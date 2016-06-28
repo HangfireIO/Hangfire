@@ -42,7 +42,7 @@ namespace Hangfire.Server
     public sealed class BackgroundProcessingServer : IBackgroundProcess, IDisposable
     {
         public static readonly TimeSpan DefaultShutdownTimeout = TimeSpan.FromSeconds(15);
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.For<BackgroundProcessingServer>();
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 #pragma warning disable 618
@@ -169,7 +169,7 @@ namespace Hangfire.Server
 
         private static string GetGloballyUniqueServerId()
         {
-            return $"{Environment.MachineName.ToLowerInvariant()}:{Process.GetCurrentProcess().Id}:{Guid.NewGuid()}";
+            return $"{Environment.GetEnvironmentVariable("COMPUTERNAME").ToLowerInvariant()}:{Process.GetCurrentProcess().Id}:{Guid.NewGuid()}";
         }
 
         private static ServerContext GetServerContext(IReadOnlyDictionary<string, object> properties)

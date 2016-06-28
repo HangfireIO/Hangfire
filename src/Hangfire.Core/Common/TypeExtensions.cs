@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Hangfire.Common
@@ -8,7 +9,7 @@ namespace Hangfire.Common
     {
         public static string ToGenericTypeString(this Type type)
         {
-            if (!type.IsGenericType)
+            if (!type.GetTypeInfo().IsGenericType)
             {
                 return type.GetFullNameWithoutNamespace()
                         .ReplacePlusWithDotInNestedTypeName();

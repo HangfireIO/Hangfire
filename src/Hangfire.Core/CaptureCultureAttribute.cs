@@ -47,13 +47,23 @@ namespace Hangfire
             if (!String.IsNullOrEmpty(cultureName))
             {
                 filterContext.Items["PreviousCulture"] = CultureInfo.CurrentCulture;
-                Thread.CurrentThread.CurrentCulture = new CultureInfo(cultureName);
+#if NETFULL
+                Thread.CurrentThread
+#else
+                CultureInfo
+#endif
+                    .CurrentCulture = new CultureInfo(cultureName);
             }
 
             if (!String.IsNullOrEmpty(uiCultureName))
             {
                 filterContext.Items["PreviousUICulture"] = CultureInfo.CurrentUICulture;
-                Thread.CurrentThread.CurrentUICulture = new CultureInfo(uiCultureName);
+#if NETFULL
+                Thread.CurrentThread
+#else
+                CultureInfo
+#endif
+                    .CurrentUICulture = new CultureInfo(uiCultureName);
             }
         }
 
@@ -63,11 +73,21 @@ namespace Hangfire
 
             if (filterContext.Items.ContainsKey("PreviousCulture"))
             {
-                Thread.CurrentThread.CurrentCulture = (CultureInfo)filterContext.Items["PreviousCulture"];
+#if NETFULL
+                Thread.CurrentThread
+#else
+                CultureInfo
+#endif
+                    .CurrentCulture = (CultureInfo)filterContext.Items["PreviousCulture"];
             }
             if (filterContext.Items.ContainsKey("PreviousUICulture"))
             {
-                Thread.CurrentThread.CurrentUICulture = (CultureInfo)filterContext.Items["PreviousUICulture"];
+#if NETFULL
+                Thread.CurrentThread
+#else
+                CultureInfo
+#endif
+                    .CurrentUICulture = (CultureInfo)filterContext.Items["PreviousUICulture"];
             }
         }
     }

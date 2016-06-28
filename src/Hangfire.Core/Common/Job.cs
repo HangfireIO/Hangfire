@@ -186,7 +186,7 @@ namespace Hangfire.Common
         {
             return useCache
                 ? ReflectedAttributeCache.GetTypeFilterAttributes(Type)
-                : GetFilterAttributes(Type);
+                : GetFilterAttributes(Type.GetTypeInfo());
         }
 
         internal IEnumerable<JobFilterAttribute> GetMethodFilterAttributes(bool useCache)

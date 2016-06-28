@@ -15,9 +15,14 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Hangfire.Annotations;
+
+#if NETFULL
+using System.Collections.Generic;
+#else
+using Microsoft.AspNetCore.Http;
+#endif
 
 namespace Hangfire.Dashboard
 {
@@ -27,24 +32,40 @@ namespace Hangfire.Dashboard
             string appPath,
             int statsPollingInterval,
             [NotNull] JobStorage jobStorage,
-            [NotNull] IDictionary<string, object> owinEnvironment, 
+#if NETFULL
+            [NotNull] IDictionary<string, object> owinEnvironment,
+#else
+            [NotNull] HttpContext http,
+#endif
             [NotNull] Match uriMatch)
         {
             if (jobStorage == null) throw new ArgumentNullException(nameof(jobStorage));
+#if NETFULL
             if (owinEnvironment == null) throw new ArgumentNullException(nameof(owinEnvironment));
+#else
+            if (http == null) throw new ArgumentNullException(nameof(http));
+#endif
             if (uriMatch == null) throw new ArgumentNullException(nameof(uriMatch));
 
             AppPath = appPath;
             StatsPollingInterval = statsPollingInterval;
             JobStorage = jobStorage;
+#if NETFULL
             OwinEnvironment = owinEnvironment;
+#else
+            Http = http;
+#endif
             UriMatch = uriMatch;
         }
 
         public string AppPath { get; }
         public int StatsPollingInterval { get; }
         public JobStorage JobStorage { get; }
+#if NETFULL
         public IDictionary<string, object> OwinEnvironment { get; } 
+#else
+        public HttpContext Http { get; }
+#endif
         public Match UriMatch { get; }
     }
 }

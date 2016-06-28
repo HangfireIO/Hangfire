@@ -17,7 +17,12 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
+#if NETFULL
 using Microsoft.Owin;
+#else
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
+#endif
 
 namespace Hangfire.Dashboard
 {
@@ -32,14 +37,22 @@ namespace Hangfire.Dashboard
 
         public async Task Dispatch(RequestDispatcherContext context)
         {
+#if NETFULL
             var owinContext = new OwinContext(context.OwinEnvironment);
-
+            var response = owinContext.Response;
             var form = await owinContext.ReadFormSafeAsync();
             var jobIds = form.GetValues("jobs[]");
 
             if (jobIds == null)
+#else
+            var response = context.Http.Response;
+            var form = await context.Http.Request.ReadFormAsync();
+            var jobIds = form["jobs[]"];
+
+            if (jobIds == StringValues.Empty)
+#endif
             {
-                owinContext.Response.StatusCode = 422;
+                response.StatusCode = 422;
                 return;
             }
 
@@ -48,7 +61,7 @@ namespace Hangfire.Dashboard
                 _command(context, jobId);
             }
 
-            owinContext.Response.StatusCode = (int)HttpStatusCode.NoContent;
+            response.StatusCode = (int)HttpStatusCode.NoContent;
         }
     }
 }

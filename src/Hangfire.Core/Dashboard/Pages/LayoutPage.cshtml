@@ -1,12 +1,14 @@
 ﻿@* Generator: Template TypeVisibility: Public GeneratePrettyNames: True *@
 @using System
+@using System.Globalization
+@using System.Reflection
 @using System.Threading
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @using Hangfire.Dashboard.Resources
 @inherits RazorPage
 <!DOCTYPE html>
-<html lang="@Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName">
+<html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
 <head>
     <title>@Title - Hangfire</title>
     <meta charset="utf-8">
@@ -57,7 +59,7 @@
                     <li>
                         <a href="http://hangfire.io/" target="_blank">Hangfire
                             @{
-                                var version = GetType().Assembly.GetName().Version;
+                                var version = GetType().GetTypeInfo().Assembly.GetName().Version;
                             }
 
                             @($"{version.Major}.{version.Minor}.{version.Build}")
@@ -75,7 +77,7 @@
                 hangFire.config = {
                     pollInterval: @StatsPollingInterval,
                     pollUrl: '@(Url.To("/stats"))',
-                    locale: '@Thread.CurrentThread.CurrentUICulture'
+                    locale: '@CultureInfo.CurrentUICulture'
                 };
             })(window.Hangfire = window.Hangfire || {});
         </script>

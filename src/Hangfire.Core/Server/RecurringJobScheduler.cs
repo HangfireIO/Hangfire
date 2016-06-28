@@ -66,7 +66,7 @@ namespace Hangfire.Server
     public class RecurringJobScheduler : IBackgroundProcess
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.For<RecurringJobScheduler>();
         
         private readonly IBackgroundJobFactory _factory;
         private readonly Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> _instantFactory;
@@ -208,12 +208,21 @@ namespace Hangfire.Server
                     $"recurring-job:{recurringJobId}",
                     changedFields);
             }
+#if NETFULL
             catch (TimeZoneNotFoundException ex)
             {
+#else
+            catch (Exception ex)
+            {
+                // https://github.com/dotnet/corefx/issues/7552
+                if (!ex.GetType().Name.Equals("TimeZoneNotFoundException")) throw;
+#endif
+
                 Logger.ErrorException(
                     $"Recurring job '{recurringJobId}' was not triggered: {ex.Message}.",
                     ex);
             }
+
         }
 
         private static DateTime GetLastInstant(IReadOnlyDictionary<string, string> recurringJob, IScheduleInstant instant)

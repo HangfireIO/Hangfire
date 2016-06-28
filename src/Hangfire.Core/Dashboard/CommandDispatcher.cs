@@ -17,7 +17,11 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
+#if NETFULL
 using Microsoft.Owin;
+#else
+using Microsoft.AspNetCore.Http;
+#endif
 
 namespace Hangfire.Dashboard
 {
@@ -32,21 +36,28 @@ namespace Hangfire.Dashboard
 
         public Task Dispatch(RequestDispatcherContext context)
         {
+#if NETFULL
             var owinContext = new OwinContext(context.OwinEnvironment);
+            var request = owinContext.Request;
+            var response = owinContext.Response;
+#else
+            var request = context.Http.Request;
+            var response = context.Http.Response;
+#endif
 
-            if (owinContext.Request.Method != WebRequestMethods.Http.Post)
+            if ("POST".Equals(request.Method, StringComparison.OrdinalIgnoreCase))
             {
-                owinContext.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+                response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
                 return Task.FromResult(false);
             }
 
             if (_command(context))
             {
-                owinContext.Response.StatusCode = (int)HttpStatusCode.NoContent;
+                response.StatusCode = (int)HttpStatusCode.NoContent;
             }
             else
             {
-                owinContext.Response.StatusCode = 422;
+                response.StatusCode = 422;
             }
 
             return Task.FromResult(true);

@@ -17,7 +17,12 @@
 using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+
+#if NETFULL
 using Microsoft.Owin;
+#else
+using Microsoft.AspNetCore.Http;
+#endif
 
 namespace Hangfire.Dashboard
 {
@@ -32,13 +37,19 @@ namespace Hangfire.Dashboard
 
         public Task Dispatch(RequestDispatcherContext context)
         {
+#if NETFULL
             var owinContext = new OwinContext(context.OwinEnvironment);
-            owinContext.Response.ContentType = "text/html";
+            var response = owinContext.Response;
+#else
+            var response = context.Http.Response;
+#endif
+            
+            response.ContentType = "text/html";
 
             var page = _pageFunc(context.UriMatch);
             page.Assign(context);
 
-            return owinContext.Response.WriteAsync(page.ToString());
+            return response.WriteAsync(page.ToString());
         }
     }
 }

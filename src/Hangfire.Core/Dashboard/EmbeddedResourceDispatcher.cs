@@ -15,10 +15,15 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Globalization;
 using System.Reflection;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
+#if NETFULL
 using Microsoft.Owin;
+#else
+using Microsoft.AspNetCore.Http;
+#endif
 
 namespace Hangfire.Dashboard
 {
@@ -43,22 +48,44 @@ namespace Hangfire.Dashboard
 
         public Task Dispatch(RequestDispatcherContext context)
         {
+#if NETFULL
             var owinContext = new OwinContext(context.OwinEnvironment);
+            var response = owinContext.Response;
+#else
+            var response = context.Http.Response;
+#endif
 
-            owinContext.Response.ContentType = _contentType;
-            owinContext.Response.Expires = DateTime.Now.AddYears(1);
+            response.ContentType = _contentType;
 
-            WriteResponse(owinContext.Response);
+#if NETFULL
+            response.Expires = DateTime.Now.AddYears(1);
+#else
+            response.Headers["Expires"] = DateTime.Now.AddYears(1).ToString("r", CultureInfo.InvariantCulture);
+#endif
+
+            WriteResponse(response);
 
             return Task.FromResult(true);
         }
 
-        protected virtual void WriteResponse(IOwinResponse response)
+        protected virtual void WriteResponse(
+#if NETFULL
+            IOwinResponse
+#else
+            HttpResponse
+#endif
+            response)
         {
             WriteResource(response, _assembly, _resourceName);
         }
 
-        protected void WriteResource(IOwinResponse response, Assembly assembly, string resourceName)
+        protected void WriteResource(
+#if NETFULL
+            IOwinResponse
+#else
+            HttpResponse
+#endif
+            response, Assembly assembly, string resourceName)
         {
             using (var inputStream = assembly.GetManifestResourceStream(resourceName))
             {

@@ -12,7 +12,9 @@ namespace Hangfire.Common.ExpressionUtil
     // Represents a lambda expression (root element in Expression<T>)
 
     [SuppressMessage("Microsoft.Usage", "CA2218:OverrideGetHashCodeOnOverridingEquals", Justification = "Overrides AddToHashCodeCombiner() instead.")]
+#if NETFULL
     [ExcludeFromCodeCoverage]
+#endif
     internal sealed class LambdaExpressionFingerprint : ExpressionFingerprint
     {
         public LambdaExpressionFingerprint(ExpressionType nodeType, Type type)

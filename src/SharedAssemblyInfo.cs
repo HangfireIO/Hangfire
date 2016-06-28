@@ -11,4 +11,6 @@ using System.Runtime.InteropServices;
 [assembly: CLSCompliant(false)]
 
 // Don't edit manually! Use `build.bat version` command instead!
+#if NETFULL
 [assembly: AssemblyVersion("1.6.0")]
+#endif

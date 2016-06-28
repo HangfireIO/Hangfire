@@ -16,7 +16,9 @@ namespace Hangfire.Common.ExpressionUtil
     // be compiled and cached, and the array lookup happens at runtime.
 
     [SuppressMessage("Microsoft.Usage", "CA2218:OverrideGetHashCodeOnOverridingEquals", Justification = "Overrides AddToHashCodeCombiner() instead.")]
+#if NETFULL
     [ExcludeFromCodeCoverage]
+#endif
     internal sealed class ConstantExpressionFingerprint : ExpressionFingerprint
     {
         public ConstantExpressionFingerprint(ExpressionType nodeType, Type type)

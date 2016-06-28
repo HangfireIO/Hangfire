@@ -16,16 +16,38 @@
 
 using System;
 using System.Collections.Generic;
+
+#if NETFULL
 using Microsoft.Owin;
+#else
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+#endif
 
 namespace Hangfire.Dashboard
 {
     public class LocalRequestsOnlyAuthorizationFilter : IAuthorizationFilter
     {
-        public bool Authorize(IDictionary<string, object> owinEnvironment)
+        public bool Authorize(
+#if NETFULL
+            IDictionary<string, object> owinEnvironment
+#else
+            HttpContext context
+#endif
+            )
         {
+#if NETFULL
             var context = new OwinContext(owinEnvironment);
-            var remoteAddress = context.Request.RemoteIpAddress;
+#else
+            var connection = context.Features.Get<IHttpConnectionFeature>();
+#endif
+            var remoteAddress =
+#if NETFULL
+                context.Request.RemoteIpAddress
+#else
+                connection.RemoteIpAddress.ToString()
+#endif
+                ;
 
             // if unknown, assume not local
             if (String.IsNullOrEmpty(remoteAddress))
@@ -36,7 +58,13 @@ namespace Hangfire.Dashboard
                 return true;
 
             // compare with local address
-            if (remoteAddress == context.Request.LocalIpAddress)
+            if (remoteAddress ==
+#if NETFULL
+                context.Request.LocalIpAddress
+#else
+                connection.LocalIpAddress.ToString()
+#endif
+                )
                 return true;
 
             return false;

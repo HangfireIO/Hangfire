@@ -338,6 +338,7 @@ namespace Hangfire.Logging
             return GetLogger(typeof(T));
         }
 
+#if NETFULL
         /// <summary>
         /// Gets a logger for the current class.
         /// </summary>
@@ -347,6 +348,7 @@ namespace Hangfire.Logging
             var stackFrame = new StackFrame(1, false);
             return GetLogger(stackFrame.GetMethod().DeclaringType);
         }
+#endif
 
         /// <summary>
         /// Gets a logger for the specified type.
@@ -388,9 +390,11 @@ namespace Hangfire.Logging
             new Tuple<IsLoggerAvailable, CreateLogProvider>(SerilogLogProvider.IsLoggerAvailable, () => new SerilogLogProvider()),
             new Tuple<IsLoggerAvailable, CreateLogProvider>(NLogLogProvider.IsLoggerAvailable, () => new NLogLogProvider()),
             new Tuple<IsLoggerAvailable, CreateLogProvider>(Log4NetLogProvider.IsLoggerAvailable, () => new Log4NetLogProvider()),
+#if NETFULL
             new Tuple<IsLoggerAvailable, CreateLogProvider>(EntLibLogProvider.IsLoggerAvailable, () => new EntLibLogProvider()),
             new Tuple<IsLoggerAvailable, CreateLogProvider>(LoupeLogProvider.IsLoggerAvailable, () => new LoupeLogProvider()),
             new Tuple<IsLoggerAvailable, CreateLogProvider>(ElmahLogProvider.IsLoggerAvailable, () => new ElmahLogProvider()),
+#endif
         };
 
         private static ILogProvider ResolveLogProvider()
@@ -823,6 +827,7 @@ namespace Hangfire.Logging.LogProviders
         }
     }
 
+#if NETFULL
     public class EntLibLogProvider : ILogProvider
     {
         private const string TypeTemplate = "Microsoft.Practices.EnterpriseLibrary.Logging.{0}, Microsoft.Practices.EnterpriseLibrary.Logging";
@@ -979,6 +984,7 @@ namespace Hangfire.Logging.LogProviders
             }
         }
     }
+#endif
 
     public class SerilogLogProvider : ILogProvider
     {
@@ -1229,6 +1235,7 @@ namespace Hangfire.Logging.LogProviders
         }
     }
 
+#if NETFULL
     public class LoupeLogProvider : ILogProvider
     {
         private static bool _providerIsAvailableOverride = true;
@@ -1354,6 +1361,7 @@ namespace Hangfire.Logging.LogProviders
             params object[] args
             );
     }
+#endif
 
     public class ColouredConsoleLogProvider : ILogProvider
     {
@@ -1470,6 +1478,7 @@ namespace Hangfire.Logging.LogProviders
         }
     }
 
+#if NETFULL
     public class ElmahLogProvider : ILogProvider
     {
         private static bool _providerIsAvailableOverride = true;
@@ -1580,4 +1589,5 @@ namespace Hangfire.Logging.LogProviders
             }
         }
     }
+#endif
 }

@@ -84,6 +84,7 @@ namespace Hangfire
             return configuration.UseLogProvider(new Log4NetLogProvider());
         }
 
+#if NETFULL
         public static IGlobalConfiguration<ElmahLogProvider> UseElmahLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
         {
@@ -124,6 +125,7 @@ namespace Hangfire
 
             return configuration.UseLogProvider(new LoupeLogProvider());
         }
+#endif
 
         public static IGlobalConfiguration<TFilter> UseFilter<TFilter>(
             [NotNull] this IGlobalConfiguration configuration, 

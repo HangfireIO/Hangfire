@@ -130,7 +130,7 @@ namespace Hangfire.Storage
 
                 if (CoreBackgroundJobPerformer.Substitutions.ContainsKey(parameter.ParameterType))
                 {
-                    value = parameter.ParameterType.IsValueType
+                    value = parameter.ParameterType.GetTypeInfo().IsValueType
                         ? Activator.CreateInstance(parameter.ParameterType)
                         : null;
                 }
@@ -164,6 +164,7 @@ namespace Hangfire.Storage
                 }
                 else
                 {
+#if NETFULL
                     try
                     {
                         var converter = TypeDescriptor.GetConverter(type);
@@ -173,6 +174,9 @@ namespace Hangfire.Storage
                     {
                         throw jsonException;
                     }
+#else
+                    throw;
+#endif
                 }
             }
             return value;
@@ -182,7 +186,7 @@ namespace Hangfire.Storage
         {
             var methods = new List<MethodInfo>(type.GetMethods());
 
-            if (type.IsInterface)
+            if (type.GetTypeInfo().IsInterface)
             {
                 methods.AddRange(type.GetInterfaces().SelectMany(x => x.GetMethods()));
             }

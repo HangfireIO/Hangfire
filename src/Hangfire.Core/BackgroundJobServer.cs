@@ -28,7 +28,7 @@ namespace Hangfire
 {
     public class BackgroundJobServer : IDisposable
     {
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.For<BackgroundJobServer>();
 
         private readonly BackgroundJobServerOptions _options;
         private readonly IDisposable _processingServer;

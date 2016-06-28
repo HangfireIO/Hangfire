@@ -41,7 +41,7 @@ namespace Hangfire.Server
     public class Worker : IBackgroundProcess
     {
         private static readonly TimeSpan JobInitializationWaitTimeout = TimeSpan.FromMinutes(1);
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.For<Worker>();
 
         private readonly string _workerId;
         private readonly string[] _queues;

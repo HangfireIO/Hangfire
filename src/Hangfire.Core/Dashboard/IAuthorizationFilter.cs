@@ -16,10 +16,20 @@
 
 using System.Collections.Generic;
 
+#if !NETFULL
+using Microsoft.AspNetCore.Http;
+#endif
+
 namespace Hangfire.Dashboard
 {
     public interface IAuthorizationFilter
     {
-        bool Authorize(IDictionary<string, object> owinEnvironment);
+        bool Authorize(
+#if NETFULL
+            IDictionary<string, object> owinEnvironment
+#else
+            HttpContext context
+#endif
+            );
     }
 }

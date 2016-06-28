@@ -11,7 +11,9 @@ using System.Reflection;
 
 namespace Hangfire.Common.ExpressionUtil
 {
+#if NETFULL
     [ExcludeFromCodeCoverage]
+#endif
     internal static class CachedExpressionCompiler
     {
         // This is the entry point to the cached expression compilation system. The system

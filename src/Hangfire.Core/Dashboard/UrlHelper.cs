@@ -17,23 +17,48 @@
 using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
+#if NETFULL
 using Microsoft.Owin;
+#else
+using Microsoft.AspNetCore.Http;
+#endif
 
 namespace Hangfire.Dashboard
 {
     public class UrlHelper
     {
+#if NETFULL
         private readonly OwinContext _context;
+#else
+        private readonly HttpRequest _request;
+#endif
 
-        public UrlHelper([NotNull] IDictionary<string, object> owinContext)
+        public UrlHelper(
+#if NETFULL
+            [NotNull] IDictionary<string, object> owinContext
+#else
+            [NotNull] HttpRequest request
+#endif
+            )
         {
+#if NETFULL
             if (owinContext == null) throw new ArgumentNullException(nameof(owinContext));
             _context = new OwinContext(owinContext);
+#else
+            if (request == null) throw new ArgumentNullException(nameof(request));
+            _request = request;
+#endif
         }
 
         public string To(string relativePath)
         {
-            return _context.Request.PathBase + relativePath;
+            return
+#if NETFULL
+                _context.Request.PathBase 
+#else
+                _request.PathBase
+#endif
+                + relativePath;
         }
 
         public string Home()

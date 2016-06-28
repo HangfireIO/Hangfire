@@ -19,7 +19,11 @@ using System.Diagnostics;
 using System.Net;
 using System.Text;
 using Hangfire.Storage.Monitoring;
+#if NETFULL
 using Microsoft.Owin;
+#else
+using Microsoft.AspNetCore.Http;
+#endif
 
 namespace Hangfire.Dashboard
 {
@@ -54,8 +58,13 @@ namespace Hangfire.Dashboard
             }
         }
 
+#if NETFULL
         internal IOwinRequest Request { private get; set; }
         internal IOwinResponse Response { private get; set; }
+#else
+        internal HttpRequest Request { private get; set; }
+        internal HttpResponse Response { private get; set; }
+#endif
 
         public string RequestPath => Request.Path.Value;
 
@@ -88,14 +97,26 @@ namespace Hangfire.Dashboard
 
         internal void Assign(RequestDispatcherContext context)
         {
+#if NETFULL
             var owinContext = new OwinContext(context.OwinEnvironment);
 
             Request = owinContext.Request;
             Response = owinContext.Response;
+#else
+            Request = context.Http.Request;
+            Response = context.Http.Response;
+#endif
+
             Storage = context.JobStorage;
             AppPath = context.AppPath;
             StatsPollingInterval = context.StatsPollingInterval;
-            Url = new UrlHelper(context.OwinEnvironment);
+            Url = new UrlHelper(
+#if NETFULL
+                context.OwinEnvironment
+#else
+                Request
+#endif
+                );
 
             _statisticsLazy = new Lazy<StatisticsDto>(() =>
             {

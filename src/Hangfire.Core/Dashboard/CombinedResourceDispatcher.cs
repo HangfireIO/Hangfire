@@ -16,7 +16,11 @@
 
 using System.Reflection;
 using Hangfire.Annotations;
+#if NETFULL
 using Microsoft.Owin;
+#else
+using Microsoft.AspNetCore.Http;
+#endif
 
 namespace Hangfire.Dashboard
 {
@@ -37,7 +41,13 @@ namespace Hangfire.Dashboard
             _resourceNames = resourceNames;
         }
 
-        protected override void WriteResponse(IOwinResponse response)
+        protected override void WriteResponse(
+#if NETFULL
+            IOwinResponse
+#else
+            HttpResponse
+#endif
+            response)
         {
             foreach (var resourceName in _resourceNames)
             {

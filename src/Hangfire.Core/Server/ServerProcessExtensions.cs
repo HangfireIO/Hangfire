@@ -101,7 +101,7 @@ namespace Hangfire.Server
 
             logger.Debug($"Background process '{process}' stopped.");
         }
-
+        
         private static void TrySetThreadName(string name)
         {
             try
