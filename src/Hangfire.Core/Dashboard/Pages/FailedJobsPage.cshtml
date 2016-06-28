@@ -1,20 +1,50 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
 @using System
+@using System.Collections.Generic
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @using Hangfire.Dashboard.Resources
+@using Hangfire.States
 @inherits RazorPage
 @{
     Layout = new LayoutPage(Strings.FailedJobsPage_Title);
 
     int from, perPage;
+    string filterString = Query("filterString");
+    string filterMethodString = Query("filterMethodString");
+    string startDate = Query("startDate");
+    string endDate = Query("endDate");
+    string startTime = Query("startTime");
+    string endTime = Query("endTime");
 
     int.TryParse(Query("from"), out from);
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    var pager = new Pager(from, perPage, monitor.FailedCount());
-    var failedJobs = monitor.FailedJobs(pager.FromRecord, pager.RecordsPerPage);
+
+    var countParameters = new Dictionary<string, string>()
+    {
+        { "stateName", FailedState.StateName },
+        { "filterString", filterString },
+        { "filterMethodString", filterMethodString },
+        { "startDate", startDate },
+        { "endDate", endDate },
+        { "startTime", startTime },
+        { "endTime", endTime }
+    };
+
+    var jobCount = monitor.JobCountByStateName(countParameters);
+    var pager = new Pager(from, perPage, jobCount)
+    {
+        JobsFilterText = filterString,
+        JobsFilterMethodText = filterMethodString,
+        JobsFilterStartDate = startDate,
+        JobsFilterEndDate = endDate,
+        JobsFilterStartTime = startTime,
+        JobsFilterEndTime = endTime
+    };
+
+    var failedJobs = monitor.FailedJobs(pager);
 }
 
 <div class="row">
@@ -27,7 +57,7 @@
         @if (pager.TotalPageCount == 0)
         {
             <div class="alert alert-success">
-               @Strings.FailedJobsPage_NoJobs
+                @Strings.FailedJobsPage_NoJobs
             </div>
         }
         else
@@ -35,7 +65,6 @@
             <div class="alert alert-warning">
                 @Html.Raw(Strings.FailedJobsPage_FailedJobsNotExpire_Warning_Html)
             </div>
-            
             <div class="js-jobs-list">
                 <div class="btn-toolbar btn-toolbar-top">
                     <button class="js-jobs-list-command btn btn-sm btn-primary"
@@ -45,7 +74,6 @@
                         <span class="glyphicon glyphicon-repeat"></span>
                         @Strings.Common_RequeueJobs
                     </button>
-
                     <button class="js-jobs-list-command btn btn-sm btn-default"
                             data-url="@Url.To("/jobs/failed/delete")"
                             data-loading-text="@Strings.Common_Deleting"
@@ -53,10 +81,58 @@
                         <span class="glyphicon glyphicon-remove"></span>
                         @Strings.Common_DeleteSelected
                     </button>
-
-                    @Html.PerPageSelector(pager)
+                    @if (EnableSearch == true)
+                    {
+                        <button data-toggle="collapse" data-target="#advanced-search-bar" class="btn btn-sm btn-success">Advanced Search</button>
+                    }
                 </div>
+                @if (EnableSearch == true)
+                {
+                    <div id="advanced-search-bar" class="collapse well">
+                        <h4 class="advanced-search-header">
+                            Advanced Search
+                        </h4>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <input type="text" value="" id="filterValueString" class="form-control" placeholder="Search..." />
+                                </div>
+                                <div class="form-group">
+                                    @{
+                                        var currentDateTime = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                                    }
+                                    <input id="filterOnDateTime" name="filterOnDateTime" type="checkbox" class="js-jobs-filterOnDateTime-checked" />
+                                    <label for="filterOnDateTime">Filter on date time</label>
 
+                                    <div id="datetime-filters" class="row">
+                                        <div class="col-xs-6">
+                                            <input type="text" value="@currentDateTime" class="datetimeselector-start form-control" id="startDateTime" />
+                                        </div>
+                                        <div class="col-xs-6">
+                                            <input type="text" value="@currentDateTime" class="datetimeselector-end form-control" id="endDateTime" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <input id="filterOnMethodName" name="filterOnMethodName" type="checkbox" class="js-jobs-filterOnMethodName-checked" />
+                                    <label for="filterOnMethodName">Filter on method name</label>
+                                    <input type="text" value="" id="filterMethodString" class="form-control" placeholder="Method name..." />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <button class="js-jobs-filter-command btn btn-sm btn-success"
+                                        data-url="@Url.To("/jobs/failed")">
+                                    <span class="glyphicon glyphicon-repeat"></span>
+
+                                    Filter jobs
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+                @Html.PerPageSelector(pager)
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
@@ -73,14 +149,14 @@
                             @{ var index = 0; }
                             @foreach (var job in failedJobs)
                             {
-                                <tr class="js-jobs-list-row @(!job.Value.InFailedState ? "obsolete-data" : null) @(job.Value.InFailedState ? "hover" : null)">
-                                    <td rowspan="@(job.Value.InFailedState ? "2" : "1")">
+                                <tr class="js-jobs-list-row @(!job.Value.InFailedState ? " obsolete-data" : null) @(job.Value.InFailedState ? "hover" : null)">
+                                    <td rowspan="@(job.Value.InFailedState ? " 2" : "1" )">
                                         @if (job.Value.InFailedState)
                                         {
                                             <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
                                         }
                                     </td>
-                                    <td class="min-width" rowspan="@(job.Value.InFailedState ? "2" : "1")">
+                                    <td class="min-width" rowspan="@(job.Value.InFailedState ? " 2" : "1" )">
                                         @Html.JobIdLink(job.Key)
                                         @if (!job.Value.InFailedState)
                                         {
@@ -90,7 +166,14 @@
                                     <td class="min-width">
                                         @if (job.Value.FailedAt.HasValue)
                                         {
-                                            @Html.RelativeTime(job.Value.FailedAt.Value)
+                                            if (RelativeTime == true)
+                                            {
+                                                @Html.RelativeTime(job.Value.FailedAt.Value);
+                                            }
+                                            else
+                                            {
+                                                @Html.Raw(job.Value.FailedAt.Value.ToString("dd/MM/yyyy HH:mm"));
+                                            }
                                         }
                                     </td>
                                     <td>
@@ -109,7 +192,7 @@
                                 {
                                     <tr>
                                         <td colspan="2" class="failed-job-details">
-                                            <div class="expandable" style="@(index++ == 0 ? "display: block;" : null)">
+                                            <div class="expandable" style="@(index++ == 0 ? " display: block;" : null)">
                                                 <h4>@job.Value.ExceptionType</h4>
                                                 <p class="text-muted">
                                                     @job.Value.ExceptionMessage
@@ -127,7 +210,6 @@
                         </tbody>
                     </table>
                 </div>
-
                 @Html.Paginator(pager)
             </div>
         }

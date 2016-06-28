@@ -30,7 +30,9 @@ namespace Hangfire.Dashboard
             int statsPollingInterval,
             [NotNull] JobStorage jobStorage,
             [NotNull] IDictionary<string, object> owinEnvironment,
-            [NotNull] Match uriMatch)
+            [NotNull] Match uriMatch,
+            bool enableSearch = false,
+            bool relativeTime = false)
         {
             if (jobStorage == null) throw new ArgumentNullException(nameof(jobStorage));
             if (owinEnvironment == null) throw new ArgumentNullException(nameof(owinEnvironment));
@@ -38,12 +40,16 @@ namespace Hangfire.Dashboard
 
             AppPath = appPath;
             StatsPollingInterval = statsPollingInterval;
+            RelativeTime = relativeTime;
+            EnableSearch = enableSearch;
             JobStorage = jobStorage;
             OwinEnvironment = owinEnvironment;
             UriMatch = uriMatch;
         }
 
         public string AppPath { get; }
+        public bool EnableSearch { get; }
+        public bool RelativeTime { get; }
         public int StatsPollingInterval { get; }
         public JobStorage JobStorage { get; }
         public IDictionary<string, object> OwinEnvironment { get; } 
@@ -64,7 +70,9 @@ namespace Hangfire.Dashboard
                 owinContext.Options.StatsPollingInterval,
                 owinContext.Storage,
                 owinContext.Environment,
-                owinContext.UriMatch);
+                owinContext.UriMatch,
+                owinContext.Options.EnableSearch,
+                owinContext.Options.RelativeTime);
         }
     }
 }

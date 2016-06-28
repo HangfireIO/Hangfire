@@ -27,39 +27,68 @@ namespace Hangfire.Dashboard
         private int _startPageIndex = 1;
         private int _endPageIndex = 1;
 
-        public Pager(int from, int perPage, long total)
-        {
+        public Pager(int from, int perPage, long total)        
+        {            
             FromRecord = from >= 0 ? from : 0;
             RecordsPerPage = perPage > 0 ? perPage : DefaultRecordsPerPage;
-            TotalRecordCount = total;
             CurrentPage = FromRecord / RecordsPerPage + 1;
+            TotalRecordCount = total;
             TotalPageCount = (int)Math.Ceiling((double)TotalRecordCount / RecordsPerPage);
-
             PagerItems = GenerateItems();
-        }
-
+        }               
         public string BasePageUrl { get; set; }
-
-        public int FromRecord { get; }
-        public int RecordsPerPage { get; }
-        public int CurrentPage { get; }
-
-        public int TotalPageCount { get; }
-        public long TotalRecordCount { get; }
+        public int FromRecord { get; private set; }
+        public int RecordsPerPage { get; private set; }
+        public int CurrentPage { get; private set; }
+        public int TotalPageCount { get; private set; }
+        public long TotalRecordCount { get; private set; }
+        public string JobsFilterText { get; set; }
+        public string JobsFilterMethodText { get; set; }
+        public string JobsFilterStartDate { get; set; }
+        public string JobsFilterEndDate { get; set; }
+        public string JobsFilterStartTime { get; set; }
+        public string JobsFilterEndTime { get; set; }
 
         internal ICollection<Item> PagerItems { get; }
 
         public string PageUrl(int page)
         {
             if (page < 1 || page > TotalPageCount) return "#";
+                              
+            string newUrl = BasePageUrl + "?from=" + ((page - 1) * RecordsPerPage) + "&count=" + RecordsPerPage;
 
-            return BasePageUrl + "?from=" + (page - 1) * RecordsPerPage + "&count=" + RecordsPerPage;
+            if (!string.IsNullOrEmpty(JobsFilterText))
+                newUrl += "&filterString=" + JobsFilterText;
+
+            if (!string.IsNullOrEmpty(JobsFilterMethodText))
+                newUrl += "&filterMethodString=" + JobsFilterMethodText;
+
+            if ( !string.IsNullOrEmpty(JobsFilterStartDate) && !string.IsNullOrEmpty(JobsFilterEndDate) )
+                newUrl += "&startDate=" + JobsFilterStartDate+ "&endDate=" + JobsFilterEndDate;
+
+            if (!string.IsNullOrEmpty(JobsFilterStartTime) && !string.IsNullOrEmpty(JobsFilterEndTime))
+                newUrl += "&startTime=" + JobsFilterStartTime + "&endTime=" + JobsFilterEndTime;
+
+            return newUrl;
         }
 
         public string RecordsPerPageUrl(int perPage)
         {
             if (perPage <= 0) return "#";
-            return BasePageUrl + "?from=0&count=" + perPage;
+
+            var newUrl = BasePageUrl + "?from=0&count=" + perPage;
+
+            if (!string.IsNullOrEmpty(JobsFilterText)) newUrl += "&filterString=" + JobsFilterText;
+
+            if (!string.IsNullOrEmpty(JobsFilterMethodText)) newUrl += "&filterMethodString=" + JobsFilterMethodText;
+
+            if (!string.IsNullOrEmpty(JobsFilterStartDate) && !string.IsNullOrEmpty(JobsFilterEndDate))
+                newUrl += "&startDate=" + JobsFilterStartDate + "&endDate=" + JobsFilterEndDate;
+
+            if (!string.IsNullOrEmpty(JobsFilterStartTime) && !string.IsNullOrEmpty(JobsFilterEndTime))
+                newUrl += "&startTime=" + JobsFilterStartTime + "&endTime=" + JobsFilterEndTime;
+
+            return newUrl;
         }
 
         private ICollection<Item> GenerateItems()

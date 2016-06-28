@@ -399,15 +399,24 @@
     <EmbeddedResource Include="Dashboard\Content\css\bootstrap.min.css" />
     <EmbeddedResource Include="Dashboard\Content\css\hangfire.css" />
     <EmbeddedResource Include="Dashboard\Content\css\rickshaw.min.css" />
+    <EmbeddedResource Include="Dashboard\Content\css\jquery.datepick.css" />
+    <EmbeddedResource Include="Dashboard\Content\css\jquery.datetimepicker.css" />
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.svg" />
     <EmbeddedResource Include="Dashboard\Content\js\bootstrap.min.js" />
     <EmbeddedResource Include="Dashboard\Content\js\d3.layout.min.js" />
     <EmbeddedResource Include="Dashboard\Content\js\d3.min.js" />
-    <EmbeddedResource Include="Dashboard\Content\js\hangfire.js" />
     <EmbeddedResource Include="Dashboard\Content\js\jquery-2.1.4.min.js" />
     <EmbeddedResource Include="Dashboard\Content\js\moment-with-locales.min.js" />
     <EmbeddedResource Include="Dashboard\Content\js\moment.min.js" />
     <EmbeddedResource Include="Dashboard\Content\js\rickshaw.min.js" />
+    <EmbeddedResource Include="Dashboard\Content\js\HistoryGraph.js" />
+    <EmbeddedResource Include="Dashboard\Content\js\jquery.datepick.min.js" />
+    <EmbeddedResource Include="Dashboard\Content\js\jquery.datetimepicker.full.min.js" />
+    <EmbeddedResource Include="Dashboard\Content\js\jquery.plugin.min.js" />
+    <EmbeddedResource Include="Dashboard\Content\js\Metrics.js" />
+    <EmbeddedResource Include="Dashboard\Content\js\Page.js" />
+    <EmbeddedResource Include="Dashboard\Content\js\RealTimeGraph.js" />
+    <EmbeddedResource Include="Dashboard\Content\js\StatisticsPoller.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.eot" />

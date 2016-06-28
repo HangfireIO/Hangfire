@@ -205,6 +205,12 @@ a:hover .label-hover {
     margin-bottom: 10px;
 }
 
+.fltr-txtbx{
+    margin-left: 12px;
+    font-size:15px;
+    line-height:1    
+}
+
 .paginator .btn {
     color: #428bca;
 }
@@ -517,6 +523,17 @@ span.metric-danger.highlighted {
 span.metric-null,
 div.metric-null {
     display: none;
+}
+
+/*Advanced Search*/
+.advanced-search-header {
+    margin-top: 0;
+    font-weight:bold;
+}
+
+#datetime-filters,
+#filterMethodString {
+    display:none;
 }
 
 @media (min-width: 992px) {
