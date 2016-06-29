@@ -16,20 +16,24 @@
 
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+#if NETFULL
+using System.Configuration;
 using System.Transactions;
+#endif
 using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.Storage;
+#if NETFULL
 using IsolationLevel = System.Transactions.IsolationLevel;
+#endif
 
 namespace Hangfire.SqlServer
 {
@@ -63,6 +67,7 @@ namespace Hangfire.SqlServer
 
             _options = options;
 
+#if NETFULL
             if (IsConnectionString(nameOrConnectionString))
             {
                 _connectionString = nameOrConnectionString;
@@ -76,6 +81,9 @@ namespace Hangfire.SqlServer
                 throw new ArgumentException(
                     $"Could not find connection string with name '{nameOrConnectionString}' in application config file");
             }
+#else
+            _connectionString = nameOrConnectionString;
+#endif
 
             if (options.PrepareSchemaIfNecessary)
             {
@@ -208,15 +216,34 @@ namespace Hangfire.SqlServer
             }, null);
         }
 
+
         internal T UseTransaction<T>([InstantHandle] Func<DbConnection, T> func, IsolationLevel? isolationLevel)
         {
+#if NETFULL
             using (var transaction = CreateTransaction(isolationLevel ?? _options.TransactionIsolationLevel))
             {
-                var result = UseConnection(func);
+                var result = UseConnection(connection =>
+                {
+                    connection.EnlistTransaction(Transaction.Current);
+                    return func(connection);
+                });
+
                 transaction.Complete();
 
                 return result;
             }
+#else
+            return UseConnection(connection =>
+            {
+                using (var transaction = connection.BeginTransaction(isolationLevel ?? IsolationLevel.ReadCommitted))
+                {
+                    var result = func(connection);
+                    transaction.Commit();
+
+                    return result;
+                }
+            });
+#endif
         }
 
         internal DbConnection CreateAndOpenConnection()
@@ -244,7 +271,8 @@ namespace Hangfire.SqlServer
                 connection.Dispose();
             }
         }
-        
+
+#if NETFULL
         private TransactionScope CreateTransaction(IsolationLevel? isolationLevel)
         {
             return isolationLevel != null
@@ -252,6 +280,7 @@ namespace Hangfire.SqlServer
                     new TransactionOptions { IsolationLevel = isolationLevel.Value, Timeout = _options.TransactionTimeout })
                 : new TransactionScope();
         }
+#endif
 
         private void InitializeQueueProviders()
         {
@@ -259,6 +288,7 @@ namespace Hangfire.SqlServer
             QueueProviders = new PersistentJobQueueProviderCollection(defaultQueueProvider);
         }
 
+#if NETFULL
         private bool IsConnectionString(string nameOrConnectionString)
         {
             return nameOrConnectionString.Contains(";");
@@ -270,6 +300,7 @@ namespace Hangfire.SqlServer
 
             return connectionStringSetting != null;
         }
+#endif
 
         public static readonly DashboardMetric ActiveConnections = new DashboardMetric(
             "connections:active",

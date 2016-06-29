@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+#if NETFULL
 using System.Transactions;
+#endif
 using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Common;
@@ -49,8 +51,6 @@ namespace Hangfire.SqlServer
         {
             _storage.UseTransaction(connection =>
             {
-                connection.EnlistTransaction(Transaction.Current);
-
                 if (_lockedResources.Count > 0)
                 {
                     connection.Execute(

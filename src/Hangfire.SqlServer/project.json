@@ -1,0 +1,31 @@
+﻿{
+    "version": "1.6.0-*",
+    "buildOptions": {
+        "compile": "**/*.cs"
+    },
+    "frameworks": {
+        "net45": {
+            "buildOptions": {
+                "define": [ "NETFULL" ]
+            },
+            "dependencies": {
+                "Hangfire.Core": "1.6.0-*",
+                "Dapper": "1.42.0"
+            },
+            "frameworkAssemblies": {
+                "System.Configuration": "4.0.0.0",
+                "System.Data": "4.0.0.0",
+                "System.Transactions": "4.0.0.0"
+            }
+        },
+        "netstandard1.3": {
+            "imports": "portable-netcore45",
+            "dependencies": {
+                "NETStandard.Library": "1.6.0",
+				"System.Data.SqlClient": "4.1.0",
+                "Hangfire.Core": "1.6.0-*",
+                "Dapper": "1.50.0-rc3"
+            }
+        }
+    }
+}
