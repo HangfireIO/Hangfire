@@ -17,42 +17,32 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
-#if NETFULL
-using Microsoft.Owin;
-#else
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
-#endif
 
 namespace Hangfire.Dashboard
 {
-    internal class BatchCommandDispatcher : IRequestDispatcher
+    internal class BatchCommandDispatcher : IDashboardDispatcher
     {
-        private readonly Action<RequestDispatcherContext, string> _command;
+        private readonly Action<DashboardContext, string> _command;
 
-        public BatchCommandDispatcher(Action<RequestDispatcherContext, string> command)
+        public BatchCommandDispatcher(Action<DashboardContext, string> command)
         {
             _command = command;
         }
 
-        public async Task Dispatch(RequestDispatcherContext context)
-        {
 #if NETFULL
-            var owinContext = new OwinContext(context.OwinEnvironment);
-            var response = owinContext.Response;
-            var form = await owinContext.ReadFormSafeAsync();
-            var jobIds = form.GetValues("jobs[]");
-
-            if (jobIds == null)
-#else
-            var response = context.Http.Response;
-            var form = await context.Http.Request.ReadFormAsync();
-            var jobIds = form["jobs[]"];
-
-            if (jobIds == StringValues.Empty)
+        [Obsolete("Use the `BatchCommandDispatcher(Action<DashboardContext>, string)` instead. Will be removed in 2.0.0.")]
+        public BatchCommandDispatcher(Action<RequestDispatcherContext, string> command)
+        {
+            _command = (context, jobId) => command(RequestDispatcherContext.FromDashboardContext(context), jobId);
+        }
 #endif
+
+        public async Task Dispatch(DashboardContext context)
+        {
+            var jobIds = await context.Request.GetFormValuesAsync("jobs[]");
+            if (jobIds.Count == 0)
             {
-                response.StatusCode = 422;
+                context.Response.StatusCode = 422;
                 return;
             }
 
@@ -61,7 +51,7 @@ namespace Hangfire.Dashboard
                 _command(context, jobId);
             }
 
-            response.StatusCode = (int)HttpStatusCode.NoContent;
+            context.Response.StatusCode = (int)HttpStatusCode.NoContent;
         }
     }
 }

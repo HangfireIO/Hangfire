@@ -78,16 +78,28 @@
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="BackgroundJobServerOptions.cs" />
     <Compile Include="Client\CoreBackgroundJobFactory.cs" />
+    <Compile Include="Dashboard\AspNetCore\AspNetCoreDashboardContext.cs" />
+    <Compile Include="Dashboard\AspNetCore\AspNetCoreDashboardRequest.cs" />
+    <Compile Include="Dashboard\AspNetCore\AspNetCoreDashboardResponse.cs" />
     <Compile Include="Dashboard\Content\resx\Strings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
+    <Compile Include="Dashboard\DashboardContext.cs" />
+    <Compile Include="Dashboard\DashboardRequest.cs" />
+    <Compile Include="Dashboard\DashboardResponse.cs" />
+    <Compile Include="Dashboard\IDashboardAuthorizationFilter.cs" />
+    <Compile Include="Dashboard\IDashboardDispatcher.cs" />
+    <Compile Include="Dashboard\Owin\OwinDashboardContext.cs" />
+    <Compile Include="Dashboard\Owin\OwinDashboardRequest.cs" />
+    <Compile Include="Dashboard\Owin\OwinDashboardResponse.cs" />
+    <Compile Include="Dashboard\Obsolete\RequestDispatcherWrapper.cs" />
     <Compile Include="JobActivatorContext.cs" />
     <Compile Include="IRecurringJobManager.cs" />
     <Compile Include="Obsolete\Job.Obsolete.cs" />
     <Compile Include="Common\TypeExtensions.cs" />
-    <Compile Include="Dashboard\OwinRequestExtensions.cs" />
+    <Compile Include="Dashboard\Owin\OwinRequestExtensions.cs" />
     <Compile Include="Dashboard\Pages\AwaitingJobsPage.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -166,8 +178,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>_Navigation.cshtml</DependentUpon>
     </Compile>
-    <Compile Include="Dashboard\RequestDispatcherContext.cs" />
-    <Compile Include="Dashboard\IAuthorizationFilter.cs" />
+    <Compile Include="Dashboard\Obsolete\RequestDispatcherContext.cs" />
+    <Compile Include="Dashboard\Obsolete\IAuthorizationFilter.cs" />
     <Compile Include="Dashboard\LocalRequestsOnlyAuthorizationFilter.cs" />
     <Compile Include="Obsolete\DashboardOwinExtensions.cs" />
     <Compile Include="Dashboard\RouteCollection.cs" />
@@ -179,7 +191,7 @@
     <Compile Include="Dashboard\JobMethodCallRenderer.cs" />
     <Compile Include="Dashboard\JsonStats.cs" />
     <Compile Include="Dashboard\NonEscapedString.cs" />
-    <Compile Include="Dashboard\IRequestDispatcher.cs" />
+    <Compile Include="Dashboard\Obsolete\IRequestDispatcher.cs" />
     <Compile Include="Dashboard\Pager.cs" />
     <Compile Include="Dashboard\Pages\HomePage.generated.cs">
       <DependentUpon>HomePage.cshtml</DependentUpon>
@@ -283,7 +295,7 @@
     <Compile Include="Obsolete\IBootstrapperConfiguration.cs" />
     <Compile Include="IGlobalConfiguration.cs" />
     <Compile Include="Obsolete\OwinBootstrapper.cs" />
-    <Compile Include="Dashboard\MiddlewareExtensions.cs" />
+    <Compile Include="Dashboard\Owin\MiddlewareExtensions.cs" />
     <Compile Include="LatencyTimeoutAttribute.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RecurringJob.cs" />

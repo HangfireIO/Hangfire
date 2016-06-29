@@ -146,8 +146,17 @@ namespace Hangfire
                 ShutdownTimeout = _options.ShutdownTimeout,
                 HeartbeatInterval = _options.HeartbeatInterval,
 #pragma warning disable 618
-                ServerCheckInterval = _options.ServerWatchdogOptions?.CheckInterval ?? _options.ServerCheckInterval,
-                ServerTimeout = _options.ServerWatchdogOptions?.ServerTimeout ?? _options.ServerTimeout
+                ServerCheckInterval =
+#if NETFULL
+                    _options.ServerWatchdogOptions?.CheckInterval ??
+#endif
+                    _options.ServerCheckInterval,
+
+                ServerTimeout =
+#if NETFULL
+                    _options.ServerWatchdogOptions?.ServerTimeout ??
+#endif
+                    _options.ServerTimeout
 #pragma warning restore 618
             };
         }

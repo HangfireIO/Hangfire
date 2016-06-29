@@ -14,58 +14,60 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+#if NETFULL
+
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 
-#if NETFULL
-using System.Collections.Generic;
-#else
-using Microsoft.AspNetCore.Http;
-#endif
-
 namespace Hangfire.Dashboard
 {
+    [Obsolete("Use the `DashboardContext` class instead. Will be removed in 2.0.0.")]
     public class RequestDispatcherContext
     {
         public RequestDispatcherContext(
             string appPath,
             int statsPollingInterval,
             [NotNull] JobStorage jobStorage,
-#if NETFULL
             [NotNull] IDictionary<string, object> owinEnvironment,
-#else
-            [NotNull] HttpContext http,
-#endif
             [NotNull] Match uriMatch)
         {
             if (jobStorage == null) throw new ArgumentNullException(nameof(jobStorage));
-#if NETFULL
             if (owinEnvironment == null) throw new ArgumentNullException(nameof(owinEnvironment));
-#else
-            if (http == null) throw new ArgumentNullException(nameof(http));
-#endif
             if (uriMatch == null) throw new ArgumentNullException(nameof(uriMatch));
 
             AppPath = appPath;
             StatsPollingInterval = statsPollingInterval;
             JobStorage = jobStorage;
-#if NETFULL
             OwinEnvironment = owinEnvironment;
-#else
-            Http = http;
-#endif
             UriMatch = uriMatch;
         }
 
         public string AppPath { get; }
         public int StatsPollingInterval { get; }
         public JobStorage JobStorage { get; }
-#if NETFULL
         public IDictionary<string, object> OwinEnvironment { get; } 
-#else
-        public HttpContext Http { get; }
-#endif
         public Match UriMatch { get; }
+
+        public static RequestDispatcherContext FromDashboardContext([NotNull] DashboardContext context)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            var owinContext = context as OwinDashboardContext;
+            if (owinContext == null)
+            {
+                throw new NotSupportedException($"context must be of type '{nameof(OwinDashboardContext)}'");
+            }
+            
+            return new RequestDispatcherContext(
+                owinContext.Options.AppPath,
+                owinContext.Options.StatsPollingInterval,
+                owinContext.Storage,
+                owinContext.Environment,
+                owinContext.UriMatch);
+        }
     }
 }
+
+#endif

@@ -16,58 +16,55 @@
 
 using System;
 using System.Collections.Generic;
-
 #if NETFULL
 using Microsoft.Owin;
-#else
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 #endif
 
 namespace Hangfire.Dashboard
 {
-    public class LocalRequestsOnlyAuthorizationFilter : IAuthorizationFilter
+    public class LocalRequestsOnlyAuthorizationFilter : IDashboardAuthorizationFilter
+#if NETFULL
+#pragma warning disable 618
+        , IAuthorizationFilter
+#pragma warning restore 618
+#endif
     {
-        public bool Authorize(
-#if NETFULL
-            IDictionary<string, object> owinEnvironment
-#else
-            HttpContext context
-#endif
-            )
-        {
-#if NETFULL
-            var context = new OwinContext(owinEnvironment);
-#else
-            var connection = context.Features.Get<IHttpConnectionFeature>();
-#endif
-            var remoteAddress =
-#if NETFULL
-                context.Request.RemoteIpAddress
-#else
-                connection.RemoteIpAddress.ToString()
-#endif
-                ;
-
+        public bool Authorize(DashboardContext context)
+        {          
             // if unknown, assume not local
-            if (String.IsNullOrEmpty(remoteAddress))
+            if (String.IsNullOrEmpty(context.Request.RemoteIpAddress))
                 return false;
 
             // check if localhost
-            if (remoteAddress == "127.0.0.1" || remoteAddress == "::1")
+            if (context.Request.RemoteIpAddress == "127.0.0.1" || context.Request.RemoteIpAddress == "::1")
                 return true;
 
             // compare with local address
-            if (remoteAddress ==
-#if NETFULL
-                context.Request.LocalIpAddress
-#else
-                connection.LocalIpAddress.ToString()
-#endif
-                )
+            if (context.Request.RemoteIpAddress == context.Request.LocalIpAddress)
                 return true;
 
             return false;
         }
+
+#if NETFULL
+        public bool Authorize(IDictionary<string, object> owinEnvironment)
+        {
+            var context = new OwinContext(owinEnvironment);
+
+            // if unknown, assume not local
+            if (String.IsNullOrEmpty(context.Request.RemoteIpAddress))
+                return false;
+
+            // check if localhost
+            if (context.Request.RemoteIpAddress == "127.0.0.1" || context.Request.RemoteIpAddress == "::1")
+                return true;
+
+            // compare with local address
+            if (context.Request.RemoteIpAddress == context.Request.LocalIpAddress)
+                return true;
+
+            return false;
+        }
+#endif
     }
 }

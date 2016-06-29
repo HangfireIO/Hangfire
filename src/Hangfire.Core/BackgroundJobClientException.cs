@@ -19,6 +19,7 @@ using Hangfire.Client;
 
 #pragma warning disable 618 // Obsolete member
 
+// ReSharper disable once CheckNamespace
 namespace Hangfire
 {
     /// <summary>
@@ -26,7 +27,12 @@ namespace Hangfire
     /// implements the <see cref="IBackgroundJobClient"/> interface is unable
     /// to perform an operation due to an error.
     /// </summary>
-    public class BackgroundJobClientException : CreateJobFailedException
+    public class BackgroundJobClientException :
+#if NETFULL
+        CreateJobFailedException
+#else
+        Exception
+#endif
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobClientException"/>

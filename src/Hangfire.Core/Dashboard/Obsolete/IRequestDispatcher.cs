@@ -14,29 +14,18 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+#if NETFULL
+
 using System;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Hangfire.Dashboard
 {
-    internal class RazorPageDispatcher : IDashboardDispatcher
+    [Obsolete("Use the `IDashboardDispatcher` interface instead. Will be removed in 2.0.0.")]
+    public interface IRequestDispatcher
     {
-        private readonly Func<Match, RazorPage> _pageFunc;
-
-        public RazorPageDispatcher(Func<Match, RazorPage> pageFunc)
-        {
-            _pageFunc = pageFunc;
-        }
-
-        public Task Dispatch(DashboardContext context)
-        {
-            context.Response.ContentType = "text/html";
-
-            var page = _pageFunc(context.UriMatch);
-            page.Assign(context);
-
-            return context.Response.WriteAsync(page.ToString());
-        }
+        Task Dispatch(RequestDispatcherContext context);
     }
 }
+
+#endif

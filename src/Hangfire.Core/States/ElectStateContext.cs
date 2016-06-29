@@ -23,9 +23,12 @@ using Hangfire.Storage;
 
 namespace Hangfire.States
 {
+    public class ElectStateContext
+#if NETFULL
 #pragma warning disable 618
-    public class ElectStateContext : StateContext
+        : StateContext
 #pragma warning restore 618
+#endif
     {
         private readonly IList<IState> _traversedStates = new List<IState>();
         private IState _candidateState;
@@ -43,7 +46,12 @@ namespace Hangfire.States
             CurrentState = applyContext.OldStateName;
         }
         
-        public override BackgroundJob BackgroundJob { get; }
+        [NotNull]
+        public
+#if NETFULL
+            override
+#endif
+            BackgroundJob BackgroundJob { get; }
 
         [NotNull]
         public JobStorage Storage { get; }

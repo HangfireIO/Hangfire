@@ -19,8 +19,6 @@ using System.Collections.Generic;
 using Hangfire.Annotations;
 #if NETFULL
 using Microsoft.Owin;
-#else
-using Microsoft.AspNetCore.Http;
 #endif
 
 namespace Hangfire.Dashboard
@@ -28,35 +26,29 @@ namespace Hangfire.Dashboard
     public class UrlHelper
     {
 #if NETFULL
-        private readonly OwinContext _context;
-#else
-        private readonly HttpRequest _request;
+        private readonly OwinContext _owinContext;
+
+        [Obsolete("Please use UrlHelper(DashboardContext) instead. Will be removed in 2.0.0.")]
+        public UrlHelper([NotNull] IDictionary<string, object> owinEnvironment)
+        {
+            if (owinEnvironment == null) throw new ArgumentNullException(nameof(owinEnvironment));
+            _owinContext = new OwinContext(owinEnvironment);
+        }
 #endif
 
-        public UrlHelper(
-#if NETFULL
-            [NotNull] IDictionary<string, object> owinContext
-#else
-            [NotNull] HttpRequest request
-#endif
-            )
+        private readonly DashboardContext _context;
+
+        public UrlHelper([NotNull] DashboardContext context)
         {
-#if NETFULL
-            if (owinContext == null) throw new ArgumentNullException(nameof(owinContext));
-            _context = new OwinContext(owinContext);
-#else
-            if (request == null) throw new ArgumentNullException(nameof(request));
-            _request = request;
-#endif
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            _context = context;
         }
 
         public string To(string relativePath)
         {
-            return
+            return _context?.Request.PathBase
 #if NETFULL
-                _context.Request.PathBase 
-#else
-                _request.PathBase
+                ?? _owinContext.Request.PathBase
 #endif
                 + relativePath;
         }

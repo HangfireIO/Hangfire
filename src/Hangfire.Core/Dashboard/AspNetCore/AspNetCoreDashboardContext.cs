@@ -1,5 +1,5 @@
 ﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright © 2016 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -14,22 +14,31 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
-
 #if !NETFULL
+
+using System;
+using Hangfire.Annotations;
 using Microsoft.AspNetCore.Http;
-#endif
 
 namespace Hangfire.Dashboard
 {
-    public interface IAuthorizationFilter
+    public sealed class AspNetCoreDashboardContext : DashboardContext
     {
-        bool Authorize(
-#if NETFULL
-            IDictionary<string, object> owinEnvironment
-#else
-            HttpContext context
-#endif
-            );
+        public AspNetCoreDashboardContext(
+            [NotNull] JobStorage storage,
+            [NotNull] DashboardOptions options,
+            [NotNull] HttpContext httpContext) 
+            : base(storage, options)
+        {
+            if (httpContext == null) throw new ArgumentNullException(nameof(httpContext));
+
+            HttpContext = httpContext;
+            Request = new AspNetCoreDashboardRequest(httpContext);
+            Response = new AspNetCoreDashboardResponse(httpContext);
+        }
+
+        public HttpContext HttpContext { get; }
     }
 }
+
+#endif

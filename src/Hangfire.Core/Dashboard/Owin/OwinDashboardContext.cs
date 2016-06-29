@@ -1,5 +1,5 @@
 ﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright © 2016 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -14,29 +14,31 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+#if NETFULL
+
 using System;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using System.Collections.Generic;
+using Hangfire.Annotations;
 
 namespace Hangfire.Dashboard
 {
-    internal class RazorPageDispatcher : IDashboardDispatcher
+    public sealed class OwinDashboardContext : DashboardContext
     {
-        private readonly Func<Match, RazorPage> _pageFunc;
-
-        public RazorPageDispatcher(Func<Match, RazorPage> pageFunc)
+        public OwinDashboardContext(
+            [NotNull] JobStorage storage,
+            [NotNull] DashboardOptions options,
+            [NotNull] IDictionary<string, object> environment) 
+            : base(storage, options)
         {
-            _pageFunc = pageFunc;
+            if (environment == null) throw new ArgumentNullException(nameof(environment));
+
+            Environment = environment;
+            Request = new OwinDashboardRequest(environment);
+            Response = new OwinDashboardResponse(environment);
         }
 
-        public Task Dispatch(DashboardContext context)
-        {
-            context.Response.ContentType = "text/html";
-
-            var page = _pageFunc(context.UriMatch);
-            page.Assign(context);
-
-            return context.Response.WriteAsync(page.ToString());
-        }
+        public IDictionary<string, object> Environment { get; }
     }
 }
+
+#endif

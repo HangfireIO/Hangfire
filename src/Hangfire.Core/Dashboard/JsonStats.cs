@@ -17,29 +17,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-#if NETFULL
-using Microsoft.Owin;
-#else
-using Microsoft.AspNetCore.Http;
-#endif
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 
 namespace Hangfire.Dashboard
 {
-    internal class JsonStats : IRequestDispatcher
+    internal class JsonStats : IDashboardDispatcher
     {
-        public async Task Dispatch(RequestDispatcherContext context)
+        public async Task Dispatch(DashboardContext context)
         {
-#if NETFULL
-            var owinContext = new OwinContext(context.OwinEnvironment);
-            var form = await owinContext.ReadFormSafeAsync();
-            var requestedMetrics = new HashSet<string>(form.GetValues("metrics[]") ?? new string[0]);
-#else
-            var form = await context.Http.Request.ReadFormAsync();
-            var requestedMetrics = new HashSet<string>(form["metrics[]"]);
-#endif
+            var requestedMetrics = await context.Request.GetFormValuesAsync("metrics[]");
             var page = new StubPage();
             page.Assign(context);
 
@@ -59,13 +47,8 @@ namespace Hangfire.Dashboard
             };
             var serialized = JsonConvert.SerializeObject(result, settings);
 
-#if NETFULL
-            owinContext.Response.ContentType = "application/json";
-            await owinContext.Response.WriteAsync(serialized);
-#else
-            context.Http.Response.ContentType = "application/json";
-            await context.Http.Response.WriteAsync(serialized);
-#endif
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(serialized);
         }
 
         private class StubPage : RazorPage

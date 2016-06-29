@@ -19,11 +19,6 @@ using System.Diagnostics;
 using System.Net;
 using System.Text;
 using Hangfire.Storage.Monitoring;
-#if NETFULL
-using Microsoft.Owin;
-#else
-using Microsoft.AspNetCore.Http;
-#endif
 
 namespace Hangfire.Dashboard
 {
@@ -58,22 +53,17 @@ namespace Hangfire.Dashboard
             }
         }
 
-#if NETFULL
-        internal IOwinRequest Request { private get; set; }
-        internal IOwinResponse Response { private get; set; }
-#else
-        internal HttpRequest Request { private get; set; }
-        internal HttpResponse Response { private get; set; }
-#endif
+        internal DashboardRequest Request { private get; set; }
+        internal DashboardResponse Response { private get; set; }
 
-        public string RequestPath => Request.Path.Value;
+        public string RequestPath => Request.Path;
 
         /// <exclude />
         public abstract void Execute();
 
         public string Query(string key)
         {
-            return Request.Query[key];
+            return Request.GetQuery(key);
         }
 
         public override string ToString()
@@ -95,28 +85,15 @@ namespace Hangfire.Dashboard
             _statisticsLazy = parentPage._statisticsLazy;
         }
 
-        internal void Assign(RequestDispatcherContext context)
+        internal void Assign(DashboardContext context)
         {
-#if NETFULL
-            var owinContext = new OwinContext(context.OwinEnvironment);
+            Request = context.Request;
+            Response = context.Response;
 
-            Request = owinContext.Request;
-            Response = owinContext.Response;
-#else
-            Request = context.Http.Request;
-            Response = context.Http.Response;
-#endif
-
-            Storage = context.JobStorage;
-            AppPath = context.AppPath;
-            StatsPollingInterval = context.StatsPollingInterval;
-            Url = new UrlHelper(
-#if NETFULL
-                context.OwinEnvironment
-#else
-                Request
-#endif
-                );
+            Storage = context.Storage;
+            AppPath = context.Options.AppPath;
+            StatsPollingInterval = context.Options.StatsPollingInterval;
+            Url = new UrlHelper(context);
 
             _statisticsLazy = new Lazy<StatisticsDto>(() =>
             {

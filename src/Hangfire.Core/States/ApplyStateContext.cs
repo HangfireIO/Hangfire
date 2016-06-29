@@ -20,9 +20,12 @@ using Hangfire.Storage;
 
 namespace Hangfire.States
 {
+    public class ApplyStateContext
+#if NETFULL
 #pragma warning disable 618
-    public class ApplyStateContext : StateContext
+        : StateContext
 #pragma warning restore 618
+#endif
     {
         internal ApplyStateContext(
             [NotNull] IWriteOnlyTransaction transaction, 
@@ -64,7 +67,12 @@ namespace Hangfire.States
         [NotNull]
         public IWriteOnlyTransaction Transaction { get; }
         
-        public override BackgroundJob BackgroundJob { get; }
+        [NotNull]
+        public
+#if NETFULL
+            override
+#endif
+            BackgroundJob BackgroundJob { get; }
 
         [CanBeNull]
         public string OldStateName { get; }

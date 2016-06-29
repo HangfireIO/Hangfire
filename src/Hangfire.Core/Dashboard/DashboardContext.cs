@@ -1,5 +1,5 @@
 ﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright © 2016 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -16,27 +16,27 @@
 
 using System;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using Hangfire.Annotations;
 
 namespace Hangfire.Dashboard
 {
-    internal class RazorPageDispatcher : IDashboardDispatcher
+    public abstract class DashboardContext
     {
-        private readonly Func<Match, RazorPage> _pageFunc;
-
-        public RazorPageDispatcher(Func<Match, RazorPage> pageFunc)
+        protected DashboardContext([NotNull] JobStorage storage, [NotNull] DashboardOptions options)
         {
-            _pageFunc = pageFunc;
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (options == null) throw new ArgumentNullException(nameof(options));
+
+            Storage = storage;
+            Options = options;
         }
 
-        public Task Dispatch(DashboardContext context)
-        {
-            context.Response.ContentType = "text/html";
+        public JobStorage Storage { get; }
+        public DashboardOptions Options { get; }
 
-            var page = _pageFunc(context.UriMatch);
-            page.Assign(context);
-
-            return context.Response.WriteAsync(page.ToString());
-        }
+        public Match UriMatch { get; set; }
+        
+        public DashboardRequest Request { get; protected set; }
+        public DashboardResponse Response { get; protected set; }
     }
 }
