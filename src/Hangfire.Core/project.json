@@ -3,14 +3,7 @@
 
     "buildOptions": {
         "compile": "**/*.cs",
-        "configurations": {
-            "Release": {
-                "buildOptions": {
-                    "optimize": true,
-                    "xmlDoc": true
-                }
-            }
-        }
+        "embed": [ "**/*.resources" ],
     },
     
     "frameworks": {

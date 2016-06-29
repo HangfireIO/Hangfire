@@ -1,7 +1,8 @@
 ﻿{
     "version": "1.6.0-*",
     "buildOptions": {
-        "compile": "**/*.cs"
+        "compile": "**/*.cs",
+        "embed": [ "Install.sql" ]
     },
     "frameworks": {
         "net45": {

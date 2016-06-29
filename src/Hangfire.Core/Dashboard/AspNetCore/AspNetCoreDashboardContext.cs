@@ -17,11 +17,63 @@
 #if !NETFULL
 
 using System;
+using System.Net;
+using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Microsoft.AspNetCore.Http;
 
 namespace Hangfire.Dashboard
 {
+    public class DashboardMiddleware
+    {
+        private readonly RequestDelegate _next;
+        private readonly JobStorage _storage;
+        private readonly DashboardOptions _options;
+        private readonly RouteCollection _routes;
+
+        public DashboardMiddleware(
+            [NotNull] RequestDelegate next,
+            [NotNull] JobStorage storage,
+            [NotNull] DashboardOptions options,
+            [NotNull] RouteCollection routes)
+        {
+            if (next == null) throw new ArgumentNullException(nameof(next));
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (options == null) throw new ArgumentNullException(nameof(options));
+            if (routes == null) throw new ArgumentNullException(nameof(routes));
+
+            _next = next;
+            _storage = storage;
+            _options = options;
+            _routes = routes;
+        }
+
+        public Task Invoke(HttpContext httpContext)
+        {
+            var context = new AspNetCoreDashboardContext(_storage, _options, httpContext);
+            var findResult = _routes.FindDispatcher(httpContext.Request.Path.Value);
+            
+            if (findResult == null)
+            {
+                return _next.Invoke(httpContext);
+            }
+
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            /*foreach (var filter in _options.Authorization)
+            {
+                if (!filter.Authorize(context))
+                {
+                    httpContext.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
+                    return Task.FromResult(false);
+                }
+            }*/
+
+            context.UriMatch = findResult.Item2;
+
+            return findResult.Item1.Dispatch(context);
+        }
+    }
+
     public sealed class AspNetCoreDashboardContext : DashboardContext
     {
         public AspNetCoreDashboardContext(

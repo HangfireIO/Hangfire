@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Hangfire;
+using Hangfire.Dashboard;
+using Hangfire.SqlServer;
 
 namespace MvcCoreSample
 {
@@ -29,6 +32,9 @@ namespace MvcCoreSample
         {
             // Add framework services.
             services.AddMvc();
+            services.AddSingleton<JobStorage>(new SqlServerStorage(@"Server=.\sqlexpress;database=hangfire.sample;integrated security=sspi;"));
+            services.AddSingleton<DashboardOptions>(new DashboardOptions());
+            services.AddSingleton<Hangfire.Dashboard.RouteCollection>(Hangfire.Dashboard.DashboardRoutes.Routes);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -46,8 +52,12 @@ namespace MvcCoreSample
             {
                 app.UseExceptionHandler("/Home/Error");
             }
-
+            
             app.UseStaticFiles();
+
+            GlobalConfiguration.Configuration.UseSqlServerStorage(@"Server=.\sqlexpress;database=hangfire.sample;integrated security=sspi;");
+
+            app.UseMiddleware<DashboardMiddleware>();
 
             app.UseMvc(routes =>
             {
