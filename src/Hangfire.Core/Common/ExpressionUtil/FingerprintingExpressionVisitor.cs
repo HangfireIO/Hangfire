@@ -9,9 +9,7 @@ namespace Hangfire.Common.ExpressionUtil
     // This is a visitor which produces a fingerprint of an expression. It doesn't
     // rewrite the expression in a form which can be compiled and cached.
 
-#if NETFULL
     [ExcludeFromCodeCoverage]
-#endif
     internal sealed class FingerprintingExpressionVisitor : ExpressionVisitor
     {
         private readonly List<object> _seenConstants = new List<object>();

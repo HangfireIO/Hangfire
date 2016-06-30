@@ -13,9 +13,7 @@ namespace Hangfire.Common.ExpressionUtil
     // Represents certain forms of array access or indexer property access
 
     [SuppressMessage("Microsoft.Usage", "CA2218:OverrideGetHashCodeOnOverridingEquals", Justification = "Overrides AddToHashCodeCombiner() instead.")]
-#if NETFULL
     [ExcludeFromCodeCoverage]
-#endif
     internal sealed class IndexExpressionFingerprint : ExpressionFingerprint
     {
         public IndexExpressionFingerprint(ExpressionType nodeType, Type type, PropertyInfo indexer)

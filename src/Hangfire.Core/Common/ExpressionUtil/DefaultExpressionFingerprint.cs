@@ -12,9 +12,7 @@ namespace Hangfire.Common.ExpressionUtil
     // Expression of form default(T)
 
     [SuppressMessage("Microsoft.Usage", "CA2218:OverrideGetHashCodeOnOverridingEquals", Justification = "Overrides AddToHashCodeCombiner() instead.")]
-#if NETFULL
     [ExcludeFromCodeCoverage]
-#endif
     internal sealed class DefaultExpressionFingerprint : ExpressionFingerprint
     {
         public DefaultExpressionFingerprint(ExpressionType nodeType, Type type)

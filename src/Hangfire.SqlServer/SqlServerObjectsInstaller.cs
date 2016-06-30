@@ -16,7 +16,6 @@
 
 using System;
 using System.Data.Common;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -25,9 +24,6 @@ using Hangfire.Logging;
 
 namespace Hangfire.SqlServer
 {
-#if NETFULL
-    [ExcludeFromCodeCoverage]
-#endif
     public static class SqlServerObjectsInstaller
     {
         public static readonly int RequiredSchemaVersion = 5;
