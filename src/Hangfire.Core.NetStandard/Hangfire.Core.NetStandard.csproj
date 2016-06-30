@@ -582,6 +582,9 @@
     <Compile Include="..\Hangfire.Core\Obsolete\ServerWatchdogOptions.cs">
       <Link>Obsolete\ServerWatchdogOptions.cs</Link>
     </Compile>
+    <Compile Include="..\Hangfire.Core\Obsolete\StateContext.cs">
+      <Link>Obsolete\StateContext.cs</Link>
+    </Compile>
     <Compile Include="..\Hangfire.Core\Properties\Annotations.cs">
       <Link>Properties\Annotations.cs</Link>
     </Compile>
