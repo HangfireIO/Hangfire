@@ -27,6 +27,13 @@ services:
   - mssql2008r2sp2
   - msmq
 
+# branches to build
+branches:
+  # whitelist
+  only:
+    - master
+    - dev
+
 shallow_clone: true
 
 cache:
