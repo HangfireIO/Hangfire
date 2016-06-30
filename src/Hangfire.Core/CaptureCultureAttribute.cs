@@ -16,7 +16,9 @@
 
 using System;
 using System.Globalization;
+#if NETFULL
 using System.Threading;
+#endif
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Server;
@@ -47,23 +49,13 @@ namespace Hangfire
             if (!String.IsNullOrEmpty(cultureName))
             {
                 filterContext.Items["PreviousCulture"] = CultureInfo.CurrentCulture;
-#if NETFULL
-                Thread.CurrentThread
-#else
-                CultureInfo
-#endif
-                    .CurrentCulture = new CultureInfo(cultureName);
+                SetCurrentCulture(new CultureInfo(cultureName));
             }
 
             if (!String.IsNullOrEmpty(uiCultureName))
             {
                 filterContext.Items["PreviousUICulture"] = CultureInfo.CurrentUICulture;
-#if NETFULL
-                Thread.CurrentThread
-#else
-                CultureInfo
-#endif
-                    .CurrentUICulture = new CultureInfo(uiCultureName);
+                SetCurrentUICulture(new CultureInfo(uiCultureName));
             }
         }
 
@@ -73,22 +65,31 @@ namespace Hangfire
 
             if (filterContext.Items.ContainsKey("PreviousCulture"))
             {
-#if NETFULL
-                Thread.CurrentThread
-#else
-                CultureInfo
-#endif
-                    .CurrentCulture = (CultureInfo)filterContext.Items["PreviousCulture"];
+                SetCurrentCulture((CultureInfo) filterContext.Items["PreviousCulture"]);
             }
             if (filterContext.Items.ContainsKey("PreviousUICulture"))
             {
-#if NETFULL
-                Thread.CurrentThread
-#else
-                CultureInfo
-#endif
-                    .CurrentUICulture = (CultureInfo)filterContext.Items["PreviousUICulture"];
+                SetCurrentUICulture((CultureInfo)filterContext.Items["PreviousUICulture"]);
             }
+        }
+        
+        private static void SetCurrentCulture(CultureInfo value)
+        {
+#if NETFULL
+            Thread.CurrentThread.CurrentCulture = value;
+#else
+            CultureInfo.CurrentCulture = value;
+#endif
+        }
+
+        // ReSharper disable once InconsistentNaming
+        private static void SetCurrentUICulture(CultureInfo value)
+        {
+#if NETFULL
+            Thread.CurrentThread.CurrentUICulture = value;
+#else
+            CultureInfo.CurrentUICulture = value;
+#endif
         }
     }
 }

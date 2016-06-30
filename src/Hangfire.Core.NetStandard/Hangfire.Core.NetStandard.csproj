@@ -570,11 +570,17 @@
     <Compile Include="..\Hangfire.Core\MoreLinq\MoreEnumerable.Pairwise.cs">
       <Link>App_Packages\MoreLinq\MoreEnumerable.Pairwise.cs</Link>
     </Compile>
+    <Compile Include="..\Hangfire.Core\Obsolete\CreateJobFailedException.cs">
+      <Link>Obsolete\CreateJobFailedException.cs</Link>
+    </Compile>
     <Compile Include="..\Hangfire.Core\Obsolete\IServerComponent.cs">
       <Link>Obsolete\IServerComponent.cs</Link>
     </Compile>
     <Compile Include="..\Hangfire.Core\Obsolete\IServerProcess.cs">
       <Link>Obsolete\IServerProcess.cs</Link>
+    </Compile>
+    <Compile Include="..\Hangfire.Core\Obsolete\ServerWatchdogOptions.cs">
+      <Link>Obsolete\ServerWatchdogOptions.cs</Link>
     </Compile>
     <Compile Include="..\Hangfire.Core\Properties\Annotations.cs">
       <Link>Properties\Annotations.cs</Link>

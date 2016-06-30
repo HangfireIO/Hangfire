@@ -76,10 +76,8 @@ namespace Hangfire
         public TimeSpan ServerTimeout { get; set; }
         public TimeSpan ServerCheckInterval { get; set; }
 
-#if NETFULL
         [Obsolete("Please use `ServerTimeout` or `ServerCheckInterval` options instead. Will be removed in 2.0.0.")]
         public ServerWatchdogOptions ServerWatchdogOptions { get; set; }
-#endif
 
         [CanBeNull]
         public IJobFilterProvider FilterProvider { get; set; }

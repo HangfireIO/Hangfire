@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-#if NETFULL
-
 using System;
 
 // ReSharper disable once CheckNamespace
@@ -35,5 +33,3 @@ namespace Hangfire.Server
         public TimeSpan CheckInterval { get; set; }
     }
 }
-
-#endif
