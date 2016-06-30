@@ -360,10 +360,19 @@ BEGIN
         [FetchedAt] ASC
     );
     PRINT 'Re-created index [IX_HangFire_JobQueue_QueueAndFetchedAt]';
-		
+
+	ALTER TABLE [$(HangFireSchema)].[Server] DROP CONSTRAINT [PK_HangFire_Server]
+    PRINT 'Dropped constraint [PK_HangFire_Server] to modify the [HangFire].[Server].[Id] column';
+
 	ALTER TABLE [$(HangFireSchema)].[Server] ALTER COLUMN [Id] NVARCHAR (100) NOT NULL;
 	PRINT 'Modified [$(HangFireSchema)].[Server].[Id] length to 100';
-		
+
+	ALTER TABLE [$(HangFireSchema)].[Server] ADD  CONSTRAINT [PK_HangFire_Server] PRIMARY KEY CLUSTERED
+	(
+		[Id] ASC
+	);
+	PRINT 'Re-created constraint [PK_HangFire_Server]';
+
 	SET @CURRENT_SCHEMA_VERSION = 5;
 END
 	
