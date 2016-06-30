@@ -77,9 +77,14 @@ Hangfire.SqlServer.Msmq
 * Fixed – Package now depends on the latest Hangfire.SqlServer instead of version 1.2.2.
     </releaseNotes>
     <dependencies>
-      <dependency id="Hangfire.Core" version="[0.0.0]" />
-      <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
-      <dependency id="Microsoft.Owin.Host.SystemWeb" version="3.0.0" />
+      <group>
+        <dependency id="Hangfire.Core" version="[0.0.0]" />
+        <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
+      </group>
+      
+      <group targetFramework="net45">
+        <dependency id="Microsoft.Owin.Host.SystemWeb" version="3.0.0" />
+      </group>
     </dependencies>
   </metadata>
   <files>

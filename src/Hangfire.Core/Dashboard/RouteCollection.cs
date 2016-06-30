@@ -45,7 +45,7 @@ namespace Hangfire.Dashboard
             _dispatchers.Add(new Tuple<string, IDashboardDispatcher>(pathTemplate, dispatcher));
         }
 
-        internal Tuple<IDashboardDispatcher, Match> FindDispatcher(string path)
+        public Tuple<IDashboardDispatcher, Match> FindDispatcher(string path)
         {
             if (path.Length == 0) path = "/";
 

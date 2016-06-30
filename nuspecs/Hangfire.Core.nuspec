@@ -45,14 +45,25 @@ Backported from 1.5.5
 * Fixed – ToGenericTypeString method now supports nested classes.
     </releaseNotes>
     <dependencies>
-      <dependency id="Owin" version="1.0" />
-      <dependency id="Newtonsoft.Json" version="5.0.0" />
+      <group targetFramework="net45">
+        <dependency id="Owin" version="1.0" />
+        <dependency id="Newtonsoft.Json" version="5.0.0" />
+      </group>
+      <group targetFramework="netstandard1_3">
+        <dependency id="Newtonsoft.Json" version="9.0.1" />
+        <dependency id="NCrontab" version="3.1.0" />
+      </group>
     </dependencies>
   </metadata>
   <files>
     <file src="Net45\Hangfire.Core.dll" target="lib\net45" />
     <file src="Net45\Hangfire.Core.xml" target="lib\net45" />
     <file src="Net45\Hangfire.Core.pdb" target="lib\net45" />
+    
+    <file src="NetStandard\Hangfire.Core.dll" target="lib\netstandard1_3" />
+    <file src="NetStandard\Hangfire.Core.xml" target="lib\netstandard1_3" />
+    <file src="NetStandard\Hangfire.Core.pdb" target="lib\netstandard1_3" />
+    
     <file src="..\src\Hangfire.Core\**\*.cs;..\src\Hangfire.Core\**\*.cshtml" target="src" />
   </files>
 </package>

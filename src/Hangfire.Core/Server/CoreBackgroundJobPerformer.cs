@@ -84,7 +84,7 @@ namespace Hangfire.Server
 
                     if (methodInfo.ReturnType.GetTypeInfo().IsGenericType)
                     {
-                        var resultProperty = methodInfo.ReturnType.GetProperty("Result");
+                        var resultProperty = methodInfo.ReturnType.GetRuntimeProperty("Result");
 
                         result = resultProperty.GetValue(task);
                     }

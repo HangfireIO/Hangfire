@@ -39,13 +39,24 @@ Backported from 1.5.6
 * Changed – `SqlServerStorage` class constructor now takes `DbConnection` instances.
     </releaseNotes>
     <dependencies>
-      <dependency id="Hangfire.Core" version="[0.0.0]" />
+      <group>
+        <dependency id="Hangfire.Core" version="[0.0.0]" />
+      </group>
+      
+      <group targetFramework="netstandard1_3">
+        <dependency id="Dapper" version="1.5.0-rc3" />
+      </group>
     </dependencies>
   </metadata>
   <files>
     <file src="Net45\Hangfire.SqlServer.dll" target="lib\net45" />
     <file src="Net45\Hangfire.SqlServer.xml" target="lib\net45" />
     <file src="Net45\Hangfire.SqlServer.pdb" target="lib\net45" />
+    
+    <file src="NetStandard\Hangfire.SqlServer.dll" target="lib\netstandard1_3" />
+    <file src="NetStandard\Hangfire.SqlServer.xml" target="lib\netstandard1_3" />
+    <file src="NetStandard\Hangfire.SqlServer.pdb" target="lib\netstandard1_3" />
+    
     <file src="Tools\DefaultInstall.sql" target="tools\install.sql" />
     <file src="..\src\Hangfire.SqlServer\**\*.cs" target="src" />
   </files>

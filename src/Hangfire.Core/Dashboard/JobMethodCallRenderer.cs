@@ -227,16 +227,10 @@ namespace Hangfire.Dashboard
         {
             if (type == typeof (string)) return null;
 
-            return type.GetInterfaces()
+            return type.GetTypeInfo().ImplementedInterfaces
                 .Where(x => x.GetTypeInfo().IsGenericType
                             && x.GetTypeInfo().GetGenericTypeDefinition() == typeof (IEnumerable<>))
-                .Select(x => x.GetTypeInfo()
-#if NETFULL
-                .GetGenericArguments()
-#else
-                .GenericTypeArguments
-#endif
-                [0])
+                .Select(x => x.GetTypeInfo().GetAllGenericArguments()[0])
                 .FirstOrDefault();
         }
 

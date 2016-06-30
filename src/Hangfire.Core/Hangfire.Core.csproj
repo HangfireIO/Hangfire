@@ -34,7 +34,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;NETFULL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\Hangfire.Core.xml</DocumentationFile>
@@ -78,9 +78,6 @@
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="BackgroundJobServerOptions.cs" />
     <Compile Include="Client\CoreBackgroundJobFactory.cs" />
-    <Compile Include="Dashboard\AspNetCore\AspNetCoreDashboardContext.cs" />
-    <Compile Include="Dashboard\AspNetCore\AspNetCoreDashboardRequest.cs" />
-    <Compile Include="Dashboard\AspNetCore\AspNetCoreDashboardResponse.cs" />
     <Compile Include="Dashboard\Content\resx\Strings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -16,7 +16,9 @@
 
 using System;
 using System.Collections.Generic;
+#if NETFULL
 using System.ComponentModel;
+#endif
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -184,11 +186,11 @@ namespace Hangfire.Storage
 
         private static IEnumerable<MethodInfo> GetAllMethods(Type type)
         {
-            var methods = new List<MethodInfo>(type.GetMethods());
+            var methods = new List<MethodInfo>(type.GetRuntimeMethods());
 
             if (type.GetTypeInfo().IsInterface)
             {
-                methods.AddRange(type.GetInterfaces().SelectMany(x => x.GetMethods()));
+                methods.AddRange(type.GetTypeInfo().ImplementedInterfaces.SelectMany(x => x.GetRuntimeMethods()));
             }
 
             return methods;
@@ -230,7 +232,7 @@ namespace Hangfire.Storage
                     }
 
                     // Skipping non-generic parameters of assignable types.
-                    if (parameterType.IsAssignableFrom(actualType)) continue;
+                    if (parameterType.GetTypeInfo().IsAssignableFrom(actualType.GetTypeInfo())) continue;
 
                     parameterTypesMatched = false;
                     break;

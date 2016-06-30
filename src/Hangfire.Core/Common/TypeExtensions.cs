@@ -40,7 +40,7 @@ namespace Hangfire.Common
 
         private static string ReplaceGenericParametersInGenericTypeName(this string typeName, Type type)
         {
-            var genericArguments = type.GetGenericArguments();
+            var genericArguments = type .GetTypeInfo().GetAllGenericArguments();
 
             const string regexForGenericArguments = @"`[1-9]\d*";
 
@@ -55,6 +55,11 @@ namespace Hangfire.Common
             });
 
             return typeName;
+        }
+
+        public static Type[] GetAllGenericArguments(this TypeInfo type)
+        {
+            return type.GenericTypeArguments.Length > 0 ? type.GenericTypeArguments : type.GenericTypeParameters;
         }
     }
 }
