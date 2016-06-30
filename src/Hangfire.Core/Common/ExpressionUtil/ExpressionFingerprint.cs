@@ -8,6 +8,7 @@ namespace Hangfire.Common.ExpressionUtil
 {
     // Serves as the base class for all expression fingerprints. Provides a default implementation
     // of GetHashCode().
+
     [ExcludeFromCodeCoverage]
     internal abstract class ExpressionFingerprint
     {
