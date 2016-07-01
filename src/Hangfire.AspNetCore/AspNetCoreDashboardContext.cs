@@ -17,7 +17,6 @@
 #if !NETFULL
 
 using System;
-using System.Net;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Microsoft.AspNetCore.Http;
