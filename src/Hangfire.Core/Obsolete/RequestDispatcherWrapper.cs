@@ -1,5 +1,5 @@
 ﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright © 2016 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -16,12 +16,25 @@
 
 using System;
 using System.Threading.Tasks;
+using Hangfire.Annotations;
 
+// ReSharper disable once CheckNamespace
 namespace Hangfire.Dashboard
 {
-    [Obsolete("Use the `IDashboardDispatcher` interface instead. Will be removed in 2.0.0.")]
-    public interface IRequestDispatcher
+    [Obsolete("Use IDashboardDispatcher-based dispatchers instead. Will be removed in 2.0.0.")]
+    public class RequestDispatcherWrapper : IDashboardDispatcher
     {
-        Task Dispatch(RequestDispatcherContext context);
+        private readonly IRequestDispatcher _dispatcher;
+        
+        public RequestDispatcherWrapper([NotNull] IRequestDispatcher dispatcher)
+        {
+            if (dispatcher == null) throw new ArgumentNullException(nameof(dispatcher));
+            _dispatcher = dispatcher;
+        }
+
+        public Task Dispatch(DashboardContext context)
+        {
+            return _dispatcher.Dispatch(RequestDispatcherContext.FromDashboardContext(context));
+        }
     }
 }

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 
+// ReSharper disable once CheckNamespace
 namespace Hangfire.Dashboard
 {
     [Obsolete("Use the `DashboardContext` class instead. Will be removed in 2.0.0.")]
