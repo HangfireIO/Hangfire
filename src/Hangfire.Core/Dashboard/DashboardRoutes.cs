@@ -166,6 +166,7 @@ namespace Hangfire.Dashboard
 
             Routes.AddRazorPage("/jobs/details/(?<JobId>.+)", x => new JobDetailsPage(x.Groups["JobId"].Value));
 
+#if NETFULL
             Routes.AddRazorPage("/recurring", x => new RecurringJobsPage());
             Routes.AddRecurringBatchCommand(
                 "/recurring/remove", 
@@ -174,6 +175,7 @@ namespace Hangfire.Dashboard
             Routes.AddRecurringBatchCommand(
                 "/recurring/trigger", 
                 (manager, jobId) => manager.Trigger(jobId));
+#endif
 
             Routes.AddRazorPage("/servers", x => new ServersPage());
             Routes.AddRazorPage("/retries", x => new RetriesPage());

@@ -134,7 +134,9 @@ namespace Hangfire
             }
             
             processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger));
+#if NETFULL
             processes.Add(new RecurringJobScheduler(factory));
+#endif
 
             return processes;
         }
