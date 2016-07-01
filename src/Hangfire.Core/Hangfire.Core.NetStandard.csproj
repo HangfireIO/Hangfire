@@ -106,14 +106,11 @@
     <Compile Include="Dashboard\BatchCommandDispatcher.cs" />
     <Compile Include="Dashboard\CombinedResourceDispatcher.cs" />
     <Compile Include="Dashboard\CommandDispatcher.cs" />
-    <Compile Include="Dashboard\Content\resx\Strings.Designer.cs" />
-    <Compile Include="Dashboard\Content\resx\Strings.es.Designer.cs" />
-    <Compile Include="Dashboard\Content\resx\Strings.es1.Designer.cs">
+    <Compile Include="Dashboard\Content\resx\Strings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>Strings.es.resx</DependentUpon>
+      <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
-    <Compile Include="Dashboard\Content\resx\Strings1.Designer.cs" />
     <Compile Include="Dashboard\DashboardContext.cs" />
     <Compile Include="Dashboard\DashboardMetric.cs" />
     <Compile Include="Dashboard\DashboardMetrics.cs" />
@@ -500,12 +497,12 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Dashboard\Content\resx\Strings.es.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Strings.es1.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <EmbeddedResource Include="Dashboard\Content\resx\Strings.es.resx" />
     <EmbeddedResource Include="Dashboard\Content\resx\Strings.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Hangfire.Dashboard.Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

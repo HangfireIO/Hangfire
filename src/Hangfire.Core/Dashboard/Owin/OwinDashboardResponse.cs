@@ -23,7 +23,7 @@ using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
-    public sealed class OwinDashboardResponse : DashboardResponse
+    internal sealed class OwinDashboardResponse : DashboardResponse
     {
         private readonly IOwinContext _context;
 

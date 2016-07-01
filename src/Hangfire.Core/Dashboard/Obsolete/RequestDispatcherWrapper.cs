@@ -20,15 +20,12 @@ using Hangfire.Annotations;
 
 namespace Hangfire.Dashboard
 {
+    [Obsolete("Use IDashboardDispatcher-based dispatchers instead. Will be removed in 2.0.0.")]
     public class RequestDispatcherWrapper : IDashboardDispatcher
     {
-#pragma warning disable 618
         private readonly IRequestDispatcher _dispatcher;
-#pragma warning restore 618
-
-#pragma warning disable 618
+        
         public RequestDispatcherWrapper([NotNull] IRequestDispatcher dispatcher)
-#pragma warning restore 618
         {
             if (dispatcher == null) throw new ArgumentNullException(nameof(dispatcher));
             _dispatcher = dispatcher;
@@ -36,9 +33,7 @@ namespace Hangfire.Dashboard
 
         public Task Dispatch(DashboardContext context)
         {
-#pragma warning disable 618
             return _dispatcher.Dispatch(RequestDispatcherContext.FromDashboardContext(context));
-#pragma warning restore 618
         }
     }
 }

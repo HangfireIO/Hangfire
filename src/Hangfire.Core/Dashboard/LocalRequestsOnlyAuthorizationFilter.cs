@@ -16,9 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-#if NETFULL
-using Microsoft.Owin;
-#endif
 
 namespace Hangfire.Dashboard
 {
@@ -49,7 +46,7 @@ namespace Hangfire.Dashboard
 #if NETFULL
         public bool Authorize(IDictionary<string, object> owinEnvironment)
         {
-            var context = new OwinContext(owinEnvironment);
+            var context = new Microsoft.Owin.OwinContext(owinEnvironment);
 
             // if unknown, assume not local
             if (String.IsNullOrEmpty(context.Request.RemoteIpAddress))

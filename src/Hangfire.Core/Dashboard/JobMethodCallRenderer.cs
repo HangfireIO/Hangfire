@@ -61,7 +61,7 @@ namespace Hangfire.Dashboard
 
                 builder.AppendLine();
             }
-            
+
             if (job.Method.GetCustomAttribute<AsyncStateMachineAttribute>() != null)
             {
                 builder.Append($"{WrapKeyword("await")} ");
@@ -93,9 +93,11 @@ namespace Hangfire.Dashboard
             {
                 var parameter = parameters[i];
 
+#pragma warning disable 618
                 if (i < job.Arguments.Length)
                 {
                     var argument = job.Arguments[i]; // TODO: check bounds
+#pragma warning restore 618
                     string renderedArgument;
 
                     var enumerableArgument = GetIEnumerableGenericArgument(parameter.ParameterType);
@@ -115,33 +117,29 @@ namespace Hangfire.Dashboard
                         isJson = false;
                     }
 
-                    if (argumentValue == null)
+                    if (enumerableArgument == null)
                     {
-                        renderedArgument = WrapKeyword("null");
+                        var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
+                        renderedArgument = argumentRenderer.Render(isJson, argumentValue?.ToString(), argument);
                     }
                     else
                     {
-                        if (enumerableArgument == null)
-                        {
-                            var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
-                            renderedArgument = argumentRenderer.Render(isJson, argumentValue.ToString(), argument);
-                        }
-                        else
-                        {
-                            var renderedItems = new List<string>();
+                        var renderedItems = new List<string>();
 
-                            foreach (var item in (IEnumerable)argumentValue)
-                            {
-                                var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
-                                renderedItems.Add(argumentRenderer.Render(isJson, item.ToString(),
-                                    JobHelper.ToJson(item)));
-                            }
-
-                            renderedArgument = String.Format(
-                                WrapKeyword("new") + "{0} {{ {1} }}",
-                                parameter.ParameterType.IsArray ? " []" : "",
-                                String.Join(", ", renderedItems));
+                        // ReSharper disable once LoopCanBeConvertedToQuery
+                        foreach (var item in (IEnumerable)argumentValue)
+                        {
+                            var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
+                            renderedItems.Add(argumentRenderer.Render(isJson, item.ToString(),
+                                JobHelper.ToJson(item)));
                         }
+
+                        // ReSharper disable once UseStringInterpolation
+                        renderedArgument = String.Format(
+                            "{0}{1} {{ {2} }}",
+                            WrapKeyword("new"),
+                            parameter.ParameterType.IsArray ? " []" : "",
+                            String.Join(", ", renderedItems));
                     }
 
                     renderedArguments.Add(renderedArgument);
@@ -219,11 +217,11 @@ namespace Hangfire.Dashboard
 
         private static Type GetIEnumerableGenericArgument(Type type)
         {
-            if (type == typeof (string)) return null;
+            if (type == typeof(string)) return null;
 
             return type.GetTypeInfo().ImplementedInterfaces
                 .Where(x => x.GetTypeInfo().IsGenericType
-                            && x.GetTypeInfo().GetGenericTypeDefinition() == typeof (IEnumerable<>))
+                            && x.GetTypeInfo().GetGenericTypeDefinition() == typeof(IEnumerable<>))
                 .Select(x => x.GetTypeInfo().GetAllGenericArguments()[0])
                 .FirstOrDefault();
         }
@@ -259,7 +257,7 @@ namespace Hangfire.Dashboard
                         .Append(WrapType(Encode(_deserializationType.Name)))
                         .Append(WrapIdentifier("&gt;"))
                         .Append("(");
-                    
+
                     builder.Append(WrapString(Encode("\"" + rawValue.Replace("\"", "\\\"") + "\"")));
                 }
                 else
@@ -339,7 +337,7 @@ namespace Hangfire.Dashboard
                     };
                 }
 
-                if (type == typeof (CancellationToken))
+                if (type == typeof(CancellationToken))
                 {
                     return new ArgumentRenderer
                     {
@@ -357,7 +355,7 @@ namespace Hangfire.Dashboard
             private static bool IsNumericType(Type type)
             {
                 if (type == null) return false;
-                
+
                 switch (type.GetTypeCode())
                 {
                     case TypeCode.Byte:
@@ -389,7 +387,7 @@ namespace Hangfire.Dashboard
             }
         }
     }
-    
+
     internal enum TypeCode
     {
         Empty = 0,          // Null reference
