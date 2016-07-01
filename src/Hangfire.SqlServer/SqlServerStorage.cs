@@ -24,6 +24,7 @@ using System.Text;
 #if NETFULL
 using System.Configuration;
 using System.Transactions;
+using IsolationLevel = System.Transactions.IsolationLevel;
 #endif
 using Dapper;
 using Hangfire.Annotations;
@@ -31,9 +32,6 @@ using Hangfire.Dashboard;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.Storage;
-#if NETFULL
-using IsolationLevel = System.Transactions.IsolationLevel;
-#endif
 
 namespace Hangfire.SqlServer
 {
@@ -65,26 +63,9 @@ namespace Hangfire.SqlServer
             if (nameOrConnectionString == null) throw new ArgumentNullException(nameof(nameOrConnectionString));
             if (options == null) throw new ArgumentNullException(nameof(options));
 
+            _connectionString = GetConnectionString(nameOrConnectionString);
             _options = options;
-
-#if NETFULL
-            if (IsConnectionString(nameOrConnectionString))
-            {
-                _connectionString = nameOrConnectionString;
-            }
-            else if (IsConnectionStringInConfiguration(nameOrConnectionString))
-            {
-                _connectionString = ConfigurationManager.ConnectionStrings[nameOrConnectionString].ConnectionString;
-            }
-            else
-            {
-                throw new ArgumentException(
-                    $"Could not find connection string with name '{nameOrConnectionString}' in application config file");
-            }
-#else
-            _connectionString = nameOrConnectionString;
-#endif
-
+            
             if (options.PrepareSchemaIfNecessary)
             {
                 using (var connection = CreateAndOpenConnection())
@@ -215,8 +196,7 @@ namespace Hangfire.SqlServer
                 return true;
             }, null);
         }
-
-
+        
         internal T UseTransaction<T>([InstantHandle] Func<DbConnection, DbTransaction, T> func, IsolationLevel? isolationLevel)
         {
 #if NETFULL
@@ -272,20 +252,30 @@ namespace Hangfire.SqlServer
             }
         }
 
-#if NETFULL
-        private TransactionScope CreateTransaction(IsolationLevel? isolationLevel)
-        {
-            return isolationLevel != null
-                ? new TransactionScope(TransactionScopeOption.Required,
-                    new TransactionOptions { IsolationLevel = isolationLevel.Value, Timeout = _options.TransactionTimeout })
-                : new TransactionScope();
-        }
-#endif
-
         private void InitializeQueueProviders()
         {
             var defaultQueueProvider = new SqlServerJobQueueProvider(this, _options);
             QueueProviders = new PersistentJobQueueProviderCollection(defaultQueueProvider);
+        }
+
+        private string GetConnectionString(string nameOrConnectionString)
+        {
+#if NETFULL
+            if (IsConnectionString(nameOrConnectionString))
+            {
+                return nameOrConnectionString;
+            }
+
+            if (IsConnectionStringInConfiguration(nameOrConnectionString))
+            {
+                return ConfigurationManager.ConnectionStrings[nameOrConnectionString].ConnectionString;
+            }
+
+            throw new ArgumentException(
+                $"Could not find connection string with name '{nameOrConnectionString}' in application config file");
+#else
+            return nameOrConnectionString;
+#endif
         }
 
 #if NETFULL
@@ -299,6 +289,14 @@ namespace Hangfire.SqlServer
             var connectionStringSetting = ConfigurationManager.ConnectionStrings[connectionStringName];
 
             return connectionStringSetting != null;
+        }
+
+        private TransactionScope CreateTransaction(IsolationLevel? isolationLevel)
+        {
+            return isolationLevel != null
+                ? new TransactionScope(TransactionScopeOption.Required,
+                    new TransactionOptions { IsolationLevel = isolationLevel.Value, Timeout = _options.TransactionTimeout })
+                : new TransactionScope();
         }
 #endif
 
