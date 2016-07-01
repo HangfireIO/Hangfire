@@ -16,9 +16,6 @@
 
 using System;
 using System.Globalization;
-#if NETFULL
-using System.Threading;
-#endif
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Server;
@@ -76,7 +73,7 @@ namespace Hangfire
         private static void SetCurrentCulture(CultureInfo value)
         {
 #if NETFULL
-            Thread.CurrentThread.CurrentCulture = value;
+            System.Threading.Thread.CurrentThread.CurrentCulture = value;
 #else
             CultureInfo.CurrentCulture = value;
 #endif
@@ -86,7 +83,7 @@ namespace Hangfire
         private static void SetCurrentUICulture(CultureInfo value)
         {
 #if NETFULL
-            Thread.CurrentThread.CurrentUICulture = value;
+            System.Threading.Thread.CurrentThread.CurrentUICulture = value;
 #else
             CultureInfo.CurrentUICulture = value;
 #endif

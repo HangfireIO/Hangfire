@@ -14,9 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-#if !NETFULL
-
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Microsoft.AspNetCore.Http;
@@ -58,14 +57,14 @@ namespace Hangfire.Dashboard
             }
 
             // ReSharper disable once LoopCanBeConvertedToQuery
-            /*foreach (var filter in _options.Authorization)
+            foreach (var filter in _options.Authorization)
             {
                 if (!filter.Authorize(context))
                 {
                     httpContext.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
                     return Task.FromResult(false);
                 }
-            }*/
+            }
 
             context.UriMatch = findResult.Item2;
 
@@ -91,5 +90,3 @@ namespace Hangfire.Dashboard
         public HttpContext HttpContext { get; }
     }
 }
-
-#endif

@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-#if NETFULL
-
 using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
@@ -40,5 +38,3 @@ namespace Hangfire.Dashboard
         public IDictionary<string, object> Environment { get; }
     }
 }
-
-#endif

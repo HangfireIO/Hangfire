@@ -51,14 +51,14 @@ Task Pack -Depends Collect -Description "Create NuGet packages and archive files
         "Using tag-based version for packages."
         $version = $tag.Substring(1)
     }
-
+    
     Create-Archive "Hangfire-$version"
     
     Create-Package "Hangfire" $version
     Create-Package "Hangfire.Core" $version
     Create-Package "Hangfire.SqlServer" $version
     Create-Package "Hangfire.SqlServer.Msmq" $version
-	Create-Package "Hangfire.AspNetCore" $version
+    Create-Package "Hangfire.AspNetCore" $version
 }
 
 function Run-OpenCover($assembly) {

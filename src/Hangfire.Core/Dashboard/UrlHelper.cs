@@ -17,22 +17,19 @@
 using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
-#if NETFULL
-using Microsoft.Owin;
-#endif
 
 namespace Hangfire.Dashboard
 {
     public class UrlHelper
     {
 #if NETFULL
-        private readonly OwinContext _owinContext;
+        private readonly Microsoft.Owin.OwinContext _owinContext;
 
         [Obsolete("Please use UrlHelper(DashboardContext) instead. Will be removed in 2.0.0.")]
         public UrlHelper([NotNull] IDictionary<string, object> owinEnvironment)
         {
             if (owinEnvironment == null) throw new ArgumentNullException(nameof(owinEnvironment));
-            _owinContext = new OwinContext(owinEnvironment);
+            _owinContext = new Microsoft.Owin.OwinContext(owinEnvironment);
         }
 #endif
 

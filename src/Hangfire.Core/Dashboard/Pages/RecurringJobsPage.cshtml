@@ -1,9 +1,6 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: true *@
 @using System
 @using System.Collections.Generic
-#if NETFULL
-@using CronExpressionDescriptor
-#endif
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @using Hangfire.Dashboard.Resources
@@ -100,15 +97,15 @@
                                         @* ReSharper disable once EmptyGeneralCatchClause *@
                                         @{
                                             var cronDescription = job.Cron;
-                                        #if NETFULL
+#if NETFULL
                                             try
                                             {
-                                                cronDescription = ExpressionDescriptor.GetDescription(job.Cron);
+                                                cronDescription = CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.Cron);
                                             }
                                             catch (FormatException)
                                             {
                                             }
-                                        #endif
+#endif
                                         }
                                         @cronDescription
                                     </td>

@@ -43,7 +43,6 @@ namespace Hangfire.States
             CurrentState = applyContext.OldStateName;
         }
         
-        [NotNull]
         public override BackgroundJob BackgroundJob { get; }
 
         [NotNull]

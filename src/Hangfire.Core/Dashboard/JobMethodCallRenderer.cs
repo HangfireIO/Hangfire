@@ -93,13 +93,13 @@ namespace Hangfire.Dashboard
             {
                 var parameter = parameters[i];
 
-#if NETFULL
-#pragma warning disable 618
                 if (i < job.Arguments.Length)
                 {
                     var argument = job.Arguments[i]; // TODO: check bounds
-#pragma warning restore 618
-                    
+                    string renderedArgument;
+
+                    var enumerableArgument = GetIEnumerableGenericArgument(parameter.ParameterType);
+
                     object argumentValue;
                     bool isJson = true;
 
@@ -114,40 +114,34 @@ namespace Hangfire.Dashboard
                         argumentValue = argument;
                         isJson = false;
                     }
-#else
-                if (i < job.Args.Count)
-                {
-                    object argumentValue = job.Args[i];
-                    string argument = "CHECKME";
-                    bool isJson = false;
-#endif
 
-                    string renderedArgument;
-
-                    var enumerableArgument = GetIEnumerableGenericArgument(parameter.ParameterType);
-                    if (enumerableArgument == null)
+                    if (argumentValue == null)
                     {
-                        var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
-                        renderedArgument = argumentRenderer.Render(isJson, argumentValue?.ToString(), argument);
+                        renderedArgument = WrapKeyword("null");
                     }
                     else
                     {
-                        var renderedItems = new List<string>();
-
-                        // ReSharper disable once LoopCanBeConvertedToQuery
-                        foreach (var item in (IEnumerable)argumentValue)
+                        if (enumerableArgument == null)
                         {
-                            var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
-                            renderedItems.Add(argumentRenderer.Render(isJson, item.ToString(),
-                                JobHelper.ToJson(item)));
+                            var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
+                            renderedArgument = argumentRenderer.Render(isJson, argumentValue.ToString(), argument);
                         }
+                        else
+                        {
+                            var renderedItems = new List<string>();
 
-                        // ReSharper disable once UseStringInterpolation
-                        renderedArgument = String.Format(
-                            "{0}{1} {{ {2} }}",
-                            WrapKeyword("new"),
-                            parameter.ParameterType.IsArray ? " []" : "",
-                            String.Join(", ", renderedItems));
+                            foreach (var item in (IEnumerable)argumentValue)
+                            {
+                                var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
+                                renderedItems.Add(argumentRenderer.Render(isJson, item.ToString(),
+                                    JobHelper.ToJson(item)));
+                            }
+
+                            renderedArgument = String.Format(
+                                WrapKeyword("new") + "{0} {{ {1} }}",
+                                parameter.ParameterType.IsArray ? " []" : "",
+                                String.Join(", ", renderedItems));
+                        }
                     }
 
                     renderedArguments.Add(renderedArgument);

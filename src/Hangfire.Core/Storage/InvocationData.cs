@@ -16,9 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-#if NETFULL
-using System.ComponentModel;
-#endif
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -169,7 +166,7 @@ namespace Hangfire.Storage
 #if NETFULL
                     try
                     {
-                        var converter = TypeDescriptor.GetConverter(type);
+                        var converter = System.ComponentModel.TypeDescriptor.GetConverter(type);
                         value = converter.ConvertFromInvariantString(argument);
                     }
                     catch (Exception)

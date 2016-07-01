@@ -44,7 +44,6 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="AppBuilderExtensions.cs" />
     <Compile Include="App_Packages\LibLog.1.4\LibLog.cs" />
     <Compile Include="App_Packages\StackTraceFormatter\StackTraceFormatter.cs" />
     <Compile Include="App_Packages\StackTraceParser\StackTraceParser.cs" />

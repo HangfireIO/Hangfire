@@ -19,7 +19,6 @@ using Hangfire.Client;
 
 #pragma warning disable 618 // Obsolete member
 
-// ReSharper disable once CheckNamespace
 namespace Hangfire
 {
     /// <summary>

@@ -1,6 +1,4 @@
-﻿#if NETFULL
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
@@ -98,7 +96,7 @@ namespace Hangfire.Common
 
                     object value;
 
-                    if (typeof(IJobCancellationToken).IsAssignableFrom(parameter.ParameterType))
+                    if (typeof(IJobCancellationToken).GetTypeInfo().IsAssignableFrom(parameter.ParameterType.GetTypeInfo()))
                     {
                         value = cancellationToken;
                     }
@@ -120,8 +118,12 @@ namespace Hangfire.Common
                             }
                             else
                             {
+#if NETFULL
                                 var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
                                 value = converter.ConvertFromInvariantString(argument);
+#else
+                                throw;
+#endif
                             }
                         }
                     }
@@ -179,4 +181,3 @@ namespace Hangfire.Common
         }
     }
 }
-#endif
