@@ -207,17 +207,17 @@ namespace Hangfire.SqlServer
             }
         }
 
-        internal void UseTransaction([InstantHandle] Action<DbConnection> action)
+        internal void UseTransaction([InstantHandle] Action<DbConnection, DbTransaction> action)
         {
-            UseTransaction(connection =>
+            UseTransaction((connection, transaction) =>
             {
-                action(connection);
+                action(connection, transaction);
                 return true;
             }, null);
         }
 
 
-        internal T UseTransaction<T>([InstantHandle] Func<DbConnection, T> func, IsolationLevel? isolationLevel)
+        internal T UseTransaction<T>([InstantHandle] Func<DbConnection, DbTransaction, T> func, IsolationLevel? isolationLevel)
         {
 #if NETFULL
             using (var transaction = CreateTransaction(isolationLevel ?? _options.TransactionIsolationLevel))
@@ -225,7 +225,7 @@ namespace Hangfire.SqlServer
                 var result = UseConnection(connection =>
                 {
                     connection.EnlistTransaction(Transaction.Current);
-                    return func(connection);
+                    return func(connection, null);
                 });
 
                 transaction.Complete();
@@ -237,7 +237,7 @@ namespace Hangfire.SqlServer
             {
                 using (var transaction = connection.BeginTransaction(isolationLevel ?? IsolationLevel.ReadCommitted))
                 {
-                    var result = func(connection);
+                    var result = func(connection, transaction);
                     transaction.Commit();
 
                     return result;

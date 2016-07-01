@@ -257,11 +257,11 @@ on Target.[Key] = Source.[Key] and Target.Field = Source.Field
 when matched then update set Value = Source.Value
 when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
 
-            _storage.UseTransaction(connection =>
+            _storage.UseTransaction((connection, transaction) =>
             {
                 foreach (var keyValuePair in keyValuePairs)
                 {
-                    connection.Execute(sql, new { key = key, field = keyValuePair.Key, value = keyValuePair.Value });
+                    connection.Execute(sql, new { key = key, field = keyValuePair.Key, value = keyValuePair.Value }, transaction);
                 }
             });
         }

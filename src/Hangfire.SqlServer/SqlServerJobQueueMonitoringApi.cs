@@ -54,9 +54,9 @@ namespace Hangfire.SqlServer
             {
                 if (_queuesCache.Count == 0 || _cacheUpdated.Add(QueuesCacheTimeout) < DateTime.UtcNow)
                 {
-                    var result = UseTransaction(connection =>
+                    var result = UseTransaction((connection, transaction) =>
                     {
-                        return connection.Query(sqlQuery).Select(x => (string) x.Queue).ToList();
+                        return connection.Query(sqlQuery, transaction: transaction).Select(x => (string) x.Queue).ToList();
                     });
 
                     _queuesCache = result;
@@ -77,11 +77,12 @@ $@"select r.JobId from (
 ) as r
 where r.row_num between @start and @end";
 
-            return UseTransaction(connection =>
+            return UseTransaction((connection, transaction) =>
             {
                 return connection.Query<JobIdDto>(
                     sqlQuery,
-                    new { queue = queue, start = from + 1, end = @from + perPage })
+                    new { queue = queue, start = from + 1, end = @from + perPage },
+                    transaction)
                     .ToList()
                     .Select(x => x.JobId)
                     .ToList();
@@ -98,9 +99,9 @@ where r.row_num between @start and @end";
             string sqlQuery = $@"
 select count(Id) from [{_storage.SchemaName}].JobQueue where [Queue] = @queue";
 
-            return UseTransaction(connection =>
+            return UseTransaction((connection, transaction) =>
             {
-                var result = connection.Query<int>(sqlQuery, new { queue = queue }).Single();
+                var result = connection.Query<int>(sqlQuery, new { queue = queue }, transaction).Single();
 
                 return new EnqueuedAndFetchedCountDto
                 {
@@ -109,7 +110,7 @@ select count(Id) from [{_storage.SchemaName}].JobQueue where [Queue] = @queue";
             });
         }
 
-        private T UseTransaction<T>(Func<DbConnection, T> func)
+        private T UseTransaction<T>(Func<DbConnection, DbTransaction, T> func)
         {
             return _storage.UseTransaction(func, IsolationLevel.ReadUncommitted);
         }
