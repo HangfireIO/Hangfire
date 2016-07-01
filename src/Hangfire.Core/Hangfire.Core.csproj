@@ -91,7 +91,7 @@
     <Compile Include="Dashboard\Owin\OwinDashboardContext.cs" />
     <Compile Include="Dashboard\Owin\OwinDashboardRequest.cs" />
     <Compile Include="Dashboard\Owin\OwinDashboardResponse.cs" />
-    <Compile Include="Dashboard\Obsolete\RequestDispatcherWrapper.cs" />
+    <Compile Include="Obsolete\RequestDispatcherWrapper.cs" />
     <Compile Include="JobActivatorContext.cs" />
     <Compile Include="IRecurringJobManager.cs" />
     <Compile Include="Obsolete\Job.Obsolete.cs" />
@@ -175,8 +175,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>_Navigation.cshtml</DependentUpon>
     </Compile>
-    <Compile Include="Dashboard\Obsolete\RequestDispatcherContext.cs" />
-    <Compile Include="Dashboard\Obsolete\IAuthorizationFilter.cs" />
+    <Compile Include="Obsolete\RequestDispatcherContext.cs" />
+    <Compile Include="Obsolete\IAuthorizationFilter.cs" />
     <Compile Include="Dashboard\LocalRequestsOnlyAuthorizationFilter.cs" />
     <Compile Include="Obsolete\DashboardOwinExtensions.cs" />
     <Compile Include="Dashboard\RouteCollection.cs" />
@@ -188,7 +188,7 @@
     <Compile Include="Dashboard\JobMethodCallRenderer.cs" />
     <Compile Include="Dashboard\JsonStats.cs" />
     <Compile Include="Dashboard\NonEscapedString.cs" />
-    <Compile Include="Dashboard\Obsolete\IRequestDispatcher.cs" />
+    <Compile Include="Obsolete\IRequestDispatcher.cs" />
     <Compile Include="Dashboard\Pager.cs" />
     <Compile Include="Dashboard\Pages\HomePage.generated.cs">
       <DependentUpon>HomePage.cshtml</DependentUpon>
