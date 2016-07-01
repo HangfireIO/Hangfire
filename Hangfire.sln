@@ -54,9 +54,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Core.NetStandard", "src\Hangfire.Core.NetStandard\Hangfire.Core.NetStandard.csproj", "{2A528F3A-5120-430A-B881-E265FA09ABB5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Core.NetStandard", "src\Hangfire.Core\Hangfire.Core.NetStandard.csproj", "{2A528F3A-5120-430A-B881-E265FA09ABB5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.NetStandard", "src\Hangfire.SqlServer.NetStandard\Hangfire.SqlServer.NetStandard.csproj", "{1513919A-5746-46CE-B8C6-C2FDB3361C2D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.NetStandard", "src\Hangfire.SqlServer\Hangfire.SqlServer.NetStandard.csproj", "{1513919A-5746-46CE-B8C6-C2FDB3361C2D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.AspNetCore", "src\Hangfire.AspNetCore\Hangfire.AspNetCore.csproj", "{6DCC60C2-4F6E-4855-82EC-E8E1ABB36700}"
 EndProject

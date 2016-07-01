@@ -53,7 +53,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Hangfire.Core.NetStandard\Hangfire.Core.NetStandard.csproj">
+    <ProjectReference Include="..\Hangfire.Core\Hangfire.Core.NetStandard.csproj">
       <Project>{2a528f3a-5120-430a-b881-e265fa09abb5}</Project>
       <Name>Hangfire.Core.NetStandard</Name>
     </ProjectReference>

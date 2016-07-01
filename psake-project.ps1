@@ -34,8 +34,8 @@ Task Collect -Depends Merge -Description "Copy all artifacts to the build folder
     Collect-Assembly "Hangfire.SqlServer" "Net45"
     Collect-Assembly "Hangfire.SqlServer.Msmq" "Net45"
 
-	Collect-Assembly @("Hangfire.Core.NetStandard", "Hangfire.Core") "NetStandard"
-	Collect-Assembly @("Hangfire.SqlServer.NetStandard", "Hangfire.SqlServer") "NetStandard"
+	Collect-Assembly @("Hangfire.Core", "netstandard\Hangfire.Core") "NetStandard"
+	Collect-Assembly @("Hangfire.SqlServer", "netstandard\Hangfire.SqlServer") "NetStandard"
 
 	Collect-Assembly "Hangfire.AspNetCore" "NetStandard"
     
