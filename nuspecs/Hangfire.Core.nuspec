@@ -67,6 +67,6 @@ Backported from 1.5.5
     <file src="NetStandard\Hangfire.Core.xml" target="lib\netstandard1.3" />
     <file src="NetStandard\Hangfire.Core.pdb" target="lib\netstandard1.3" />
     
-    <file src="..\src\Hangfire.Core\**\*.cs;..\src\Hangfire.Core\**\*.cshtml" target="src" />
+    <file src="..\src\Hangfire.Core\**\*.cs;..\src\Hangfire.Core\**\*.cshtml" target="src" exclude="**\obj*\**\*.cs" />
   </files>
 </package>

@@ -39,6 +39,6 @@
     <file src="Net45\Hangfire.SqlServer.Msmq.dll" target="lib\net45" />
     <file src="Net45\Hangfire.SqlServer.Msmq.xml" target="lib\net45" />
     <file src="Net45\Hangfire.SqlServer.Msmq.pdb" target="lib\net45" />
-    <file src="..\src\Hangfire.SqlServer.Msmq\**\*.cs" target="src" />
+    <file src="..\src\Hangfire.SqlServer.Msmq\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
   </files>
 </package>
