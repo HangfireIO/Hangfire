@@ -22,14 +22,14 @@ using Microsoft.AspNetCore.Http;
 
 namespace Hangfire.Dashboard
 {
-    public class DashboardMiddleware
+    public class HangfireDashboardMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly JobStorage _storage;
         private readonly DashboardOptions _options;
         private readonly RouteCollection _routes;
 
-        public DashboardMiddleware(
+        public HangfireDashboardMiddleware(
             [NotNull] RequestDelegate next,
             [NotNull] JobStorage storage,
             [NotNull] DashboardOptions options,

@@ -8,7 +8,7 @@
     <ProjectGuid>{6DCC60C2-4F6E-4855-82EC-E8E1ABB36700}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Hangfire.AspNetCore</RootNamespace>
+    <RootNamespace>Hangfire</RootNamespace>
     <AssemblyName>Hangfire.AspNetCore</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>

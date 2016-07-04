@@ -25,7 +25,7 @@ using Hangfire.Annotations;
 
 namespace Hangfire.Dashboard
 {
-    public sealed class AspNetCoreDashboardResponse : DashboardResponse
+    internal sealed class AspNetCoreDashboardResponse : DashboardResponse
     {
         private readonly HttpContext _context;
 

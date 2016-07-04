@@ -23,7 +23,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Hangfire.Dashboard
 {
-    public sealed class AspNetCoreDashboardRequest : DashboardRequest
+    internal sealed class AspNetCoreDashboardRequest : DashboardRequest
     {
         private readonly HttpContext _context;
 
