@@ -46,6 +46,8 @@ Backported from 1.5.6
       <group targetFramework="netstandard1.3">
         <dependency id="NETStandard.Library" version="1.6.0" />
         <dependency id="Microsoft.NETCore.Portable.Compatibility" version="1.0.1" />
+        <dependency id="System.Data.Common" version="4.1.0" />
+        <dependency id="System.Data.SqlClient" version="4.1.0" />
         <dependency id="Dapper" version="[1.5.0-rc3, )" />
       </group>
     </dependencies>
