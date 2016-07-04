@@ -1,12 +1,13 @@
 ﻿{
-  "supports": {},
-  "dependencies": {
-    "NETStandard.Library": "1.6.0",
-    "Microsoft.AspNetCore.Http.Abstractions": "1.0.0" 
-  },
-  "frameworks": {
-    "netstandard1.3": {
-        "imports": "portable-netcore45"
+    "supports": {},
+    "dependencies": {
+        "NETStandard.Library": "1.6.0",
+        "Microsoft.NETCore.Portable.Compatibility": "1.0.1",
+        "Microsoft.AspNetCore.Http.Abstractions": "1.0.0"
+    },
+    "frameworks": {
+        "netstandard1.3": {
+            "imports": "portable-netcore45"
+        }
     }
-  }
-}
+}   
