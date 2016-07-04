@@ -16,25 +16,24 @@
 
 using System;
 using Hangfire.Annotations;
-using Microsoft.AspNetCore.Http;
+using Hangfire.Logging;
+using Microsoft.Extensions.Logging;
 
-namespace Hangfire.Dashboard
+namespace Hangfire.AspNetCore
 {
-    public sealed class AspNetCoreDashboardContext : DashboardContext
+    public class AspNetCoreLogProvider : ILogProvider
     {
-        public AspNetCoreDashboardContext(
-            [NotNull] JobStorage storage,
-            [NotNull] DashboardOptions options,
-            [NotNull] HttpContext httpContext) 
-            : base(storage, options)
-        {
-            if (httpContext == null) throw new ArgumentNullException(nameof(httpContext));
+        private readonly ILoggerFactory _loggerFactory;
 
-            HttpContext = httpContext;
-            Request = new AspNetCoreDashboardRequest(httpContext);
-            Response = new AspNetCoreDashboardResponse(httpContext);
+        public AspNetCoreLogProvider([NotNull] ILoggerFactory loggerFactory)
+        {
+            if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
+            _loggerFactory = loggerFactory;
         }
 
-        public HttpContext HttpContext { get; }
+        public ILog GetLogger(string name)
+        {
+            return new AspNetCoreLog(_loggerFactory.CreateLogger(name));
+        }
     }
 }

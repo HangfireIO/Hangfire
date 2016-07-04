@@ -14,12 +14,12 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-#if !NETFULL
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Hangfire.Dashboard
 {
@@ -30,7 +30,12 @@ namespace Hangfire.Dashboard
         public AspNetCoreDashboardRequest([NotNull] HttpContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
+
             _context = context;
+
+            var connection = _context.Features.Get<IHttpConnectionFeature>();
+            LocalIpAddress = connection.LocalIpAddress.ToString();
+            RemoteIpAddress = connection.RemoteIpAddress.ToString();
         }
 
         public override string Method => _context.Request.Method;
@@ -47,4 +52,3 @@ namespace Hangfire.Dashboard
         }
     }
 }
-#endif

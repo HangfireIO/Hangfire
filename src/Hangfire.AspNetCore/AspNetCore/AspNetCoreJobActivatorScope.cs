@@ -16,25 +16,28 @@
 
 using System;
 using Hangfire.Annotations;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hangfire.Dashboard
+namespace Hangfire.AspNetCore
 {
-    public sealed class AspNetCoreDashboardContext : DashboardContext
+    internal class AspNetCoreJobActivatorScope : JobActivatorScope
     {
-        public AspNetCoreDashboardContext(
-            [NotNull] JobStorage storage,
-            [NotNull] DashboardOptions options,
-            [NotNull] HttpContext httpContext) 
-            : base(storage, options)
-        {
-            if (httpContext == null) throw new ArgumentNullException(nameof(httpContext));
+        private readonly IServiceScope _serviceScope;
 
-            HttpContext = httpContext;
-            Request = new AspNetCoreDashboardRequest(httpContext);
-            Response = new AspNetCoreDashboardResponse(httpContext);
+        public AspNetCoreJobActivatorScope([NotNull] IServiceScope serviceScope)
+        {
+            if (serviceScope == null) throw new ArgumentNullException(nameof(serviceScope));
+            _serviceScope = serviceScope;
         }
 
-        public HttpContext HttpContext { get; }
+        public override object Resolve(Type type)
+        {
+            return _serviceScope.ServiceProvider.GetRequiredService(type);
+        }
+
+        public override void DisposeScope()
+        {
+            _serviceScope.Dispose();
+        }
     }
 }
