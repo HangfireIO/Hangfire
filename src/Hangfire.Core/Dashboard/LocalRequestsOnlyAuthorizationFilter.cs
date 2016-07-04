@@ -28,9 +28,10 @@ namespace Hangfire.Dashboard
     {
         public bool Authorize(DashboardContext context)
         {          
-            // if unknown, assume not local
+            // If unknown, assume local (specific to ASP.NET Core)
+            // If the corresponsing feature isn't available, it will throw.
             if (String.IsNullOrEmpty(context.Request.RemoteIpAddress))
-                return false;
+                return true;
 
             // check if localhost
             if (context.Request.RemoteIpAddress == "127.0.0.1" || context.Request.RemoteIpAddress == "::1")
