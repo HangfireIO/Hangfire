@@ -106,12 +106,22 @@ and Queue in @queues";
                 fetchedJob.Queue);
         }
 
+#if NETFULL
         public void Enqueue(IDbConnection connection, string queue, string jobId)
+#else
+        public void Enqueue(DbConnection connection, DbTransaction transaction, string queue, string jobId)
+#endif
         {
             string enqueueJobSql =
 $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)";
 
-            connection.Execute(enqueueJobSql, new { jobId = jobId, queue = queue });
+            connection.Execute(
+                enqueueJobSql, 
+                new { jobId = jobId, queue = queue }
+#if !NETFULL
+                , transaction
+#endif
+                );
         }
 
         [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]

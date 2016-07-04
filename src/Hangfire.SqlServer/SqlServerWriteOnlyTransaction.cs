@@ -133,7 +133,13 @@ values (@jobId, @name, @reason, @createdAt, @data)";
             var provider = _storage.QueueProviders.GetProvider(queue);
             var persistentQueue = provider.GetJobQueue();
 
-            QueueCommand((x, t) => persistentQueue.Enqueue(x, queue, jobId));
+            QueueCommand((connection, transaction) => persistentQueue.Enqueue(
+                connection,
+#if !NETFULL
+                transaction,
+#endif
+                queue,
+                jobId));
 
             if (persistentQueue.GetType() == typeof(SqlServerJobQueue))
             {
