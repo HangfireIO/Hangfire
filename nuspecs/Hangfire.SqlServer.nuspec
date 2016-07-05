@@ -39,7 +39,7 @@ Backported from 1.5.6
 * Changed – `SqlServerStorage` class constructor now takes `DbConnection` instances.
     </releaseNotes>
     <dependencies>
-      <group>
+      <group targetFramework="net45">
         <dependency id="Hangfire.Core" version="[0.0.0]" />
       </group>
       
@@ -49,6 +49,7 @@ Backported from 1.5.6
         <dependency id="System.Data.Common" version="4.1.0" />
         <dependency id="System.Data.SqlClient" version="4.1.0" />
         <dependency id="Dapper" version="1.50.0-rc3" />
+        <dependency id="Hangfire.Core" version="[0.0.0]" />
       </group>
     </dependencies>
   </metadata>
