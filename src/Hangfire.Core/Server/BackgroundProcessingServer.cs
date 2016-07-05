@@ -169,7 +169,10 @@ namespace Hangfire.Server
 
         private static string GetGloballyUniqueServerId()
         {
-            return $"{Environment.GetEnvironmentVariable("COMPUTERNAME").ToLowerInvariant()}:{Process.GetCurrentProcess().Id}:{Guid.NewGuid()}";
+            var hostName = Environment.GetEnvironmentVariable("COMPUTERNAME")
+                           ?? Environment.GetEnvironmentVariable("HOSTNAME");
+
+            return $"{hostName.ToLowerInvariant()}:{Process.GetCurrentProcess().Id}:{Guid.NewGuid()}";
         }
 
         private static ServerContext GetServerContext(IReadOnlyDictionary<string, object> properties)
