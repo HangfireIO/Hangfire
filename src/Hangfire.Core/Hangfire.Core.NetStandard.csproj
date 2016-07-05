@@ -45,6 +45,14 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="App_Packages\LibLog.1.4\LibLog.cs" />
+    <Compile Include="App_Packages\NCrontab\CrontabException.cs" />
+    <Compile Include="App_Packages\NCrontab\CrontabField.cs" />
+    <Compile Include="App_Packages\NCrontab\CrontabFieldImpl.cs" />
+    <Compile Include="App_Packages\NCrontab\CrontabFieldKind.cs" />
+    <Compile Include="App_Packages\NCrontab\CrontabSchedule.cs" />
+    <Compile Include="App_Packages\NCrontab\ErrorHandling.cs" />
+    <Compile Include="App_Packages\NCrontab\ICrontabField.cs" />
+    <Compile Include="App_Packages\NCrontab\StringSeparatorStock.cs" />
     <Compile Include="App_Packages\StackTraceFormatter\StackTraceFormatter.cs" />
     <Compile Include="App_Packages\StackTraceParser\StackTraceParser.cs" />
     <Compile Include="AttemptsExceededAction.cs" />

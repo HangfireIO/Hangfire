@@ -102,7 +102,6 @@ namespace Hangfire.Dashboard
             });
         }
 
-#if NETFULL
         public static void AddRecurringBatchCommand(
             this RouteCollection routes,
             string pathTemplate,
@@ -116,6 +115,5 @@ namespace Hangfire.Dashboard
                 command(manager, jobId);
             });
         }
-#endif
     }
 }
