@@ -1,8 +1,8 @@
 {
     "supports": {},
     "dependencies": {
-        "NETStandard.Library": "1.6.0",
         "Microsoft.NETCore.Portable.Compatibility": "1.0.1",
+        "NETStandard.Library": "1.6.0",
         "System.Threading.Thread": "4.0.0",
         "Newtonsoft.Json": "9.0.1"
     },

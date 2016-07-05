@@ -50,8 +50,8 @@ Backported from 1.5.5
         <dependency id="Newtonsoft.Json" version="5.0.0" />
       </group>
       <group targetFramework="netstandard1.3">
-        <dependency id="NETStandard.Library" version="1.6.0" />
         <dependency id="Microsoft.NETCore.Portable.Compatibility" version="1.0.1" />
+        <dependency id="NETStandard.Library" version="1.6.0" />
         <dependency id="System.Threading.Thread" version="4.0.0" />
         <dependency id="Newtonsoft.Json" version="9.0.1" />
       </group>
