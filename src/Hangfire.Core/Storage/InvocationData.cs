@@ -153,7 +153,11 @@ namespace Hangfire.Storage
                     ? JobHelper.FromJson(argument, type)
                     : null;
             }
-            catch (Exception jsonException)
+            catch (Exception
+#if NETFULL
+            jsonException
+#endif
+            )
             {
                 if (type == typeof (object))
                 {

@@ -55,6 +55,7 @@ namespace Hangfire.SqlServer
 
             script = script.Replace("$(HangFireSchema)", !string.IsNullOrWhiteSpace(schema) ? schema : Constants.DefaultSchema);
 
+#if NETFULL
             for (var i = 0; i < RetryAttempts; i++)
             {
                 try
@@ -64,18 +65,19 @@ namespace Hangfire.SqlServer
                 }
                 catch (DbException ex)
                 {
-#if NETFULL
                     if (ex.ErrorCode == 1205)
                     {
                         Log.WarnException("Deadlock occurred during automatic migration execution. Retrying...", ex);
                     }
                     else
-#endif
                     {
                         throw;
                     }
                 }
             }
+#else
+            connection.Execute(script);
+#endif
 
             Log.Info("Hangfire SQL objects installed.");
         }
