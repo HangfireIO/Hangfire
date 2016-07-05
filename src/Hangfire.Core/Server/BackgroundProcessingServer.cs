@@ -16,7 +16,9 @@
 
 using System;
 using System.Collections.Generic;
+#if NETFULL
 using System.Diagnostics;
+#endif
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -158,21 +160,34 @@ namespace Hangfire.Server
         {
             yield return new ServerHeartbeat(_options.HeartbeatInterval);
             yield return new ServerWatchdog(_options.ServerCheckInterval, _options.ServerTimeout);
-        } 
+        }
+
+        private string GetGloballyUniqueServerId()
+        {
+            var serverName = _options.ServerName;
+            var guid = Guid.NewGuid().ToString();
+
+            if (String.IsNullOrWhiteSpace(serverName))
+            {
+                var hostName = Environment.GetEnvironmentVariable("COMPUTERNAME")
+                               ?? Environment.GetEnvironmentVariable("HOSTNAME");
+
+                serverName = hostName.ToLowerInvariant();
+#if NETFULL
+                serverName += ":" + Process.GetCurrentProcess().Id;
+#endif
+            }
+
+            return !String.IsNullOrWhiteSpace(serverName)
+                ? $"{serverName}:{guid}"
+                : guid;
+        }
 
 #pragma warning disable 618
         private static IServerProcess WrapProcess(IServerProcess process)
 #pragma warning restore 618
         {
             return new InfiniteLoopProcess(new AutomaticRetryProcess(process));
-        }
-
-        private static string GetGloballyUniqueServerId()
-        {
-            var hostName = Environment.GetEnvironmentVariable("COMPUTERNAME")
-                           ?? Environment.GetEnvironmentVariable("HOSTNAME");
-
-            return $"{hostName.ToLowerInvariant()}:{Process.GetCurrentProcess().Id}:{Guid.NewGuid()}";
         }
 
         private static ServerContext GetServerContext(IReadOnlyDictionary<string, object> properties)

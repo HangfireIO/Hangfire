@@ -226,7 +226,10 @@ namespace Hangfire.Dashboard
 
         public NonEscapedString ServerId(string serverId)
         {
-            var shortenedId = String.Join(":", serverId.Split(':').Take(2));
+            var parts = serverId.Split(':');
+            var shortenedId = parts.Length > 1
+                ? String.Join(":", parts.Take(parts.Length - 1))
+                : serverId;
 
             return new NonEscapedString(
                 $"<span class=\"labe label-defult text-uppercase\" title=\"{serverId}\">{shortenedId}</span>");
