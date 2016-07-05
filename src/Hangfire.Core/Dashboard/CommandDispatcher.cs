@@ -42,7 +42,7 @@ namespace Hangfire.Dashboard
             var request = context.Request;
             var response = context.Response;
 
-            if ("POST".Equals(request.Method, StringComparison.OrdinalIgnoreCase))
+            if (!"POST".Equals(request.Method, StringComparison.OrdinalIgnoreCase))
             {
                 response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
                 return Task.FromResult(false);
