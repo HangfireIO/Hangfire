@@ -105,21 +105,22 @@ namespace Hangfire.Dashboard
                 return Strings.Common_CannotFindTargetMethod;
             }
 
+#if NETFULL
             var displayNameAttribute = job.Method.GetCustomAttribute(typeof(DisplayNameAttribute)) as DisplayNameAttribute;
+            if (displayNameAttribute != null && displayNameAttribute.DisplayName != null)
+            {
+                try
+                {
+                    return String.Format(displayNameAttribute.DisplayName, job.Args.ToArray());
+                }
+                catch (FormatException)
+                {
+                    return displayNameAttribute.DisplayName;
+                }
+            }
+#endif
 
-            if (displayNameAttribute?.DisplayName == null)
-            {
-                return job.ToString();
-            }
-
-            try
-            {
-                return String.Format(displayNameAttribute.DisplayName, job.Args.ToArray());
-            }
-            catch (FormatException)
-            {
-                return displayNameAttribute.DisplayName;
-            }
+            return job.ToString();
         }
 
         public NonEscapedString StateLabel(string stateName)
