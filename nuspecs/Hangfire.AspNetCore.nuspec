@@ -19,8 +19,8 @@
     <dependencies>
       <group targetFramework="netstandard1.3">
         <dependency id="NETStandard.Library" version="1.6.0" />
-        <dependency id="System.ComponentModel" version="4.0.1" />
         <dependency id="Microsoft.NETCore.Portable.Compatibility" version="1.0.1" />
+        <dependency id="System.ComponentModel" version="4.0.1" />
         <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="1.0.0" />
         <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="1.0.0" />
         <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="1.0.0" />
