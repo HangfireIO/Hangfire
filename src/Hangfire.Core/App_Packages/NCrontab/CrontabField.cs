@@ -157,8 +157,8 @@ namespace NCrontab
         /// </summary>
         /// <remarks>
         /// To set the entire range of values representable by the field,
-        /// set <param name="start" /> and <param name="end" /> to -1 and
-        /// <param name="interval" /> to 1.
+        /// set <paramref name="start" /> and <paramref name="end" /> to -1 and
+        /// <paramref name="interval" /> to 1.
         /// </remarks>
 
         T Accumulate<T>(int start, int end, int interval, T success, Func<ExceptionProvider, T> errorSelector)

@@ -173,7 +173,7 @@ namespace NCrontab
         /// (meaning every minute) then the next occurrence of the schedule
         /// will be at one minute past midnight and not midnight itself.
         /// The method returns the <em>next</em> occurrence <em>after</em>
-        /// <paramref name="baseTime"/>. Also, <param name="endTime" /> is
+        /// <paramref name="baseTime"/>. Also, <paramref name="endTime" /> is
         /// exclusive.
         /// </remarks>
 
@@ -205,7 +205,7 @@ namespace NCrontab
         /// (meaning every minute) then the next occurrence of the schedule
         /// will be at one minute past midnight and not midnight itself.
         /// The method returns the <em>next</em> occurrence <em>after</em>
-        /// <paramref name="baseTime"/>. Also, <param name="endTime" /> is
+        /// <paramref name="baseTime"/>. Also, <paramref name="endTime" /> is
         /// exclusive.
         /// </remarks>
 
