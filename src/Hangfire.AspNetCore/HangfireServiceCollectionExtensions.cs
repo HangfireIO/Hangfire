@@ -16,12 +16,15 @@
 
 using System;
 using Hangfire.Annotations;
+using Hangfire.AspNetCore;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Dashboard;
+using Hangfire.Logging;
 using Hangfire.States;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Hangfire
 {
@@ -44,7 +47,26 @@ namespace Hangfire
             services.TryAddSingleton<IBackgroundJobClient, BackgroundJobClient>();
 
             services.TryAddSingleton(typeof(HangfireMarkerService));
-            services.TryAddSingleton(_ => configuration);
+
+            services.TryAddSingleton<Action<IGlobalConfiguration>>(serviceProvider =>
+            {
+                return config =>
+                {
+                    var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+                    if (loggerFactory != null)
+                    {
+                        config.UseLogProvider(new AspNetCoreLogProvider(loggerFactory));
+                    }
+
+                    var scopeFactory = serviceProvider.GetService<IServiceScopeFactory>();
+                    if (scopeFactory != null)
+                    {
+                        config.UseActivator(new AspNetCoreJobActivator(scopeFactory));
+                    }
+
+                    configuration(config);
+                };
+            });
 
             return services;
         }

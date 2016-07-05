@@ -18,15 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Hangfire.Annotations;
-using Hangfire.AspNetCore;
 using Hangfire.Dashboard;
-using Hangfire.Logging;
 using Hangfire.Server;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Hangfire
 {
@@ -90,18 +87,6 @@ namespace Hangfire
             }
 
             if (Interlocked.CompareExchange(ref _initialized, 1, 0) != 0) return;
-
-            var loggerFactory = app.ApplicationServices.GetService<ILoggerFactory>();
-            if (loggerFactory != null)
-            {
-                LogProvider.SetCurrentLogProvider(new AspNetCoreLogProvider(loggerFactory));
-            }
-
-            var scopeFactory = app.ApplicationServices.GetService<IServiceScopeFactory>();
-            if (scopeFactory != null)
-            {
-                JobActivator.Current = new AspNetCoreJobActivator(scopeFactory);
-            }
 
             var configuration = app.ApplicationServices.GetRequiredService<Action<IGlobalConfiguration>>();
             configuration(GlobalConfiguration.Configuration);
