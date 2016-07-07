@@ -34,13 +34,13 @@ branches:
     - master
     - dev
 
+pull_requests:
+  do_not_increment_build_number: true
+
 shallow_clone: true
 
 cache:
   - packages
-  
-nuget:
-  disable_publish_on_pr: true
 
 #---------------------------------#
 #       build configuration       #
