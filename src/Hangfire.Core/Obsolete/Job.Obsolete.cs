@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Server;
@@ -48,7 +49,7 @@ namespace Hangfire.Common
                 }
 
                 var deserializedArguments = DeserializeArguments(cancellationToken);
-                result = InvokeMethod(instance, deserializedArguments);
+                result = InvokeMethod(instance, deserializedArguments, cancellationToken.ShutdownToken);
             }
             finally
             {
@@ -138,7 +139,7 @@ namespace Hangfire.Common
         }
 
         [Obsolete("Will be removed in 2.0.0")]
-        private object InvokeMethod(object instance, object[] deserializedArguments)
+        private object InvokeMethod(object instance, object[] deserializedArguments, CancellationToken shutdownToken)
         {
             try
             {
@@ -146,14 +147,26 @@ namespace Hangfire.Common
             }
             catch (TargetInvocationException ex)
             {
-                if (ex.InnerException is OperationCanceledException && !(ex.InnerException is TaskCanceledException))
+                if (ex.InnerException is JobAbortedException)
                 {
-                    // `OperationCanceledException` and its descendants are used
-                    // to notify a worker that job performance was canceled,
-                    // so we should not wrap this exception and throw it as-is.
+                    // JobAbortedException exception should be thrown as-is to notify
+                    // a worker that background job was aborted by a state change, and
+                    // should NOT be re-queued.
                     throw ex.InnerException;
                 }
 
+                if (ex.InnerException is OperationCanceledException &&
+                    shutdownToken.IsCancellationRequested)
+                {
+                    // OperationCanceledException exceptions are treated differently from
+                    // others, when ShutdownToken's cancellation was requested, to notify
+                    // a worker that job performance was aborted by a shutdown request,
+                    // and a job identifier should BE re-queued.
+                    throw ex.InnerException;
+                }
+
+                // Other exceptions are wrapped with JobPerformanceException to preserve a
+                // shallow stack trace without Hangfire methods.
                 throw new JobPerformanceException(
                     "An exception occurred during performance of the job.",
                     ex.InnerException);
