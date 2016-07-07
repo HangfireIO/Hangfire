@@ -1,11 +1,11 @@
 Framework 4.5.1
+Include "packages\Hangfire.Build.0.2.4\tools\psake-common.ps1"
+
 Properties {
     $solution = "Hangfire.sln"
     $coverage_file = "coverage.xml"
     $coverage_filter = "+[Hangfire.*]* -[*.Tests]* -[*]*.Annotations.* -[*]*.Dashboard.* -[*]*.Logging.* -[*]*.ExpressionUtil.*"
 }
-
-Include "packages\Hangfire.Build.0.2.2\tools\psake-common.ps1"
 
 Task Default -Depends Collect
 
