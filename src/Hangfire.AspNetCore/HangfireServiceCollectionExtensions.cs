@@ -20,7 +20,7 @@ using Hangfire.AspNetCore;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Dashboard;
-using Hangfire.Logging;
+using Hangfire.Server;
 using Hangfire.States;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -41,13 +41,27 @@ namespace Hangfire
             services.TryAddSingleton(_ => JobStorage.Current);
             services.TryAddSingleton(_ => JobActivator.Current);
             services.TryAddSingleton(_ => DashboardRoutes.Routes);
+
             services.TryAddSingleton<IJobFilterProvider>(_ => GlobalJobFilters.Filters);
 
-            services.TryAddSingleton<IBackgroundJobFactory, BackgroundJobFactory>();
-            services.TryAddSingleton<IBackgroundJobStateChanger, BackgroundJobStateChanger>();
-            services.TryAddSingleton<IBackgroundJobClient, BackgroundJobClient>();
+            services.TryAddSingleton<IBackgroundJobFactory>(x => new BackgroundJobFactory(
+                x.GetRequiredService<IJobFilterProvider>()));
 
-            services.TryAddSingleton(typeof(HangfireMarkerService));
+            services.TryAddSingleton<IBackgroundJobStateChanger>(x => new BackgroundJobStateChanger(
+                x.GetRequiredService<IJobFilterProvider>()));
+
+            services.TryAddSingleton<IBackgroundJobPerformer>(x => new BackgroundJobPerformer(
+                x.GetRequiredService<IJobFilterProvider>(),
+                x.GetRequiredService<JobActivator>()));
+
+            services.TryAddSingleton<IBackgroundJobClient>(x => new BackgroundJobClient(
+                x.GetRequiredService<JobStorage>(),
+                x.GetRequiredService<IBackgroundJobFactory>(),
+                x.GetRequiredService<IBackgroundJobStateChanger>()));
+
+            services.TryAddSingleton<IRecurringJobManager>(x => new RecurringJobManager(
+                x.GetRequiredService<JobStorage>(),
+                x.GetRequiredService<IBackgroundJobFactory>()));
 
             services.TryAddSingleton<Action<IGlobalConfiguration>>(serviceProvider =>
             {
