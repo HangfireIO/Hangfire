@@ -116,15 +116,12 @@ namespace Hangfire.Server
             {
                 filter.OnPerforming(preContext);
             }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
             catch (Exception filterException)
             {
-                throw new JobPerformanceException(
-                    "An exception occurred during execution of one of the filters",
-                    filterException);
+                CoreBackgroundJobPerformer.HandleJobPerformanceException(
+                    filterException,
+                    preContext.CancellationToken.ShutdownToken);
+                throw;
             }
             
             if (preContext.Canceled)
@@ -151,9 +148,11 @@ namespace Hangfire.Server
                 }
                 catch (Exception filterException)
                 {
-                    throw new JobPerformanceException(
-                        "An exception occurred during execution of one of the filters",
-                        filterException);
+                    CoreBackgroundJobPerformer.HandleJobPerformanceException(
+                        filterException,
+                        postContext.CancellationToken.ShutdownToken);
+
+                    throw;
                 }
 
                 if (!postContext.ExceptionHandled)
@@ -168,15 +167,13 @@ namespace Hangfire.Server
                 {
                     filter.OnPerformed(postContext);
                 }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
                 catch (Exception filterException)
                 {
-                    throw new JobPerformanceException(
-                        "An exception occurred during execution of one of the filters",
-                        filterException);
+                    CoreBackgroundJobPerformer.HandleJobPerformanceException(
+                        filterException,
+                        postContext.CancellationToken.ShutdownToken);
+
+                    throw;
                 }
             }
 
