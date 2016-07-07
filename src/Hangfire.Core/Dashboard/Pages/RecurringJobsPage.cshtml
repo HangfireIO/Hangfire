@@ -96,7 +96,7 @@
                                     <td class="min-width">
                                         @* ReSharper disable once EmptyGeneralCatchClause *@
                                         @{
-                                            var cronDescription = job.Cron;
+                                            string cronDescription = null;
 #if NETFULL
                                             try
                                             {
@@ -107,7 +107,15 @@
                                             }
 #endif
                                         }
-                                        @cronDescription
+
+                                        @if (cronDescription != null)
+                                        {
+                                            @: @cronDescription
+                                        }
+                                        else
+                                        {
+                                            <code>@job.Cron</code>
+                                        }
                                     </td>
                                     <td class="min-width">
                                         @if (!String.IsNullOrWhiteSpace(job.TimeZoneId))
