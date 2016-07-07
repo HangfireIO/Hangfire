@@ -58,17 +58,17 @@ namespace Hangfire.Server
                 }
 
                 var arguments = SubstituteArguments(context);
-                var result = InvokeMethod(context.BackgroundJob.Job.Method, instance, arguments);
+                var result = InvokeMethod(context, instance, arguments);
 
                 return result;
             }
         }
 
-        private static object InvokeMethod(MethodInfo methodInfo, object instance, object[] arguments)
+        private static object InvokeMethod(PerformContext context, object instance, object[] arguments)
         {
             try
             {
-                return methodInfo.Invoke(instance, arguments);
+                return context.BackgroundJob.Job.Method.Invoke(instance, arguments);
             }
             catch (ArgumentException ex)
             {
@@ -78,14 +78,26 @@ namespace Hangfire.Server
             }
             catch (TargetInvocationException ex)
             {
-                if (ex.InnerException is OperationCanceledException && !(ex.InnerException is TaskCanceledException))
+                if (ex.InnerException is JobAbortedException)
                 {
-                    // `OperationCanceledException` and its descendants are used
-                    // to notify a worker that job performance was canceled,
-                    // so we should not wrap this exception and throw it as-is.
+                    // JobAbortedException exception should be thrown as-is to notify
+                    // a worker that background job was aborted by a state change, and
+                    // should NOT be re-queued.
+                    throw ex.InnerException;
+                }
+                
+                if (ex.InnerException is OperationCanceledException &&
+                    context.CancellationToken.ShutdownToken.IsCancellationRequested)
+                {
+                    // OperationCanceledException exceptions are treated differently from
+                    // others, when ShutdownToken's cancellation was requested, to notify
+                    // a worker that job performance was aborted by a shutdown request,
+                    // and a job identifier should BE re-queued.
                     throw ex.InnerException;
                 }
 
+                // Other exceptions are wrapped with JobPerformanceException to preserve a
+                // shallow stack trace without Hangfire methods.
                 throw new JobPerformanceException(
                     "An exception occurred during performance of the job.",
                     ex.InnerException);
