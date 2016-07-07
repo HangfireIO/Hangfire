@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
 using Hangfire.Server;
@@ -38,12 +37,12 @@ namespace Hangfire
             if (app == null) throw new ArgumentNullException(nameof(app));
             if (pathMatch == null) throw new ArgumentNullException(nameof(pathMatch));
 
-            Initialize(app);
+            ThrowIfNotConfigured(app);
 
             var services = app.ApplicationServices;
 
-            options = options ?? services.GetService<DashboardOptions>() ?? new DashboardOptions();
             storage = storage ?? services.GetRequiredService<JobStorage>();
+            options = options ?? services.GetService<DashboardOptions>() ?? new DashboardOptions();
             var routes = app.ApplicationServices.GetRequiredService<RouteCollection>();
 
             app.Map(new PathString(pathMatch), x => x.UseMiddleware<AspNetCoreDashboardMiddleware>(storage, options, routes));
@@ -59,13 +58,13 @@ namespace Hangfire
         {
             if (app == null) throw new ArgumentNullException(nameof(app));
             
-            Initialize(app);
+            ThrowIfNotConfigured(app);
 
             var services = app.ApplicationServices;
             var lifetime = services.GetRequiredService<IApplicationLifetime>();
 
-            options = options ?? services.GetService<BackgroundJobServerOptions>() ?? new BackgroundJobServerOptions();
             storage = storage ?? services.GetRequiredService<JobStorage>();
+            options = options ?? services.GetService<BackgroundJobServerOptions>() ?? new BackgroundJobServerOptions();
             additionalProcesses = additionalProcesses ?? services.GetServices<IBackgroundProcess>();
 
             var server = new BackgroundJobServer(options, storage, additionalProcesses);
@@ -76,22 +75,14 @@ namespace Hangfire
             return app;
         }
 
-        private static int _initialized = 0;
-
-        private static void Initialize(IApplicationBuilder app)
+        private static void ThrowIfNotConfigured(IApplicationBuilder app)
         {
             var configuration = app.ApplicationServices.GetService<IGlobalConfiguration>();
-
             if (configuration == null)
             {
                 throw new InvalidOperationException(
                     "Unable to find the required services. Please add all the required services by calling 'IServiceCollection.AddHangfire' inside the call to 'ConfigureServices(...)' in the application startup code.");
             }
-
-            if (Interlocked.CompareExchange(ref _initialized, 1, 0) != 0) return;
-
-            var configurationAction = app.ApplicationServices.GetRequiredService<Action<IGlobalConfiguration>>();
-            configurationAction(configuration);
         }
     }
 }
