@@ -147,29 +147,8 @@ namespace Hangfire.Common
             }
             catch (TargetInvocationException ex)
             {
-                if (ex.InnerException is JobAbortedException)
-                {
-                    // JobAbortedException exception should be thrown as-is to notify
-                    // a worker that background job was aborted by a state change, and
-                    // should NOT be re-queued.
-                    throw ex.InnerException;
-                }
-
-                if (ex.InnerException is OperationCanceledException &&
-                    shutdownToken.IsCancellationRequested)
-                {
-                    // OperationCanceledException exceptions are treated differently from
-                    // others, when ShutdownToken's cancellation was requested, to notify
-                    // a worker that job performance was aborted by a shutdown request,
-                    // and a job identifier should BE re-queued.
-                    throw ex.InnerException;
-                }
-
-                // Other exceptions are wrapped with JobPerformanceException to preserve a
-                // shallow stack trace without Hangfire methods.
-                throw new JobPerformanceException(
-                    "An exception occurred during performance of the job.",
-                    ex.InnerException);
+                CoreBackgroundJobPerformer.HandleJobPerformanceException(ex.InnerException, shutdownToken);
+                throw;
             }
         }
 
