@@ -115,9 +115,16 @@ namespace Hangfire.Server
             _bootstrapTask = WrapProcess(this).CreateTask(context);
         }
 
-        public void Dispose()
+        public void SendStop()
         {
             _cts.Cancel();
+        }
+
+        public void Dispose()
+        {
+            SendStop();
+
+            // TODO: Dispose _cts
 
             if (!_bootstrapTask.Wait(_options.ShutdownTimeout))
             {

@@ -69,8 +69,8 @@ namespace Hangfire
 
             var server = new BackgroundJobServer(options, storage, additionalProcesses);
 
-            lifetime.ApplicationStopping.Register(() => server.Dispose());
-            //lifetime.ApplicationStopped.Register(() => );
+            lifetime.ApplicationStopping.Register(() => server.SendStop());
+            lifetime.ApplicationStopped.Register(() => server.Dispose());
 
             return app;
         }

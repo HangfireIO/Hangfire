@@ -31,7 +31,7 @@ namespace Hangfire
         private static readonly ILog Logger = LogProvider.For<BackgroundJobServer>();
 
         private readonly BackgroundJobServerOptions _options;
-        private readonly IDisposable _processingServer;
+        private readonly BackgroundProcessingServer _processingServer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobServer"/> class
@@ -110,6 +110,12 @@ namespace Hangfire
                 processes, 
                 properties, 
                 GetProcessingServerOptions());
+        }
+
+        public void SendStop()
+        {
+            Logger.Debug("Hangfire Server is stopping...");
+            _processingServer.SendStop();
         }
 
         public void Dispose()
