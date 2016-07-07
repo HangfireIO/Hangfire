@@ -58,13 +58,13 @@ Backported from 1.5.5
     </dependencies>
   </metadata>
   <files>
-    <file src="Net45\Hangfire.Core.dll" target="lib\net45" />
-    <file src="Net45\Hangfire.Core.xml" target="lib\net45" />
-    <file src="Net45\Hangfire.Core.pdb" target="lib\net45" />
+    <file src="net45\Hangfire.Core.dll" target="lib\net45" />
+    <file src="net45\Hangfire.Core.xml" target="lib\net45" />
+    <file src="net45\Hangfire.Core.pdb" target="lib\net45" />
     
-    <file src="NetStandard\Hangfire.Core.dll" target="lib\netstandard1.3" />
-    <file src="NetStandard\Hangfire.Core.xml" target="lib\netstandard1.3" />
-    <file src="NetStandard\Hangfire.Core.pdb" target="lib\netstandard1.3" />
+    <file src="netstandard1.3\Hangfire.Core.dll" target="lib\netstandard1.3" />
+    <file src="netstandard1.3\Hangfire.Core.xml" target="lib\netstandard1.3" />
+    <file src="netstandard1.3\Hangfire.Core.pdb" target="lib\netstandard1.3" />
     
     <file src="..\src\Hangfire.Core\**\*.cs;..\src\Hangfire.Core\**\*.cshtml" target="src" exclude="**\obj*\**\*.cs" />
   </files>

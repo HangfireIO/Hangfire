@@ -30,9 +30,9 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="NetStandard\Hangfire.AspNetCore.dll" target="lib\netstandard1.3" />
-    <file src="NetStandard\Hangfire.AspNetCore.xml" target="lib\netstandard1.3" />
-    <file src="NetStandard\Hangfire.AspNetCore.pdb" target="lib\netstandard1.3" />
+    <file src="netstandard1.3\Hangfire.AspNetCore.dll" target="lib\netstandard1.3" />
+    <file src="netstandard1.3\Hangfire.AspNetCore.xml" target="lib\netstandard1.3" />
+    <file src="netstandard1.3\Hangfire.AspNetCore.pdb" target="lib\netstandard1.3" />
     
     <file src="..\src\Hangfire.AspNetCore\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
   </files>

@@ -54,13 +54,13 @@ Backported from 1.5.6
     </dependencies>
   </metadata>
   <files>
-    <file src="Net45\Hangfire.SqlServer.dll" target="lib\net45" />
-    <file src="Net45\Hangfire.SqlServer.xml" target="lib\net45" />
-    <file src="Net45\Hangfire.SqlServer.pdb" target="lib\net45" />
+    <file src="net45\Hangfire.SqlServer.dll" target="lib\net45" />
+    <file src="net45\Hangfire.SqlServer.xml" target="lib\net45" />
+    <file src="net45\Hangfire.SqlServer.pdb" target="lib\net45" />
     
-    <file src="NetStandard\Hangfire.SqlServer.dll" target="lib\netstandard1.3" />
-    <file src="NetStandard\Hangfire.SqlServer.xml" target="lib\netstandard1.3" />
-    <file src="NetStandard\Hangfire.SqlServer.pdb" target="lib\netstandard1.3" />
+    <file src="netstandard1.3\Hangfire.SqlServer.dll" target="lib\netstandard1.3" />
+    <file src="netstandard1.3\Hangfire.SqlServer.xml" target="lib\netstandard1.3" />
+    <file src="netstandard1.3\Hangfire.SqlServer.pdb" target="lib\netstandard1.3" />
     
     <file src="Tools\DefaultInstall.sql" target="tools\install.sql" />
     <file src="..\src\Hangfire.SqlServer\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
