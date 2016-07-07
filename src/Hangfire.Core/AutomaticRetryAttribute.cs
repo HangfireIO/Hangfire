@@ -82,7 +82,7 @@ namespace Hangfire
         /// </remarks>
         public static readonly int DefaultRetryAttempts = 10;
 
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.For<AutomaticRetryAttribute>();
         
         private readonly object _lockObject = new object();
         private int _attempts;

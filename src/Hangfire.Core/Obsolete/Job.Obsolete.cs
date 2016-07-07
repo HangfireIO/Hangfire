@@ -96,7 +96,7 @@ namespace Hangfire.Common
 
                     object value;
 
-                    if (typeof(IJobCancellationToken).IsAssignableFrom(parameter.ParameterType))
+                    if (typeof(IJobCancellationToken).GetTypeInfo().IsAssignableFrom(parameter.ParameterType.GetTypeInfo()))
                     {
                         value = cancellationToken;
                     }
@@ -118,8 +118,12 @@ namespace Hangfire.Common
                             }
                             else
                             {
+#if NETFULL
                                 var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
                                 value = converter.ConvertFromInvariantString(argument);
+#else
+                                throw;
+#endif
                             }
                         }
                     }

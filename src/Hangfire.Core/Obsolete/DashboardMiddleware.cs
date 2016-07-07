@@ -21,6 +21,8 @@ using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Microsoft.Owin;
 
+#pragma warning disable 618
+
 // ReSharper disable once CheckNamespace
 namespace Hangfire.Dashboard
 {
@@ -52,33 +54,31 @@ namespace Hangfire.Dashboard
             _authorizationFilters = authorizationFilters;
         }
 
-        public override Task Invoke(IOwinContext context)
+        public override Task Invoke(IOwinContext owinContext)
         {
-            var dispatcher = _routes.FindDispatcher(context.Request.Path.Value);
+            var dispatcher = _routes.FindDispatcher(owinContext.Request.Path.Value);
             
             if (dispatcher == null)
             {
-                return Next.Invoke(context);
+                return Next.Invoke(owinContext);
             }
 
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var filter in _authorizationFilters)
             {
-                if (!filter.Authorize(context.Environment))
+                if (!filter.Authorize(owinContext.Environment))
                 {
-                    context.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
+                    owinContext.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
                     return Task.FromResult(false);
                 }
             }
-
-            var dispatcherContext = new RequestDispatcherContext(
-                _appPath,
-                _statsPollingInterval,
+            
+            var context = new OwinDashboardContext(
                 _storage,
-                context.Environment,
-                dispatcher.Item2);
+                new DashboardOptions { AppPath = _appPath, StatsPollingInterval = _statsPollingInterval, AuthorizationFilters = _authorizationFilters }, 
+                owinContext.Environment);
 
-            return dispatcher.Item1.Dispatch(dispatcherContext);
+            return dispatcher.Item1.Dispatch(context);
         }
     }
 }

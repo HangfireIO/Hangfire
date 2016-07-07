@@ -186,7 +186,7 @@ namespace Hangfire.Common
         {
             return useCache
                 ? ReflectedAttributeCache.GetTypeFilterAttributes(Type)
-                : GetFilterAttributes(Type);
+                : GetFilterAttributes(Type.GetTypeInfo());
         }
 
         internal IEnumerable<JobFilterAttribute> GetMethodFilterAttributes(bool useCache)
@@ -381,7 +381,7 @@ namespace Hangfire.Common
                 throw new NotSupportedException("Global methods are not supported. Use class methods instead.");
             }
 
-            if (!method.DeclaringType.IsAssignableFrom(type))
+            if (!method.DeclaringType.GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
             {
                 throw new ArgumentException(
                     $"The type `{method.DeclaringType}` must be derived from the `{type}` type.",

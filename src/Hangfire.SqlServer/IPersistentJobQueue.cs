@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System.Data;
 using System.Threading;
 using Hangfire.Storage;
 
@@ -23,6 +22,15 @@ namespace Hangfire.SqlServer
     public interface IPersistentJobQueue
     {
         IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken);
-        void Enqueue(IDbConnection connection, string queue, string jobId);
+
+#if NETFULL
+        void Enqueue(System.Data.IDbConnection connection, string queue, string jobId);
+#else
+        void Enqueue(
+            System.Data.Common.DbConnection connection, 
+            System.Data.Common.DbTransaction transaction, 
+            string queue, 
+            string jobId);
+#endif
     }
 }

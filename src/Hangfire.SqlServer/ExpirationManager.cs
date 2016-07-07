@@ -26,7 +26,7 @@ namespace Hangfire.SqlServer
     internal class ExpirationManager : IServerComponent
 #pragma warning restore 618
     {
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.For<ExpirationManager>();
 
         private const string DistributedLockKey = "locks:expirationmanager";
         private static readonly TimeSpan DefaultLockTimeout = TimeSpan.FromMinutes(5);

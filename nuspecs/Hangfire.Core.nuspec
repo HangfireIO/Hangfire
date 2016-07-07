@@ -45,14 +45,27 @@ Backported from 1.5.5
 * Fixed – ToGenericTypeString method now supports nested classes.
     </releaseNotes>
     <dependencies>
-      <dependency id="Owin" version="1.0" />
-      <dependency id="Newtonsoft.Json" version="5.0.0" />
+      <group targetFramework="net45">
+        <dependency id="Owin" version="1.0" />
+        <dependency id="Newtonsoft.Json" version="5.0.0" />
+      </group>
+      <group targetFramework="netstandard1.3">
+        <dependency id="Microsoft.NETCore.Portable.Compatibility" version="1.0.1" />
+        <dependency id="NETStandard.Library" version="1.6.0" />
+        <dependency id="System.Threading.Thread" version="4.0.0" />
+        <dependency id="Newtonsoft.Json" version="9.0.1" />
+      </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="Net45\Hangfire.Core.dll" target="lib\net45" />
-    <file src="Net45\Hangfire.Core.xml" target="lib\net45" />
-    <file src="Net45\Hangfire.Core.pdb" target="lib\net45" />
-    <file src="..\src\Hangfire.Core\**\*.cs;..\src\Hangfire.Core\**\*.cshtml" target="src" />
+    <file src="net45\Hangfire.Core.dll" target="lib\net45" />
+    <file src="net45\Hangfire.Core.xml" target="lib\net45" />
+    <file src="net45\Hangfire.Core.pdb" target="lib\net45" />
+    
+    <file src="netstandard1.3\Hangfire.Core.dll" target="lib\netstandard1.3" />
+    <file src="netstandard1.3\Hangfire.Core.xml" target="lib\netstandard1.3" />
+    <file src="netstandard1.3\Hangfire.Core.pdb" target="lib\netstandard1.3" />
+    
+    <file src="..\src\Hangfire.Core\**\*.cs;..\src\Hangfire.Core\**\*.cshtml" target="src" exclude="**\obj*\**\*.cs" />
   </files>
 </package>

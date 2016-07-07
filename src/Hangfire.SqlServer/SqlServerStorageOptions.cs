@@ -15,7 +15,11 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+#if NETFULL
 using System.Transactions;
+#else
+using System.Data;
+#endif
 
 namespace Hangfire.SqlServer
 {

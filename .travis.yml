@@ -6,6 +6,7 @@ sudo: required
 
 # Make sure build dependencies are installed.
 install:
+ - export HOSTNAME=localhost
  - travis_retry nuget install .nuget/packages.config -OutputDirectory packages
  - travis_retry nuget restore Hangfire.Mono.sln
  

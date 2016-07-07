@@ -13,7 +13,7 @@ namespace Hangfire
     /// </summary>
     public sealed class LatencyTimeoutAttribute : JobFilterAttribute, IElectStateFilter
     {
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.For<LatencyTimeoutAttribute>();
 
         private readonly int _timeoutInSeconds;
         

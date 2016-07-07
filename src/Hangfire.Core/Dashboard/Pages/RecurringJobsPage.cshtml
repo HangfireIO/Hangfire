@@ -1,7 +1,6 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: true *@
 @using System
 @using System.Collections.Generic
-@using CronExpressionDescriptor
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @using Hangfire.Dashboard.Resources
@@ -97,16 +96,26 @@
                                     <td class="min-width">
                                         @* ReSharper disable once EmptyGeneralCatchClause *@
                                         @{
-                                            var cronDescription = job.Cron;
+                                            string cronDescription = null;
+#if NETFULL
                                             try
                                             {
-                                                cronDescription = ExpressionDescriptor.GetDescription(job.Cron);
+                                                cronDescription = CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.Cron);
                                             }
                                             catch (FormatException)
                                             {
                                             }
+#endif
                                         }
-                                        @cronDescription
+
+                                        @if (cronDescription != null)
+                                        {
+                                            @: @cronDescription
+                                        }
+                                        else
+                                        {
+                                            <code>@job.Cron</code>
+                                        }
                                     </td>
                                     <td class="min-width">
                                         @if (!String.IsNullOrWhiteSpace(job.TimeZoneId))

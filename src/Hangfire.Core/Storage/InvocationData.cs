@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -130,7 +129,7 @@ namespace Hangfire.Storage
 
                 if (CoreBackgroundJobPerformer.Substitutions.ContainsKey(parameter.ParameterType))
                 {
-                    value = parameter.ParameterType.IsValueType
+                    value = parameter.ParameterType.GetTypeInfo().IsValueType
                         ? Activator.CreateInstance(parameter.ParameterType)
                         : null;
                 }
@@ -154,7 +153,11 @@ namespace Hangfire.Storage
                     ? JobHelper.FromJson(argument, type)
                     : null;
             }
-            catch (Exception jsonException)
+            catch (Exception
+#if NETFULL
+            jsonException
+#endif
+            )
             {
                 if (type == typeof (object))
                 {
@@ -164,15 +167,19 @@ namespace Hangfire.Storage
                 }
                 else
                 {
+#if NETFULL
                     try
                     {
-                        var converter = TypeDescriptor.GetConverter(type);
+                        var converter = System.ComponentModel.TypeDescriptor.GetConverter(type);
                         value = converter.ConvertFromInvariantString(argument);
                     }
                     catch (Exception)
                     {
                         throw jsonException;
                     }
+#else
+                    throw;
+#endif
                 }
             }
             return value;
@@ -180,11 +187,11 @@ namespace Hangfire.Storage
 
         private static IEnumerable<MethodInfo> GetAllMethods(Type type)
         {
-            var methods = new List<MethodInfo>(type.GetMethods());
+            var methods = new List<MethodInfo>(type.GetRuntimeMethods());
 
-            if (type.IsInterface)
+            if (type.GetTypeInfo().IsInterface)
             {
-                methods.AddRange(type.GetInterfaces().SelectMany(x => x.GetMethods()));
+                methods.AddRange(type.GetTypeInfo().ImplementedInterfaces.SelectMany(x => x.GetRuntimeMethods()));
             }
 
             return methods;
@@ -226,7 +233,7 @@ namespace Hangfire.Storage
                     }
 
                     // Skipping non-generic parameters of assignable types.
-                    if (parameterType.IsAssignableFrom(actualType)) continue;
+                    if (parameterType.GetTypeInfo().IsAssignableFrom(actualType.GetTypeInfo())) continue;
 
                     parameterTypesMatched = false;
                     break;

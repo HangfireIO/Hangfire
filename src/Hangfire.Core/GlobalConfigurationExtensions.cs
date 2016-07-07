@@ -49,6 +49,14 @@ namespace Hangfire
             return configuration.Use(activator, x => JobActivator.Current = x);
         }
 
+        public static IGlobalConfiguration<JobActivator> UseDefaultActivator(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            return configuration.UseActivator(new JobActivator());
+        }
+
         public static IGlobalConfiguration<TLogProvider> UseLogProvider<TLogProvider>(
             [NotNull] this IGlobalConfiguration configuration,
             [NotNull] TLogProvider provider)
@@ -84,6 +92,7 @@ namespace Hangfire
             return configuration.UseLogProvider(new Log4NetLogProvider());
         }
 
+#if NETFULL
         public static IGlobalConfiguration<ElmahLogProvider> UseElmahLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
         {
@@ -124,6 +133,7 @@ namespace Hangfire
 
             return configuration.UseLogProvider(new LoupeLogProvider());
         }
+#endif
 
         public static IGlobalConfiguration<TFilter> UseFilter<TFilter>(
             [NotNull] this IGlobalConfiguration configuration, 

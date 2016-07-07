@@ -21,6 +21,7 @@ using System.Net;
 using System.Text;
 using Hangfire.Common;
 using System.ComponentModel;
+using System.Reflection;
 using Hangfire.Annotations;
 using Hangfire.Dashboard.Pages;
 using Hangfire.Dashboard.Resources;
@@ -104,21 +105,22 @@ namespace Hangfire.Dashboard
                 return Strings.Common_CannotFindTargetMethod;
             }
 
-            var displayNameAttribute = Attribute.GetCustomAttribute(job.Method, typeof(DisplayNameAttribute), true) as DisplayNameAttribute;
+#if NETFULL
+            var displayNameAttribute = job.Method.GetCustomAttribute(typeof(DisplayNameAttribute)) as DisplayNameAttribute;
+            if (displayNameAttribute != null && displayNameAttribute.DisplayName != null)
+            {
+                try
+                {
+                    return String.Format(displayNameAttribute.DisplayName, job.Args.ToArray());
+                }
+                catch (FormatException)
+                {
+                    return displayNameAttribute.DisplayName;
+                }
+            }
+#endif
 
-            if (displayNameAttribute?.DisplayName == null)
-            {
-                return job.ToString();
-            }
-
-            try
-            {
-                return String.Format(displayNameAttribute.DisplayName, job.Args.ToArray());
-            }
-            catch (FormatException)
-            {
-                return displayNameAttribute.DisplayName;
-            }
+            return job.ToString();
         }
 
         public NonEscapedString StateLabel(string stateName)
@@ -225,7 +227,10 @@ namespace Hangfire.Dashboard
 
         public NonEscapedString ServerId(string serverId)
         {
-            var shortenedId = String.Join(":", serverId.Split(':').Take(2));
+            var parts = serverId.Split(':');
+            var shortenedId = parts.Length > 1
+                ? String.Join(":", parts.Take(parts.Length - 1))
+                : serverId;
 
             return new NonEscapedString(
                 $"<span class=\"labe label-defult text-uppercase\" title=\"{serverId}\">{shortenedId}</span>");

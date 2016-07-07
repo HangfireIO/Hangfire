@@ -31,7 +31,7 @@ namespace Hangfire
         private static readonly TimeSpan AddJobLockTimeout = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan ContinuationStateFetchTimeout = TimeSpan.FromSeconds(30);
 
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.For<ContinuationsSupportAttribute>();
 
         private readonly HashSet<string> _knownFinalStates;
         private readonly IBackgroundJobStateChanger _stateChanger;

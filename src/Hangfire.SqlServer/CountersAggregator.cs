@@ -26,7 +26,7 @@ namespace Hangfire.SqlServer
     internal class CountersAggregator : IServerComponent
 #pragma warning restore 618
     {
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.For<CountersAggregator>();
 
         private const int NumberOfRecordsInSinglePass = 1000;
         private static readonly TimeSpan DelayBetweenPasses = TimeSpan.FromMilliseconds(500);

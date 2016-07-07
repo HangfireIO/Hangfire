@@ -19,15 +19,17 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 
+// ReSharper disable once CheckNamespace
 namespace Hangfire.Dashboard
 {
+    [Obsolete("Use the `DashboardContext` class instead. Will be removed in 2.0.0.")]
     public class RequestDispatcherContext
     {
         public RequestDispatcherContext(
             string appPath,
             int statsPollingInterval,
             [NotNull] JobStorage jobStorage,
-            [NotNull] IDictionary<string, object> owinEnvironment, 
+            [NotNull] IDictionary<string, object> owinEnvironment,
             [NotNull] Match uriMatch)
         {
             if (jobStorage == null) throw new ArgumentNullException(nameof(jobStorage));
@@ -46,5 +48,23 @@ namespace Hangfire.Dashboard
         public JobStorage JobStorage { get; }
         public IDictionary<string, object> OwinEnvironment { get; } 
         public Match UriMatch { get; }
+
+        public static RequestDispatcherContext FromDashboardContext([NotNull] DashboardContext context)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            var owinContext = context as OwinDashboardContext;
+            if (owinContext == null)
+            {
+                throw new NotSupportedException($"context must be of type '{nameof(OwinDashboardContext)}'");
+            }
+            
+            return new RequestDispatcherContext(
+                owinContext.Options.AppPath,
+                owinContext.Options.StatsPollingInterval,
+                owinContext.Storage,
+                owinContext.Environment,
+                owinContext.UriMatch);
+        }
     }
 }

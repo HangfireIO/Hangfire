@@ -14,10 +14,13 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Threading.Tasks;
 
+// ReSharper disable once CheckNamespace
 namespace Hangfire.Dashboard
 {
+    [Obsolete("Use the `IDashboardDispatcher` interface instead. Will be removed in 2.0.0.")]
     public interface IRequestDispatcher
     {
         Task Dispatch(RequestDispatcherContext context);
