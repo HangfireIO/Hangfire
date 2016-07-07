@@ -80,7 +80,9 @@ namespace Hangfire
 
         private static void Initialize(IApplicationBuilder app)
         {
-            if (app.ApplicationServices.GetService(typeof(HangfireMarkerService)) == null)
+            var configuration = app.ApplicationServices.GetService<IGlobalConfiguration>();
+
+            if (configuration == null)
             {
                 throw new InvalidOperationException(
                     "Unable to find the required services. Please add all the required services by calling 'IServiceCollection.AddHangfire' inside the call to 'ConfigureServices(...)' in the application startup code.");
@@ -88,8 +90,8 @@ namespace Hangfire
 
             if (Interlocked.CompareExchange(ref _initialized, 1, 0) != 0) return;
 
-            var configuration = app.ApplicationServices.GetRequiredService<Action<IGlobalConfiguration>>();
-            configuration(GlobalConfiguration.Configuration);
+            var configurationAction = app.ApplicationServices.GetRequiredService<Action<IGlobalConfiguration>>();
+            configurationAction(configuration);
         }
     }
 }

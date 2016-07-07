@@ -37,6 +37,7 @@ namespace Hangfire
             if (services == null) throw new ArgumentNullException(nameof(services));
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
+            services.TryAddSingleton(_ => GlobalConfiguration.Configuration);
             services.TryAddSingleton(_ => JobStorage.Current);
             services.TryAddSingleton(_ => JobActivator.Current);
             services.TryAddSingleton(_ => DashboardRoutes.Routes);

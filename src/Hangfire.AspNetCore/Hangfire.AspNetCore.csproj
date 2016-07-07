@@ -56,7 +56,6 @@
     <Compile Include="Dashboard\AspNetCoreDashboardResponse.cs" />
     <Compile Include="Dashboard\AspNetCoreDashboardMiddleware.cs" />
     <Compile Include="HangfireApplicationBuilderExtensions.cs" />
-    <Compile Include="HangfireMarkerService.cs" />
     <Compile Include="HangfireServiceCollectionExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
