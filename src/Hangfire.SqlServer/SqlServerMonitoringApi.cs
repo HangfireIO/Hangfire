@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Transactions;
 using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Common;
@@ -121,7 +120,7 @@ namespace Hangfire.SqlServer
             return UseConnection<IList<ServerDto>>(connection =>
             {
                 var servers = connection.Query<Entities.Server>(
-                    string.Format(@"select * from [{0}].Server", _storage.GetSchemaName()))
+                    string.Format(@"select * from [{0}].Server with (nolock)", _storage.GetSchemaName()))
                     .ToList();
 
                 var result = new List<ServerDto>();
@@ -256,9 +255,9 @@ namespace Hangfire.SqlServer
             {
 
                 string sql = string.Format(@"
-select * from [{0}].Job where Id = @id
-select * from [{0}].JobParameter where JobId = @id
-select * from [{0}].State where JobId = @id order by Id desc", _storage.GetSchemaName());
+select * from [{0}].Job with (nolock) where Id = @id
+select * from [{0}].JobParameter with (nolock) where JobId = @id
+select * from [{0}].State with (nolock) where JobId = @id order by Id desc", _storage.GetSchemaName());
 
                 using (var multi = connection.QueryMultiple(sql, new { id = jobId }))
                 {
@@ -307,22 +306,22 @@ select * from [{0}].State where JobId = @id order by Id desc", _storage.GetSchem
         public StatisticsDto GetStatistics()
         {
             string sql = string.Format(@"
-select count(Id) from [{0}].Job where StateName = N'Enqueued';
-select count(Id) from [{0}].Job where StateName = N'Failed';
-select count(Id) from [{0}].Job where StateName = N'Processing';
-select count(Id) from [{0}].Job where StateName = N'Scheduled';
-select count(Id) from [{0}].Server;
+select count(Id) from [{0}].Job with (nolock) where StateName = N'Enqueued';
+select count(Id) from [{0}].Job with (nolock) where StateName = N'Failed';
+select count(Id) from [{0}].Job with (nolock) where StateName = N'Processing';
+select count(Id) from [{0}].Job with (nolock) where StateName = N'Scheduled';
+select count(Id) from [{0}].Server with (nolock);
 select sum(s.[Value]) from (
-    select sum([Value]) as [Value] from [{0}].Counter where [Key] = N'stats:succeeded'
+    select sum([Value]) as [Value] from [{0}].Counter with (nolock) where [Key] = N'stats:succeeded'
     union all
-    select [Value] from [{0}].AggregatedCounter where [Key] = N'stats:succeeded'
+    select [Value] from [{0}].AggregatedCounter with (nolock) where [Key] = N'stats:succeeded'
 ) as s;
 select sum(s.[Value]) from (
-    select sum([Value]) as [Value] from [{0}].Counter where [Key] = N'stats:deleted'
+    select sum([Value]) as [Value] from [{0}].Counter with (nolock) where [Key] = N'stats:deleted'
     union all
-    select [Value] from [{0}].AggregatedCounter where [Key] = N'stats:deleted'
+    select [Value] from [{0}].AggregatedCounter with (nolock) where [Key] = N'stats:deleted'
 ) as s;
-select count(*) from [{0}].[Set] where [Key] = N'recurring-jobs';
+select count(*) from [{0}].[Set] with (nolock) where [Key] = N'recurring-jobs';
 ", _storage.GetSchemaName());
 
             var statistics = UseConnection(connection =>
@@ -390,7 +389,7 @@ select count(*) from [{0}].[Set] where [Key] = N'recurring-jobs';
             IDictionary<string, DateTime> keyMaps)
         {
             string sqlQuery = string.Format(@"
-select [Key], [Value] as [Count] from [{0}].AggregatedCounter
+select [Key], [Value] as [Count] from [{0}].AggregatedCounter with (nolock)
 where [Key] in @keys", _storage.GetSchemaName());
 
             var valuesMap = connection.Query(
@@ -423,7 +422,7 @@ where [Key] in @keys", _storage.GetSchemaName());
 
         private T UseConnection<T>(Func<SqlConnection, T> action)
         {
-            return _storage.UseTransaction(action, IsolationLevel.ReadUncommitted);
+            return _storage.UseConnection(action);
         }
 
         private JobList<EnqueuedJobDto> EnqueuedJobs(
@@ -432,8 +431,8 @@ where [Key] in @keys", _storage.GetSchemaName());
         {
             string enqueuedJobsSql = string.Format(@"
 select j.*, s.Reason as StateReason, s.Data as StateData 
-from [{0}].Job j
-left join [{0}].State s on s.Id = j.StateId
+from [{0}].Job j with (nolock)
+left join [{0}].State s with (nolock) on s.Id = j.StateId
 where j.Id in @jobIds", _storage.GetSchemaName());
 
             var jobs = connection.Query<SqlJob>(
@@ -456,8 +455,8 @@ where j.Id in @jobIds", _storage.GetSchemaName());
         private long GetNumberOfJobsByStateName(SqlConnection connection, string stateName)
         {
             var sqlQuery = _jobListLimit.HasValue
-                ? string.Format(@"select count(j.Id) from (select top (@limit) Id from [{0}].Job where StateName = @state) as j", _storage.GetSchemaName())
-                : string.Format(@"select count(Id) from [{0}].Job where StateName = @state", _storage.GetSchemaName());
+                ? string.Format(@"select count(j.Id) from (select top (@limit) Id from [{0}].Job with (nolock) where StateName = @state) as j", _storage.GetSchemaName())
+                : string.Format(@"select count(Id) from [{0}].Job with (nolock) where StateName = @state", _storage.GetSchemaName());
 
             var count = connection.Query<int>(
                  sqlQuery,
@@ -492,8 +491,8 @@ where j.Id in @jobIds", _storage.GetSchemaName());
             string jobsSql = string.Format(@"
 select * from (
   select j.*, s.Reason as StateReason, s.Data as StateData, row_number() over (order by j.Id desc) as row_num
-  from [{0}].Job j with (forceseek)
-  left join [{0}].State s on j.StateId = s.Id
+  from [{0}].Job j with (nolock, forceseek)
+  left join [{0}].State s with (nolock) on j.StateId = s.Id
   where j.StateName = @stateName
 ) as j where j.row_num between @start and @end
 ", _storage.GetSchemaName());
@@ -534,8 +533,8 @@ select * from (
         {
             string fetchedJobsSql = string.Format(@"
 select j.*, s.Reason as StateReason, s.Data as StateData 
-from [{0}].Job j
-left join [{0}].State s on s.Id = j.StateId
+from [{0}].Job j with (nolock)
+left join [{0}].State s with (nolock) on s.Id = j.StateId
 where j.Id in @jobIds", _storage.GetSchemaName());
 
             var jobs = connection.Query<SqlJob>(
