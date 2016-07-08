@@ -58,12 +58,13 @@ namespace Hangfire.Server
                     _innerProcess.Execute(context);
                     return;
                 }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
                 catch (Exception ex)
                 {
+                    if (ex is OperationCanceledException && context.IsShutdownRequested)
+                    {
+                        throw;
+                    }
+
                     // Break the loop after the retry attempts number exceeded.
                     if (i >= MaxRetryAttempts - 1) throw;
 

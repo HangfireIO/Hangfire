@@ -65,12 +65,19 @@ namespace Hangfire.Server
             {
                 return PerformJobWithFilters(context, filterInfo.ServerFilters);
             }
-            catch (OperationCanceledException)
+            catch (JobAbortedException)
             {
                 throw;
             }
             catch (Exception ex)
             {
+                // TODO: Catch only JobPerformanceException, and pass InnerException to filters
+
+                if (ex is OperationCanceledException && context.CancellationToken.ShutdownToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+
                 var exceptionContext = new ServerExceptionContext(context, ex);
                 InvokeServerExceptionFilters(exceptionContext, filterInfo.ServerExceptionFilters);
 

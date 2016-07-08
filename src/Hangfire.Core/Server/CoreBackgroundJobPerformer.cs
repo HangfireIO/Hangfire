@@ -74,8 +74,7 @@ namespace Hangfire.Server
                 throw exception;
             }
 
-            if (exception is OperationCanceledException &&
-                shutdownToken.IsCancellationRequested)
+            if (exception is OperationCanceledException && shutdownToken.IsCancellationRequested)
             {
                 // OperationCanceledException exceptions are treated differently from
                 // others, when ShutdownToken's cancellation was requested, to notify

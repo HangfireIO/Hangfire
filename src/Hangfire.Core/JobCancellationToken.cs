@@ -35,7 +35,7 @@ namespace Hangfire
 
         public void ThrowIfCancellationRequested()
         {
-            if (_canceled) throw new OperationCanceledException();
+            ShutdownToken.ThrowIfCancellationRequested();
         }
     }
 }
