@@ -71,7 +71,7 @@ namespace Hangfire.Server
             }
             catch (Exception ex)
             {
-                // TODO: Catch only JobPerformanceException, and pass InnerException to filters
+                // TODO: Catch only JobPerformanceException, and pass InnerException to filters in 2.0.0.
 
                 if (ex is OperationCanceledException && context.CancellationToken.ShutdownToken.IsCancellationRequested)
                 {

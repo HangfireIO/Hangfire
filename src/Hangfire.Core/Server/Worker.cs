@@ -144,7 +144,16 @@ namespace Hangfire.Server
                 }
                 catch (Exception ex)
                 {
-                    Logger.DebugException("An exception occurred while processing a job. It will be re-queued.", ex);
+                    if (context.IsShutdownRequested)
+                    {
+                        Logger.Info(String.Format(
+                            "Shutdown request requested while processing background job '{0}'. It will be re-queued.",
+                            fetchedJob.JobId));
+                    }
+                    else
+                    {
+                        Logger.DebugException("An exception occurred while processing a job. It will be re-queued.", ex);
+                    }
 
                     fetchedJob.Requeue();
                     throw;
