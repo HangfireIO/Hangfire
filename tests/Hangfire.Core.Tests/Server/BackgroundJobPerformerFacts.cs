@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Hangfire.Common;
 using Hangfire.Server;
 using Moq;
@@ -135,8 +136,8 @@ namespace Hangfire.Core.Tests.Server
             // Act & Assert
             Assert.Throws<InvalidOperationException>(() => performer.Perform(_context.Object));
 
-            filter.Verify(x => x.OnServerException(
-                It.IsNotNull<ServerExceptionContext>()));
+            filter.Verify(x => x.OnServerException(It.Is<ServerExceptionContext>(context =>
+                context.Exception is InvalidOperationException)));
         }
 
         [Fact, Sequence]
@@ -409,9 +410,33 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Run_ServerFiltersAreNotInvoked_OnOperationCanceledException()
+        public void Run_ExceptionFiltersAreNOTInvoked_OnJobAbortedException()
         {
             // Arrange
+            _innerPerformer
+                .Setup(x => x.Perform(_context.Object))
+                .Throws<JobAbortedException>();
+
+            var filter = CreateFilter<IServerExceptionFilter>();
+            var performer = CreatePerformer();
+
+            // Act
+            Assert.Throws<JobAbortedException>(() => performer.Perform(_context.Object));
+
+            // Assert
+            filter.Verify(
+                x => x.OnServerException(It.IsAny<ServerExceptionContext>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public void Run_ExceptionFiltersAreNOTInvoked_OnOperationCanceledException_WhenShutdownTokenIsCanceled()
+        {
+            // Arrange
+            var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(cts.Token);
             _innerPerformer
                 .Setup(x => x.Perform(_context.Object))
                 .Throws<OperationCanceledException>();
@@ -430,9 +455,34 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Run_ThrowsOperationCanceledException_OccurredInPreFilterMethods()
+        public void Run_ExceptionFiltersAreInvoked_OnOperationCanceledException_WhenShutdownTokenIsNOTCanceled()
         {
             // Arrange
+            _innerPerformer
+                .Setup(x => x.Perform(_context.Object))
+                .Throws<OperationCanceledException>();
+
+            var filter = CreateFilter<IServerExceptionFilter>();
+            var performer = CreatePerformer();
+
+            // Act
+            Assert.Throws<OperationCanceledException>(
+                () => performer.Perform(_context.Object));
+
+            // Assert
+            filter.Verify(
+                x => x.OnServerException(It.IsAny<ServerExceptionContext>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public void Run_ThrowsOperationCanceledException_OccurredInPreFilterMethods_WhenShutdownTokenIsCanceled()
+        {
+            // Arrange
+            var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(cts.Token);
             var filter = CreateFilter<IServerFilter>();
             filter.Setup(x => x.OnPerforming(It.IsAny<PerformingContext>()))
                 .Throws<OperationCanceledException>();
@@ -445,7 +495,43 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Run_ThrowsOperationCanceledException_OccurredInPostFilterMethods()
+        public void Run_ThrowsJobPerformanceException_InsteadOfOperationCanceled_OccurredInPreFilterMethods_WhenShutdownTokenIsNotCanceled()
+        {
+            // Arrange
+            var filter = CreateFilter<IServerFilter>();
+            filter.Setup(x => x.OnPerforming(It.IsAny<PerformingContext>()))
+                .Throws<OperationCanceledException>();
+
+            var performer = CreatePerformer();
+
+            // Act
+            var exception = Assert.Throws<JobPerformanceException>(
+                () => performer.Perform(_context.Object));
+
+            // Assert
+            Assert.IsType<OperationCanceledException>(exception.InnerException);
+        }
+
+        [Fact]
+        public void Run_ThrowsOperationCanceledException_OccurredInPostFilterMethods_WhenShutdownTokenIsCanceled()
+        {
+            // Arrange
+            var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(cts.Token);
+            var filter = CreateFilter<IServerFilter>();
+            filter.Setup(x => x.OnPerformed(It.IsAny<PerformedContext>()))
+                .Throws<OperationCanceledException>();
+
+            var performer = CreatePerformer();
+
+            // Act & Assert
+            Assert.Throws<OperationCanceledException>(() => performer.Perform(_context.Object));
+        }
+
+        [Fact]
+        public void Run_ThrowsJobPerformanceException_InsteadOfOperationCanceled_OccurredInPostFilterMethods_WhenShutdownTokenIsNOTCanceled()
         {
             // Arrange
             var filter = CreateFilter<IServerFilter>();
@@ -454,9 +540,12 @@ namespace Hangfire.Core.Tests.Server
 
             var performer = CreatePerformer();
 
-            // Act & Assert
-            Assert.Throws<OperationCanceledException>(
+            // Act
+            var exception = Assert.Throws<JobPerformanceException>(
                 () => performer.Perform(_context.Object));
+
+            // Assert
+            Assert.IsType<OperationCanceledException>(exception.InnerException);
         }
 
         public static void Method()

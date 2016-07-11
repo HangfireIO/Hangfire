@@ -142,13 +142,18 @@ namespace Hangfire.Server
                     // Success point. No things must be done after previous command
                     // was succeeded.
                 }
-                catch (JobAbortedException)
-                {
-                    fetchedJob.RemoveFromQueue();
-                }
                 catch (Exception ex)
                 {
-                    Logger.DebugException("An exception occurred while processing a job. It will be re-queued.", ex);
+                    if (context.IsShutdownRequested)
+                    {
+                        Logger.Info(String.Format(
+                            "Shutdown request requested while processing background job '{0}'. It will be re-queued.",
+                            fetchedJob.JobId));
+                    }
+                    else
+                    {
+                        Logger.DebugException("An exception occurred while processing a job. It will be re-queued.", ex);
+                    }
 
                     fetchedJob.Requeue();
                     throw;
@@ -191,9 +196,12 @@ namespace Hangfire.Server
 
                 return new SucceededState(result, (long) latency, duration.ElapsedMilliseconds);
             }
-            catch (OperationCanceledException)
+            catch (JobAbortedException)
             {
-                throw;
+                // Background job performance was aborted due to a
+                // state change, so it's idenfifier should be removed
+                // from a queue.
+                return null;
             }
             catch (JobPerformanceException ex)
             {
@@ -204,6 +212,11 @@ namespace Hangfire.Server
             }
             catch (Exception ex)
             {
+                if (ex is OperationCanceledException && context.IsShutdownRequested)
+                {
+                    throw;
+                }
+
                 return new FailedState(ex)
                 {
                     Reason = "An exception occurred during processing of a background job."

@@ -489,18 +489,54 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void Perform_PassesCancellationToken_IfThereIsIJobCancellationTokenParameter()
+        public void Perform_RethrowsOperationCanceledException_WhenShutdownTokenIsCanceled()
         {
             // Arrange
             var job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _token.Setup(x => x.ShutdownToken).Returns(new CancellationToken(true));
             _token.Setup(x => x.ThrowIfCancellationRequested()).Throws<OperationCanceledException>();
 
             // Act & Assert
-            Assert.Throws<OperationCanceledException>(
-                () => job.Perform(_activator.Object, _token.Object));
+            Assert.Throws<OperationCanceledException>(() => job.Perform(_activator.Object, _token.Object));
         }
 
-	    [Fact]
+        [Fact]
+        public void Run_RethrowsTaskCanceledException_WhenShutdownTokenIsCanceled()
+        {
+            // Arrange
+            var job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _token.Setup(x => x.ShutdownToken).Returns(new CancellationToken(true));
+            _token.Setup(x => x.ThrowIfCancellationRequested()).Throws<TaskCanceledException>();
+
+            // Act & Assert
+            Assert.Throws<TaskCanceledException>(() => job.Perform(_activator.Object, _token.Object));
+        }
+
+        [Fact]
+        public void Run_RethrowsJobAbortedException()
+        {
+            // Arrange
+            var job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _token.Setup(x => x.ShutdownToken).Returns(CancellationToken.None);
+            _token.Setup(x => x.ThrowIfCancellationRequested()).Throws<JobAbortedException>();
+
+            // Act & Assert
+            Assert.Throws<JobAbortedException>(() => job.Perform(_activator.Object, _token.Object));
+        }
+
+        [Fact]
+        public void Run_ThrowsJobPerformanceException_InsteadOfOperationCanceled_WhenShutdownWasNOTInitiated()
+        {
+            // Arrange
+            var job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _token.Setup(x => x.ShutdownToken).Returns(CancellationToken.None);
+            _token.Setup(x => x.ThrowIfCancellationRequested()).Throws<OperationCanceledException>();
+
+            // Act & Assert
+            Assert.Throws<JobPerformanceException>(() => job.Perform(_activator.Object, _token.Object));
+        }
+
+        [Fact]
         public void Perform_ReturnsValue_WhenCallingFunctionReturningValue()
         {
             var job = Job.FromExpression<Instance>(x => x.FunctionReturningValue());

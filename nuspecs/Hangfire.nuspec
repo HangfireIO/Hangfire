@@ -21,6 +21,15 @@
     
 1.6.0-ci
 
+Backported from 1.5.9
+
+Hangfire.Core
+* Fixed – `OperationCanceledException` exceptions don't cause background processing to stop.
+
+Hangfire.SqlServer
+* Fixed – Don't leak Dashboard UI's `READ UNCOMMITTED` isolation level to other parts of an application.
+* Fixed – `READ_COMMITTED_SNAPSHOT` option doesn't prevent background jobs from being processed.
+    
 Backported from 1.5.8
 
 Hangfire.SqlServer

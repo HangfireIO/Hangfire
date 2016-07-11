@@ -1,12 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.Core.Tests.Common;
 using Hangfire.Server;
 using Moq;
 using Xunit;
-using System.Threading;
 
 namespace Hangfire.Core.Tests.Server
 {
@@ -266,16 +266,59 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Perform_PassesHangfireJobCancellationToken_IfThereIsIJobCancellationTokenParameter()
+        public void Perform_RethrowsOperationCanceledException_WhenShutdownTokenIsCanceled()
         {
             // Arrange
             _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(new CancellationToken(true));
             _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<OperationCanceledException>();
+
             var performer = CreatePerformer();
 
             // Act & Assert
-            Assert.Throws<OperationCanceledException>(
-                () => performer.Perform(_context.Object));
+            Assert.Throws<OperationCanceledException>(() => performer.Perform(_context.Object));
+        }
+
+        [Fact]
+        public void Run_RethrowsTaskCanceledException_WhenShutdownTokenIsCanceled()
+        {
+            // Arrange
+            _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(new CancellationToken(true));
+            _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<TaskCanceledException>();
+
+            var performer = CreatePerformer();
+
+            // Act & Assert
+            Assert.Throws<TaskCanceledException>(() => performer.Perform(_context.Object));
+        }
+
+        [Fact]
+        public void Run_RethrowsJobAbortedException()
+        {
+            // Arrange
+            _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(CancellationToken.None);
+            _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<JobAbortedException>();
+
+            var performer = CreatePerformer();
+
+            // Act & Assert
+            Assert.Throws<JobAbortedException>(() => performer.Perform(_context.Object));
+        }
+
+        [Fact]
+        public void Run_ThrowsJobPerformanceException_InsteadOfOperationCanceled_WhenShutdownWasNOTInitiated()
+        {
+            // Arrange
+            _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(CancellationToken.None);
+            _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<OperationCanceledException>();
+
+            var performer = CreatePerformer();
+
+            // Act & Assert
+            Assert.Throws<JobPerformanceException>(() => performer.Perform(_context.Object));
         }
 
         [Fact]

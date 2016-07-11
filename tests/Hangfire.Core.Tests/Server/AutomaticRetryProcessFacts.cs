@@ -104,14 +104,26 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [PossibleHangingFact]
-        public void Execute_DoesNotCauseAutomaticRetry_OnOperationCanceledException()
+        public void Execute_DoesNotCauseAutomaticRetry_WhenOperationCanceledExceptionCausedByShutdownThrown()
         {
+            _context.CancellationTokenSource.Cancel();
             _process.Setup(x => x.Execute(It.IsAny<BackgroundProcessContext>())).Throws<OperationCanceledException>();
             var wrapper = CreateWrapper();
 
             Assert.Throws<OperationCanceledException>(() => wrapper.Execute(_context.Object));
 
             _process.Verify(x => x.Execute(It.IsNotNull<BackgroundProcessContext>()), Times.Once);
+        }
+
+        [PossibleHangingFact]
+        public void Execute_CausesAutomaticRetry_WhenOperationCanceledExceptionThrown_NotCausedByShutdown()
+        {
+            _process.Setup(x => x.Execute(It.IsAny<BackgroundProcessContext>())).Throws<OperationCanceledException>();
+            var wrapper = CreateWrapper();
+
+            Assert.Throws<OperationCanceledException>(() => wrapper.Execute(_context.Object));
+
+            _process.Verify(x => x.Execute(It.IsNotNull<BackgroundProcessContext>()), Times.Exactly(_maxRetryAttempts));
         }
 
         private AutomaticRetryProcess CreateWrapper()

@@ -282,9 +282,9 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (items == null) throw new ArgumentNullException(nameof(items));
 
+            // TODO: Rewrite using the `MERGE` statement.
             string query =
-                $@"
-insert into [{_storage.SchemaName}].[Set] ([Key], Value, Score)
+$@"insert into [{_storage.SchemaName}].[Set] ([Key], Value, Score)
 values (@key, @value, 0.0)";
 
             AcquireSetLock();

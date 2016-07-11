@@ -89,14 +89,19 @@ namespace Hangfire.Server
             {
                 process.Execute(context);
             }
-            catch (OperationCanceledException)
-            {
-            }
             catch (Exception ex)
             {
-                logger.FatalException(
-                    $"Fatal error occurred during execution of '{process}' process. It will be stopped. See the exception for details.",
-                    ex);
+                if (ex is OperationCanceledException && context.IsShutdownRequested)
+                {
+                    // Graceful shutdown
+                    logger.Trace($"Background process '{process}' was stopped due to a shutdown request.");
+                }
+                else
+                {
+                    logger.FatalException(
+                        $"Fatal error occurred during execution of '{process}' process. It will be stopped. See the exception for details.",
+                        ex);
+                }
             }
 
             logger.Debug($"Background process '{process}' stopped.");
