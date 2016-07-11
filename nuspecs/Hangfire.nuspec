@@ -18,6 +18,15 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.5.9
+
+Hangfire.Core
+* Fixed – `OperationCanceledException` exceptions don't cause background processing to stop.
+
+Hangfire.SqlServer
+* Fixed – Don't leak Dashboard UI's `READ UNCOMMITTED` isolation level to other parts of an application.
+* Fixed – `READ_COMMITTED_SNAPSHOT` option doesn't prevent background jobs from being processed.
+    
 1.5.8
 
 Hangfire.SqlServer
