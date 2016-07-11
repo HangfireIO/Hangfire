@@ -273,7 +273,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             return _storage.UseConnection(connection =>
             {
                 var result = connection.Query<SqlHash>(
-                    $"select Field, Value from [{_storage.SchemaName}].Hash with (forceseek. readcommittedlock) where [Key] = @key",
+                    $"select Field, Value from [{_storage.SchemaName}].Hash with (forceseek, readcommittedlock) where [Key] = @key",
                     new { key })
                     .ToDictionary(x => x.Field, x => x.Value);
 
