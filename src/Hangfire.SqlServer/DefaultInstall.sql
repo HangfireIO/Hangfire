@@ -282,7 +282,7 @@ BEGIN
 		[Key] [nvarchar](100) NOT NULL,
 		[Field] [nvarchar](100) NOT NULL,
 		[Value] [nvarchar](max) NULL,
-		[ExpireAt] [datetime2](7) NULL,
+		[ExpireAt] [datetime] NULL,
 		
 		CONSTRAINT [PK_HangFire_Hash] PRIMARY KEY CLUSTERED ([Id] ASC)
 	);

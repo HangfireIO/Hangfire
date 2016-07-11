@@ -201,13 +201,19 @@ where j.Id = @jobId", _storage.GetSchemaName());
 
             _storage.UseConnection(connection =>
             {
-                connection.Execute(
-                    string.Format(@";merge [{0}].JobParameter with (holdlock) as Target "
+                var sql =
+                    _storage.SqlServerSettings != null &&
+                    !string.IsNullOrEmpty(_storage.SqlServerSettings.SetJobParameterSql)
+                        ? _storage.SqlServerSettings.SetJobParameterSql 
+                        : @";merge [{0}].JobParameter with (holdlock) as Target "
                     + @"using (VALUES (@jobId, @name, @value)) as Source (JobId, Name, Value) "
                     + @"on Target.JobId = Source.JobId AND Target.Name = Source.Name "
                     + @"when matched then update set Value = Source.Value "
                     +
-                    @"when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.Name, Source.Value);", _storage.GetSchemaName()),
+                    @"when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.Name, Source.Value);"
+                    ;
+                connection.Execute(string.Format(sql,
+                    _storage.GetSchemaName()),
                     new { jobId = id, name, value });
             });
         }
@@ -253,12 +259,18 @@ where j.Id = @jobId", _storage.GetSchemaName());
             if (key == null) throw new ArgumentNullException("key");
             if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
 
-            string sql = string.Format(@"
+            var sql =
+                _storage.SqlServerSettings != null &&
+                !string.IsNullOrEmpty(_storage.SqlServerSettings.SetRangeInHashSql)
+                    ? _storage.SqlServerSettings.SetRangeInHashSql
+                    : @"
 ;merge [{0}].Hash with (holdlock) as Target
 using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
 on Target.[Key] = Source.[Key] and Target.Field = Source.Field
 when matched then update set Value = Source.Value
-when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);", _storage.GetSchemaName());
+when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
+
+            sql = string.Format(sql, _storage.GetSchemaName());
 
             _storage.UseTransaction(connection =>
             {
@@ -275,8 +287,13 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
 
             return _storage.UseConnection(connection =>
             {
+                var forceSeek = _storage.SqlServerSettings != null
+                    ? _storage.SqlServerSettings.WithForceSeekSql
+                    : " with (forceseek) ";
                 var result = connection.Query<SqlHash>(
-                    string.Format("select Field, Value from [{0}].Hash with (forceseek) where [Key] = @key", _storage.GetSchemaName()),
+                    string.Format("select Field, Value from [{0}].Hash {1} where [Key] = @key", 
+                    _storage.GetSchemaName(),
+                    forceSeek),
                     new { key })
                     .ToDictionary(x => x.Field, x => x.Value);
 
@@ -298,14 +315,20 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
 
             _storage.UseConnection(connection =>
             {
-                connection.Execute(
-                    string.Format(@";merge [{0}].Server with (holdlock) as Target "
+                var sql =
+                    _storage.SqlServerSettings != null &&
+                    !string.IsNullOrEmpty(_storage.SqlServerSettings.SetRangeInHashSql)
+                        ? _storage.SqlServerSettings.SetRangeInHashSql
+                        : @";merge [{0}].Server with (holdlock) as Target "
                     + @"using (VALUES (@id, @data, @heartbeat)) as Source (Id, Data, Heartbeat) "
                     + @"on Target.Id = Source.Id "
                     + @"when matched then update set Data = Source.Data, LastHeartbeat = Source.Heartbeat "
                     +
-                    @"when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat);", _storage.GetSchemaName()),
-                    new { id = serverId, data = JobHelper.ToJson(data), heartbeat = DateTime.UtcNow });
+                    @"when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat);";
+
+                    connection.Execute(
+                        string.Format(sql, _storage.GetSchemaName()),
+                        new { id = serverId, data = JobHelper.ToJson(data), heartbeat = DateTime.UtcNow });
             });
         }
 

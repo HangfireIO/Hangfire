@@ -31,13 +31,16 @@ namespace Hangfire.SqlServer
 
         private readonly SqlServerStorage _storage;
         private readonly TimeSpan _interval;
+        private readonly ISqlServerSettings _sqlServerSettings;
 
-        public CountersAggregator(SqlServerStorage storage, TimeSpan interval)
+        public CountersAggregator(SqlServerStorage storage, TimeSpan interval, 
+            ISqlServerSettings sqlServerSettings = null)
         {
             if (storage == null) throw new ArgumentNullException("storage");
 
             _storage = storage;
             _interval = interval;
+            _sqlServerSettings = sqlServerSettings;
         }
 
         public void Execute(CancellationToken cancellationToken)
@@ -70,9 +73,12 @@ namespace Hangfire.SqlServer
             return GetType().ToString();
         }
 
-        private static string GetAggregationQuery(SqlServerStorage storage)
+        private string GetAggregationQuery(SqlServerStorage storage)
         {
-            return string.Format(@"
+            var aggregationQuery = _sqlServerSettings != null &&
+                                   !string.IsNullOrEmpty(_sqlServerSettings.CountersAggregationSql)
+                ? _sqlServerSettings.CountersAggregationSql
+                : @"
 DECLARE @RecordsToAggregate TABLE
 (
 	[Key] NVARCHAR(100) NOT NULL,
@@ -98,7 +104,9 @@ WHEN MATCHED THEN UPDATE SET
 	[Target].[ExpireAt] = (SELECT MAX([ExpireAt]) FROM (VALUES ([Source].ExpireAt), ([Target].[ExpireAt])) AS MaxExpireAt([ExpireAt]))
 WHEN NOT MATCHED THEN INSERT ([Key], [Value], [ExpireAt]) VALUES ([Source].[Key], [Source].[Value], [Source].[ExpireAt]);
 
-COMMIT TRAN", storage.GetSchemaName());
+COMMIT TRAN";
+
+            return string.Format(aggregationQuery, storage.GetSchemaName());
         }
     }
 }

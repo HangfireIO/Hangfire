@@ -35,6 +35,7 @@ namespace Hangfire.SqlServer
             DashboardJobListLimit = 50000;
             _schemaName = Constants.DefaultSchema;
             TransactionTimeout = TimeSpan.FromMinutes(1);
+            SqlServer2005Compatibility = false;
         }
 
         public IsolationLevel? TransactionIsolationLevel { get; set; }
@@ -84,5 +85,11 @@ namespace Hangfire.SqlServer
                 _schemaName = value;
             }
         }
+
+        /// <summary>
+        /// Whether to run SQL compatible with SQL Server 2005 (true), or 
+        /// SQL optimised for 2008 and newer (false). Default is false.
+        /// </summary>
+        public bool SqlServer2005Compatibility { get; set; }
     }
 }
