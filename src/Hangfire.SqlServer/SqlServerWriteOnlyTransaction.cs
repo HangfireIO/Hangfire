@@ -245,6 +245,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             if (key == null) throw new ArgumentNullException("key");
             if (items == null) throw new ArgumentNullException("items");
 
+            // TODO: Rewrite using the `MERGE` statement.
             string query = string.Format(@"
 insert into [{0}].[Set] ([Key], Value, Score)
 values (@key, @value, 0.0)", _storage.GetSchemaName());
