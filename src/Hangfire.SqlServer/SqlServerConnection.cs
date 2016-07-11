@@ -128,7 +128,7 @@ values (@jobId, @name, @value)", _storage.GetSchemaName());
             if (id == null) throw new ArgumentNullException("id");
 
             string sql =
-                string.Format(@"select InvocationData, StateName, Arguments, CreatedAt from [{0}].Job where Id = @id", _storage.GetSchemaName());
+                string.Format(@"select InvocationData, StateName, Arguments, CreatedAt from [{0}].Job with (readcommittedlock) where Id = @id", _storage.GetSchemaName());
 
             return _storage.UseConnection(connection =>
             {
@@ -169,7 +169,7 @@ values (@jobId, @name, @value)", _storage.GetSchemaName());
 
             string sql = string.Format(@"
 select s.Name, s.Reason, s.Data
-from [{0}].State s
+from [{0}].State s with (readcommittedlock)
 inner join [{0}].Job j on j.StateId = s.Id
 where j.Id = @jobId", _storage.GetSchemaName());
 
@@ -218,7 +218,7 @@ where j.Id = @jobId", _storage.GetSchemaName());
             if (name == null) throw new ArgumentNullException("name");
 
             return _storage.UseConnection(connection => connection.Query<string>(
-                string.Format(@"select Value from [{0}].JobParameter where JobId = @id and Name = @name", _storage.GetSchemaName()),
+                string.Format(@"select Value from [{0}].JobParameter with (readcommittedlock) where JobId = @id and Name = @name", _storage.GetSchemaName()),
                 new { id = id, name = name })
                 .SingleOrDefault());
         }
@@ -230,7 +230,7 @@ where j.Id = @jobId", _storage.GetSchemaName());
             return _storage.UseConnection(connection =>
             {
                 var result = connection.Query<string>(
-                    string.Format(@"select Value from [{0}].[Set] where [Key] = @key", _storage.GetSchemaName()),
+                    string.Format(@"select Value from [{0}].[Set] with (readcommittedlock) where [Key] = @key", _storage.GetSchemaName()),
                     new { key });
 
                 return new HashSet<string>(result);
@@ -243,7 +243,7 @@ where j.Id = @jobId", _storage.GetSchemaName());
             if (toScore < fromScore) throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.");
 
             return _storage.UseConnection(connection => connection.Query<string>(
-                string.Format(@"select top 1 Value from [{0}].[Set] where [Key] = @key and Score between @from and @to order by Score", _storage.GetSchemaName()),
+                string.Format(@"select top 1 Value from [{0}].[Set] with (readcommittedlock) where [Key] = @key and Score between @from and @to order by Score", _storage.GetSchemaName()),
                 new { key, from = fromScore, to = toScore })
                 .SingleOrDefault());
         }
@@ -276,7 +276,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             return _storage.UseConnection(connection =>
             {
                 var result = connection.Query<SqlHash>(
-                    string.Format("select Field, Value from [{0}].Hash with (forceseek) where [Key] = @key", _storage.GetSchemaName()),
+                    string.Format("select Field, Value from [{0}].Hash with (forceseek, readcommittedlock) where [Key] = @key", _storage.GetSchemaName()),
                     new { key })
                     .ToDictionary(x => x.Field, x => x.Value);
 
@@ -350,7 +350,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             if (key == null) throw new ArgumentNullException("key");
 
             return _storage.UseConnection(connection => connection.Query<int>(
-                string.Format("select count([Key]) from [{0}].[Set] where [Key] = @key", _storage.GetSchemaName()),
+                string.Format("select count([Key]) from [{0}].[Set] with (readcommittedlock) where [Key] = @key", _storage.GetSchemaName()),
                 new { key = key }).First());
         }
 
@@ -361,7 +361,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             string query = string.Format(@"
 select [Value] from (
 	select [Value], row_number() over (order by [Id] ASC) as row_num 
-	from [{0}].[Set]
+	from [{0}].[Set] with (readcommittedlock)
 	where [Key] = @key 
 ) as s where s.row_num between @startingFrom and @endingAt", _storage.GetSchemaName());
 
@@ -375,7 +375,7 @@ select [Value] from (
             if (key == null) throw new ArgumentNullException("key");
 
             string query = string.Format(@"
-select min([ExpireAt]) from [{0}].[Set]
+select min([ExpireAt]) from [{0}].[Set] with (readcommittedlock)
 where [Key] = @key", _storage.GetSchemaName());
 
             return _storage.UseConnection(connection =>
@@ -392,10 +392,10 @@ where [Key] = @key", _storage.GetSchemaName());
             if (key == null) throw new ArgumentNullException("key");
 
             string query = string.Format(@"
-select sum(s.[Value]) from (select sum([Value]) as [Value] from [{0}].Counter
+select sum(s.[Value]) from (select sum([Value]) as [Value] from [{0}].Counter with (readcommittedlock)
 where [Key] = @key
 union all
-select [Value] from [{0}].AggregatedCounter
+select [Value] from [{0}].AggregatedCounter with (readcommittedlock)
 where [Key] = @key) as s", _storage.GetSchemaName());
 
             return _storage.UseConnection(connection => 
@@ -407,7 +407,7 @@ where [Key] = @key) as s", _storage.GetSchemaName());
             if (key == null) throw new ArgumentNullException("key");
 
             string query = string.Format(@"
-select count([Id]) from [{0}].Hash
+select count([Id]) from [{0}].Hash with (readcommittedlock)
 where [Key] = @key", _storage.GetSchemaName());
 
             return _storage.UseConnection(connection => connection.Query<long>(query, new { key = key }).Single());
@@ -418,7 +418,7 @@ where [Key] = @key", _storage.GetSchemaName());
             if (key == null) throw new ArgumentNullException("key");
 
             string query = string.Format(@"
-select min([ExpireAt]) from [{0}].Hash
+select min([ExpireAt]) from [{0}].Hash with (readcommittedlock)
 where [Key] = @key", _storage.GetSchemaName());
 
             return _storage.UseConnection(connection =>
@@ -436,7 +436,7 @@ where [Key] = @key", _storage.GetSchemaName());
             if (name == null) throw new ArgumentNullException("name");
 
             string query = string.Format(@"
-select [Value] from [{0}].Hash
+select [Value] from [{0}].Hash with (readcommittedlock)
 where [Key] = @key and [Field] = @field", _storage.GetSchemaName());
 
             return _storage.UseConnection(connection => connection
@@ -448,7 +448,7 @@ where [Key] = @key and [Field] = @field", _storage.GetSchemaName());
             if (key == null) throw new ArgumentNullException("key");
 
             string query = string.Format(@"
-select count([Id]) from [{0}].List
+select count([Id]) from [{0}].List with (readcommittedlock)
 where [Key] = @key", _storage.GetSchemaName());
 
             return _storage.UseConnection(connection => connection.Query<long>(query, new { key = key }).Single());
@@ -459,7 +459,7 @@ where [Key] = @key", _storage.GetSchemaName());
             if (key == null) throw new ArgumentNullException("key");
 
             string query = string.Format(@"
-select min([ExpireAt]) from [{0}].List
+select min([ExpireAt]) from [{0}].List with (readcommittedlock)
 where [Key] = @key", _storage.GetSchemaName());
 
             return _storage.UseConnection(connection =>
@@ -478,7 +478,7 @@ where [Key] = @key", _storage.GetSchemaName());
             string query = string.Format(@"
 select [Value] from (
 	select [Value], row_number() over (order by [Id] desc) as row_num 
-	from [{0}].List
+	from [{0}].List with (readcommittedlock)
 	where [Key] = @key 
 ) as s where s.row_num between @startingFrom and @endingAt", _storage.GetSchemaName());
 
@@ -492,7 +492,7 @@ select [Value] from (
             if (key == null) throw new ArgumentNullException("key");
 
             string query = string.Format(@"
-select [Value] from [{0}].List
+select [Value] from [{0}].List with (readcommittedlock)
 where [Key] = @key
 order by [Id] desc", _storage.GetSchemaName());
 
