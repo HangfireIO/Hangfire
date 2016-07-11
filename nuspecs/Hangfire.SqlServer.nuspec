@@ -14,6 +14,10 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.5.9
+* Fixed – Don't leak Dashboard UI's `READ UNCOMMITTED` isolation level to other parts of an application.
+* Fixed – `READ_COMMITTED_SNAPSHOT` option doesn't prevent background jobs from being processed.
+    
 1.5.8
 * Changed – Disable immediate execution of a keep-alive query in queue and distributed locks.
 * Fixed – Background jobs may be processed multiple times.
