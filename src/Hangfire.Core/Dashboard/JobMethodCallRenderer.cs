@@ -250,6 +250,11 @@ namespace Hangfire.Dashboard
                 var builder = new StringBuilder();
                 if (_deserializationType != null)
                 {
+                    if (rawValue == null)
+                    {
+                        return WrapKeyword("null");
+                    }
+
                     builder.Append(WrapIdentifier(
                         isJson ? "FromJson" : "Deserialize"));
 
