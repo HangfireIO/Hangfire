@@ -22,6 +22,7 @@
 • Added – Non-blocking `BackgroundJobServer.SendStop` method, that requests for a shutdown.
 • Added – `BackgroundJobServerOptions.ServerName` option is back.
 • Added – `IDashboardAuthorizationFilter` interface that makes `IAuthorizationFilter` obsolete.
+• Fixed – Job Details Page throws `NullReferenceException` for `null` arguments.
     
 Backported from 1.5.9
 • Fixed – `OperationCanceledException` exceptions don't cause background processing to stop.
