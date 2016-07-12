@@ -356,13 +356,13 @@ BEGIN
 	PRINT 'Modified [HangFire].[JobQueue].[Queue] length to 50';
 
 	CREATE NONCLUSTERED INDEX [IX_HangFire_JobQueue_QueueAndFetchedAt] ON [HangFire].[JobQueue] (
-        [Queue] ASC,
-        [FetchedAt] ASC
-    );
-    PRINT 'Re-created index [IX_HangFire_JobQueue_QueueAndFetchedAt]';
+		[Queue] ASC,
+		[FetchedAt] ASC
+	);
+	PRINT 'Re-created index [IX_HangFire_JobQueue_QueueAndFetchedAt]';
 
 	ALTER TABLE [HangFire].[Server] DROP CONSTRAINT [PK_HangFire_Server]
-    PRINT 'Dropped constraint [PK_HangFire_Server] to modify the [HangFire].[Server].[Id] column';
+	PRINT 'Dropped constraint [PK_HangFire_Server] to modify the [HangFire].[Server].[Id] column';
 		
 	ALTER TABLE [HangFire].[Server] ALTER COLUMN [Id] NVARCHAR (100) NOT NULL;
 	PRINT 'Modified [HangFire].[Server].[Id] length to 100';
