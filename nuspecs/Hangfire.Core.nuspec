@@ -15,37 +15,37 @@
     <releaseNotes>http://hangfire.io/blog/
     
 Backported from 1.5.9
-* Fixed – `OperationCanceledException` exceptions don't cause background processing to stop.
+• Fixed – `OperationCanceledException` exceptions don't cause background processing to stop.
     
 1.6.0-beta3
-* Added – Spanish localization for the Dashboard UI (by @Elph).
-* Added – Enable backtracking from background job to recurrent job (by @teodimache).
-* Changed – Make the realtime/history graph to use localized dates on hover (by @Elph).
-* Changed – Make graph tooltip also localized using data-attributes (by @Elph).
-* Changed – Dashboard metric's title now contains the ResourceKey instead the title (by @Elph).
-* Fixed – Beta2 is not allowing for adding filters to the `GlobalJobFilters` collection.
+• Added – Spanish localization for the Dashboard UI (by @Elph).
+• Added – Enable backtracking from background job to recurrent job (by @teodimache).
+• Changed – Make the realtime/history graph to use localized dates on hover (by @Elph).
+• Changed – Make graph tooltip also localized using data-attributes (by @Elph).
+• Changed – Dashboard metric's title now contains the ResourceKey instead the title (by @Elph).
+• Fixed – Beta2 is not allowing for adding filters to the `GlobalJobFilters` collection.
 
 Backported from 1.5.7
-* Fixed – Add queue name validation to the `RecurringJobScheduler` class (by @pzielinski86).
+• Fixed – Add queue name validation to the `RecurringJobScheduler` class (by @pzielinski86).
     
 1.6.0-beta2
-* Added – Ability to change statistics polling interval in dashboard (by @tristal).
-* Added – Cron expressions for regular intervals for the `Cron` class (by @geirsagberg).
-* Added – `IRecurringJobManager` interface for the `RecurringJobManager` class (by @arnoldasgudas).
+• Added – Ability to change statistics polling interval in dashboard (by @tristal).
+• Added – Cron expressions for regular intervals for the `Cron` class (by @geirsagberg).
+• Added – `IRecurringJobManager` interface for the `RecurringJobManager` class (by @arnoldasgudas).
 
 Backported from 1.5.5
-* Fixed – Missed recurring jobs sometimes aren't triggered for the first time.
+• Fixed – Missed recurring jobs sometimes aren't triggered for the first time.
 
 1.6.0-beta1
-* Added – Ability to create jobs based on `async` methods, they are awaited by a worker.
-* Added – Multilanguage support in Dashboard via resource files.
-* Added – Show background job continuations on Job Details page.
-* Added – Access to background job context from the `JobActivator.BeginScope` method.
-* Changed – Job Details page was redesigned to be more clean with less colors.
-* Changed – Update jQuery to 2.1.4 and rickshaw.js to 1.5.1.
-* Changed – Update NCrontab to 3.1.0.
-* Changed – Update CronExpressionDescriptor to 1.17.
-* Fixed – ToGenericTypeString method now supports nested classes.
+• Added – Ability to create jobs based on `async` methods, they are awaited by a worker.
+• Added – Multilanguage support in Dashboard via resource files.
+• Added – Show background job continuations on Job Details page.
+• Added – Access to background job context from the `JobActivator.BeginScope` method.
+• Changed – Job Details page was redesigned to be more clean with less colors.
+• Changed – Update jQuery to 2.1.4 and rickshaw.js to 1.5.1.
+• Changed – Update NCrontab to 3.1.0.
+• Changed – Update CronExpressionDescriptor to 1.17.
+• Fixed – ToGenericTypeString method now supports nested classes.
     </releaseNotes>
     <dependencies>
       <group targetFramework="net45">

@@ -15,20 +15,20 @@
     <releaseNotes>http://hangfire.io/blog/
    
 1.6.0-beta1
-* Fixed – Package now depends on the latest Hangfire.SqlServer instead of version 1.2.2.
+• Fixed – Package now depends on the latest Hangfire.SqlServer instead of version 1.2.2.
     
 1.5.7
-* Fixed – Dashboard crashing when trying to get the MSMQ queue length (by @yangman).
+• Fixed – Dashboard crashing when trying to get the MSMQ queue length (by @yangman).
     
 1.5.7
-* Fixed – Dashboard crashing when trying to get the MSMQ queue length (by @yangman).
+• Fixed – Dashboard crashing when trying to get the MSMQ queue length (by @yangman).
     
 1.5.0
-* Added – Support for remote MSMQ queues through DTC transactions.
+• Added – Support for remote MSMQ queues through DTC transactions.
 
 1.4.0
-* Changed – Speed up `GetCount` method with native implementation.
-* Fixed – Incorrect order of fetching when multiple queues used.
+• Changed – Speed up `GetCount` method with native implementation.
+• Fixed – Incorrect order of fetching when multiple queues used.
     </releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="[0.0.0]" />
