@@ -58,7 +58,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Core.NetStandard",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.NetStandard", "src\Hangfire.SqlServer\Hangfire.SqlServer.NetStandard.csproj", "{1513919A-5746-46CE-B8C6-C2FDB3361C2D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.AspNetCore", "src\Hangfire.AspNetCore\Hangfire.AspNetCore.csproj", "{6DCC60C2-4F6E-4855-82EC-E8E1ABB36700}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.AspNetCore.NetStandard", "src\Hangfire.AspNetCore\Hangfire.AspNetCore.NetStandard.csproj", "{6DCC60C2-4F6E-4855-82EC-E8E1ABB36700}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.AspNetCore", "src\Hangfire.AspNetCore\Hangfire.AspNetCore.csproj", "{73AFEBE0-9B11-44F6-A69C-8A51538CF18E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -110,6 +112,10 @@ Global
 		{6DCC60C2-4F6E-4855-82EC-E8E1ABB36700}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6DCC60C2-4F6E-4855-82EC-E8E1ABB36700}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6DCC60C2-4F6E-4855-82EC-E8E1ABB36700}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73AFEBE0-9B11-44F6-A69C-8A51538CF18E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73AFEBE0-9B11-44F6-A69C-8A51538CF18E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73AFEBE0-9B11-44F6-A69C-8A51538CF18E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73AFEBE0-9B11-44F6-A69C-8A51538CF18E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
