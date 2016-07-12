@@ -16,6 +16,9 @@
 
 1.6.0-ci
 
+• Added – .NET Core support for Hangfire.Core and Hangfire.SqlServer packages (`netstandard1.3` target).
+• Changed – Update Dapper to 1.50.1 version.
+
 Backported from 1.5.9
 • Fixed – Don't leak Dashboard UI's `READ UNCOMMITTED` isolation level to other parts of an application.
 • Fixed – `READ_COMMITTED_SNAPSHOT` option doesn't prevent background jobs from being processed.

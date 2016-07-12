@@ -14,6 +14,15 @@
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.0-ci
+
+• Added – .NET Core support for Hangfire.Core and Hangfire.SqlServer packages (`netstandard1.3` target).
+• Added – Deep integration with ASP.NET Core via Hangfire.AspNetCore package.
+• Added – Abstractions for Dashboard UI to decouple it from OWIN.
+• Added – Non-blocking `BackgroundJobServer.SendStop` method, that requests for a shutdown.
+• Added – `BackgroundJobServerOptions.ServerName` option is back.
+• Added – `IDashboardAuthorizationFilter` interface that makes `IAuthorizationFilter` obsolete.
+    
 Backported from 1.5.9
 • Fixed – `OperationCanceledException` exceptions don't cause background processing to stop.
     
