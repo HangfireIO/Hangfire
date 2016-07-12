@@ -38,6 +38,8 @@ namespace Hangfire
 
         public abstract object Resolve(Type type);
 
+        public abstract object Resolve(string typeName);
+
         public virtual void DisposeScope()
         {
         }

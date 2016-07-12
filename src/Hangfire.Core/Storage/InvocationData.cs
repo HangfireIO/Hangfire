@@ -20,9 +20,9 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using Hangfire.Common;
 using Hangfire.Server;
+using Newtonsoft.Json;
 
 namespace Hangfire.Storage
 {
@@ -46,28 +46,43 @@ namespace Hangfire.Storage
         {
             try
             {
-                var type = System.Type.GetType(Type, throwOnError: true, ignoreCase: true);
-                var parameterTypes = JobHelper.FromJson<Type[]>(ParameterTypes);
-                var method = GetNonOpenMatchingMethod(type, Method, parameterTypes);
-                
-                if (method == null)
+                // Use Dependency Injection to solve dependencies.
+                using (var scope = JobActivator.Current.BeginScope())
                 {
-                    throw new InvalidOperationException(String.Format(
-                        "The type `{0}` does not contain a method with signature `{1}({2})`",
-                        type.FullName,
-                        Method,
-                        String.Join(", ", parameterTypes.Select(x => x.Name))));
+                    var type = scope.Resolve(Type)?.GetType() ?? System.Type.GetType(Type, throwOnError: true, ignoreCase: true);
+                    var parameterTypes = this.GetParameters(scope);
+                    var method = GetNonOpenMatchingMethod(type, Method, parameterTypes.ToArray());
+
+                    if (method == null)
+                    {
+                        throw new InvalidOperationException(String.Format(
+                            "The type `{0}` does not contain a method with signature `{1}({2})`",
+                            type.FullName,
+                            Method,
+                            String.Join(", ", parameterTypes.Select(x => x.Name))));
+                    }
+
+                    var serializedArguments = JobHelper.FromJson<string[]>(Arguments);
+                    var arguments = DeserializeArguments(method, serializedArguments);
+
+                    return new Job(type, method, arguments);
                 }
-
-                var serializedArguments = JobHelper.FromJson<string[]>(Arguments);
-                var arguments = DeserializeArguments(method, serializedArguments);
-
-                return new Job(type, method, arguments);
             }
             catch (Exception ex)
             {
                 throw new JobLoadException("Could not load the job. See inner exception for the details.", ex);
             }
+        }
+
+        public List<Type> GetParameters(JobActivatorScope scope)
+        {
+            List<Type> parameterTypes = new List<System.Type>();
+            var parameters = JsonConvert.DeserializeObject<string[]>(ParameterTypes);
+
+            foreach (var current in parameters)
+                parameterTypes.Add(scope.Resolve(current).GetType());
+
+            return parameterTypes;
         }
 
         public static InvocationData Serialize(Job job)
@@ -148,7 +163,7 @@ namespace Hangfire.Storage
             }
             catch (Exception jsonException)
             {
-                if (type == typeof (object))
+                if (type == typeof(object))
                 {
                     // Special case for handling object types, because string can not
                     // be converted to object type.
@@ -181,7 +196,7 @@ namespace Hangfire.Storage
 
             return methods;
         }
-        
+
         private static MethodInfo GetNonOpenMatchingMethod(Type type, string name, Type[] parameterTypes)
         {
             var methodCandidates = GetAllMethods(type);
@@ -227,8 +242,8 @@ namespace Hangfire.Storage
                 if (!parameterTypesMatched) continue;
 
                 // Return first found method candidate with matching parameters.
-                return methodCandidate.ContainsGenericParameters 
-                    ? methodCandidate.MakeGenericMethod(genericArguments.ToArray()) 
+                return methodCandidate.ContainsGenericParameters
+                    ? methodCandidate.MakeGenericMethod(genericArguments.ToArray())
                     : methodCandidate;
             }
 

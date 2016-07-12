@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json.Converters;
 
 namespace Hangfire
 {
@@ -47,6 +49,12 @@ namespace Hangfire
             return Activator.CreateInstance(jobType);
         }
 
+        public virtual object ActivateJob(string jobType)
+        {
+            var type = Type.GetType(jobType);
+            return type != null ? this.ActivateJob(type) : null;
+        }        
+
         public virtual JobActivatorScope BeginScope()
         {
             return new SimpleJobActivatorScope(this);
@@ -66,6 +74,19 @@ namespace Hangfire
             public override object Resolve(Type type)
             {
                 var instance = _activator.ActivateJob(type);
+                var disposable = instance as IDisposable;
+
+                if (disposable != null)
+                {
+                    _disposables.Add(disposable);
+                }
+
+                return instance;
+            }
+
+            public override object Resolve(string typeName)
+            {
+                var instance = _activator.ActivateJob(typeName);
                 var disposable = instance as IDisposable;
 
                 if (disposable != null)
