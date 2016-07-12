@@ -41,10 +41,6 @@
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Dapper, Version=1.40.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dapper.1.42\lib\net45\Dapper.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
@@ -95,7 +91,7 @@
     <EmbeddedResource Include="Install.sql" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="Hangfire.SqlServer.project.json" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="DefaultInstall.sql">

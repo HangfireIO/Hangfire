@@ -2,12 +2,367 @@
   "locked": false,
   "version": 2,
   "targets": {
-    ".NETFramework,Version=v4.5": {},
-    ".NETFramework,Version=v4.5/win": {}
+    ".NETFramework,Version=v4.5": {
+      "CronExpressionDescriptor/1.17.0": {
+        "type": "package",
+        "compile": {
+          "lib/net45/CronExpressionDescriptor.dll": {}
+        },
+        "runtime": {
+          "lib/net45/CronExpressionDescriptor.dll": {}
+        },
+        "resource": {
+          "lib/net45/de/CronExpressionDescriptor.resources.dll": {
+            "locale": "de"
+          },
+          "lib/net45/es/CronExpressionDescriptor.resources.dll": {
+            "locale": "es"
+          },
+          "lib/net45/fr/CronExpressionDescriptor.resources.dll": {
+            "locale": "fr"
+          },
+          "lib/net45/it/CronExpressionDescriptor.resources.dll": {
+            "locale": "it"
+          },
+          "lib/net45/nl/CronExpressionDescriptor.resources.dll": {
+            "locale": "nl"
+          },
+          "lib/net45/no/CronExpressionDescriptor.resources.dll": {
+            "locale": "no"
+          },
+          "lib/net45/pt/CronExpressionDescriptor.resources.dll": {
+            "locale": "pt"
+          },
+          "lib/net45/ru/CronExpressionDescriptor.resources.dll": {
+            "locale": "ru"
+          },
+          "lib/net45/tr/CronExpressionDescriptor.resources.dll": {
+            "locale": "tr"
+          },
+          "lib/net45/uk/CronExpressionDescriptor.resources.dll": {
+            "locale": "uk"
+          },
+          "lib/net45/zh-CHS/CronExpressionDescriptor.resources.dll": {
+            "locale": "zh-CHS"
+          }
+        }
+      },
+      "LibLog/1.5.0": {
+        "type": "package",
+        "frameworkAssemblies": [
+          "Microsoft.CSharp"
+        ]
+      },
+      "Microsoft.Owin/3.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Owin": "1.0.0"
+        },
+        "compile": {
+          "lib/net45/Microsoft.Owin.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Microsoft.Owin.dll": {}
+        }
+      },
+      "MoreLinq.Source.MoreEnumerable.Pairwise/1.0.1": {
+        "type": "package"
+      },
+      "ncrontab/3.1.0": {
+        "type": "package",
+        "compile": {
+          "lib/net45/NCrontab.dll": {}
+        },
+        "runtime": {
+          "lib/net45/NCrontab.dll": {}
+        }
+      },
+      "Newtonsoft.Json/5.0.1": {
+        "type": "package",
+        "compile": {
+          "lib/net45/Newtonsoft.Json.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Newtonsoft.Json.dll": {}
+        }
+      },
+      "Owin/1.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/net40/Owin.dll": {}
+        },
+        "runtime": {
+          "lib/net40/Owin.dll": {}
+        }
+      },
+      "StackTraceFormatter.Source/1.1.0": {
+        "type": "package",
+        "dependencies": {
+          "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, 2.0.0)",
+          "StackTraceParser.Source": "[1.2.0, 2.0.0)"
+        }
+      },
+      "StackTraceParser.Source/1.2.0": {
+        "type": "package"
+      }
+    },
+    ".NETFramework,Version=v4.5/win": {
+      "CronExpressionDescriptor/1.17.0": {
+        "type": "package",
+        "compile": {
+          "lib/net45/CronExpressionDescriptor.dll": {}
+        },
+        "runtime": {
+          "lib/net45/CronExpressionDescriptor.dll": {}
+        },
+        "resource": {
+          "lib/net45/de/CronExpressionDescriptor.resources.dll": {
+            "locale": "de"
+          },
+          "lib/net45/es/CronExpressionDescriptor.resources.dll": {
+            "locale": "es"
+          },
+          "lib/net45/fr/CronExpressionDescriptor.resources.dll": {
+            "locale": "fr"
+          },
+          "lib/net45/it/CronExpressionDescriptor.resources.dll": {
+            "locale": "it"
+          },
+          "lib/net45/nl/CronExpressionDescriptor.resources.dll": {
+            "locale": "nl"
+          },
+          "lib/net45/no/CronExpressionDescriptor.resources.dll": {
+            "locale": "no"
+          },
+          "lib/net45/pt/CronExpressionDescriptor.resources.dll": {
+            "locale": "pt"
+          },
+          "lib/net45/ru/CronExpressionDescriptor.resources.dll": {
+            "locale": "ru"
+          },
+          "lib/net45/tr/CronExpressionDescriptor.resources.dll": {
+            "locale": "tr"
+          },
+          "lib/net45/uk/CronExpressionDescriptor.resources.dll": {
+            "locale": "uk"
+          },
+          "lib/net45/zh-CHS/CronExpressionDescriptor.resources.dll": {
+            "locale": "zh-CHS"
+          }
+        }
+      },
+      "LibLog/1.5.0": {
+        "type": "package",
+        "frameworkAssemblies": [
+          "Microsoft.CSharp"
+        ]
+      },
+      "Microsoft.Owin/3.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Owin": "1.0.0"
+        },
+        "compile": {
+          "lib/net45/Microsoft.Owin.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Microsoft.Owin.dll": {}
+        }
+      },
+      "MoreLinq.Source.MoreEnumerable.Pairwise/1.0.1": {
+        "type": "package"
+      },
+      "ncrontab/3.1.0": {
+        "type": "package",
+        "compile": {
+          "lib/net45/NCrontab.dll": {}
+        },
+        "runtime": {
+          "lib/net45/NCrontab.dll": {}
+        }
+      },
+      "Newtonsoft.Json/5.0.1": {
+        "type": "package",
+        "compile": {
+          "lib/net45/Newtonsoft.Json.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Newtonsoft.Json.dll": {}
+        }
+      },
+      "Owin/1.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/net40/Owin.dll": {}
+        },
+        "runtime": {
+          "lib/net40/Owin.dll": {}
+        }
+      },
+      "StackTraceFormatter.Source/1.1.0": {
+        "type": "package",
+        "dependencies": {
+          "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, 2.0.0)",
+          "StackTraceParser.Source": "[1.2.0, 2.0.0)"
+        }
+      },
+      "StackTraceParser.Source/1.2.0": {
+        "type": "package"
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "CronExpressionDescriptor/1.17.0": {
+      "sha512": "tmr0NbWSEkFx8jzmliB+zV2t3b/GaOhQEEKhnmmXi0P5JLhf63aH9XkE9Xz6e+ha8ushpwU7/G7AFGd8Y8BwXQ==",
+      "type": "package",
+      "files": [
+        "CronExpressionDescriptor.1.17.0.nupkg.sha512",
+        "CronExpressionDescriptor.nuspec",
+        "lib/net35/CronExpressionDescriptor.dll",
+        "lib/net35/de/CronExpressionDescriptor.resources.dll",
+        "lib/net35/es/CronExpressionDescriptor.resources.dll",
+        "lib/net35/fr/CronExpressionDescriptor.resources.dll",
+        "lib/net35/it/CronExpressionDescriptor.resources.dll",
+        "lib/net35/nl/CronExpressionDescriptor.resources.dll",
+        "lib/net35/no/CronExpressionDescriptor.resources.dll",
+        "lib/net35/pt/CronExpressionDescriptor.resources.dll",
+        "lib/net35/ru/CronExpressionDescriptor.resources.dll",
+        "lib/net35/tr/CronExpressionDescriptor.resources.dll",
+        "lib/net35/uk/CronExpressionDescriptor.resources.dll",
+        "lib/net35/zh-CHS/CronExpressionDescriptor.resources.dll",
+        "lib/net40/CronExpressionDescriptor.dll",
+        "lib/net40/de/CronExpressionDescriptor.resources.dll",
+        "lib/net40/es/CronExpressionDescriptor.resources.dll",
+        "lib/net40/fr/CronExpressionDescriptor.resources.dll",
+        "lib/net40/it/CronExpressionDescriptor.resources.dll",
+        "lib/net40/nl/CronExpressionDescriptor.resources.dll",
+        "lib/net40/no/CronExpressionDescriptor.resources.dll",
+        "lib/net40/pt/CronExpressionDescriptor.resources.dll",
+        "lib/net40/ru/CronExpressionDescriptor.resources.dll",
+        "lib/net40/tr/CronExpressionDescriptor.resources.dll",
+        "lib/net40/uk/CronExpressionDescriptor.resources.dll",
+        "lib/net40/zh-CHS/CronExpressionDescriptor.resources.dll",
+        "lib/net45/CronExpressionDescriptor.dll",
+        "lib/net45/de/CronExpressionDescriptor.resources.dll",
+        "lib/net45/es/CronExpressionDescriptor.resources.dll",
+        "lib/net45/fr/CronExpressionDescriptor.resources.dll",
+        "lib/net45/it/CronExpressionDescriptor.resources.dll",
+        "lib/net45/nl/CronExpressionDescriptor.resources.dll",
+        "lib/net45/no/CronExpressionDescriptor.resources.dll",
+        "lib/net45/pt/CronExpressionDescriptor.resources.dll",
+        "lib/net45/ru/CronExpressionDescriptor.resources.dll",
+        "lib/net45/tr/CronExpressionDescriptor.resources.dll",
+        "lib/net45/uk/CronExpressionDescriptor.resources.dll",
+        "lib/net45/zh-CHS/CronExpressionDescriptor.resources.dll"
+      ]
+    },
+    "LibLog/1.5.0": {
+      "sha512": "0bNoz50GPHYnS3fv/qTS2dFBeYgoppM1t//gWULGxY/TM5TNxxknUWqOqzE8eZgLIa2ENfIwzumvbeWFnx14rg==",
+      "type": "package",
+      "files": [
+        "LibLog.1.5.0.nupkg.sha512",
+        "LibLog.nuspec",
+        "content/net40/App_Packages/LibLog.1.4/LibLog.cs.pp"
+      ]
+    },
+    "Microsoft.Owin/3.0.1": {
+      "sha512": "64yZsGN9uRnXNVAyAT4F6KWmdDUJ6yX4uqzxKTdGANKH1oMt0IKZ7THRRa3mXIOo8iSu4tq/DCBUycUY9pXZzw==",
+      "type": "package",
+      "files": [
+        "Microsoft.Owin.3.0.1.nupkg.sha512",
+        "Microsoft.Owin.nuspec",
+        "lib/net45/Microsoft.Owin.XML",
+        "lib/net45/Microsoft.Owin.dll"
+      ]
+    },
+    "MoreLinq.Source.MoreEnumerable.Pairwise/1.0.1": {
+      "sha512": "N1bmYqxItSwixZ72KJ/V4e3mEnIO5AtMcmjtilqe+Ulp4GpSje9DP+1Cv4j01s3uG4h7P4G1axUEODL1yWB5Og==",
+      "type": "package",
+      "files": [
+        "MoreLinq.Source.MoreEnumerable.Pairwise.1.0.1.nupkg.sha512",
+        "MoreLinq.Source.MoreEnumerable.Pairwise.nuspec",
+        "content/net20/MoreLinq/MoreEnumerable.Pairwise.cs"
+      ]
+    },
+    "ncrontab/3.1.0": {
+      "sha512": "IwLZ4b+NAFFrFjQ+FPcRKkBDYF215ZGgIDjkFFcll+b/bNlTpGl/X4EWpUMKi1BZDmcxRVDV4TGaFWf077uq3w==",
+      "type": "package",
+      "files": [
+        "COPYING.txt",
+        "lib/net35-client/NCrontab.dll",
+        "lib/net40-client/NCrontab.dll",
+        "lib/net45/NCrontab.dll",
+        "lib/portable-net45+netcore45+wpa81+wp8/NCrontab.dll",
+        "ncrontab.3.1.0.nupkg.sha512",
+        "ncrontab.nuspec"
+      ]
+    },
+    "Newtonsoft.Json/5.0.1": {
+      "sha512": "AuSDf0kpGGLSvFmj1Zia8BxTeUCdQ6lB8lWUZRYVXRnAQLmiEGmoP0M+9KHwJNqBW2FiFwSG8Jkz3G7tS6k7MQ==",
+      "type": "package",
+      "files": [
+        "Newtonsoft.Json.5.0.1.nupkg.sha512",
+        "Newtonsoft.Json.nuspec",
+        "lib/net20/Newtonsoft.Json.dll",
+        "lib/net20/Newtonsoft.Json.xml",
+        "lib/net35/Newtonsoft.Json.dll",
+        "lib/net35/Newtonsoft.Json.xml",
+        "lib/net40/Newtonsoft.Json.dll",
+        "lib/net40/Newtonsoft.Json.xml",
+        "lib/net45/Newtonsoft.Json.dll",
+        "lib/net45/Newtonsoft.Json.xml",
+        "lib/netcore45/Newtonsoft.Json.dll",
+        "lib/netcore45/Newtonsoft.Json.xml",
+        "lib/portable-net40+sl4+wp7+win8/Newtonsoft.Json.dll",
+        "lib/portable-net40+sl4+wp7+win8/Newtonsoft.Json.xml",
+        "lib/portable-net45+wp80+win8/Newtonsoft.Json.dll",
+        "lib/portable-net45+wp80+win8/Newtonsoft.Json.xml",
+        "lib/wp80/Newtonsoft.Json.dll",
+        "lib/wp80/Newtonsoft.Json.xml"
+      ]
+    },
+    "Owin/1.0.0": {
+      "sha512": "OseTFniKmyp76mEzOBwIKGBRS5eMoYNkMKaMXOpxx9jv88+b6mh1rSaw43vjBOItNhaLFG3d0a20PfHyibH5sw==",
+      "type": "package",
+      "files": [
+        "Owin.1.0.0.nupkg.sha512",
+        "Owin.nuspec",
+        "lib/net40/Owin.dll"
+      ]
+    },
+    "StackTraceFormatter.Source/1.1.0": {
+      "sha512": "69Zxg50Sm1kq9hvxPgEo0w9li8oiD2qVT87GGsqXJP2vfYs33LVKGHRMSP2Z4iTP3UC0PJTeurCeWY2t7X/76Q==",
+      "type": "package",
+      "files": [
+        "COPYING.txt",
+        "StackTraceFormatter.Source.1.1.0.nupkg.sha512",
+        "StackTraceFormatter.Source.nuspec",
+        "content/App_Packages/StackTraceFormatter/StackTraceFormatter.cs.pp"
+      ]
+    },
+    "StackTraceParser.Source/1.2.0": {
+      "sha512": "C7WD8g/Ta5huE/w6Zlc+T1kyPiY0+VhFT3XwvUa/UtK5Rb18oCGBXbLEBxZhgZbg+1dC9wMDcQsDCB5/07n3Ag==",
+      "type": "package",
+      "files": [
+        "COPYING.txt",
+        "StackTraceParser.Source.1.2.0.nupkg.sha512",
+        "StackTraceParser.Source.nuspec",
+        "content/App_Packages/StackTraceParser/StackTraceParser.cs.pp"
+      ]
+    }
+  },
   "projectFileDependencyGroups": {
-    "": [],
+    "": [
+      "CronExpressionDescriptor >= 1.17.0",
+      "LibLog >= 1.5.0",
+      "Microsoft.Owin >= 3.0.1",
+      "MoreLinq.Source.MoreEnumerable.Pairwise >= 1.0.1",
+      "Newtonsoft.Json >= 5.0.1",
+      "Owin >= 1.0.0",
+      "StackTraceFormatter.Source >= 1.1.0",
+      "StackTraceParser.Source >= 1.2.0",
+      "ncrontab >= 3.1.0"
+    ],
     ".NETFramework,Version=v4.5": []
   }
 }
