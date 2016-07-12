@@ -46,9 +46,11 @@
           }
         }
       },
-      "Dapper/1.42.0": {
+      "Dapper/1.50.1": {
         "frameworkAssemblies": [
-          "Microsoft.CSharp"
+          "System.Data",
+          "System.Xml",
+          "System.Xml.Linq"
         ],
         "compile": {
           "lib/net45/Dapper.dll": {}
@@ -150,9 +152,11 @@
           }
         }
       },
-      "Dapper/1.42.0": {
+      "Dapper/1.50.1": {
         "frameworkAssemblies": [
-          "Microsoft.CSharp"
+          "System.Data",
+          "System.Xml",
+          "System.Xml.Linq"
         ],
         "compile": {
           "lib/net45/Dapper.dll": {}
@@ -256,22 +260,21 @@
         "lib/net45/zh-CHS/CronExpressionDescriptor.resources.dll"
       ]
     },
-    "Dapper/1.42.0": {
-      "sha512": "HBNIulHq5DWD1K60iVABe4oW4HoWmraR20yy9jLrw9tgTbMY2eolYk2UgXFI43lSUMTdhUjPvlHci0TnsfoiXw==",
+    "Dapper/1.50.1": {
+      "sha512": "UnvcSLoFOriBz9uMTwWmhhpvkPke91OfouxkWK+88zrFXbm38DP0MmQNjFYIsnPUnvPd/pC+nhgm+nM+mkdtTg==",
       "type": "package",
-      "path": "Dapper/1.42.0",
+      "path": "Dapper/1.50.1",
       "files": [
-        "Dapper.1.42.0.nupkg.sha512",
+        "Dapper.1.50.1.nupkg.sha512",
         "Dapper.nuspec",
-        "lib/net35/Dapper.dll",
-        "lib/net35/Dapper.pdb",
-        "lib/net35/Dapper.xml",
         "lib/net40/Dapper.dll",
-        "lib/net40/Dapper.pdb",
         "lib/net40/Dapper.xml",
         "lib/net45/Dapper.dll",
-        "lib/net45/Dapper.pdb",
-        "lib/net45/Dapper.xml"
+        "lib/net45/Dapper.xml",
+        "lib/net451/Dapper.dll",
+        "lib/net451/Dapper.xml",
+        "lib/netstandard1.3/Dapper.dll",
+        "lib/netstandard1.3/Dapper.xml"
       ]
     },
     "LibLog/1.5.0": {
@@ -371,7 +374,7 @@
   },
   "projectFileDependencyGroups": {
     "": [
-      "Dapper >= 1.42.0"
+      "Dapper >= 1.50.1"
     ],
     ".NETFramework,Version=v4.5": []
   }

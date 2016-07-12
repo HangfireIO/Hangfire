@@ -1,7 +1,11 @@
-{
-    "dependencies": {
-        "Dapper": "1.42"
-    },
-    "runtimes": { "win": {} },
-    "frameworks": { "net45": {} }
+﻿{
+  "dependencies": {
+    "Dapper": "1.50.1"
+  },
+  "runtimes": {
+    "win": {}
+  },
+  "frameworks": {
+    "net45": {}
+  }
 }
