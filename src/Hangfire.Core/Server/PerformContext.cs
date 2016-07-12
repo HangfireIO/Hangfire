@@ -34,7 +34,7 @@ namespace Hangfire.Server
             Items = context.Items;
         }
 
-        internal PerformContext(
+        public PerformContext(
             [NotNull] IStorageConnection connection, 
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IJobCancellationToken cancellationToken)
