@@ -30,7 +30,7 @@ namespace Hangfire.States
         private readonly IList<IState> _traversedStates = new List<IState>();
         private IState _candidateState;
 
-        internal ElectStateContext([NotNull] ApplyStateContext applyContext)
+        public ElectStateContext([NotNull] ApplyStateContext applyContext)
         {
             if (applyContext == null) throw new ArgumentNullException(nameof(applyContext));
             
