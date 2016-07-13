@@ -286,9 +286,6 @@
   <data name="LayoutPage_Back" xml:space="preserve">
     <value>Back to site</value>
   </data>
-  <data name="LayoutPage_Brand" xml:space="preserve">
-    <value>Hangfire Dashboard</value>
-  </data>
   <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
     <value>Generated: {0}ms</value>
   </data>

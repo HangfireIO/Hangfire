@@ -283,10 +283,6 @@
   <data name="LayoutPage_Back" xml:space="preserve">
     <value>Volver</value>
   </data>
-  <data name="LayoutPage_Brand" xml:space="preserve">
-    <value>Panel Hangfire</value>
-    <comment>Fuzzy</comment>
-  </data>
   <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
     <value>Generado: {0}ms</value>
   </data>

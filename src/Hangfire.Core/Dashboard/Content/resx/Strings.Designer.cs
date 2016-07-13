@@ -676,15 +676,6 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hangfire Dashboard.
-        /// </summary>
-        public static string LayoutPage_Brand {
-            get {
-                return ResourceManager.GetString("LayoutPage_Brand", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Generated: {0}ms.
         /// </summary>
         public static string LayoutPage_Footer_Generatedms {
