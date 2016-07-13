@@ -189,7 +189,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             _recurringJob["Job"] =
-                JobHelper.ToJson(new InvocationData("SomeType", "SomeMethod", "Parameters", "arguments"));
+                JobHelper.ToJson(new InvocationData("SomeType", "SomeMethod", "Parameters", "arguments", "SomePath"));
 
             var scheduler = CreateScheduler();
 

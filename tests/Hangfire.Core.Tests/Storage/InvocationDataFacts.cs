@@ -15,20 +15,22 @@ namespace Hangfire.Core.Tests.Storage
             var serializedData = new InvocationData(
                 type.AssemblyQualifiedName,
                 methodInfo.Name,
-                JobHelper.ToJson(new [] { typeof(string) }),
-                JobHelper.ToJson(new [] { JobHelper.ToJson("Hello") }));
+                JobHelper.ToJson(new[] { typeof(string) }),
+                JobHelper.ToJson(new[] { JobHelper.ToJson("Hello") }),
+                @"c:\");
 
             var job = serializedData.Deserialize();
 
             Assert.Equal(type, job.Type);
             Assert.Equal(methodInfo, job.Method);
             Assert.Equal("Hello", job.Args[0]);
+            Assert.Equal(@"c:\", job.Path);
         }
 
         [Fact]
         public void Deserialize_WrapsAnException_WithTheJobLoadException()
         {
-            var serializedData = new InvocationData(null, null, null, null);
+            var serializedData = new InvocationData(null, null, null, null, null);
 
             Assert.Throws<JobLoadException>(
                 () => serializedData.Deserialize());
@@ -40,6 +42,7 @@ namespace Hangfire.Core.Tests.Storage
             var serializedData = new InvocationData(
                 "NonExistingType",
                 "Perform",
+                "",
                 "",
                 "");
 
@@ -53,7 +56,8 @@ namespace Hangfire.Core.Tests.Storage
             var serializedData = new InvocationData(
                 typeof(InvocationDataFacts).AssemblyQualifiedName,
                 "NonExistingMethod",
-                JobHelper.ToJson(new [] { typeof(string) }),
+                JobHelper.ToJson(new[] { typeof(string) }),
+                "",
                 "");
 
             Assert.Throws<JobLoadException>(
@@ -102,6 +106,7 @@ namespace Hangfire.Core.Tests.Storage
             var serializedData = new InvocationData(
                 typeof(IParent).AssemblyQualifiedName,
                 "Method",
+                "",
                 JobHelper.ToJson(new string[0]),
                 JobHelper.ToJson(new string[0]));
 
@@ -116,6 +121,7 @@ namespace Hangfire.Core.Tests.Storage
             var serializedData = new InvocationData(
                 typeof(IChild).AssemblyQualifiedName,
                 "Method",
+                "",
                 JobHelper.ToJson(new string[0]),
                 JobHelper.ToJson(new string[0]));
 

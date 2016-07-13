@@ -131,7 +131,7 @@ namespace Hangfire.Common
         /// </summary>
         /// 
         /// <param name="type">Type that contains the given method.</param>
-        /// <param name="method">Method that should be invoked.</param>
+        /// <param name="method">Method that should be invoked.</param>        
         /// <param name="args">Arguments that should be passed during the method call.</param>
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="type"/> argument is null.</exception>
@@ -143,15 +143,39 @@ namespace Hangfire.Common
         /// <exception cref="ArgumentException">Parameter/argument count mismatch.</exception>
         /// <exception cref="NotSupportedException"><paramref name="method"/> is not supported.</exception>
         public Job([NotNull] Type type, [NotNull] MethodInfo method, [NotNull] params object[] args)
+            : this(type, method, null, args)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Job"/> class with the 
+        /// type, metadata of a method and the given list of arguments.
+        /// </summary>
+        /// 
+        /// <param name="type">Type that contains the given method.</param>
+        /// <param name="method">Method that should be invoked.</param>
+        /// <param name="path">Full path of loaded assembly</param>
+        /// <param name="args">Arguments that should be passed during the method call.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="type"/> argument is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="method"/> argument is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="args"/> argument is null.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="type"/> does not contain the given <paramref name="method"/>.
+        /// </exception>
+        /// <exception cref="ArgumentException">Parameter/argument count mismatch.</exception>
+        /// <exception cref="NotSupportedException"><paramref name="method"/> is not supported.</exception>
+        public Job([NotNull] Type type, [NotNull] MethodInfo method, string path = null, [NotNull] params object[] args)
         {
             if (type == null) throw new ArgumentNullException("type");
             if (method == null) throw new ArgumentNullException("method");
             if (args == null) throw new ArgumentNullException("args");
-            
+
             Validate(type, "type", method, "method", args.Length, "args");
 
             Type = type;
             Method = method;
+            Path = path;
             Args = args;
         }
 
@@ -170,12 +194,17 @@ namespace Hangfire.Common
         public MethodInfo Method { get; private set; }
 
         /// <summary>
+        /// Gets the full path of loaded assembly
+        /// </summary>
+        public string Path { get; private set; }
+
+        /// <summary>
         /// Gets a read-only collection of arguments that Should be passed to a 
         /// method invocation during the performance.
         /// </summary>
         [NotNull]
         public IReadOnlyList<object> Args { get; private set; }
-        
+
         public override string ToString()
         {
             return String.Format("{0}.{1}", Type.ToGenericTypeString(), Method.Name);
@@ -241,6 +270,7 @@ namespace Hangfire.Common
             }
 
             Type type;
+            string path = null;
 
             if (callExpression.Object != null)
             {
@@ -256,11 +286,15 @@ namespace Hangfire.Common
             {
                 type = callExpression.Method.DeclaringType;
             }
-            
+
+            if (type != null)            
+                path = Assembly.GetAssembly(type).Location;
+
             return new Job(
                 // ReSharper disable once AssignNullToNotNullAttribute
                 type,
                 callExpression.Method,
+                path,
                 GetExpressionValues(callExpression.Arguments));
         }
 
@@ -292,18 +326,22 @@ namespace Hangfire.Common
             if (callExpression == null)
             {
                 throw new ArgumentException("Expression body should be of type `MethodCallExpression`", "methodCall");
-            }
+            }            
+                        
+            var type = typeof (TType);
+            var path = Assembly.GetAssembly(type).Location;
 
             return new Job(
-                typeof(TType),
+                type,
                 callExpression.Method,
+                path,
                 GetExpressionValues(callExpression.Arguments));
         }
 
         private static void Validate(
-            Type type, 
+            Type type,
             [InvokerParameterName] string typeParameterName,
-            MethodInfo method, 
+            MethodInfo method,
             [InvokerParameterName] string methodParameterName,
             // ReSharper disable once UnusedParameter.Local
             int argumentCount,

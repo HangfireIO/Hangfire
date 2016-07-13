@@ -21,6 +21,7 @@ namespace Hangfire.Core.Tests.Common
 
         private readonly Type _type;
         private readonly MethodInfo _method;
+        private readonly string _fullPath;
         private readonly string[] _arguments;
         private readonly Mock<JobActivator> _activator;
         private readonly Mock<IJobCancellationToken> _token;
@@ -29,6 +30,7 @@ namespace Hangfire.Core.Tests.Common
         {
             _type = typeof (JobFacts);
             _method = _type.GetMethod("StaticMethod");
+            _fullPath = Assembly.GetAssembly(_type).Location;
             _arguments = new string[0];
 
             _activator = new Mock<JobActivator> { CallBase = true };
@@ -54,22 +56,23 @@ namespace Hangfire.Core.Tests.Common
         {
             Assert.Throws<ArgumentException>(
                 () => new Job(typeof(Job), _method, _arguments));
-        }
+        }        
 
         [Fact]
         public void Ctor_ShouldThrowAnException_WhenArgumentsArrayIsNull()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new Job(_type, _method, null));
-        }
+                () => new Job(_type, _method, null, null));
+        }        
 
         [Fact]
         public void Ctor_ShouldInitializeAllProperties()
         {
-            var job = new Job(_type, _method, _arguments);
+            var job = new Job(_type, _method, _fullPath, _arguments);
 
             Assert.Same(_type, job.Type);
             Assert.Same(_method, job.Method);
+            Assert.Same(_fullPath, job.Path);
             Assert.True(_arguments.SequenceEqual(job.Arguments));
         }
 

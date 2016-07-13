@@ -194,6 +194,37 @@ where j.Id = @jobId", _storage.GetSchemaName());
             });
         }
 
+        public override StateData GetStateData(string jobId, string stateName)
+        {
+            if (jobId == null) throw new ArgumentNullException("jobId");
+
+            string sql = string.Format(@"
+select Name, Reason, Data
+from [{0}].State
+where JobId = @jobId
+and Name = @stateName", _storage.GetSchemaName());
+
+            return _storage.UseConnection(connection =>
+            {
+                var sqlState = connection.Query<SqlState>(sql, new { jobId = jobId, stateName = stateName }).LastOrDefault();
+                if (sqlState == null)
+                {
+                    return null;
+                }
+
+                var data = new Dictionary<string, string>(
+                    JobHelper.FromJson<Dictionary<string, string>>(sqlState.Data),
+                    StringComparer.OrdinalIgnoreCase);
+
+                return new StateData
+                {
+                    Name = sqlState.Name,
+                    Reason = sqlState.Reason,
+                    Data = data
+                };
+            });
+        }
+
         public override void SetJobParameter(string id, string name, string value)
         {
             if (id == null) throw new ArgumentNullException("id");
