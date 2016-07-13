@@ -195,12 +195,12 @@ namespace Hangfire.Dashboard
 
         private static DeletedState CreateDeletedState()
         {
-            return new DeletedState { Reason = "Deleted via Dashboard UI" };
+            return new DeletedState { Reason = "Triggered via Dashboard UI" };
         }
 
         private static EnqueuedState CreateEnqueuedState()
         {
-            return new EnqueuedState { Reason = "Enqueued via Dashboard UI" };
+            return new EnqueuedState { Reason = "Triggered via Dashboard UI" };
         }
 
         private static Assembly GetExecutingAssembly()
