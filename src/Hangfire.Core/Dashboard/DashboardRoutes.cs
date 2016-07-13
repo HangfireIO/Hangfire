@@ -49,13 +49,13 @@ namespace Hangfire.Dashboard
             
             #region Embedded static content
 
-            Routes.Add("/js", new CombinedResourceDispatcher(
+            Routes.Add("/js[0-9]{3}", new CombinedResourceDispatcher(
                 "application/javascript",
                 GetExecutingAssembly(),
                 GetContentFolderNamespace("js"),
                 Javascripts));
 
-            Routes.Add("/css", new CombinedResourceDispatcher(
+            Routes.Add("/css[0-9]{3}", new CombinedResourceDispatcher(
                 "text/css",
                 GetExecutingAssembly(),
                 GetContentFolderNamespace("css"),

@@ -2,7 +2,6 @@
 @using System
 @using System.Globalization
 @using System.Reflection
-@using System.Threading
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @using Hangfire.Dashboard.Resources
@@ -13,7 +12,8 @@
     <title>@Title - Hangfire</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="@Url.To("/css")">
+    @{ var version = GetType().GetTypeInfo().Assembly.GetName().Version; }
+    <link rel="stylesheet" href="@Url.To($"/css{version.Major}{version.Minor}{version.Build}")">
 </head>
     <body>
         <!-- Wrap all page content here -->
@@ -57,12 +57,7 @@
             <div class="container">
                 <ul class="list-inline credit">
                     <li>
-                        <a href="http://hangfire.io/" target="_blank">Hangfire
-                            @{
-                                var version = GetType().GetTypeInfo().Assembly.GetName().Version;
-                            }
-
-                            @($"{version.Major}.{version.Minor}.{version.Build}")
+                        <a href="http://hangfire.io/" target="_blank">Hangfire @($"{version.Major}.{version.Minor}.{version.Build}")
                         </a>
                     </li>
                     <li>@Storage</li>
@@ -81,6 +76,6 @@
                 };
             })(window.Hangfire = window.Hangfire || {});
         </script>
-        <script src="@Url.To("/js")"></script>
+        <script src="@Url.To($"/js{version.Major}{version.Minor}{version.Build}")"></script>
     </body>
 </html>
