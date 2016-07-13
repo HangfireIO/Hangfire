@@ -16,6 +16,7 @@
 
 using System;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.States;
 
@@ -102,6 +103,48 @@ namespace Hangfire
         public static void AddOrUpdate<T>(
             string recurringJobId,
             Expression<Action<T>> methodCall,
+            string cronExpression,
+            TimeZoneInfo timeZone = null,
+            string queue = EnqueuedState.DefaultQueue)
+        {
+            var job = Job.FromExpression(methodCall);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+        }
+        
+        public static void AddOrUpdate(
+            string recurringJobId,
+            Expression<Func<Task>> methodCall,
+            Func<string> cronExpression,
+            TimeZoneInfo timeZone = null,
+            string queue = EnqueuedState.DefaultQueue)
+        {
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue);
+        }
+
+        public static void AddOrUpdate<T>(
+            string recurringJobId,
+            Expression<Func<T, Task>> methodCall,
+            Func<string> cronExpression,
+            TimeZoneInfo timeZone = null,
+            string queue = EnqueuedState.DefaultQueue)
+        {
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue);
+        }
+
+        public static void AddOrUpdate(
+            string recurringJobId,
+            Expression<Func<Task>> methodCall,
+            string cronExpression,
+            TimeZoneInfo timeZone = null,
+            string queue = EnqueuedState.DefaultQueue)
+        {
+            var job = Job.FromExpression(methodCall);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+        }
+
+        public static void AddOrUpdate<T>(
+            string recurringJobId,
+            Expression<Func<T, Task>> methodCall,
             string cronExpression,
             TimeZoneInfo timeZone = null,
             string queue = EnqueuedState.DefaultQueue)
