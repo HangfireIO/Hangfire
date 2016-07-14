@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
+using Hangfire.Notification;
 using Hangfire.Server;
 using Hangfire.Storage;
 using Moq;
@@ -24,12 +26,15 @@ namespace Hangfire.Core.Tests.Server
 
             _connection = new Mock<IStorageConnection>();
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
+
+            NotificationStore.Current = new NotificationStore(new List<INotifier>());
         }
 
         [Fact]
         public void Execute_DelegatesRemovalToStorageConnection()
         {
             _connection.Setup(x => x.RemoveTimedOutServers(It.IsAny<TimeSpan>())).Returns(1);
+            _connection.Setup(x => x.GetTimedOutServers(It.IsAny<TimeSpan>())).Returns(new List<string> {});
             var watchdog = new ServerWatchdog(_checkInterval, _serverTimeout);
 
 			watchdog.Execute(_context.Object);

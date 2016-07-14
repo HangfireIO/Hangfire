@@ -23,15 +23,21 @@ using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
+using Hangfire.Notification;
 
 namespace Hangfire
 {
-    public class BackgroundJobServer : IDisposable
+    public class BackgroundJobServer : IDisposable, IWorkerObserver
     {
         private static readonly ILog Logger = LogProvider.For<BackgroundJobServer>();
 
         private readonly BackgroundJobServerOptions _options;
         private readonly BackgroundProcessingServer _processingServer;
+        private readonly object _failedLock;
+
+        private DateTime _lastEmailNotification;
+        private bool _hasFirstFailedDateTime;
+        private long _failedJobsCount;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobServer"/> class
@@ -83,6 +89,10 @@ namespace Hangfire
             if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
 
             _options = options;
+            _lastEmailNotification = new DateTime();
+            _hasFirstFailedDateTime = false;
+            _failedJobsCount = 0;
+            _failedLock = new object();
 
             var processes = new List<IBackgroundProcess>();
             processes.AddRange(GetRequiredProcesses());
@@ -136,7 +146,9 @@ namespace Hangfire
             
             for (var i = 0; i < _options.WorkerCount; i++)
             {
-                processes.Add(new Worker(_options.Queues, performer, stateChanger));
+                Worker worker = new Worker(_options.Queues, performer, stateChanger);
+                worker.Subscribe(this);
+                processes.Add(worker);
             }
             
             processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger));
@@ -167,6 +179,33 @@ namespace Hangfire
         [Obsolete("This method is a stub. Please call the `Dispose` method instead. Will be removed in version 2.0.0.")]
         public void Stop()
         {
+        }
+
+        public void Update()
+        {
+            var threshold = _options.JobCheckThreshold;
+            var interval = _options.JobCheckInterval;
+
+            lock (_failedLock)
+            {
+                _failedJobsCount++;
+            }
+
+            if (!_hasFirstFailedDateTime || DateTime.Now.Subtract(interval) > _lastEmailNotification)
+            {
+                _lastEmailNotification = DateTime.Now;
+                _failedJobsCount = 1;
+                _hasFirstFailedDateTime = true;
+            }
+            else if (_failedJobsCount > threshold)
+            {
+                var name = _options.ServerName;
+                var msg = $"The server with machine name: \"{ name }\" has had a peak of failed jobs.";
+
+                NotificationStore.Current.NotifyAll(EventTypes.Events.FailedJobPeak, "Failed job peak", msg);
+
+                _hasFirstFailedDateTime = false;
+            }
         }
     }
 }

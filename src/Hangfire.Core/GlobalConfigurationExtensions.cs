@@ -21,6 +21,7 @@ using Hangfire.Dashboard;
 using Hangfire.Dashboard.Pages;
 using Hangfire.Logging;
 using Hangfire.Logging.LogProviders;
+using Hangfire.Notification;
 
 namespace Hangfire
 {
@@ -36,6 +37,17 @@ namespace Hangfire
             if (storage == null) throw new ArgumentNullException(nameof(storage));
 
             return configuration.Use(storage, x => JobStorage.Current = x);
+        }
+
+        public static IGlobalConfiguration<TStorage> UseNotificationStorage<TStorage>(
+            [NotNull] this IGlobalConfiguration configuration,
+            [NotNull] TStorage notificationStorage)
+            where TStorage : NotificationStore
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (notificationStorage == null) throw new ArgumentNullException(nameof(notificationStorage));
+
+            return configuration.Use(notificationStorage, x => NotificationStore.Current = x);
         }
 
         public static IGlobalConfiguration<TActivator> UseActivator<TActivator>(
