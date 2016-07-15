@@ -14,35 +14,13 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>http://hangfire.io/blog/
 
-1.6.0-ci
-
+1.6.0
 • Added – .NET Core support for Hangfire.Core and Hangfire.SqlServer packages (`netstandard1.3` target).
-• Changed – Update Dapper to 1.50.1 version.
-
-Backported from 1.5.9
-• Fixed – Don't leak Dashboard UI's `READ UNCOMMITTED` isolation level to other parts of an application.
-• Fixed – `READ_COMMITTED_SNAPSHOT` option doesn't prevent background jobs from being processed.
-
-Backported from 1.5.8
-• Changed – Disable immediate execution of a keep-alive query in queue and distributed locks.
-• Fixed – Background jobs may be processed multiple times.
-• Fixed – Keep-alive queries sometimes failing to execute.
-    
-1.6.0-beta3
-
-Backported from 1.5.7
-• Fixed – Add missing transaction to `KeepAliveQuery` (by @maxhauser).
-    
-1.6.0-beta2
+• Added – Zero latency processing when client and server reside in the same process (by @bgurmendi).
+• Changed – `SqlServerStorage` class constructor now takes `DbConnection` instances (by @tystol).
 • Changed – `SqlServerObjectsInstaller` class is public now (by @vbfox).
-
-Backported from 1.5.6
-• Fixed – Use keep-alive queries to prevent SQL Azure from killing a connection after 30 minute timeout.
-• Fixed – Convert lock timeout value from double to int.
-
-1.6.0-beta1
-• Added – Zero latency processing when client and server reside in the same process.
-• Changed – `SqlServerStorage` class constructor now takes `DbConnection` instances.
+• Changed – Update Dapper to 1.50.1 version.
+• Fixed – Drop constraints on Server.Id prior to altering it to avoid conflicts.
     </releaseNotes>
     <dependencies>
       <group targetFramework="net45">

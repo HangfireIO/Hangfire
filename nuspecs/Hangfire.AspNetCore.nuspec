@@ -14,7 +14,8 @@
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>http://hangfire.io/blog/
     
-1.6.0 – Initial Release
+1.6.0
+• Added – Deep integration with ASP.NET Core via Hangfire.AspNetCore package.
     </releaseNotes>
     <dependencies>
       <group targetFramework="net451">
