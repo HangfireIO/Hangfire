@@ -79,7 +79,7 @@ namespace Hangfire.Dashboard
 #pragma warning restore 618
                         {
                             owinContext.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
-                            return Task.FromResult(false);
+                            return owinContext.Response.WriteAsync("401 Unauthorized");
                         }
                     }
                     else
@@ -87,7 +87,7 @@ namespace Hangfire.Dashboard
                         if (options.Authorization.Any(filter => !filter.Authorize(context)))
                         {
                             owinContext.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
-                            return Task.FromResult(false);
+                            return owinContext.Response.WriteAsync("401 Unauthorized");
                         }
                     }
 

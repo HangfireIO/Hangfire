@@ -69,7 +69,7 @@ namespace Hangfire.Dashboard
                 if (!filter.Authorize(owinContext.Environment))
                 {
                     owinContext.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
-                    return Task.FromResult(false);
+                    return owinContext.Response.WriteAsync("401 Unauthorized");
                 }
             }
             
