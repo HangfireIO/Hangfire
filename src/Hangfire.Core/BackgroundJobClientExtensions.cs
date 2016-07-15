@@ -434,13 +434,24 @@ namespace Hangfire
         /// <param name="fromState">Current state assertion, or null if unneeded.</param>
         /// <returns>True, if state change succeeded, otherwise false.</returns>
         public static bool Requeue(
-            [NotNull] this IBackgroundJobClient client, 
-            [NotNull] string jobId, 
+            [NotNull] this IBackgroundJobClient client,
+            [NotNull] string jobId,
             [CanBeNull] string fromState)
         {
-            if (client == null) throw new ArgumentNullException(nameof(client));
+            return Requeue(client, jobId, fromState, null);
+        }
+
+        public static bool Requeue(
+            [NotNull] this IBackgroundJobClient client,
+            [NotNull] string jobId,
+            [CanBeNull] string fromState,
+            [CanBeNull] string queueName)
+        {
+            if (client == null) throw new ArgumentNullException("client");
 
             var state = new EnqueuedState();
+            if (!string.IsNullOrEmpty(queueName)) state.Queue = queueName;
+
             return client.ChangeState(jobId, state, fromState);
         }
 

@@ -111,6 +111,10 @@ namespace Hangfire.Dashboard
                 "/jobs/processing/requeue",
                 (client, jobId) => client.ChangeState(jobId, CreateEnqueuedState(), ProcessingState.StateName));
 
+            Routes.AddClientBatchCommand(
+                "/jobs/processing/specificrequeue",
+                (client, jobIdAndQueue) => client.Requeue(jobIdAndQueue.Split(new char[] { ':' })[0], ProcessingState.StateName, jobIdAndQueue.Split(new char[] { ':' })[1]));
+
             Routes.AddRazorPage("/jobs/scheduled", x => new ScheduledJobsPage());
 
             Routes.AddClientBatchCommand(
@@ -126,11 +130,19 @@ namespace Hangfire.Dashboard
                 "/jobs/succeeded/requeue",
                 (client, jobId) => client.ChangeState(jobId, CreateEnqueuedState(), SucceededState.StateName));
 
+            Routes.AddClientBatchCommand(
+                "/jobs/succeeded/specificrequeue",
+                (client, jobIdAndQueue) => client.Requeue(jobIdAndQueue.Split(new char[] { ':' })[0], SucceededState.StateName, jobIdAndQueue.Split(new char[] { ':' })[1]));
+
             Routes.AddRazorPage("/jobs/failed", x => new FailedJobsPage());
 
             Routes.AddClientBatchCommand(
                 "/jobs/failed/requeue",
                 (client, jobId) => client.ChangeState(jobId, CreateEnqueuedState(), FailedState.StateName));
+
+            Routes.AddClientBatchCommand(
+                "/jobs/failed/specificrequeue",
+                (client, jobIdAndQueue) => client.Requeue(jobIdAndQueue.Split(new char[] { ':' })[0], FailedState.StateName, jobIdAndQueue.Split(new char[] { ':' })[1]));
 
             Routes.AddClientBatchCommand(
                 "/jobs/failed/delete",
@@ -141,6 +153,10 @@ namespace Hangfire.Dashboard
             Routes.AddClientBatchCommand(
                 "/jobs/deleted/requeue",
                 (client, jobId) => client.ChangeState(jobId, CreateEnqueuedState(), DeletedState.StateName));
+
+            Routes.AddClientBatchCommand(
+                "/jobs/deleted/specificrequeue",
+                (client, jobIdAndQueue) => client.Requeue(jobIdAndQueue.Split(new char[] { ':' })[0], DeletedState.StateName, jobIdAndQueue.Split(new char[] { ':' })[1]));
 
             Routes.AddRazorPage("/jobs/awaiting", x => new AwaitingJobsPage());
             Routes.AddClientBatchCommand("/jobs/awaiting/enqueue", (client, jobId) => client.ChangeState(

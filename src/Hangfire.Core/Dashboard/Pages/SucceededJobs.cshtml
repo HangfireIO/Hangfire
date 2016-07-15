@@ -15,6 +15,7 @@
     var monitor = Storage.GetMonitoringApi();
     var pager = new Pager(from, perPage, monitor.SucceededListCount());
     var succeededJobs = monitor.SucceededJobs(pager.FromRecord, pager.RecordsPerPage);
+    var servers = monitor.Servers();
 }
 
 <div class="row">
@@ -34,13 +35,49 @@
         {
             <div class="js-jobs-list">
                 <div class="btn-toolbar btn-toolbar-top">
-                    <button class="js-jobs-list-command btn btn-sm btn-primary"
-                            data-url="@Url.To("/jobs/succeeded/requeue")"
-                            data-loading-text="@Strings.Common_Enqueueing"
-                            disabled="disabled">
-                        <span class="glyphicon glyphicon-repeat"></span>
-                        @Strings.Common_RequeueJobs
-                    </button>
+                    @if (SpecificJobRequeue == true)
+                    {
+                        <div class="btn-group">
+                            <button data-toggle="dropdown" data-target="#advanced-requeue-dropdown"
+                                    class="js-jobs-list-select btn dropdown-toggle btn-sm btn-primary"
+                                    aria-haspopup="true" aria-expanded="false" disabled="disabled">
+                                <span class="glyphicon glyphicon-repeat"></span>
+                                @Strings.Common_RequeueJobs
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="js-jobs-list-command noselect" data-url="@Url.To("/jobs/succeeded/requeue")">
+                                        Default queue
+                                    </a>
+                                </li>
+                                <li class="divider" role="separator"></li>
+                                @foreach (var server in servers)
+                                {
+                                    <li class="noselect dropdown-header">@(server.Name.ToUpperInvariant().Split(':')[0])</li>
+                                    foreach (var queue in server.Queues)
+                                    {
+                                        <li>
+                                            <a class="noselect js-jobs-list-command"
+                                               data-url="@Url.To("/jobs/succeeded/specificrequeue")"
+                                               id="@queue">
+                                                @queue
+                                            </a>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <button class="js-jobs-list-command btn btn-sm btn-primary"
+                                data-url="@Url.To("/jobs/succeeded/requeue")"
+                                data-loading-text="@Strings.Common_Enqueueing"
+                                disabled="disabled">
+                            <span class="glyphicon glyphicon-repeat"></span>
+                            @Strings.Common_RequeueJobs
+                        </button>
+                    }
 
                     @Html.PerPageSelector(pager)
                 </div>

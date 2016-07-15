@@ -43,6 +43,7 @@ namespace Hangfire.Dashboard
         public string AppPath { get; internal set; }
         public int StatsPollingInterval { get; internal set; }
         public Stopwatch GenerationTime { get; private set; }
+        public bool SpecificJobRequeue { get; private set; }
 
         public StatisticsDto Statistics
         {
@@ -78,6 +79,8 @@ namespace Hangfire.Dashboard
             Response = parentPage.Response;
             Storage = parentPage.Storage;
             AppPath = parentPage.AppPath;
+            SpecificJobRequeue = parentPage.SpecificJobRequeue;
+
             StatsPollingInterval = parentPage.StatsPollingInterval;
             Url = parentPage.Url;
 
@@ -93,6 +96,8 @@ namespace Hangfire.Dashboard
             Storage = context.Storage;
             AppPath = context.Options.AppPath;
             StatsPollingInterval = context.Options.StatsPollingInterval;
+            SpecificJobRequeue = context.Options.SpecificJobRequeue;
+
             Url = new UrlHelper(context);
 
             _statisticsLazy = new Lazy<StatisticsDto>(() =>
