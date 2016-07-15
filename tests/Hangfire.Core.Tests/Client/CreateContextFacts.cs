@@ -6,6 +6,9 @@ using Hangfire.Storage;
 using Moq;
 using Xunit;
 
+// ReSharper disable ObjectCreationAsStatement
+// ReSharper disable AssignNullToNotNullAttribute
+
 namespace Hangfire.Core.Tests.Client
 {
     public class CreateContextFacts

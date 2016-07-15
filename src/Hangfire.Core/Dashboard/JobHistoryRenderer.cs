@@ -112,12 +112,34 @@ namespace Hangfire.Dashboard
             this HtmlHelper helper,
             string state, IDictionary<string, string> properties)
         {
-            return Renderers[state](helper, properties);
+            var renderer = Renderers.ContainsKey(state)
+                ? Renderers[state]
+                : DefaultRenderer;
+
+            return renderer?.Invoke(helper, properties);
         }
 
         public static NonEscapedString NullRenderer(HtmlHelper helper, IDictionary<string, string> properties)
         {
             return null;
+        }
+
+        public static NonEscapedString DefaultRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
+        {
+            if (stateData == null || stateData.Count == 0) return null;
+
+            var builder = new StringBuilder();
+            builder.Append("<dl class=\"dl-horizontal\">");
+
+            foreach (var item in stateData)
+            {
+                builder.Append($"<dt>{item.Key}</dt>");
+                builder.Append($"<dd>{item.Value}</dd>");
+            }
+
+            builder.Append("</dl>");
+
+            return new NonEscapedString(builder.ToString());
         }
 
         public static NonEscapedString SucceededRenderer(HtmlHelper html, IDictionary<string, string> stateData)
@@ -131,7 +153,7 @@ namespace Hangfire.Dashboard
             {
                 var latency = TimeSpan.FromMilliseconds(long.Parse(stateData["Latency"]));
 
-                builder.AppendFormat("<dt>Latency:</dt><dd>{0}</dd>", html.ToHumanDuration(latency, false));
+                builder.Append($"<dt>Latency:</dt><dd>{html.ToHumanDuration(latency, false)}</dd>");
 
                 itemsAdded = true;
             }
@@ -139,7 +161,7 @@ namespace Hangfire.Dashboard
             if (stateData.ContainsKey("PerformanceDuration"))
             {
                 var duration = TimeSpan.FromMilliseconds(long.Parse(stateData["PerformanceDuration"]));
-                builder.AppendFormat("<dt>Duration:</dt><dd>{0}</dd>", html.ToHumanDuration(duration, false));
+                builder.Append($"<dt>Duration:</dt><dd>{html.ToHumanDuration(duration, false)}</dd>");
 
                 itemsAdded = true;
             }
@@ -148,7 +170,7 @@ namespace Hangfire.Dashboard
             if (stateData.ContainsKey("Result") && !String.IsNullOrWhiteSpace(stateData["Result"]))
             {
                 var result = stateData["Result"];
-                builder.AppendFormat("<dt>Result:</dt><dd>{0}</dd>", System.Net.WebUtility.HtmlEncode(result));
+                builder.Append($"<dt>Result:</dt><dd>{System.Net.WebUtility.HtmlEncode(result)}</dd>");
 
                 itemsAdded = true;
             }
@@ -163,11 +185,8 @@ namespace Hangfire.Dashboard
         private static NonEscapedString FailedRenderer(HtmlHelper html, IDictionary<string, string> stateData)
         {
             var stackTrace = html.StackTrace(stateData["ExceptionDetails"]).ToString();
-            return new NonEscapedString(String.Format(
-                "<h4 class=\"exception-type\">{0}</h4><p>{1}</p>{2}",
-                stateData["ExceptionType"],
-                stateData["ExceptionMessage"],
-                stackTrace != null ? "<pre class=\"stack-trace\">" + stackTrace + "</pre>" : null));
+            return new NonEscapedString(
+                $"<h4 class=\"exception-type\">{stateData["ExceptionType"]}</h4><p class=\"text-muted\">{stateData["ExceptionMessage"]}</p>{"<pre class=\"stack-trace\">" + stackTrace + "</pre>"}");
         }
 
         private static NonEscapedString ProcessingRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
@@ -189,20 +208,18 @@ namespace Hangfire.Dashboard
             if (serverId != null)
             {
                 builder.Append("<dt>Server:</dt>");
-                builder.AppendFormat(
-                    "<dd><span class=\"label label-default\">{0}</span></dd>",
-                    serverId.ToUpperInvariant());
+                builder.Append($"<dd>{helper.ServerId(serverId)}</dd>");
             }
 
             if (stateData.ContainsKey("WorkerId"))
             {
                 builder.Append("<dt>Worker:</dt>");
-                builder.AppendFormat("<dd>{0}</dd>", stateData["WorkerId"].Substring(0, 8));
+                builder.Append($"<dd>{stateData["WorkerId"].Substring(0, 8)}</dd>");
             }
             else if (stateData.ContainsKey("WorkerNumber"))
             {
                 builder.Append("<dt>Worker:</dt>");
-                builder.AppendFormat("<dd>#{0}</dd>", stateData["WorkerNumber"]);
+                builder.Append($"<dd>#{stateData["WorkerNumber"]}</dd>");
             }
 
             builder.Append("</dl>");
@@ -212,19 +229,16 @@ namespace Hangfire.Dashboard
 
         private static NonEscapedString EnqueuedRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
         {
-            return new NonEscapedString(String.Format(
-                "<dl class=\"dl-horizontal\"><dt>Queue:</dt><dd><span class=\"label label-queue label-primary\">{0}</span></dd></dl>",
-                stateData["Queue"]));
+            return new NonEscapedString(
+                $"<dl class=\"dl-horizontal\"><dt>Queue:</dt><dd>{helper.QueueLabel(stateData["Queue"])}</dd></dl>");
         }
 
         private static NonEscapedString ScheduledRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
         {
             var enqueueAt = JobHelper.DeserializeDateTime(stateData["EnqueueAt"]);
 
-            return new NonEscapedString(String.Format(
-                "<dl class=\"dl-horizontal\"><dt>Enqueue at:</dt><dd data-moment=\"{0}\">{1}</dd></dl>",
-                JobHelper.ToTimestamp(enqueueAt),
-                enqueueAt));
+            return new NonEscapedString(
+                $"<dl class=\"dl-horizontal\"><dt>Enqueue at:</dt><dd data-moment=\"{JobHelper.ToTimestamp(enqueueAt)}\">{enqueueAt}</dd></dl>");
         }
 
         private static NonEscapedString AwaitingRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
@@ -235,9 +249,7 @@ namespace Hangfire.Dashboard
 
             if (stateData.ContainsKey("ParentId"))
             {
-                builder.AppendFormat(
-                    "<dt>Parent</dt><dd>{0}</dd>",
-                    helper.JobIdLink(stateData["ParentId"]));
+                builder.Append($"<dt>Parent</dt><dd>{helper.JobIdLink(stateData["ParentId"])}</dd>");
             }
 
             if (stateData.ContainsKey("NextState"))
@@ -246,16 +258,12 @@ namespace Hangfire.Dashboard
                     stateData["NextState"],
                     new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
 
-                builder.AppendFormat(
-                    "<dt>Next State</dt><dd>{0}</dd>",
-                    helper.StateLabel(nextState.Name));
+                builder.Append($"<dt>Next State</dt><dd>{helper.StateLabel(nextState.Name)}</dd>");
             }
 
             if (stateData.ContainsKey("Options"))
             {
-                builder.AppendFormat(
-                    "<dt>Options</dt><dd><code>{0}</code></dd>",
-                    helper.HtmlEncode(stateData["Options"]));
+                builder.Append($"<dt>Options</dt><dd><code>{helper.HtmlEncode(stateData["Options"])}</code></dd>");
             }
 
             builder.Append("</dl>");

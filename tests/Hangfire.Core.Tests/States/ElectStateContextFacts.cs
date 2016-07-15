@@ -4,6 +4,8 @@ using Hangfire.States;
 using Moq;
 using Xunit;
 
+// ReSharper disable AssignNullToNotNullAttribute
+
 namespace Hangfire.Core.Tests.States
 {
     public class ElectStateContextFacts
@@ -12,8 +14,7 @@ namespace Hangfire.Core.Tests.States
 
         public ElectStateContextFacts()
         {
-            _applyContext = new ApplyStateContextMock();
-            _applyContext.OldStateName = "State";
+            _applyContext = new ApplyStateContextMock { OldStateName = "State" };
         }
 
         [Fact]

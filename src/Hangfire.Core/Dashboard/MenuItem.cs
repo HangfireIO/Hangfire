@@ -27,8 +27,8 @@ namespace Hangfire.Dashboard
             Url = url;
         }
 
-        public string Text { get; private set; }
-        public string Url { get; private set; }
+        public string Text { get; }
+        public string Url { get; }
 
         public bool Active { get; set; }
         public DashboardMetric Metric { get; set; }

@@ -32,10 +32,10 @@ namespace Hangfire.Server
 
         public ScheduleInstant(DateTime nowInstant, TimeZoneInfo timeZone, [NotNull] CrontabSchedule schedule)
         {
-            if (schedule == null) throw new ArgumentNullException("schedule");
+            if (schedule == null) throw new ArgumentNullException(nameof(schedule));
             if (nowInstant.Kind != DateTimeKind.Utc)
             {
-                throw new ArgumentException("Only DateTime values in UTC should be passed.", "nowInstant");
+                throw new ArgumentException("Only DateTime values in UTC should be passed.", nameof(nowInstant));
             }
 
             _timeZone = timeZone;
@@ -56,22 +56,22 @@ namespace Hangfire.Server
             }
         }
 
-        public DateTime NowInstant { get; private set; }
-        public DateTime? NextInstant { get; private set; }
+        public DateTime NowInstant { get; }
+        public DateTime? NextInstant { get; }
 
         public IEnumerable<DateTime> GetNextInstants(DateTime lastInstant)
         {
             if (lastInstant.Kind != DateTimeKind.Utc)
             {
-                throw new ArgumentException("Only DateTime values in UTC should be passed.", "lastInstant");
+                throw new ArgumentException("Only DateTime values in UTC should be passed.", nameof(lastInstant));
             }
             
             return _schedule
                 .GetNextOccurrences(
-                    TimeZoneInfo.ConvertTimeFromUtc(lastInstant, _timeZone),
-                    TimeZoneInfo.ConvertTimeFromUtc(NowInstant.AddSeconds(1), _timeZone))
+                    TimeZoneInfo.ConvertTime(lastInstant, TimeZoneInfo.Utc, _timeZone),
+                    TimeZoneInfo.ConvertTime(NowInstant.AddSeconds(1), TimeZoneInfo.Utc, _timeZone))
                 .Where(x => !_timeZone.IsInvalidTime(x))
-                .Select(x => TimeZoneInfo.ConvertTimeToUtc(x, _timeZone))
+                .Select(x => TimeZoneInfo.ConvertTime(x, _timeZone, TimeZoneInfo.Utc))
                 .ToList();
         }
     }

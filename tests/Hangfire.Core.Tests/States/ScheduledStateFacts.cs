@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Hangfire.Common;
 using Hangfire.States;
 using Xunit;

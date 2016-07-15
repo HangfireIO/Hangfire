@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
@@ -178,7 +177,7 @@ insert into HangFire.AggregatedCounter ([Key], [Value], [ExpireAt])
 values ('key', 1, @expireAt)
 select scope_identity() as Id";
 
-            var id = connection.Query(insertSql, new { @expireAt = expireAt }).Single();
+            var id = connection.Query(insertSql, new { expireAt }).Single();
             var recordId = (int) id.Id;
             return recordId;
         }

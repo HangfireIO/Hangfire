@@ -21,7 +21,7 @@ namespace Hangfire.Core.Tests
                 () => new BackgroundProcessContext(ServerId, Storage.Object, Properties, CancellationTokenSource.Token));
         }
 
-        public BackgroundProcessContext Object { get { return _context.Value; } }
+        public BackgroundProcessContext Object => _context.Value;
 
         public string ServerId { get; set; }
         public Mock<JobStorage> Storage { get; set; }

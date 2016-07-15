@@ -17,22 +17,20 @@
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Reflection;
 
 namespace Hangfire.Common
 {
     /// <summary>
     /// Represents the base class for job filter attributes.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Method)]
     public abstract class JobFilterAttribute : Attribute, IJobFilter
     {
         private static readonly ConcurrentDictionary<Type, bool> MultiuseAttributeCache = new ConcurrentDictionary<Type, bool>();
         private int _order = JobFilter.DefaultOrder;
 
-        public bool AllowMultiple
-        {
-            get { return AllowsMultiple(GetType()); }
-        }
+        public bool AllowMultiple => AllowsMultiple(GetType());
 
         public int Order
         {
@@ -41,7 +39,7 @@ namespace Hangfire.Common
             {
                 if (value < JobFilter.DefaultOrder)
                 {
-                    throw new ArgumentOutOfRangeException("value", "The Order value should be greater or equal to '-1'");
+                    throw new ArgumentOutOfRangeException(nameof(value), "The Order value should be greater or equal to '-1'");
                 }
                 _order = value;
             }
@@ -51,7 +49,8 @@ namespace Hangfire.Common
         {
             return MultiuseAttributeCache.GetOrAdd(
                 attributeType,
-                type => type.GetCustomAttributes(typeof(AttributeUsageAttribute), true)
+                type => type.GetTypeInfo()
+                            .GetCustomAttributes(typeof(AttributeUsageAttribute), true)
                             .Cast<AttributeUsageAttribute>()
                             .First()
                             .AllowMultiple);

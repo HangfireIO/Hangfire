@@ -24,10 +24,10 @@ namespace Hangfire.Dashboard.Pages
     {
         public SidebarMenu([NotNull] IEnumerable<Func<RazorPage, MenuItem>> items)
         {
-            if (items == null) throw new ArgumentNullException("items");
+            if (items == null) throw new ArgumentNullException(nameof(items));
             Items = items;
         }
 
-        public IEnumerable<Func<RazorPage, MenuItem>> Items { get; private set; }
+        public IEnumerable<Func<RazorPage, MenuItem>> Items { get; }
     }
 }

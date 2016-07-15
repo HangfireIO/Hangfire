@@ -17,23 +17,38 @@
 using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
-using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
     public class UrlHelper
     {
-        private readonly OwinContext _context;
+#if NETFULL
+        private readonly Microsoft.Owin.OwinContext _owinContext;
 
-        public UrlHelper([NotNull] IDictionary<string, object> owinContext)
+        [Obsolete("Please use UrlHelper(DashboardContext) instead. Will be removed in 2.0.0.")]
+        public UrlHelper([NotNull] IDictionary<string, object> owinEnvironment)
         {
-            if (owinContext == null) throw new ArgumentNullException("owinContext");
-            _context = new OwinContext(owinContext);
+            if (owinEnvironment == null) throw new ArgumentNullException(nameof(owinEnvironment));
+            _owinContext = new Microsoft.Owin.OwinContext(owinEnvironment);
+        }
+#endif
+
+        private readonly DashboardContext _context;
+
+        public UrlHelper([NotNull] DashboardContext context)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            _context = context;
         }
 
         public string To(string relativePath)
         {
-            return _context.Request.PathBase + relativePath;
+            return
+#if NETFULL
+                _owinContext?.Request.PathBase.Value ??
+#endif
+                _context.Request.PathBase
+                + relativePath;
         }
 
         public string Home()

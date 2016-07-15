@@ -20,7 +20,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;NETFULL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>ExtendedDesignGuidelineRules.ruleset</CodeAnalysisRuleSet>
@@ -28,12 +28,13 @@
     <Prefer32Bit>false</Prefer32Bit>
     <NoWarn>1591</NoWarn>
     <LangVersion>default</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;NETFULL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\Hangfire.Core.xml</DocumentationFile>
@@ -41,32 +42,27 @@
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CronExpressionDescriptor, Version=1.13.0.0, Culture=neutral, PublicKeyToken=a2ab0e0f73f9b037, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\CronExpressionDescriptor.1.13.0\lib\net35\CronExpressionDescriptor.dll</HintPath>
+    <Reference Include="CronExpressionDescriptor, Version=1.17.0.0, Culture=neutral, PublicKeyToken=a2ab0e0f73f9b037, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CronExpressionDescriptor.1.17.0\lib\net45\CronExpressionDescriptor.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Owin, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NCrontab">
-      <HintPath>..\..\packages\ncrontab.1.0.0\lib\NCrontab.dll</HintPath>
+    <Reference Include="NCrontab, Version=3.1.19111.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\ncrontab.3.1.0\lib\net45\NCrontab.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Newtonsoft.Json.5.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5">
       <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
+    <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedAssemblyInfo.cs">
@@ -82,9 +78,26 @@
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="BackgroundJobServerOptions.cs" />
     <Compile Include="Client\CoreBackgroundJobFactory.cs" />
+    <Compile Include="Dashboard\Content\resx\Strings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard\DashboardContext.cs" />
+    <Compile Include="Dashboard\DashboardRequest.cs" />
+    <Compile Include="Dashboard\DashboardResponse.cs" />
+    <Compile Include="Dashboard\IDashboardAuthorizationFilter.cs" />
+    <Compile Include="Dashboard\IDashboardDispatcher.cs" />
+    <Compile Include="Dashboard\Owin\OwinDashboardContext.cs" />
+    <Compile Include="Dashboard\Owin\OwinDashboardContextExtensions.cs" />
+    <Compile Include="Dashboard\Owin\OwinDashboardRequest.cs" />
+    <Compile Include="Dashboard\Owin\OwinDashboardResponse.cs" />
+    <Compile Include="Obsolete\RequestDispatcherWrapper.cs" />
+    <Compile Include="JobActivatorContext.cs" />
+    <Compile Include="IRecurringJobManager.cs" />
     <Compile Include="Obsolete\Job.Obsolete.cs" />
     <Compile Include="Common\TypeExtensions.cs" />
-    <Compile Include="Dashboard\OwinRequestExtensions.cs" />
+    <Compile Include="Dashboard\Owin\OwinRequestExtensions.cs" />
     <Compile Include="Dashboard\Pages\AwaitingJobsPage.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -92,6 +105,8 @@
     </Compile>
     <Compile Include="JobActivatorScope.cs" />
     <Compile Include="Properties\NamespaceDoc.cs" />
+    <Compile Include="RecurringJobManagerExtensions.cs" />
+    <Compile Include="RecurringJobOptions.cs" />
     <Compile Include="Server\BackgroundProcessContext.cs" />
     <Compile Include="Obsolete\IServerProcess.cs" />
     <Compile Include="Server\BackgroundProcessingServerOptions.cs" />
@@ -161,8 +176,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>_Navigation.cshtml</DependentUpon>
     </Compile>
-    <Compile Include="Dashboard\RequestDispatcherContext.cs" />
-    <Compile Include="Dashboard\IAuthorizationFilter.cs" />
+    <Compile Include="Obsolete\RequestDispatcherContext.cs" />
+    <Compile Include="Obsolete\IAuthorizationFilter.cs" />
     <Compile Include="Dashboard\LocalRequestsOnlyAuthorizationFilter.cs" />
     <Compile Include="Obsolete\DashboardOwinExtensions.cs" />
     <Compile Include="Dashboard\RouteCollection.cs" />
@@ -174,7 +189,7 @@
     <Compile Include="Dashboard\JobMethodCallRenderer.cs" />
     <Compile Include="Dashboard\JsonStats.cs" />
     <Compile Include="Dashboard\NonEscapedString.cs" />
-    <Compile Include="Dashboard\IRequestDispatcher.cs" />
+    <Compile Include="Obsolete\IRequestDispatcher.cs" />
     <Compile Include="Dashboard\Pager.cs" />
     <Compile Include="Dashboard\Pages\HomePage.generated.cs">
       <DependentUpon>HomePage.cshtml</DependentUpon>
@@ -278,7 +293,8 @@
     <Compile Include="Obsolete\IBootstrapperConfiguration.cs" />
     <Compile Include="IGlobalConfiguration.cs" />
     <Compile Include="Obsolete\OwinBootstrapper.cs" />
-    <Compile Include="Dashboard\MiddlewareExtensions.cs" />
+    <Compile Include="Dashboard\Owin\MiddlewareExtensions.cs" />
+    <Compile Include="LatencyTimeoutAttribute.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RecurringJob.cs" />
     <Compile Include="RecurringJobManager.cs" />
@@ -418,6 +434,13 @@
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.woff" />
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.woff2" />
     <Compile Include="BackgroundJob.Instance.cs" />
+    <EmbeddedResource Include="Dashboard\Content\resx\Strings.es.resx" />
+    <EmbeddedResource Include="Dashboard\Content\resx\Strings.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Hangfire.Dashboard.Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <None Include="Dashboard\Pages\AwaitingJobsPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>AwaitingJobsPage.generated.cs</LastGenOutput>
@@ -506,6 +529,7 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_PerPageSelector.generated.cs</LastGenOutput>
     </None>
+    <None Include="Hangfire.Core.project.json" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
@@ -535,13 +559,14 @@
     <EmbeddedResource Include="Dashboard\Content\js\hangfire.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Dashboard\Content\js\jquery-1.10.2.min.js" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Dashboard\Content\js\moment.min.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Dashboard\Content\js\rickshaw.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\js\jquery-2.1.4.min.js" />
+    <EmbeddedResource Include="Dashboard\Content\js\moment-with-locales.min.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

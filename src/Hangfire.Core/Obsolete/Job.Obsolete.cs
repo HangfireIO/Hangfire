@@ -8,6 +8,7 @@ using Hangfire.Annotations;
 using Hangfire.Server;
 using Hangfire.Storage;
 
+// ReSharper disable once CheckNamespace
 namespace Hangfire.Common
 {
     partial class Job
@@ -15,11 +16,11 @@ namespace Hangfire.Common
         [Obsolete("Please use Job(Type, MethodInfo, object[]) ctor overload instead. Will be removed in 2.0.0.")]
         public Job([NotNull] Type type, [NotNull] MethodInfo method, [NotNull] string[] arguments)
         {
-            if (type == null) throw new ArgumentNullException("type");
-            if (method == null) throw new ArgumentNullException("method");
-            if (arguments == null) throw new ArgumentNullException("arguments");
+            if (type == null) throw new ArgumentNullException(nameof(type));
+            if (method == null) throw new ArgumentNullException(nameof(method));
+            if (arguments == null) throw new ArgumentNullException(nameof(arguments));
 
-            Validate(type, "type", method, "method", arguments.Length, "arguments");
+            Validate(type, nameof(type), method, nameof(method), arguments.Length, nameof(arguments));
 
             Type = type;
             Method = method;
@@ -29,14 +30,14 @@ namespace Hangfire.Common
         /// <exclude />
         [NotNull]
         [Obsolete("Please use `Args` property instead to avoid unnecessary serializations/deserializations. Will be deleted in 2.0.0.")]
-        public string[] Arguments { get { return InvocationData.SerializeArguments(Args); } }
+        public string[] Arguments => InvocationData.SerializeArguments(Args);
 
         /// <exclude />
         [Obsolete("This method is deprecated. Please use `CoreBackgroundJobPerformer` or `BackgroundJobPerformer` classes instead. Will be removed in 2.0.0.")]
         public object Perform(JobActivator activator, IJobCancellationToken cancellationToken)
         {
-            if (activator == null) throw new ArgumentNullException("activator");
-            if (cancellationToken == null) throw new ArgumentNullException("cancellationToken");
+            if (activator == null) throw new ArgumentNullException(nameof(activator));
+            if (cancellationToken == null) throw new ArgumentNullException(nameof(cancellationToken));
 
             object instance = null;
 
@@ -68,8 +69,7 @@ namespace Hangfire.Common
 
                 if (instance == null)
                 {
-                    throw new InvalidOperationException(
-                        String.Format("JobActivator returned NULL instance of the '{0}' type.", Type));
+                    throw new InvalidOperationException($"JobActivator returned NULL instance of the '{Type}' type.");
                 }
 
                 return instance;
@@ -97,7 +97,7 @@ namespace Hangfire.Common
 
                     object value;
 
-                    if (typeof(IJobCancellationToken).IsAssignableFrom(parameter.ParameterType))
+                    if (typeof(IJobCancellationToken).GetTypeInfo().IsAssignableFrom(parameter.ParameterType.GetTypeInfo()))
                     {
                         value = cancellationToken;
                     }
@@ -119,8 +119,12 @@ namespace Hangfire.Common
                             }
                             else
                             {
+#if NETFULL
                                 var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
                                 value = converter.ConvertFromInvariantString(argument);
+#else
+                                throw;
+#endif
                             }
                         }
                     }
@@ -158,10 +162,7 @@ namespace Hangfire.Common
             try
             {
                 var disposable = instance as IDisposable;
-                if (disposable != null)
-                {
-                    disposable.Dispose();
-                }
+                disposable?.Dispose();
             }
             catch (Exception ex)
             {

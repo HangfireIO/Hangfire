@@ -1,5 +1,4 @@
-﻿using Hangfire.Msmq.Tests;
-using Xunit;
+﻿using Xunit;
 
 namespace Hangfire.SqlServer.Msmq.Tests
 {

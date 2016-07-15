@@ -17,17 +17,19 @@
 using System;
 using Hangfire.Annotations;
 
+#pragma warning disable 618
+
 namespace Hangfire.Server
 {
     internal class InfiniteLoopProcess : IBackgroundProcessWrapper
     {
         public InfiniteLoopProcess([NotNull] IServerProcess innerProcess)
         {
-            if (innerProcess == null) throw new ArgumentNullException("innerProcess");
+            if (innerProcess == null) throw new ArgumentNullException(nameof(innerProcess));
             InnerProcess = innerProcess;
         }
-
-        public IServerProcess InnerProcess { get; private set; }
+        
+        public IServerProcess InnerProcess { get; }
 
         public void Execute(BackgroundProcessContext context)
         {

@@ -26,14 +26,14 @@ namespace Hangfire.Common.ExpressionUtil
         }
 
         // http://msdn.microsoft.com/en-us/library/system.linq.expressions.unaryexpression.method.aspx
-        public MethodInfo Method { get; private set; }
+        public MethodInfo Method { get; }
 
         public override bool Equals(object obj)
         {
             UnaryExpressionFingerprint other = obj as UnaryExpressionFingerprint;
             return (other != null)
-                   && Equals(this.Method, other.Method)
-                   && this.Equals(other);
+                   && Equals(Method, other.Method)
+                   && Equals(other);
         }
 
         internal override void AddToHashCodeCombiner(HashCodeCombiner combiner)

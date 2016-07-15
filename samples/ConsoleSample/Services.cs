@@ -3,16 +3,23 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Hangfire;
 
 namespace ConsoleSample
 {
     public class Services
     {
-        private static readonly Random _random = new Random();
+        private static readonly Random Rand = new Random();
 
         public void EmptyDefault()
         {
+        }
+
+        public async Task Async(CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            await Task.Delay(TimeSpan.FromDays(1), cancellationToken);
         }
 
         [Queue("critical")]
@@ -20,7 +27,7 @@ namespace ConsoleSample
         {
         }
 
-        [AutomaticRetry(Attempts = 0)]
+        [AutomaticRetry(Attempts = 0), LatencyTimeout(30)]
         public void Error()
         {
             Console.WriteLine("Beginning error task...");
@@ -31,9 +38,9 @@ namespace ConsoleSample
         public void Random(int number)
         {
             int time;
-            lock (_random)
+            lock (Rand)
             {
-                time = _random.Next(10);
+                time = Rand.Next(10);
             }
 
             if (time < 5)
@@ -67,7 +74,7 @@ namespace ConsoleSample
         [DisplayName("Name: {0}")]
         public void Args(string name, int authorId, DateTime createdAt)
         {
-            Console.WriteLine("{0}, {1}, {2}", name, authorId, createdAt);
+            Console.WriteLine($"{name}, {authorId}, {createdAt}");
         }
 
         public void Custom(int id, string[] values, CustomObject objects, DayOfWeek dayOfWeek)

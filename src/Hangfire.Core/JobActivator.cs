@@ -35,21 +35,30 @@ namespace Hangfire
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
                 }
 
                 _current = value;
             }
         }
 
+        
         public virtual object ActivateJob(Type jobType)
         {
             return Activator.CreateInstance(jobType);
         }
 
+        [Obsolete("Please implement/use the BeginScope(JobActivatorContext) method instead. Will be removed in 2.0.0.")]
         public virtual JobActivatorScope BeginScope()
         {
             return new SimpleJobActivatorScope(this);
+        }
+
+        public virtual JobActivatorScope BeginScope(JobActivatorContext context)
+        {
+#pragma warning disable 618
+            return BeginScope();
+#pragma warning restore 618
         }
 
         class SimpleJobActivatorScope : JobActivatorScope
@@ -59,7 +68,7 @@ namespace Hangfire
 
             public SimpleJobActivatorScope([NotNull] JobActivator activator)
             {
-                if (activator == null) throw new ArgumentNullException("activator");
+                if (activator == null) throw new ArgumentNullException(nameof(activator));
                 _activator = activator;
             }
 

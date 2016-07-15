@@ -41,30 +41,24 @@ namespace Hangfire.Client
 
         [CanBeNull]
         [Obsolete("Please use `BackgroundJob` property instead. Will be removed in 2.0.0.")]
-        public string JobId { get { return BackgroundJob != null ? BackgroundJob.Id : null; } }
+        public string JobId => BackgroundJob?.Id;
 
         [CanBeNull]
-        public BackgroundJob BackgroundJob { get; private set; }
+        public BackgroundJob BackgroundJob { get; }
         
-        public override IDictionary<string, object> Parameters
-        {
-            get
-            {
-                return new ReadOnlyDictionary<string, object>(base.Parameters);
-            }
-        }
+        public override IDictionary<string, object> Parameters => new ReadOnlyDictionary<string, object>(base.Parameters);
 
         /// <summary>
         /// Gets an exception that occurred during the creation of the job.
         /// </summary>
         [CanBeNull]
-        public Exception Exception { get; private set; }
+        public Exception Exception { get; }
 
         /// <summary>
         /// Gets a value that indicates that this <see cref="CreatedContext"/>
         /// object was canceled.
         /// </summary>
-        public bool Canceled { get; private set; }
+        public bool Canceled { get; }
 
         /// <summary>
         /// Gets or sets a value that indicates that this <see cref="CreatedContext"/>
@@ -74,7 +68,7 @@ namespace Hangfire.Client
 
         public void SetJobParameter([NotNull] string name, object value)
         {
-            if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("name");
+            if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException(nameof(name));
 
             throw new InvalidOperationException("Could not set parameter for a created job.");
         }

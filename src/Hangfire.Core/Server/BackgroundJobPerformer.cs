@@ -48,8 +48,8 @@ namespace Hangfire.Server
             [NotNull] IJobFilterProvider filterProvider, 
             [NotNull] IBackgroundJobPerformer innerPerformer)
         {
-            if (filterProvider == null) throw new ArgumentNullException("filterProvider");
-            if (innerPerformer == null) throw new ArgumentNullException("innerPerformer");
+            if (filterProvider == null) throw new ArgumentNullException(nameof(filterProvider));
+            if (innerPerformer == null) throw new ArgumentNullException(nameof(innerPerformer));
 
             _filterProvider = filterProvider;
             _innerPerformer = innerPerformer;
@@ -57,7 +57,7 @@ namespace Hangfire.Server
 
         public object Perform(PerformContext context)
         {
-            if (context == null) throw new ArgumentNullException("context");
+            if (context == null) throw new ArgumentNullException(nameof(context));
 
             var filterInfo = GetFilters(context.BackgroundJob.Job);
 

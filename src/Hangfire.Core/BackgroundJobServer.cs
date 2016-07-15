@@ -28,10 +28,10 @@ namespace Hangfire
 {
     public class BackgroundJobServer : IDisposable
     {
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.For<BackgroundJobServer>();
 
         private readonly BackgroundJobServerOptions _options;
-        private readonly IDisposable _processingServer;
+        private readonly BackgroundProcessingServer _processingServer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobServer"/> class
@@ -78,9 +78,9 @@ namespace Hangfire
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (options == null) throw new ArgumentNullException("options");
-            if (additionalProcesses == null) throw new ArgumentNullException("additionalProcesses");
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (options == null) throw new ArgumentNullException(nameof(options));
+            if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
 
             _options = options;
 
@@ -95,21 +95,27 @@ namespace Hangfire
             };
 
             Logger.Info("Starting Hangfire Server");
-            Logger.InfoFormat("Using job storage: '{0}'.", storage);
+            Logger.Info($"Using job storage: '{storage}'");
 
             storage.WriteOptionsToLog(Logger);
 
             Logger.Info("Using the following options for Hangfire Server:");
-            Logger.InfoFormat("    Worker count: {0}.", options.WorkerCount);
-            Logger.InfoFormat("    Listening queues: {0}.", String.Join(", ", options.Queues.Select(x => "'" + x + "'")));
-            Logger.InfoFormat("    Shutdown timeout: {0}.", options.ShutdownTimeout);
-            Logger.InfoFormat("    Schedule polling interval: {0}.", options.SchedulePollingInterval);
+            Logger.Info($"    Worker count: {options.WorkerCount}");
+            Logger.Info($"    Listening queues: {String.Join(", ", options.Queues.Select(x => "'" + x + "'"))}");
+            Logger.Info($"    Shutdown timeout: {options.ShutdownTimeout}");
+            Logger.Info($"    Schedule polling interval: {options.SchedulePollingInterval}");
             
             _processingServer = new BackgroundProcessingServer(
                 storage, 
                 processes, 
                 properties, 
                 GetProcessingServerOptions());
+        }
+
+        public void SendStop()
+        {
+            Logger.Debug("Hangfire Server is stopping...");
+            _processingServer.SendStop();
         }
 
         public void Dispose()
@@ -145,12 +151,11 @@ namespace Hangfire
             {
                 ShutdownTimeout = _options.ShutdownTimeout,
                 HeartbeatInterval = _options.HeartbeatInterval,
-                ServerCheckInterval = _options.ServerWatchdogOptions != null
-                    ? _options.ServerWatchdogOptions.CheckInterval
-                    : _options.ServerCheckInterval,
-                ServerTimeout = _options.ServerWatchdogOptions != null
-                    ? _options.ServerWatchdogOptions.ServerTimeout
-                    : _options.ServerTimeout
+#pragma warning disable 618
+                ServerCheckInterval = _options.ServerWatchdogOptions?.CheckInterval ?? _options.ServerCheckInterval,
+                ServerTimeout = _options.ServerWatchdogOptions?.ServerTimeout ?? _options.ServerTimeout,
+                ServerName = _options.ServerName
+#pragma warning restore 618
             };
         }
 

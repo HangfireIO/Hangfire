@@ -14,7 +14,7 @@
 //
 #endregion
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable All
 
 namespace Hangfire
 {

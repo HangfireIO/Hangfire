@@ -26,14 +26,14 @@ namespace Hangfire.Common.ExpressionUtil
         }
 
         // http://msdn.microsoft.com/en-us/library/system.linq.expressions.indexexpression.indexer.aspx
-        public PropertyInfo Indexer { get; private set; }
+        public PropertyInfo Indexer { get; }
 
         public override bool Equals(object obj)
         {
             IndexExpressionFingerprint other = obj as IndexExpressionFingerprint;
             return (other != null)
-                   && Equals(this.Indexer, other.Indexer)
-                   && this.Equals(other);
+                   && Equals(Indexer, other.Indexer)
+                   && Equals(other);
         }
 
         internal override void AddToHashCodeCombiner(HashCodeCombiner combiner)

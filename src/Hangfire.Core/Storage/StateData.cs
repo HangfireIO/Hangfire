@@ -17,6 +17,8 @@
 using System.Collections.Generic;
 using Hangfire.Annotations;
 
+// ReSharper disable NotNullMemberIsNotInitialized - Let's trust them!
+
 namespace Hangfire.Storage
 {
     public class StateData

@@ -6,6 +6,7 @@ sudo: required
 
 # Make sure build dependencies are installed.
 install:
+ - export HOSTNAME=localhost
  - travis_retry nuget install .nuget/packages.config -OutputDirectory packages
  - travis_retry nuget restore Hangfire.Mono.sln
  
@@ -14,15 +15,10 @@ cache:
  - directories:
    - packages
 
-services:
-  - redis-server
-  - rabbitmq
-
 # Run the build script
 script:
  - xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
  - mono ./packages/xunit.runners.1.9.2/tools/xunit.console.clr4.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll
- - mono ./packages/xunit.runners.1.9.2/tools/xunit.console.clr4.exe ./tests/Hangfire.SqlServer.RabbitMq.Tests/bin/Release/Hangfire.SqlServer.RabbitMq.Tests.dll
 
 # Only watch the master branch.
 branches:

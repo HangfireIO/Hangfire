@@ -27,7 +27,7 @@ namespace Hangfire.Common
         {
             if (arg == null)
             {
-                throw new ArgumentNullException("arg");
+                throw new ArgumentNullException(nameof(arg));
             }
 
             Func<object, object> func = Wrap(arg);

@@ -1,24 +1,65 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Hangfire.Common
 {
     internal static class TypeExtensions
     {
-        public static string ToGenericTypeString(this Type t)
+        public static string ToGenericTypeString(this Type type)
         {
-            if (!t.GetTypeInfo().IsGenericType)
+            if (!type.GetTypeInfo().IsGenericType)
             {
-                return t.Name;
+                return type.GetFullNameWithoutNamespace()
+                        .ReplacePlusWithDotInNestedTypeName();
             }
 
-            var genericTypeName = t.GetGenericTypeDefinition().Name;
-            genericTypeName = genericTypeName.Substring(0, genericTypeName.IndexOf('`'));
+            return type.GetGenericTypeDefinition()
+                    .GetFullNameWithoutNamespace()
+                    .ReplacePlusWithDotInNestedTypeName()
+                    .ReplaceGenericParametersInGenericTypeName(type);
+        }
 
-            var genericArgs = string.Join(",", t.GetGenericArguments().Select(ToGenericTypeString).ToArray());
+        private static string GetFullNameWithoutNamespace(this Type type)
+        {
+            if (type.IsGenericParameter)
+            {
+                return type.Name;
+            }
 
-            return genericTypeName + "<" + genericArgs + ">";
+            const int dotLength = 1;
+            // ReSharper disable once PossibleNullReferenceException
+            return type.FullName.Substring(type.Namespace.Length + dotLength);
+        }
+
+        private static string ReplacePlusWithDotInNestedTypeName(this string typeName)
+        {
+            return typeName.Replace('+', '.');
+        }
+
+        private static string ReplaceGenericParametersInGenericTypeName(this string typeName, Type type)
+        {
+            var genericArguments = type .GetTypeInfo().GetAllGenericArguments();
+
+            const string regexForGenericArguments = @"`[1-9]\d*";
+
+            var rgx = new Regex(regexForGenericArguments);
+
+            typeName = rgx.Replace(typeName, match =>
+            {
+                var currentGenericArgumentNumbers = int.Parse(match.Value.Substring(1));
+                var currentArguments = string.Join(",", genericArguments.Take(currentGenericArgumentNumbers).Select(ToGenericTypeString));
+                genericArguments = genericArguments.Skip(currentGenericArgumentNumbers).ToArray();
+                return string.Concat("<", currentArguments, ">");
+            });
+
+            return typeName;
+        }
+
+        public static Type[] GetAllGenericArguments(this TypeInfo type)
+        {
+            return type.GenericTypeArguments.Length > 0 ? type.GenericTypeArguments : type.GenericTypeParameters;
         }
     }
 }

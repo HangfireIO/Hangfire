@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleSample", "samples\ConsoleSample\ConsoleSample.csproj", "{C02BB718-2AE4-434C-8668-C894FF663FCE}"
 EndProject
@@ -24,11 +24,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{15E186DF
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspecs", "nuspecs", "{5E687025-A525-4534-8869-CB685C7B11C4}"
 	ProjectSection(SolutionItems) = preProject
+		nuspecs\Hangfire.AspNetCore.nuspec = nuspecs\Hangfire.AspNetCore.nuspec
 		nuspecs\Hangfire.Core.nuspec = nuspecs\Hangfire.Core.nuspec
 		nuspecs\Hangfire.nuspec = nuspecs\Hangfire.nuspec
 		nuspecs\Hangfire.SqlServer.MSMQ.nuspec = nuspecs\Hangfire.SqlServer.MSMQ.nuspec
 		nuspecs\Hangfire.SqlServer.nuspec = nuspecs\Hangfire.SqlServer.nuspec
-		nuspecs\Hangfire.SqlServer.RabbitMQ.nuspec = nuspecs\Hangfire.SqlServer.RabbitMQ.nuspec
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{37E2BF00-C473-48A5-B2A7-5A3DE0910FCF}"
@@ -44,14 +44,23 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.Msmq", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.Msmq.Tests", "tests\Hangfire.SqlServer.Msmq.Tests\Hangfire.SqlServer.Msmq.Tests.csproj", "{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.RabbitMq.Tests", "tests\Hangfire.SqlServer.RabbitMq.Tests\Hangfire.SqlServer.RabbitMq.Tests.csproj", "{2654D751-33D5-411D-A187-D057FED9CD25}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.RabbitMq", "src\Hangfire.SqlServer.RabbitMq\Hangfire.SqlServer.RabbitMq.csproj", "{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{F710C9CF-69F9-4373-9B74-ABB185BF985B}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\packages.config = .nuget\packages.config
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8667E5ED-006A-4542-B200-9C0C2C48FF13}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Core.NetStandard", "src\Hangfire.Core\Hangfire.Core.NetStandard.csproj", "{2A528F3A-5120-430A-B881-E265FA09ABB5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.NetStandard", "src\Hangfire.SqlServer\Hangfire.SqlServer.NetStandard.csproj", "{1513919A-5746-46CE-B8C6-C2FDB3361C2D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.AspNetCore.NetStandard", "src\Hangfire.AspNetCore\Hangfire.AspNetCore.NetStandard.csproj", "{6DCC60C2-4F6E-4855-82EC-E8E1ABB36700}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.AspNetCore", "src\Hangfire.AspNetCore\Hangfire.AspNetCore.csproj", "{73AFEBE0-9B11-44F6-A69C-8A51538CF18E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -91,14 +100,22 @@ Global
 		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2654D751-33D5-411D-A187-D057FED9CD25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2654D751-33D5-411D-A187-D057FED9CD25}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2654D751-33D5-411D-A187-D057FED9CD25}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2654D751-33D5-411D-A187-D057FED9CD25}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A528F3A-5120-430A-B881-E265FA09ABB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A528F3A-5120-430A-B881-E265FA09ABB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A528F3A-5120-430A-B881-E265FA09ABB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A528F3A-5120-430A-B881-E265FA09ABB5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1513919A-5746-46CE-B8C6-C2FDB3361C2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1513919A-5746-46CE-B8C6-C2FDB3361C2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1513919A-5746-46CE-B8C6-C2FDB3361C2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1513919A-5746-46CE-B8C6-C2FDB3361C2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DCC60C2-4F6E-4855-82EC-E8E1ABB36700}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DCC60C2-4F6E-4855-82EC-E8E1ABB36700}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DCC60C2-4F6E-4855-82EC-E8E1ABB36700}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DCC60C2-4F6E-4855-82EC-E8E1ABB36700}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73AFEBE0-9B11-44F6-A69C-8A51538CF18E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73AFEBE0-9B11-44F6-A69C-8A51538CF18E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73AFEBE0-9B11-44F6-A69C-8A51538CF18E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73AFEBE0-9B11-44F6-A69C-8A51538CF18E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -109,6 +126,5 @@ Global
 		{E13C3543-39A3-475C-BB43-2E311E634843} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
 		{6DFFA275-C483-4501-823A-741AC9EC0846} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
 		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
-		{2654D751-33D5-411D-A187-D057FED9CD25} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
 	EndGlobalSection
 EndGlobal

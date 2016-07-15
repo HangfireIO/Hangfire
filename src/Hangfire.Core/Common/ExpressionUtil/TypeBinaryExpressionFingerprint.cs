@@ -22,14 +22,14 @@ namespace Hangfire.Common.ExpressionUtil
         }
 
         // http://msdn.microsoft.com/en-us/library/system.linq.expressions.typebinaryexpression.typeoperand.aspx
-        public Type TypeOperand { get; private set; }
+        public Type TypeOperand { get; }
 
         public override bool Equals(object obj)
         {
             TypeBinaryExpressionFingerprint other = obj as TypeBinaryExpressionFingerprint;
             return (other != null)
-                   && Equals(this.TypeOperand, other.TypeOperand)
-                   && this.Equals(other);
+                   && TypeOperand == other.TypeOperand
+                   && Equals(other);
         }
 
         internal override void AddToHashCodeCombiner(HashCodeCombiner combiner)

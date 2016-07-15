@@ -7,6 +7,8 @@ using Hangfire.Storage;
 using Moq;
 using Xunit;
 
+// ReSharper disable AssignNullToNotNullAttribute
+
 namespace Hangfire.Core.Tests
 {
     public class RecurringJobManagerFacts
@@ -17,7 +19,7 @@ namespace Hangfire.Core.Tests
         private readonly string _cronExpression;
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
-        private Mock<IBackgroundJobFactory> _factory;
+        private readonly Mock<IBackgroundJobFactory> _factory;
 
         public RecurringJobManagerFacts()
         {
@@ -84,18 +86,7 @@ namespace Hangfire.Core.Tests
 
             Assert.Equal("queue", exception.ParamName);
         }
-
-        [Fact]
-        public void AddOrUpdate_ThrowsAnException_WhenQueueNameHasInvalidFormat()
-        {
-            var manager = CreateManager();
-
-            var exception = Assert.Throws<ArgumentException>(
-                () => manager.AddOrUpdate(_id, _job, Cron.Daily(), TimeZoneInfo.Local, "UPPER_CASE"));
-
-            Assert.Equal("queue", exception.ParamName);
-        }
-
+        
         [Fact]
         public void AddOrUpdate_ThrowsAnException_WhenCronExpressionIsNull()
         {
@@ -130,6 +121,39 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void AddOrUpdate_ThrowsAnException_WhenTimeZoneIsNull()
+        {
+            var manager = CreateManager();
+
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => manager.AddOrUpdate(_id, _job, _cronExpression, (TimeZoneInfo) null));
+
+            Assert.Equal("timeZone", exception.ParamName);
+        }
+
+        [Fact]
+        public void AddOrUpdate_ThrowsAnException_WhenOptionsArgumentIsNull()
+        {
+            var manager = CreateManager();
+
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => manager.AddOrUpdate(_id, _job, _cronExpression, null));
+
+            Assert.Equal("options", exception.ParamName);
+        }
+
+        [Fact]
+        public void AddOrUpdate_ThrowsAnException_WhenQueueIsNull()
+        {
+            var manager = CreateManager();
+
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => manager.AddOrUpdate(_id, _job, _cronExpression, TimeZoneInfo.Utc, null));
+
+            Assert.Equal("queue", exception.ParamName);
+        }
+
+        [Fact]
         public void AddOrUpdate_AddsAJob_ToTheRecurringJobsSet()
         {
             var manager = CreateManager();
@@ -147,8 +171,8 @@ namespace Hangfire.Core.Tests
             manager.AddOrUpdate(_id, _job, _cronExpression);
 
             _transaction.Verify(x => x.SetRangeInHash(
-                String.Format("recurring-job:{0}", _id),
-                It.Is<Dictionary<string, string>>(rj =>
+                $"recurring-job:{_id}",
+                It.Is<Dictionary<string, string>>(rj => 
                     rj["Cron"] == "* * * * *"
                     && !String.IsNullOrEmpty(rj["Job"])
                     && JobHelper.DeserializeDateTime(rj["CreatedAt"]) > DateTime.UtcNow.AddMinutes(-1))));
@@ -196,7 +220,7 @@ namespace Hangfire.Core.Tests
         public void Trigger_EnqueuesScheduledJob()
         {
             // Arrange
-            _connection.Setup(x => x.GetAllEntriesFromHash(String.Format("recurring-job:{0}", _id)))
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}"))
                 .Returns(new Dictionary<string, string>
                 {
                     { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) }
@@ -215,7 +239,7 @@ namespace Hangfire.Core.Tests
         public void Trigger_EnqueuedJobToTheSpecificQueue_IfSpecified()
         {
             // Arrange
-            _connection.Setup(x => x.GetAllEntriesFromHash(String.Format("recurring-job:{0}", _id)))
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}"))
                 .Returns(new Dictionary<string, string>
                 {
                     { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) },
@@ -258,7 +282,7 @@ namespace Hangfire.Core.Tests
             manager.RemoveIfExists(_id);
 
             _transaction.Verify(x => x.RemoveFromSet("recurring-jobs", _id));
-            _transaction.Verify(x => x.RemoveHash(String.Format("recurring-job:{0}", _id)));
+            _transaction.Verify(x => x.RemoveHash($"recurring-job:{_id}"));
             _transaction.Verify(x => x.Commit());
         }
 

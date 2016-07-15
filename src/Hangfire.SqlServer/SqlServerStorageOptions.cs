@@ -15,7 +15,11 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+#if NETFULL
 using System.Transactions;
+#else
+using System.Data;
+#endif
 
 namespace Hangfire.SqlServer
 {
@@ -28,7 +32,9 @@ namespace Hangfire.SqlServer
         {
             TransactionIsolationLevel = null;
             QueuePollInterval = TimeSpan.FromSeconds(15);
+#pragma warning disable 618
             InvisibilityTimeout = TimeSpan.FromMinutes(30);
+#pragma warning restore 618
             JobExpirationCheckInterval = TimeSpan.FromHours(1);
             CountersAggregateInterval = TimeSpan.FromMinutes(5);
             PrepareSchemaIfNecessary = true;
@@ -44,17 +50,15 @@ namespace Hangfire.SqlServer
             get { return _queuePollInterval; }
             set
             {
-                var message = String.Format(
-                    "The QueuePollInterval property value should be positive. Given: {0}.",
-                    value);
+                var message = $"The QueuePollInterval property value should be positive. Given: {value}.";
 
                 if (value == TimeSpan.Zero)
                 {
-                    throw new ArgumentException(message, "value");
+                    throw new ArgumentException(message, nameof(value));
                 }
                 if (value != value.Duration())
                 {
-                    throw new ArgumentException(message, "value");
+                    throw new ArgumentException(message, nameof(value));
                 }
 
                 _queuePollInterval = value;
@@ -79,7 +83,7 @@ namespace Hangfire.SqlServer
             {
                 if (string.IsNullOrWhiteSpace(_schemaName))
                 {
-                    throw new ArgumentException(_schemaName, "value");
+                    throw new ArgumentException(_schemaName, nameof(value));
                 }
                 _schemaName = value;
             }

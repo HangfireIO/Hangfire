@@ -54,7 +54,7 @@ namespace Hangfire.Core.Tests.Server
             _connection.Setup(x => x.GetAllItemsFromSet("recurring-jobs"))
                 .Returns(new HashSet<string> { RecurringJobId });
 
-            _connection.Setup(x => x.GetAllEntriesFromHash(String.Format("recurring-job:{0}", RecurringJobId)))
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{RecurringJobId}"))
                 .Returns(_recurringJob);
 
             _backgroundJobMock = new BackgroundJobMock();
@@ -125,7 +125,7 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
 
             // Assert
-            var jobKey = String.Format("recurring-job:{0}", RecurringJobId);
+            var jobKey = $"recurring-job:{RecurringJobId}";
 
             _connection.Verify(x => x.SetRangeInHash(
                 jobKey,
@@ -156,7 +156,7 @@ namespace Hangfire.Core.Tests.Server
             _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
 
             _connection.Verify(x => x.SetRangeInHash(
-                String.Format("recurring-job:{0}", RecurringJobId),
+                $"recurring-job:{RecurringJobId}",
                 It.Is<Dictionary<string, string>>(rj =>
                     rj.ContainsKey("NextExecution") && rj["NextExecution"]
                         == JobHelper.SerializeDateTime(_instant.Object.NextInstant.Value))));

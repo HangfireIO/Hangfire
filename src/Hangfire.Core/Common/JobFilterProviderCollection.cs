@@ -26,6 +26,7 @@ namespace Hangfire.Common
     /// </summary>
     public class JobFilterProviderCollection : Collection<IJobFilterProvider>, IJobFilterProvider
     {
+        // ReSharper disable once InconsistentNaming
         private static readonly FilterComparer _filterComparer = new FilterComparer();
 
         /// <summary>

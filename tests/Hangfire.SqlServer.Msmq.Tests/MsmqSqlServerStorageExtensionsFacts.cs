@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Linq;
-using Hangfire.SqlServer;
-using Hangfire.SqlServer.Msmq;
-using Hangfire.States;
 using Xunit;
 
-namespace Hangfire.Msmq.Tests
+// ReSharper disable AssignNullToNotNullAttribute
+
+namespace Hangfire.SqlServer.Msmq.Tests
 {
     public class MsmqSqlServerStorageExtensionsFacts
     {
@@ -22,7 +21,7 @@ namespace Hangfire.Msmq.Tests
         public void UseMsmqQueues_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => MsmqSqlServerStorageExtensions.UseMsmqQueues((SqlServerStorage)null, CleanMsmqQueueAttribute.PathPattern));
+                () => MsmqSqlServerStorageExtensions.UseMsmqQueues(null, CleanMsmqQueueAttribute.PathPattern));
             
             Assert.Equal("storage", exception.ParamName);
         }

@@ -18,6 +18,7 @@ using System;
 using Hangfire.Annotations;
 using Hangfire.Common;
 
+// ReSharper disable once CheckNamespace
 namespace Hangfire.States
 {
     /// <exclude />
@@ -29,13 +30,13 @@ namespace Hangfire.States
 
         [NotNull]
         [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
-        public string JobId { get { return BackgroundJob.Id; } }
+        public string JobId => BackgroundJob.Id;
 
         [CanBeNull]
         [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
-        public Job Job { get { return BackgroundJob.Job; } }
+        public Job Job => BackgroundJob.Job;
 
         [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
-        public DateTime CreatedAt { get { return BackgroundJob.CreatedAt; } }
+        public DateTime CreatedAt => BackgroundJob.CreatedAt;
     }
 }

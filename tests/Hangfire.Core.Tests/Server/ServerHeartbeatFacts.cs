@@ -22,7 +22,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_UpdateServerHeartbeat()
         {
-            var server = new ServerHeartbeat(ServerHeartbeat.DefaultHeartbeatInterval);
+            var server = new ServerHeartbeat(TimeSpan.Zero);
 
 			server.Execute(_context.Object);
 

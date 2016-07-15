@@ -23,18 +23,29 @@ namespace Hangfire.Dashboard
 {
     public class RouteCollection
     {
-        private readonly List<Tuple<string, IRequestDispatcher>> _dispatchers
-            = new List<Tuple<string, IRequestDispatcher>>();
+        private readonly List<Tuple<string, IDashboardDispatcher>> _dispatchers
+            = new List<Tuple<string, IDashboardDispatcher>>();
 
+#if NETFULL
+        [Obsolete("Use the Add(string, IDashboardDispatcher) overload instead. Will be removed in 2.0.0.")]
         public void Add([NotNull] string pathTemplate, [NotNull] IRequestDispatcher dispatcher)
         {
-            if (pathTemplate == null) throw new ArgumentNullException("pathTemplate");
-            if (dispatcher == null) throw new ArgumentNullException("dispatcher");
+            if (pathTemplate == null) throw new ArgumentNullException(nameof(pathTemplate));
+            if (dispatcher == null) throw new ArgumentNullException(nameof(dispatcher));
 
-            _dispatchers.Add(new Tuple<string, IRequestDispatcher>(pathTemplate, dispatcher));
+            _dispatchers.Add(new Tuple<string, IDashboardDispatcher>(pathTemplate, new RequestDispatcherWrapper(dispatcher)));
+        }
+#endif
+
+        public void Add([NotNull] string pathTemplate, [NotNull] IDashboardDispatcher dispatcher)
+        {
+            if (pathTemplate == null) throw new ArgumentNullException(nameof(pathTemplate));
+            if (dispatcher == null) throw new ArgumentNullException(nameof(dispatcher));
+
+            _dispatchers.Add(new Tuple<string, IDashboardDispatcher>(pathTemplate, dispatcher));
         }
 
-        public Tuple<IRequestDispatcher, Match> FindDispatcher(string path)
+        public Tuple<IDashboardDispatcher, Match> FindDispatcher(string path)
         {
             if (path.Length == 0) path = "/";
 
@@ -54,7 +65,7 @@ namespace Hangfire.Dashboard
 
                 if (match.Success)
                 {
-                    return new Tuple<IRequestDispatcher, Match>(dispatcher.Item2, match);
+                    return new Tuple<IDashboardDispatcher, Match>(dispatcher.Item2, match);
                 }
             }
             

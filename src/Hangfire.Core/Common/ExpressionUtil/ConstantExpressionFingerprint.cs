@@ -30,7 +30,7 @@ namespace Hangfire.Common.ExpressionUtil
         {
             ConstantExpressionFingerprint other = obj as ConstantExpressionFingerprint;
             return (other != null)
-                   && this.Equals(other);
+                   && Equals(other);
         }
     }
 }

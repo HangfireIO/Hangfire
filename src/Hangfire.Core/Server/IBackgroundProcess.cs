@@ -17,6 +17,8 @@
 using System;
 using Hangfire.Annotations;
 
+#pragma warning disable 618 // Obsolete member
+
 namespace Hangfire.Server
 {
     /// <summary>

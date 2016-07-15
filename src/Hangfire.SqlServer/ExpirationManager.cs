@@ -22,9 +22,11 @@ using Hangfire.Server;
 
 namespace Hangfire.SqlServer
 {
+#pragma warning disable 618
     internal class ExpirationManager : IServerComponent
+#pragma warning restore 618
     {
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.For<ExpirationManager>();
 
         private const string DistributedLockKey = "locks:expirationmanager";
         private static readonly TimeSpan DefaultLockTimeout = TimeSpan.FromMinutes(5);
@@ -50,7 +52,7 @@ namespace Hangfire.SqlServer
 
         public ExpirationManager(SqlServerStorage storage, TimeSpan checkInterval)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
 
             _storage = storage;
             _checkInterval = checkInterval;
@@ -60,7 +62,7 @@ namespace Hangfire.SqlServer
         {
             foreach (var table in ProcessedTables)
             {
-                Logger.DebugFormat("Removing outdated records from table '{0}'...", table);
+                Logger.Debug($"Removing outdated records from table '{table}'...");
 
                 int removedCount = 0;
 
@@ -73,9 +75,8 @@ namespace Hangfire.SqlServer
                         try
                         {
                             removedCount = connection.Execute(
-                                String.Format(@"
-set transaction isolation level read committed;
-delete top (@count) from [{0}].[{1}] with (readpast) where ExpireAt < @now;", _storage.GetSchemaName(), table),
+$@"set transaction isolation level read committed;
+delete top (@count) from [{_storage.SchemaName}].[{table}] with (readpast) where ExpireAt < @now;",
                                 new { now = DateTime.UtcNow, count = NumberOfRecordsInSinglePass });
                         }
                         finally
@@ -86,12 +87,12 @@ delete top (@count) from [{0}].[{1}] with (readpast) where ExpireAt < @now;", _s
 
                     if (removedCount > 0)
                     {
-                        Logger.Trace(String.Format("Removed {0} outdated record(s) from '{1}' table.", removedCount,
-                            table));
+                        Logger.Trace($"Removed {removedCount} outdated record(s) from '{table}' table.");
 
                         cancellationToken.WaitHandle.WaitOne(DelayBetweenPasses);
                         cancellationToken.ThrowIfCancellationRequested();
                     }
+                    // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
                 } while (removedCount != 0);
             }
 

@@ -1,5 +1,7 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True TrimLeadingUnderscores : true *@
 @using Hangfire.Dashboard
+@using Hangfire.Dashboard.Resources;
+
 @inherits RazorPage
 <div class="btn-toolbar">
     @if (_pager.TotalPageCount > 1)
@@ -16,12 +18,12 @@
                         break;
                     case Pager.ItemType.NextPage:
                         <a href="@_pager.PageUrl(page.PageIndex)" class="btn btn-default @(page.Disabled ? "disabled" : null)">
-                            Next
+                            @Strings.Paginator_Next
                         </a>
                         break;
                     case Pager.ItemType.PrevPage:
                         <a href="@_pager.PageUrl(page.PageIndex)" class="btn btn-default @(page.Disabled ? "disabled" : null)">
-                            Prev
+                            @Strings.Paginator_Prev
                         </a>
                         break;
                     case Pager.ItemType.MorePage:
@@ -35,5 +37,7 @@
         <div class="btn-toolbar-spacer"></div>
     }
 
-    <div class="btn-toolbar-label">Total items: @_pager.TotalRecordCount</div>
+    <div class="btn-toolbar-label">
+        @Strings.Paginator_TotalItems: @_pager.TotalRecordCount
+    </div>
 </div>

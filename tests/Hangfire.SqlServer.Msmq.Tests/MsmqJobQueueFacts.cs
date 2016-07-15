@@ -2,9 +2,10 @@
 using System.Data;
 using System.Messaging;
 using System.Threading;
-using Hangfire.Msmq.Tests;
 using Moq;
 using Xunit;
+
+// ReSharper disable PossibleNullReferenceException
 
 namespace Hangfire.SqlServer.Msmq.Tests
 {
@@ -44,9 +45,7 @@ namespace Hangfire.SqlServer.Msmq.Tests
                 transaction.Begin();
 
                 var message = messageQueue.Receive(TimeSpan.FromSeconds(5), transaction);
-                message.Formatter = new BinaryMessageFormatter();
 
-                Assert.Equal("job-id", message.Body);
                 Assert.Equal("job-id", message.Label);
 
                 transaction.Commit();
