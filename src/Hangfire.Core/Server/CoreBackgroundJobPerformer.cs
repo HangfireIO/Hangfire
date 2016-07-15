@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
@@ -78,7 +79,7 @@ namespace Hangfire.Server
                 // JobAbortedException exception should be thrown as-is to notify
                 // a worker that background job was aborted by a state change, and
                 // should NOT be re-queued.
-                throw exception;
+                ExceptionDispatchInfo.Capture(exception).Throw();
             }
 
             if (exception is OperationCanceledException && shutdownToken.IsCancellationRequested)
@@ -87,6 +88,7 @@ namespace Hangfire.Server
                 // others, when ShutdownToken's cancellation was requested, to notify
                 // a worker that job performance was aborted by a shutdown request,
                 // and a job identifier should BE re-queued.
+                ExceptionDispatchInfo.Capture(exception).Throw();
                 throw exception;
             }
 
