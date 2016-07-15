@@ -177,7 +177,8 @@ namespace Hangfire.Server
             if (String.IsNullOrWhiteSpace(serverName))
             {
                 var hostName = Environment.GetEnvironmentVariable("COMPUTERNAME")
-                               ?? Environment.GetEnvironmentVariable("HOSTNAME");
+                               ?? Environment.GetEnvironmentVariable("HOSTNAME")
+                               ?? "localhost";
 
                 serverName = hostName.ToLowerInvariant();
 #if NETFULL
