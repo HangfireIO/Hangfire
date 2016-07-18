@@ -33,10 +33,10 @@ before_install:
   - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install openssl; brew link --force openssl; fi
   - export EnableNuGetPackageRestore=true
   - export DOTNET_INSTALL_DIR="$PWD/.dotnetcli"
+  - export PATH="$DOTNET_INSTALL_DIR:$PATH"  
   
 install:
- - curl -sSL https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.sh | bash /dev/stdin --version "$CLI_VERSION" --install-dir "$DOTNET_INSTALL_DIR"
- - export PATH="$DOTNET_INSTALL_DIR:$PATH"  
+ - travis_retry curl -sSL https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.sh | bash /dev/stdin --version "$CLI_VERSION" --install-dir "$DOTNET_INSTALL_DIR"
 
 cache: 
  - apt
@@ -45,8 +45,11 @@ cache:
 
 # Run the build script
 script:
- - travis_retry mono .nuget/NuGet.exe install .nuget/packages.config -OutputDirectory packages
  - travis_retry dotnet restore
  - dotnet test tests/Hangfire.Core.Tests
- - xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
- - mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll
+ 
+# Tests on Mono disabled – waiting for https://github.com/NuGet/Home/issues/3085
+# - travis_retry mono .nuget/NuGet.exe install .nuget/packages.config -OutputDirectory packages
+# - travis_retry mono .nuget/NuGet.exe install .
+# - xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
+# - mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll
