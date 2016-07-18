@@ -46,12 +46,10 @@ cache:
 #       build configuration       #
 #---------------------------------#
 
-before_build:
-  - dotnet restore
-
 # to run your custom scripts instead of automatic MSBuild
 build_script:
   - build.bat pack
+  - dotnet restore
   - dotnet test tests/Hangfire.Core.Tests
 
 after_build:
