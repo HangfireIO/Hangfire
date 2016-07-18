@@ -19,7 +19,14 @@ Task Test -Depends Compile -Description "Run unit and integration tests under Op
     Run-OpenCoverXunit2 "Hangfire.SqlServer.Msmq.Tests" $coverage_file $coverage_filter
 }
 
-Task Merge -Depends Test -Description "Run ILMerge /internalize to merge assemblies." {
+Task Test-Core {
+	Exec { 
+		dotnet restore
+		dotnet test "tests/Hangfire.Core.Tests"
+	}
+}
+
+Task Merge -Depends Test, Test-Core -Description "Run ILMerge /internalize to merge assemblies." {
     # Remove `*.pdb` file to be able to prepare NuGet symbol packages.
 	Remove-File ((Get-SrcOutputDir "Hangfire.SqlServer") + "\Dapper.pdb")
     
@@ -51,6 +58,18 @@ Task Pack -Depends Collect -Description "Create NuGet packages and archive files
     Create-Package "Hangfire.SqlServer" $version
     Create-Package "Hangfire.SqlServer.Msmq" $version
     Create-Package "Hangfire.AspNetCore" $version
+}
+
+function Run-Xunit2Tests($project, $target) {
+    Write-Host "Running xUnit test runner for '$project'..." -ForegroundColor "Green"
+    $assembly = (Get-TestsOutputDir $project $target) + "\$project.dll"
+	
+    if ($appVeyor) {
+        Exec { xunit.console $assembly /appveyor }
+    } else {
+		$xunit2 = Resolve-Path $xunit2
+        Exec { .$xunit2 $assembly }
+    }
 }
 
 function Run-OpenCoverXunit2($projectWithOptionalTarget, $coverageFile, $coverageFilter) {
