@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using Hangfire.Common;
 using Hangfire.Server;
@@ -175,14 +176,42 @@ namespace Hangfire.Storage
                     }
                     catch (Exception)
                     {
-                        throw jsonException;
+                        ExceptionDispatchInfo.Capture(jsonException).Throw();
+                        throw;
                     }
 #else
-                    throw;
+                    DateTime dateTime;
+                    if (type == typeof(DateTime) && ParseDateTimeArgument(argument, out dateTime))
+                    {
+                        value = dateTime;
+                    }
+                    else
+                    {
+                        throw;
+                    }
 #endif
                 }
             }
             return value;
+        }
+
+        internal static bool ParseDateTimeArgument(string argument, out DateTime value)
+        {
+            DateTime dateTime;
+            var result = DateTime.TryParse(argument, out dateTime);
+
+            if (!result)
+            {
+                result = DateTime.TryParseExact(
+                    argument, 
+                    "MM/dd/yyyy HH:mm:ss.ffff", 
+                    CultureInfo.CurrentCulture,
+                    DateTimeStyles.None, 
+                    out dateTime);
+            }
+
+            value = dateTime;
+            return result;
         }
 
         private static IEnumerable<MethodInfo> GetAllMethods(Type type)
