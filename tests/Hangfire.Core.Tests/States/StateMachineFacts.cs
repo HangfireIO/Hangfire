@@ -83,7 +83,7 @@ namespace Hangfire.Core.Tests.States
                 context.CurrentState == _context.OldStateName)));
         }
 
-        [Fact, Sequence]
+        [Fact, SequenceAttribute]
         public void ApplyState_CallsElectionFilters()
         {
             // Arrange

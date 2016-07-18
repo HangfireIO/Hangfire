@@ -120,7 +120,7 @@ namespace Hangfire.SqlServer.Tests
             });
         }
 
-        [Fact(Timeout = 1000), CleanDatabase(IsolationLevel.Unspecified)]
+        [Fact, CleanDatabase(IsolationLevel.Unspecified)]
         public void DistributedLocks_AreReEntrant_FromTheSameThread_OnTheSameResource()
         {
             var storage = new SqlServerStorage(ConnectionUtils.GetConnectionString());

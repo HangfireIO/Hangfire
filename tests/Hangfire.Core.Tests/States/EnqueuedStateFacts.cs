@@ -43,9 +43,10 @@ namespace Hangfire.Core.Tests.States
         {
             var state = new EnqueuedState();
 
-            Assert.DoesNotThrow(() => state.Queue = "lowercasedcharacters");
-            Assert.DoesNotThrow(() => state.Queue = "underscores_allowed");
-            Assert.DoesNotThrow(() => state.Queue = "1234567890_allowed");
+            // Does not throw
+            state.Queue = "lowercasedcharacters";
+            state.Queue = "underscores_allowed";
+            state.Queue = "1234567890_allowed";
         }
 
         [Fact]

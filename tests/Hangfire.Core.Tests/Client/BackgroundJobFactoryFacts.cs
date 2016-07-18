@@ -376,7 +376,7 @@ namespace Hangfire.Core.Tests.Client
             var factory = CreateFactory();
 
             // Act
-            Assert.DoesNotThrow(() => factory.Create(_context.Object));
+            factory.Create(_context.Object);
 
             // Assert
             outerFilter.Verify(x => x.OnCreated(It.Is<CreatedContext>(context => context.Exception != null)));

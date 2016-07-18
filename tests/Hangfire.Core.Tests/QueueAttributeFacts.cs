@@ -41,7 +41,8 @@ namespace Hangfire.Core.Tests
                 ApplyContext = { NewState = new Mock<IState>() }
             };
 
-            Assert.DoesNotThrow(() => filter.OnStateElection(context.Object));
+            // Does not throw
+            filter.OnStateElection(context.Object);
         }
     }
 }

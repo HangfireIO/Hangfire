@@ -5,6 +5,8 @@ Properties {
     $solution = "Hangfire.sln"
     $coverage_file = "coverage.xml"
     $coverage_filter = "+[Hangfire.*]* -[*.Tests]* -[*]*.Annotations.* -[*]*.Dashboard.* -[*]*.Logging.* -[*]*.ExpressionUtil.*"
+	$opencover = "packages\OpenCover.*\opencover.console.exe"
+	$xunit2 = "packages\xunit.runner.console.*\tools\xunit.console.exe"
 }
 
 Task Default -Depends Collect
@@ -12,9 +14,9 @@ Task Default -Depends Collect
 Task Test -Depends Compile -Description "Run unit and integration tests under OpenCover." {
 	Remove-File $coverage_file
     
-    Run-OpenCover "Hangfire.Core.Tests" $coverage_file $coverage_filter
-    Run-OpenCover "Hangfire.SqlServer.Tests" $coverage_file $coverage_filter
-    Run-OpenCover "Hangfire.SqlServer.Msmq.Tests" $coverage_file $coverage_filter
+    Run-OpenCoverXunit2 "Hangfire.Core.Tests" $coverage_file $coverage_filter
+    Run-OpenCoverXunit2 "Hangfire.SqlServer.Tests" $coverage_file $coverage_filter
+    Run-OpenCoverXunit2 "Hangfire.SqlServer.Msmq.Tests" $coverage_file $coverage_filter
 }
 
 Task Merge -Depends Test -Description "Run ILMerge /internalize to merge assemblies." {
@@ -49,4 +51,30 @@ Task Pack -Depends Collect -Description "Create NuGet packages and archive files
     Create-Package "Hangfire.SqlServer" $version
     Create-Package "Hangfire.SqlServer.Msmq" $version
     Create-Package "Hangfire.AspNetCore" $version
+}
+
+function Run-OpenCoverXunit2($projectWithOptionalTarget, $coverageFile, $coverageFilter) {
+    $project = $projectWithOptionalTarget
+    $target = $null
+
+    if ($projectWithOptionalTarget -Is [System.Array]) {
+        $project = $projectWithOptionalTarget[0]
+        $target = $projectWithOptionalTarget[1]
+    }
+
+    if ($env:APPVEYOR) {
+        $xunit_path = Get-Command "xunit.console.exe" | Select-Object -ExpandProperty Definition
+        $extra = "/appveyor"
+    }
+    else {
+        # We need to use paths without asterisks here
+        $xunit_path = Resolve-Path $xunit2
+    }
+
+    Write-Host "Running OpenCover/xUnit for '$project'..." -ForegroundColor "Green"
+    $assembly = (Get-TestsOutputDir $project $target) + "\$project.dll"
+	
+    Exec {
+        .$opencover -target:"$xunit_path" -targetargs:"`"$assembly`" -noshadow $extra" -filter:"$coverageFilter" -mergeoutput -output:"$coverageFile" -register:user -returntargetcode
+    }
 }

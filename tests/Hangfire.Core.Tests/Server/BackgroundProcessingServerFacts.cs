@@ -77,7 +77,7 @@ namespace Hangfire.Core.Tests.Server
             component2.Setup(x => x.Execute(It.IsAny<BackgroundProcessContext>())).Callback(() => Thread.Sleep(10));
 
             // Act
-            using (CreateServer()) { Thread.Sleep(100); }
+            using (CreateServer()) { Thread.Sleep(200); }
 
             // Assert
             component1.Verify(x => x.Execute(It.IsAny<BackgroundProcessContext>()), Times.AtLeast(5));

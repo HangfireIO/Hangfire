@@ -181,7 +181,8 @@ namespace Hangfire.Core.Tests.Server
                 .Returns(new HashSet<string> { "non-existing-job" });
             var scheduler = CreateScheduler();
 
-            Assert.DoesNotThrow(() => scheduler.Execute(_context.Object));
+            // Does not throw
+            scheduler.Execute(_context.Object);
         }
 
         [Fact]
@@ -193,8 +194,8 @@ namespace Hangfire.Core.Tests.Server
 
             var scheduler = CreateScheduler();
 
-            // Act & Assert
-            Assert.DoesNotThrow(() => scheduler.Execute(_context.Object));
+            // Act & Assert does not throw
+            scheduler.Execute(_context.Object);
         }
 
         [Fact]
@@ -212,8 +213,8 @@ namespace Hangfire.Core.Tests.Server
             _recurringJob["TimeZoneId"] = timeZone.Id;
             var scheduler = CreateScheduler();
 
-            // Act & Assert
-            Assert.DoesNotThrow(() => scheduler.Execute(_context.Object));
+            // Act & Assert does not throw
+            scheduler.Execute(_context.Object);
         }
 
         [Fact]
@@ -228,8 +229,8 @@ namespace Hangfire.Core.Tests.Server
             _recurringJob.Remove("TimeZoneId");
             var scheduler = CreateScheduler();
 
-            // Act & Assert
-            Assert.DoesNotThrow(() => scheduler.Execute(_context.Object));
+            // Act & Assert does not throw
+            scheduler.Execute(_context.Object);
         }
 
         [Fact]

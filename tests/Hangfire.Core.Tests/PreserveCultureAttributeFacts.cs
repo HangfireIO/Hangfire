@@ -63,7 +63,8 @@ namespace Hangfire.Core.Tests
         {
             var filter = CreateFilter();
 
-            Assert.DoesNotThrow(() => filter.OnCreated(null));
+            // Does not throw
+            filter.OnCreated(null);
         }
 
         [Fact]

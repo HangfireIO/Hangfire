@@ -261,7 +261,8 @@ namespace Hangfire.Core.Tests
         {
             var manager = CreateManager();
 
-            Assert.DoesNotThrow(() => manager.Trigger(_id));
+            manager.Trigger(_id);
+
             _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
         }
 

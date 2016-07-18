@@ -176,8 +176,8 @@ namespace Hangfire.Core.Tests.Server
             
             var performer = CreatePerformer();
 
-            // Act & Assert
-            Assert.DoesNotThrow(() => performer.Perform(_context.Object));
+            // Act & Assert does not throw
+            performer.Perform(_context.Object);
         }
 
         [Fact, Sequence]
@@ -344,8 +344,8 @@ namespace Hangfire.Core.Tests.Server
 
             var performer = CreatePerformer();
 
-            // Act & Assert
-            Assert.DoesNotThrow(() => performer.Perform(_context.Object));
+            // Act & Assert does not throw
+            performer.Perform(_context.Object);
         }
 
         [Fact]
@@ -365,7 +365,7 @@ namespace Hangfire.Core.Tests.Server
             var performer = CreatePerformer();
 
             // Act
-            Assert.DoesNotThrow(() => performer.Perform(_context.Object));
+            performer.Perform(_context.Object);
 
             // Assert
             outerFilter.Verify(x => x.OnPerformed(It.Is<PerformedContext>(context => context.Exception != null)));
