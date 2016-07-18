@@ -31,7 +31,7 @@ branches:
 
 # Make sure build dependencies are installed.
 before_install:  
-  - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install openssl; brew link --force openssl; fi
+  - if test "$TRAVIS_OS_NAME" == "osx"; then brew install openssl; brew link --force openssl; fi
   - export DOTNET_INSTALL_DIR="$PWD/.dotnetcli"
   - export PATH="$DOTNET_INSTALL_DIR:$PATH"  
   
