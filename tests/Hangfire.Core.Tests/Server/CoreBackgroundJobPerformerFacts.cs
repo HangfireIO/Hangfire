@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Common;
@@ -97,6 +98,7 @@ namespace Hangfire.Core.Tests.Server
             Assert.True(_methodInvoked);
         }
 
+#if NETFULL
         [Fact, StaticLock]
         public void Perform_PassesCorrectDateTime_IfItWasSerialized_UsingTypeConverter()
         {
@@ -119,6 +121,7 @@ namespace Hangfire.Core.Tests.Server
             // Assert - see also the `MethodWithDateTimeArgument` method.
             Assert.True(_methodInvoked);
         }
+#endif
 
         [Fact, StaticLock]
         public void Perform_PassesCorrectDateTime_IfItWasSerialized_UsingOldFormat()
