@@ -6,9 +6,8 @@ sudo: required
 
 # Make sure build dependencies are installed.
 install:
- - export HOSTNAME=localhost
- - travis_retry nuget install .nuget/packages.config -OutputDirectory packages
- - travis_retry nuget restore Hangfire.Mono.sln
+ - travis_retry mono .nuget/nuget.exe install .nuget/packages.config -OutputDirectory packages
+ - travis_retry mono .nuget/nuget.exe restore Hangfire.Mono.sln
  
 cache: 
  - apt
@@ -18,7 +17,7 @@ cache:
 # Run the build script
 script:
  - xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
- - mono ./packages/xunit.runners.1.9.2/tools/xunit.console.clr4.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll
+ - mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll
 
 # Only watch the master branch.
 branches:
