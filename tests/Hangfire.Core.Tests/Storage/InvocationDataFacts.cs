@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using Hangfire.Common;
 using Hangfire.Storage;
 using Xunit;
@@ -103,7 +104,7 @@ namespace Hangfire.Core.Tests.Storage
             var serializedData = new InvocationData(
                 typeof(IParent).AssemblyQualifiedName,
                 "Method",
-                JobHelper.ToJson(new string[0]),
+                JobHelper.ToJson(new Type[0]),
                 JobHelper.ToJson(new string[0]));
 
             var job = serializedData.Deserialize();
@@ -117,7 +118,7 @@ namespace Hangfire.Core.Tests.Storage
             var serializedData = new InvocationData(
                 typeof(IChild).AssemblyQualifiedName,
                 "Method",
-                JobHelper.ToJson(new string[0]),
+                JobHelper.ToJson(new Type[0]),
                 JobHelper.ToJson(new string[0]));
 
             var job = serializedData.Deserialize();
