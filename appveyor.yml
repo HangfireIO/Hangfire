@@ -46,8 +46,13 @@ cache:
 #       build configuration       #
 #---------------------------------#
 
+before_build:
+  - dotnet restore
+
 # to run your custom scripts instead of automatic MSBuild
-build_script: build.bat pack
+build_script:
+  - build.bat pack
+  - dotnet test tests/Hangfire.Core.Tests
 
 after_build:
   - packages\coveralls.io.1.3.4\tools\coveralls.net --opencover coverage.xml
