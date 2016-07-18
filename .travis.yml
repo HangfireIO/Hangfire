@@ -6,8 +6,8 @@ sudo: required
 
 # Make sure build dependencies are installed.
 install:
- - travis_retry mono .nuget/nuget.exe install .nuget/packages.config -OutputDirectory packages
- - travis_retry mono .nuget/nuget.exe restore Hangfire.Mono.sln
+ - travis_retry mono .nuget/NuGet.exe install .nuget/packages.config -OutputDirectory packages
+ - travis_retry mono .nuget/NuGet.exe restore Hangfire.Mono.sln
  
 cache: 
  - apt
