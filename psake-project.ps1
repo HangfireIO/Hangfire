@@ -53,18 +53,6 @@ Task Pack -Depends Collect -Description "Create NuGet packages and archive files
     Create-Package "Hangfire.AspNetCore" $version
 }
 
-function Run-Xunit2Tests($project, $target) {
-    Write-Host "Running xUnit test runner for '$project'..." -ForegroundColor "Green"
-    $assembly = (Get-TestsOutputDir $project $target) + "\$project.dll"
-	
-    if ($appVeyor) {
-        Exec { xunit.console $assembly /appveyor }
-    } else {
-		$xunit2 = Resolve-Path $xunit2
-        Exec { .$xunit2 $assembly }
-    }
-}
-
 function Run-OpenCoverXunit2($projectWithOptionalTarget, $coverageFile, $coverageFilter) {
     $project = $projectWithOptionalTarget
     $target = $null
@@ -74,14 +62,8 @@ function Run-OpenCoverXunit2($projectWithOptionalTarget, $coverageFile, $coverag
         $target = $projectWithOptionalTarget[1]
     }
 
-    if ($env:APPVEYOR) {
-        $xunit_path = Get-Command "xunit.console.exe" | Select-Object -ExpandProperty Definition
-        $extra = "/appveyor"
-    }
-    else {
-        # We need to use paths without asterisks here
-        $xunit_path = Resolve-Path $xunit2
-    }
+    # We need to use paths without asterisks here
+    $xunit_path = Resolve-Path $xunit2
 
     Write-Host "Running OpenCover/xUnit for '$project'..." -ForegroundColor "Green"
     $assembly = (Get-TestsOutputDir $project $target) + "\$project.dll"
