@@ -6,7 +6,9 @@ using Hangfire.Server;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
+#if NETFULL
 using Moq.Sequences;
+#endif
 using Xunit;
 
 // ReSharper disable AssignNullToNotNullAttribute
@@ -119,6 +121,7 @@ namespace Hangfire.Core.Tests.Server
             _fetchedJob.Verify(x => x.Requeue());
         }
 
+#if NETFULL
         [Fact, Sequence]
         public void Execute_ExecutesDefaultWorkflow_WhenJobIsCorrect()
         {
@@ -143,6 +146,7 @@ namespace Hangfire.Core.Tests.Server
 
             // Assert - see the `SequenceAttribute` class.
         }
+#endif
 
         [Fact]
         public void Execute_SetsCurrentServer_ToProcessingState()

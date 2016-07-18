@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Threading;
 using System.Transactions;
 using Dapper;
-using Xunit;
+using Xunit.Sdk;
 
 namespace Hangfire.SqlServer.Tests
 {

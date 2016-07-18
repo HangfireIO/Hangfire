@@ -33,19 +33,22 @@ namespace Hangfire.Core.Tests.States
         [Fact]
         public void ValidateQueueName_DoesntThrowAnException_WhenQueueNameHasOnlyLowerCaseLetters()
         {
-            Assert.DoesNotThrow(() => EnqueuedState.ValidateQueueName("queue", "valid"));
+            // Does not throw
+            EnqueuedState.ValidateQueueName("queue", "valid");
         }
 
         [Fact]
         public void ValidateQueueName_DoesntThrowAnException_WhenQueueNameHasUnderscores()
         {
-            Assert.DoesNotThrow(() => EnqueuedState.ValidateQueueName("queue", "a_b_c"));
+            // Does not throw
+            EnqueuedState.ValidateQueueName("queue", "a_b_c");
         }
 
         [Fact]
         public void ValidateQueueName_DoesntThrowAnException_WhenValueHasOnlyDigits()
         {
-            Assert.DoesNotThrow(() => EnqueuedState.ValidateQueueName("queue", "363463"));
+            // Does not throw
+            EnqueuedState.ValidateQueueName("queue", "363463");
         }
     }
 }

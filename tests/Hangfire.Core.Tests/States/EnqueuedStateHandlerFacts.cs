@@ -56,7 +56,8 @@ namespace Hangfire.Core.Tests.States
         {
             var handler = new EnqueuedState.Handler();
 
-            Assert.DoesNotThrow(() => handler.Unapply(null, null));
+            // Does not throw
+            handler.Unapply(null, null);
         }
     }
 }

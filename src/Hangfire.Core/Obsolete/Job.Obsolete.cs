@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
@@ -123,7 +124,15 @@ namespace Hangfire.Common
                                 var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
                                 value = converter.ConvertFromInvariantString(argument);
 #else
-                                throw;
+                                DateTime dateTime;
+                                if (parameter.ParameterType == typeof(DateTime) && InvocationData.ParseDateTimeArgument(argument, out dateTime))
+                                {
+                                    value = dateTime;
+                                }
+                                else
+                                {
+                                    throw;
+                                }
 #endif
                             }
                         }

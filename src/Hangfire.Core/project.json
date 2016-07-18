@@ -1,4 +1,32 @@
 {
+    "buildOptions": {
+        "warningsAsErrors": true,
+        "xmlDoc": true,
+        "nowarn": [
+            "CS1591"
+        ],
+        "compile": {
+            "exclude": [
+                "AppBuilderExtensions.cs",
+                "Dashboard/Owin/*",
+                "Obsolete/DashboardOwinExtensions.cs",
+                "Obsolete/DashboardMiddleware.cs",
+                "Obsolete/OwinBootstrapper.cs",
+                "Obsolete/ServerOwinExtensions.cs",
+                "Obsolete/RequestDispatcherContext.cs",
+                "Obsolete/IRequestDispatcher.cs",
+                "Obsolete/RequestDispatcherWrapper.cs",
+                "Obsolete/StartupConfiguration.cs",
+                "Obsolete/IBootstrapperConfiguration.cs",
+                "Obsolete/BootstrapperConfigurationExtensions.cs"
+            ]
+        },
+        "embed": {
+            "include": [
+                "Dashboard/Content/**"
+            ]
+        }
+    },
     "supports": {},
     "dependencies": {
         "Microsoft.NETCore.Portable.Compatibility": "1.0.1",

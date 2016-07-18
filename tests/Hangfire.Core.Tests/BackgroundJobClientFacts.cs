@@ -68,7 +68,8 @@ namespace Hangfire.Core.Tests
         {
             JobStorage.Current = new Mock<JobStorage>().Object;
             // ReSharper disable once ObjectCreationAsStatement
-            Assert.DoesNotThrow(() => new BackgroundJobClient());
+            // Does not throw
+            new BackgroundJobClient();
         }
 
         [Fact]
