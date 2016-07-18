@@ -116,7 +116,8 @@ namespace Hangfire.Core.Tests.Common
 			CreateAndPerform(Int64Value);
 		}
 
-		private const UInt64 UInt64Value = UInt64.MaxValue;
+#if NETFULL
+        private const UInt64 UInt64Value = UInt64.MaxValue;
 		public void Method(UInt64 value) { Assert.Equal(UInt64Value, value); }
 
 		[Fact]
@@ -124,6 +125,7 @@ namespace Hangfire.Core.Tests.Common
 		{
 			CreateAndPerform(UInt64Value);
 		}
+#endif
 
         private const Int16 Int16Value = Int16.MaxValue;
 		public void Method(Int16 value) { Assert.Equal(Int16Value, value); }
@@ -183,7 +185,8 @@ namespace Hangfire.Core.Tests.Common
 			}
 		}
 
-		private static readonly CultureInfo CultureInfoValue = CultureInfo.GetCultureInfo("ru-RU");
+#if NETFULL
+        private static readonly CultureInfo CultureInfoValue = new CultureInfo("ru-RU");
 		public void Method(CultureInfo value) { Assert.Equal(CultureInfoValue, value); }
 
         [Fact]
@@ -191,6 +194,7 @@ namespace Hangfire.Core.Tests.Common
 		{
 			CreateAndPerform(CultureInfoValue);
 		}
+#endif
 
         private const DayOfWeek EnumValue = DayOfWeek.Saturday;
 		public void Method(DayOfWeek value) { Assert.Equal(EnumValue, value); }
