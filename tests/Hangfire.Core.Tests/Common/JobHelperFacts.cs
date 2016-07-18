@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.Serialization.Formatters;
 using Hangfire.Annotations;
 using Hangfire.Common;

@@ -162,7 +162,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(expected, job.Arguments[0]);
         }
 
-	    [Fact]
+        [Fact]
 	    public void FromExpression_ConvertsArgumentsToJson()
 	    {
 		    var job = Job.FromExpression(() => MethodWithArguments("123", 1));
@@ -176,10 +176,10 @@ namespace Hangfire.Core.Tests.Common
         {
             var date = DateTime.UtcNow;
 
-            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+            CultureHelper.SetCurrentCulture("en-US");
             var enJob = Job.FromExpression(() => MethodWithDateTimeArgument(date));
 
-            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("ru-RU");
+            CultureHelper.SetCurrentCulture("ru-RU");
             var ruJob = Job.FromExpression(() => MethodWithDateTimeArgument(date));
 
             Assert.Equal(enJob.Arguments[0], ruJob.Arguments[0]);

@@ -1,4 +1,5 @@
-﻿using Hangfire.Common;
+﻿using System.Reflection;
+using Hangfire.Common;
 using Hangfire.Storage;
 using Xunit;
 
@@ -81,7 +82,7 @@ namespace Hangfire.Core.Tests.Storage
 
             var job = serializedData.Deserialize();
 
-            Assert.False(job.Type.ContainsGenericParameters);
+            Assert.False(job.Type.GetTypeInfo().ContainsGenericParameters);
             Assert.Equal(typeof(string), job.Type.GetGenericArguments()[0]);
         }
 

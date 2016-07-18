@@ -6,7 +6,9 @@ using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
+#if NETFULL
 using Moq.Sequences;
+#endif
 using Xunit;
 
 // ReSharper disable PossibleNullReferenceException
@@ -126,6 +128,7 @@ namespace Hangfire.Core.Tests.Client
                 It.IsNotNull<ClientExceptionContext>()));
         }
 
+#if NETFULL
         [Fact, Sequence]
         public void Run_CallsExceptionFilters_InReverseOrder()
         {
@@ -151,6 +154,7 @@ namespace Hangfire.Core.Tests.Client
 
             // Assert - see the `SequenceAttribute` class.
         }
+#endif
 
         [Fact]
         public void Run_EatsException_WhenItWasHandlerByFilter_AndReturnsNullJobIdentifier()
@@ -173,6 +177,7 @@ namespace Hangfire.Core.Tests.Client
             Assert.Null(jobId);
         }
 
+#if NETFULL
         [Fact, Sequence]
         public void Run_CallsClientFilters_BeforeAndAfterTheCreationOfAJob()
         {
@@ -217,6 +222,7 @@ namespace Hangfire.Core.Tests.Client
 
             // Assert - see the `SequenceAttribute` class.
         }
+#endif
 
         [Fact]
         public void Run_DoesNotCallBoth_CreateJob_And_OnCreated_WhenFilterCancelsThis_AndReturnsNullJobIdentifier()
