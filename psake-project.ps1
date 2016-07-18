@@ -19,14 +19,7 @@ Task Test -Depends Compile -Description "Run unit and integration tests under Op
     Run-OpenCoverXunit2 "Hangfire.SqlServer.Msmq.Tests" $coverage_file $coverage_filter
 }
 
-Task Test-Core {
-	Exec { 
-		dotnet restore
-		dotnet test "tests/Hangfire.Core.Tests"
-	}
-}
-
-Task Merge -Depends Test, Test-Core -Description "Run ILMerge /internalize to merge assemblies." {
+Task Merge -Depends Test -Description "Run ILMerge /internalize to merge assemblies." {
     # Remove `*.pdb` file to be able to prepare NuGet symbol packages.
 	Remove-File ((Get-SrcOutputDir "Hangfire.SqlServer") + "\Dapper.pdb")
     
