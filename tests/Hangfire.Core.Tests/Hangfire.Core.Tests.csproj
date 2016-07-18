@@ -151,6 +151,7 @@
     <Compile Include="Storage\StorageConnectionExtensionsFacts.cs" />
     <Compile Include="Utils\CultureHelper.cs" />
     <Compile Include="Utils\GlobalLockAttribute.cs" />
+    <Compile Include="Utils\PlatformHelper.cs" />
     <Compile Include="Utils\SequenceAttribute.cs" />
     <Compile Include="Utils\StaticLockAttribute.cs" />
     <Compile Include="States\EnqueuedStateValidationFacts.cs" />
@@ -159,6 +160,7 @@
     <None Include="app.config" />
     <None Include="Hangfire.Core.Tests.project.json" />
     <None Include="packages.config" />
+    <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Hangfire.Core\Hangfire.Core.csproj">

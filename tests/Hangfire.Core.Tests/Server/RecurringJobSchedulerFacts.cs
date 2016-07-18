@@ -201,7 +201,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_GetsInstance_InAGivenTimeZone()
         {
-            var timeZoneId = Type.GetType("Mono.Runtime") != null ? "Pacific/Honolulu" : "Hawaiian Standard Time";
+            var timeZoneId = PlatformHelper.IsRunningOnWindows() ? "Hawaiian Standard Time" : "Pacific/Honolulu";
 
             _instantFactory = (schedule, timeZoneInfo) =>
             {
