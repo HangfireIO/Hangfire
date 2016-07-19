@@ -229,7 +229,7 @@ namespace Hangfire
         /// <param name="interval">The number of hours to wait between every activation.</param>
         public static string HourInterval(int interval)
         {
-            return $"* */{interval} * * *";
+            return $"0 */{interval} * * *";
         }
 
         /// <summary>
@@ -238,7 +238,7 @@ namespace Hangfire
         /// <param name="interval">The number of days to wait between every activation.</param>
         public static string DayInterval(int interval)
         {
-            return $"* * */{interval} * *";
+            return $"0 0 */{interval} * *";
         }
 
         /// <summary>
@@ -247,7 +247,7 @@ namespace Hangfire
         /// <param name="interval">The number of months to wait between every activation.</param>
         public static string MonthInterval(int interval)
         {
-            return $"* * * */{interval} *";
+            return $"0 0 0 */{interval} *";
         }
 
 #if NETFULL
