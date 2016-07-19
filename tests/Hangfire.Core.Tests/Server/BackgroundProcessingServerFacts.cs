@@ -80,8 +80,8 @@ namespace Hangfire.Core.Tests.Server
             using (CreateServer()) { Thread.Sleep(200); }
 
             // Assert
-            component1.Verify(x => x.Execute(It.IsAny<BackgroundProcessContext>()), Times.AtLeast(5));
-            component2.Verify(x => x.Execute(It.IsNotNull<BackgroundProcessContext>()), Times.AtLeast(5));
+            component1.Verify(x => x.Execute(It.IsAny<BackgroundProcessContext>()), Times.AtLeast(3));
+            component2.Verify(x => x.Execute(It.IsNotNull<BackgroundProcessContext>()), Times.AtLeast(3));
         }
 
         private BackgroundProcessingServer CreateServer()
