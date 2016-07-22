@@ -117,7 +117,7 @@ namespace Hangfire.Dashboard
                         isJson = false;
                     }
 
-                    if (enumerableArgument == null)
+                    if (enumerableArgument == null || argumentValue == null)
                     {
                         var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
                         renderedArgument = argumentRenderer.Render(isJson, argumentValue?.ToString(), argument);
