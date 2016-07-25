@@ -41,12 +41,12 @@ namespace Hangfire.Server
         {
             using (var connection = context.Storage.GetConnection())
             {
+                var timedOutServers = connection.GetTimedOutServers(_serverTimeout);
                 var serversRemoved = connection.RemoveTimedOutServers(_serverTimeout);
                 if (serversRemoved != 0)
                 {
                     var msg = "The servers with machine name and server ID: \n";
 
-                    var timedOutServers = connection.GetTimedOutServers(_serverTimeout);
                     foreach (var item in timedOutServers)
                     {
                         var servername = item.Split(':');

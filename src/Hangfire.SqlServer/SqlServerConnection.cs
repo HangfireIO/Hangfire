@@ -348,7 +348,7 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
                 throw new ArgumentException("The `timeOut` value must be positive.", nameof(timeOut));
             }
 
-            var query = $@"select Id from [{nameof(_storage)}].Server where LastHeartbeat < @timeOutAt";
+            var query = $@"select Id from [{_storage.SchemaName}].Server where LastHeartbeat < @timeOutAt";
 
             return _storage.UseConnection(connection => connection
                 .Query<string>(query, new { timeOutAt = DateTime.UtcNow.Add(timeOut.Negate()) }))

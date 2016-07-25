@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
@@ -33,10 +34,8 @@ namespace Hangfire
 
         private readonly BackgroundJobServerOptions _options;
         private readonly BackgroundProcessingServer _processingServer;
-        private readonly object _failedLock;
 
         private DateTime _lastEmailNotification;
-        private bool _hasFirstFailedDateTime;
         private long _failedJobsCount;
 
         /// <summary>
@@ -89,10 +88,8 @@ namespace Hangfire
             if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
 
             _options = options;
-            _lastEmailNotification = new DateTime();
-            _hasFirstFailedDateTime = false;
+            _lastEmailNotification = DateTime.MinValue;
             _failedJobsCount = 0;
-            _failedLock = new object();
 
             var processes = new List<IBackgroundProcess>();
             processes.AddRange(GetRequiredProcesses());
@@ -185,17 +182,13 @@ namespace Hangfire
         {
             var threshold = _options.JobCheckThreshold;
             var interval = _options.JobCheckInterval;
+            
+            Interlocked.Increment(ref _failedJobsCount);
 
-            lock (_failedLock)
-            {
-                _failedJobsCount++;
-            }
-
-            if (!_hasFirstFailedDateTime || DateTime.Now.Subtract(interval) > _lastEmailNotification)
+            if ( DateTime.Now.Subtract(interval) > _lastEmailNotification)
             {
                 _lastEmailNotification = DateTime.Now;
-                _failedJobsCount = 1;
-                _hasFirstFailedDateTime = true;
+                _failedJobsCount = 1;                
             }
             else if (_failedJobsCount > threshold)
             {
@@ -203,8 +196,6 @@ namespace Hangfire
                 var msg = $"The server with machine name: \"{ name }\" has had a peak of failed jobs.";
 
                 NotificationStore.Current.NotifyAll(EventTypes.Events.FailedJobPeak, "Failed job peak", msg);
-
-                _hasFirstFailedDateTime = false;
             }
         }
     }
