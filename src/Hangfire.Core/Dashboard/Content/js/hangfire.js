@@ -451,6 +451,7 @@
                     }).get();
 
                     if (!confirmText || confirm(confirmText)) {
+                        $this.prop('disabled');
                         var loadingDelay = setTimeout(function () {
                             $this.button('loading');
                         }, 100);
@@ -459,7 +460,6 @@
                             clearTimeout(loadingDelay);
                             window.location.reload();
                         });
-                        $this.button('reset');
                     }
 
                     e.preventDefault();
