@@ -457,9 +457,9 @@
 
                         $.post($this.data('url'), { 'jobs[]': jobs }, function () {
                             clearTimeout(loadingDelay);
-                            $this.button('reset');
                             window.location.reload();
                         });
+                        $this.button('reset');
                     }
 
                     e.preventDefault();
