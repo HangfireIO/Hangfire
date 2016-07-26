@@ -335,13 +335,13 @@
                 var confirmText = $this.data('confirm');
 
                 if (!confirmText || confirm(confirmText)) {
+                    $this.prop('disabled');
                     var loadingDelay = setTimeout(function() {
                         $this.button('loading');
                     }, 100);
 
                     $.post($this.data('ajax'), function() {
                         clearTimeout(loadingDelay);
-                        $this.button('reset');
                         window.location.reload();
                     });
                 }
