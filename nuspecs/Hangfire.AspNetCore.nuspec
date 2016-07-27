@@ -14,6 +14,9 @@
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.1
+• Fixed – Add missing `GetHttpContext` extension method for the .NET Core platform.
+    
 1.6.0
 • Added – Deep integration with ASP.NET Core via Hangfire.AspNetCore package.
     </releaseNotes>

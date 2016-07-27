@@ -19,6 +19,20 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.1
+
+Hangfire.Core
+• Added – Automatic unit tests execution for .NET Core on Windows, Linux and OS X using AppVeyor and Travis CI.
+• Fixed – `DateTime` deserialization issues on .NET Core platform.
+• Fixed – Fixed UI command behaviour, buttons can only be pressed once per command (by @mahoneyj2).
+• Fixed – `TypeInitializationException` when using Serilog appeared in version 1.6.0.
+• Fixed – Cron format strings for intervals are specified correctly now (by @stevetsang).
+• Fixed – `NullReference` on Job Details page when background job has null value for `IEnumerable` argument.
+• Fixed – Don't skip symbols when publishing NuGet packages.
+
+Hangfire.AspNetCore
+• Fixed – Add missing `GetHttpContext` extension method for the .NET Core platform.
+    
 1.6.0
     
 Hangfire.Core
