@@ -29,6 +29,7 @@ Hangfire.Core
 • Fixed – Cron format strings for intervals are specified correctly now (by @stevetsang).
 • Fixed – `NullReference` on Job Details page when background job has null value for `IEnumerable` argument.
 • Fixed – Don't skip symbols when publishing NuGet packages.
+• Fixed – Use GUID identifier when can't determine the host name.
 
 Hangfire.AspNetCore
 • Fixed – Add missing `GetHttpContext` extension method for the .NET Core platform.
