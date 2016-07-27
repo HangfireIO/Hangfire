@@ -5,8 +5,8 @@ Hangfire [![Official Site](https://img.shields.io/badge/site-hangfire.io-blue.sv
 
 &nbsp; | `master` | `dev`
 --- | --- | --- 
-**Windows** | [![Windows Build Status](https://ci.appveyor.com/api/projects/status/70m632jkycqpnsp9/branch/master?svg=true)](https://ci.appveyor.com/project/odinserj/hangfire-525)  | [![Windows Build Status](https://ci.appveyor.com/api/projects/status/70m632jkycqpnsp9/branch/dev?svg=true)](https://ci.appveyor.com/project/odinserj/hangfire-525) 
-**Linux / OS X** | [![Travis CI Build Status](https://travis-ci.org/HangfireIO/Hangfire.svg?branch=master)](https://travis-ci.org/HangfireIO/Hangfire) | [![Linux and OS X Build Status](https://travis-ci.org/HangfireIO/Hangfire.svg?branch=dev)](https://travis-ci.org/HangfireIO/Hangfire)
+**Windows** | [![Windows Build Status](https://img.shields.io/appveyor/ci/odinserj/hangfire-525/master.svg?maxAge=2592000)](https://ci.appveyor.com/project/odinserj/hangfire-525)  | [![Windows Build Status](https://img.shields.io/appveyor/ci/odinserj/hangfire-525/dev.svg?maxAge=2592000)](https://ci.appveyor.com/project/odinserj/hangfire-525) 
+**Linux / OS X** | [![Travis CI Build Status](https://img.shields.io/travis/HangfireIO/Hangfire/master.svg?maxAge=2592000)](https://travis-ci.org/HangfireIO/Hangfire) | [![Linux and OS X Build Status](https://img.shields.io/travis/HangfireIO/Hangfire/dev.svg?maxAge=2592000)](https://travis-ci.org/HangfireIO/Hangfire)
 
 ## Overview
 
