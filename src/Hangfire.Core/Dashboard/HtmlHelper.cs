@@ -22,6 +22,7 @@ using System.Text;
 using Hangfire.Common;
 using System.ComponentModel;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 using Hangfire.Dashboard.Pages;
 using Hangfire.Dashboard.Resources;
@@ -250,7 +251,14 @@ namespace Hangfire.Dashboard
 
         public NonEscapedString StackTrace(string stackTrace)
         {
-            return new NonEscapedString(StackTraceFormatter.FormatHtml(stackTrace, StackTraceHtmlFragments));
+            try
+            {
+                return new NonEscapedString(StackTraceFormatter.FormatHtml(stackTrace, StackTraceHtmlFragments));
+            }
+            catch (RegexMatchTimeoutException)
+            {
+                return new NonEscapedString(HtmlEncode(stackTrace));
+            }
         }
 
         public string HtmlEncode(string text)
