@@ -111,16 +111,6 @@ namespace MQTools
             return matches[0];
         }
 
-        private static long GetPrivateQueueCount(string queue)
-        {
-            return GetQueueCount(null, "private$", queue);
-        }
-
-        private static long GetPrivateQueueCount(string computerName, string queue)
-        {
-            return GetQueueCount(computerName, "private$", queue);
-        }
-
         private static long GetQueueCount(string computerName, string queueType, string queue)
         {
             if (string.IsNullOrEmpty(computerName)) computerName = null;
