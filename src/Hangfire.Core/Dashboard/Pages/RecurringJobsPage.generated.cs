@@ -281,12 +281,12 @@ WriteLiteral("</th>\r\n                                <th class=\"min-width\">"
             
             #line default
             #line hidden
-WriteLiteral("</th>\r\n                                <th>");
+WriteLiteral("</th>\r\n                                <th class=\"min-width\">");
 
 
             
             #line 81 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                               Write(Strings.RecurringJobsPage_Table_TimeZone);
+                                                 Write(Strings.RecurringJobsPage_Table_TimeZone);
 
             
             #line default
@@ -403,19 +403,27 @@ WriteLiteral("\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                                            ");
-
-WriteLiteral(" ");
+WriteLiteral("                                            <code title=\"");
 
 
             
             #line 113 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                          Write(cronDescription);
+                                                    Write(cronDescription);
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n");
+WriteLiteral("\">");
+
+
+            
+            #line 113 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+                                                                      Write(job.Cron);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</code>\r\n");
 
 
             
@@ -532,7 +540,7 @@ WriteLiteral("\r\n");
 
             
             #line 134 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                    }
+                                        }
                                         else
                                         {
 
