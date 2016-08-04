@@ -64,6 +64,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MessageQueueExtensionsFacts.cs" />
     <Compile Include="MsmqJobQueueFacts.cs" />
     <Compile Include="MsmqJobQueueMonitoringApiFacts.cs" />
     <Compile Include="MsmqJobQueueProviderFacts.cs" />
