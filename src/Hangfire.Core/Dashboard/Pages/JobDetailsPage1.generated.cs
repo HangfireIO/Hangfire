@@ -523,12 +523,12 @@ WriteLiteral("</td>\r\n");
 
 
 
-WriteLiteral("                                        <td>");
+WriteLiteral("                                        <td class=\"word-break\">");
 
 
             
             #line 134 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                       Write(Html.JobNameLink(continuation.JobId, jobData.Job));
+                                                          Write(Html.JobNameLink(continuation.JobId, jobData.Job));
 
             
             #line default

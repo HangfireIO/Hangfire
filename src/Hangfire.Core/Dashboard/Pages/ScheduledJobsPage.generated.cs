@@ -364,8 +364,8 @@ WriteLiteral("                                </td>\r\n                         
             
             #line default
             #line hidden
-WriteLiteral("\r\n                                </td>\r\n                                <td>\r\n  " +
-"                                  ");
+WriteLiteral("\r\n                                </td>\r\n                                <td clas" +
+"s=\"word-break\">\r\n                                    ");
 
 
             

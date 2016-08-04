@@ -404,8 +404,8 @@ WriteLiteral("\r\n                                    </td>\r\n");
 
 
 
-WriteLiteral("                                    <td>\r\n                                       " +
-" ");
+WriteLiteral("                                    <td class=\"word-break\">\r\n                    " +
+"                    ");
 
 
             

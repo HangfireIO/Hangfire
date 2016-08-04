@@ -122,6 +122,10 @@ a:hover .label-hover {
     border-color: #f5e8ce;
 }
 
+.word-break {
+    word-break: break-all;
+}
+
 /* Statistics widget
 -------------------------------------------------- */
 
