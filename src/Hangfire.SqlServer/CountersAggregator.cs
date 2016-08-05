@@ -65,6 +65,8 @@ namespace Hangfire.SqlServer
                 // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
             } while (removedCount >= NumberOfRecordsInSinglePass);
 
+            Logger.Trace("Records from the 'Counter' table aggregated.");
+
             cancellationToken.WaitHandle.WaitOne(_interval);
         }
 
