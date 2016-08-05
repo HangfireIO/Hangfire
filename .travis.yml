@@ -1,18 +1,28 @@
 # Travis-CI Build for Hangfire
 # see travis-ci.org for details
 
-language: csharp
+#language: csharp
+language: cpp
 sudo: required
 dist: trusty
-osx_image: xcode7.2
-
-mono: none
-dotnet: 1.0.0-preview2-003121
 
 os:  
   - linux
   - osx
+
+env:  
+  - CLI_VERSION=latest
   
+addons:  
+  apt:
+    packages:
+    - gettext
+    - libcurl4-openssl-dev
+    - libicu-dev
+    - libssl-dev
+    - libunwind8
+    - zlib1g
+
 # Only watch the master branch.
 branches:
   only:
@@ -20,15 +30,25 @@ branches:
     - dev
 
 # Make sure build dependencies are installed.
+before_install:  
+  - if test "$TRAVIS_OS_NAME" == "osx"; then brew install openssl; brew link --force openssl; fi
+  - export DOTNET_INSTALL_DIR="$PWD/.dotnetcli"
+  - export PATH="$DOTNET_INSTALL_DIR:$PATH"  
+  
 install:
-  - travis_retry dotnet restore
+  - travis_retry curl -sSL https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.sh | bash /dev/stdin --version "$CLI_VERSION" --install-dir "$DOTNET_INSTALL_DIR"
+
+#cache: 
+# - apt
+# - directories:
+#   - packages
 
 # Run the build script
 script:
-  - dotnet test tests/Hangfire.Core.Tests -verbose
+  - travis_retry dotnet restore
+  - dotnet test tests/Hangfire.Core.Tests
  
 # Tests on Mono disabled – waiting for https://github.com/NuGet/Home/issues/3085
-# Also waiting for nuget package to be updated to 2.12
 # - travis_retry mono .nuget/NuGet.exe install .nuget/packages.config -OutputDirectory packages
 # - travis_retry mono .nuget/NuGet.exe install .
 # - xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
