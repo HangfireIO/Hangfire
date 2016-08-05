@@ -7,7 +7,7 @@ dist: trusty
 osx_image: xcode7.2
 
 mono: none
-dotnet: 1.0.0-preview3-003223
+dotnet: 1.0.0-preview2-003121
 
 os:  
   - linux
