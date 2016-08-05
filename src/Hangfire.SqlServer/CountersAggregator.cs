@@ -83,13 +83,13 @@ $@"DECLARE @RecordsToAggregate TABLE
 	[ExpireAt] DATETIME NULL
 )
 
+SET NOCOUNT ON
+
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED
 BEGIN TRAN
 
 DELETE TOP (@count) [{storage.SchemaName}].[Counter] with (readpast)
 OUTPUT DELETED.[Key], DELETED.[Value], DELETED.[ExpireAt] INTO @RecordsToAggregate
-
-SET NOCOUNT ON
 
 ;MERGE [{storage.SchemaName}].[AggregatedCounter] AS [Target]
 USING (
