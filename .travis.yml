@@ -1,8 +1,7 @@
 # Travis-CI Build for Hangfire
 # see travis-ci.org for details
 
-#language: csharp
-language: cpp
+language: csharp
 sudo: required
 dist: trusty
 
@@ -47,9 +46,7 @@ install:
 script:
  - travis_retry dotnet restore
  - dotnet test tests/Hangfire.Core.Tests
- 
-# Tests on Mono disabled – waiting for https://github.com/NuGet/Home/issues/3085
-# - travis_retry mono .nuget/NuGet.exe install .nuget/packages.config -OutputDirectory packages
-# - travis_retry mono .nuget/NuGet.exe install .
-# - xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
-# - mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll
+ - travis_retry mono nuget install .nuget/packages.config -OutputDirectory packages
+ - travis_retry mono nuget install .
+ - xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
+ - mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll
