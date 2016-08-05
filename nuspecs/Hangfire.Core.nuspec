@@ -14,6 +14,12 @@
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.2
+• Changed – Recurring job page displays now raw cron strings, descriptions are in tooltips.
+• Fixed – Return non-highlighted stack trace, when parsing takes too long, instead of throwing an exception.
+• Fixed – Dashboard UI works correctly again, when IE 11 is in the Compatibility Mode.
+• Fixed – Long method names now don't push tables out of the boundaries now.
+    
 1.6.1
 • Added – Automatic unit tests execution for .NET Core on Windows, Linux and OS X using AppVeyor and Travis CI.
 • Fixed – `DateTime` deserialization issues on .NET Core platform.

@@ -13,6 +13,11 @@
     <copyright>Copyright © 2013-2016 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>http://hangfire.io/blog/
+    
+1.6.2
+• Changed – `JobExpirationCheckInterval` property value now defaults to 30 minutes.
+• Fixed – Excessive blocking when expiring records in `State` and `JobParameters` tables.
+• Fixed – Migration script `Install.sql` was deadlocked by itself, leading to errors on startup.
 
 1.6.0
 • Added – .NET Core support for Hangfire.Core and Hangfire.SqlServer packages (`netstandard1.3` target).
