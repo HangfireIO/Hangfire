@@ -65,6 +65,8 @@ namespace Hangfire.SqlServer
                 // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
             } while (removedCount >= NumberOfRecordsInSinglePass);
 
+            Logger.Trace("Records from the 'Counter' table aggregated.");
+
             cancellationToken.WaitHandle.WaitOne(_interval);
         }
 
@@ -83,13 +85,13 @@ $@"DECLARE @RecordsToAggregate TABLE
 	[ExpireAt] DATETIME NULL
 )
 
+SET NOCOUNT ON
+
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED
 BEGIN TRAN
 
 DELETE TOP (@count) [{storage.SchemaName}].[Counter] with (readpast)
 OUTPUT DELETED.[Key], DELETED.[Value], DELETED.[ExpireAt] INTO @RecordsToAggregate
-
-SET NOCOUNT ON
 
 ;MERGE [{storage.SchemaName}].[AggregatedCounter] AS [Target]
 USING (

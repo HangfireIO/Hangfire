@@ -387,7 +387,7 @@ WriteLiteral("                                    </td>\r\n                     
             #line default
             #line hidden
 WriteLiteral("\r\n                                    </td>\r\n                                    " +
-"<td>\r\n");
+"<td class=\"word-break\">\r\n");
 
 
             

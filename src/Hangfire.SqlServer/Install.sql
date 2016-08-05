@@ -23,6 +23,10 @@ PRINT 'Installing Hangfire SQL objects...';
 BEGIN TRANSACTION;
 BEGIN TRY;
 
+-- Acquire exclusive lock to prevent deadlocks caused by schema creation / version update
+DECLARE @SchemaLockResult INT;
+EXEC @SchemaLockResult = sp_getapplock @Resource = '$(HangFireSchema):SchemaLock', @LockMode = 'Exclusive'
+
 -- Create the database schema if it doesn't exists
 IF NOT EXISTS (SELECT [schema_id] FROM [sys].[schemas] WHERE [name] = '$(HangFireSchema)')
 BEGIN

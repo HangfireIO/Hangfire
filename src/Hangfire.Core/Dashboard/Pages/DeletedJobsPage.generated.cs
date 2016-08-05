@@ -342,8 +342,8 @@ WriteLiteral("</em></td>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                                        <td>\r\n                                   " +
-"         ");
+WriteLiteral("                                        <td class=\"word-break\">\r\n                " +
+"                            ");
 
 
             

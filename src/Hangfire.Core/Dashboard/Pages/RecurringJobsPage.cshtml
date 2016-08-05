@@ -78,7 +78,7 @@
                                 </th>
                                 <th class="min-width">@Strings.Common_Id</th>
                                 <th class="min-width">@Strings.RecurringJobsPage_Table_Cron</th>
-                                <th>@Strings.RecurringJobsPage_Table_TimeZone</th>
+                                <th class="min-width">@Strings.RecurringJobsPage_Table_TimeZone</th>
                                 <th>@Strings.Common_Job</th>
                                 <th class="align-right min-width">@Strings.RecurringJobsPage_Table_NextExecution</th>
                                 <th class="align-right min-width">@Strings.RecurringJobsPage_Table_LastExecution</th>
@@ -110,7 +110,7 @@
 
                                         @if (cronDescription != null)
                                         {
-                                            @: @cronDescription
+                                            <code title="@cronDescription">@job.Cron</code>
                                         }
                                         else
                                         {
@@ -127,11 +127,11 @@
                                             @: UTC
                                     }
                                     </td>
-                                    <td>
+                                    <td class="word-break">
                                         @if (job.Job != null)
                                         {
                                             @: @Html.JobName(job.Job)
-                                    }
+                                        }
                                         else
                                         {
                                             <em>@job.LoadException.InnerException.Message</em>

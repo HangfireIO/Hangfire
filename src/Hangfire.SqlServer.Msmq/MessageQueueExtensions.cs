@@ -83,19 +83,16 @@ namespace MQTools
         // ReSharper disable once RedundantOverflowCheckingContext
         private const int MQ_INFORMATION_UNSUPPORTED_PROPERTY = unchecked((int)0x400E0004); // An unsupported property identifier was specified in pMgmtProps
 
-        const string QueueRegex = @"^(?:.*\:(?<computerName>.*)|\.)\\(?<queueType>.*)\\(?<queue>.*)$";
+        const string QueueRegex = @"^(?:(.*\:)|)((?<computerName>[^\\]*)|\.)(?:\\(?<queueType>.*)|)\\(?<queue>.*)$";
         private static readonly Regex regex = new Regex(QueueRegex, RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static long GetCount(this MessageQueue messageQueue)
         {
-            var matches = regex.Matches(messageQueue.Path);
+            var match = GetQueuePathMatch(messageQueue.Path);
 
-            if (matches.Count != 1)
-                throw new ApplicationException("Unable to parse " + messageQueue.Path);
-
-            var computerName = matches[0].Groups["computerName"].Value;
-            var queueType = matches[0].Groups["queueType"].Value;
-            var queue = matches[0].Groups["queue"].Value;
+            var computerName = match.Groups["computerName"].Value;
+            var queueType = match.Groups["queueType"].Value;
+            var queue = match.Groups["queue"].Value;
 
             if (computerName == ".")
                 computerName = null;
@@ -103,20 +100,29 @@ namespace MQTools
             return GetQueueCount(computerName, queueType, queue);
         }
 
-        private static long GetPrivateQueueCount(string queue)
+        internal static Match GetQueuePathMatch(string queuePath)
         {
-            return GetQueueCount(null, "private$", queue);
-        }
+            var matches = regex.Matches(queuePath);
+            if (matches.Count != 1)
+            {
+                throw new InvalidOperationException($"Unable to parse queue path '{queuePath}'");
+            }
 
-        private static long GetPrivateQueueCount(string computerName, string queue)
-        {
-            return GetQueueCount(computerName, "private$", queue);
+            return matches[0];
         }
 
         private static long GetQueueCount(string computerName, string queueType, string queue)
         {
             if (string.IsNullOrEmpty(computerName)) computerName = null;
-            string queuePath = $"queue=Direct=OS:{computerName ?? "."}\\{queueType}\\{queue}";
+            string queuePath = $"queue=Direct=OS:{computerName ?? "."}";
+
+            if (!String.IsNullOrEmpty(queueType))
+            {
+                queuePath += $"\\{queueType}";
+            }
+
+            queuePath += $"\\{queue}";
+
             return GetCount(computerName, queuePath);
         }
 

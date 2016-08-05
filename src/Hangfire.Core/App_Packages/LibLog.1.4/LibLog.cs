@@ -1068,7 +1068,7 @@ namespace Hangfire.Logging.LogProviders
 
                 // Func<object, object, bool> isEnabled = (logger, level) => { return ((SeriLog.ILogger)logger).IsEnabled(level); }
                 var loggerType = Type.GetType("Serilog.ILogger, Serilog");
-                MethodInfo isEnabledMethodInfo = loggerType.GetRuntimeMethod("IsEnabled", null);
+                MethodInfo isEnabledMethodInfo = loggerType.GetRuntimeMethod("IsEnabled", new Type[] { logEventTypeType });
                 ParameterExpression instanceParam = Expression.Parameter(typeof(object));
                 UnaryExpression instanceCast = Expression.Convert(instanceParam, loggerType);
                 ParameterExpression levelParam = Expression.Parameter(typeof(object));

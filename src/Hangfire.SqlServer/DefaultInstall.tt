@@ -7,13 +7,13 @@
 <#@ output extension=".sql" #>
 
 <#
-	var script = GetStringResource(
+    var script = GetStringResource(
         typeof(Hangfire.SqlServer.IPersistentJobQueue).Assembly, 
         "Hangfire.SqlServer.Install.sql");
 
-	script = script.Replace("$(HangFireSchema)", "HangFire");
+    script = script.Replace("$(HangFireSchema)", "HangFire");
 
-	Write(script);
+    Write(script);
 #>
 
 <#+

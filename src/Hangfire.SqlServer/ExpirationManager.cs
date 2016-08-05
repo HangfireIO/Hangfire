@@ -15,8 +15,9 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Data.Common;
+using System.Data.SqlClient;
 using System.Threading;
-using Dapper;
 using Hangfire.Logging;
 using Hangfire.Server;
 
@@ -30,8 +31,10 @@ namespace Hangfire.SqlServer
 
         private const string DistributedLockKey = "locks:expirationmanager";
         private static readonly TimeSpan DefaultLockTimeout = TimeSpan.FromMinutes(5);
-        private static readonly TimeSpan DelayBetweenPasses = TimeSpan.FromSeconds(1);
-        private const int NumberOfRecordsInSinglePass = 1000;
+
+        // The value should be low enough to prevent INDEX SCAN operator,
+        // see https://github.com/HangfireIO/Hangfire/issues/628
+        private const int NumberOfRecordsInSinglePass = 100;
         
         private static readonly string[] ProcessedTables =
         {
@@ -45,11 +48,6 @@ namespace Hangfire.SqlServer
         private readonly SqlServerStorage _storage;
         private readonly TimeSpan _checkInterval;
 
-        public ExpirationManager(SqlServerStorage storage)
-            : this(storage, TimeSpan.FromHours(1))
-        {
-        }
-
         public ExpirationManager(SqlServerStorage storage, TimeSpan checkInterval)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -62,38 +60,28 @@ namespace Hangfire.SqlServer
         {
             foreach (var table in ProcessedTables)
             {
-                Logger.Debug($"Removing outdated records from table '{table}'...");
+                Logger.Debug($"Removing outdated records from the '{table}' table...");
 
-                int removedCount = 0;
-
-                do
+                _storage.UseConnection(connection =>
                 {
-                    _storage.UseConnection(connection =>
+                    SqlServerDistributedLock.Acquire(connection, DistributedLockKey, DefaultLockTimeout);
+
+                    try
                     {
-                        SqlServerDistributedLock.Acquire(connection, DistributedLockKey, DefaultLockTimeout);
-
-                        try
-                        {
-                            removedCount = connection.Execute(
-$@"set transaction isolation level read committed;
-delete top (@count) from [{_storage.SchemaName}].[{table}] with (readpast) where ExpireAt < @now;",
-                                new { now = DateTime.UtcNow, count = NumberOfRecordsInSinglePass });
-                        }
-                        finally
-                        {
-                            SqlServerDistributedLock.Release(connection, DistributedLockKey);
-                        }
-                    });
-
-                    if (removedCount > 0)
-                    {
-                        Logger.Trace($"Removed {removedCount} outdated record(s) from '{table}' table.");
-
-                        cancellationToken.WaitHandle.WaitOne(DelayBetweenPasses);
-                        cancellationToken.ThrowIfCancellationRequested();
+                        ExecuteNonQuery(
+                            connection,
+                            GetQuery(_storage.SchemaName, table),
+                            cancellationToken,
+                            new SqlParameter("@count", NumberOfRecordsInSinglePass),
+                            new SqlParameter("@now", DateTime.UtcNow));
                     }
-                    // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
-                } while (removedCount != 0);
+                    finally
+                    {
+                        SqlServerDistributedLock.Release(connection, DistributedLockKey);
+                    }
+                });
+
+                Logger.Trace($"Outdated records removed from the '{table}' table.");
             }
 
             cancellationToken.WaitHandle.WaitOne(_checkInterval);
@@ -102,6 +90,41 @@ delete top (@count) from [{_storage.SchemaName}].[{table}] with (readpast) where
         public override string ToString()
         {
             return GetType().ToString();
+        }
+
+        private static string GetQuery(string schemaName, string table)
+        {
+            return
+$@"set transaction isolation level read committed;
+set nocount on;
+while (1 = 1)
+begin
+    delete top (@count) from [{schemaName}].[{table}] with (readpast) where ExpireAt < @now;
+    if @@ROWCOUNT = 0 break;
+end";
+        }
+
+        private static int ExecuteNonQuery(
+            DbConnection connection, 
+            string commandText,
+            CancellationToken cancellationToken,
+            params SqlParameter[] parameters)
+        {
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = commandText;
+                command.Parameters.AddRange(parameters);
+
+                var registration = cancellationToken.Register(command.Cancel);
+                try
+                {
+                    return command.ExecuteNonQuery();
+                }
+                finally
+                {
+                    registration.Dispose();
+                }
+            }
         }
     }
 }

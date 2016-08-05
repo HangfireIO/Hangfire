@@ -7,7 +7,7 @@
 #   - Section names should be unique on each level.
 
 # Don't edit manually! Use `build.bat version` command instead!
-version: 1.6.0-build-0{build}
+version: 1.6.2-build-0{build}
 
 os: Visual Studio 2015
 
@@ -83,7 +83,6 @@ deploy:
       appveyor_repo_tag: true
 
   - provider: NuGet
-    skip_symbols: true
     api_key: 
       secure: 8BQmcR1hP9MoxvrmXJKMtlRyX6LI36H9ZTU8fSEetvzMGCl1PUlXKZRUGq+GVMja
     on:

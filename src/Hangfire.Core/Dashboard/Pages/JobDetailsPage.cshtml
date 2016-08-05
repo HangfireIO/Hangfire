@@ -131,7 +131,7 @@
                                         <td class="min-width">@Html.JobIdLink(continuation.JobId)</td>
                                         <td class="min-width"><code>@continuation.Options.ToString("G")</code></td>
                                         <td class="min-width">@Html.StateLabel(jobData.State)</td>
-                                        <td>@Html.JobNameLink(continuation.JobId, jobData.Job)</td>
+                                        <td class="word-break">@Html.JobNameLink(continuation.JobId, jobData.Job)</td>
                                         <td class="align-right">@Html.RelativeTime(jobData.CreatedAt)</td>
                                     }
                                 </tr>

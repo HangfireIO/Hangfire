@@ -434,8 +434,8 @@ WriteLiteral("                                    </td>\r\n                     
             #line default
             #line hidden
 WriteLiteral("                                    </td>\r\n                                    <t" +
-"d>\r\n                                        <div>\r\n                             " +
-"               ");
+"d>\r\n                                        <div class=\"word-break\">\r\n          " +
+"                                  ");
 
 
             

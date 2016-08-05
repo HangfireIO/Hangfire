@@ -171,23 +171,21 @@ namespace Hangfire.Server
 
         private string GetGloballyUniqueServerId()
         {
-            var serverName = _options.ServerName;
+            var serverName = _options.ServerName
+                ?? Environment.GetEnvironmentVariable("COMPUTERNAME")
+                ?? Environment.GetEnvironmentVariable("HOSTNAME");
+
             var guid = Guid.NewGuid().ToString();
 
-            if (String.IsNullOrWhiteSpace(serverName))
-            {
-                var hostName = Environment.GetEnvironmentVariable("COMPUTERNAME")
-                               ?? Environment.GetEnvironmentVariable("HOSTNAME")
-                               ?? "localhost";
-
-                serverName = hostName.ToLowerInvariant();
 #if NETFULL
+            if (!String.IsNullOrWhiteSpace(serverName))
+            {
                 serverName += ":" + Process.GetCurrentProcess().Id;
-#endif
             }
+#endif
 
             return !String.IsNullOrWhiteSpace(serverName)
-                ? $"{serverName}:{guid}"
+                ? $"{serverName.ToLowerInvariant()}:{guid}"
                 : guid;
         }
 
