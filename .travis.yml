@@ -6,7 +6,7 @@ sudo: required
 dist: trusty
 
 mono: none
-dotnet: latest
+dotnet: 1.0.0-preview2-003121
 
 os:  
   - linux
