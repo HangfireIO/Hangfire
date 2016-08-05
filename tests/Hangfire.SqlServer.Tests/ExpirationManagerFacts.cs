@@ -14,7 +14,7 @@ namespace Hangfire.SqlServer.Tests
         [Fact]
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
-            Assert.Throws<ArgumentNullException>(() => new ExpirationManager(null));
+            Assert.Throws<ArgumentNullException>(() => new ExpirationManager(null, TimeSpan.Zero));
         }
 
         [Fact, CleanDatabase]

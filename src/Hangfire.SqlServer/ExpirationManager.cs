@@ -48,11 +48,6 @@ namespace Hangfire.SqlServer
         private readonly SqlServerStorage _storage;
         private readonly TimeSpan _checkInterval;
 
-        public ExpirationManager(SqlServerStorage storage)
-            : this(storage, TimeSpan.FromHours(1))
-        {
-        }
-
         public ExpirationManager(SqlServerStorage storage, TimeSpan checkInterval)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
