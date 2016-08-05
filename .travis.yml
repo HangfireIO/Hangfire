@@ -5,48 +5,30 @@ language: csharp
 sudo: required
 dist: trusty
 
+mono: none
+dotnet: latest
+
 os:  
   - linux
   - osx
-
-env:  
-  - CLI_VERSION=latest
   
-addons:  
-  apt:
-    packages:
-    - gettext
-    - libcurl4-openssl-dev
-    - libicu-dev
-    - libssl-dev
-    - libunwind8
-    - zlib1g
-
 # Only watch the master branch.
 branches:
- only:
-   - master
-   - dev
+  only:
+    - master
+    - dev
 
 # Make sure build dependencies are installed.
-before_install:  
-  - if test "$TRAVIS_OS_NAME" == "osx"; then brew install openssl; brew link --force openssl; fi
-  - export DOTNET_INSTALL_DIR="$PWD/.dotnetcli"
-  - export PATH="$DOTNET_INSTALL_DIR:$PATH"  
-  
 install:
- - travis_retry curl -sSL https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.sh | bash /dev/stdin --version "$CLI_VERSION" --install-dir "$DOTNET_INSTALL_DIR"
-
-#cache: 
-# - apt
-# - directories:
-#   - packages
+  - travis_retry dotnet restore
 
 # Run the build script
 script:
- - travis_retry dotnet restore
- - dotnet test tests/Hangfire.Core.Tests
- - travis_retry nuget install .nuget/packages.config -OutputDirectory packages
- - travis_retry nuget install .
- - xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
- - mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll
+  - dotnet test tests/Hangfire.Core.Tests
+ 
+# Tests on Mono disabled – waiting for https://github.com/NuGet/Home/issues/3085
+# Also waiting for nuget package to be updated to 2.12
+# - travis_retry mono .nuget/NuGet.exe install .nuget/packages.config -OutputDirectory packages
+# - travis_retry mono .nuget/NuGet.exe install .
+# - xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
+# - mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll
