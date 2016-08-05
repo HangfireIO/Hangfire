@@ -46,7 +46,7 @@ install:
 script:
  - travis_retry dotnet restore
  - dotnet test tests/Hangfire.Core.Tests
- - travis_retry mono nuget install .nuget/packages.config -OutputDirectory packages
- - travis_retry mono nuget install .
+ - travis_retry nuget install .nuget/packages.config -OutputDirectory packages
+ - travis_retry nuget install .
  - xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
  - mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll
