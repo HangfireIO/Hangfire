@@ -35,7 +35,7 @@ namespace Hangfire.SqlServer
 #pragma warning disable 618
             InvisibilityTimeout = TimeSpan.FromMinutes(30);
 #pragma warning restore 618
-            JobExpirationCheckInterval = TimeSpan.FromHours(1);
+            JobExpirationCheckInterval = TimeSpan.FromMinutes(30);
             CountersAggregateInterval = TimeSpan.FromMinutes(5);
             PrepareSchemaIfNecessary = true;
             DashboardJobListLimit = 50000;
