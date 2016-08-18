@@ -260,7 +260,7 @@ namespace Hangfire
         {
             if (Delay != TimeSpan.Zero)
             {
-                return _delay;
+                return Delay;
             }
 
             return TimeSpan.FromSeconds(SecondsToDelay(retryAttempt));
