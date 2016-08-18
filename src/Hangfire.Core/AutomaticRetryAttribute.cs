@@ -83,11 +83,12 @@ namespace Hangfire
         public static readonly int DefaultRetryAttempts = 10;
 
         private static readonly ILog Logger = LogProvider.For<AutomaticRetryAttribute>();
-        
+
         private readonly object _lockObject = new object();
         private int _attempts;
         private AttemptsExceededAction _onAttemptsExceeded;
         private bool _logEvents;
+        private TimeSpan _delay;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AutomaticRetryAttribute"/>
@@ -139,6 +140,15 @@ namespace Hangfire
         {
             get { lock (_lockObject) { return _logEvents; } }
             set { lock (_lockObject) { _logEvents = value; } }
+        }
+
+        /// <summary>
+        /// Gets or sets the delay taken between retry attempts.
+        /// </summary>
+        public TimeSpan Delay
+        {
+            get { lock (_lockObject) { return _delay; } }
+            set { lock (_lockObject) { _delay = value; } }
         }
 
         /// <inheritdoc />
@@ -202,11 +212,11 @@ namespace Hangfire
         {
             context.SetJobParameter("RetryCount", retryAttempt);
 
-            var delay = TimeSpan.FromSeconds(SecondsToDelay(retryAttempt));
+            var delay = GetDelay(retryAttempt);
 
             const int maxMessageLength = 50;
             var exceptionMessage = failedState.Exception.Message.Length > maxMessageLength
-                ? failedState.Exception.Message.Substring(0, maxMessageLength - 1) + "…" 
+                ? failedState.Exception.Message.Substring(0, maxMessageLength - 1) + "…"
                 : failedState.Exception.Message;
 
             // If attempt number is less than max attempts, we should
@@ -244,6 +254,16 @@ namespace Hangfire
                     $"Failed to process the job '{context.BackgroundJob.Id}': an exception occured. Job was automatically deleted because the retry attempt count exceeded {Attempts}.",
                     failedState.Exception);
             }
+        }
+
+        private TimeSpan GetDelay(int retryAttempt)
+        {
+            if (Delay != TimeSpan.Zero)
+            {
+                return _delay;
+            }
+
+            return TimeSpan.FromSeconds(SecondsToDelay(retryAttempt));
         }
 
         // delayed_job uses the same basic formula
