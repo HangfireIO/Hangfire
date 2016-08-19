@@ -13,6 +13,11 @@
     <copyright>Copyright © 2013-2016 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>http://hangfire.io/blog/
+
+1.6.3
+• Fixed – Prevent `ExpirationManager`'s command from timing out, when there are a lot of records.
+• Fixed – `CountersAggregator` issue introduced in 1.6.2, that causes slow record aggregation.
+• Fixed – Add `XLOCK` hint for `CountersAggregator` query to prevent deadlocks on lock escalation.
     
 1.6.2
 • Changed – `JobExpirationCheckInterval` property value now defaults to 30 minutes.

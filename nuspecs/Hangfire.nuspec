@@ -19,6 +19,20 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.3
+
+Hangfire.Core
+• Fixed – Add missing `RecurringJob.AddOrUpdate` method overloads to prevent CS4014 warnings.
+• Fixed – `ToGenericTypeString` method now handles types with no namespace correctly.
+
+Hangfire.SqlServer
+• Fixed – Prevent `ExpirationManager`'s command from timing out, when there are a lot of records.
+• Fixed – `CountersAggregator` issue introduced in 1.6.2, that causes slow record aggregation.
+• Fixed – Add `XLOCK` hint for `CountersAggregator` query to prevent deadlocks on lock escalation.
+
+Hangfire.SqlServer.Msmq
+• Fixed – Prevent MSMQ transactions from timing out after 1 minute of processing.
+    
 1.6.2
 
 Hangfire.Core
