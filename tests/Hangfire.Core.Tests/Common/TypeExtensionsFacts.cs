@@ -4,6 +4,10 @@ using Xunit;
 
 // ReSharper disable UnusedTypeParameter
 
+public class ClassWithoutNamespace
+{
+}
+
 namespace Hangfire.Core.Tests.Common
 {
 	public class TypeExtensionsFacts
@@ -32,6 +36,12 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(typeof(GenericClass<Assert>).ToGenericTypeString(), "GenericClass<Assert>");
             Assert.Equal(typeof(GenericClass<List<Assert>>.NestedNonGenericClass).ToGenericTypeString(), "GenericClass<List<Assert>>.NestedNonGenericClass");
             Assert.Equal(typeof(GenericClass<List<GenericClass<List<Assert>>.NestedNonGenericClass.DoubleNestedGenericClass<Assert, List<Assert>, Stack<Assert>>>>.NestedNonGenericClass.DoubleNestedGenericClass<Assert, List<Assert>, Stack<Assert>>).ToGenericTypeString(), "GenericClass<List<GenericClass<List<Assert>>.NestedNonGenericClass.DoubleNestedGenericClass<Assert,List<Assert>,Stack<Assert>>>>.NestedNonGenericClass.DoubleNestedGenericClass<Assert,List<Assert>,Stack<Assert>>");        
+	    }
+
+	    [Fact]
+	    public void ToGenericTypeString_CorrectlyHandlesTypesWithoutNamespace()
+	    {
+	        Assert.Equal("ClassWithoutNamespace", typeof(ClassWithoutNamespace).ToGenericTypeString());
 	    }
 	}
     
