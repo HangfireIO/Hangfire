@@ -28,7 +28,7 @@ namespace Hangfire.SqlServer
     {
         private static readonly ILog Logger = LogProvider.For<CountersAggregator>();
 
-        private const int NumberOfRecordsInSinglePass = 1000;
+        private const int NumberOfRecordsInSinglePass = 10000;
         private static readonly TimeSpan DelayBetweenPasses = TimeSpan.FromMilliseconds(500);
 
         private readonly SqlServerStorage _storage;
@@ -85,13 +85,13 @@ $@"DECLARE @RecordsToAggregate TABLE
 	[ExpireAt] DATETIME NULL
 )
 
-SET NOCOUNT ON
-
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED
 BEGIN TRAN
 
 DELETE TOP (@count) [{storage.SchemaName}].[Counter] with (readpast)
 OUTPUT DELETED.[Key], DELETED.[Value], DELETED.[ExpireAt] INTO @RecordsToAggregate
+
+SET NOCOUNT ON
 
 ;MERGE [{storage.SchemaName}].[AggregatedCounter] AS [Target]
 USING (
