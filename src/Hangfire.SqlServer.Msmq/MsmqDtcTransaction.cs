@@ -27,7 +27,7 @@ namespace Hangfire.SqlServer.Msmq
 
         public MsmqDtcTransaction()
         {
-            _scope = new TransactionScope();
+            _scope = new TransactionScope(TransactionScopeOption.Required, TimeSpan.Zero);
         }
 
         public void Dispose()
