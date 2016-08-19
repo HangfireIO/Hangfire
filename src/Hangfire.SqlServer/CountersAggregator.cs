@@ -27,8 +27,11 @@ namespace Hangfire.SqlServer
 #pragma warning restore 618
     {
         private static readonly ILog Logger = LogProvider.For<CountersAggregator>();
-
-        private const int NumberOfRecordsInSinglePass = 10000;
+        
+        // This number should be high enough to aggregate counters efficiently,
+        // but low enough to not to cause large amount of row locks to be taken.
+        // Lock escalation to page locks may pause the background processing.
+        private const int NumberOfRecordsInSinglePass = 1000;
         private static readonly TimeSpan DelayBetweenPasses = TimeSpan.FromMilliseconds(500);
 
         private readonly SqlServerStorage _storage;
@@ -88,7 +91,7 @@ $@"DECLARE @RecordsToAggregate TABLE
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED
 BEGIN TRAN
 
-DELETE TOP (@count) [{storage.SchemaName}].[Counter] with (readpast)
+DELETE TOP (@count) [{storage.SchemaName}].[Counter] with (readpast, xlock, rowlock)
 OUTPUT DELETED.[Key], DELETED.[Value], DELETED.[ExpireAt] INTO @RecordsToAggregate
 
 SET NOCOUNT ON
