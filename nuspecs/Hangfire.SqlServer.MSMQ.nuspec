@@ -14,6 +14,9 @@
     <tags>Hangfire SqlServer MSMQ</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.3
+• Fixed – Prevent MSMQ transactions from timing out after 1 minute of processing.
+    
 1.6.2
 • Fixed – Public MSMQ queue paths are parsed correctly now, when determining the queue length.
     

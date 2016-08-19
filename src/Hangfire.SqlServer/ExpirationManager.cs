@@ -114,6 +114,7 @@ end";
             {
                 command.CommandText = commandText;
                 command.Parameters.AddRange(parameters);
+                command.CommandTimeout = 0;
 
                 var registration = cancellationToken.Register(command.Cancel);
                 try

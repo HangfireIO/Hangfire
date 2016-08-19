@@ -14,6 +14,10 @@
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.3
+• Fixed – Add missing `RecurringJob.AddOrUpdate` method overloads to prevent CS4014 warnings.
+• Fixed – `ToGenericTypeString` method now handles types with no namespace correctly.
+    
 1.6.2
 • Changed – Recurring job page displays now raw cron strings, descriptions are in tooltips.
 • Fixed – Return non-highlighted stack trace, when parsing takes too long, instead of throwing an exception.

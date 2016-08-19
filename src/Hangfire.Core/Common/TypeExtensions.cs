@@ -30,7 +30,9 @@ namespace Hangfire.Common
 
             const int dotLength = 1;
             // ReSharper disable once PossibleNullReferenceException
-            return type.FullName.Substring(type.Namespace.Length + dotLength);
+            return !String.IsNullOrEmpty(type.Namespace)
+                ? type.FullName.Substring(type.Namespace.Length + dotLength)
+                : type.FullName;
         }
 
         private static string ReplacePlusWithDotInNestedTypeName(this string typeName)
