@@ -16,9 +16,12 @@
 
 using System;
 using System.Net;
+using System.Linq;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.Http.Extensions;
 
 namespace Hangfire.Dashboard
 {
@@ -61,8 +64,29 @@ namespace Hangfire.Dashboard
             {
                 if (!filter.Authorize(context))
                 {
-                    httpContext.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
-                    return httpContext.Response.WriteAsync("401 Unauthorized");
+                    if (httpContext.Authentication.GetAuthenticationSchemes().Any())
+                    {
+                        // There's at least one authentication scheme enabled for this server
+                        // Issue an authentication challenge and allow it to do all the magic
+                        
+                        return httpContext.Authentication.ChallengeAsync(new AuthenticationProperties()
+                        {
+                            // provide it with url to redirect back after successful authentication
+                            RedirectUri = UriHelper.BuildRelative(httpContext.Request.PathBase,
+                                                                  httpContext.Request.Path,
+                                                                  httpContext.Request.QueryString)
+                        });
+                    }
+                    else
+                    {
+                        // No authentication schemes available for this server,
+                        // so we fallback to a plain '403 Forbidden' response.
+                        // It still may be handled by the upstream middleware, like 
+                        // Microsoft.AspNetCore.Diagnostics.StatusCodePagesMiddleware
+
+                        httpContext.Response.StatusCode = 403;
+                        return Task.FromResult(0);
+                    }
                 }
             }
 
