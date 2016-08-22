@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Hangfire.Notification
 {
@@ -41,7 +38,7 @@ namespace Hangfire.Notification
             _notifiers = notifiers;
         }
 
-        public void NotifyAll(EventTypes.Events eventType, string subject, string message)
+        public void NotifyAll(EventTypes eventType, string subject, string message)
         {
             foreach (var notifer in _notifiers)
             {

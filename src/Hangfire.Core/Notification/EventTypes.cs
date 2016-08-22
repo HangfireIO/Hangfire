@@ -6,12 +6,9 @@ using System.Threading.Tasks;
 
 namespace Hangfire.Notification
 {
-    public class EventTypes
+    public enum EventTypes
     {
-        public enum Events
-        {
-            FailedJobPeak,
-            ServerTimeout
-        }
+        FailedJobPeak,
+        ServerTimeout
     }
 }

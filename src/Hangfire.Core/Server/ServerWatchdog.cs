@@ -56,7 +56,7 @@ namespace Hangfire.Server
                     }
                     msg += "\n \n have timed out.";
 
-                    NotificationStore.Current.NotifyAll(EventTypes.Events.ServerTimeout, "Server timeout", msg);
+                    NotificationStore.Current.NotifyAll(EventTypes.ServerTimeout, "Server timeout", msg);
 
                     Logger.Info($"{serversRemoved} servers were removed due to timeout");
                 }

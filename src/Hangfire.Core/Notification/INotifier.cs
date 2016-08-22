@@ -8,7 +8,7 @@ namespace Hangfire.Notification
 {
     public interface INotifier
     {
-        void Notify(EventTypes.Events eventType, string subject, string message);
-        void Subscribe(EventTypes.Events eventType, List<string> toEmails);
+        void Notify(EventTypes eventType, string subject, string message);
+        void Subscribe(EventTypes eventType, List<string> toEmails);
     }
 }

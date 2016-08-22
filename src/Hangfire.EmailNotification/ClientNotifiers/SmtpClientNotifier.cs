@@ -12,7 +12,7 @@ namespace Hangfire.EmailNotification
     public class SmtpClientNotifier : INotifier
     {
         private readonly SmtpClient _smtpClient;
-        private readonly Dictionary<EventTypes.Events, List<string>> _eventReceivers;
+        private readonly Dictionary<EventTypes, List<string>> _eventReceivers;
         private readonly string _fromEmail;
         private readonly string _fromName;
         
@@ -21,11 +21,11 @@ namespace Hangfire.EmailNotification
             _fromEmail = fromEmail;
             _fromName = fromName;
             _smtpClient = new SmtpClient(sendgridConfig.Host, sendgridConfig.Port);
-            _eventReceivers = new Dictionary<EventTypes.Events, List<string>>();
+            _eventReceivers = new Dictionary<EventTypes, List<string>>();
             _smtpClient.Credentials = new System.Net.NetworkCredential(sendgridConfig.Username, sendgridConfig.Password);
         }
 
-        public void Notify(EventTypes.Events eventType, string subject, string message)
+        public void Notify(EventTypes eventType, string subject, string message)
         {
             var mailMsg = new MailMessage();
 
@@ -47,7 +47,7 @@ namespace Hangfire.EmailNotification
             }
         }
 
-        public void Subscribe(EventTypes.Events eventType, List<string> toEmails)
+        public void Subscribe(EventTypes eventType, List<string> toEmails)
         {
             if (toEmails == null) throw new NullReferenceException();
 
