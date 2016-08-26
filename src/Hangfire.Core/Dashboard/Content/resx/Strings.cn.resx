@@ -121,103 +121,103 @@
     <value>Don't worry, continuations are working as expected. But your current job storage does not support some queries required to show this page. Please try to update your storage or wait until the full command set is implemented.</value>
   </data>
   <data name="AwaitingJobsPage_ContinuationsWarning_Title" xml:space="preserve">
-    <value>Continuations are working, but this page can't be displayed</value>
+    <value>作业继续执行中，但是无法显示该页面</value>
   </data>
   <data name="AwaitingJobsPage_NoJobs" xml:space="preserve">
-    <value>No jobs found in awaiting state.</value>
+    <value>没有等待中的作业</value>
   </data>
   <data name="AwaitingJobsPage_Table_Options" xml:space="preserve">
-    <value>Options</value>
+    <value>选项</value>
   </data>
   <data name="AwaitingJobsPage_Table_Parent" xml:space="preserve">
-    <value>Parent</value>
+    <value>父级</value>
   </data>
   <data name="AwaitingJobsPage_Title" xml:space="preserve">
-    <value>Awaiting Jobs</value>
+    <value>等待中的作业</value>
   </data>
   <data name="Common_Created" xml:space="preserve">
-    <value>Created</value>
+    <value>创建</value>
   </data>
   <data name="Common_Delete" xml:space="preserve">
-    <value>Delete</value>
+    <value>删除</value>
   </data>
   <data name="Common_DeleteConfirm" xml:space="preserve">
-    <value>Do you really want to DELETE ALL selected jobs?</value>
+    <value>您确定要删除所选的全部作业吗？</value>
   </data>
   <data name="Common_Deleting" xml:space="preserve">
-    <value>Deleting...</value>
+    <value>删除中...</value>
   </data>
   <data name="Common_DeleteSelected" xml:space="preserve">
-    <value>Delete selected</value>
+    <value>删除选中</value>
   </data>
   <data name="Common_EnqueueButton_Text" xml:space="preserve">
-    <value>Enqueue jobs</value>
+    <value>队列作业</value>
   </data>
   <data name="Common_Enqueueing" xml:space="preserve">
-    <value>Enqueueing...</value>
+    <value>加入队列中...</value>
   </data>
   <data name="Common_Fetched" xml:space="preserve">
-    <value>Fetched</value>
+    <value>获取到</value>
   </data>
   <data name="Common_Id" xml:space="preserve">
-    <value>Id</value>
+    <value>编号</value>
   </data>
   <data name="Common_Job" xml:space="preserve">
-    <value>Job</value>
+    <value>作业</value>
   </data>
   <data name="Common_JobExpired" xml:space="preserve">
-    <value>Job expired.</value>
+    <value>作业过期.</value>
   </data>
   <data name="Common_JobStateChanged_Text" xml:space="preserve">
     <value>Job's state has been changed while fetching data.</value>
   </data>
   <data name="Common_LessDetails" xml:space="preserve">
-    <value>Less details...</value>
+    <value>收起...</value>
   </data>
   <data name="Common_MoreDetails" xml:space="preserve">
-    <value>More details...</value>
+    <value>更多...</value>
   </data>
   <data name="Common_NotAvailable" xml:space="preserve">
     <value>N/A</value>
   </data>
   <data name="Common_PeriodDay" xml:space="preserve">
-    <value>Day</value>
+    <value>天</value>
   </data>
   <data name="Common_PeriodWeek" xml:space="preserve">
-    <value>Week</value>
+    <value>周</value>
   </data>
   <data name="Common_Reason" xml:space="preserve">
-    <value>Reason</value>
+    <value>原因</value>
   </data>
   <data name="Common_RequeueJobs" xml:space="preserve">
-    <value>Requeue jobs</value>
+    <value>重新加入队列</value>
   </data>
   <data name="Common_Retry" xml:space="preserve">
-    <value>Retry</value>
+    <value>重试</value>
   </data>
   <data name="Common_Server" xml:space="preserve">
-    <value>Server</value>
+    <value>服务器</value>
   </data>
   <data name="Common_State" xml:space="preserve">
-    <value>State</value>
+    <value>状态</value>
   </data>
   <data name="Common_Unknown" xml:space="preserve">
-    <value>Unknown</value>
+    <value>未知</value>
   </data>
   <data name="DeletedJobsPage_NoJobs" xml:space="preserve">
-    <value>No deleted jobs found.</value>
+    <value>没有找到任何已经删除的作业</value>
   </data>
   <data name="DeletedJobsPage_Table_Deleted" xml:space="preserve">
-    <value>Deleted</value>
+    <value>删除</value>
   </data>
   <data name="DeletedJobsPage_Title" xml:space="preserve">
-    <value>Deleted Jobs</value>
+    <value>删除作业</value>
   </data>
   <data name="EnqueuedJobsPage_NoJobs" xml:space="preserve">
-    <value>The queue is empty.</value>
+    <value>没有任何作业</value>
   </data>
   <data name="EnqueuedJobsPage_Title" xml:space="preserve">
-    <value>Enqueued jobs</value>
+    <value>队列作业</value>
   </data>
   <data name="FailedJobsPage_FailedJobsNotExpire_Warning_Html" xml:space="preserve">
     <value>&lt;strong&gt;Failed jobs do not become expired&lt;/strong&gt; to allow you to re-queue them without any
@@ -225,37 +225,37 @@
                 attribute to delete them automatically.</value>
   </data>
   <data name="FailedJobsPage_NoJobs" xml:space="preserve">
-    <value>You have no failed jobs at the moment.</value>
+    <value>没有失败的作业</value>
   </data>
   <data name="FailedJobsPage_Table_Failed" xml:space="preserve">
-    <value>Failed</value>
+    <value>失败</value>
   </data>
   <data name="FailedJobsPage_Title" xml:space="preserve">
-    <value>Failed Jobs</value>
+    <value>失败的作业</value>
   </data>
   <data name="FetchedJobsPage_NoJobs" xml:space="preserve">
-    <value>The queue is empty.</value>
+    <value>没有任何作业</value>
   </data>
   <data name="FetchedJobsPage_Title" xml:space="preserve">
     <value>Fetched jobs</value>
   </data>
   <data name="HomePage_HistoryGraph" xml:space="preserve">
-    <value>History graph</value>
+    <value>历史图表走势</value>
   </data>
   <data name="HomePage_RealtimeGraph" xml:space="preserve">
-    <value>Realtime graph</value>
+    <value>实时图表走势</value>
   </data>
   <data name="HomePage_Title" xml:space="preserve">
-    <value>Dashboard</value>
+    <value>式表盘</value>
   </data>
   <data name="JobDetailsPage_Created" xml:space="preserve">
-    <value>Created</value>
+    <value>创建</value>
   </data>
   <data name="JobDetailsPage_DeleteConfirm" xml:space="preserve">
-    <value>Do you really want to delete this job?</value>
+    <value>确认删除这个作业吗？</value>
   </data>
   <data name="JobDetailsPage_State" xml:space="preserve">
-    <value>State</value>
+    <value>状态</value>
   </data>
   <data name="JobDetailsPage_JobAbortedNotActive_Warning_Html" xml:space="preserve">
     <value>&lt;strong&gt;The job was aborted&lt;/strong&gt; – it is processed by server
@@ -278,79 +278,79 @@
                     It will be removed automatically &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;.</value>
   </data>
   <data name="JobDetailsPage_JobId" xml:space="preserve">
-    <value>Job ID</value>
+    <valueJob Id</value>
   </data>
   <data name="JobDetailsPage_Requeue" xml:space="preserve">
-    <value>Requeue</value>
+    <value>重试</value>
   </data>
   <data name="LayoutPage_Back" xml:space="preserve">
-    <value>Back to site</value>
+    <value>返回应用</value>
   </data>
   <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
-    <value>Generated: {0}ms</value>
+    <value>耗时: {0}ms</value>
   </data>
   <data name="LayoutPage_Footer_Time" xml:space="preserve">
-    <value>Time: {0} GMT</value>
+    <value>时间: {0} GMT</value>
   </data>
   <data name="Paginator_Next" xml:space="preserve">
-    <value>Next</value>
+    <value>下一步</value>
   </data>
   <data name="Paginator_Prev" xml:space="preserve">
-    <value>Prev</value>
+    <value>上一步</value>
   </data>
   <data name="Paginator_TotalItems" xml:space="preserve">
-    <value>Total items</value>
+    <value>总条数</value>
   </data>
   <data name="PerPageSelector_ItemsPerPage" xml:space="preserve">
-    <value>Items per page</value>
+    <value>每页条数</value>
   </data>
   <data name="ProcessingJobsPage_Aborted" xml:space="preserve">
     <value>Looks like the job was aborted</value>
   </data>
   <data name="ProcessingJobsPage_NoJobs" xml:space="preserve">
-    <value>No jobs are being processed right now.</value>
+    <value>没有立即执行的作业</value>
   </data>
   <data name="ProcessingJobsPage_Table_Started" xml:space="preserve">
-    <value>Started</value>
+    <value>执行</value>
   </data>
   <data name="ProcessingJobsPage_Title" xml:space="preserve">
-    <value>Processing Jobs</value>
+    <value>执行中作业</value>
   </data>
   <data name="QueuesPage_NoJobs" xml:space="preserve">
-    <value>No jobs queued.</value>
+    <value>没有作业</value>
   </data>
   <data name="QueuesPage_NoQueues" xml:space="preserve">
-    <value>No queued jobs found. Try to enqueue a job.</value>
+    <value>队列中不存在。尝试添加作业到队列</value>
   </data>
   <data name="QueuesPage_Table_Length" xml:space="preserve">
-    <value>Length</value>
+    <value>长度</value>
   </data>
   <data name="QueuesPage_Table_NextsJobs" xml:space="preserve">
-    <value>Nexts jobs</value>
+    <value>下一个作业</value>
   </data>
   <data name="QueuesPage_Table_Queue" xml:space="preserve">
-    <value>Queue</value>
+    <value>队列</value>
   </data>
   <data name="QueuesPage_Title" xml:space="preserve">
-    <value>Queues</value>
+    <value>队列</value>
   </data>
   <data name="RecurringJobsPage_Canceled" xml:space="preserve">
-    <value>Canceled</value>
+    <value>取消</value>
   </data>
   <data name="RecurringJobsPage_NoJobs" xml:space="preserve">
-    <value>No recurring jobs found.</value>
+    <value>没有作业</value>
   </data>
   <data name="RecurringJobsPage_Table_Cron" xml:space="preserve">
     <value>Cron</value>
   </data>
   <data name="RecurringJobsPage_Table_LastExecution" xml:space="preserve">
-    <value>Last execution</value>
+    <value>最后执行</value>
   </data>
   <data name="RecurringJobsPage_Table_NextExecution" xml:space="preserve">
-    <value>Next execution</value>
+    <value>下一个执行</value>
   </data>
   <data name="RecurringJobsPage_Table_TimeZone" xml:space="preserve">
-    <value>Time zone</value>
+    <value>时区</value>
   </data>
   <data name="RecurringJobsPage_Title" xml:space="preserve">
     <value>Recurring jobs</value>
@@ -362,10 +362,10 @@
     <value>Trigger now</value>
   </data>
   <data name="RetriesPage_NoJobs" xml:space="preserve">
-    <value>All is OK – you have no retries.</value>
+    <value>没有重试的作业</value>
   </data>
   <data name="RetriesPage_Title" xml:space="preserve">
-    <value>Retries</value>
+    <value>重试</value>
   </data>
   <data name="RetriesPage_Warning_Html" xml:space="preserve">
     <value>&lt;h4&gt;Retries are working, but this page can't be displayed&lt;/h4&gt;
@@ -383,40 +383,40 @@
     <value>Enqueue now</value>
   </data>
   <data name="ScheduledJobsPage_NoJobs" xml:space="preserve">
-    <value>There are no scheduled jobs.</value>
+    <value>没有作业</value>
   </data>
   <data name="ScheduledJobsPage_Table_Enqueue" xml:space="preserve">
     <value>Enqueue</value>
   </data>
   <data name="ScheduledJobsPage_Table_Scheduled" xml:space="preserve">
-    <value>Scheduled</value>
+    <value>计划的</value>
   </data>
   <data name="ScheduledJobsPage_Title" xml:space="preserve">
-    <value>Scheduled Jobs</value>
+    <value>计划作业</value>
   </data>
   <data name="ServersPage_NoServers" xml:space="preserve">
-    <value>There are no active servers. Background tasks will not be processed.</value>
+    <value>没有活动服务器。后台作业将不会被执行。</value>
   </data>
   <data name="ServersPage_Table_Heartbeat" xml:space="preserve">
-    <value>Heartbeat</value>
+    <value>心跳</value>
   </data>
   <data name="ServersPage_Table_Name" xml:space="preserve">
-    <value>Name</value>
+    <value>名称</value>
   </data>
   <data name="ServersPage_Table_Queues" xml:space="preserve">
-    <value>Queues</value>
+    <value>队列</value>
   </data>
   <data name="ServersPage_Table_Started" xml:space="preserve">
-    <value>Started</value>
+    <value>执行</value>
   </data>
   <data name="ServersPage_Table_Workers" xml:space="preserve">
-    <value>Workers</value>
+    <value>工作区</value>
   </data>
   <data name="ServersPage_Title" xml:space="preserve">
-    <value>Servers</value>
+    <value>服务器</value>
   </data>
   <data name="SucceededJobsPage_NoJobs" xml:space="preserve">
-    <value>No succeeded jobs found.</value>
+    <value>没有作业</value>
   </data>
   <data name="SucceededJobsPage_Table_Succeeded" xml:space="preserve">
     <value>Succeeded</value>
@@ -428,34 +428,34 @@
     <value>Succeeded Jobs</value>
   </data>
   <data name="JobsSidebarMenu_Awaiting" xml:space="preserve">
-    <value>Awaiting</value>
+    <value>等待中</value>
   </data>
   <data name="JobsSidebarMenu_Deleted" xml:space="preserve">
-    <value>Deleted</value>
+    <value>删除</value>
   </data>
   <data name="JobsSidebarMenu_Failed" xml:space="preserve">
-    <value>Failed</value>
+    <value>失败</value>
   </data>
   <data name="JobsSidebarMenu_Processing" xml:space="preserve">
-    <value>Processing</value>
+    <value>执行中</value>
   </data>
   <data name="JobsSidebarMenu_Scheduled" xml:space="preserve">
-    <value>Scheduled</value>
+    <value>计划</value>
   </data>
   <data name="JobsSidebarMenu_Succeeded" xml:space="preserve">
-    <value>Succeeded</value>
+    <value>完成</value>
   </data>
   <data name="NavigationMenu_Jobs" xml:space="preserve">
-    <value>Jobs</value>
+    <value>作业</value>
   </data>
   <data name="NavigationMenu_RecurringJobs" xml:space="preserve">
-    <value>Recurring Jobs</value>
+    <value>周期性作业</value>
   </data>
   <data name="NavigationMenu_Retries" xml:space="preserve">
-    <value>Retries</value>
+    <value>重试</value>
   </data>
   <data name="NavigationMenu_Servers" xml:space="preserve">
-    <value>Servers</value>
+    <value>服务器</value>
   </data>
   <data name="Common_CannotFindTargetMethod" xml:space="preserve">
     <value>Can not find the target method.</value>
@@ -473,22 +473,22 @@
     <value>Active Connections</value>
   </data>
   <data name="Metrics_DeletedJobs" xml:space="preserve">
-    <value>Deleted Jobs</value>
+    <value>删除</value>
   </data>
   <data name="Metrics_FailedJobs" xml:space="preserve">
-    <value>Failed Jobs</value>
+    <value>失败</value>
   </data>
   <data name="Metrics_ProcessingJobs" xml:space="preserve">
-    <value>Processing Jobs</value>
+    <value>执行中</value>
   </data>
   <data name="Metrics_RecurringJobs" xml:space="preserve">
-    <value>Recurring Jobs</value>
+    <value>定时</value>
   </data>
   <data name="Metrics_Retries" xml:space="preserve">
-    <value>Retries</value>
+    <value>重试</value>
   </data>
   <data name="Metrics_ScheduledJobs" xml:space="preserve">
-    <value>Scheduled Jobs</value>
+    <value>计划</value>
   </data>
   <data name="Metrics_Servers" xml:space="preserve">
     <value>服务器</value>
@@ -509,7 +509,7 @@
     <value>等待中</value>
   </data>
   <data name="Metrics_EnqueuedCountOrNull" xml:space="preserve">
-    <value>Enqueued</value>
+    <value>队列</value>
   </data>
   <data name="Metrics_EnqueuedQueuesCount" xml:space="preserve">
     <value>Enqueued / Queues</value>
