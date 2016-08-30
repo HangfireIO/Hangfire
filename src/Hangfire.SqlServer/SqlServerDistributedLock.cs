@@ -65,10 +65,11 @@ namespace Hangfire.SqlServer
 
             _storage = storage;
             _resource = resource;
-            _connection = storage.CreateAndOpenConnection();
 
             if (!AcquiredLocks.Value.ContainsKey(_resource) || AcquiredLocks.Value[_resource] == 0)
             {
+                _connection = storage.CreateAndOpenConnection();
+
                 Acquire(_connection, _resource, timeout);
 
                 if (!_storage.IsExistingConnection(_connection))
