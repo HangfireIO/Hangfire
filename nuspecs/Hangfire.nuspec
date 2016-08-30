@@ -19,6 +19,11 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.4
+
+Hangfire.SqlServer
+• Fixed – `SqlConnection` object leaks when using nested distributed locks (in batches and continuations).
+    
 1.6.3
 
 Hangfire.Core
