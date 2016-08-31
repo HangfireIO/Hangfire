@@ -329,30 +329,37 @@ namespace Hangfire.Common
                 throw new ArgumentException("Expression body should be of type `MethodCallExpression`", nameof(methodCall));
             }
 
-            var type = explicitType;
+            var type = explicitType ?? callExpression.Method.DeclaringType;
+            var method = callExpression.Method;
 
-            if (type == null)
+            if (explicitType == null && callExpression.Object != null)
             {
-                if (callExpression.Object != null)
-                {
-                    var objectValue = GetExpressionValue(callExpression.Object);
-                    if (objectValue == null)
-                    {
-                        throw new InvalidOperationException("Expression object should be not null.");
-                    }
+                // Creating a job that is based on a scope variable. We should infer its
+                // type and method based on its value, and not from the expression tree.
 
-                    type = objectValue.GetType();
-                }
-                else
+                // TODO: BREAKING: Consider removing this special case entirely.
+                // People consider that the whole object is serialized, this is not true.
+
+                var objectValue = GetExpressionValue(callExpression.Object);
+                if (objectValue == null)
                 {
-                    type = callExpression.Method.DeclaringType;
+                    throw new InvalidOperationException("Expression object should be not null.");
                 }
+
+                // TODO: BREAKING: Consider using `callExpression.Object.Type` expression instead.
+                type = objectValue.GetType();
+
+                // If an expression tree is based on interface, we should use its own
+                // MethodInfo instance, based on the same method name and parameter types.
+                method = type.GetRuntimeMethod(
+                    callExpression.Method.Name,
+                    callExpression.Method.GetParameters().Select(x => x.ParameterType).ToArray());
             }
 
             return new Job(
                 // ReSharper disable once AssignNullToNotNullAttribute
                 type,
-                callExpression.Method,
+                method,
                 GetExpressionValues(callExpression.Arguments));
         }
 
