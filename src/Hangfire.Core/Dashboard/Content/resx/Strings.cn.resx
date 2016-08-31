@@ -169,7 +169,7 @@
     <value>作业过期.</value>
   </data>
   <data name="Common_JobStateChanged_Text" xml:space="preserve">
-    <value>Job's state has been changed while fetching data.</value>
+    <value>作业状态已经发生变化</value>
   </data>
   <data name="Common_LessDetails" xml:space="preserve">
     <value>收起...</value>
@@ -265,10 +265,8 @@
                         also re-queue or delete it manually.</value>
   </data>
   <data name="JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;Looks like the job was aborted&lt;/strong&gt; – it is processed by server
-                        &lt;code&gt;{0}&lt;/code&gt;, which reported its heartbeat more than 1 minute ago.
-                        It will be retried automatically after invisibility timeout, but you can
-                        also re-queue or delete it manually.</value>
+    <value>&lt;strong&gt;作业疑似终止&lt;/strong&gt; – 服务器代码
+                        &lt;code&gt;{0}&lt;/code&gt;, 心跳包超过1分钟请求超时后，作业会自动重试。但也可以重新加入队列或者删除作业。</value>
   </data>
   <data name="JobDetailsPage_JobExpired" xml:space="preserve">
     <value>Background job '{0}' has expired or could not be found on the server.</value>
@@ -278,7 +276,7 @@
                     It will be removed automatically &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;.</value>
   </data>
   <data name="JobDetailsPage_JobId" xml:space="preserve">
-    <valueJob Id</value>
+    <value>Job Id</value>
   </data>
   <data name="JobDetailsPage_Requeue" xml:space="preserve">
     <value>重试</value>
@@ -305,7 +303,7 @@
     <value>每页条数</value>
   </data>
   <data name="ProcessingJobsPage_Aborted" xml:space="preserve">
-    <value>Looks like the job was aborted</value>
+    <value>作业疑似终止</value>
   </data>
   <data name="ProcessingJobsPage_NoJobs" xml:space="preserve">
     <value>没有立即执行的作业</value>
@@ -353,13 +351,13 @@
     <value>时区</value>
   </data>
   <data name="RecurringJobsPage_Title" xml:space="preserve">
-    <value>Recurring jobs</value>
+    <value>定期作业</value>
   </data>
   <data name="RecurringJobsPage_Triggering" xml:space="preserve">
-    <value>Triggering...</value>
+    <value>执行中...</value>
   </data>
   <data name="RecurringJobsPage_TriggerNow" xml:space="preserve">
-    <value>Trigger now</value>
+    <value>立即执行</value>
   </data>
   <data name="RetriesPage_NoJobs" xml:space="preserve">
     <value>没有重试的作业</value>
@@ -380,13 +378,13 @@
         &lt;/p&gt;</value>
   </data>
   <data name="ScheduledJobsPage_EnqueueNow" xml:space="preserve">
-    <value>Enqueue now</value>
+    <value>加入队列</value>
   </data>
   <data name="ScheduledJobsPage_NoJobs" xml:space="preserve">
     <value>没有作业</value>
   </data>
   <data name="ScheduledJobsPage_Table_Enqueue" xml:space="preserve">
-    <value>Enqueue</value>
+    <value>队列</value>
   </data>
   <data name="ScheduledJobsPage_Table_Scheduled" xml:space="preserve">
     <value>计划的</value>
@@ -419,13 +417,13 @@
     <value>没有作业</value>
   </data>
   <data name="SucceededJobsPage_Table_Succeeded" xml:space="preserve">
-    <value>Succeeded</value>
+    <value>完成</value>
   </data>
   <data name="SucceededJobsPage_Table_TotalDuration" xml:space="preserve">
     <value>Total Duration</value>
   </data>
   <data name="SucceededJobsPage_Title" xml:space="preserve">
-    <value>Succeeded Jobs</value>
+    <value>完成的作业</value>
   </data>
   <data name="JobsSidebarMenu_Awaiting" xml:space="preserve">
     <value>等待中</value>
@@ -461,7 +459,7 @@
     <value>Can not find the target method.</value>
   </data>
   <data name="Common_Enqueued" xml:space="preserve">
-    <value>Enqueued</value>
+    <value>队列</value>
   </data>
   <data name="Common_NoState" xml:space="preserve">
     <value>No state</value>
@@ -512,7 +510,7 @@
     <value>队列</value>
   </data>
   <data name="Metrics_EnqueuedQueuesCount" xml:space="preserve">
-    <value>Enqueued / Queues</value>
+    <value>队列</value>
   </data>
   <data name="Metrics_FailedCountOrNull" xml:space="preserve">
     <value>{0} failed job(s) found. Retry or delete them manually.</value>
