@@ -248,6 +248,15 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void FromNonGenericExpression_InfersACorrectMethod_FromAGivenObject_WhenInterfaceTreeIsUsed()
+        {
+            IDisposable instance = new Instance();
+            var job = Job.FromExpression(() => instance.Dispose());
+
+            Assert.Equal(typeof(Instance), job.Method.DeclaringType);
+        }
+
+        [Fact]
         public void FromNonGenericExpression_ThrowsAnException_IfGivenObjectIsNull()
         {
             IDisposable instance = null;
@@ -690,6 +699,10 @@ namespace Hangfire.Core.Tests.Common
 
                 return FunctionReturningValue();
             }
+        }
+
+        public class DerivedInstance : Instance
+        {
         }
 
         public class BrokenDispose : IDisposable
