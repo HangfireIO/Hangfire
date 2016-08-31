@@ -50,7 +50,6 @@ namespace Hangfire.Core.Tests.Server
                 });
 
             var process = CreateProcess(_innerComponent.Object);
-            _context.CancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(100));
 
             // Act
             process.Execute(_context.Object);
@@ -63,11 +62,15 @@ namespace Hangfire.Core.Tests.Server
         public void Execute_CallsTheExecuteMethod_OfAProcess_UntilCancellationToken_IsCanceled()
         {
             // Arrange
+            var timesExecuted = 0;
+
             _innerProcess.Setup(x => x.Execute(It.IsAny<BackgroundProcessContext>()))
-                  .Callback(() => { Thread.Sleep(5); });
+                  .Callback(() =>
+                {
+                    if (timesExecuted++ > 5) _context.CancellationTokenSource.Cancel();
+                });
 
             var process = CreateProcess(_innerProcess.Object);
-            _context.CancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(100));
 
             // Act
             process.Execute(_context.Object);
