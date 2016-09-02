@@ -32,6 +32,15 @@ namespace Hangfire
         }
 
         /// <summary>
+        /// Returns cron expression that fires every &lt;<paramref name="minutes"></paramref>&gt; minutes.
+        /// </summary>
+        /// <param name="minutes">The minute in which the schedule will be activated (0-59).</param>
+        public static string Minutely(int minutes)
+        {
+            return string.Format("*/{0} * * * *", minutes);
+        }
+
+        /// <summary>
         /// Returns cron expression that fires every hour at the first minute.
         /// </summary>
         public static string Hourly()
