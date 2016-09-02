@@ -61,8 +61,14 @@ namespace Hangfire.Dashboard
             {
                 if (!filter.Authorize(context))
                 {
-                    httpContext.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
-                    return httpContext.Response.WriteAsync("401 Unauthorized");
+                    // If status code has a non-default value, then it was changed
+                    // by one of authorization filters. In this case, we should
+                    // leave everything as is.
+                    if (!httpContext.Response.HasStarted && httpContext.Response.StatusCode == 200)
+                    {
+                        httpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
+                        return httpContext.Response.WriteAsync("403 Forbidden");
+                    }
                 }
             }
 
