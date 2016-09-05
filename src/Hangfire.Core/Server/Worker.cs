@@ -38,13 +38,14 @@ namespace Hangfire.Server
     /// <threadsafety static="true" instance="true"/>
     /// 
     /// <seealso cref="EnqueuedState"/>
-    public class Worker : IBackgroundProcess
+    public class Worker : IBackgroundProcess, IWorkerObservable
     {
         private static readonly TimeSpan JobInitializationWaitTimeout = TimeSpan.FromMinutes(1);
         private static readonly ILog Logger = LogProvider.For<Worker>();
 
         private readonly string _workerId;
         private readonly string[] _queues;
+        private List<IWorkerObserver> _observers;
 
         private readonly IBackgroundJobPerformer _performer;
         private readonly IBackgroundJobStateChanger _stateChanger;
@@ -68,6 +69,7 @@ namespace Hangfire.Server
             if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
             
             _queues = queues.ToArray();
+            _observers = new List<IWorkerObserver>();
             _performer = performer;
             _stateChanger = stateChanger;
             _workerId = Guid.NewGuid().ToString();
@@ -130,6 +132,14 @@ namespace Hangfire.Server
                             fetchedJob.JobId, 
                             state, 
                             ProcessingState.StateName));
+
+                        if (state.Name == FailedState.StateName)
+                        {
+                            foreach (var item in _observers)
+                            {
+                                item.Update();
+                            }
+                        }
                     }
 
                     // Checkpoint #4. The job was performed, and it is in the one
@@ -223,5 +233,10 @@ namespace Hangfire.Server
                 };
             }
         }
+
+        public void Subscribe(IWorkerObserver observer)
+        {
+            _observers.Add(observer);
+        }    
     }
 }

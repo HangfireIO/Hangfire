@@ -24,9 +24,11 @@ namespace Hangfire
 {
     public class BackgroundJobServerOptions
     {
+        public static readonly TimeSpan DefaultJobCheckInterval = TimeSpan.FromMinutes(5);
+        public static readonly int DefaultJobCheckThreshold = 100;
+
         // https://github.com/HangfireIO/Hangfire/issues/246
         private const int MaxDefaultWorkerCount = 40;
-
         private int _workerCount;
         private string[] _queues;
 
@@ -39,7 +41,9 @@ namespace Hangfire
             HeartbeatInterval = ServerHeartbeat.DefaultHeartbeatInterval;
             ServerTimeout = ServerWatchdog.DefaultServerTimeout;
             ServerCheckInterval = ServerWatchdog.DefaultCheckInterval;
-            
+            JobCheckInterval = DefaultJobCheckInterval;
+            JobCheckThreshold = DefaultJobCheckThreshold;
+
             FilterProvider = null;
             Activator = null;
         }
@@ -74,6 +78,8 @@ namespace Hangfire
         public TimeSpan HeartbeatInterval { get; set; }
         public TimeSpan ServerTimeout { get; set; }
         public TimeSpan ServerCheckInterval { get; set; }
+        public TimeSpan JobCheckInterval { get; set; }
+        public int JobCheckThreshold { get; set; }
 
         [Obsolete("Please use `ServerTimeout` or `ServerCheckInterval` options instead. Will be removed in 2.0.0.")]
         public ServerWatchdogOptions ServerWatchdogOptions { get; set; }

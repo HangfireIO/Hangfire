@@ -296,6 +296,7 @@
     <Compile Include="IGlobalConfiguration.cs" />
     <Compile Include="IJobCancellationToken.cs" />
     <Compile Include="IRecurringJobManager.cs" />
+    <Compile Include="IWorkerObserver.cs" />
     <Compile Include="JobActivator.cs" />
     <Compile Include="JobActivatorContext.cs" />
     <Compile Include="JobActivatorScope.cs" />
@@ -304,6 +305,9 @@
     <Compile Include="JobStorage.cs" />
     <Compile Include="LatencyTimeoutAttribute.cs" />
     <Compile Include="MoreLinq\MoreEnumerable.Pairwise.cs" />
+    <Compile Include="Notification\EventTypes.cs" />
+    <Compile Include="Notification\INotifier.cs" />
+    <Compile Include="Notification\NotificationStore.cs" />
     <Compile Include="Obsolete\CreateJobFailedException.cs" />
     <Compile Include="Obsolete\IServerComponent.cs" />
     <Compile Include="Obsolete\IServerProcess.cs" />
@@ -334,6 +338,7 @@
     <Compile Include="Server\IServerExceptionFilter.cs" />
     <Compile Include="Server\IServerFilter.cs" />
     <Compile Include="Server\IThrottler.cs" />
+    <Compile Include="Server\IWorkerObservable.cs" />
     <Compile Include="Server\JobAbortedException.cs" />
     <Compile Include="Server\JobPerformanceException.cs" />
     <Compile Include="Server\PerformContext.cs" />

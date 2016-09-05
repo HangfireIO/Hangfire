@@ -49,6 +49,7 @@ namespace Hangfire.Storage
         void RemoveServer(string serverId);
         void Heartbeat(string serverId);
         int RemoveTimedOutServers(TimeSpan timeOut);
+        List<string> GetTimedOutServers(TimeSpan timeout);
 
         // Set operations
 

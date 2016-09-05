@@ -17,21 +17,26 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
+using Hangfire.Notification;
 
 namespace Hangfire
 {
-    public class BackgroundJobServer : IDisposable
+    public class BackgroundJobServer : IDisposable, IWorkerObserver
     {
         private static readonly ILog Logger = LogProvider.For<BackgroundJobServer>();
 
         private readonly BackgroundJobServerOptions _options;
         private readonly BackgroundProcessingServer _processingServer;
+
+        private DateTime _lastEmailNotification;
+        private long _failedJobsCount;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobServer"/> class
@@ -83,6 +88,8 @@ namespace Hangfire
             if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
 
             _options = options;
+            _lastEmailNotification = DateTime.MinValue;
+            _failedJobsCount = 0;
 
             var processes = new List<IBackgroundProcess>();
             processes.AddRange(GetRequiredProcesses());
@@ -136,7 +143,9 @@ namespace Hangfire
             
             for (var i = 0; i < _options.WorkerCount; i++)
             {
-                processes.Add(new Worker(_options.Queues, performer, stateChanger));
+                Worker worker = new Worker(_options.Queues, performer, stateChanger);
+                worker.Subscribe(this);
+                processes.Add(worker);
             }
             
             processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger));
@@ -167,6 +176,27 @@ namespace Hangfire
         [Obsolete("This method is a stub. Please call the `Dispose` method instead. Will be removed in version 2.0.0.")]
         public void Stop()
         {
+        }
+
+        public void Update()
+        {
+            var threshold = _options.JobCheckThreshold;
+            var interval = _options.JobCheckInterval;
+            
+            Interlocked.Increment(ref _failedJobsCount);
+
+            if ( DateTime.Now.Subtract(interval) > _lastEmailNotification)
+            {
+                _lastEmailNotification = DateTime.Now;
+                _failedJobsCount = 1;                
+            }
+            else if (_failedJobsCount > threshold)
+            {
+                var name = _options.ServerName;
+                var msg = $"The server with machine name: \"{ name }\" has had a peak of failed jobs.";
+
+                NotificationStore.Current.NotifyAll(EventTypes.FailedJobPeak, "Failed job peak", msg);
+            }
         }
     }
 }
