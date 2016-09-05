@@ -26,6 +26,8 @@ namespace Hangfire
         {
             AppPath = "/";
             Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
+            EnableSearch = false;
+            RelativeTime = true;
             StatsPollingInterval = 2000;
         }
 
@@ -40,6 +42,10 @@ namespace Hangfire
 #endif
 
         public IEnumerable<IDashboardAuthorizationFilter> Authorization { get; set; }
+
+        public bool EnableSearch { get; set; }
+
+        public bool RelativeTime { get; set; }
 
         /// <summary>
         /// The interval the /stats endpoint should be polled with.
