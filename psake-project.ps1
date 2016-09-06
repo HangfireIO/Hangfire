@@ -10,6 +10,7 @@ Properties {
 }
 
 Task Default -Depends Collect
+Task CI -Depends Default, TestNetCore, CoverityScan
 
 Task Test -Depends Compile -Description "Run unit and integration tests under OpenCover." {
 	Remove-File $coverage_file
@@ -51,6 +52,24 @@ Task Pack -Depends Collect -Description "Create NuGet packages and archive files
     Create-Package "Hangfire.SqlServer" $version
     Create-Package "Hangfire.SqlServer.Msmq" $version
     Create-Package "Hangfire.AspNetCore" $version
+}
+
+Task TestNetCore -Depends Clean -Description "Run unit and integration tests against .NET Core" {
+    Exec {
+        dotnet restore
+        dotnet test tests/Hangfire.Core.Tests
+    }
+}
+
+Task CoverityScan -Depends Restore -PreCondition { return $env:APPVEYOR_SCHEDULED_BUILD } -Description "Runs static code analysis using Coverity Scan" {
+    Exec {
+        cov-build --dir cov-int msbuild /t:rebuild Hangfire.sln
+
+        $publish = Resolve-Path "packages\PublishCoverity.*\tools\PublishCoverity.exe"
+
+        .$publish compress -o coverity.zip -i cov-int --nologo
+        .$publish publish -z coverity.zip -r HangfireIO/Hangfire -t $env:COVERITY_TOKEN -e $env:COVERITY_EMAIL --codeVersion $env:APPVEYOR_BUILD_VERSION --nologo
+    }
 }
 
 function Run-OpenCoverXunit2($projectWithOptionalTarget, $coverageFile, $coverageFilter) {
