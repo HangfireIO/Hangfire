@@ -27,6 +27,7 @@ namespace Hangfire
             AppPath = "/";
             Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
             StatsPollingInterval = 2000;
+            JobNameProvider = null;
         }
 
         /// <summary>
@@ -45,5 +46,10 @@ namespace Hangfire
         /// The interval the /stats endpoint should be polled with.
         /// </summary>
         public int StatsPollingInterval { get; set; }
+
+        /// <summary>
+        /// Display name provider for jobs
+        /// </summary>
+        public IDashboardJobNameProvider JobNameProvider { get; set; }
     }
 }

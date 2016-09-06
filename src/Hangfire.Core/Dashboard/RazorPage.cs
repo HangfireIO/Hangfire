@@ -41,6 +41,7 @@ namespace Hangfire.Dashboard
 
         public JobStorage Storage { get; internal set; }
         public string AppPath { get; internal set; }
+        public IDashboardJobNameProvider JobNameProvider { get; internal set; }
         public int StatsPollingInterval { get; internal set; }
         public Stopwatch GenerationTime { get; private set; }
 
@@ -53,8 +54,10 @@ namespace Hangfire.Dashboard
             }
         }
 
-        internal DashboardRequest Request { private get; set; }
-        internal DashboardResponse Response { private get; set; }
+        internal DashboardContext Context { get; private set; }
+
+        internal DashboardRequest Request => Context.Request;
+        internal DashboardResponse Response => Context.Response;
 
         public string RequestPath => Request.Path;
 
@@ -74,10 +77,10 @@ namespace Hangfire.Dashboard
         /// <exclude />
         public void Assign(RazorPage parentPage)
         {
-            Request = parentPage.Request;
-            Response = parentPage.Response;
+            Context = parentPage.Context;
             Storage = parentPage.Storage;
             AppPath = parentPage.AppPath;
+            JobNameProvider = parentPage.JobNameProvider;
             StatsPollingInterval = parentPage.StatsPollingInterval;
             Url = parentPage.Url;
 
@@ -87,11 +90,10 @@ namespace Hangfire.Dashboard
 
         internal void Assign(DashboardContext context)
         {
-            Request = context.Request;
-            Response = context.Response;
-
+            Context = context;
             Storage = context.Storage;
             AppPath = context.Options.AppPath;
+            JobNameProvider = context.Options.JobNameProvider;
             StatsPollingInterval = context.Options.StatsPollingInterval;
             Url = new UrlHelper(context);
 

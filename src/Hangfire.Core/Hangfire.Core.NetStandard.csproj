@@ -129,6 +129,7 @@
     <Compile Include="Dashboard\HtmlHelper.cs" />
     <Compile Include="Dashboard\IDashboardAuthorizationFilter.cs" />
     <Compile Include="Dashboard\IDashboardDispatcher.cs" />
+    <Compile Include="Dashboard\IDashboardJobNameProvider.cs" />
     <Compile Include="Dashboard\JobHistoryRenderer.cs" />
     <Compile Include="Dashboard\JobMethodCallRenderer.cs" />
     <Compile Include="Dashboard\JobsSidebarMenu.cs" />
