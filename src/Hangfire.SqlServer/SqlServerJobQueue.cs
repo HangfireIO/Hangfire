@@ -53,9 +53,8 @@ namespace Hangfire.SqlServer
             if (queues == null) throw new ArgumentNullException(nameof(queues));
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", nameof(queues));
 
-            FetchedJob fetchedJob;
-            DbConnection connection;
-            DbTransaction transaction;
+            FetchedJob fetchedJob = null;
+            DbTransaction transaction = null;
 
             string fetchJobSqlTemplate =
 $@"delete top (1) from [{_storage.SchemaName}].JobQueue with (readpast, updlock, rowlock)
@@ -66,44 +65,43 @@ and Queue in @queues";
             do
             {
                 cancellationToken.ThrowIfCancellationRequested();
-
-                connection = _storage.CreateAndOpenConnection();
-                transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+                var connection = _storage.CreateAndOpenConnection();
 
                 try
                 {
+                    transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+
                     fetchedJob = connection.Query<FetchedJob>(
-                               fetchJobSqlTemplate,
+                        fetchJobSqlTemplate,
 #pragma warning disable 618
-                               new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds },
+                        new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds },
 #pragma warning restore 618
-                               transaction)
-                               .SingleOrDefault();
-                }
-                catch (DbException)
-                {
-                    transaction.Dispose();
-                    _storage.ReleaseConnection(connection);
-                    throw;
-                }
-                
-                if (fetchedJob == null)
-                {
-                    transaction.Rollback();
-                    transaction.Dispose();
-                    _storage.ReleaseConnection(connection);
+                        transaction).SingleOrDefault();
 
-                    WaitHandle.WaitAny(new []{ cancellationToken.WaitHandle, NewItemInQueueEvent },_options.QueuePollInterval);
-                    cancellationToken.ThrowIfCancellationRequested();
+                    if (fetchedJob != null)
+                    {
+                        return new SqlServerFetchedJob(
+                            _storage,
+                            connection,
+                            transaction,
+                            fetchedJob.JobId.ToString(CultureInfo.InvariantCulture),
+                            fetchedJob.Queue);
+                    }
                 }
-            } while (fetchedJob == null);
+                finally
+                {
+                    if (fetchedJob == null)
+                    {
+                        transaction?.Dispose();
+                        transaction = null;
 
-            return new SqlServerFetchedJob(
-                _storage,
-                connection,
-                transaction,
-                fetchedJob.JobId.ToString(CultureInfo.InvariantCulture),
-                fetchedJob.Queue);
+                        _storage.ReleaseConnection(connection);
+                    }
+                }
+
+                WaitHandle.WaitAny(new[] { cancellationToken.WaitHandle, NewItemInQueueEvent }, _options.QueuePollInterval);
+                cancellationToken.ThrowIfCancellationRequested();
+            } while (true);
         }
 
 #if NETFULL
@@ -117,7 +115,7 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
 
             connection.Execute(
                 enqueueJobSql, 
-                new { jobId = jobId, queue = queue }
+                new { jobId = int.Parse(jobId), queue = queue }
 #if !NETFULL
                 , transaction
 #endif
