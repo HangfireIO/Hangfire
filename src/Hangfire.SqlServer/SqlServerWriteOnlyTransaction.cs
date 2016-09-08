@@ -233,7 +233,7 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
         {
             string trimSql =
 $@";with cte as (
-    select row_number() over (order by Id desc) as row_num, [Key] 
+    select row_number() over (order by Id desc) as row_num
     from [{_storage.SchemaName}].List
     where [Key] = @key)
 delete from cte where row_num not between @start and @end";
