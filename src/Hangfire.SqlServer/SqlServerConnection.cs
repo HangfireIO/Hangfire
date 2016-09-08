@@ -215,7 +215,7 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
             if (name == null) throw new ArgumentNullException(nameof(name));
 
             return _storage.UseConnection(connection => connection.ExecuteScalar<string>(
-                $@"select Value from [{_storage.SchemaName}].JobParameter with (readcommittedlock) where JobId = @id and Name = @name",
+                $@"select top (1) Value from [{_storage.SchemaName}].JobParameter with (readcommittedlock) where JobId = @id and Name = @name",
                 new { id = int.Parse(id), name = name }));
         }
 
