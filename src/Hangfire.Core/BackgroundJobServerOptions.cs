@@ -25,7 +25,7 @@ namespace Hangfire
     public class BackgroundJobServerOptions
     {
         // https://github.com/HangfireIO/Hangfire/issues/246
-        private const int MaxDefaultWorkerCount = 40;
+        private const int MaxDefaultWorkerCount = 20;
 
         private int _workerCount;
         private string[] _queues;
