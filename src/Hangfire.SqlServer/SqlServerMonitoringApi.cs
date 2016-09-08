@@ -334,17 +334,17 @@ select count(*) from [{0}].[Set] with (nolock) where [Key] = N'recurring-jobs';
                 var stats = new StatisticsDto();
                 using (var multi = connection.QueryMultiple(sql))
                 {
-                    stats.Enqueued = multi.Read<int>().Single();
-                    stats.Failed = multi.Read<int>().Single();
-                    stats.Processing = multi.Read<int>().Single();
-                    stats.Scheduled = multi.Read<int>().Single();
+                    stats.Enqueued = multi.ReadSingle<int>();
+                    stats.Failed = multi.ReadSingle<int>();
+                    stats.Processing = multi.ReadSingle<int>();
+                    stats.Scheduled = multi.ReadSingle<int>();
 
-                    stats.Servers = multi.Read<int>().Single();
+                    stats.Servers = multi.ReadSingle<int>();
 
-                    stats.Succeeded = multi.Read<long?>().SingleOrDefault() ?? 0;
-                    stats.Deleted = multi.Read<long?>().SingleOrDefault() ?? 0;
+                    stats.Succeeded = multi.ReadSingleOrDefault<long?>() ?? 0;
+                    stats.Deleted = multi.ReadSingleOrDefault<long?>() ?? 0;
 
-                    stats.Recurring = multi.Read<int>().Single();
+                    stats.Recurring = multi.ReadSingle<int>();
                 }
                 return stats;
             });
@@ -462,10 +462,9 @@ where j.Id in @jobIds";
                 ? $@"select count(j.Id) from (select top (@limit) Id from [{_storage.SchemaName}].Job with (nolock) where StateName = @state) as j"
                 : $@"select count(Id) from [{_storage.SchemaName}].Job with (nolock) where StateName = @state";
 
-            var count = connection.Query<int>(
+            var count = connection.ExecuteScalar<int>(
                  sqlQuery,
-                 new { state = stateName, limit = _jobListLimit })
-                 .Single();
+                 new { state = stateName, limit = _jobListLimit });
 
             return count;
         }

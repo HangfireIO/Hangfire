@@ -101,7 +101,7 @@ select count(Id) from [{_storage.SchemaName}].JobQueue with (nolock) where [Queu
 
             return UseTransaction((connection, transaction) =>
             {
-                var result = connection.Query<int>(sqlQuery, new { queue = queue }, transaction).Single();
+                var result = connection.ExecuteScalar<int>(sqlQuery, new { queue = queue }, transaction);
 
                 return new EnqueuedAndFetchedCountDto
                 {
