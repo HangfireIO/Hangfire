@@ -86,7 +86,7 @@ SELECT CAST(SCOPE_IDENTITY() as int)";
 
             return _storage.UseConnection(connection =>
             {
-                var jobId = connection.Query<int>(
+                var jobId = connection.ExecuteScalar<int>(
                     createJobSql,
                     new
                     {
@@ -94,7 +94,7 @@ SELECT CAST(SCOPE_IDENTITY() as int)";
                         arguments = invocationData.Arguments,
                         createdAt = createdAt,
                         expireAt = createdAt.Add(expireIn)
-                    }).Single().ToString();
+                    }).ToString();
 
                 if (parameters.Count > 0)
                 {
@@ -104,7 +104,7 @@ SELECT CAST(SCOPE_IDENTITY() as int)";
                     {
                         parameterArray[parameterIndex++] = new
                         {
-                            jobId = jobId,
+                            jobId = int.Parse(jobId),
                             name = parameter.Key,
                             value = parameter.Value
                         };
@@ -130,7 +130,7 @@ $@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.Schema
 
             return _storage.UseConnection(connection =>
             {
-                var jobData = connection.Query<SqlJob>(sql, new { id = id })
+                var jobData = connection.Query<SqlJob>(sql, new { id = int.Parse(id) })
                     .SingleOrDefault();
 
                 if (jobData == null) return null;
@@ -173,7 +173,7 @@ where j.Id = @jobId";
 
             return _storage.UseConnection(connection =>
             {
-                var sqlState = connection.Query<SqlState>(sql, new { jobId = jobId }).SingleOrDefault();
+                var sqlState = connection.Query<SqlState>(sql, new { jobId = int.Parse(jobId) }).SingleOrDefault();
                 if (sqlState == null)
                 {
                     return null;
@@ -205,7 +205,7 @@ using (VALUES (@jobId, @name, @value)) as Source (JobId, Name, Value)
 on Target.JobId = Source.JobId AND Target.Name = Source.Name
 when matched then update set Value = Source.Value
 when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.Name, Source.Value);",
-                    new { jobId = id, name, value });
+                    new { jobId = int.Parse(id), name, value });
             });
         }
 
