@@ -31,10 +31,8 @@ namespace Hangfire.SqlServer
 
         private const string DistributedLockKey = "locks:expirationmanager";
         private static readonly TimeSpan DefaultLockTimeout = TimeSpan.FromMinutes(5);
-
-        // The value should be low enough to prevent INDEX SCAN operator,
-        // see https://github.com/HangfireIO/Hangfire/issues/628
-        private const int NumberOfRecordsInSinglePass = 100;
+        
+        private const int NumberOfRecordsInSinglePass = 1000;
         
         private static readonly string[] ProcessedTables =
         {
@@ -99,7 +97,10 @@ $@"set transaction isolation level read committed;
 set nocount on;
 while (1 = 1)
 begin
-    delete top (@count) from [{schemaName}].[{table}] with (readpast) where ExpireAt < @now;
+    delete top (@count) from [{schemaName}].[{table}] with (readpast) 
+    where ExpireAt < @now
+    option (loop join, optimize for (@count = 20000));
+
     if @@ROWCOUNT = 0 break;
 end";
         }
