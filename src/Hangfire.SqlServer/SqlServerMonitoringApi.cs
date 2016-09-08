@@ -310,6 +310,7 @@ select * from [{_storage.SchemaName}].State with (nolock) where JobId = @id orde
         public StatisticsDto GetStatistics()
         {
             string sql = String.Format(@"
+set transaction isolation level read committed;
 select count(Id) from [{0}].Job with (nolock) where StateName = N'Enqueued';
 select count(Id) from [{0}].Job with (nolock) where StateName = N'Failed';
 select count(Id) from [{0}].Job with (nolock) where StateName = N'Processing';
