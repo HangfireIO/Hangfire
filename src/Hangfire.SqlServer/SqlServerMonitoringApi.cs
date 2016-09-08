@@ -316,12 +316,12 @@ select count(Id) from [{0}].Job with (nolock) where StateName = N'Processing';
 select count(Id) from [{0}].Job with (nolock) where StateName = N'Scheduled';
 select count(Id) from [{0}].Server with (nolock);
 select sum(s.[Value]) from (
-    select sum([Value]) as [Value] from [{0}].Counter with (nolock) where [Key] = N'stats:succeeded'
+    select sum([Value]) as [Value] from [{0}].Counter with (readpast) where [Key] = N'stats:succeeded'
     union all
     select [Value] from [{0}].AggregatedCounter with (nolock) where [Key] = N'stats:succeeded'
 ) as s;
 select sum(s.[Value]) from (
-    select sum([Value]) as [Value] from [{0}].Counter with (nolock) where [Key] = N'stats:deleted'
+    select sum([Value]) as [Value] from [{0}].Counter with (readpast) where [Key] = N'stats:deleted'
     union all
     select [Value] from [{0}].AggregatedCounter with (nolock) where [Key] = N'stats:deleted'
 ) as s;
