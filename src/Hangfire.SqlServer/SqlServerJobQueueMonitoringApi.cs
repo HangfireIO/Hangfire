@@ -48,7 +48,7 @@ namespace Hangfire.SqlServer
 
         public IEnumerable<string> GetQueues()
         {
-            string sqlQuery = $@"select distinct(Queue) from [{_storage.SchemaName}].JobQueue";
+            string sqlQuery = $@"select distinct(Queue) from [{_storage.SchemaName}].JobQueue with (nolock)";
 
             lock (_cacheLock)
             {
