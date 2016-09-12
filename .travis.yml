@@ -11,7 +11,10 @@ os:
   - osx
 
 env:  
-  - CLI_VERSION=latest
+  global:
+    - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+    - DOTNET_CLI_TELEMETRY_OPTOUT: 1
+    - CLI_VERSION=latest
   
 addons:  
   apt:
