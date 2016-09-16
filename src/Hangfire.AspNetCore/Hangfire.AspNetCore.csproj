@@ -42,6 +42,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="AspNetCore\AspNetCoreJobFilterProviders.cs" />
     <Compile Include="AspNetCore\AspNetCoreJobActivator.cs" />
     <Compile Include="AspNetCore\AspNetCoreJobActivatorScope.cs" />
     <Compile Include="AspNetCore\AspNetCoreLog.cs" />
