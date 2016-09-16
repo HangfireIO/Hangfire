@@ -23,7 +23,7 @@ namespace Hangfire.Dashboard
             Value = value;
         }
 
-        public string Value { get; private set; }
+        public string Value { get; }
         public long IntValue { get; set; }
         public MetricStyle Style { get; set; }
         public bool Highlighted { get; set; }

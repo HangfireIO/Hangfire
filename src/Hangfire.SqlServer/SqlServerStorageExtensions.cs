@@ -27,8 +27,8 @@ namespace Hangfire
             [NotNull] this IGlobalConfiguration configuration,
             [NotNull] string nameOrConnectionString)
         {
-            if (configuration == null) throw new ArgumentNullException("configuration");
-            if (nameOrConnectionString == null) throw new ArgumentNullException("nameOrConnectionString");
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (nameOrConnectionString == null) throw new ArgumentNullException(nameof(nameOrConnectionString));
 
             var storage = new SqlServerStorage(nameOrConnectionString);
             return configuration.UseStorage(storage);
@@ -39,9 +39,9 @@ namespace Hangfire
             [NotNull] string nameOrConnectionString, 
             [NotNull] SqlServerStorageOptions options)
         {
-            if (configuration == null) throw new ArgumentNullException("configuration");
-            if (nameOrConnectionString == null) throw new ArgumentNullException("nameOrConnectionString");
-            if (options == null) throw new ArgumentNullException("options");
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (nameOrConnectionString == null) throw new ArgumentNullException(nameof(nameOrConnectionString));
+            if (options == null) throw new ArgumentNullException(nameof(options));
 
             var storage = new SqlServerStorage(nameOrConnectionString, options);
             return configuration.UseStorage(storage);

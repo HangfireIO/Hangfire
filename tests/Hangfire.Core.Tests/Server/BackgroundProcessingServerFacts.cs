@@ -6,6 +6,8 @@ using Hangfire.Storage;
 using Moq;
 using Xunit;
 
+// ReSharper disable AssignNullToNotNullAttribute
+
 namespace Hangfire.Core.Tests.Server
 {
     public class BackgroundProcessingServerFacts
@@ -69,13 +71,26 @@ namespace Hangfire.Core.Tests.Server
         public void Execute_StartsAllTheProcesses_InLoop_AndWaitsForThem()
         {
             // Arrange
+            var component1Countdown = new CountdownEvent(5);
+            var component2Countdown = new CountdownEvent(5);
+
             var component1 = CreateProcessMock<IBackgroundProcess>();
-            component1.Setup(x => x.Execute(It.IsAny<BackgroundProcessContext>())).Callback(() => Thread.Sleep(10));
+            component1.Setup(x => x.Execute(It.IsAny<BackgroundProcessContext>())).Callback(() =>
+            {
+                component1Countdown.Signal();
+            });
+
             var component2 = CreateProcessMock<IBackgroundProcess>();
-            component2.Setup(x => x.Execute(It.IsAny<BackgroundProcessContext>())).Callback(() => Thread.Sleep(10));
+            component2.Setup(x => x.Execute(It.IsAny<BackgroundProcessContext>())).Callback(() =>
+            {
+                component2Countdown.Signal();
+            });
 
             // Act
-            using (CreateServer()) { Thread.Sleep(100); }
+            using (CreateServer())
+            {
+                WaitHandle.WaitAll(new[] { component1Countdown.WaitHandle, component2Countdown.WaitHandle });
+            }
 
             // Assert
             component1.Verify(x => x.Execute(It.IsAny<BackgroundProcessContext>()), Times.AtLeast(5));

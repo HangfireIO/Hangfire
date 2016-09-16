@@ -16,6 +16,7 @@
 
 using System;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.States;
 
@@ -100,6 +101,24 @@ namespace Hangfire
         /// 
         /// <seealso cref="EnqueuedState"/>
         /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
+        public static string Enqueue([NotNull, InstantHandle] Expression<Func<Task>> methodCall)
+        {
+            var client = ClientFactory();
+            return client.Enqueue(methodCall);
+        }
+
+        /// <summary>
+        /// Creates a new fire-and-forget job based on a given method call expression.
+        /// </summary>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <returns>Unique identifier of a background job.</returns>
+        /// 
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="methodCall"/> is <see langword="null"/>.
+        /// </exception>
+        /// 
+        /// <seealso cref="EnqueuedState"/>
+        /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
         public static string Enqueue<T>([NotNull, InstantHandle] Expression<Action<T>> methodCall)
         {
             var client = ClientFactory();
@@ -107,7 +126,25 @@ namespace Hangfire
         }
 
         /// <summary>
-        /// Creates a new background job based on a specified static method
+        /// Creates a new fire-and-forget job based on a given method call expression.
+        /// </summary>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <returns>Unique identifier of a background job.</returns>
+        /// 
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="methodCall"/> is <see langword="null"/>.
+        /// </exception>
+        /// 
+        /// <seealso cref="EnqueuedState"/>
+        /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
+        public static string Enqueue<T>([NotNull, InstantHandle] Expression<Func<T, Task>> methodCall)
+        {
+            var client = ClientFactory();
+            return client.Enqueue(methodCall);
+        }
+
+        /// <summary>
+        /// Creates a new background job based on a specified method
         /// call expression and schedules it to be enqueued after a given delay.
         /// </summary>
         /// 
@@ -116,6 +153,22 @@ namespace Hangfire
         /// <returns>Unique identifier of the created job.</returns>
         public static string Schedule(
             [NotNull, InstantHandle] Expression<Action> methodCall, 
+            TimeSpan delay)
+        {
+            var client = ClientFactory();
+            return client.Schedule(methodCall, delay);
+        }
+
+        /// <summary>
+        /// Creates a new background job based on a specified method
+        /// call expression and schedules it to be enqueued after a given delay.
+        /// </summary>
+        /// 
+        /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
+        /// <param name="delay">Delay, after which the job will be enqueued.</param>
+        /// <returns>Unique identifier of the created job.</returns>
+        public static string Schedule(
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             TimeSpan delay)
         {
             var client = ClientFactory();
@@ -132,6 +185,22 @@ namespace Hangfire
         /// <returns>Unique identifier of a created job.</returns>
         public static string Schedule(
             [NotNull, InstantHandle] Expression<Action> methodCall, 
+            DateTimeOffset enqueueAt)
+        {
+            var client = ClientFactory();
+            return client.Schedule(methodCall, enqueueAt);
+        }
+
+        /// <summary>
+        /// Creates a new background job based on a specified method call expression
+        /// and schedules it to be enqueued at the given moment of time.
+        /// </summary>
+        /// 
+        /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
+        /// <param name="enqueueAt">The moment of time at which the job will be enqueued.</param>
+        /// <returns>Unique identifier of a created job.</returns>
+        public static string Schedule(
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             DateTimeOffset enqueueAt)
         {
             var client = ClientFactory();
@@ -156,6 +225,23 @@ namespace Hangfire
         }
 
         /// <summary>
+        /// Creates a new background job based on a specified instance method
+        /// call expression and schedules it to be enqueued after a given delay.
+        /// </summary>
+        /// 
+        /// <typeparam name="T">Type whose method will be invoked during job processing.</typeparam>
+        /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
+        /// <param name="delay">Delay, after which the job will be enqueued.</param>
+        /// <returns>Unique identifier of the created job.</returns>
+        public static string Schedule<T>(
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
+            TimeSpan delay)
+        {
+            var client = ClientFactory();
+            return client.Schedule(methodCall, delay);
+        }
+
+        /// <summary>
         /// Creates a new background job based on a specified method call expression
         /// and schedules it to be enqueued at the given moment of time.
         /// </summary>
@@ -166,6 +252,23 @@ namespace Hangfire
         /// <returns>Unique identifier of a created job.</returns>
         public static string Schedule<T>(
             [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
+            DateTimeOffset enqueueAt)
+        {
+            var client = ClientFactory();
+            return client.Schedule(methodCall, enqueueAt);
+        }
+
+        /// <summary>
+        /// Creates a new background job based on a specified method call expression
+        /// and schedules it to be enqueued at the given moment of time.
+        /// </summary>
+        /// 
+        /// <typeparam name="T">The type whose method will be invoked during the job processing.</typeparam>
+        /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
+        /// <param name="enqueueAt">The moment of time at which the job will be enqueued.</param>
+        /// <returns>Unique identifier of a created job.</returns>
+        public static string Schedule<T>(
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             DateTimeOffset enqueueAt)
         {
             var client = ClientFactory();
@@ -231,6 +334,13 @@ namespace Hangfire
             return client.Requeue(jobId, fromState);
         }
 
+        /// <summary>
+        /// Creates a new background job that will wait for a successful completion 
+        /// of another background job to be enqueued.
+        /// </summary>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <returns>Unique identifier of a created job.</returns>
         public static string ContinueWith(
             [NotNull] string parentId, 
             [NotNull, InstantHandle] Expression<Action> methodCall)
@@ -239,6 +349,13 @@ namespace Hangfire
             return client.ContinueWith(parentId, methodCall);
         }
 
+        /// <summary>
+        /// Creates a new background job that will wait for a successful completion 
+        /// of another background job to be enqueued.
+        /// </summary>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <returns>Unique identifier of a created job.</returns>
         public static string ContinueWith<T>(
             [NotNull] string parentId, 
             [NotNull, InstantHandle] Expression<Action<T>> methodCall)
@@ -247,6 +364,13 @@ namespace Hangfire
             return client.ContinueWith(parentId, methodCall);
         }
 
+        /// <summary>
+        /// Creates a new background job that will wait for another background job to be enqueued.
+        /// </summary>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="options">Continuation options.</param>
+        /// <returns>Unique identifier of a created job.</returns>
         public static string ContinueWith(
             [NotNull] string parentId, 
             [NotNull, InstantHandle] Expression<Action> methodCall, 
@@ -256,6 +380,30 @@ namespace Hangfire
             return client.ContinueWith(parentId, methodCall, options);
         }
 
+        /// <summary>
+        /// Creates a new background job that will wait for another background job to be enqueued.
+        /// </summary>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="options">Continuation options. By default, 
+        /// <see cref="JobContinuationOptions.OnlyOnSucceededState"/> is used.</param>
+        /// <returns>Unique identifier of a created job.</returns>
+        public static string ContinueWith(
+            [NotNull] string parentId,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
+            JobContinuationOptions options = JobContinuationOptions.OnlyOnSucceededState)
+        {
+            var client = ClientFactory();
+            return client.ContinueWith(parentId, methodCall, options: options);
+        }
+
+        /// <summary>
+        /// Creates a new background job that will wait for another background job to be enqueued.
+        /// </summary>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="options">Continuation options.</param>
+        /// <returns>Unique identifier of a created job.</returns>
         public static string ContinueWith<T>(
             [NotNull] string parentId, 
             [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
@@ -263,6 +411,23 @@ namespace Hangfire
         {
             var client = ClientFactory();
             return client.ContinueWith(parentId, methodCall, options);
+        }
+
+        /// <summary>
+        /// Creates a new background job that will wait for another background job to be enqueued.
+        /// </summary>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="options">Continuation options. By default, 
+        /// <see cref="JobContinuationOptions.OnlyOnSucceededState"/> is used.</param>
+        /// <returns>Unique identifier of a created job.</returns>
+        public static string ContinueWith<T>(
+            [NotNull] string parentId,
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
+            JobContinuationOptions options = JobContinuationOptions.OnlyOnSucceededState)
+        {
+            var client = ClientFactory();
+            return client.ContinueWith(parentId, methodCall, options: options);
         }
     }
 }

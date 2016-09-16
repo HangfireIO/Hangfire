@@ -5,6 +5,8 @@ using Hangfire.Server;
 using Moq;
 using Xunit;
 
+#pragma warning disable 618
+
 namespace Hangfire.Core.Tests.Server
 {
     public class AutomaticRetryProcessFacts
@@ -88,7 +90,7 @@ namespace Hangfire.Core.Tests.Server
                 Times.Once);
         }
 
-        [PossibleHangingFact]
+        [Fact]
         public void Execute_ShouldBeInterrupted_ByCancellationToken()
         {
             _delay = TimeSpan.FromDays(1);
@@ -101,15 +103,27 @@ namespace Hangfire.Core.Tests.Server
             _process.Verify(x => x.Execute(It.IsNotNull<BackgroundProcessContext>()), Times.Once);
         }
 
-        [PossibleHangingFact]
-        public void Execute_DoesNotCauseAutomaticRetry_OnOperationCanceledException()
+        [Fact]
+        public void Execute_DoesNotCauseAutomaticRetry_WhenOperationCanceledExceptionCausedByShutdownThrown()
         {
+            _context.CancellationTokenSource.Cancel();
             _process.Setup(x => x.Execute(It.IsAny<BackgroundProcessContext>())).Throws<OperationCanceledException>();
             var wrapper = CreateWrapper();
 
             Assert.Throws<OperationCanceledException>(() => wrapper.Execute(_context.Object));
 
             _process.Verify(x => x.Execute(It.IsNotNull<BackgroundProcessContext>()), Times.Once);
+        }
+
+        [Fact]
+        public void Execute_CausesAutomaticRetry_WhenOperationCanceledExceptionThrown_NotCausedByShutdown()
+        {
+            _process.Setup(x => x.Execute(It.IsAny<BackgroundProcessContext>())).Throws<OperationCanceledException>();
+            var wrapper = CreateWrapper();
+
+            Assert.Throws<OperationCanceledException>(() => wrapper.Execute(_context.Object));
+
+            _process.Verify(x => x.Execute(It.IsNotNull<BackgroundProcessContext>()), Times.Exactly(_maxRetryAttempts));
         }
 
         private AutomaticRetryProcess CreateWrapper()
@@ -122,7 +136,9 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [UsedImplicitly]
+#pragma warning disable 618
         private class WaitingComponent : IServerComponent
+#pragma warning restore 618
         {
             public void Execute(CancellationToken token)
             {

@@ -10,7 +10,7 @@ namespace Hangfire.Dashboard.Pages
             Items = items;
         }
 
-        public string Title { get; private set; }
-        public IDictionary<string, string> Items { get; private set; }
+        public string Title { get; }
+        public IDictionary<string, string> Items { get; }
     }
 }

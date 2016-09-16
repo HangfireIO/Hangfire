@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.Serialization.Formatters;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Storage;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xunit;
+
+// ReSharper disable AssignNullToNotNullAttribute
 
 namespace Hangfire.Core.Tests.Common
 {
@@ -225,11 +229,12 @@ namespace Hangfire.Core.Tests.Common
                 PropertyA = propertyA;
             }
 
-            public string PropertyA { get; private set; }
+            public string PropertyA { get; }
         }
 
         private class BackgroundJob
         {
+            [UsedImplicitly]
             public void DoWork(string workId, string message)
             {
             }

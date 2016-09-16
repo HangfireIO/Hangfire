@@ -9,73 +9,120 @@
     <projectUrl>http://hangfire.io/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
+    <summary>An easy way to perform fire-and-forget, delayed and recurring tasks inside ASP.NET applications. No Windows Service required.</summary>
     <description>
       An easy and reliable way to perform fire-and-forget, delayed and recurring long-running, short-running, CPU or I/O intensive tasks inside ASP.NET application. No Windows Service / Task Scheduler required. Even ASP.NET is not required.
       Backed by Redis, SQL Server, SQL Azure or MSMQ. This is a .NET alternative to Sidekiq, Resque and Celery.
       http://hangfire.io/
     </description>
-    <copyright>Copyright © 2013-2015 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013-2016 Sergey Odinokov</copyright>
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
-1.5.3
+1.6.4
 
 Hangfire.SqlServer
-* Fixed – "Cannot release the application lock" exception when using distributed locks.
+• Fixed – `SqlConnection` object leaks when using nested distributed locks (in batches and continuations).
     
-1.5.2
-* Fixed – `JobLoadException` when using interface method as a background job, appeared in 1.5.1.
-    
-1.5.1
-* Fixed – `JobLoadException` during deserialization when a method defined in an inherited interface.
-* Fixed – Unable to see enqueued jobs in Dashboard UI when using SQL Server queues.
-* Fixed – Show alert box instead of an exception on Awaiting Jobs page.
-    
-1.5.0
+1.6.3
 
 Hangfire.Core
-* Added – `IBackgroundProcess` interface that allows to implement custom background processes.
-* Added – `BackgroundProcessingServer` class for creating a server instance with completely custom background processes.
-* Added – Support for running multiple `BackgroundJobServer` instances in the same AppDomain without explicit server names.
-* Added – `JobActivatorScope` class to support custom IoC scopes/lifetimes.
-* Added – Allow to specify a custom queue for recurring jobs (by @maleet).
-* Added – Allow to use CancellationToken type as a job method parameter.
-* Added – It is now possible to query the storage in state applying filters.
-* Added – Allow to pass custom filters to `BackgroundJobServer` via options.
-* Added – Option to hide the "Back to site" link (by @dradovic).
-* Changed – Server components and background processes now use `Task` with `TaskCreationOptions.LongRunning`.
-* Changed – ServerIds are now generated without ServerName, server names are deprecated.
-* Changed – Arguments Renderer now supports TimeSpan and DateTime (by @yngndrw).
-* Changed – Minor improvements for Dashboard navigation (by @pwelter34).
-* Changed – Worker does not process a job when a transition to the Processing state failed (by @yngndrw).
-* Changed – `BackgroundJobClientException` is thrown instead of `CreateJobFailedException`.
-* Changed – WorkerId is now auto-generated and based on a GUID.
-* Changed – Use StackTraceFormatter package for marking-up stack traces (by @atifaziz).
-* Changed – Updated Dashboard CSS to Twitter Bootstrap 3.3.5.
-* Fixed – Prevent worker from fetching and processing a job on shutdown.
-* Fixed – `TaskCanceledException` thrown from a job method leads to failed job as expected.
-* Fixed – Make `DelayedJobScheduler` resilient to empty background job ids.
-* Fixed – Logical error in SqlServerDistributedLockTimeout value check (by @Tom-Kelly).
-* Fixed – `OverflowException` in Dashboard when job duration exceeds int.MaxValue (by @mavenius).
-* Fixed – "More details" button in Dashboard changes to "Less details" when collapsed (by @pascalberger).
+• Fixed – Add missing `RecurringJob.AddOrUpdate` method overloads to prevent CS4014 warnings.
+• Fixed – `ToGenericTypeString` method now handles types with no namespace correctly.
 
 Hangfire.SqlServer
-* Added – Ability to specify the schema for SQL Server job storage (by @ryanmwright).
-* Added – `TransactionTimeout` option for configuring the `TransactionScope` timeout.
-* Added – `DashboardJobListLimit` option to prevent full table scans in Dashboard.
-* Changed – `SqlServerDistributedLock` class is now public.
-* Changed – Use `rowlock` table hint in job fetch query to prevent escalation.
-* Changed – Dramatically improved page load times in Dashboard.
-* Changed – Instant re-queue for background jobs even after ungraceful shutdown.
-* Changed – `JobQueue.Queue` and `Server.Id` column length increased to 50 and 100 respectively (by @maleet).
+• Fixed – Prevent `ExpirationManager`'s command from timing out, when there are a lot of records.
+• Fixed – `CountersAggregator` issue introduced in 1.6.2, that causes slow record aggregation.
+• Fixed – Add `XLOCK` hint for `CountersAggregator` query to prevent deadlocks on lock escalation.
 
 Hangfire.SqlServer.Msmq
-* Added – Support for remote MSMQ queues through DTC transactions.
+• Fixed – Prevent MSMQ transactions from timing out after 1 minute of processing.
+    
+1.6.2
+
+Hangfire.Core
+• Changed – Recurring job page displays now raw cron strings, descriptions are in tooltips.
+• Fixed – Return non-highlighted stack trace, when parsing takes too long, instead of throwing an exception.
+• Fixed – Dashboard UI works correctly again, when IE 11 is in the Compatibility Mode.
+• Fixed – Long method names now don't push tables out of the boundaries now.
+
+Hangfire.SqlServer
+• Changed – `JobExpirationCheckInterval` property value now defaults to 30 minutes.
+• Fixed – Excessive blocking when expiring records in `State` and `JobParameters` tables.
+• Fixed – Migration script `Install.sql` was deadlocked by itself, leading to errors on startup.
+
+Hangfire.SqlServer.Msmq
+• Fixed – Public MSMQ queue paths are parsed correctly now, when determining the queue length.
+    
+1.6.1
+
+Hangfire.Core
+• Added – Automatic unit tests execution for .NET Core on Windows, Linux and OS X using AppVeyor and Travis CI.
+• Fixed – `DateTime` deserialization issues on .NET Core platform.
+• Fixed – Fixed UI command behaviour, buttons can only be pressed once per command (by @mahoneyj2).
+• Fixed – `TypeInitializationException` when using Serilog appeared in version 1.6.0.
+• Fixed – Cron format strings for intervals are specified correctly now (by @stevetsang).
+• Fixed – `NullReference` on Job Details page when background job has null value for `IEnumerable` argument.
+• Fixed – Don't skip symbols when publishing NuGet packages.
+• Fixed – Use GUID identifier when can't determine the host name.
+
+Hangfire.AspNetCore
+• Fixed – Add missing `GetHttpContext` extension method for the .NET Core platform.
+    
+1.6.0
+    
+Hangfire.Core
+• Added – .NET Core support for Hangfire.Core and Hangfire.SqlServer packages (`netstandard1.3` target).
+• Added – Ability to create jobs based on async methods, they are awaited by a worker (by @tuespetre).
+• Added – Access to background job context from the `JobActivator.BeginScope` method.
+• Added – Add LatencyTimeoutAttribute To delete jobs if timeout is exceeded (by @Excommunicated).
+• Added – Ability to change statistics polling interval in dashboard (by @tristal).
+• Added – Non-blocking `BackgroundJobServer.SendStop` method, that requests for a shutdown.
+• Added – `BackgroundJobServerOptions.ServerName` option is back.
+• Added – `IDashboardAuthorizationFilter` interface that makes `IAuthorizationFilter` obsolete.
+• Added – Show background job continuations on Job Details page.
+• Added – Multilanguage support in Dashboard via resource files (by @Elph).
+• Added – Spanish localization for the Dashboard UI (by @Elph).
+• Added – Enable backtracking from background job to recurrent job (by @teodimache).
+• Added – Cron expressions for regular intervals for the `Cron` class (by @geirsagberg).
+• Added – `IRecurringJobManager` interface for the `RecurringJobManager` class (by @arnoldasgudas).
+• Added – Abstractions for Dashboard UI to decouple it from OWIN.
+• Changed – Make the realtime/history graph to use localized dates on hover (by @Elph).
+• Changed – Make graph tooltip also localized using data-attributes (by @Elph).
+• Changed – Dashboard metric's title now contains the ResourceKey instead the title (by @Elph).
+• Changed – Job Details page was redesigned to be more clean with less colors.
+• Changed – Update jQuery to 2.1.4 and rickshaw.js to 1.5.1.
+• Changed – Update NCrontab to 3.1.0.
+• Changed – Update CronExpressionDescriptor to 1.17.
+• Fixed – `ToGenericTypeString` method now supports nested classes (by @patrykpiotrmarek).
+• Fixed – Dashboard Errors in Chrome and IE - Cannot read property 'removeChild' of null.
+• Fixed – /hangfire/js outputs (unintended) UTF-8 BOM.
+
+Hangfire.AspNetCore
+• Added – Deep integration with ASP.NET Core via Hangfire.AspNetCore package.
+
+Hangfire.SqlServer
+• Added – .NET Core support for Hangfire.Core and Hangfire.SqlServer packages (`netstandard1.3` target).
+• Added – Zero latency processing when client and server reside in the same process (by @bgurmendi).
+• Changed – `SqlServerStorage` class constructor now takes `DbConnection` instances (by @tystol).
+• Changed – `SqlServerObjectsInstaller` class is public now (by @vbfox).
+• Changed – Update Dapper to 1.50.1 version.
+• Fixed – Drop constraints on Server.Id prior to altering it to avoid conflicts.
+
+Hangfire.SqlServer.Msmq
+• Fixed – Package now depends on the latest Hangfire.SqlServer instead of version 1.2.2.
     </releaseNotes>
     <dependencies>
-      <dependency id="Hangfire.Core" version="[0.0.0]" />
-      <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
-      <dependency id="Microsoft.Owin.Host.SystemWeb" version="3.0.0" />
+      <group targetFramework="net45">
+        <dependency id="Hangfire.Core" version="[0.0.0]" />
+        <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
+        <dependency id="Microsoft.Owin.Host.SystemWeb" version="3.0.0" />
+      </group>
+      <group targetFramework="netstandard1.3">
+        <dependency id="Hangfire.Core" version="[0.0.0]" />
+        <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
+        <dependency id="Hangfire.AspNetCore" version="[0.0.0]" />
+      </group>
     </dependencies>
   </metadata>
   <files>

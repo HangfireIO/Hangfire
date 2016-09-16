@@ -19,7 +19,6 @@ using System.Diagnostics;
 using System.Net;
 using System.Text;
 using Hangfire.Storage.Monitoring;
-using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
@@ -42,6 +41,7 @@ namespace Hangfire.Dashboard
 
         public JobStorage Storage { get; internal set; }
         public string AppPath { get; internal set; }
+        public int StatsPollingInterval { get; internal set; }
         public Stopwatch GenerationTime { get; private set; }
 
         public StatisticsDto Statistics
@@ -53,20 +53,17 @@ namespace Hangfire.Dashboard
             }
         }
 
-        internal IOwinRequest Request { private get; set; }
-        internal IOwinResponse Response { private get; set; }
+        internal DashboardRequest Request { private get; set; }
+        internal DashboardResponse Response { private get; set; }
 
-        public string RequestPath
-        {
-            get { return Request.Path.Value; }
-        }
+        public string RequestPath => Request.Path;
 
         /// <exclude />
         public abstract void Execute();
 
         public string Query(string key)
         {
-            return Request.Query[key];
+            return Request.GetQuery(key);
         }
 
         public override string ToString()
@@ -81,21 +78,22 @@ namespace Hangfire.Dashboard
             Response = parentPage.Response;
             Storage = parentPage.Storage;
             AppPath = parentPage.AppPath;
+            StatsPollingInterval = parentPage.StatsPollingInterval;
             Url = parentPage.Url;
 
             GenerationTime = parentPage.GenerationTime;
             _statisticsLazy = parentPage._statisticsLazy;
         }
 
-        internal void Assign(RequestDispatcherContext context)
+        internal void Assign(DashboardContext context)
         {
-            var owinContext = new OwinContext(context.OwinEnvironment);
+            Request = context.Request;
+            Response = context.Response;
 
-            Request = owinContext.Request;
-            Response = owinContext.Response;
-            Storage = context.JobStorage;
-            AppPath = context.AppPath;
-            Url = new UrlHelper(context.OwinEnvironment);
+            Storage = context.Storage;
+            AppPath = context.Options.AppPath;
+            StatsPollingInterval = context.Options.StatsPollingInterval;
+            Url = new UrlHelper(context);
 
             _statisticsLazy = new Lazy<StatisticsDto>(() =>
             {
@@ -118,7 +116,7 @@ namespace Hangfire.Dashboard
             if (value == null)
                 return;
             var html = value as NonEscapedString;
-            WriteLiteral(html != null ? html.ToString() : Encode(value.ToString()));
+            WriteLiteral(html?.ToString() ?? Encode(value.ToString()));
         }
 
         protected virtual object RenderBody()

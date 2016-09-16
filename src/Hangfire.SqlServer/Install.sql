@@ -21,6 +21,11 @@ SET @TARGET_SCHEMA_VERSION = 5;
 PRINT 'Installing Hangfire SQL objects...';
 
 BEGIN TRANSACTION;
+BEGIN TRY;
+
+-- Acquire exclusive lock to prevent deadlocks caused by schema creation / version update
+DECLARE @SchemaLockResult INT;
+EXEC @SchemaLockResult = sp_getapplock @Resource = '$(HangFireSchema):SchemaLock', @LockMode = 'Exclusive'
 
 -- Create the database schema if it doesn't exists
 IF NOT EXISTS (SELECT [schema_id] FROM [sys].[schemas] WHERE [name] = '$(HangFireSchema)')
@@ -55,7 +60,7 @@ PRINT 'Current Hangfire schema version: ' + CASE @CURRENT_SCHEMA_VERSION WHEN NU
 IF @CURRENT_SCHEMA_VERSION IS NOT NULL AND @CURRENT_SCHEMA_VERSION > @TARGET_SCHEMA_VERSION
 BEGIN
     ROLLBACK TRANSACTION;
-    RAISERROR(N'HangFire current database schema version %d is newer than the configured SqlServerStorage schema version %d. Please update to the latest HangFire.SqlServer NuGet package.', 11, 1,
+    RAISERROR(N'Hangfire current database schema version %d is newer than the configured SqlServerStorage schema version %d. Please update to the latest Hangfire.SqlServer NuGet package.', 11, 1,
         @CURRENT_SCHEMA_VERSION, @TARGET_SCHEMA_VERSION);
 END
 
@@ -359,10 +364,19 @@ BEGIN
         [FetchedAt] ASC
     );
     PRINT 'Re-created index [IX_HangFire_JobQueue_QueueAndFetchedAt]';
-		
+
+	ALTER TABLE [$(HangFireSchema)].[Server] DROP CONSTRAINT [PK_HangFire_Server]
+    PRINT 'Dropped constraint [PK_HangFire_Server] to modify the [HangFire].[Server].[Id] column';
+
 	ALTER TABLE [$(HangFireSchema)].[Server] ALTER COLUMN [Id] NVARCHAR (100) NOT NULL;
 	PRINT 'Modified [$(HangFireSchema)].[Server].[Id] length to 100';
-		
+
+	ALTER TABLE [$(HangFireSchema)].[Server] ADD  CONSTRAINT [PK_HangFire_Server] PRIMARY KEY CLUSTERED
+	(
+		[Id] ASC
+	);
+	PRINT 'Re-created constraint [PK_HangFire_Server]';
+
 	SET @CURRENT_SCHEMA_VERSION = 5;
 END
 	
@@ -383,3 +397,14 @@ PRINT 'Hangfire database schema installed';
 
 COMMIT TRANSACTION;
 PRINT 'Hangfire SQL objects installed';
+
+END TRY
+BEGIN CATCH
+    DECLARE @ERROR NVARCHAR(MAX);
+	SET @ERROR = ERROR_MESSAGE();
+
+	if @@TRANCOUNT > 0
+		ROLLBACK TRANSACTION
+
+	RAISERROR(N'Hangfire database migration script failed: %s Changes were rolled back, please fix the problem and re-run the script again.', 11, 1, @ERROR);
+END CATCH

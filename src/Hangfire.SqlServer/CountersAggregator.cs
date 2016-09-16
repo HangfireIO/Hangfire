@@ -22,10 +22,15 @@ using Hangfire.Server;
 
 namespace Hangfire.SqlServer
 {
+#pragma warning disable 618
     internal class CountersAggregator : IServerComponent
+#pragma warning restore 618
     {
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
-
+        private static readonly ILog Logger = LogProvider.For<CountersAggregator>();
+        
+        // This number should be high enough to aggregate counters efficiently,
+        // but low enough to not to cause large amount of row locks to be taken.
+        // Lock escalation to page locks may pause the background processing.
         private const int NumberOfRecordsInSinglePass = 1000;
         private static readonly TimeSpan DelayBetweenPasses = TimeSpan.FromMilliseconds(500);
 
@@ -34,7 +39,7 @@ namespace Hangfire.SqlServer
 
         public CountersAggregator(SqlServerStorage storage, TimeSpan interval)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
 
             _storage = storage;
             _interval = interval;
@@ -42,7 +47,7 @@ namespace Hangfire.SqlServer
 
         public void Execute(CancellationToken cancellationToken)
         {
-            Logger.DebugFormat("Aggregating records in 'Counter' table...");
+            Logger.Debug("Aggregating records in 'Counter' table...");
 
             int removedCount = 0;
 
@@ -60,7 +65,10 @@ namespace Hangfire.SqlServer
                     cancellationToken.WaitHandle.WaitOne(DelayBetweenPasses);
                     cancellationToken.ThrowIfCancellationRequested();
                 }
+                // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
             } while (removedCount >= NumberOfRecordsInSinglePass);
+
+            Logger.Trace("Records from the 'Counter' table aggregated.");
 
             cancellationToken.WaitHandle.WaitOne(_interval);
         }
@@ -72,8 +80,8 @@ namespace Hangfire.SqlServer
 
         private static string GetAggregationQuery(SqlServerStorage storage)
         {
-            return string.Format(@"
-DECLARE @RecordsToAggregate TABLE
+            return 
+$@"DECLARE @RecordsToAggregate TABLE
 (
 	[Key] NVARCHAR(100) NOT NULL,
 	[Value] SMALLINT NOT NULL,
@@ -83,12 +91,13 @@ DECLARE @RecordsToAggregate TABLE
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED
 BEGIN TRAN
 
-DELETE TOP (@count) [{0}].[Counter] with (readpast)
+DELETE TOP (@count) C 
 OUTPUT DELETED.[Key], DELETED.[Value], DELETED.[ExpireAt] INTO @RecordsToAggregate
+FROM [{storage.SchemaName}].[Counter] C WITH (READPAST, XLOCK, INDEX(0))
 
 SET NOCOUNT ON
 
-;MERGE [{0}].[AggregatedCounter] AS [Target]
+;MERGE [{storage.SchemaName}].[AggregatedCounter] WITH (HOLDLOCK) AS [Target]
 USING (
 	SELECT [Key], SUM([Value]) as [Value], MAX([ExpireAt]) AS [ExpireAt] FROM @RecordsToAggregate
 	GROUP BY [Key]) AS [Source] ([Key], [Value], [ExpireAt])
@@ -98,7 +107,8 @@ WHEN MATCHED THEN UPDATE SET
 	[Target].[ExpireAt] = (SELECT MAX([ExpireAt]) FROM (VALUES ([Source].ExpireAt), ([Target].[ExpireAt])) AS MaxExpireAt([ExpireAt]))
 WHEN NOT MATCHED THEN INSERT ([Key], [Value], [ExpireAt]) VALUES ([Source].[Key], [Source].[Value], [Source].[ExpireAt]);
 
-COMMIT TRAN", storage.GetSchemaName());
+COMMIT TRAN";
         }
     }
 }
+

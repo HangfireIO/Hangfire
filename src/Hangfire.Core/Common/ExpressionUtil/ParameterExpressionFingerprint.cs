@@ -22,14 +22,14 @@ namespace Hangfire.Common.ExpressionUtil
         }
 
         // Parameter position within the overall expression, used to maintain alpha equivalence.
-        public int ParameterIndex { get; private set; }
+        public int ParameterIndex { get; }
 
         public override bool Equals(object obj)
         {
             ParameterExpressionFingerprint other = obj as ParameterExpressionFingerprint;
             return (other != null)
-                   && (this.ParameterIndex == other.ParameterIndex)
-                   && this.Equals(other);
+                   && (ParameterIndex == other.ParameterIndex)
+                   && Equals(other);
         }
 
         internal override void AddToHashCodeCombiner(HashCodeCombiner combiner)

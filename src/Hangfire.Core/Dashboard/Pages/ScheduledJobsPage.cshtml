@@ -1,9 +1,10 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
+@using Hangfire.Dashboard.Resources
 @inherits RazorPage
 @{
-    Layout = new LayoutPage("Scheduled Jobs");
+    Layout = new LayoutPage(Strings.ScheduledJobsPage_Title);
 
     int from, perPage;
 
@@ -20,12 +21,12 @@
         @Html.JobsSidebar()
     </div>
     <div class="col-md-9">
-        <h1 class="page-header">Scheduled Jobs</h1>
+        <h1 class="page-header">@Strings.ScheduledJobsPage_Title</h1>
 
         @if (pager.TotalPageCount == 0)
         {
             <div class="alert alert-info">
-                There are no scheduled jobs.
+                @Strings.ScheduledJobsPage_NoJobs
             </div>
         }
         else
@@ -34,67 +35,69 @@
                 <div class="btn-toolbar btn-toolbar-top">
                     <button class="js-jobs-list-command btn btn-sm btn-primary"
                             data-url="@Url.To("/jobs/scheduled/enqueue")"
-                            data-loading-text="Enqueueing..."
+                            data-loading-text="@Strings.Common_Enqueueing"
                             disabled="disabled">
                         <span class="glyphicon glyphicon-play"></span>
-                        Enqueue now
+                        @Strings.ScheduledJobsPage_EnqueueNow
                     </button>
 
                     <button class="js-jobs-list-command btn btn-sm btn-default"
                             data-url="@Url.To("/jobs/scheduled/delete")"
-                            data-loading-text="Deleting..."
-                            data-confirm="Do you really want to DELETE ALL selected jobs?"
+                            data-loading-text="@Strings.Common_Deleting"
+                            data-confirm="@Strings.Common_DeleteConfirm"
                             disabled="disabled">
                         <span class="glyphicon glyphicon-remove"></span>
-                        Delete selected
+                        @Strings.Common_DeleteSelected
                     </button>
 
                     @Html.PerPageSelector(pager)
                 </div>
 
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th class="min-width">
-                            <input type="checkbox" class="js-jobs-list-select-all"/>
-                        </th>
-                        <th class="min-width">Id</th>
-                        <th>Enqueue</th>
-                        <th>Job</th>
-                        <th class="align-right">Scheduled</th>
-                    </tr>
-                    </thead>
-                    @foreach (var job in scheduledJobs)
-                    {
-                        <tr class="js-jobs-list-row @(!job.Value.InScheduledState ? "obsolete-data" : null) @(job.Value.InScheduledState ? "hover" : null)">
-                            <td>
-                                @if (job.Value.InScheduledState)
-                                {
-                                    <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
-                                }
-                            </td>
-                            <td class="min-width">
-                                @Html.JobIdLink(job.Key)
-                                @if (!job.Value.InScheduledState)
-                                {
-                                    <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
-                                }
-                            </td>
-                            <td class="min-width">
-                                @Html.RelativeTime(job.Value.EnqueueAt)
-                            </td>
-                            <td>
-                                @Html.JobNameLink(job.Key, job.Value.Job)
-                            </td>
-                            <td class="align-right">
-                                @if (job.Value.ScheduledAt.HasValue)
-                                {
-                                    @Html.RelativeTime(job.Value.ScheduledAt.Value)
-                                }
-                            </td>
-                        </tr>
-                    }
-                </table>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="min-width">
+                                    <input type="checkbox" class="js-jobs-list-select-all" />
+                                </th>
+                                <th class="min-width">@Strings.Common_Id</th>
+                                <th>@Strings.ScheduledJobsPage_Table_Enqueue</th>
+                                <th>@Strings.Common_Job</th>
+                                <th class="align-right">ScheduledJobsPage_Table_Scheduled</th>
+                            </tr>
+                        </thead>
+                        @foreach (var job in scheduledJobs)
+                        {
+                            <tr class="js-jobs-list-row @(!job.Value.InScheduledState ? "obsolete-data" : null) @(job.Value.InScheduledState ? "hover" : null)">
+                                <td>
+                                    @if (job.Value.InScheduledState)
+                                    {
+                                        <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
+                                    }
+                                </td>
+                                <td class="min-width">
+                                    @Html.JobIdLink(job.Key)
+                                    @if (!job.Value.InScheduledState)
+                                    {
+                                        <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
+                                    }
+                                </td>
+                                <td class="min-width">
+                                    @Html.RelativeTime(job.Value.EnqueueAt)
+                                </td>
+                                <td class="word-break">
+                                    @Html.JobNameLink(job.Key, job.Value.Job)
+                                </td>
+                                <td class="align-right">
+                                    @if (job.Value.ScheduledAt.HasValue)
+                                    {
+                                        @Html.RelativeTime(job.Value.ScheduledAt.Value)
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                </div>
 
                 @Html.Paginator(pager)
             </div>

@@ -41,7 +41,7 @@ namespace Hangfire.Core.Tests.States
 
             Assert.Equal(JobHelper.SerializeDateTime(state.StartedAt), data["StartedAt"]);
             Assert.Equal(ServerId, data["ServerId"]);
-            Assert.Equal(WorkerId.ToString(CultureInfo.InvariantCulture), data["WorkerId"]);
+            Assert.Equal(WorkerId.ToString(), data["WorkerId"]);
         }
 
         [Fact]

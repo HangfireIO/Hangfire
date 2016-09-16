@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
+// ReSharper disable All
+
 namespace Hangfire.Common.ExpressionUtil
 {
     // This is a visitor which rewrites constant expressions as parameter lookups. It's meant
@@ -34,6 +36,7 @@ namespace Hangfire.Common.ExpressionUtil
         protected override Expression VisitConstant(ConstantExpression node)
         {
             // rewrite the constant expression as (TConst)hoistedConstants[i];
+            // coverity[missing_super_call]
             return Expression.Convert(Expression.Property(_hoistedConstantsParamExpr, "Item", Expression.Constant(_numConstantsProcessed++)), node.Type);
         }
     }

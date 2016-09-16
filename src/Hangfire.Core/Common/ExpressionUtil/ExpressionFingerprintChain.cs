@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
+// ReSharper disable All
+
 namespace Hangfire.Common.ExpressionUtil
 {
     // Expression fingerprint chain class
@@ -54,19 +56,14 @@ namespace Hangfire.Common.ExpressionUtil
             // Two chains are considered equal if two elements appearing in the same index in
             // each chain are equal (value equality, not referential equality).
 
-            if (other == null)
+            if (Elements.Count != other?.Elements.Count)
             {
                 return false;
             }
 
-            if (this.Elements.Count != other.Elements.Count)
+            for (int i = 0; i < Elements.Count; i++)
             {
-                return false;
-            }
-
-            for (int i = 0; i < this.Elements.Count; i++)
-            {
-                if (!Equals(this.Elements[i], other.Elements[i]))
+                if (!Equals(Elements[i], other.Elements[i]))
                 {
                     return false;
                 }

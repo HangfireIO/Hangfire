@@ -10,26 +10,38 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>MSMQ queues support for SQL Server job storage implementation for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2014-2015 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2014-2016 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer MSMQ</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.3
+• Fixed – Prevent MSMQ transactions from timing out after 1 minute of processing.
+    
+1.6.2
+• Fixed – Public MSMQ queue paths are parsed correctly now, when determining the queue length.
+    
+1.6.0
+• Fixed – Package now depends on the latest Hangfire.SqlServer instead of version 1.2.2.
+    
+1.5.7
+• Fixed – Dashboard crashing when trying to get the MSMQ queue length (by @yangman).
+    
 1.5.0
-* Added – Support for remote MSMQ queues through DTC transactions.
+• Added – Support for remote MSMQ queues through DTC transactions.
 
 1.4.0
-* Changed – Speed up `GetCount` method with native implementation.
-* Fixed – Incorrect order of fetching when multiple queues used.
+• Changed – Speed up `GetCount` method with native implementation.
+• Fixed – Incorrect order of fetching when multiple queues used.
     </releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="[0.0.0]" />
-      <dependency id="Hangfire.SqlServer" version="1.2.2" />
+      <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
     </dependencies>
   </metadata>
   <files>
-    <file src="Net45\Hangfire.SqlServer.Msmq.dll" target="lib\net45" />
-    <file src="Net45\Hangfire.SqlServer.Msmq.xml" target="lib\net45" />
-    <file src="Net45\Hangfire.SqlServer.Msmq.pdb" target="lib\net45" />
-    <file src="..\src\Hangfire.SqlServer.Msmq\**\*.cs" target="src" />
+    <file src="net45\Hangfire.SqlServer.Msmq.dll" target="lib\net45" />
+    <file src="net45\Hangfire.SqlServer.Msmq.xml" target="lib\net45" />
+    <file src="net45\Hangfire.SqlServer.Msmq.pdb" target="lib\net45" />
+    <file src="..\src\Hangfire.SqlServer.Msmq\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
   </files>
 </package>

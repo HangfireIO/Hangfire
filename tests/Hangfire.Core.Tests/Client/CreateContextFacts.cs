@@ -6,6 +6,9 @@ using Hangfire.Storage;
 using Moq;
 using Xunit;
 
+// ReSharper disable ObjectCreationAsStatement
+// ReSharper disable AssignNullToNotNullAttribute
+
 namespace Hangfire.Core.Tests.Client
 {
     public class CreateContextFacts
@@ -53,7 +56,8 @@ namespace Hangfire.Core.Tests.Client
         [Fact]
         public void Ctor_DoesNotThrowAnException_WhenStateIsNull()
         {
-            Assert.DoesNotThrow(() => new CreateContext(_storage.Object, _connection.Object, _job, null));
+            // Does not throw
+            new CreateContext(_storage.Object, _connection.Object, _job, null);
         }
 
         [Fact]

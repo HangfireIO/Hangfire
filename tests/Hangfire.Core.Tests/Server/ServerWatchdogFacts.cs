@@ -26,7 +26,7 @@ namespace Hangfire.Core.Tests.Server
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
         }
 
-        [PossibleHangingFact]
+        [Fact]
         public void Execute_DelegatesRemovalToStorageConnection()
         {
             _connection.Setup(x => x.RemoveTimedOutServers(It.IsAny<TimeSpan>())).Returns(1);

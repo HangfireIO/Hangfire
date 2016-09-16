@@ -74,10 +74,7 @@ namespace Hangfire.States
         /// Please see the remarks section of the <see cref="IState.Name">IState.Name</see>
         /// article for the details.
         /// </remarks>
-        public string Name
-        {
-            get { return StateName; }
-        }
+        public string Name => StateName;
 
         /// <inheritdoc />
         public string Reason { get; set; }
@@ -88,10 +85,7 @@ namespace Hangfire.States
         /// Please refer to the <see cref="IState.IsFinal">IState.IsFinal</see> documentation
         /// for the details.
         /// </remarks>
-        public bool IsFinal
-        {
-            get { return true; }
-        }
+        public bool IsFinal => true;
 
         /// <inheritdoc />
         /// <remarks>
@@ -100,15 +94,12 @@ namespace Hangfire.States
         /// <see cref="IState.IgnoreJobLoadException">IState.IgnoreJobLoadException</see>
         /// article.
         /// </remarks>
-        public bool IgnoreJobLoadException
-        {
-            get { return true; }
-        }
+        public bool IgnoreJobLoadException => true;
 
         /// <summary>
         /// Gets a date/time when the current state instance was created.
         /// </summary>
-        public DateTime DeletedAt { get; private set; }
+        public DateTime DeletedAt { get; }
 
         /// <inheritdoc />
         /// <remarks>
@@ -150,10 +141,8 @@ namespace Hangfire.States
                 transaction.DecrementCounter("stats:deleted");
             }
 
-            public string StateName
-            {
-                get { return DeletedState.StateName; }
-            }
+            // ReSharper disable once MemberHidesStaticFromOuterClass
+            public string StateName => DeletedState.StateName;
         }
     }
 }

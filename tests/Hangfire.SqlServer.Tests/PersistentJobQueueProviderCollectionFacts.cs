@@ -7,7 +7,7 @@ namespace Hangfire.SqlServer.Tests
 {
     public class PersistentJobQueueProviderCollectionFacts
     {
-        private static readonly string[] _queues = { "default", "critical" };
+        private static readonly string[] Queues = { "default", "critical" };
         private readonly Mock<IPersistentJobQueueProvider> _defaultProvider;
         private readonly Mock<IPersistentJobQueueProvider> _provider;
 
@@ -51,7 +51,7 @@ namespace Hangfire.SqlServer.Tests
             var collection = CreateCollection();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => collection.Add(null, _queues));
+                () => collection.Add(null, Queues));
 
             Assert.Equal("provider", exception.ParamName);
         }
@@ -72,7 +72,7 @@ namespace Hangfire.SqlServer.Tests
         {
             var collection = CreateCollection();
 
-            collection.Add(_provider.Object, _queues);
+            collection.Add(_provider.Object, Queues);
 
             Assert.Contains(_provider.Object, collection);
         }
@@ -81,7 +81,7 @@ namespace Hangfire.SqlServer.Tests
         public void GetProvider_CanBeResolved_ByAnyQueue()
         {
             var collection = CreateCollection();
-            collection.Add(_provider.Object, _queues);
+            collection.Add(_provider.Object, Queues);
 
             var provider1 = collection.GetProvider("default");
             var provider2 = collection.GetProvider("critical");

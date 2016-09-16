@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Server;
 using Hangfire.Storage;
 
+// ReSharper disable once CheckNamespace
 namespace Hangfire.Common
 {
     partial class Job
@@ -14,11 +17,11 @@ namespace Hangfire.Common
         [Obsolete("Please use Job(Type, MethodInfo, object[]) ctor overload instead. Will be removed in 2.0.0.")]
         public Job([NotNull] Type type, [NotNull] MethodInfo method, [NotNull] string[] arguments)
         {
-            if (type == null) throw new ArgumentNullException("type");
-            if (method == null) throw new ArgumentNullException("method");
-            if (arguments == null) throw new ArgumentNullException("arguments");
+            if (type == null) throw new ArgumentNullException(nameof(type));
+            if (method == null) throw new ArgumentNullException(nameof(method));
+            if (arguments == null) throw new ArgumentNullException(nameof(arguments));
 
-            Validate(type, "type", method, "method", arguments.Length, "arguments");
+            Validate(type, nameof(type), method, nameof(method), arguments.Length, nameof(arguments));
 
             Type = type;
             Method = method;
@@ -28,14 +31,14 @@ namespace Hangfire.Common
         /// <exclude />
         [NotNull]
         [Obsolete("Please use `Args` property instead to avoid unnecessary serializations/deserializations. Will be deleted in 2.0.0.")]
-        public string[] Arguments { get { return InvocationData.SerializeArguments(Args); } }
+        public string[] Arguments => InvocationData.SerializeArguments(Args);
 
         /// <exclude />
         [Obsolete("This method is deprecated. Please use `CoreBackgroundJobPerformer` or `BackgroundJobPerformer` classes instead. Will be removed in 2.0.0.")]
         public object Perform(JobActivator activator, IJobCancellationToken cancellationToken)
         {
-            if (activator == null) throw new ArgumentNullException("activator");
-            if (cancellationToken == null) throw new ArgumentNullException("cancellationToken");
+            if (activator == null) throw new ArgumentNullException(nameof(activator));
+            if (cancellationToken == null) throw new ArgumentNullException(nameof(cancellationToken));
 
             object instance = null;
 
@@ -48,7 +51,7 @@ namespace Hangfire.Common
                 }
 
                 var deserializedArguments = DeserializeArguments(cancellationToken);
-                result = InvokeMethod(instance, deserializedArguments);
+                result = InvokeMethod(instance, deserializedArguments, cancellationToken.ShutdownToken);
             }
             finally
             {
@@ -67,8 +70,7 @@ namespace Hangfire.Common
 
                 if (instance == null)
                 {
-                    throw new InvalidOperationException(
-                        String.Format("JobActivator returned NULL instance of the '{0}' type.", Type));
+                    throw new InvalidOperationException($"JobActivator returned NULL instance of the '{Type}' type.");
                 }
 
                 return instance;
@@ -96,7 +98,7 @@ namespace Hangfire.Common
 
                     object value;
 
-                    if (typeof(IJobCancellationToken).IsAssignableFrom(parameter.ParameterType))
+                    if (typeof(IJobCancellationToken).GetTypeInfo().IsAssignableFrom(parameter.ParameterType.GetTypeInfo()))
                     {
                         value = cancellationToken;
                     }
@@ -118,8 +120,20 @@ namespace Hangfire.Common
                             }
                             else
                             {
+#if NETFULL
                                 var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
                                 value = converter.ConvertFromInvariantString(argument);
+#else
+                                DateTime dateTime;
+                                if (parameter.ParameterType == typeof(DateTime) && InvocationData.ParseDateTimeArgument(argument, out dateTime))
+                                {
+                                    value = dateTime;
+                                }
+                                else
+                                {
+                                    throw;
+                                }
+#endif
                             }
                         }
                     }
@@ -138,7 +152,7 @@ namespace Hangfire.Common
         }
 
         [Obsolete("Will be removed in 2.0.0")]
-        private object InvokeMethod(object instance, object[] deserializedArguments)
+        private object InvokeMethod(object instance, object[] deserializedArguments, CancellationToken shutdownToken)
         {
             try
             {
@@ -146,17 +160,8 @@ namespace Hangfire.Common
             }
             catch (TargetInvocationException ex)
             {
-                if (ex.InnerException is OperationCanceledException && !(ex.InnerException is TaskCanceledException))
-                {
-                    // `OperationCanceledException` and its descendants are used
-                    // to notify a worker that job performance was canceled,
-                    // so we should not wrap this exception and throw it as-is.
-                    throw ex.InnerException;
-                }
-
-                throw new JobPerformanceException(
-                    "An exception occurred during performance of the job.",
-                    ex.InnerException);
+                CoreBackgroundJobPerformer.HandleJobPerformanceException(ex.InnerException, shutdownToken);
+                throw;
             }
         }
 
@@ -166,10 +171,7 @@ namespace Hangfire.Common
             try
             {
                 var disposable = instance as IDisposable;
-                if (disposable != null)
-                {
-                    disposable.Dispose();
-                }
+                disposable?.Dispose();
             }
             catch (Exception ex)
             {

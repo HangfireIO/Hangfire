@@ -15,7 +15,6 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.IO;
 using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 
@@ -28,33 +27,63 @@ namespace Hangfire.Dashboard
             [NotNull] string pathTemplate, 
             [NotNull] Func<Match, RazorPage> pageFunc)
         {
-            if (routes == null) throw new ArgumentNullException("routes");
-            if (pathTemplate == null) throw new ArgumentNullException("pathTemplate");
-            if (pageFunc == null) throw new ArgumentNullException("pageFunc");
+            if (routes == null) throw new ArgumentNullException(nameof(routes));
+            if (pathTemplate == null) throw new ArgumentNullException(nameof(pathTemplate));
+            if (pageFunc == null) throw new ArgumentNullException(nameof(pageFunc));
 
             routes.Add(pathTemplate, new RazorPageDispatcher(pageFunc));
         }
 
+#if NETFULL
+        [Obsolete("Use the AddCommand(RouteCollection, string, Func<DashboardContext, bool>) overload instead. Will be removed in 2.0.0.")]
         public static void AddCommand(
             [NotNull] this RouteCollection routes, 
             [NotNull] string pathTemplate, 
             [NotNull] Func<RequestDispatcherContext, bool> command)
         {
-            if (routes == null) throw new ArgumentNullException("routes");
-            if (pathTemplate == null) throw new ArgumentNullException("pathTemplate");
-            if (command == null) throw new ArgumentNullException("command");
+            if (routes == null) throw new ArgumentNullException(nameof(routes));
+            if (pathTemplate == null) throw new ArgumentNullException(nameof(pathTemplate));
+            if (command == null) throw new ArgumentNullException(nameof(command));
+
+            routes.Add(pathTemplate, new CommandDispatcher(command));
+        }
+#endif
+
+        public static void AddCommand(
+            [NotNull] this RouteCollection routes,
+            [NotNull] string pathTemplate,
+            [NotNull] Func<DashboardContext, bool> command)
+        {
+            if (routes == null) throw new ArgumentNullException(nameof(routes));
+            if (pathTemplate == null) throw new ArgumentNullException(nameof(pathTemplate));
+            if (command == null) throw new ArgumentNullException(nameof(command));
 
             routes.Add(pathTemplate, new CommandDispatcher(command));
         }
 
+#if NETFULL
+        [Obsolete("Use the AddBatchCommand(RouteCollection, string, Func<DashboardContext, bool>) overload instead. Will be removed in 2.0.0.")]
         public static void AddBatchCommand(
             [NotNull] this RouteCollection routes, 
             [NotNull] string pathTemplate, 
             [NotNull] Action<RequestDispatcherContext, string> command)
         {
-            if (routes == null) throw new ArgumentNullException("routes");
-            if (pathTemplate == null) throw new ArgumentNullException("pathTemplate");
-            if (command == null) throw new ArgumentNullException("command");
+            if (routes == null) throw new ArgumentNullException(nameof(routes));
+            if (pathTemplate == null) throw new ArgumentNullException(nameof(pathTemplate));
+            if (command == null) throw new ArgumentNullException(nameof(command));
+
+            routes.Add(pathTemplate, new BatchCommandDispatcher(command));
+        }
+#endif
+
+        public static void AddBatchCommand(
+            [NotNull] this RouteCollection routes,
+            [NotNull] string pathTemplate,
+            [NotNull] Action<DashboardContext, string> command)
+        {
+            if (routes == null) throw new ArgumentNullException(nameof(routes));
+            if (pathTemplate == null) throw new ArgumentNullException(nameof(pathTemplate));
+            if (command == null) throw new ArgumentNullException(nameof(command));
 
             routes.Add(pathTemplate, new BatchCommandDispatcher(command));
         }
@@ -64,11 +93,11 @@ namespace Hangfire.Dashboard
             string pathTemplate, 
             [NotNull] Action<IBackgroundJobClient, string> command)
         {
-            if (command == null) throw new ArgumentNullException("command");
+            if (command == null) throw new ArgumentNullException(nameof(command));
 
             routes.AddBatchCommand(pathTemplate, (context, jobId) =>
             {
-                var client = new BackgroundJobClient(context.JobStorage);
+                var client = new BackgroundJobClient(context.Storage);
                 command(client, jobId);
             });
         }
@@ -78,11 +107,11 @@ namespace Hangfire.Dashboard
             string pathTemplate,
             [NotNull] Action<RecurringJobManager, string> command)
         {
-            if (command == null) throw new ArgumentNullException("command");
+            if (command == null) throw new ArgumentNullException(nameof(command));
 
             routes.AddBatchCommand(pathTemplate, (context, jobId) =>
             {
-                var manager = new RecurringJobManager(context.JobStorage);
+                var manager = new RecurringJobManager(context.Storage);
                 command(manager, jobId);
             });
         }

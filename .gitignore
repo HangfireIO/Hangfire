@@ -1,4 +1,10 @@
 #################
+## IDEA Rider
+#################
+.idea
+.idea.*
+
+#################
 ## Eclipse
 #################
 
@@ -55,8 +61,8 @@ x64/
 # Visual Studio 2015 cache/options directory
 .vs/
 
-# DNX
-project.lock.json
+# dotnet
+*.lock.json
 artifacts/
 
 # MSTest test Results

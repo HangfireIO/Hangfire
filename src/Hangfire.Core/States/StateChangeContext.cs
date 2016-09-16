@@ -51,10 +51,10 @@ namespace Hangfire.States
             [CanBeNull] IEnumerable<string> expectedStates, 
             CancellationToken cancellationToken)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (connection == null) throw new ArgumentNullException("connection");
-            if (backgroundJobId == null) throw new ArgumentNullException("backgroundJobId");
-            if (newState == null) throw new ArgumentNullException("newState");
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            if (backgroundJobId == null) throw new ArgumentNullException(nameof(backgroundJobId));
+            if (newState == null) throw new ArgumentNullException(nameof(newState));
 
             Storage = storage;
             Connection = connection;
@@ -64,11 +64,11 @@ namespace Hangfire.States
             CancellationToken = cancellationToken;
         }
 
-        public JobStorage Storage { get; private set; }
-        public IStorageConnection Connection { get; private set; }
-        public string BackgroundJobId { get; private set; }
-        public IState NewState { get; private set; }
-        public IEnumerable<string> ExpectedStates { get; private set; }
-        public CancellationToken CancellationToken { get; private set; }
+        public JobStorage Storage { get; }
+        public IStorageConnection Connection { get; }
+        public string BackgroundJobId { get; }
+        public IState NewState { get; }
+        public IEnumerable<string> ExpectedStates { get; }
+        public CancellationToken CancellationToken { get; }
     }
 }

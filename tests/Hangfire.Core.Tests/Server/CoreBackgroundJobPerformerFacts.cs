@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.Core.Tests.Common;
@@ -35,7 +37,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact, StaticLock]
-        public void Run_CanInvokeStaticMethods()
+        public void Perform_CanInvokeStaticMethods()
         {
             _methodInvoked = false;
             _context.BackgroundJob.Job = Job.FromExpression(() => StaticMethod());
@@ -47,7 +49,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact, StaticLock]
-        public void Run_CanInvokeInstanceMethods()
+        public void Perform_CanInvokeInstanceMethods()
         {
             _methodInvoked = false;
             _context.BackgroundJob.Job = Job.FromExpression<CoreBackgroundJobPerformerFacts>(x => x.InstanceMethod());
@@ -59,7 +61,18 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact, StaticLock]
-        public void Run_DisposesDisposableInstance_AfterPerformance()
+        public void Perform_ActivatesJob_WithinAScope()
+        {
+            var performer = CreatePerformer();
+            _context.BackgroundJob.Job = Job.FromExpression<CoreBackgroundJobPerformerFacts>(x => x.InstanceMethod());
+
+            performer.Perform(_context.Object);
+
+            _activator.Verify(x => x.BeginScope(It.IsNotNull<JobActivatorContext>()), Times.Once);
+        }
+
+        [Fact, StaticLock]
+        public void Perform_DisposesDisposableInstance_AfterPerformance()
         {
             _disposed = false;
             _context.BackgroundJob.Job = Job.FromExpression<Disposable>(x => x.Method());
@@ -71,7 +84,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact, StaticLock]
-        public void Run_PassesArguments_ToACallingMethod()
+        public void Perform_PassesArguments_ToACallingMethod()
         {
             // Arrange
             _methodInvoked = false;
@@ -85,8 +98,9 @@ namespace Hangfire.Core.Tests.Server
             Assert.True(_methodInvoked);
         }
 
+#if NETFULL
         [Fact, StaticLock]
-        public void Run_PassesCorrectDateTime_IfItWasSerialized_UsingTypeConverter()
+        public void Perform_PassesCorrectDateTime_IfItWasSerialized_UsingTypeConverter()
         {
             // Arrange
             _methodInvoked = false;
@@ -96,7 +110,9 @@ namespace Hangfire.Core.Tests.Server
             var type = typeof(CoreBackgroundJobPerformerFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
 
-            _context.BackgroundJob.Job = new Job(type, method, new[] { convertedDate });
+#pragma warning disable CS0618 // Type or member is obsolete
+            _context.BackgroundJob.Job = new Job(type, method, new [] { convertedDate });
+#pragma warning restore CS0618 // Type or member is obsolete
             var performer = CreatePerformer();
 
             // Act
@@ -105,9 +121,10 @@ namespace Hangfire.Core.Tests.Server
             // Assert - see also the `MethodWithDateTimeArgument` method.
             Assert.True(_methodInvoked);
         }
+#endif
 
         [Fact, StaticLock]
-        public void Run_PassesCorrectDateTime_IfItWasSerialized_UsingOldFormat()
+        public void Perform_PassesCorrectDateTime_IfItWasSerialized_UsingOldFormat()
         {
             // Arrange
             _methodInvoked = false;
@@ -116,7 +133,9 @@ namespace Hangfire.Core.Tests.Server
             var type = typeof(CoreBackgroundJobPerformerFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
 
-            _context.BackgroundJob.Job = new Job(type, method, new[] { convertedDate });
+#pragma warning disable CS0618 // Type or member is obsolete
+            _context.BackgroundJob.Job = new Job(type, method, new [] { convertedDate });
+#pragma warning restore CS0618 // Type or member is obsolete
             var performer = CreatePerformer();
 
             // Act
@@ -127,7 +146,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact, StaticLock]
-        public void Run_PassesCorrectDateTimeArguments()
+        public void Perform_PassesCorrectDateTimeArguments()
         {
             // Arrange
             _methodInvoked = false;
@@ -142,7 +161,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact, StaticLock]
-        public void Run_WorksCorrectly_WithNullValues()
+        public void Perform_WorksCorrectly_WithNullValues()
         {
             // Arrange
             _methodInvoked = false;
@@ -157,7 +176,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Run_ThrowsException_WhenActivatorThrowsAnException()
+        public void Perform_ThrowsException_WhenActivatorThrowsAnException()
         {
             // Arrange
             var exception = new InvalidOperationException();
@@ -172,7 +191,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Run_ThrowsPerformanceException_WhenActivatorReturnsNull()
+        public void Perform_ThrowsPerformanceException_WhenActivatorReturnsNull()
         {
             _activator.Setup(x => x.ActivateJob(It.IsNotNull<Type>())).Returns(null);
             _context.BackgroundJob.Job = Job.FromExpression(() => InstanceMethod());
@@ -183,11 +202,11 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Run_ThrowsPerformanceException_OnArgumentsDeserializationFailure()
+        public void Perform_ThrowsPerformanceException_OnArgumentsDeserializationFailure()
         {
             var type = typeof(JobFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
-            _context.BackgroundJob.Job = new Job(type, method, new object[] { "sdfa" });
+            _context.BackgroundJob.Job = new Job(type, method, "sdfa");
             var performer = CreatePerformer();
 
             var exception = Assert.Throws<JobPerformanceException>(
@@ -197,7 +216,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact, StaticLock]
-        public void Run_ThrowsPerformanceException_OnDisposalFailure()
+        public void Perform_ThrowsPerformanceException_OnDisposalFailure()
         {
             _methodInvoked = false;
             _context.BackgroundJob.Job = Job.FromExpression<BrokenDispose>(x => x.Method());
@@ -210,7 +229,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Run_ThrowsPerformanceException_WithUnwrappedInnerException()
+        public void Perform_ThrowsPerformanceException_WithUnwrappedInnerException()
         {
             _context.BackgroundJob.Job = Job.FromExpression(() => ExceptionMethod());
             var performer = CreatePerformer();
@@ -222,8 +241,23 @@ namespace Hangfire.Core.Tests.Server
             Assert.Equal("exception", thrownException.InnerException.Message);
         }
 
+#pragma warning disable 4014
         [Fact]
-        public void Run_ThrowsPerformanceException_WhenMethodThrownTaskCanceledException()
+        public void Run_ThrowsPerformanceException_WithUnwrappedInnerException_ForTasks()
+        {
+            _context.BackgroundJob.Job = Job.FromExpression(() => TaskExceptionMethod());
+            var performer = CreatePerformer();
+
+            var thrownException = Assert.Throws<JobPerformanceException>(
+                () => performer.Perform(_context.Object));
+
+            Assert.IsType<InvalidOperationException>(thrownException.InnerException);
+            Assert.Equal("exception", thrownException.InnerException.Message);
+        }
+#pragma warning restore 4014
+
+        [Fact]
+        public void Perform_ThrowsPerformanceException_WhenMethodThrownTaskCanceledException()
         {
             _context.BackgroundJob.Job = Job.FromExpression(() => TaskCanceledExceptionMethod());
             var performer = CreatePerformer();
@@ -235,20 +269,78 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Run_PassesCancellationToken_IfThereIsIJobCancellationTokenParameter()
+        public void Perform_RethrowsOperationCanceledException_WhenShutdownTokenIsCanceled()
         {
             // Arrange
             _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(new CancellationToken(true));
             _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<OperationCanceledException>();
+
             var performer = CreatePerformer();
 
             // Act & Assert
+            Assert.Throws<OperationCanceledException>(() => performer.Perform(_context.Object));
+        }
+
+        [Fact]
+        public void Run_RethrowsTaskCanceledException_WhenShutdownTokenIsCanceled()
+        {
+            // Arrange
+            _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(new CancellationToken(true));
+            _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<TaskCanceledException>();
+
+            var performer = CreatePerformer();
+
+            // Act & Assert
+            Assert.Throws<TaskCanceledException>(() => performer.Perform(_context.Object));
+        }
+
+        [Fact]
+        public void Run_RethrowsJobAbortedException()
+        {
+            // Arrange
+            _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(CancellationToken.None);
+            _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<JobAbortedException>();
+
+            var performer = CreatePerformer();
+
+            // Act & Assert
+            Assert.Throws<JobAbortedException>(() => performer.Perform(_context.Object));
+        }
+
+        [Fact]
+        public void Run_ThrowsJobPerformanceException_InsteadOfOperationCanceled_WhenShutdownWasNOTInitiated()
+        {
+            // Arrange
+            _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(CancellationToken.None);
+            _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<OperationCanceledException>();
+
+            var performer = CreatePerformer();
+
+            // Act & Assert
+            Assert.Throws<JobPerformanceException>(() => performer.Perform(_context.Object));
+        }
+
+        [Fact]
+        public void Run_PassesStandardCancellationToken_IfThereIsCancellationTokenParameter()
+        {
+            // Arrange
+            _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(default(CancellationToken)));
+            var source = new CancellationTokenSource();
+            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(source.Token);
+            var performer = CreatePerformer();
+
+            // Act & Assert
+            source.Cancel();
             Assert.Throws<OperationCanceledException>(
                 () => performer.Perform(_context.Object));
         }
 
         [Fact]
-        public void Run_ReturnsValue_WhenCallingFunctionReturningValue()
+        public void Perform_ReturnsValue_WhenCallingFunctionReturningValue()
         {
             _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningValue());
             var performer = CreatePerformer();
@@ -257,6 +349,32 @@ namespace Hangfire.Core.Tests.Server
 
             Assert.Equal("Return value", result);
         }
+
+#pragma warning disable 4014
+        [Fact]
+        public void Run_DoesNotReturnValue_WhenCallingFunctionReturningPlainTask()
+        {
+            _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningTask());
+            var performer = CreatePerformer();
+
+            var result = performer.Perform(_context.Object);
+
+            Assert.Equal(null, result);
+        }
+#pragma warning restore 4014
+
+#pragma warning disable 4014
+        [Fact]
+        public void Run_ReturnsTaskResult_WhenCallingFunctionReturningGenericTask()
+        {
+            _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningTaskResultingInString());
+            var performer = CreatePerformer();
+
+            var result = performer.Perform(_context.Object);
+
+            Assert.Equal("Return value", result);
+        }
+#pragma warning restore 4014
 
         public void InstanceMethod()
         {
@@ -305,6 +423,11 @@ namespace Hangfire.Core.Tests.Server
             token.ThrowIfCancellationRequested();
         }
 
+        public static void CancelableJob(CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+        }
+
         public void MethodWithDateTimeArgument(DateTime argument)
         {
             _methodInvoked = true;
@@ -327,6 +450,13 @@ namespace Hangfire.Core.Tests.Server
 
         public static void ExceptionMethod()
         {
+            throw new InvalidOperationException("exception");
+        }
+
+        public static async Task TaskExceptionMethod()
+        {
+            await Task.Yield();
+
             throw new InvalidOperationException("exception");
         }
 

@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using Hangfire.Dashboard;
 
@@ -24,7 +25,8 @@ namespace Hangfire
         public DashboardOptions()
         {
             AppPath = "/";
-            AuthorizationFilters = new[] { new LocalRequestsOnlyAuthorizationFilter() };
+            Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
+            StatsPollingInterval = 2000;
         }
 
         /// <summary>
@@ -32,6 +34,16 @@ namespace Hangfire
         /// </summary>
         public string AppPath { get; set; }
 
+#if NETFULL
+        [Obsolete("Please use `Authorization` property instead. Will be removed in 2.0.0.")]
         public IEnumerable<IAuthorizationFilter> AuthorizationFilters { get; set; }
+#endif
+
+        public IEnumerable<IDashboardAuthorizationFilter> Authorization { get; set; }
+
+        /// <summary>
+        /// The interval the /stats endpoint should be polled with.
+        /// </summary>
+        public int StatsPollingInterval { get; set; }
     }
 }

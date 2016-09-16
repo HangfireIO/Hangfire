@@ -24,7 +24,6 @@ body {
 
 /* Set the fixed height of the footer here */
 #footer {
-  height: 60px;
   background-color: #f5f5f5;
 }
 
@@ -38,6 +37,9 @@ body {
 
 .page-header {
     margin-top: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .btn-death {
@@ -66,6 +68,7 @@ body {
     padding: 7px 0;
     vertical-align: middle;
     display: inline-block;
+    margin-left: 5px;
 }
 
 .btn-toolbar-label-sm {
@@ -73,7 +76,7 @@ body {
 }
 
 .btn-toolbar-spacer {
-    width: 10px;
+    width: 5px;
     display: inline-block;
     height: 1px;
 }
@@ -83,31 +86,12 @@ a:hover .label-hover {
     color: #fff!important;
 }
 
-.pre-args {
-    padding: 2px 4px;
-    font-size: 90%;
-    color: #c7254e;
-    background-color: #f9f2f4;
-    border-radius: 4px;
-    border: none;
-    margin: 0;
-}
-
 .expander {
     cursor: pointer;
 }
 
 .expandable {
     display: none;
-}
-
-.table-outer td {
-    background: #f9f9f9;
-}
-
-.table-outer td.table-inner-wrapper {
-    padding: 0;
-    border-top: none;
 }
 
 .table-inner {
@@ -136,6 +120,10 @@ a:hover .label-hover {
 .table>tbody>tr.highlight:hover>td, .table>tbody>tr.highlight:hover>th {
     background-color: #f6f2dd;
     border-color: #f5e8ce;
+}
+
+.word-break {
+    word-break: break-all;
 }
 
 /* Statistics widget
@@ -225,117 +213,65 @@ a:hover .label-hover {
     color: #333;
 }
 
-.label-queue {
-    text-transform: uppercase;
-}
-
 /* Job Snippet styles */
 
 .job-snippet {
     margin-bottom: 20px;
-}
-
-.job-snippet-header {
-    margin-bottom: -1px;
-    height: 29px;
-}
-
-.job-snippet-header .btn-xs {
-    margin-top: 3px;
-    padding: 0 10px;
-    font-size: 14px;
-}
-
-.job-snippet-tab {
-    display: inline-block;
-    background-color: #eee;
-    border: solid 1px #eee;
-    color: #a5a5a5;
-    border-bottom: none;
-    padding: 3px 14px 4px;
-    -ms-border-top-left-radius: 4px;
-    border-top-left-radius: 4px;
-    -ms-border-top-right-radius: 4px;
-    border-top-right-radius: 4px;
-}
-
-.job-snippet-header .job-snippet-id {
-    color: #888;
-    -ms-text-shadow: 0 1px white;
-    text-shadow: 0 1px white;
-}
-
-.job-snippet-body {
+    padding: 15px;
     display: table;
     width: 100%;
-    border: solid 1px #eee;
     -ms-border-radius: 4px;
     border-radius: 4px;
-    -ms-border-top-left-radius: 0;
-    border-top-left-radius: 0;
+    background-color: #f5f5f5;
 }
 
-.job-snippet-body > * {
+.job-snippet > * {
     display: table-cell;
     vertical-align: top;
 }
 
-.job-snippet-body pre {
+.job-snippet-code {
+    vertical-align: top;
+}
+
+.job-snippet-code pre {
     border: none;
     margin: 0;
     background: inherit;
     padding: 0;
     -ms-border-radius: 0;
     border-radius: 0;
+    font-size: 14px;
 }
 
-.job-snippet-body pre code {
+.job-snippet-code code {
     display: block; 
     color: black;
 }
 
-.job-snippet-code {
-    vertical-align: top;
-    padding: 14px 14px;
-    background-color: #fcfcfc;
-    -ms-border-top-left-radius: 4px;
-    border-top-left-radius: 4px;
-    -ms-border-bottom-left-radius: 4px;
-    border-bottom-left-radius: 4px;
-}
-
-.job-snippet-code .job-creation-date {
-    color: #777;
-}
-
-.job-snippet-body pre .comment {
+.job-snippet-code pre .comment {
     color: rgb(0, 128, 0);
 }
 
-.job-snippet-body pre .keyword {
+.job-snippet-code pre .keyword {
     color: rgb(0, 0, 255);
 }
 
-.job-snippet-body pre .string {
+.job-snippet-code pre .string {
     color: rgb(163, 21, 21);
 }
 
-.job-snippet-body pre .type {
+.job-snippet-code pre .type {
     color: rgb(43, 145, 175);
 }
 
-.job-snippet-body pre .xmldoc {
+.job-snippet-code pre .xmldoc {
     color: rgb(128, 128, 128);
 }
 
 .job-snippet-properties {
-    max-width: 140px;
-    background-color: #f5f5f5;
-    padding: 14px 10px;
-    -ms-border-top-right-radius: 4px;
-    border-top-right-radius: 4px;
-    -ms-border-bottom-right-radius: 4px;
-    border-bottom-right-radius: 4px;
+    max-width: 200px;
+    padding-left: 5px;
 }
 
 .job-snippet-properties dl {
@@ -349,18 +285,78 @@ a:hover .label-hover {
 }
 
 .job-snippet-properties dl dd {
-    margin-left: 20px;
+    margin-left: 0;
     margin-bottom: 5px;
 }
 
 .job-snippet-properties pre {
-    display: block;
-    color: #c7254e;
     background-color: white;
     -webkit-box-shadow: none;
     -ms-box-shadow: none;
-    box-shadow: none;
     padding: 2px 4px;
+    border: none;
+    margin: 0;
+}
+
+.job-snippet-properties code {
+    color: black;
+}
+
+.state-card {
+    position: relative;
+    display: block;
+    margin-bottom: 7px;
+    padding: 12px;
+    background-color: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 3px;
+}
+
+.state-card-title {
+    margin-bottom: 0;
+}
+
+.state-card-title .pull-right {
+    margin-top: 3px;
+}
+
+.state-card-text {
+    margin-top: 5px;
+    margin-bottom: 0;
+}
+
+.state-card h4 {
+    margin-top: 0;
+}
+
+.state-card-body {
+    padding: 10px;
+    margin: 10px -12px -12px -12px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    background-color: #f5f5f5;
+}
+
+.state-card-body dl {
+    margin-top: 5px;
+    margin-bottom: 0;
+}
+
+.state-card-body pre {
+    white-space: pre-wrap;       /* CSS 3 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+    background: transparent;
+    padding: 0;
+}
+
+.state-card-body .stack-trace {
+    background-color: transparent;
+    padding: 0 20px;
+    margin-bottom: 0px;
+}
+
+.state-card-body .exception-type {
+    margin-top: 0;
 }
 
 /* Job History styles */
@@ -386,10 +382,6 @@ a:hover .label-hover {
 .job-history-body {
     background-color: #f5f5f5;
     padding: 10px;
-    -ms-border-bottom-left-radius: 4px;
-    border-bottom-left-radius: 4px;
-    -ms-border-bottom-right-radius: 4px;
-    border-bottom-right-radius: 4px;
 }
 
 .job-history-title {

@@ -42,13 +42,7 @@ namespace Hangfire.Common
         /// <summary>
         /// Gets the number of filters in the global job filter collection.
         /// </summary>
-        public int Count
-        {
-            get
-            {
-                return _filters.Count;
-            }
-        }
+        public int Count => _filters.Count;
 
         /// <summary>
         /// Adds the specified filter to the global filter collection.
@@ -118,6 +112,7 @@ namespace Hangfire.Common
             return GetEnumerator();
         }
 
+        // ReSharper disable once UnusedParameter.Local
         private static void ValidateFilterInstance(object instance)
         {
             if (instance != null &&

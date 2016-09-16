@@ -41,7 +41,7 @@ namespace Hangfire.Server
     public class Worker : IBackgroundProcess
     {
         private static readonly TimeSpan JobInitializationWaitTimeout = TimeSpan.FromMinutes(1);
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.For<Worker>();
 
         private readonly string _workerId;
         private readonly string[] _queues;
@@ -63,9 +63,9 @@ namespace Hangfire.Server
             [NotNull] IBackgroundJobPerformer performer, 
             [NotNull] IBackgroundJobStateChanger stateChanger)
         {
-            if (queues == null) throw new ArgumentNullException("queues");
-            if (performer == null) throw new ArgumentNullException("performer");
-            if (stateChanger == null) throw new ArgumentNullException("stateChanger");
+            if (queues == null) throw new ArgumentNullException(nameof(queues));
+            if (performer == null) throw new ArgumentNullException(nameof(performer));
+            if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
             
             _queues = queues.ToArray();
             _performer = performer;
@@ -76,7 +76,7 @@ namespace Hangfire.Server
         /// <inheritdoc />
         public void Execute(BackgroundProcessContext context)
         {
-            if (context == null) throw new ArgumentNullException("context");
+            if (context == null) throw new ArgumentNullException(nameof(context));
 
             using (var connection = context.Storage.GetConnection())
             using (var fetchedJob = connection.FetchNextJob(_queues, context.CancellationToken))
@@ -142,13 +142,18 @@ namespace Hangfire.Server
                     // Success point. No things must be done after previous command
                     // was succeeded.
                 }
-                catch (JobAbortedException)
-                {
-                    fetchedJob.RemoveFromQueue();
-                }
                 catch (Exception ex)
                 {
-                    Logger.DebugException("An exception occurred while processing a job. It will be re-queued.", ex);
+                    if (context.IsShutdownRequested)
+                    {
+                        Logger.Info(String.Format(
+                            "Shutdown request requested while processing background job '{0}'. It will be re-queued.",
+                            fetchedJob.JobId));
+                    }
+                    else
+                    {
+                        Logger.DebugException("An exception occurred while processing a job. It will be re-queued.", ex);
+                    }
 
                     fetchedJob.Requeue();
                     throw;
@@ -159,7 +164,7 @@ namespace Hangfire.Server
         /// <inheritdoc />
         public override string ToString()
         {
-            return String.Format("{0} #{1}", GetType().Name, _workerId.Substring(0, 8));
+            return $"{GetType().Name} #{_workerId.Substring(0, 8)}";
         }
 
         private IState PerformJob(BackgroundProcessContext context, IStorageConnection connection, string jobId)
@@ -191,9 +196,12 @@ namespace Hangfire.Server
 
                 return new SucceededState(result, (long) latency, duration.ElapsedMilliseconds);
             }
-            catch (OperationCanceledException)
+            catch (JobAbortedException)
             {
-                throw;
+                // Background job performance was aborted due to a
+                // state change, so it's idenfifier should be removed
+                // from a queue.
+                return null;
             }
             catch (JobPerformanceException ex)
             {
@@ -204,6 +212,11 @@ namespace Hangfire.Server
             }
             catch (Exception ex)
             {
+                if (ex is OperationCanceledException && context.IsShutdownRequested)
+                {
+                    throw;
+                }
+
                 return new FailedState(ex)
                 {
                     Reason = "An exception occurred during processing of a background job."

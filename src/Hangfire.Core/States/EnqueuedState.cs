@@ -107,7 +107,7 @@ namespace Hangfire.States
         /// </exception>
         public EnqueuedState([NotNull] string queue)
         {
-            ValidateQueueName("queue", queue);
+            ValidateQueueName(nameof(queue), queue);
 
             _queue = queue;
             EnqueuedAt = DateTime.UtcNow;
@@ -143,7 +143,7 @@ namespace Hangfire.States
             get { return _queue; }
             set
             {
-                ValidateQueueName("value", value);
+                ValidateQueueName(nameof(value), value);
                 _queue = value;
             }
         }
@@ -151,7 +151,7 @@ namespace Hangfire.States
         /// <summary>
         /// Gets a date/time when the current state instance was created.
         /// </summary>
-        public DateTime EnqueuedAt { get; private set; }
+        public DateTime EnqueuedAt { get; }
 
         /// <inheritdoc />
         /// <remarks>
@@ -159,7 +159,7 @@ namespace Hangfire.States
         /// Please see the remarks section of the <see cref="IState.Name">IState.Name</see>
         /// article for the details.
         /// </remarks>
-        public string Name { get { return StateName; } }
+        public string Name => StateName;
 
         /// <inheritdoc />
         public string Reason { get; set; }
@@ -170,7 +170,7 @@ namespace Hangfire.States
         /// Please refer to the <see cref="IState.IsFinal">IState.IsFinal</see> documentation
         /// for the details.
         /// </remarks>
-        public bool IsFinal { get { return false; } }
+        public bool IsFinal => false;
 
         /// <inheritdoc />
         /// <remarks>
@@ -179,7 +179,7 @@ namespace Hangfire.States
         /// <see cref="IState.IgnoreJobLoadException">IState.IgnoreJobLoadException</see>
         /// article.
         /// </remarks>
-        public bool IgnoreJobLoadException { get { return false; } }
+        public bool IgnoreJobLoadException => false;
 
         /// <inheritdoc />
         /// <remarks>
@@ -216,7 +216,7 @@ namespace Hangfire.States
             };
         }
 
-        private static void ValidateQueueName([InvokerParameterName] string parameterName, string value)
+        internal static void ValidateQueueName([InvokerParameterName] string parameterName, string value)
         {
             if (String.IsNullOrWhiteSpace(value))
             {
@@ -226,9 +226,7 @@ namespace Hangfire.States
             if (!Regex.IsMatch(value, @"^[a-z0-9_]+$"))
             {
                 throw new ArgumentException(
-                    String.Format(
-                        "The queue name must consist of lowercase letters, digits and underscore characters only. Given: '{0}'.",
-                        value),
+                    $"The queue name must consist of lowercase letters, digits and underscore characters only. Given: '{value}'.",
                     parameterName);
             }
         }
@@ -240,9 +238,8 @@ namespace Hangfire.States
                 var enqueuedState = context.NewState as EnqueuedState;
                 if (enqueuedState == null)
                 {
-                    throw new InvalidOperationException(String.Format(
-                        "`{0}` state handler can be registered only for the Enqueued state.",
-                        typeof(Handler).FullName));
+                    throw new InvalidOperationException(
+                        $"`{typeof (Handler).FullName}` state handler can be registered only for the Enqueued state.");
                 }
 
                 transaction.AddToQueue(enqueuedState.Queue, context.BackgroundJob.Id);
@@ -252,10 +249,8 @@ namespace Hangfire.States
             {
             }
 
-            public string StateName
-            {
-                get { return EnqueuedState.StateName; }
-            }
+            // ReSharper disable once MemberHidesStaticFromOuterClass
+            public string StateName => EnqueuedState.StateName;
         }
     }
 }

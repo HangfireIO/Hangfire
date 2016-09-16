@@ -28,17 +28,13 @@ namespace Hangfire.SqlServer.Msmq
 
         private readonly string _pathPattern;
         private readonly MsmqTransactionType _transactionType;
-        private readonly ThreadLocal<IMessageFormatter> _formatter;
 
         public MsmqJobQueue(string pathPattern, MsmqTransactionType transactionType)
         {
-            if (pathPattern == null) throw new ArgumentNullException("pathPattern");
+            if (pathPattern == null) throw new ArgumentNullException(nameof(pathPattern));
 
             _pathPattern = pathPattern;
             _transactionType = transactionType;
-
-            _formatter = new ThreadLocal<IMessageFormatter>(
-                () => new BinaryMessageFormatter());
         }
 
         public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken)
@@ -50,45 +46,41 @@ namespace Hangfire.SqlServer.Msmq
             do
             {
                 cancellationToken.ThrowIfCancellationRequested();
-
-                var queueName = queues[queueIndex];
-
                 transaction = CreateTransaction();
-                
-                using (var messageQueue = GetMessageQueue(queueName))
+
+                try
                 {
-                    try
+                    using (var messageQueue = GetMessageQueue(queues[queueIndex]))
                     {
                         var message = queueIndex == queues.Length - 1
-                            ? transaction.Receive(messageQueue, SyncReceiveTimeout)
-                            : transaction.Receive(messageQueue, new TimeSpan(1));
+                                ? transaction.Receive(messageQueue, SyncReceiveTimeout)
+                                : transaction.Receive(messageQueue, new TimeSpan(1));
 
-                        message.Formatter = _formatter.Value;
+                        jobId = message.Label;
 
-                        jobId = (string)message.Body;
-
+                        return new MsmqFetchedJob(transaction, jobId);
                     }
-                    catch (MessageQueueException ex)
+                }
+                catch (MessageQueueException ex) when (ex.MessageQueueErrorCode == MessageQueueErrorCode.IOTimeout)
+                {
+                    // Receive timeout occurred, we should just switch to the next queue
+                }
+                finally
+                {
+                    if (jobId == null)
                     {
                         transaction.Dispose();
-
-                        if (ex.MessageQueueErrorCode != MessageQueueErrorCode.IOTimeout)
-                        {
-                            throw;
-                        }
                     }
                 }
 
                 queueIndex = (queueIndex + 1) % queues.Length;
-            } while (jobId == null);
-
-            return new MsmqFetchedJob(transaction, jobId);
+            } while (true);
         }
 
         public void Enqueue(IDbConnection connection, string queue, string jobId)
         {
             using (var messageQueue = GetMessageQueue(queue))
-            using (var message = new Message { Body = jobId, Label = jobId, Formatter = _formatter.Value })
+            using (var message = new Message { Label = jobId })
             using (var transaction = new MessageQueueTransaction())
             {
                 transaction.Begin();

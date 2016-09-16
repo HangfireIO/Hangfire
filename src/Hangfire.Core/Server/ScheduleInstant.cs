@@ -32,40 +32,46 @@ namespace Hangfire.Server
 
         public ScheduleInstant(DateTime nowInstant, TimeZoneInfo timeZone, [NotNull] CrontabSchedule schedule)
         {
-            if (schedule == null) throw new ArgumentNullException("schedule");
+            if (schedule == null) throw new ArgumentNullException(nameof(schedule));
             if (nowInstant.Kind != DateTimeKind.Utc)
             {
-                throw new ArgumentException("Only DateTime values in UTC should be passed.", "nowInstant");
+                throw new ArgumentException("Only DateTime values in UTC should be passed.", nameof(nowInstant));
             }
 
             _timeZone = timeZone;
             _schedule = schedule;
 
             NowInstant = nowInstant.AddSeconds(-nowInstant.Second);
-            NextInstant = TimeZoneInfo.ConvertTime(
-                _schedule.GetNextOccurrence(TimeZoneInfo.ConvertTime(NowInstant, TimeZoneInfo.Utc, _timeZone)),
-                _timeZone,
-                TimeZoneInfo.Utc);
+
+            var nextOccurrences = _schedule.GetNextOccurrences(
+                TimeZoneInfo.ConvertTime(NowInstant, TimeZoneInfo.Utc, _timeZone),
+                DateTime.MaxValue);
+
+            foreach (var nextOccurrence in nextOccurrences)
+            {
+                if (_timeZone.IsInvalidTime(nextOccurrence)) continue;
+
+                NextInstant = TimeZoneInfo.ConvertTime(nextOccurrence, _timeZone, TimeZoneInfo.Utc);
+                break;
+            }
         }
 
-        public DateTime NowInstant { get; private set; }
-        public DateTime NextInstant { get; private set; }
+        public DateTime NowInstant { get; }
+        public DateTime? NextInstant { get; }
 
-        public IEnumerable<DateTime> GetNextInstants(DateTime? lastInstant)
+        public IEnumerable<DateTime> GetNextInstants(DateTime lastInstant)
         {
-            if (lastInstant.HasValue && lastInstant.Value.Kind != DateTimeKind.Utc)
+            if (lastInstant.Kind != DateTimeKind.Utc)
             {
-                throw new ArgumentException("Only DateTime values in UTC should be passed.", "lastInstant");
+                throw new ArgumentException("Only DateTime values in UTC should be passed.", nameof(lastInstant));
             }
-
-            var baseTime = lastInstant ?? NowInstant.AddSeconds(-1);
-            var endTime = NowInstant.AddSeconds(1);
-
+            
             return _schedule
                 .GetNextOccurrences(
-                    TimeZoneInfo.ConvertTimeFromUtc(baseTime, _timeZone),
-                    TimeZoneInfo.ConvertTimeFromUtc(endTime, _timeZone))
-                .Select(x => TimeZoneInfo.ConvertTimeToUtc(x, _timeZone))
+                    TimeZoneInfo.ConvertTime(lastInstant, TimeZoneInfo.Utc, _timeZone),
+                    TimeZoneInfo.ConvertTime(NowInstant.AddSeconds(1), TimeZoneInfo.Utc, _timeZone))
+                .Where(x => !_timeZone.IsInvalidTime(x))
+                .Select(x => TimeZoneInfo.ConvertTime(x, _timeZone, TimeZoneInfo.Utc))
                 .ToList();
         }
     }

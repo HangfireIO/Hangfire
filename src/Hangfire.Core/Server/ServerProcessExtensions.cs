@@ -20,6 +20,8 @@ using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Logging;
 
+#pragma warning disable 618
+
 namespace Hangfire.Server
 {
     internal static class ServerProcessExtensions
@@ -28,7 +30,7 @@ namespace Hangfire.Server
         {
             if (!(process is IServerComponent || process is IBackgroundProcess))
             {
-                throw new ArgumentOutOfRangeException("process", "Long-running process must be of type IServerComponent or IBackgroundProcess.");
+                throw new ArgumentOutOfRangeException(nameof(process), "Long-running process must be of type IServerComponent or IBackgroundProcess.");
             }
 
             var backgroundProcess = process as IBackgroundProcess;
@@ -38,21 +40,18 @@ namespace Hangfire.Server
             }
             else
             {
-                var component = process as IServerComponent;
-                if (component != null)
-                {
-                    component.Execute(context.CancellationToken);
-                }
+                var component = (IServerComponent) process;
+                component.Execute(context.CancellationToken);
             }
         }
 
         public static Task CreateTask([NotNull] this IServerProcess process, BackgroundProcessContext context)
         {
-            if (process == null) throw new ArgumentNullException("process");
+            if (process == null) throw new ArgumentNullException(nameof(process));
 
             if (!(process is IServerComponent || process is IBackgroundProcess))
             {
-                throw new ArgumentOutOfRangeException("process", "Long-running process must be of type IServerComponent or IBackgroundProcess.");
+                throw new ArgumentOutOfRangeException(nameof(process), "Long-running process must be of type IServerComponent or IBackgroundProcess.");
             }
 
             return Task.Factory.StartNew(
@@ -62,7 +61,7 @@ namespace Hangfire.Server
 
         public static Type GetProcessType([NotNull] this IServerProcess process)
         {
-            if (process == null) throw new ArgumentNullException("process");
+            if (process == null) throw new ArgumentNullException(nameof(process));
 
             var nextProcess = process;
 
@@ -84,25 +83,28 @@ namespace Hangfire.Server
             // LogProvider.GetLogger does not throw any exception, that is why we are not
             // using the `try` statement here. It does not return `null` value as well.
             var logger = LogProvider.GetLogger(process.GetProcessType());
-            logger.DebugFormat("Background process '{0}' started.", process);
+            logger.Debug($"Background process '{process}' started.");
 
             try
             {
                 process.Execute(context);
             }
-            catch (OperationCanceledException)
-            {
-            }
             catch (Exception ex)
             {
-                logger.FatalException(
-                    String.Format(
-                        "Fatal error occurred during execution of '{0}' process. It will be stopped. See the exception for details.",
-                        process),
-                    ex);
+                if (ex is OperationCanceledException && context.IsShutdownRequested)
+                {
+                    // Graceful shutdown
+                    logger.Trace($"Background process '{process}' was stopped due to a shutdown request.");
+                }
+                else
+                {
+                    logger.FatalException(
+                        $"Fatal error occurred during execution of '{process}' process. It will be stopped. See the exception for details.",
+                        ex);
+                }
             }
 
-            logger.DebugFormat("Background process '{0}' stopped.", process);
+            logger.Debug($"Background process '{process}' stopped.");
         }
 
         private static void TrySetThreadName(string name)

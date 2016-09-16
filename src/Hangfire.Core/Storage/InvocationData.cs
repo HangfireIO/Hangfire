@@ -16,10 +16,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using Hangfire.Common;
 using Hangfire.Server;
@@ -37,9 +37,9 @@ namespace Hangfire.Storage
             Arguments = arguments;
         }
 
-        public string Type { get; private set; }
-        public string Method { get; private set; }
-        public string ParameterTypes { get; private set; }
+        public string Type { get; }
+        public string Method { get; }
+        public string ParameterTypes { get; }
         public string Arguments { get; set; }
 
         public Job Deserialize()
@@ -52,11 +52,8 @@ namespace Hangfire.Storage
                 
                 if (method == null)
                 {
-                    throw new InvalidOperationException(String.Format(
-                        "The type `{0}` does not contain a method with signature `{1}({2})`",
-                        type.FullName,
-                        Method,
-                        String.Join(", ", parameterTypes.Select(x => x.Name))));
+                    throw new InvalidOperationException(
+                        $"The type `{type.FullName}` does not contain a method with signature `{Method}({String.Join(", ", parameterTypes.Select(x => x.Name))})`");
                 }
 
                 var serializedArguments = JobHelper.FromJson<string[]>(Arguments);
@@ -84,18 +81,29 @@ namespace Hangfire.Storage
             var serializedArguments = new List<string>(arguments.Count);
             foreach (var argument in arguments)
             {
-                string value = null;
+                string value;
 
                 if (argument != null)
                 {
                     if (argument is DateTime)
                     {
-                        value = ((DateTime)argument).ToString("o", CultureInfo.InvariantCulture);
+                        value = ((DateTime) argument).ToString("o", CultureInfo.InvariantCulture);
+                    }
+                    else if (argument is CancellationToken)
+                    {
+                        // CancellationToken type instances are substituted with ShutdownToken 
+                        // during the background job performance, so we don't need to store 
+                        // their values.
+                        value = null;
                     }
                     else
                     {
                         value = JobHelper.ToJson(argument);
                     }
+                }
+                else
+                {
+                    value = null;
                 }
 
                 // Logic, related to optional parameters and their default values, 
@@ -122,7 +130,7 @@ namespace Hangfire.Storage
 
                 if (CoreBackgroundJobPerformer.Substitutions.ContainsKey(parameter.ParameterType))
                 {
-                    value = parameter.ParameterType.IsValueType
+                    value = parameter.ParameterType.GetTypeInfo().IsValueType
                         ? Activator.CreateInstance(parameter.ParameterType)
                         : null;
                 }
@@ -146,7 +154,11 @@ namespace Hangfire.Storage
                     ? JobHelper.FromJson(argument, type)
                     : null;
             }
-            catch (Exception jsonException)
+            catch (Exception
+#if NETFULL
+            jsonException
+#endif
+            )
             {
                 if (type == typeof (object))
                 {
@@ -156,27 +168,59 @@ namespace Hangfire.Storage
                 }
                 else
                 {
+#if NETFULL
                     try
                     {
-                        var converter = TypeDescriptor.GetConverter(type);
+                        var converter = System.ComponentModel.TypeDescriptor.GetConverter(type);
                         value = converter.ConvertFromInvariantString(argument);
                     }
                     catch (Exception)
                     {
-                        throw jsonException;
+                        ExceptionDispatchInfo.Capture(jsonException).Throw();
+                        throw;
                     }
+#else
+                    DateTime dateTime;
+                    if (type == typeof(DateTime) && ParseDateTimeArgument(argument, out dateTime))
+                    {
+                        value = dateTime;
+                    }
+                    else
+                    {
+                        throw;
+                    }
+#endif
                 }
             }
             return value;
         }
 
+        internal static bool ParseDateTimeArgument(string argument, out DateTime value)
+        {
+            DateTime dateTime;
+            var result = DateTime.TryParse(argument, out dateTime);
+
+            if (!result)
+            {
+                result = DateTime.TryParseExact(
+                    argument, 
+                    "MM/dd/yyyy HH:mm:ss.ffff", 
+                    CultureInfo.CurrentCulture,
+                    DateTimeStyles.None, 
+                    out dateTime);
+            }
+
+            value = dateTime;
+            return result;
+        }
+
         private static IEnumerable<MethodInfo> GetAllMethods(Type type)
         {
-            var methods = new List<MethodInfo>(type.GetMethods());
+            var methods = new List<MethodInfo>(type.GetRuntimeMethods());
 
-            if (type.IsInterface)
+            if (type.GetTypeInfo().IsInterface)
             {
-                methods.AddRange(type.GetInterfaces().SelectMany(x => x.GetMethods()));
+                methods.AddRange(type.GetTypeInfo().ImplementedInterfaces.SelectMany(x => x.GetRuntimeMethods()));
             }
 
             return methods;
@@ -218,7 +262,7 @@ namespace Hangfire.Storage
                     }
 
                     // Skipping non-generic parameters of assignable types.
-                    if (parameterType.IsAssignableFrom(actualType)) continue;
+                    if (parameterType.GetTypeInfo().IsAssignableFrom(actualType.GetTypeInfo())) continue;
 
                     parameterTypesMatched = false;
                     break;

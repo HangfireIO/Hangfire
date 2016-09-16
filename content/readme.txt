@@ -2,18 +2,41 @@ Please see http://docs.hangfire.io for more information on using Hangfire. The
 `Hangfire` package is using SQL Server as a job storage and intended to run in
 any OWIN-based web application.
 
-To run Hangfire in your application, update the existing OWIN Startup class or
-create the file `Startup.cs` in the root folder of your application as shown
-below. Please see also http://docs.hangfire.io/en/latest/quick-start.html.
-
-!!! DASHBOARD REQUIRES AUTH CONFIGURATION !!!
++-----------------------------------------------------------------------------+
+|  !!! DASHBOARD REQUIRES AUTH CONFIGURATION !!!                              |
++-----------------------------------------------------------------------------+
 
 By default, ONLY LOCAL requests are allowed to access the Dashboard. Please
 see the `Configuring Dashboard authorization` section in Hangfire documentation:
-http://docs.hangfire.io/en/latest/configuration/configuring-authorization.html
+http://docs.hangfire.io/en/latest/configuration/using-dashboard.html#configuring-authorization
+
+Sample ASP.NET Core Startup class
+---------------------------------
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Hangfire;
+
+namespace MyWebApplication
+{
+    public class Startup
+    {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddHangfire(x => x.UseSqlServerStorage("<connection string>"));
+        }
+        
+        public void Configure(IApplicationBuilder app)
+        {
+            app.UseHangfireServer();
+            app.UseHangfireDashboard();
+        }
+    }
+}
+
 
 Sample OWIN Startup class
---------------------------
+-------------------------
 
 using Hangfire;
 using Microsoft.Owin;

@@ -10,35 +10,56 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>SQL Server 2008+ (including Express), SQL Server LocalDB and SQL Azure storage support for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2013-2015 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013-2016 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>http://hangfire.io/blog/
     
-1.5.3
-* Fixed – "Cannot release the application lock" exception when using distributed locks.
+1.6.4
+• Fixed – `SqlConnection` object leaks when using nested distributed locks (in batches and continuations).
+
+1.6.3
+• Fixed – Prevent `ExpirationManager`'s command from timing out, when there are a lot of records.
+• Fixed – `CountersAggregator` issue introduced in 1.6.2, that causes slow record aggregation.
+• Fixed – Add `XLOCK` hint for `CountersAggregator` query to prevent deadlocks on lock escalation.
     
-1.5.1
-* Fixed – Unable to see enqueued jobs in Dashboard UI when using SQL Server queues.
-    
-1.5.0
-* Added – Ability to specify the schema for SQL Server job storage (by @ryanmwright).
-* Added – `TransactionTimeout` option for configuring the `TransactionScope` timeout.
-* Added – `DashboardJobListLimit` option to prevent full table scans in Dashboard.
-* Changed – `SqlServerDistributedLock` class is now public.
-* Changed – Use `rowlock` table hint in job fetch query to prevent escalation.
-* Changed – Dramatically improved page load times in Dashboard.
-* Changed – Instant re-queue for background jobs even after ungraceful shutdown.
-* Changed – `JobQueue.Queue` and `Server.Id` column length increased to 50 and 100 respectively (by @maleet).
+1.6.2
+• Changed – `JobExpirationCheckInterval` property value now defaults to 30 minutes.
+• Fixed – Excessive blocking when expiring records in `State` and `JobParameters` tables.
+• Fixed – Migration script `Install.sql` was deadlocked by itself, leading to errors on startup.
+
+1.6.0
+• Added – .NET Core support for Hangfire.Core and Hangfire.SqlServer packages (`netstandard1.3` target).
+• Added – Zero latency processing when client and server reside in the same process (by @bgurmendi).
+• Changed – `SqlServerStorage` class constructor now takes `DbConnection` instances (by @tystol).
+• Changed – `SqlServerObjectsInstaller` class is public now (by @vbfox).
+• Changed – Update Dapper to 1.50.1 version.
+• Fixed – Drop constraints on Server.Id prior to altering it to avoid conflicts.
     </releaseNotes>
     <dependencies>
-      <dependency id="Hangfire.Core" version="[0.0.0]" />
+      <group targetFramework="net45">
+        <dependency id="Hangfire.Core" version="[0.0.0]" />
+      </group>
+      
+      <group targetFramework="netstandard1.3">
+        <dependency id="Microsoft.NETCore.Portable.Compatibility" version="1.0.1" />
+        <dependency id="NETStandard.Library" version="1.6.0" />
+        <dependency id="System.Data.Common" version="4.1.0" />
+        <dependency id="System.Data.SqlClient" version="4.1.0" />
+        <dependency id="Dapper" version="1.50.1" />
+        <dependency id="Hangfire.Core" version="[0.0.0]" />
+      </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="Net45\Hangfire.SqlServer.dll" target="lib\net45" />
-    <file src="Net45\Hangfire.SqlServer.xml" target="lib\net45" />
-    <file src="Net45\Hangfire.SqlServer.pdb" target="lib\net45" />
+    <file src="net45\Hangfire.SqlServer.dll" target="lib\net45" />
+    <file src="net45\Hangfire.SqlServer.xml" target="lib\net45" />
+    <file src="net45\Hangfire.SqlServer.pdb" target="lib\net45" />
+    
+    <file src="netstandard1.3\Hangfire.SqlServer.dll" target="lib\netstandard1.3" />
+    <file src="netstandard1.3\Hangfire.SqlServer.xml" target="lib\netstandard1.3" />
+    <file src="netstandard1.3\Hangfire.SqlServer.pdb" target="lib\netstandard1.3" />
+    
     <file src="Tools\DefaultInstall.sql" target="tools\install.sql" />
-    <file src="..\src\Hangfire.SqlServer\**\*.cs" target="src" />
+    <file src="..\src\Hangfire.SqlServer\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
   </files>
 </package>

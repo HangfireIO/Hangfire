@@ -6,8 +6,13 @@ using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
+#if NETFULL
 using Moq.Sequences;
+#endif
 using Xunit;
+
+// ReSharper disable PossibleNullReferenceException
+// ReSharper disable AssignNullToNotNullAttribute
 
 namespace Hangfire.Core.Tests.Client
 {
@@ -37,7 +42,7 @@ namespace Hangfire.Core.Tests.Client
                 _filters.Select(f => new JobFilter(f, JobFilterScope.Type, null)));
             
             _innerFactory = new Mock<IBackgroundJobFactory>();
-            _innerFactory.Setup(x => x.Create((_context.Object))).Returns(_backgroundJob.Object);
+            _innerFactory.Setup(x => x.Create(_context.Object)).Returns(_backgroundJob.Object);
         }
 
         [Fact]
@@ -123,6 +128,7 @@ namespace Hangfire.Core.Tests.Client
                 It.IsNotNull<ClientExceptionContext>()));
         }
 
+#if NETFULL
         [Fact, Sequence]
         public void Run_CallsExceptionFilters_InReverseOrder()
         {
@@ -148,6 +154,7 @@ namespace Hangfire.Core.Tests.Client
 
             // Assert - see the `SequenceAttribute` class.
         }
+#endif
 
         [Fact]
         public void Run_EatsException_WhenItWasHandlerByFilter_AndReturnsNullJobIdentifier()
@@ -170,6 +177,7 @@ namespace Hangfire.Core.Tests.Client
             Assert.Null(jobId);
         }
 
+#if NETFULL
         [Fact, Sequence]
         public void Run_CallsClientFilters_BeforeAndAfterTheCreationOfAJob()
         {
@@ -214,6 +222,7 @@ namespace Hangfire.Core.Tests.Client
 
             // Assert - see the `SequenceAttribute` class.
         }
+#endif
 
         [Fact]
         public void Run_DoesNotCallBoth_CreateJob_And_OnCreated_WhenFilterCancelsThis_AndReturnsNullJobIdentifier()
@@ -373,7 +382,7 @@ namespace Hangfire.Core.Tests.Client
             var factory = CreateFactory();
 
             // Act
-            Assert.DoesNotThrow(() => factory.Create(_context.Object));
+            factory.Create(_context.Object);
 
             // Assert
             outerFilter.Verify(x => x.OnCreated(It.Is<CreatedContext>(context => context.Exception != null)));

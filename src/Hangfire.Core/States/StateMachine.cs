@@ -34,8 +34,8 @@ namespace Hangfire.States
             [NotNull] IJobFilterProvider filterProvider, 
             [NotNull] IStateMachine innerStateMachine)
         {
-            if (filterProvider == null) throw new ArgumentNullException("filterProvider");
-            if (innerStateMachine == null) throw new ArgumentNullException("innerStateMachine");
+            if (filterProvider == null) throw new ArgumentNullException(nameof(filterProvider));
+            if (innerStateMachine == null) throw new ArgumentNullException(nameof(innerStateMachine));
             
             _filterProvider = filterProvider;
             _innerStateMachine = innerStateMachine;

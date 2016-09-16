@@ -1,12 +1,14 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Reflection;
 using Hangfire.Common;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
+
+#pragma warning disable 618
 
 namespace Hangfire.Core.Tests.Common
 {
@@ -114,7 +116,8 @@ namespace Hangfire.Core.Tests.Common
 			CreateAndPerform(Int64Value);
 		}
 
-		private const UInt64 UInt64Value = UInt64.MaxValue;
+#if NETFULL
+        private const UInt64 UInt64Value = UInt64.MaxValue;
 		public void Method(UInt64 value) { Assert.Equal(UInt64Value, value); }
 
 		[Fact]
@@ -122,8 +125,9 @@ namespace Hangfire.Core.Tests.Common
 		{
 			CreateAndPerform(UInt64Value);
 		}
+#endif
 
-		private const Int16 Int16Value = Int16.MaxValue;
+        private const Int16 Int16Value = Int16.MaxValue;
 		public void Method(Int16 value) { Assert.Equal(Int16Value, value); }
 
 		[Fact]
@@ -181,16 +185,18 @@ namespace Hangfire.Core.Tests.Common
 			}
 		}
 
-		private static readonly CultureInfo CultureInfoValue = CultureInfo.GetCultureInfo("ru-RU");
+#if NETFULL
+        private static readonly CultureInfo CultureInfoValue = new CultureInfo("ru-RU");
 		public void Method(CultureInfo value) { Assert.Equal(CultureInfoValue, value); }
 
-		[Fact]
+        [Fact]
 		public void CultureInfoValues_AreBeingDeserializedCorrectly()
 		{
 			CreateAndPerform(CultureInfoValue);
 		}
+#endif
 
-		private const DayOfWeek EnumValue = DayOfWeek.Saturday;
+        private const DayOfWeek EnumValue = DayOfWeek.Saturday;
 		public void Method(DayOfWeek value) { Assert.Equal(EnumValue, value); }
 
 		[Fact]
@@ -297,20 +303,22 @@ namespace Hangfire.Core.Tests.Common
 
 		private void CreateAndPerform<T>(T argumentValue, bool checkJsonOnly = false)
 		{
-			var type = typeof(JobArgumentFacts);
+            var type = typeof(JobArgumentFacts);
 			var methodInfo = type.GetMethod("Method", new[] { typeof(T) });
 
 			var serializationMethods = new List<Tuple<string, Func<string>>>();
 
-			if (!checkJsonOnly)
+#if NETFULL
+            if (!checkJsonOnly)
 			{
 				var converter = TypeDescriptor.GetConverter(typeof(T));
 				serializationMethods.Add(new Tuple<string, Func<string>>(
 					"TypeDescriptor",
 					() => converter.ConvertToInvariantString(argumentValue)));
 			}
+#endif
 
-			serializationMethods.Add(new Tuple<string, Func<string>>(
+            serializationMethods.Add(new Tuple<string, Func<string>>(
 				"JSON",
 				() => JsonConvert.SerializeObject(argumentValue)));
 

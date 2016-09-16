@@ -14,7 +14,7 @@
 //
 #endregion
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable All
 
 namespace Hangfire
 {
@@ -43,17 +43,17 @@ namespace Hangfire
         public string BeforeParameters    { get; set; }
         public string AfterParameters     { get; set; }
 
-        string IStackTraceFormatter<string>.Text(string text)            { return  string.IsNullOrEmpty(text) ? string.Empty : WebUtility.HtmlEncode(text); }
-        string IStackTraceFormatter<string>.Type(string markup)          { return  BeforeType          + markup + AfterType; }
-        string IStackTraceFormatter<string>.Method(string markup)        { return  BeforeMethod        + markup + AfterMethod; }
-        string IStackTraceFormatter<string>.ParameterType(string markup) { return  BeforeParameterType + markup + AfterParameterType; }
-        string IStackTraceFormatter<string>.ParameterName(string markup) { return  BeforeParameterName + markup + AfterParameterName; }
-        string IStackTraceFormatter<string>.File(string markup)          { return  BeforeFile          + markup + AfterFile; }
-        string IStackTraceFormatter<string>.Line(string markup)          { return  BeforeLine          + markup + AfterLine; }
-        string IStackTraceFormatter<string>.BeforeFrame                  { get { return  BeforeFrame      ?? string.Empty; } }
-        string IStackTraceFormatter<string>.AfterFrame                   { get { return  AfterFrame       ?? string.Empty; } }
-        string IStackTraceFormatter<string>.BeforeParameters             { get { return  BeforeParameters ?? string.Empty; } }
-        string IStackTraceFormatter<string>.AfterParameters              { get { return  AfterParameters  ?? string.Empty; } }
+        string IStackTraceFormatter<string>.Text(string text)            => string.IsNullOrEmpty(text) ? string.Empty : WebUtility.HtmlEncode(text);
+        string IStackTraceFormatter<string>.Type(string markup)          => BeforeType          + markup + AfterType;
+        string IStackTraceFormatter<string>.Method(string markup)        => BeforeMethod        + markup + AfterMethod;
+        string IStackTraceFormatter<string>.ParameterType(string markup) => BeforeParameterType + markup + AfterParameterType;
+        string IStackTraceFormatter<string>.ParameterName(string markup) => BeforeParameterName + markup + AfterParameterName;
+        string IStackTraceFormatter<string>.File(string markup)          => BeforeFile          + markup + AfterFile;
+        string IStackTraceFormatter<string>.Line(string markup)          => BeforeLine          + markup + AfterLine;
+        string IStackTraceFormatter<string>.BeforeFrame                  => BeforeFrame      ?? string.Empty;
+        string IStackTraceFormatter<string>.AfterFrame                   => AfterFrame       ?? string.Empty;
+        string IStackTraceFormatter<string>.BeforeParameters             => BeforeParameters ?? string.Empty;
+        string IStackTraceFormatter<string>.AfterParameters              => AfterParameters  ?? string.Empty;
     }
 
     partial interface IStackTraceFormatter<T>

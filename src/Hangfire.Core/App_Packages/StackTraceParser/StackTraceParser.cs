@@ -32,16 +32,17 @@ namespace Hangfire
     partial class StackTraceParser
     {
         const string Space = @"[\x20\t]";
+        const string NotSpace = @"[^\x20\t]";
 
         static readonly Regex Regex = new Regex(@"
             ^
             " + Space + @"*
             \w+ " + Space + @"+
             (?<frame>
-                (?<type> .+ ) \.
-                (?<method> .+? ) " + Space + @"*
+                (?<type> " + NotSpace + @"+ ) \.
+                (?<method> " + NotSpace + @"+? ) " + Space + @"*
                 (?<params>  \( ( " + Space + @"* \)
-                               |        (?<pt> .+?) " + Space + @"+ (?<pn> .+?)
+                               |                    (?<pt> .+?) " + Space + @"+ (?<pn> .+?)
                                  (, " + Space + @"* (?<pt> .+?) " + Space + @"+ (?<pn> .+?) )* \) ) )
                 ( " + Space + @"+
                     ( # Microsoft .NET stack traces
@@ -63,13 +64,18 @@ namespace Hangfire
             | RegexOptions.ExplicitCapture
             | RegexOptions.CultureInvariant
             | RegexOptions.IgnorePatternWhitespace
-            | RegexOptions.Compiled);
+            | RegexOptions.Compiled,
+            // Cap the evaluation time to make it obvious should the expression
+            // fall into the "catastrophic backtracking" trap due to over
+            // generalization.
+            // https://github.com/atifaziz/StackTraceParser/issues/4
+            TimeSpan.FromSeconds(5));
 
         public static IEnumerable<T> Parse<T>(
             string text,
             Func<string, string, string, string, IEnumerable<KeyValuePair<string, string>>, string, string, T> selector)
         {
-            if (selector == null) throw new ArgumentNullException("selector");
+            if (selector == null) throw new ArgumentNullException(nameof(selector));
 
             return Parse(text, (idx, len, txt) => txt,
                                (t, m) => new { Type = t, Method = m },
@@ -89,12 +95,12 @@ namespace Hangfire
             Func<TToken, TToken, TSourceLocation> sourceLocationSelector,
             Func<TToken, TMethod, TParameters, TSourceLocation, TFrame> selector)
         {
-            if (tokenSelector == null) throw new ArgumentNullException("tokenSelector");
-            if (methodSelector == null) throw new ArgumentNullException("methodSelector");
-            if (parameterSelector == null) throw new ArgumentNullException("parameterSelector");
-            if (parametersSelector == null) throw new ArgumentNullException("parametersSelector");
-            if (sourceLocationSelector == null) throw new ArgumentNullException("sourceLocationSelector");
-            if (selector == null) throw new ArgumentNullException("selector");
+            if (tokenSelector == null) throw new ArgumentNullException(nameof(tokenSelector));
+            if (methodSelector == null) throw new ArgumentNullException(nameof(methodSelector));
+            if (parameterSelector == null) throw new ArgumentNullException(nameof(parameterSelector));
+            if (parametersSelector == null) throw new ArgumentNullException(nameof(parametersSelector));
+            if (sourceLocationSelector == null) throw new ArgumentNullException(nameof(sourceLocationSelector));
+            if (selector == null) throw new ArgumentNullException(nameof(selector));
 
             return from Match m in Regex.Matches(text)
                    select m.Groups into groups

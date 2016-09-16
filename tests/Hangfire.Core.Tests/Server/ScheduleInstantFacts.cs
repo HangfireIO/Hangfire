@@ -8,8 +8,8 @@ namespace Hangfire.Core.Tests.Server
 {
     public class ScheduleInstantFacts
     {
-        private readonly CrontabSchedule _schedule;
-        private readonly TimeZoneInfo _timeZone;
+        private CrontabSchedule _schedule;
+        private TimeZoneInfo _timeZone;
         private DateTime _now;
 
         public ScheduleInstantFacts()
@@ -69,6 +69,42 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void NextInstant_DoesntThrow_NearDaylightSavings()
+        {
+            // Arrange
+            _timeZone = GetNewYorkTimeZone();
+            _now = TimeZoneInfo.ConvertTime(new DateTime(2016, 3, 13, 1, 0, 0), _timeZone, TimeZoneInfo.Utc);
+            _schedule = CrontabSchedule.Parse("0 * * * *");
+            
+            var instant = CreateInstant();
+
+            // Act
+            var value = instant.NextInstant;
+
+            // Assert
+            Assert.Equal(_now.AddHours(1), value);
+        }
+
+        [Fact]
+        public void GetNextInstants_DoesntThrow_NearDaylightSavings()
+        {
+            // Arrange
+            _timeZone = GetNewYorkTimeZone();
+            _now = TimeZoneInfo.ConvertTime(new DateTime(2016, 3, 13, 3, 0, 0), _timeZone, TimeZoneInfo.Utc);
+            _schedule = CrontabSchedule.Parse("0 * * * *");
+
+            var instant = CreateInstant();
+
+            // Act
+            var last = TimeZoneInfo.ConvertTime(new DateTime(2016, 3, 13, 1, 0, 0), _timeZone, TimeZoneInfo.Utc);
+            var value = instant.GetNextInstants(last).ToList();
+
+            // Assert
+            Assert.Equal(1, value.Count);
+            Assert.Equal(last.AddHours(1), value[0]);
+        }
+
+        [Fact]
         public void GetNextInstants_ThrowsAnException_WhenLastTime_IsNotUtc()
         {
             var instant = CreateInstant();
@@ -91,15 +127,15 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void GetNextInstants_ReturnsSingleMatch_WhenLocalTimeSatisfiesTheSchedule()
+        public void GetNextInstants_ReturnsEmptyCollection_WhenLastInstantIsNow()
         {
             var time = new DateTime(2012, 12, 12, 00, 00, 00, DateTimeKind.Utc);
             var instant = CreateInstant(time);
 
-            var matches = instant.GetNextInstants(null).ToList();
+            var matches = instant.GetNextInstants(_now).ToList();
 
-            Assert.Equal(1, matches.Count);
-            Assert.Equal(time, matches[0]);
+            // LastInstant should be excluded
+            Assert.Equal(0, matches.Count);
         }
 
         [Fact]
@@ -125,6 +161,13 @@ namespace Hangfire.Core.Tests.Server
         private ScheduleInstant CreateInstant(DateTime? localTime = null)
         {
             return new ScheduleInstant(localTime ?? _now, _timeZone, _schedule);
+        }
+
+        private static TimeZoneInfo GetNewYorkTimeZone()
+        {
+            var timeZoneId = PlatformHelper.IsRunningOnWindows() ? "Eastern Standard Time" : "America/New_York";
+
+            return TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
         }
     }
 }

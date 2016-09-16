@@ -89,12 +89,12 @@ namespace Hangfire.States
         /// Gets a date/time when a background job should be <i>enqueued</i>.
         /// </summary>
         /// <value>Any date/time in <see cref="DateTimeKind.Utc"/> format.</value>
-        public DateTime EnqueueAt { get; private set; }
+        public DateTime EnqueueAt { get; }
 
         /// <summary>
         /// Gets a date/time when the current state instance was created.
         /// </summary>
-        public DateTime ScheduledAt { get; private set; }
+        public DateTime ScheduledAt { get; }
 
         /// <inheritdoc />
         /// <remarks>
@@ -102,7 +102,7 @@ namespace Hangfire.States
         /// Please see the remarks section of the <see cref="IState.Name">IState.Name</see>
         /// article for the details.
         /// </remarks>
-        public string Name { get { return StateName; } }
+        public string Name => StateName;
 
         /// <inheritdoc />
         public string Reason { get; set; }
@@ -113,7 +113,7 @@ namespace Hangfire.States
         /// Please refer to the <see cref="IState.IsFinal">IState.IsFinal</see> documentation
         /// for the details.
         /// </remarks>
-        public bool IsFinal { get { return false; } }
+        public bool IsFinal => false;
 
         /// <inheritdoc />
         /// <remarks>
@@ -122,7 +122,7 @@ namespace Hangfire.States
         /// <see cref="IState.IgnoreJobLoadException">IState.IgnoreJobLoadException</see>
         /// article.
         /// </remarks>
-        public bool IgnoreJobLoadException { get { return false; } }
+        public bool IgnoreJobLoadException => false;
 
         /// <inheritdoc />
         /// <remarks>
@@ -166,9 +166,8 @@ namespace Hangfire.States
                 var scheduledState = context.NewState as ScheduledState;
                 if (scheduledState == null)
                 {
-                    throw new InvalidOperationException(String.Format(
-                        "`{0}` state handler can be registered only for the Scheduled state.",
-                        typeof(Handler).FullName));
+                    throw new InvalidOperationException(
+                        $"`{typeof (Handler).FullName}` state handler can be registered only for the Scheduled state.");
                 }
 
                 var timestamp = JobHelper.ToTimestamp(scheduledState.EnqueueAt);
@@ -181,10 +180,7 @@ namespace Hangfire.States
             }
 
             // ReSharper disable once MemberHidesStaticFromOuterClass
-            public string StateName
-            {
-                get { return ScheduledState.StateName; }
-            }
+            public string StateName => ScheduledState.StateName;
         }
     }
 }

@@ -17,11 +17,10 @@
 using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
-    internal class RazorPageDispatcher : IRequestDispatcher
+    internal class RazorPageDispatcher : IDashboardDispatcher
     {
         private readonly Func<Match, RazorPage> _pageFunc;
 
@@ -30,15 +29,14 @@ namespace Hangfire.Dashboard
             _pageFunc = pageFunc;
         }
 
-        public Task Dispatch(RequestDispatcherContext context)
+        public Task Dispatch(DashboardContext context)
         {
-            var owinContext = new OwinContext(context.OwinEnvironment);
-            owinContext.Response.ContentType = "text/html";
+            context.Response.ContentType = "text/html";
 
             var page = _pageFunc(context.UriMatch);
             page.Assign(context);
 
-            return owinContext.Response.WriteAsync(page.ToString());
+            return context.Response.WriteAsync(page.ToString());
         }
     }
 }

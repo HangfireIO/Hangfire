@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Threading;
 using System.Transactions;
 using Dapper;
-using Xunit;
+using Xunit.Sdk;
 
 namespace Hangfire.SqlServer.Tests
 {
@@ -45,10 +45,7 @@ namespace Hangfire.SqlServer.Tests
         {
             try
             {
-                if (_transaction != null)
-                {
-                    _transaction.Dispose();
-                }
+                _transaction?.Dispose();
             }
             finally
             {

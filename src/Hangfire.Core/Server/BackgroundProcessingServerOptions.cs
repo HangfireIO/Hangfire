@@ -32,5 +32,6 @@ namespace Hangfire.Server
         public TimeSpan HeartbeatInterval { get; set; }
         public TimeSpan ServerCheckInterval { get; set; }
         public TimeSpan ServerTimeout { get; set; }
+        public string ServerName { get; set; }
     }
 }

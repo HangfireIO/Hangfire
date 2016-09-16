@@ -80,39 +80,49 @@ namespace MQTools
         private const int MQ_ERROR_ILLEGAL_PROPERTY_VT = unchecked((int)0xC00E0019); // An invalid type indicator was supplied for one of the properties specified in pMgmtProps.
         private const int MQ_ERROR_QUEUE_NOT_ACTIVE = unchecked((int)0xC00E0004); // The queue is not open or may not exist.
         private const int MQ_ERROR_SERVICE_NOT_AVAILABLE = unchecked((int)0xC00E000B); // The Message Queuing service is not available.
+        // ReSharper disable once RedundantOverflowCheckingContext
         private const int MQ_INFORMATION_UNSUPPORTED_PROPERTY = unchecked((int)0x400E0004); // An unsupported property identifier was specified in pMgmtProps
 
-        const string QueueRegex = @"^.*\:(?<computerName>.*)\\(?<queueType>.*)\\(?<queue>.*)$";
+        const string QueueRegex = @"^(?:(.*\:)|)((?<computerName>[^\\]*)|\.)(?:\\(?<queueType>.*)|)\\(?<queue>.*)$";
         private static readonly Regex regex = new Regex(QueueRegex, RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static long GetCount(this MessageQueue messageQueue)
         {
-            var matches = regex.Matches(messageQueue.FormatName);
+            var match = GetQueuePathMatch(messageQueue.Path);
 
-            if (matches.Count != 1)
-                throw new ApplicationException("Unable to parse " + messageQueue.FormatName);
+            var computerName = match.Groups["computerName"].Value;
+            var queueType = match.Groups["queueType"].Value;
+            var queue = match.Groups["queue"].Value;
 
-            var computerName = matches[0].Groups["computerName"].Value;
-            var queueType = matches[0].Groups["queueType"].Value;
-            var queue = matches[0].Groups["queue"].Value;
+            if (computerName == ".")
+                computerName = null;
 
             return GetQueueCount(computerName, queueType, queue);
         }
 
-        private static long GetPrivateQueueCount(string queue)
+        internal static Match GetQueuePathMatch(string queuePath)
         {
-            return GetQueueCount(null, "private$", queue);
-        }
+            var matches = regex.Matches(queuePath);
+            if (matches.Count != 1)
+            {
+                throw new InvalidOperationException($"Unable to parse queue path '{queuePath}'");
+            }
 
-        private static long GetPrivateQueueCount(string computerName, string queue)
-        {
-            return GetQueueCount(computerName, "private$", queue);
+            return matches[0];
         }
 
         private static long GetQueueCount(string computerName, string queueType, string queue)
         {
             if (string.IsNullOrEmpty(computerName)) computerName = null;
-            string queuePath = string.Format("queue=Direct=OS:{0}\\{1}\\{2}", computerName ?? ".", queueType, queue);
+            string queuePath = $"queue=Direct=OS:{computerName ?? "."}";
+
+            if (!String.IsNullOrEmpty(queueType))
+            {
+                queuePath += $"\\{queueType}";
+            }
+
+            queuePath += $"\\{queue}";
+
             return GetCount(computerName, queuePath);
         }
 

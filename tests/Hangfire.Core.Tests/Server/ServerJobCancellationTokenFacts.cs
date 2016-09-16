@@ -7,6 +7,8 @@ using Hangfire.Storage;
 using Moq;
 using Xunit;
 
+// ReSharper disable AssignNullToNotNullAttribute
+
 namespace Hangfire.Core.Tests.Server
 {
     public class ServerJobCancellationTokenFacts
@@ -88,7 +90,8 @@ namespace Hangfire.Core.Tests.Server
         {
             var token = CreateToken();
 
-            Assert.DoesNotThrow(token.ThrowIfCancellationRequested);
+            // Does not throw
+            token.ThrowIfCancellationRequested();
         }
 
         [Fact]

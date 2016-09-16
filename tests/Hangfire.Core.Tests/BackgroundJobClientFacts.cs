@@ -7,6 +7,8 @@ using Hangfire.Storage;
 using Moq;
 using Xunit;
 
+// ReSharper disable AssignNullToNotNullAttribute
+
 namespace Hangfire.Core.Tests
 {
     public class BackgroundJobClientFacts
@@ -66,7 +68,8 @@ namespace Hangfire.Core.Tests
         {
             JobStorage.Current = new Mock<JobStorage>().Object;
             // ReSharper disable once ObjectCreationAsStatement
-            Assert.DoesNotThrow(() => new BackgroundJobClient());
+            // Does not throw
+            new BackgroundJobClient();
         }
 
         [Fact]

@@ -15,7 +15,6 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Messaging;
 using Hangfire.Annotations;
 using Hangfire.Storage;
 
@@ -27,15 +26,15 @@ namespace Hangfire.SqlServer.Msmq
 
         public MsmqFetchedJob([NotNull] IMsmqTransaction transaction, [NotNull] string jobId)
         {
-            if (transaction == null) throw new ArgumentNullException("transaction");
-            if (jobId == null) throw new ArgumentNullException("jobId");
+            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
 
             _transaction = transaction;
 
             JobId = jobId;
         }
 
-        public string JobId { get; private set; }
+        public string JobId { get; }
 
         public void RemoveFromQueue()
         {

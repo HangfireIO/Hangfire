@@ -6,8 +6,12 @@ using Hangfire.Server;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
+#if NETFULL
 using Moq.Sequences;
+#endif
 using Xunit;
+
+// ReSharper disable AssignNullToNotNullAttribute
 
 namespace Hangfire.Core.Tests.Server
 {
@@ -117,6 +121,7 @@ namespace Hangfire.Core.Tests.Server
             _fetchedJob.Verify(x => x.Requeue());
         }
 
+#if NETFULL
         [Fact, Sequence]
         public void Execute_ExecutesDefaultWorkflow_WhenJobIsCorrect()
         {
@@ -141,6 +146,7 @@ namespace Hangfire.Core.Tests.Server
 
             // Assert - see the `SequenceAttribute` class.
         }
+#endif
 
         [Fact]
         public void Execute_SetsCurrentServer_ToProcessingState()
@@ -194,10 +200,14 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_DoesNotMoveAJob_ToTheFailedState_ButRequeuesIt_WhenProcessThrowsOperationCanceled()
+        public void Execute_DoesNotMoveAJob_ToTheFailedState_ButRequeuesIt_WhenProcessThrowsOperationCanceled_DuringShutdownOnly()
         {
             // Arrange
+            var cts = new CancellationTokenSource();
+            _context.CancellationTokenSource = cts;
+
             _performer.Setup(x => x.Perform(It.IsAny<PerformContext>()))
+                .Callback(() => cts.Cancel())
                 .Throws<OperationCanceledException>();
 
             var worker = CreateWorker();
@@ -213,7 +223,26 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_RemovesJobFromQueue_WhenProcessThrowsJobAbortedException()
+        public void Execute_MovesAJob_ToTheFailedState_AndNotRequeuesIt_WhenProcessThrowsOperationCanceled_WhenShutdownWasNotRequested()
+        {
+            // Arrange
+            _performer.Setup(x => x.Perform(It.IsAny<PerformContext>()))
+                .Throws<OperationCanceledException>();
+
+            var worker = CreateWorker();
+
+            // Act
+            worker.Execute(_context.Object);
+
+            // Assert
+            _stateChanger.Verify(
+                x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is FailedState)),
+                Times.Once);
+            _fetchedJob.Verify(x => x.Requeue(), Times.Never);
+        }
+
+        [Fact]
+        public void Execute_DoesNotMoveAJobToFailedState_AndRemovesJobFromQueue_WhenProcessThrowsJobAbortedException()
         {
             // Arrange
             _performer.Setup(x => x.Perform(It.IsAny<PerformContext>()))
@@ -222,8 +251,11 @@ namespace Hangfire.Core.Tests.Server
             var worker = CreateWorker();
 
             // Act
-            Assert.DoesNotThrow(() => worker.Execute(_context.Object));
+            worker.Execute(_context.Object);
 
+            _stateChanger.Verify(
+                x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is FailedState)),
+                Times.Never);
             _fetchedJob.Verify(x => x.RemoveFromQueue());
             _fetchedJob.Verify(x => x.Requeue(), Times.Never);
         }

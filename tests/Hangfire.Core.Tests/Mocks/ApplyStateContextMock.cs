@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
@@ -43,9 +41,6 @@ namespace Hangfire.Core.Tests
         public string OldStateName { get; set; }
         public TimeSpan JobExpirationTimeout { get; set; } 
 
-        public ApplyStateContext Object
-        {
-            get { return _context.Value; }
-        }
+        public ApplyStateContext Object => _context.Value;
     }
 }

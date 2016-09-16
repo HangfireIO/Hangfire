@@ -1,5 +1,16 @@
 ﻿using System;
 
+#if !NETFULL
+namespace System.Diagnostics.CodeAnalysis
+{
+    [Conditional("DEBUG")] // don't bloat release assemblies
+    [AttributeUsage(AttributeTargets.All, Inherited = false, AllowMultiple = false)]
+    internal sealed class ExcludeFromCodeCoverageAttribute : Attribute
+    {
+    }
+}
+#endif
+
 #pragma warning disable 1591
 // ReSharper disable UnusedMember.Global
 // ReSharper disable UnusedParameter.Local
@@ -29,7 +40,7 @@ namespace Hangfire.Annotations
   [AttributeUsage(
     AttributeTargets.Method | AttributeTargets.Parameter |
     AttributeTargets.Property | AttributeTargets.Delegate |
-    AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
+    AttributeTargets.Field)]
   public sealed class CanBeNullAttribute : Attribute { }
 
   /// <summary>
@@ -45,7 +56,7 @@ namespace Hangfire.Annotations
   [AttributeUsage(
     AttributeTargets.Method | AttributeTargets.Parameter |
     AttributeTargets.Property | AttributeTargets.Delegate |
-    AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
+    AttributeTargets.Field)]
   public sealed class NotNullAttribute : Attribute { }
 
   /// <summary>
@@ -63,8 +74,7 @@ namespace Hangfire.Annotations
   /// }
   /// </code></example>
   [AttributeUsage(
-    AttributeTargets.Constructor | AttributeTargets.Method,
-    AllowMultiple = false, Inherited = true)]
+    AttributeTargets.Constructor | AttributeTargets.Method)]
   public sealed class StringFormatMethodAttribute : Attribute
   {
     /// <param name="formatParameterName">
@@ -90,7 +100,7 @@ namespace Hangfire.Annotations
   ///         throw new ArgumentNullException("par"); // Warning: Cannot resolve symbol
   /// }
   /// </code></example>
-  [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
+  [AttributeUsage(AttributeTargets.Parameter)]
   public sealed class InvokerParameterNameAttribute : Attribute { }
 
   /// <summary>
@@ -130,7 +140,7 @@ namespace Hangfire.Annotations
   /// <item><c>SetProperty(ref myField, value, "Property")</c></item>
   /// </list>
   /// </example>
-  [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
+  [AttributeUsage(AttributeTargets.Method)]
   public sealed class NotifyPropertyChangedInvocatorAttribute : Attribute
   {
     public NotifyPropertyChangedInvocatorAttribute() { }
@@ -184,7 +194,7 @@ namespace Hangfire.Annotations
   /// public bool TryParse(string s, out Person result)
   /// </code></item>
   /// </list></examples>
-  [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
+  [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
   public sealed class ContractAnnotationAttribute : Attribute
   {
     public ContractAnnotationAttribute([NotNull] string contract)
@@ -210,7 +220,7 @@ namespace Hangfire.Annotations
   ///     private string str = "my string"; // Warning: Localizable string
   /// }
   /// </code></example>
-  [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = true)]
+  [AttributeUsage(AttributeTargets.All)]
   public sealed class LocalizationRequiredAttribute : Attribute
   {
     public LocalizationRequiredAttribute() : this(true) { }
@@ -246,7 +256,7 @@ namespace Hangfire.Annotations
   /// </code></example>
   [AttributeUsage(
     AttributeTargets.Interface | AttributeTargets.Class |
-    AttributeTargets.Struct, AllowMultiple = false, Inherited = true)]
+    AttributeTargets.Struct)]
   public sealed class CannotApplyEqualityOperatorAttribute : Attribute { }
 
   /// <summary>
@@ -259,7 +269,7 @@ namespace Hangfire.Annotations
   /// [Component] // ComponentAttribute requires implementing IComponent interface
   /// public class MyComponent : IComponent { }
   /// </code></example>
-  [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
+  [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
   [BaseTypeRequired(typeof(Attribute))]
   public sealed class BaseTypeRequiredAttribute : Attribute
   {
@@ -276,7 +286,7 @@ namespace Hangfire.Annotations
   /// (e.g. via reflection, in external library), so this symbol
   /// will not be marked as unused (as well as by other usage inspections)
   /// </summary>
-  [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = true)]
+  [AttributeUsage(AttributeTargets.All)]
   public sealed class UsedImplicitlyAttribute : Attribute
   {
     public UsedImplicitlyAttribute()
@@ -304,7 +314,7 @@ namespace Hangfire.Annotations
   /// to not mark symbols marked with such attributes as unused
   /// (as well as by other usage inspections)
   /// </summary>
-  [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+  [AttributeUsage(AttributeTargets.Class)]
   public sealed class MeansImplicitUseAttribute : Attribute
   {
     public MeansImplicitUseAttribute() 
@@ -367,7 +377,7 @@ namespace Hangfire.Annotations
   [MeansImplicitUse]
   public sealed class PublicAPIAttribute : Attribute
   {
-    public PublicAPIAttribute() { }
+    public PublicAPIAttribute() : this(String.Empty) { }
     public PublicAPIAttribute([NotNull] string comment)
     {
       Comment = comment;
@@ -383,7 +393,7 @@ namespace Hangfire.Annotations
   /// If the parameter is an enumerable, indicates that it is enumerated
   /// while the method is executed
   /// </summary>
-  [AttributeUsage(AttributeTargets.Parameter, Inherited = true)]
+  [AttributeUsage(AttributeTargets.Parameter)]
   public sealed class InstantHandleAttribute : Attribute { }
 
   /// <summary>
@@ -397,15 +407,15 @@ namespace Hangfire.Annotations
   ///   Multiply(a, b); // Waring: Return value of pure method is not used
   /// }
   /// </code></example>
-  [AttributeUsage(AttributeTargets.Method, Inherited = true)]
+  [AttributeUsage(AttributeTargets.Method)]
   public sealed class PureAttribute : Attribute { }
 
   [AttributeUsage(
     AttributeTargets.Parameter | AttributeTargets.Property |
-    AttributeTargets.Field, Inherited = true)]
+    AttributeTargets.Field)]
   public sealed class HtmlElementAttributesAttribute : Attribute
   {
-    public HtmlElementAttributesAttribute() { }
+    public HtmlElementAttributesAttribute() : this(String.Empty) { }
     public HtmlElementAttributesAttribute([NotNull] string name)
     {
       Name = name;
@@ -416,7 +426,7 @@ namespace Hangfire.Annotations
 
   [AttributeUsage(
     AttributeTargets.Parameter | AttributeTargets.Field |
-    AttributeTargets.Property, Inherited = true)]
+    AttributeTargets.Property)]
   public sealed class HtmlAttributeValueAttribute : Attribute
   {
     public HtmlAttributeValueAttribute([NotNull] string name)

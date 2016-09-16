@@ -2,9 +2,10 @@
 @using System.Linq
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
+@using Hangfire.Dashboard.Resources
 @inherits RazorPage
 @{
-    Layout = new LayoutPage("Queues");
+    Layout = new LayoutPage(Strings.QueuesPage_Title);
 
     var monitor = Storage.GetMonitoringApi();
     var queues = monitor.Queues();
@@ -15,100 +16,107 @@
         @Html.JobsSidebar()
     </div>
     <div class="col-md-9">
-        <h1 class="page-header">Queues</h1>
+        <h1 class="page-header">@Strings.QueuesPage_Title</h1>
 
         @if (queues.Count == 0)
         {
             <div class="alert alert-warning">
-                No queued jobs found. Try to enqueue a job.
+                @Strings.QueuesPage_NoQueues
             </div>
         }
         else
         {
-            <table class="table table-striped">
-                <thead>
-                <tr>
-                    <th>Queue</th>
-                    <th>Length</th>
-                    <th>Fetched</th>
-                    <th>Next jobs</th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach (var queue in queues)
-                {
-                    <tr>
-                        <td>
-                            <a class="label-queue" href="@Url.Queue(queue.Name)">
-                                @queue.Name
-                            </a>
-                        </td>
-                        <td>@queue.Length</td>
-                        <td>
-                            @if (queue.Fetched.HasValue)
-                            {
-                                <a href="@Url.To("/jobs/enqueued/fetched/" + queue.Name)">
-                                    @queue.Fetched
-                                </a>
-                            }
-                            else
-                            {
-                                <em>N/A</em>
-                            }
-                        </td>
-                        <td>
-                            @if (queue.FirstJobs.Count == 0)
-                            {
-                                <em>No jobs queued.</em>
-                            }
-                            else
-                            {
-                                <table class="table table-condensed table-bordered table-inner">
-                                    <thead>
-                                    <tr>
-                                        <th class="min-width">Id</th>
-                                        <th class="min-width">State</th>
-                                        <th>Job</th>
-                                        <th class="align-right min-width">Enqueued</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    @foreach (var job in queue.FirstJobs.Where(j => j.Value != null))
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th style="min-width: 200px;">@Strings.QueuesPage_Table_Queue</th>
+                            <th>@Strings.QueuesPage_Table_Length</th>
+                            <th>@Strings.Common_Fetched</th>
+                            <th>@Strings.QueuesPage_Table_NextsJobs</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var queue in queues)
+                        {
+                            <tr>
+                                <td>@Html.QueueLabel(queue.Name)</td>
+                                <td>@queue.Length</td>
+                                <td>
+                                    @if (queue.Fetched.HasValue)
                                     {
-                                        <tr class="@(!job.Value.InEnqueuedState ? "obsolete-data" : null)">
-                                            <td class="min-width">
-                                                @Html.JobIdLink(job.Key)
-                                                @if (!job.Value.InEnqueuedState)
-                                                {
-                                                    <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
-                                                }
-                                            </td>
-                                            <td class="min-width">
-                                                @Html.StateLabel(job.Value.State)
-                                            </td>
-                                            <td>
-                                                @Html.JobNameLink(job.Key, job.Value.Job)
-                                            </td>
-                                            <td class="align-right min-width">
-                                                @if (job.Value.EnqueuedAt.HasValue)
-                                                {
-                                                    @Html.RelativeTime(job.Value.EnqueuedAt.Value)
-                                                }
-                                                else
-                                                {
-                                                    <em>n/a</em>
-                                                }
-                                            </td>
-                                        </tr>
+                                        <a href="@Url.To("/jobs/enqueued/fetched/" + queue.Name)">
+                                            @queue.Fetched
+                                        </a>
                                     }
-                                    </tbody>
-                                </table>
-                            }
-                        </td>
-                    </tr>
-                }
-                </tbody>
-            </table>
+                                    else
+                                    {
+                                        <em>@Strings.Common_NotAvailable</em>
+                                    }
+                                </td>
+                                <td>
+                                    @if (queue.FirstJobs.Count == 0)
+                                    {
+                                        <em>
+                                            @Strings.QueuesPage_NoJobs
+                                        </em>
+                                    }
+                                    else
+                                    {
+                                        <table class="table table-condensed table-inner">
+                                            <thead>
+                                                <tr>
+                                                    <th class="min-width">@Strings.Common_Id</th>
+                                                    <th class="min-width">@Strings.Common_State</th>
+                                                    <th>@Strings.Common_Job</th>
+                                                    <th class="align-right min-width">@Strings.Common_Enqueued</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var job in queue.FirstJobs)
+                                                {
+                                                    <tr class="@(job.Value == null || !job.Value.InEnqueuedState ? "obsolete-data" : null)">
+                                                        <td class="min-width">
+                                                            @Html.JobIdLink(job.Key)
+                                                            @if (job.Value != null && !job.Value.InEnqueuedState)
+                                                            {
+                                                                <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
+                                                            }
+                                                        </td>
+                                                        @if (job.Value == null)
+                                                        {
+                                                            <td colspan="3"><em>@Strings.Common_JobExpired</em></td>
+                                                        }
+                                                        else
+                                                        {
+                                                            <td class="min-width">
+                                                                @Html.StateLabel(job.Value.State)
+                                                            </td>
+                                                            <td class="word-break">
+                                                                @Html.JobNameLink(job.Key, job.Value.Job)
+                                                            </td>
+                                                            <td class="align-right min-width">
+                                                                @if (job.Value.EnqueuedAt.HasValue)
+                                                                {
+                                                                    @Html.RelativeTime(job.Value.EnqueuedAt.Value)
+                                                                }
+                                                                else
+                                                                {
+                                                                    <em>@Strings.Common_NotAvailable</em>
+                                                                }
+                                                            </td>
+                                                        }
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         }
     </div>
 </div>

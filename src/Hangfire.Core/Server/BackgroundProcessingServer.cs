@@ -16,7 +16,9 @@
 
 using System;
 using System.Collections.Generic;
+#if NETFULL
 using System.Diagnostics;
+#endif
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,10 +44,12 @@ namespace Hangfire.Server
     public sealed class BackgroundProcessingServer : IBackgroundProcess, IDisposable
     {
         public static readonly TimeSpan DefaultShutdownTimeout = TimeSpan.FromSeconds(15);
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.For<BackgroundProcessingServer>();
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+#pragma warning disable 618
         private readonly List<IServerProcess> _processes = new List<IServerProcess>();
+#pragma warning restore 618
 
         private readonly BackgroundProcessingServerOptions _options;
         private readonly Task _bootstrapTask;
@@ -91,10 +95,10 @@ namespace Hangfire.Server
             [NotNull] IDictionary<string, object> properties, 
             [NotNull] BackgroundProcessingServerOptions options)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (processes == null) throw new ArgumentNullException("processes");
-            if (properties == null) throw new ArgumentNullException("properties");
-            if (options == null) throw new ArgumentNullException("options");
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (processes == null) throw new ArgumentNullException(nameof(processes));
+            if (properties == null) throw new ArgumentNullException(nameof(properties));
+            if (options == null) throw new ArgumentNullException(nameof(options));
 
             _options = options;
 
@@ -111,13 +115,20 @@ namespace Hangfire.Server
             _bootstrapTask = WrapProcess(this).CreateTask(context);
         }
 
-        public void Dispose()
+        public void SendStop()
         {
             _cts.Cancel();
+        }
+
+        public void Dispose()
+        {
+            SendStop();
+
+            // TODO: Dispose _cts
 
             if (!_bootstrapTask.Wait(_options.ShutdownTimeout))
             {
-                Logger.WarnFormat("Processing server takes too long to shutdown. Performing ungraceful shutdown.");
+                Logger.Warn("Processing server takes too long to shutdown. Performing ungraceful shutdown.");
             }
         }
 
@@ -156,20 +167,33 @@ namespace Hangfire.Server
         {
             yield return new ServerHeartbeat(_options.HeartbeatInterval);
             yield return new ServerWatchdog(_options.ServerCheckInterval, _options.ServerTimeout);
-        } 
-
-        private static IServerProcess WrapProcess(IServerProcess process)
-        {
-            return new InfiniteLoopProcess(new AutomaticRetryProcess(process));
         }
 
-        private static string GetGloballyUniqueServerId()
+        private string GetGloballyUniqueServerId()
         {
-            return String.Format(
-                "{0}:{1}:{2}",
-                Environment.MachineName.ToLowerInvariant(),
-                Process.GetCurrentProcess().Id,
-                Guid.NewGuid());
+            var serverName = _options.ServerName
+                ?? Environment.GetEnvironmentVariable("COMPUTERNAME")
+                ?? Environment.GetEnvironmentVariable("HOSTNAME");
+
+            var guid = Guid.NewGuid().ToString();
+
+#if NETFULL
+            if (!String.IsNullOrWhiteSpace(serverName))
+            {
+                serverName += ":" + Process.GetCurrentProcess().Id;
+            }
+#endif
+
+            return !String.IsNullOrWhiteSpace(serverName)
+                ? $"{serverName.ToLowerInvariant()}:{guid}"
+                : guid;
+        }
+
+#pragma warning disable 618
+        private static IServerProcess WrapProcess(IServerProcess process)
+#pragma warning restore 618
+        {
+            return new InfiniteLoopProcess(new AutomaticRetryProcess(process));
         }
 
         private static ServerContext GetServerContext(IReadOnlyDictionary<string, object> properties)

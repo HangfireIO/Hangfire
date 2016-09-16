@@ -56,10 +56,12 @@ namespace Hangfire
         
         public abstract IStorageConnection GetConnection();
 
+#pragma warning disable 618
         public virtual IEnumerable<IServerComponent> GetComponents()
         {
             return Enumerable.Empty<IServerComponent>();
         }
+#pragma warning restore 618
 
         public virtual IEnumerable<IStateHandler> GetStateHandlers()
         {

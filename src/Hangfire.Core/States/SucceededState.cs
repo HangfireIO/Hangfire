@@ -61,23 +61,23 @@ namespace Hangfire.States
         /// <summary>
         /// Gets a date/time when the current state instance was created.
         /// </summary>
-        public DateTime SucceededAt { get; private set; }
+        public DateTime SucceededAt { get; }
 
         /// <summary>
         /// Gets the value returned by a job method.
         /// </summary>
-        public object Result { get; private set; }
+        public object Result { get; }
         
         /// <summary>
         /// Gets the total number of milliseconds passed from a job
         /// creation time till the start of the performance.
         /// </summary>
-        public long Latency { get; private set; }
+        public long Latency { get; }
 
         /// <summary>
         /// Gets the total milliseconds elapsed from a processing start.
         /// </summary>
-        public long PerformanceDuration { get; private set; }
+        public long PerformanceDuration { get; }
 
         /// <inheritdoc />
         /// <remarks>
@@ -85,7 +85,7 @@ namespace Hangfire.States
         /// Please see the remarks section of the <see cref="IState.Name">IState.Name</see>
         /// article for the details.
         /// </remarks>
-        public string Name { get { return StateName; } }
+        public string Name => StateName;
 
         /// <inheritdoc />
         public string Reason { get; set; }
@@ -96,7 +96,7 @@ namespace Hangfire.States
         /// Please refer to the <see cref="IState.IsFinal">IState.IsFinal</see> documentation
         /// for the details.
         /// </remarks>
-        public bool IsFinal { get { return true; } }
+        public bool IsFinal => true;
 
         /// <inheritdoc />
         /// <remarks>
@@ -105,7 +105,7 @@ namespace Hangfire.States
         /// <see cref="IState.IgnoreJobLoadException">IState.IgnoreJobLoadException</see>
         /// article.
         /// </remarks>
-        public bool IgnoreJobLoadException { get { return false; } }
+        public bool IgnoreJobLoadException => false;
 
         /// <inheritdoc />
         /// <remarks>
@@ -199,10 +199,8 @@ namespace Hangfire.States
                 transaction.DecrementCounter("stats:succeeded");
             }
 
-            public string StateName
-            {
-                get { return SucceededState.StateName; }
-            }
+            // ReSharper disable once MemberHidesStaticFromOuterClass
+            public string StateName => SucceededState.StateName;
         }
     }
 }

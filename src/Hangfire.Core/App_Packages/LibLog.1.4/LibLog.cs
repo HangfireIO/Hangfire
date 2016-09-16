@@ -27,6 +27,8 @@
 using System.Reflection;
 using Hangfire.Logging.LogProviders;
 
+// ReSharper disable All
+
 namespace Hangfire.Logging
 {
     using System.Collections.Generic;
@@ -288,7 +290,7 @@ namespace Hangfire.Logging
         {
             if (logger == null)
             {
-                throw new ArgumentNullException("logger");
+                throw new ArgumentNullException(nameof(logger));
             }
         }
 
@@ -336,6 +338,7 @@ namespace Hangfire.Logging
             return GetLogger(typeof(T));
         }
 
+#if NETFULL
         /// <summary>
         /// Gets a logger for the current class.
         /// </summary>
@@ -345,6 +348,7 @@ namespace Hangfire.Logging
             var stackFrame = new StackFrame(1, false);
             return GetLogger(stackFrame.GetMethod().DeclaringType);
         }
+#endif
 
         /// <summary>
         /// Gets a logger for the specified type.
@@ -386,9 +390,11 @@ namespace Hangfire.Logging
             new Tuple<IsLoggerAvailable, CreateLogProvider>(SerilogLogProvider.IsLoggerAvailable, () => new SerilogLogProvider()),
             new Tuple<IsLoggerAvailable, CreateLogProvider>(NLogLogProvider.IsLoggerAvailable, () => new NLogLogProvider()),
             new Tuple<IsLoggerAvailable, CreateLogProvider>(Log4NetLogProvider.IsLoggerAvailable, () => new Log4NetLogProvider()),
+#if NETFULL
             new Tuple<IsLoggerAvailable, CreateLogProvider>(EntLibLogProvider.IsLoggerAvailable, () => new EntLibLogProvider()),
             new Tuple<IsLoggerAvailable, CreateLogProvider>(LoupeLogProvider.IsLoggerAvailable, () => new LoupeLogProvider()),
             new Tuple<IsLoggerAvailable, CreateLogProvider>(ElmahLogProvider.IsLoggerAvailable, () => new ElmahLogProvider()),
+#endif
         };
 
         private static ILogProvider ResolveLogProvider()
@@ -470,7 +476,6 @@ namespace Hangfire.Logging.LogProviders
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Text;
-    using System.Threading;
 
     public class NLogLogProvider : ILogProvider
     {
@@ -510,7 +515,7 @@ namespace Hangfire.Logging.LogProviders
         private static Func<string, object> GetGetLoggerMethodCall()
         {
             Type logManagerType = GetLogManagerType();
-            MethodInfo method = logManagerType.GetMethod("GetLogger", new[] { typeof(string) });
+            MethodInfo method = logManagerType.GetRuntimeMethod("GetLogger", new[] { typeof(string) });
             ParameterExpression nameParam = Expression.Parameter(typeof(string), "name");
             MethodCallExpression methodCall = Expression.Call(null, method, new Expression[] { nameParam });
             return Expression.Lambda<Func<string, object>>(methodCall, new[] { nameParam }).Compile();
@@ -692,7 +697,7 @@ namespace Hangfire.Logging.LogProviders
         private static Func<string, object> GetGetLoggerMethodCall()
         {
             Type logManagerType = GetLogManagerType();
-            MethodInfo method = logManagerType.GetMethod("GetLogger", new[] { typeof(string) });
+            MethodInfo method = logManagerType.GetRuntimeMethod("GetLogger", new[] { typeof(string) });
             ParameterExpression nameParam = Expression.Parameter(typeof(string), "name");
             MethodCallExpression methodCall = Expression.Call(null, method, new Expression[] { nameParam });
             return Expression.Lambda<Func<string, object>>(methodCall, new[] { nameParam }).Compile();
@@ -822,6 +827,7 @@ namespace Hangfire.Logging.LogProviders
         }
     }
 
+#if NETFULL
     public class EntLibLogProvider : ILogProvider
     {
         private const string TypeTemplate = "Microsoft.Practices.EnterpriseLibrary.Logging.{0}, Microsoft.Practices.EnterpriseLibrary.Logging";
@@ -978,6 +984,7 @@ namespace Hangfire.Logging.LogProviders
             }
         }
     }
+#endif
 
     public class SerilogLogProvider : ILogProvider
     {
@@ -1017,7 +1024,7 @@ namespace Hangfire.Logging.LogProviders
         private static Func<string, object> GetForContextMethodCall()
         {
             Type logManagerType = GetLogManagerType();
-            MethodInfo method = logManagerType.GetMethod("ForContext", new[] { typeof(string), typeof(object), typeof(bool) });
+            MethodInfo method = logManagerType.GetRuntimeMethod("ForContext", new[] { typeof(string), typeof(object), typeof(bool) });
             ParameterExpression propertyNameParam = Expression.Parameter(typeof(string), "propertyName");
             ParameterExpression valueParam = Expression.Parameter(typeof(object), "value");
             ParameterExpression destructureObjectsParam = Expression.Parameter(typeof(bool), "destructureObjects");
@@ -1061,7 +1068,7 @@ namespace Hangfire.Logging.LogProviders
 
                 // Func<object, object, bool> isEnabled = (logger, level) => { return ((SeriLog.ILogger)logger).IsEnabled(level); }
                 var loggerType = Type.GetType("Serilog.ILogger, Serilog");
-                MethodInfo isEnabledMethodInfo = loggerType.GetMethod("IsEnabled");
+                MethodInfo isEnabledMethodInfo = loggerType.GetRuntimeMethod("IsEnabled", new Type[] { logEventTypeType });
                 ParameterExpression instanceParam = Expression.Parameter(typeof(object));
                 UnaryExpression instanceCast = Expression.Convert(instanceParam, loggerType);
                 ParameterExpression levelParam = Expression.Parameter(typeof(object));
@@ -1075,7 +1082,7 @@ namespace Hangfire.Logging.LogProviders
 
                 // Action<object, object, string> Write =
                 // (logger, level, message) => { ((SeriLog.ILoggerILogger)logger).Write(level, message, new object[]); }
-                MethodInfo writeMethodInfo = loggerType.GetMethod("Write", new[] { logEventTypeType, typeof(string), typeof(object[]) });
+                MethodInfo writeMethodInfo = loggerType.GetRuntimeMethod("Write", new[] { logEventTypeType, typeof(string), typeof(object[]) });
                 ParameterExpression messageParam = Expression.Parameter(typeof(string));
                 ConstantExpression propertyValuesParam = Expression.Constant(new object[0]);
                 MethodCallExpression writeMethodExp = Expression.Call(instanceCast, writeMethodInfo, levelCast, messageParam, propertyValuesParam);
@@ -1088,7 +1095,7 @@ namespace Hangfire.Logging.LogProviders
 
                 // Action<object, object, string, Exception> WriteException =
                 // (logger, level, exception, message) => { ((ILogger)logger).Write(level, exception, message, new object[]); }
-                MethodInfo writeExceptionMethodInfo = loggerType.GetMethod("Write", new[]
+                MethodInfo writeExceptionMethodInfo = loggerType.GetRuntimeMethod("Write", new[]
                 {
                     logEventTypeType,
                     typeof(Exception), 
@@ -1228,6 +1235,7 @@ namespace Hangfire.Logging.LogProviders
         }
     }
 
+#if NETFULL
     public class LoupeLogProvider : ILogProvider
     {
         private static bool _providerIsAvailableOverride = true;
@@ -1331,7 +1339,7 @@ namespace Hangfire.Logging.LogProviders
                     case LogLevel.Fatal:
                         return TraceEventType.Critical;
                     default:
-                        throw new ArgumentOutOfRangeException("logLevel");
+                        throw new ArgumentOutOfRangeException(nameof(logLevel));
                 }
             }
         }
@@ -1353,6 +1361,7 @@ namespace Hangfire.Logging.LogProviders
             params object[] args
             );
     }
+#endif
 
     public class ColouredConsoleLogProvider : ILogProvider
     {
@@ -1442,7 +1451,7 @@ namespace Hangfire.Logging.LogProviders
 
             protected void Write(LogLevel logLevel, string message, Exception e = null)
             {
-                var formattedMessage = MessageFormatter(this._name, logLevel, message, e);
+                var formattedMessage = MessageFormatter(_name, logLevel, message, e);
                 ConsoleColor color;
 
                 if (Colors.TryGetValue(logLevel, out color))
@@ -1469,6 +1478,7 @@ namespace Hangfire.Logging.LogProviders
         }
     }
 
+#if NETFULL
     public class ElmahLogProvider : ILogProvider
     {
         private static bool _providerIsAvailableOverride = true;
@@ -1520,9 +1530,8 @@ namespace Hangfire.Logging.LogProviders
 
         private static Type GetHttpContextType()
         {
-            return Type.GetType(String.Format(
-                "System.Web.HttpContext, System.Web, Version={0}, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a",
-                Environment.Version));
+            return Type.GetType(
+                $"System.Web.HttpContext, System.Web, Version={Environment.Version}, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
         }
 
         private static Type GetErrorType()
@@ -1580,4 +1589,5 @@ namespace Hangfire.Logging.LogProviders
             }
         }
     }
+#endif
 }

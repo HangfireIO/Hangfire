@@ -5,15 +5,18 @@ using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
+#if NETFULL
 using Moq.Sequences;
+#endif
 using Xunit;
+
+// ReSharper disable AssignNullToNotNullAttribute
 
 namespace Hangfire.Core.Tests.States
 {
     public class StateMachineFacts
     {
         private const string OldStateName = "OldState";
-        private const string StateName = "State";
         private const string JobId = "job";
 
         private readonly List<object> _filters = new List<object>();
@@ -82,7 +85,8 @@ namespace Hangfire.Core.Tests.States
                 context.CurrentState == _context.OldStateName)));
         }
 
-        [Fact, Sequence]
+#if NETFULL
+        [Fact, SequenceAttribute]
         public void ApplyState_CallsElectionFilters()
         {
             // Arrange
@@ -101,6 +105,7 @@ namespace Hangfire.Core.Tests.States
 
             // Assert - Sequence
         }
+#endif
 
         [Fact]
         public void ApplyState_AddsJobHistory_ForTraversedStates()
@@ -120,6 +125,7 @@ namespace Hangfire.Core.Tests.States
             _context.Transaction.Verify(x => x.AddJobState(JobId, _context.NewState.Object));
         }
 
+#if NETFULL
         [Fact, Sequence]
         public void ApplyState_CallsStateUnappliedFilters_BeforeCallingInnerStateMachine()
         {
@@ -162,6 +168,7 @@ namespace Hangfire.Core.Tests.States
 
             // Assert - Sequence
         }
+#endif
         
         private StateMachine CreateStateMachine()
         {

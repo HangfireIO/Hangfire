@@ -1,7 +1,5 @@
 ﻿using System;
 using Hangfire.States;
-using Hangfire.Storage;
-using Moq;
 
 namespace Hangfire.Core.Tests
 {
@@ -19,9 +17,6 @@ namespace Hangfire.Core.Tests
 
         public ApplyStateContextMock ApplyContext { get; set; }
 
-        public ElectStateContext Object
-        {
-            get { return _context.Value; }
-        }
+        public ElectStateContext Object => _context.Value;
     }
 }

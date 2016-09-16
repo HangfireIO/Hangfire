@@ -40,7 +40,7 @@ namespace Hangfire.Common
         {
             if (instance == null)
             {
-                throw new ArgumentNullException("instance");
+                throw new ArgumentNullException(nameof(instance));
             }
 
             if (order == null)

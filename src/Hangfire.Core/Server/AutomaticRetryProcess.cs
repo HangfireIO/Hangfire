@@ -18,6 +18,8 @@ using System;
 using Hangfire.Annotations;
 using Hangfire.Logging;
 
+#pragma warning disable 618
+
 namespace Hangfire.Server
 {
     internal class AutomaticRetryProcess : IBackgroundProcessWrapper
@@ -30,7 +32,7 @@ namespace Hangfire.Server
 
         public AutomaticRetryProcess([NotNull] IServerProcess innerProcess)
         {
-            if (innerProcess == null) throw new ArgumentNullException("innerProcess");
+            if (innerProcess == null) throw new ArgumentNullException(nameof(innerProcess));
 
             _innerProcess = innerProcess;
             _logger = LogProvider.GetLogger(_innerProcess.GetProcessType());
@@ -44,10 +46,7 @@ namespace Hangfire.Server
         public TimeSpan MaxAttemptDelay { get; set; }
         public Func<int, TimeSpan> DelayCallback { get; set; }
 
-        public IServerProcess InnerProcess
-        {
-            get { return _innerProcess; }
-        }
+        public IServerProcess InnerProcess => _innerProcess;
 
         public void Execute(BackgroundProcessContext context)
         {
@@ -58,12 +57,13 @@ namespace Hangfire.Server
                     _innerProcess.Execute(context);
                     return;
                 }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
                 catch (Exception ex)
                 {
+                    if (ex is OperationCanceledException && context.IsShutdownRequested)
+                    {
+                        throw;
+                    }
+
                     // Break the loop after the retry attempts number exceeded.
                     if (i >= MaxRetryAttempts - 1) throw;
 
@@ -72,12 +72,8 @@ namespace Hangfire.Server
 
                     _logger.Log(
                         logLevel,
-                        () => String.Format(
-                            "Error occurred during execution of '{0}' process. Execution will be retried (attempt {1} of {2}) in {3} seconds.",
-                            _innerProcess,
-                            i + 1,
-                            MaxRetryAttempts,
-                            nextTry),
+                        // ReSharper disable once AccessToModifiedClosure
+                        () => $"Error occurred during execution of '{_innerProcess}' process. Execution will be retried (attempt {i + 1} of {MaxRetryAttempts}) in {nextTry} seconds.",
                         ex);
 
                     context.Wait(nextTry);

@@ -27,7 +27,7 @@ namespace Hangfire.States
 
         public void AddRange(IEnumerable<IStateHandler> handlers)
         {
-            if (handlers == null) throw new ArgumentNullException("handlers");
+            if (handlers == null) throw new ArgumentNullException(nameof(handlers));
 
             foreach (var handler in handlers)
             {
@@ -37,8 +37,8 @@ namespace Hangfire.States
 
         public void AddHandler(IStateHandler handler)
         {
-            if (handler == null) throw new ArgumentNullException("handler");
-            if (handler.StateName == null) throw new ArgumentException("The StateName property of the given state handler must be non null.", "handler");
+            if (handler == null) throw new ArgumentNullException(nameof(handler));
+            if (handler.StateName == null) throw new ArgumentException("The StateName property of the given state handler must be non null.", nameof(handler));
 
             if (!_handlers.ContainsKey(handler.StateName))
             {

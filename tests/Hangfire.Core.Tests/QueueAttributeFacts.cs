@@ -10,8 +10,10 @@ namespace Hangfire.Core.Tests
 
         public QueueAttributeFacts()
         {
-            _context = new ElectStateContextMock();
-            _context.ApplyContext.NewStateObject = new EnqueuedState("queue");
+            _context = new ElectStateContextMock
+            {
+                ApplyContext = { NewStateObject = new EnqueuedState("queue") }
+            };
         }
 
         [Fact]
@@ -34,10 +36,13 @@ namespace Hangfire.Core.Tests
         public void OnStateElection_DoesNotDoAnything_IfStateIsNotEnqueuedState()
         {
             var filter = new QueueAttribute("override");
-            var context = new ElectStateContextMock();
-            context.ApplyContext.NewState = new Mock<IState>();
+            var context = new ElectStateContextMock
+            {
+                ApplyContext = { NewState = new Mock<IState>() }
+            };
 
-            Assert.DoesNotThrow(() => filter.OnStateElection(context.Object));
+            // Does not throw
+            filter.OnStateElection(context.Object);
         }
     }
 }

@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyProduct("Hangfire")]
 [assembly: AssemblyCompany("Sergey Odinokov")]
-[assembly: AssemblyCopyright("Copyright © 2013-2015 Sergey Odinokov")]
+[assembly: AssemblyCopyright("Copyright © 2013-2016 Sergey Odinokov")]
 [assembly: AssemblyCulture("")]
 
 [assembly: ComVisible(false)]
 [assembly: CLSCompliant(false)]
 
 // Don't edit manually! Use `build.bat version` command instead!
-[assembly: AssemblyVersion("1.5.3")]
+[assembly: AssemblyVersion("1.6.5")]

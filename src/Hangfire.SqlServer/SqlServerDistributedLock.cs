@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Threading;
 using Dapper;
 using Hangfire.Annotations;
@@ -31,6 +30,12 @@ namespace Hangfire.SqlServer
         private const string LockOwner = "Session";
         private const int CommandTimeoutAdditionSeconds = 1;
 
+        // Connections to SQL Azure Database that are idle for 30 minutes 
+        // or longer will be terminated. And since we are using separate
+        // connection for a distributed lock, we'd like to prevent Resource
+        // Governor from terminating it.
+        private static readonly TimeSpan KeepAliveInterval = TimeSpan.FromMinutes(1);
+
         private static readonly IDictionary<int, string> LockErrorMessages
             = new Dictionary<int, string>
             {
@@ -43,25 +48,35 @@ namespace Hangfire.SqlServer
         private static readonly ThreadLocal<Dictionary<string, int>> AcquiredLocks
             = new ThreadLocal<Dictionary<string, int>>(() => new Dictionary<string, int>()); 
 
-        private readonly IDbConnection _connection;
+        private IDbConnection _connection;
         private readonly SqlServerStorage _storage;
         private readonly string _resource;
+        private readonly Timer _timer;
+        private readonly object _lockObject = new object();
 
         private bool _completed;
 
         public SqlServerDistributedLock([NotNull] SqlServerStorage storage, [NotNull] string resource, TimeSpan timeout)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (String.IsNullOrEmpty(resource)) throw new ArgumentNullException("resource");
-            if ((timeout.TotalSeconds + CommandTimeoutAdditionSeconds) > Int32.MaxValue) throw new ArgumentException(string.Format("The timeout specified is too large. Please supply a timeout equal to or less than {0} seconds", Int32.MaxValue - CommandTimeoutAdditionSeconds), "timeout");
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (String.IsNullOrEmpty(resource)) throw new ArgumentNullException(nameof(resource));
+            if (timeout.TotalSeconds + CommandTimeoutAdditionSeconds > Int32.MaxValue) throw new ArgumentException(
+                $"The timeout specified is too large. Please supply a timeout equal to or less than {Int32.MaxValue - CommandTimeoutAdditionSeconds} seconds", nameof(timeout));
 
             _storage = storage;
             _resource = resource;
-            _connection = storage.CreateAndOpenConnection();
 
             if (!AcquiredLocks.Value.ContainsKey(_resource) || AcquiredLocks.Value[_resource] == 0)
             {
+                _connection = storage.CreateAndOpenConnection();
+
                 Acquire(_connection, _resource, timeout);
+
+                if (!_storage.IsExistingConnection(_connection))
+                {
+                    _timer = new Timer(ExecuteKeepAliveQuery, null, KeepAliveInterval, KeepAliveInterval);
+                }
+
                 AcquiredLocks.Value[_resource] = 1;
             }
             else
@@ -82,14 +97,44 @@ namespace Hangfire.SqlServer
 
             if (AcquiredLocks.Value[_resource] != 0) return;
 
-            try
+            lock (_lockObject)
             {
-                AcquiredLocks.Value.Remove(_resource);
-                Release(_connection, _resource);
+                // Timer callback may be invoked after the Dispose method call,
+                // so we are using lock to avoid unsynchronized calls.
+
+                try
+                {
+                    AcquiredLocks.Value.Remove(_resource);
+
+                    _timer?.Dispose();
+
+                    Release(_connection, _resource);
+                }
+                finally
+                {
+                    _storage.ReleaseConnection(_connection);
+                    _connection = null;
+                }
             }
-            finally
+        }
+
+        private void ExecuteKeepAliveQuery(object obj)
+        {
+            lock (_lockObject)
             {
-                _storage.ReleaseConnection(_connection);
+                try
+                {
+                    _connection?.Execute("SELECT 1;");
+                }
+                catch
+                {
+                    // Connection is broken. This means that distributed lock
+                    // was released, and we can't guarantee the safety property
+                    // for the code that is wrapped with this block. So it was
+                    // a bad idea to have a separate connection for just
+                    // distributed lock.
+                    // TODO: Think about distributed locks and connections.
+                }
             }
         }
 
@@ -100,7 +145,7 @@ namespace Hangfire.SqlServer
             parameters.Add("@DbPrincipal", "public");
             parameters.Add("@LockMode", LockMode);
             parameters.Add("@LockOwner", LockOwner);
-            parameters.Add("@LockTimeout", timeout.TotalMilliseconds);
+            parameters.Add("@LockTimeout", (int)timeout.TotalMilliseconds);
             parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
 
             // Ensuring the timeout for the command is longer than the timeout specified for the stored procedure.
@@ -122,12 +167,7 @@ namespace Hangfire.SqlServer
                 }
 
                 throw new SqlServerDistributedLockException(
-                    String.Format(
-                    "Could not place a lock on the resource '{0}': {1}.",
-                    resource,
-                    LockErrorMessages.ContainsKey(lockResult)
-                        ? LockErrorMessages[lockResult]
-                        : String.Format("Server returned the '{0}' error.", lockResult)));
+                    $"Could not place a lock on the resource '{resource}': {(LockErrorMessages.ContainsKey(lockResult) ? LockErrorMessages[lockResult] : $"Server returned the '{lockResult}' error.")}.");
             }
         }
 
@@ -148,10 +188,7 @@ namespace Hangfire.SqlServer
             if (releaseResult < 0)
             {
                 throw new SqlServerDistributedLockException(
-                    String.Format(
-                        "Could not release a lock on the resource '{0}': Server returned the '{1}' error.",
-                        resource,
-                        releaseResult));
+                    $"Could not release a lock on the resource '{resource}': Server returned the '{releaseResult}' error.");
             }
         }
     }

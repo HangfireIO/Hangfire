@@ -40,20 +40,20 @@ namespace Hangfire.Dashboard
 
         public string BasePageUrl { get; set; }
 
-        public int FromRecord { get; private set; }
-        public int RecordsPerPage { get; private set; }
-        public int CurrentPage { get; private set; }
+        public int FromRecord { get; }
+        public int RecordsPerPage { get; }
+        public int CurrentPage { get; }
 
-        public int TotalPageCount { get; private set; }
-        public long TotalRecordCount { get; private set; }
+        public int TotalPageCount { get; }
+        public long TotalRecordCount { get; }
 
-        internal ICollection<Item> PagerItems { get; private set; }
+        internal ICollection<Item> PagerItems { get; }
 
         public string PageUrl(int page)
         {
             if (page < 1 || page > TotalPageCount) return "#";
 
-            return BasePageUrl + "?from=" + ((page - 1) * RecordsPerPage) + "&count=" + RecordsPerPage;
+            return BasePageUrl + "?from=" + (page - 1) * RecordsPerPage + "&count=" + RecordsPerPage;
         }
 
         public string RecordsPerPageUrl(int perPage)
@@ -65,7 +65,7 @@ namespace Hangfire.Dashboard
         private ICollection<Item> GenerateItems()
         {
             // start page index
-            _startPageIndex = CurrentPage - (PageItemsCount / 2);
+            _startPageIndex = CurrentPage - PageItemsCount / 2;
             if (_startPageIndex + PageItemsCount > TotalPageCount)
                 _startPageIndex = TotalPageCount + 1 - PageItemsCount;
             if (_startPageIndex < 1)
@@ -156,9 +156,9 @@ namespace Hangfire.Dashboard
                 Type = type;
             }
 
-            public int PageIndex { get; private set; }
-            public bool Disabled { get; private set; }
-            public ItemType Type { get; private set; }
+            public int PageIndex { get; }
+            public bool Disabled { get; }
+            public ItemType Type { get; }
         }
 
         internal enum ItemType

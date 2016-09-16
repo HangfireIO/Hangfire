@@ -1,16 +1,20 @@
 ﻿@* Generator: Template TypeVisibility: Public GeneratePrettyNames: True *@
 @using System
+@using System.Globalization
+@using System.Reflection
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
+@using Hangfire.Dashboard.Resources
 @inherits RazorPage
 <!DOCTYPE html>
-<html lang="en">
+<html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
 <head>
     <title>@Title - Hangfire</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta charset="utf-8" />
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="@Url.To("/css")" />
+    @{ var version = GetType().GetTypeInfo().Assembly.GetName().Version; }
+    <link rel="stylesheet" href="@Url.To($"/css{version.Major}{version.Minor}{version.Build}")">
 </head>
     <body>
         <!-- Wrap all page content here -->
@@ -34,7 +38,7 @@
                                 <li>
                                     <a href="@AppPath">
                                         <span class="glyphicon glyphicon-log-out"></span>
-                                        Back to site
+                                        @Strings.LayoutPage_Back
                                     </a>
                                 </li>
                             </ul>
@@ -54,16 +58,12 @@
             <div class="container">
                 <ul class="list-inline credit">
                     <li>
-                        <a href="http://hangfire.io/" target="_blank">Hangfire
-                            @{
-                                var version = GetType().Assembly.GetName().Version;
-                            }
-                            @String.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build)
+                        <a href="http://hangfire.io/" target="_blank">Hangfire @($"{version.Major}.{version.Minor}.{version.Build}")
                         </a>
                     </li>
                     <li>@Storage</li>
-                    <li>Time: @DateTime.UtcNow GMT</li>
-                    <li>Generated: @(GenerationTime.Elapsed.TotalMilliseconds.ToString("N"))ms</li>
+                    <li>@String.Format(Strings.LayoutPage_Footer_Time, DateTime.UtcNow)</li>
+                    <li>@String.Format(Strings.LayoutPage_Footer_Generatedms, GenerationTime.Elapsed.TotalMilliseconds.ToString("N"))</li>
                 </ul>
             </div>
         </div>
@@ -71,11 +71,12 @@
         <script>
             (function (hangFire) {
                 hangFire.config = {
-                    pollInterval: 2000,
-                    pollUrl: '@(Url.To("/stats"))'
+                    pollInterval: @StatsPollingInterval,
+                    pollUrl: '@(Url.To("/stats"))',
+                    locale: '@CultureInfo.CurrentUICulture'
                 };
             })(window.Hangfire = window.Hangfire || {});
         </script>
-        <script src="@Url.To("/js")"></script>
+        <script src="@Url.To($"/js{version.Major}{version.Minor}{version.Build}")"></script>
     </body>
 </html>

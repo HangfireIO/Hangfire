@@ -3,9 +3,10 @@
 @using System.Linq
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
+@using Hangfire.Dashboard.Resources
 @inherits RazorPage
 @{
-    Layout = new LayoutPage("Processing Jobs");
+    Layout = new LayoutPage(Strings.ProcessingJobsPage_Title);
 
     int from, perPage;
 
@@ -23,12 +24,12 @@
         @Html.JobsSidebar()
     </div>
     <div class="col-md-9">
-        <h1 class="page-header">Processing Jobs</h1>
+        <h1 class="page-header">@Strings.ProcessingJobsPage_Title</h1>
 
         @if (pager.TotalPageCount == 0)
         {
             <div class="alert alert-info">
-                No jobs are being processed right now.
+                @Strings.ProcessingJobsPage_NoJobs
             </div>
         }
         else
@@ -37,74 +38,76 @@
                 <div class="btn-toolbar btn-toolbar-top">
                     <button class="js-jobs-list-command btn btn-sm btn-primary"
                             data-url="@Url.To("/jobs/processing/requeue")"
-                            data-loading-text="Enqueueing..."
+                            data-loading-text="@Strings.Common_Enqueueing"
                             disabled="disabled">
                         <span class="glyphicon glyphicon-repeat"></span>
-                        Requeue jobs
+                        @Strings.Common_RequeueJobs
                     </button>
 
                     <button class="js-jobs-list-command btn btn-sm btn-default"
                             data-url="@Url.To("/jobs/processing/delete")"
-                            data-loading-text="Deleting..."
-                            data-confirm="Do you really want to DELETE ALL selected jobs?"
+                            data-loading-text="@Strings.Common_Deleting"
+                            data-confirm="@Strings.Common_DeleteConfirm"
                             disabled="disabled">
                         <span class="glyphicon glyphicon-remove"></span>
-                        Delete selected
+                        @Strings.Common_DeleteSelected
                     </button>
 
                     @Html.PerPageSelector(pager)
                 </div>
 
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th class="min-width">
-                            <input type="checkbox" class="js-jobs-list-select-all"/>
-                        </th>
-                        <th class="min-width">Id</th>
-                        <th class="min-width">Server</th>
-                        <th>Job</th>
-                        <th class="align-right">Started</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach (var job in processingJobs)
-                    {
-                        <tr class="js-jobs-list-row @(!job.Value.InProcessingState ? "obsolete-data" : null) @(job.Value.InProcessingState ? "hover" : null)">
-                            <td>
-                                @if (job.Value.InProcessingState)
-                                {
-                                    <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
-                                }
-                            </td>
-                            <td class="min-width">
-                                @Html.JobIdLink(job.Key)
-                                @if (!job.Value.InProcessingState)
-                                {
-                                    <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
-                                }
-                            </td>
-                            <td class="min-width">
-                                @job.Value.ServerId.ToUpperInvariant()
-                            </td>
-                            <td>
-                                @if (servers.All(x => x.Name != job.Value.ServerId || x.Heartbeat < DateTime.UtcNow.AddMinutes(-1)))
-                                {
-                                    <span title="Looks like the job was aborted" class="glyphicon glyphicon-warning-sign" style="font-size: 10px;"></span>
-                                }
-                                
-                                @Html.JobNameLink(job.Key, job.Value.Job)
-                            </td>
-                            <td class="align-right">
-                                @if (job.Value.StartedAt.HasValue)
-                                {
-                                    @Html.RelativeTime(job.Value.StartedAt.Value)
-                                }
-                            </td>
-                        </tr>
-                    }
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="min-width">
+                                    <input type="checkbox" class="js-jobs-list-select-all" />
+                                </th>
+                                <th class="min-width">@Strings.Common_Id</th>
+                                <th class="min-width">@Strings.Common_Server</th>
+                                <th>@Strings.Common_Job</th>
+                                <th class="align-right">@Strings.ProcessingJobsPage_Table_Started</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var job in processingJobs)
+                            {
+                                <tr class="js-jobs-list-row @(!job.Value.InProcessingState ? "obsolete-data" : null) @(job.Value.InProcessingState ? "hover" : null)">
+                                    <td>
+                                        @if (job.Value.InProcessingState)
+                                        {
+                                            <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
+                                        }
+                                    </td>
+                                    <td class="min-width">
+                                        @Html.JobIdLink(job.Key)
+                                        @if (!job.Value.InProcessingState)
+                                        {
+                                            <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
+                                        }
+                                    </td>
+                                    <td class="min-width">
+                                        @Html.ServerId(job.Value.ServerId)
+                                    </td>
+                                    <td class="word-break">
+                                        @if (servers.All(x => x.Name != job.Value.ServerId || x.Heartbeat < DateTime.UtcNow.AddMinutes(-1)))
+                                        {
+                                            <span title="@Strings.ProcessingJobsPage_Aborted" class="glyphicon glyphicon-warning-sign" style="font-size: 10px;"></span>
+                                        }
+
+                                        @Html.JobNameLink(job.Key, job.Value.Job)
+                                    </td>
+                                    <td class="align-right">
+                                        @if (job.Value.StartedAt.HasValue)
+                                        {
+                                            @Html.RelativeTime(job.Value.StartedAt.Value)
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
 
                 @Html.Paginator(pager)
             </div>
