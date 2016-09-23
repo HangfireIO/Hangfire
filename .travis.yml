@@ -50,7 +50,7 @@ install:
 
 # Run the build script
 script:
-  - travis_retry dotnet restore
+  - travis_retry dotnet restore --disable-parallel
   - dotnet test tests/Hangfire.Core.Tests -verbose
  
 # Tests on Mono disabled – waiting for https://github.com/NuGet/Home/issues/3085
