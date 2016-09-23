@@ -241,7 +241,7 @@ namespace Hangfire
         {
         }
 
-        private struct Continuation
+        public struct Continuation
         {
             public string JobId { get; set; }
             public JobContinuationOptions Options { get; set; }
