@@ -78,14 +78,14 @@ namespace Hangfire.Dashboard
                         if (options.AuthorizationFilters.Any(filter => !filter.Authorize(owinContext.Environment)))
 #pragma warning restore 618
                         {
-                            return Forbidden(owinContext);
+                            return Unauthorized(owinContext);
                         }
                     }
                     else
                     {
                         if (options.Authorization.Any(filter => !filter.Authorize(context)))
                         {
-                            return Forbidden(owinContext);
+                            return Unauthorized(owinContext);
                         }
                     }
 
@@ -102,16 +102,13 @@ namespace Hangfire.Dashboard
                 };
         }
 
-        private static async Task Forbidden(IOwinContext owinContext)
+        private static Task Unauthorized(IOwinContext owinContext)
         {
-            // If status code has a non-default value, then it was changed
-            // by one of authorization filters. In this case, we should
-            // leave everything as is.
-            if (owinContext.Response.StatusCode == 200)
-            {
-                owinContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
-                await owinContext.Response.WriteAsync("403 Forbidden");
-            }
+            owinContext.Response.StatusCode = owinContext.Authentication.User.Identity.IsAuthenticated
+                ? (int)HttpStatusCode.Forbidden
+                : (int)HttpStatusCode.Unauthorized;
+
+            return Task.FromResult(0);
         }
     }
 }
