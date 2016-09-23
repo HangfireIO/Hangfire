@@ -16,7 +16,6 @@
     
 1.6.5
 • Changed – Default upper limit of worker number is 20.
-• Changed – Return "403 Forbidden" instead of "401 Unauthorized".
 • Changed – Default value for DashboardJobListLimit is not 10000.
 • Fixed – Deserialization exception in continuations, when TypeNameHandling.All option is used.
 • Fixed – I18N is not working, because there are no localized resources in NuGet packages.
