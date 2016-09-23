@@ -1,0 +1,524 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AwaitingJobsPage_ContinuationsWarning_Text" xml:space="preserve">
+    <value>Don't worry, continuations are working as expected. But your current job storage does not support some queries required to show this page. Please try to update your storage or wait until the full command set is implemented.</value>
+  </data>
+  <data name="AwaitingJobsPage_ContinuationsWarning_Title" xml:space="preserve">
+    <value>作业继续执行中，但是无法显示该页面</value>
+  </data>
+  <data name="AwaitingJobsPage_NoJobs" xml:space="preserve">
+    <value>没有等待中的作业</value>
+  </data>
+  <data name="AwaitingJobsPage_Table_Options" xml:space="preserve">
+    <value>选项</value>
+  </data>
+  <data name="AwaitingJobsPage_Table_Parent" xml:space="preserve">
+    <value>父级</value>
+  </data>
+  <data name="AwaitingJobsPage_Title" xml:space="preserve">
+    <value>等待中的作业</value>
+  </data>
+  <data name="Common_Created" xml:space="preserve">
+    <value>创建</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="Common_DeleteConfirm" xml:space="preserve">
+    <value>您确定要删除所选的全部作业吗？</value>
+  </data>
+  <data name="Common_Deleting" xml:space="preserve">
+    <value>删除中...</value>
+  </data>
+  <data name="Common_DeleteSelected" xml:space="preserve">
+    <value>删除选中</value>
+  </data>
+  <data name="Common_EnqueueButton_Text" xml:space="preserve">
+    <value>队列作业</value>
+  </data>
+  <data name="Common_Enqueueing" xml:space="preserve">
+    <value>加入队列中...</value>
+  </data>
+  <data name="Common_Fetched" xml:space="preserve">
+    <value>获取到</value>
+  </data>
+  <data name="Common_Id" xml:space="preserve">
+    <value>编号</value>
+  </data>
+  <data name="Common_Job" xml:space="preserve">
+    <value>作业</value>
+  </data>
+  <data name="Common_JobExpired" xml:space="preserve">
+    <value>作业过期.</value>
+  </data>
+  <data name="Common_JobStateChanged_Text" xml:space="preserve">
+    <value>作业状态已经发生变化</value>
+  </data>
+  <data name="Common_LessDetails" xml:space="preserve">
+    <value>收起...</value>
+  </data>
+  <data name="Common_MoreDetails" xml:space="preserve">
+    <value>更多...</value>
+  </data>
+  <data name="Common_NotAvailable" xml:space="preserve">
+    <value>N/A</value>
+  </data>
+  <data name="Common_PeriodDay" xml:space="preserve">
+    <value>天</value>
+  </data>
+  <data name="Common_PeriodWeek" xml:space="preserve">
+    <value>周</value>
+  </data>
+  <data name="Common_Reason" xml:space="preserve">
+    <value>原因</value>
+  </data>
+  <data name="Common_RequeueJobs" xml:space="preserve">
+    <value>重新加入队列</value>
+  </data>
+  <data name="Common_Retry" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="Common_Server" xml:space="preserve">
+    <value>服务器</value>
+  </data>
+  <data name="Common_State" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="Common_Unknown" xml:space="preserve">
+    <value>未知</value>
+  </data>
+  <data name="DeletedJobsPage_NoJobs" xml:space="preserve">
+    <value>没有找到任何已经删除的作业</value>
+  </data>
+  <data name="DeletedJobsPage_Table_Deleted" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="DeletedJobsPage_Title" xml:space="preserve">
+    <value>删除作业</value>
+  </data>
+  <data name="EnqueuedJobsPage_NoJobs" xml:space="preserve">
+    <value>没有任何作业</value>
+  </data>
+  <data name="EnqueuedJobsPage_Title" xml:space="preserve">
+    <value>队列作业</value>
+  </data>
+  <data name="FailedJobsPage_FailedJobsNotExpire_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;Failed jobs do not become expired&lt;/strong&gt; to allow you to re-queue them without any
+                time pressure. You should re-queue or delete them manually, or apply &lt;code&gt;AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)&lt;/code&gt;
+                attribute to delete them automatically.</value>
+  </data>
+  <data name="FailedJobsPage_NoJobs" xml:space="preserve">
+    <value>没有失败的作业</value>
+  </data>
+  <data name="FailedJobsPage_Table_Failed" xml:space="preserve">
+    <value>失败</value>
+  </data>
+  <data name="FailedJobsPage_Title" xml:space="preserve">
+    <value>失败的作业</value>
+  </data>
+  <data name="FetchedJobsPage_NoJobs" xml:space="preserve">
+    <value>没有任何作业</value>
+  </data>
+  <data name="FetchedJobsPage_Title" xml:space="preserve">
+    <value>Fetched jobs</value>
+  </data>
+  <data name="HomePage_HistoryGraph" xml:space="preserve">
+    <value>历史图表走势</value>
+  </data>
+  <data name="HomePage_RealtimeGraph" xml:space="preserve">
+    <value>实时图表走势</value>
+  </data>
+  <data name="HomePage_Title" xml:space="preserve">
+    <value>式表盘</value>
+  </data>
+  <data name="JobDetailsPage_Created" xml:space="preserve">
+    <value>创建</value>
+  </data>
+  <data name="JobDetailsPage_DeleteConfirm" xml:space="preserve">
+    <value>确认删除这个作业吗？</value>
+  </data>
+  <data name="JobDetailsPage_State" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="JobDetailsPage_JobAbortedNotActive_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;The job was aborted&lt;/strong&gt; – it is processed by server
+                        &lt;code&gt;{0}&lt;/code&gt; which is not in the 
+                        &lt;a href="{1}"&gt;active servers&lt;/a&gt; list for now.
+                        It will be retried automatically after invisibility timeout, but you can
+                        also re-queue or delete it manually.</value>
+  </data>
+  <data name="JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;作业疑似终止&lt;/strong&gt; – 服务器代码
+                        &lt;code&gt;{0}&lt;/code&gt;, 心跳包超过1分钟请求超时后，作业会自动重试。但也可以重新加入队列或者删除作业。</value>
+  </data>
+  <data name="JobDetailsPage_JobExpired" xml:space="preserve">
+    <value>Background job '{0}' has expired or could not be found on the server.</value>
+  </data>
+  <data name="JobDetailsPage_JobFinished_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;The job is finished&lt;/strong&gt;.
+                    It will be removed automatically &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;.</value>
+  </data>
+  <data name="JobDetailsPage_JobId" xml:space="preserve">
+    <value>Job Id</value>
+  </data>
+  <data name="JobDetailsPage_Requeue" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="LayoutPage_Back" xml:space="preserve">
+    <value>返回应用</value>
+  </data>
+  <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
+    <value>耗时: {0}ms</value>
+  </data>
+  <data name="LayoutPage_Footer_Time" xml:space="preserve">
+    <value>时间: {0} GMT</value>
+  </data>
+  <data name="Paginator_Next" xml:space="preserve">
+    <value>下一步</value>
+  </data>
+  <data name="Paginator_Prev" xml:space="preserve">
+    <value>上一步</value>
+  </data>
+  <data name="Paginator_TotalItems" xml:space="preserve">
+    <value>总条数</value>
+  </data>
+  <data name="PerPageSelector_ItemsPerPage" xml:space="preserve">
+    <value>每页条数</value>
+  </data>
+  <data name="ProcessingJobsPage_Aborted" xml:space="preserve">
+    <value>作业疑似终止</value>
+  </data>
+  <data name="ProcessingJobsPage_NoJobs" xml:space="preserve">
+    <value>没有立即执行的作业</value>
+  </data>
+  <data name="ProcessingJobsPage_Table_Started" xml:space="preserve">
+    <value>执行</value>
+  </data>
+  <data name="ProcessingJobsPage_Title" xml:space="preserve">
+    <value>执行中作业</value>
+  </data>
+  <data name="QueuesPage_NoJobs" xml:space="preserve">
+    <value>没有作业</value>
+  </data>
+  <data name="QueuesPage_NoQueues" xml:space="preserve">
+    <value>队列中不存在。尝试添加作业到队列</value>
+  </data>
+  <data name="QueuesPage_Table_Length" xml:space="preserve">
+    <value>长度</value>
+  </data>
+  <data name="QueuesPage_Table_NextsJobs" xml:space="preserve">
+    <value>下一个作业</value>
+  </data>
+  <data name="QueuesPage_Table_Queue" xml:space="preserve">
+    <value>队列</value>
+  </data>
+  <data name="QueuesPage_Title" xml:space="preserve">
+    <value>队列</value>
+  </data>
+  <data name="RecurringJobsPage_Canceled" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="RecurringJobsPage_NoJobs" xml:space="preserve">
+    <value>没有作业</value>
+  </data>
+  <data name="RecurringJobsPage_Table_Cron" xml:space="preserve">
+    <value>Cron</value>
+  </data>
+  <data name="RecurringJobsPage_Table_LastExecution" xml:space="preserve">
+    <value>最后执行</value>
+  </data>
+  <data name="RecurringJobsPage_Table_NextExecution" xml:space="preserve">
+    <value>下一个执行</value>
+  </data>
+  <data name="RecurringJobsPage_Table_TimeZone" xml:space="preserve">
+    <value>时区</value>
+  </data>
+  <data name="RecurringJobsPage_Title" xml:space="preserve">
+    <value>定期作业</value>
+  </data>
+  <data name="RecurringJobsPage_Triggering" xml:space="preserve">
+    <value>执行中...</value>
+  </data>
+  <data name="RecurringJobsPage_TriggerNow" xml:space="preserve">
+    <value>立即执行</value>
+  </data>
+  <data name="RetriesPage_NoJobs" xml:space="preserve">
+    <value>没有重试的作业</value>
+  </data>
+  <data name="RetriesPage_Title" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="RetriesPage_Warning_Html" xml:space="preserve">
+    <value>&lt;h4&gt;Retries are working, but this page can't be displayed&lt;/h4&gt;
+        &lt;p&gt;
+            Don't worry, retries are working as expected. Your current job storage does not support
+            some queries required to show this page. Please try to update your storage or wait until
+            the full command set is implemented.
+        &lt;/p&gt;
+        &lt;p&gt;
+            Please go to the &lt;a href="{0}"&gt;Scheduled jobs&lt;/a&gt; page to see all the
+            scheduled jobs including retries.
+        &lt;/p&gt;</value>
+  </data>
+  <data name="ScheduledJobsPage_EnqueueNow" xml:space="preserve">
+    <value>加入队列</value>
+  </data>
+  <data name="ScheduledJobsPage_NoJobs" xml:space="preserve">
+    <value>没有作业</value>
+  </data>
+  <data name="ScheduledJobsPage_Table_Enqueue" xml:space="preserve">
+    <value>队列</value>
+  </data>
+  <data name="ScheduledJobsPage_Table_Scheduled" xml:space="preserve">
+    <value>计划的</value>
+  </data>
+  <data name="ScheduledJobsPage_Title" xml:space="preserve">
+    <value>计划作业</value>
+  </data>
+  <data name="ServersPage_NoServers" xml:space="preserve">
+    <value>没有活动服务器。后台作业将不会被执行。</value>
+  </data>
+  <data name="ServersPage_Table_Heartbeat" xml:space="preserve">
+    <value>心跳</value>
+  </data>
+  <data name="ServersPage_Table_Name" xml:space="preserve">
+    <value>名称</value>
+  </data>
+  <data name="ServersPage_Table_Queues" xml:space="preserve">
+    <value>队列</value>
+  </data>
+  <data name="ServersPage_Table_Started" xml:space="preserve">
+    <value>执行</value>
+  </data>
+  <data name="ServersPage_Table_Workers" xml:space="preserve">
+    <value>工作区</value>
+  </data>
+  <data name="ServersPage_Title" xml:space="preserve">
+    <value>服务器</value>
+  </data>
+  <data name="SucceededJobsPage_NoJobs" xml:space="preserve">
+    <value>没有作业</value>
+  </data>
+  <data name="SucceededJobsPage_Table_Succeeded" xml:space="preserve">
+    <value>完成</value>
+  </data>
+  <data name="SucceededJobsPage_Table_TotalDuration" xml:space="preserve">
+    <value>Total Duration</value>
+  </data>
+  <data name="SucceededJobsPage_Title" xml:space="preserve">
+    <value>完成的作业</value>
+  </data>
+  <data name="JobsSidebarMenu_Awaiting" xml:space="preserve">
+    <value>等待中</value>
+  </data>
+  <data name="JobsSidebarMenu_Deleted" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="JobsSidebarMenu_Failed" xml:space="preserve">
+    <value>失败</value>
+  </data>
+  <data name="JobsSidebarMenu_Processing" xml:space="preserve">
+    <value>执行中</value>
+  </data>
+  <data name="JobsSidebarMenu_Scheduled" xml:space="preserve">
+    <value>计划</value>
+  </data>
+  <data name="JobsSidebarMenu_Succeeded" xml:space="preserve">
+    <value>完成</value>
+  </data>
+  <data name="NavigationMenu_Jobs" xml:space="preserve">
+    <value>作业</value>
+  </data>
+  <data name="NavigationMenu_RecurringJobs" xml:space="preserve">
+    <value>周期性作业</value>
+  </data>
+  <data name="NavigationMenu_Retries" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="NavigationMenu_Servers" xml:space="preserve">
+    <value>服务器</value>
+  </data>
+  <data name="Common_CannotFindTargetMethod" xml:space="preserve">
+    <value>Can not find the target method.</value>
+  </data>
+  <data name="Common_Enqueued" xml:space="preserve">
+    <value>队列</value>
+  </data>
+  <data name="Common_NoState" xml:space="preserve">
+    <value>No state</value>
+  </data>
+  <data name="JobsSidebarMenu_Enqueued" xml:space="preserve">
+    <value>Enqueued</value>
+  </data>
+  <data name="Metrics_ActiveConnections" xml:space="preserve">
+    <value>Active Connections</value>
+  </data>
+  <data name="Metrics_DeletedJobs" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="Metrics_FailedJobs" xml:space="preserve">
+    <value>失败</value>
+  </data>
+  <data name="Metrics_ProcessingJobs" xml:space="preserve">
+    <value>执行中</value>
+  </data>
+  <data name="Metrics_RecurringJobs" xml:space="preserve">
+    <value>定时</value>
+  </data>
+  <data name="Metrics_Retries" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="Metrics_ScheduledJobs" xml:space="preserve">
+    <value>计划</value>
+  </data>
+  <data name="Metrics_Servers" xml:space="preserve">
+    <value>服务器</value>
+  </data>
+  <data name="Metrics_SucceededJobs" xml:space="preserve">
+    <value>成功的作业</value>
+  </data>
+  <data name="Metrics_TotalConnections" xml:space="preserve">
+    <value>总连接数</value>
+  </data>
+  <data name="Common_Condition" xml:space="preserve">
+    <value>Condition</value>
+  </data>
+  <data name="Common_Continuations" xml:space="preserve">
+    <value>Continuations</value>
+  </data>
+  <data name="Metrics_AwaitingCount" xml:space="preserve">
+    <value>等待中</value>
+  </data>
+  <data name="Metrics_EnqueuedCountOrNull" xml:space="preserve">
+    <value>队列</value>
+  </data>
+  <data name="Metrics_EnqueuedQueuesCount" xml:space="preserve">
+    <value>队列</value>
+  </data>
+  <data name="Metrics_FailedCountOrNull" xml:space="preserve">
+    <value>{0} failed job(s) found. Retry or delete them manually.</value>
+  </data>
+  <data name="HomePage_GraphHover_Failed" xml:space="preserve">
+    <value>失败</value>
+  </data>
+  <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
+    <value>完成</value>
+  </data>
+</root>
