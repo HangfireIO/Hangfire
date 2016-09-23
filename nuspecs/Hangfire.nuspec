@@ -28,11 +28,14 @@ Hangfire.Core
 • Fixed – Infinite redirect loops, when authenticated, but not authorized user accesses Dashboard UI.
 • Fixed – Build-time "The type ... exists in both..." issues related to Newtonsoft.Json.
 • Fixed – Use the given type's method, when scope variable is passed to a job expression.
+• Fixed – Very rare resource leaks detected by Coverity Scan.
 
 Hangfire.SqlServer
 • Fixed – Different timeout issues after making performance optimizations.
 • Fixed – SQL timeouts while getting a connection, when using default settings and >= 8 CPU cores.
 • Fixed – ExpirationManager is bloated by SqlError instances, when there are a lot of messages from server.
+• Fixed – Counters query returned inconsistent results, during CountersAggregator executions.
+• Performance – Added missing NOLOCK hint for monitoring queries when using SqlServer-based queues.
 • Performance – ExpirationManager is forced to use index seek operations for cascade deletions.
 • Performance – CountersAggregator now uses clustered index scan to issue less logical reads.
 • Performance – Paging queries in dashboard now use CTEs to utilize less logical reads.

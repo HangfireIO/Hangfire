@@ -21,6 +21,7 @@
 • Fixed – Infinite redirect loops, when authenticated, but not authorized user accesses Dashboard UI.
 • Fixed – Build-time "The type ... exists in both..." issues related to Newtonsoft.Json.
 • Fixed – Use the given type's method, when scope variable is passed to a job expression.
+• Fixed – Very rare resource leaks detected by Coverity Scan.
     
 1.6.3
 • Fixed – Add missing `RecurringJob.AddOrUpdate` method overloads to prevent CS4014 warnings.
