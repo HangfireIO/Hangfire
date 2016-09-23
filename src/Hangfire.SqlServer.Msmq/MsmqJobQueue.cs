@@ -40,21 +40,20 @@ namespace Hangfire.SqlServer.Msmq
         public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken)
         {
             string jobId = null;
-            IMsmqTransaction transaction;
             var queueIndex = 0;
 
             do
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                transaction = CreateTransaction();
-
+                var transaction = CreateTransaction();
+                
                 try
                 {
                     using (var messageQueue = GetMessageQueue(queues[queueIndex]))
                     {
                         var message = queueIndex == queues.Length - 1
-                                ? transaction.Receive(messageQueue, SyncReceiveTimeout)
-                                : transaction.Receive(messageQueue, new TimeSpan(1));
+                            ? transaction.Receive(messageQueue, SyncReceiveTimeout)
+                            : transaction.Receive(messageQueue, new TimeSpan(1));
 
                         jobId = message.Label;
 
