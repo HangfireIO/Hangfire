@@ -10,7 +10,7 @@ Properties {
 }
 
 Task Default -Depends Collect
-Task CI -Depends Default, TestNetCore, CoverityScan
+Task CI -Depends Pack, TestNetCore, CoverityScan
 
 Task Test -Depends Compile -Description "Run unit and integration tests under OpenCover." {
 	Remove-File $coverage_file
