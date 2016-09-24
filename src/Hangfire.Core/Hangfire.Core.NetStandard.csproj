@@ -505,8 +505,8 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Dashboard\Content\resx\Strings.cn.resx" />
     <EmbeddedResource Include="Dashboard\Content\resx\Strings.es.resx" />
+    <EmbeddedResource Include="Dashboard\Content\resx\Strings.zh.resx" />
     <EmbeddedResource Include="Dashboard\Content\resx\Strings.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
