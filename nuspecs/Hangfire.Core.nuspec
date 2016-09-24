@@ -15,6 +15,7 @@
     <releaseNotes>http://hangfire.io/blog/
     
 1.6.5
+• Added – Chinese language to Dashboard UI.
 • Changed – Default upper limit of worker number is 20.
 • Changed – Default value for DashboardJobListLimit is now 10000.
 • Fixed – Deserialization exception in continuations, when TypeNameHandling.All option is used.
