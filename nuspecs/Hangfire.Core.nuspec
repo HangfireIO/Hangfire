@@ -20,7 +20,7 @@
 • Fixed – Deserialization exception in continuations, when TypeNameHandling.All option is used.
 • Fixed – I18N is not working, because there are no localized resources in NuGet packages.
 • Fixed – Infinite redirect loops, when authenticated, but not authorized user accesses Dashboard UI.
-• Fixed – Build-time "The type ... exists in both..." issues related to Newtonsoft.Json.
+• Fixed – "The type ... exists in both..." issue when building Hangfire, related to Newtonsoft.Json.
 • Fixed – Use the given type's method, when scope variable is passed to a job expression.
 • Fixed – Very rare resource leaks detected by Coverity Scan.
     
