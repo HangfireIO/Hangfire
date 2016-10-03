@@ -67,7 +67,7 @@ namespace Hangfire.Server
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
         private static readonly ILog Logger = LogProvider.For<RecurringJobScheduler>();
-        
+
         private readonly IBackgroundJobFactory _factory;
         private readonly Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> _instantFactory;
         private readonly IThrottler _throttler;
@@ -80,7 +80,7 @@ namespace Hangfire.Server
             : this(new BackgroundJobFactory())
         {
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RecurringJobScheduler"/>
         /// class with custom background job factory.
@@ -101,7 +101,7 @@ namespace Hangfire.Server
             if (factory == null) throw new ArgumentNullException(nameof(factory));
             if (instantFactory == null) throw new ArgumentNullException(nameof(instantFactory));
             if (throttler == null) throw new ArgumentNullException(nameof(throttler));
-            
+
             _factory = factory;
             _instantFactory = instantFactory;
             _throttler = throttler;
@@ -131,7 +131,7 @@ namespace Hangfire.Server
 
                     try
                     {
-                        TryScheduleJob(context.Storage, connection, recurringJobId, recurringJob);
+                        TryScheduleJob(context, connection, recurringJobId, recurringJob);
                     }
                     catch (JobLoadException ex)
                     {
@@ -152,9 +152,9 @@ namespace Hangfire.Server
         }
 
         private void TryScheduleJob(
-            JobStorage storage,
-            IStorageConnection connection, 
-            string recurringJobId, 
+            BackgroundProcessContext processContext,
+            IStorageConnection connection,
+            string recurringJobId,
             IReadOnlyDictionary<string, string> recurringJob)
         {
             var serializedJob = JobHelper.FromJson<InvocationData>(recurringJob["Job"]);
@@ -172,7 +172,7 @@ namespace Hangfire.Server
                 var changedFields = new Dictionary<string, string>();
 
                 var lastInstant = GetLastInstant(recurringJob, nowInstant);
-                
+
                 if (nowInstant.GetNextInstants(lastInstant).Any())
                 {
                     var state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
@@ -181,7 +181,16 @@ namespace Hangfire.Server
                         state.Queue = recurringJob["Queue"];
                     }
 
-                    var context = new CreateContext(storage, connection, job, state);
+                    if (processContext.Properties.ContainsKey("Queues"))
+                    {
+                        var queues = (string[])processContext.Properties["Queues"];
+                        if (queues.Length > 0 && !queues.Contains(recurringJob["Queue"]))
+                        {
+                            return;
+                        }
+                    }
+
+                    var context = new CreateContext(processContext.Storage, connection, job, state);
                     context.Parameters["RecurringJobId"] = recurringJobId;
 
                     var backgroundJob = _factory.Create(context);
@@ -195,13 +204,13 @@ namespace Hangfire.Server
                     changedFields.Add("LastExecution", JobHelper.SerializeDateTime(nowInstant.NowInstant));
                     changedFields.Add("LastJobId", jobId ?? String.Empty);
                 }
-                
+
                 // Fixing old recurring jobs that doesn't have the CreatedAt field
                 if (!recurringJob.ContainsKey("CreatedAt"))
                 {
                     changedFields.Add("CreatedAt", JobHelper.SerializeDateTime(nowInstant.NowInstant));
                 }
-                    
+
                 changedFields.Add("NextExecution", nowInstant.NextInstant.HasValue ? JobHelper.SerializeDateTime(nowInstant.NextInstant.Value) : null);
 
                 connection.SetRangeInHash(
