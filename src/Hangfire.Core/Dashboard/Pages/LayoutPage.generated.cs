@@ -111,8 +111,38 @@ WriteLiteral("    <link rel=\"stylesheet\" href=\"");
             
             #line default
             #line hidden
-WriteLiteral(@""">
-</head>
+WriteLiteral("\"/>\r\n");
+
+
+            
+            #line 18 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+     if (@ExtraCssUrl != null)
+    {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("    <link rel=\"stylesheet\" href=\"");
+
+
+            
+            #line 20 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                            Write(ExtraCssUrl);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\" />\r\n");
+
+
+            
+            #line 21 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+    }
+
+            
+            #line default
+            #line hidden
+WriteLiteral(@"</head>
     <body>
         <!-- Wrap all page content here -->
         <div id=""wrap"">
@@ -130,7 +160,7 @@ WriteLiteral(@""">
 
 
             
-            #line 32 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 36 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                  Write(Url.Home());
 
             
@@ -141,7 +171,7 @@ WriteLiteral("\">Hangfire Dashboard</a>\r\n                    </div>\r\n       
 
 
             
-            #line 35 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 39 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(Html.RenderPartial(new Navigation()));
 
             
@@ -151,7 +181,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 36 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 40 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                          if(@AppPath != null) {
 
             
@@ -162,7 +192,7 @@ WriteLiteral("                            <ul class=\"nav navbar-nav navbar-righ
 
 
             
-            #line 39 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 43 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                         Write(AppPath);
 
             
@@ -173,7 +203,7 @@ WriteLiteral("\">\r\n                                        <span class=\"glyph
 
 
             
-            #line 41 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 45 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                    Write(Strings.LayoutPage_Back);
 
             
@@ -184,7 +214,7 @@ WriteLiteral("\r\n                                    </a>\r\n                  
 
 
             
-            #line 45 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 49 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                         }
 
             
@@ -197,7 +227,7 @@ WriteLiteral("                    </div>\r\n                    <!--/.nav-collap
 
 
             
-            #line 53 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 57 "..\..\Dashboard\Pages\LayoutPage.cshtml"
            Write(RenderBody());
 
             
@@ -215,7 +245,7 @@ WriteLiteral(@"
 
 
             
-            #line 61 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 65 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                                            Write($"{version.Major}.{version.Minor}.{version.Build}");
 
             
@@ -226,7 +256,7 @@ WriteLiteral("\r\n                        </a>\r\n                    </li>\r\n 
 
 
             
-            #line 64 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 68 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(Storage);
 
             
@@ -236,7 +266,7 @@ WriteLiteral("</li>\r\n                    <li>");
 
 
             
-            #line 65 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 69 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(String.Format(Strings.LayoutPage_Footer_Time, DateTime.UtcNow));
 
             
@@ -246,19 +276,19 @@ WriteLiteral("</li>\r\n                    <li>");
 
 
             
-            #line 66 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 70 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(String.Format(Strings.LayoutPage_Footer_Generatedms, GenerationTime.Elapsed.TotalMilliseconds.ToString("N")));
 
             
             #line default
             #line hidden
-WriteLiteral("</li>\r\n                </ul>\r\n            </div>\r\n        </div>\r\n        \r\n     " +
-"   <script>\r\n            (function (hangFire) {\r\n                hangFire.config" +
-" = {\r\n                    pollInterval: ");
+WriteLiteral("</li>\r\n                </ul>\r\n            </div>\r\n        </div>\r\n\r\n        <scri" +
+"pt>\r\n            (function (hangFire) {\r\n                hangFire.config = {\r\n  " +
+"                  pollInterval: ");
 
 
             
-            #line 74 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 78 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                              Write(StatsPollingInterval);
 
             
@@ -268,7 +298,7 @@ WriteLiteral(",\r\n                    pollUrl: \'");
 
 
             
-            #line 75 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 79 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                           Write(Url.To("/stats"));
 
             
@@ -278,7 +308,7 @@ WriteLiteral("\',\r\n                    locale: \'");
 
 
             
-            #line 76 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 80 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                         Write(CultureInfo.CurrentUICulture);
 
             
@@ -289,7 +319,7 @@ WriteLiteral("\'\r\n                };\r\n            })(window.Hangfire = windo
 
 
             
-            #line 80 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 84 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                 Write(Url.To($"/js{version.Major}{version.Minor}{version.Build}"));
 
             

@@ -14,10 +14,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     @{ var version = GetType().GetTypeInfo().Assembly.GetName().Version; }
-    <link rel="stylesheet" href="@Url.To($"/css{version.Major}{version.Minor}{version.Build}")">
+    <link rel="stylesheet" href="@Url.To($"/css{version.Major}{version.Minor}{version.Build}")"/>
     @if (@ExtraCssUrl != null)
     {
-    <link rel="stylesheet" href="@ExtraCssUrl">
+    <link rel="stylesheet" href="@ExtraCssUrl" />
     }
 </head>
     <body>
