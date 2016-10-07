@@ -1,5 +1,5 @@
 // This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright Â© 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -62,7 +62,9 @@ namespace Hangfire.SqlServer
             if (String.IsNullOrEmpty(resource)) throw new ArgumentNullException(nameof(resource));
             if (timeout.TotalSeconds + CommandTimeoutAdditionSeconds > Int32.MaxValue) throw new ArgumentException(
                 $"The timeout specified is too large. Please supply a timeout equal to or less than {Int32.MaxValue - CommandTimeoutAdditionSeconds} seconds", nameof(timeout));
-
+            if (timeout.TotalMilliseconds > Int32.MaxValue) throw new ArgumentException(
+                $"The timeout specified is too large. Please supply a timeout equal to or less than {(int)TimeSpan.FromMilliseconds(Int32.MaxValue).TotalSeconds} seconds", nameof(timeout));
+                
             _storage = storage;
             _resource = resource;
 
