@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCulture("")]
 
 [assembly: ComVisible(false)]
-[assembly: CLSCompliant(false)]
+[assembly: CLSCompliant(true)]
 
 // Don't edit manually! Use `build.bat version` command instead!
 [assembly: AssemblyVersion("1.6.5")]
