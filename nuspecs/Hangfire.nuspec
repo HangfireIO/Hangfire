@@ -19,6 +19,15 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.6
+
+Hangfire.Core
+• Fixed – Hangfire.Core, Hangfire.SqlServer and Hangfire.SqlServer.Msmq marked as CLS-compliant.
+• Fixed – Generic methods cause ArgumentNullException when scoped variable is used in expression.
+
+Hangfire.SqlServer
+• Fixed – SqlServerJobQueue class doesn't use obsolete InvisibilityTimeout parameter anymore.
+    
 1.6.5
 
 Hangfire.Core
