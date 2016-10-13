@@ -57,10 +57,10 @@ namespace Hangfire.SqlServer
             DbTransaction transaction = null;
 
             string fetchJobSqlTemplate =
-$@"delete top (1) from [{_storage.SchemaName}].JobQueue with (readpast, updlock, rowlock)
+$@"delete top (1) JQ
 output DELETED.Id, DELETED.JobId, DELETED.Queue
-where (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))
-and Queue in @queues";
+from [{_storage.SchemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
+where Queue in @queues";
 
             do
             {
@@ -73,9 +73,7 @@ and Queue in @queues";
 
                     fetchedJob = connection.Query<FetchedJob>(
                         fetchJobSqlTemplate,
-#pragma warning disable 618
-                        new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds },
-#pragma warning restore 618
+                        new { queues = queues },
                         transaction).SingleOrDefault();
 
                     if (fetchedJob != null)
