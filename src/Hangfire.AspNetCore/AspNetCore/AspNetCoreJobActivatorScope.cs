@@ -32,10 +32,12 @@ namespace Hangfire.AspNetCore
 
         public override object Resolve(Type type)
         {
+            AssertNotDisposed();
+
             return _serviceScope.ServiceProvider.GetRequiredService(type);
         }
 
-        public override void DisposeScope()
+        protected override void DisposeScope()
         {
             _serviceScope.Dispose();
         }

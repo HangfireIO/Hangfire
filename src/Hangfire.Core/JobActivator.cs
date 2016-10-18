@@ -61,7 +61,7 @@ namespace Hangfire
 #pragma warning restore 618
         }
 
-        class SimpleJobActivatorScope : JobActivatorScope
+        private class SimpleJobActivatorScope : JobActivatorScope
         {
             private readonly JobActivator _activator;
             private readonly List<IDisposable> _disposables = new List<IDisposable>();
@@ -74,6 +74,8 @@ namespace Hangfire
 
             public override object Resolve(Type type)
             {
+                AssertNotDisposed();
+
                 var instance = _activator.ActivateJob(type);
                 var disposable = instance as IDisposable;
 
@@ -85,7 +87,7 @@ namespace Hangfire
                 return instance;
             }
 
-            public override void DisposeScope()
+            protected override void DisposeScope()
             {
                 foreach (var disposable in _disposables)
                 {
