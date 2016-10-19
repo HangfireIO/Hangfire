@@ -1,7 +1,7 @@
 # File an Issue
 
 If you have a question rather than an issue, please post it to the [Hangfire Stack 
-Overflow tag](http://stackoverflow.com/questions/tagged/hangfire).
+Overflow tag](http://stackoverflow.com/questions/tagged/hangfire). For non-security related bugs please log a new issue:
 
 1. Search the [issue tracker](https://github.com/HangfireIO/Hangfire/issues) for similar issues.
 2. Specify the **version** of `Hangfire.Core` package in which the bug was occurred.
@@ -24,3 +24,7 @@ Hints
 
 * Use [syntax highlighting](https://help.github.com/articles/creating-and-highlighting-code-blocks/#syntax-highlighting) for your C#, SQL, etc. code blocks.
 * Use [fenced code blocks](https://help.github.com/articles/creating-and-highlighting-code-blocks/#fenced-code-blocks) for exception details.
+
+# Reporting security issues 
+
+In order to give the community time to respond and upgrade we strongly urge you report all security issues privately. Please email us at [support@hangfire.io](support@hangfire.io) with details and we will respond ASAP. Security issues always take precedence over bug fixes and feature work. We can and do mark releases as "urgent" if they contain serious security fixes. 

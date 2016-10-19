@@ -14,6 +14,19 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.6
+• Fixed – SqlServerJobQueue class doesn't use obsolete InvisibilityTimeout parameter anymore.
+    
+1.6.5
+• Fixed – Different timeout issues after making performance optimizations.
+• Fixed – SQL timeouts while getting a connection, when using default settings and >= 8 CPU cores.
+• Fixed – ExpirationManager is bloated by SqlError instances, when there are a lot of messages from server.
+• Fixed – Counters query returned inconsistent results during CountersAggregator executions.
+• Performance – Added missing NOLOCK hint for monitoring queries when using SqlServer-based queues.
+• Performance – ExpirationManager is forced to use index seek operations for cascade deletions.
+• Performance – CountersAggregator now uses clustered index scan to issue less logical reads.
+• Performance – Paging queries in dashboard now use CTEs to utilize less logical reads.
+    
 1.6.4
 • Fixed – `SqlConnection` object leaks when using nested distributed locks (in batches and continuations).
 

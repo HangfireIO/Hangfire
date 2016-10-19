@@ -10,6 +10,8 @@ os:
   - linux
   - osx
 
+osx_image: xcode7.2
+
 env:  
   global:
     - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
@@ -48,7 +50,7 @@ install:
 
 # Run the build script
 script:
-  - travis_retry dotnet restore
+  - travis_retry dotnet restore --disable-parallel
   - dotnet test tests/Hangfire.Core.Tests -verbose
  
 # Tests on Mono disabled – waiting for https://github.com/NuGet/Home/issues/3085

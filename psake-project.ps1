@@ -10,7 +10,7 @@ Properties {
 }
 
 Task Default -Depends Collect
-Task CI -Depends Default, TestNetCore, CoverityScan
+Task CI -Depends Pack, TestNetCore, CoverityScan
 
 Task Test -Depends Compile -Description "Run unit and integration tests under OpenCover." {
 	Remove-File $coverage_file
@@ -40,6 +40,9 @@ Task Collect -Depends Merge -Description "Copy all artifacts to the build folder
     
     Collect-Content "content\readme.txt"
     Collect-Tool "src\Hangfire.SqlServer\DefaultInstall.sql"
+
+    Collect-Localizations "Hangfire.Core" "net45"
+    Collect-Localizations "Hangfire.Core" "netstandard1.3"
 }
 
 Task Pack -Depends Collect -Description "Create NuGet packages and archive files." {
@@ -69,6 +72,26 @@ Task CoverityScan -Depends Restore -PreCondition { return $env:APPVEYOR_SCHEDULE
 
         .$publish compress -o coverity.zip -i cov-int --nologo
         .$publish publish -z coverity.zip -r HangfireIO/Hangfire -t $env:COVERITY_TOKEN -e $env:COVERITY_EMAIL --codeVersion $env:APPVEYOR_BUILD_VERSION --nologo
+    }
+}
+
+function Collect-Localizations($project, $target) {
+    Write-Host "Collecting localizations for '$target/$project'..." -ForegroundColor "Green"
+    
+    $output = (Get-SrcOutputDir $project $target)
+    $dirs = Get-ChildItem -Path $output -Directory
+
+    foreach ($dir in $dirs) {
+        $source = "$output\$dir\$project.resources.dll"
+
+        if (Test-Path $source) {
+            Write-Host "  Collecting '$dir' localization..."
+
+            $destination = "$build_dir\$target\$dir"
+
+            Create-Directory $destination
+            Copy-Files $source $destination
+        }
     }
 }
 

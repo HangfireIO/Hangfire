@@ -349,12 +349,12 @@ WriteLiteral("            </div>\r\n");
 
             if (job.Properties.ContainsKey("Continuations"))
             {
-                List<Continuation> continuations;
+                List<ContinuationsSupportAttribute.Continuation> continuations;
 
                 using (var connection = Storage.GetConnection())
                 {
-                    continuations = JobHelper.FromJson<List<Continuation>>(connection.GetJobParameter(
-                        JobId, "Continuations")) ?? new List<Continuation>();
+                    continuations = JobHelper.FromJson<List<ContinuationsSupportAttribute.Continuation>>(connection.GetJobParameter(
+                        JobId, "Continuations")) ?? new List<ContinuationsSupportAttribute.Continuation>();
                 }
 
                 if (continuations.Count > 0)

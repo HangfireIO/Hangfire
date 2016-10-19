@@ -266,6 +266,26 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void FromScopedExpression_HandlesGenericMethods()
+        {
+            CommandDispatcher dispatcher = new CommandDispatcher();
+            var job = Job.FromExpression(() => dispatcher.DispatchTyped(123));
+
+            Assert.Equal(typeof(CommandDispatcher), job.Type);
+            Assert.Equal(typeof(CommandDispatcher), job.Method.DeclaringType);
+        }
+
+        [Fact]
+        public void FromScopedExpression_HandlesMethodsDeclaredInBaseClasse()
+        {
+            DerivedInstance instance = new DerivedInstance();
+            var job = Job.FromExpression(() => instance.Method());
+
+            Assert.Equal(typeof(DerivedInstance), job.Type);
+            Assert.Equal(typeof(Instance), job.Method.DeclaringType);
+        }
+
+        [Fact]
         public void Ctor_ThrowsAnException_WhenMethodContainsReferenceParameter()
         {
             string test = null;
@@ -667,6 +687,18 @@ namespace Hangfire.Core.Tests.Common
         public async void AsyncVoidMethod()
         {
             await Task.Yield();
+        }
+
+        public interface ICommandDispatcher
+        {
+            void DispatchTyped<TCommand>(TCommand command);
+        }
+
+        public class CommandDispatcher : ICommandDispatcher
+        {
+            public void DispatchTyped<TCommand>(TCommand command)
+            {
+            }
         }
 
         [TestType]

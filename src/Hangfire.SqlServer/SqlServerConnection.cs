@@ -79,8 +79,8 @@ namespace Hangfire.SqlServer
 
             string createJobSql =
 $@"insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt)
-values (@invocationData, @arguments, @createdAt, @expireAt);
-SELECT CAST(SCOPE_IDENTITY() as int)";
+output inserted.Id
+values (@invocationData, @arguments, @createdAt, @expireAt)";
 
             var invocationData = InvocationData.Serialize(job);
 
