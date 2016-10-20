@@ -34,42 +34,30 @@ namespace Hangfire.Server
                 { typeof (PerformContext), x => x }
             };
 
-        private readonly JobActivator _activator;
-
-        public CoreBackgroundJobPerformer([NotNull] JobActivator activator)
-        {
-            if (activator == null) throw new ArgumentNullException(nameof(activator));
-            _activator = activator;
-        }
-
         public object Perform(PerformContext context)
         {
-            using (var scope = _activator.BeginScope(
-                new JobActivatorContext(context.Connection, context.BackgroundJob, context.CancellationToken)))
+            object instance = null;
+
+            if (context.BackgroundJob.Job == null)
             {
-                object instance = null;
-
-                if (context.BackgroundJob.Job == null)
-                {
-                    throw new InvalidOperationException("Can't perform a background job with a null job.");
-                }
-                
-                if (!context.BackgroundJob.Job.Method.IsStatic)
-                {
-                    instance = scope.Resolve(context.BackgroundJob.Job.Type);
-
-                    if (instance == null)
-                    {
-                        throw new InvalidOperationException(
-                            $"JobActivator returned NULL instance of the '{context.BackgroundJob.Job.Type}' type.");
-                    }
-                }
-
-                var arguments = SubstituteArguments(context);
-                var result = InvokeMethod(context, instance, arguments);
-
-                return result;
+                throw new InvalidOperationException("Can't perform a background job with a null job.");
             }
+                
+            if (!context.BackgroundJob.Job.Method.IsStatic)
+            {
+                instance = context.Resolve(context.BackgroundJob.Job.Type);
+
+                if (instance == null)
+                {
+                    throw new InvalidOperationException(
+                        $"JobActivator returned NULL instance of the '{context.BackgroundJob.Job.Type}' type.");
+                }
+            }
+
+            var arguments = SubstituteArguments(context);
+            var result = InvokeMethod(context, instance, arguments);
+
+            return result;
         }
 
         internal static void HandleJobPerformanceException(Exception exception, CancellationToken shutdownToken)
