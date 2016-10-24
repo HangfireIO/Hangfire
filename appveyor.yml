@@ -55,7 +55,9 @@ build_script:
   - build.bat ci
 
 after_build:
-  - packages\coveralls.io.1.3.4\tools\coveralls.net --opencover coverage.xml
+  - "SET PATH=C:\\Python34;C:\\Python34\\Scripts;%PATH%"
+  - pip install codecov
+  - codecov -f coverage.xml
 
 #---------------------------------#
 #       tests configuration       #
