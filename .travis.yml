@@ -16,7 +16,7 @@ env:
   global:
     - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     - DOTNET_CLI_TELEMETRY_OPTOUT: 1
-    - CLI_VERSION=latest
+    - CLI_VERSION=1.0.0-preview2-003121
   
 addons:  
   apt:
