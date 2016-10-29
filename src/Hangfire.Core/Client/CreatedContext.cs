@@ -27,7 +27,7 @@ namespace Hangfire.Client
     /// </summary>
     public class CreatedContext : CreateContext
     {
-        internal CreatedContext(
+        public CreatedContext(
             [NotNull] CreateContext context, 
             [CanBeNull] BackgroundJob backgroundJob,
             bool canceled, 
