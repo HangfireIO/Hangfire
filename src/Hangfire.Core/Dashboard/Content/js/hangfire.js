@@ -89,7 +89,17 @@
         };
 
         RealtimeGraph.prototype.update = function() {
-            this._graph.update();
+            var graph = this._graph;
+
+            var width = $(graph.element).innerWidth();
+            if (width !== graph.width) {
+                graph.configure({
+                    width: width,
+                    height: 200
+                });
+            }
+
+            graph.update();
         };
 
         return RealtimeGraph;
@@ -134,7 +144,17 @@
         }
 
         HistoryGraph.prototype.update = function() {
-            this._graph.update();
+            var graph = this._graph;
+
+            var width = $(graph.element).innerWidth();
+            if (width !== graph.width) {
+                graph.configure({
+                    width: width,
+                    height: 200
+                });
+            }
+
+            graph.update();
         };
 
         return HistoryGraph;
@@ -204,9 +224,9 @@
         }
 
         Page.prototype._createGraphs = function() {
-            this.realtimeGraph = this._createRealtimeGraph('realtimeGraph');
-            this.historyGraph = this._createHistoryGraph('historyGraph');
-            
+            var realtime = this.realtimeGraph = this._createRealtimeGraph('realtimeGraph');
+            var history = this.historyGraph = this._createHistoryGraph('historyGraph');
+
             var debounce = function (fn, timeout) {
                 var timeoutId = -1;
                 return function() {
@@ -217,12 +237,9 @@
                 };
             };
 
-            var self = this;
             window.onresize = debounce(function () {
-                $('#realtimeGraph').html('');
-                $('#historyGraph').html('');
-
-                self._createGraphs();
+                realtime.update();
+                history.update();
             }, 125);
         };
 
