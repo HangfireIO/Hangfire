@@ -56,3 +56,7 @@ script:
 # - travis_retry mono .nuget/NuGet.exe install .
 # - xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
 # - mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll
+
+notifications:
+  slack:
+    secure: LZuLPI1Cj9DgNAtFsZ/zk1fWBDS2PTHHIjvtCV3Fa9qNajzna2qR6Ui3sM/FQirvoXp0JHAqNYkFDI216YativqabWXZp6dQgw3u64bdlc1IWxQ4C6XHpp8WVe1wsNi19vfwKVHfvaNXpvNp9OGHXkmoTS74arRtPhpzSXO/IXw=

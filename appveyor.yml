@@ -91,3 +91,9 @@ deploy:
       secure: 8BQmcR1hP9MoxvrmXJKMtlRyX6LI36H9ZTU8fSEetvzMGCl1PUlXKZRUGq+GVMja
     on:
       appveyor_repo_tag: true
+
+notifications:
+  - provider: Slack
+    auth_token:
+      secure: tO0F4xlFABbtBGuwWqevKOQrQySSNVvw+7iag6StkAYJ0qDhlNPXefUgNeklVsvJ
+    channel: '#development'
