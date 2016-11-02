@@ -40,8 +40,8 @@ namespace Hangfire.Common
         }
 
         public static MethodInfo GetNonOpenMatchingMethod(
-            [NotNull] this Type type,
-            [NotNull] string name,
+            [NotNull] this Type type, 
+            [NotNull] string name, 
             [CanBeNull] Type[] parameterTypes)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
