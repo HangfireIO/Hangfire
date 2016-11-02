@@ -92,6 +92,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal("Method", method.Name);
             Assert.Equal(typeof(NonGenericClass), method.DeclaringType);
             Assert.Equal(1, method.GetParameters().Length);
+            Assert.Equal(typeof(int), method.GetParameters()[0].ParameterType);
         }
 
         [Fact]
@@ -103,19 +104,21 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal("Method", method.Name);
             Assert.Equal(typeof(NonGenericClass), method.DeclaringType);
             Assert.Equal(2, method.GetParameters().Length);
+            Assert.Equal(typeof(int), method.GetParameters()[0].ParameterType);
+            Assert.Equal(typeof(int), method.GetParameters()[1].ParameterType);
         }
 
         [Fact]
         public void GetNonOpenMatchingMethod_ReturnsCorrectMethod_WhenTypeIsInterface()
         {
-            var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(IChild), "Method", new Type[0]);
+            var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(IParent), "Method", new Type[0]);
             Assert.Equal("Method", method.Name);
         }
 
         [Fact]
         public void GetNonOpenMatchingMethod_HandlesMethodDefinedInBaseInterface()
         {
-            var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(IParent), "Method", new Type[0]);
+            var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(IChild), "Method", new Type[0]);
             Assert.Equal("Method", method.Name);
         }
 
@@ -127,6 +130,8 @@ namespace Hangfire.Core.Tests.Common
 
             Assert.Equal("GenericMethod", method.Name);
             Assert.Equal(typeof(NonGenericClass), method.DeclaringType);
+            Assert.Equal(true, method.IsGenericMethod);
+            Assert.Equal(false, method.ContainsGenericParameters);
         }
 
         [Fact]
@@ -158,7 +163,7 @@ namespace Hangfire.Core.Tests.Common
 	    public void GetNonOpenMatchingMethod_HandlesMethodParameterTypeIsAssignableFromPassedType()
 	    {
 	        var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "Method",
-	            new Type[] {typeof(IParent)});
+	            new Type[] {typeof(IChild)});
 
 	        Assert.Equal("Method", method.Name);
 	        Assert.Equal(typeof(NonGenericClass), method.DeclaringType);
@@ -176,12 +181,12 @@ namespace Hangfire.Core.Tests.Common
         }
     }
 
-    public interface IChild
+    public interface IParent
     {
         void Method();
     }
 
-    public interface IParent : IChild { }
+    public interface IChild : IParent { }
 
     public class NonGenericClass
     {
@@ -195,7 +200,7 @@ namespace Hangfire.Core.Tests.Common
 
         public void Method(NonGenericClass arg) { }
 
-        public void Method(IChild arg) { }
+        public void Method(IParent arg) { }
 
         public void GenericMethod<T0, T1, T2>(T0 arg0, T1 arg1, T2 arg2) { }
 
