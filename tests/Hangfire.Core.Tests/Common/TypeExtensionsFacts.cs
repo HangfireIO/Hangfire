@@ -159,16 +159,18 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(null, method);
         }
 
-	    [Fact]
-	    public void GetNonOpenMatchingMethod_HandlesMethodParameterTypeIsAssignableFromPassedType()
-	    {
-	        var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "Method",
-	            new Type[] {typeof(IChild)});
+        [Fact]
+        public void GetNonOpenMatchingMethod_HandlesMethodParameterTypeIsAssignableFromPassedType()
+        {
+            var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "Method",
+                new Type[] { typeof(IChild) });
 
-	        Assert.Equal("Method", method.Name);
-	        Assert.Equal(typeof(NonGenericClass), method.DeclaringType);
-	    }
-	}
+            Assert.Equal("Method", method.Name);
+            Assert.Equal(typeof(NonGenericClass), method.DeclaringType);
+            Assert.Equal(1, method.GetParameters().Length);
+            Assert.Equal(typeof(IParent), method.GetParameters()[0].ParameterType);
+        }
+    }
     
     public class GenericClass<T0>
     {
@@ -190,13 +192,11 @@ namespace Hangfire.Core.Tests.Common
 
     public class NonGenericClass
     {
-        public void Method() {}
+        public void Method() { }
 
         public void Method(int arg) { }
 
         public void Method(int arg0, int arg1) { }
-
-        public void Method(object arg) { }
 
         public void Method(NonGenericClass arg) { }
 
