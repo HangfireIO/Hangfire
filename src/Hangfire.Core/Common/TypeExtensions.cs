@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Hangfire.Annotations;
 
 namespace Hangfire.Common
 {
@@ -38,8 +39,16 @@ namespace Hangfire.Common
                     .ReplaceGenericParametersInGenericTypeName(type);
         }
 
-        public static MethodInfo GetNonOpenMatchingMethod(this Type type, string name, Type[] parameterTypes)
+        public static MethodInfo GetNonOpenMatchingMethod(
+            [NotNull] this Type type, 
+            [NotNull] string name, 
+            [CanBeNull] Type[] parameterTypes)
         {
+            if (type == null) throw new ArgumentNullException(nameof(type));
+            if (name == null) throw new ArgumentNullException(nameof(name));
+
+            parameterTypes = parameterTypes ?? new Type[0];
+
             var methodCandidates = new List<MethodInfo>(type.GetRuntimeMethods());
 
             if (type.GetTypeInfo().IsInterface)
