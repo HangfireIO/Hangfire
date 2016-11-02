@@ -3,7 +3,7 @@ codecov:
     require_ci_to_pass: true
 comment:
   behavior: default
-  layout: tree
+  layout: header,tree
   require_changes: true
 coverage:
   precision: 2
