@@ -88,6 +88,7 @@ namespace Hangfire
         private int _attempts;
         private AttemptsExceededAction _onAttemptsExceeded;
         private bool _logEvents;
+        private int _retryDelayInSeconds;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AutomaticRetryAttribute"/>
@@ -139,6 +140,27 @@ namespace Hangfire
         {
             get { lock (_lockObject) { return _logEvents; } }
             set { lock (_lockObject) { _logEvents = value; } }
+        }
+
+        /// <summary>
+        /// Get or sets a delay in seconds after which failed jobs will be retried
+        /// to execute again.
+        /// </summary>
+        public int RetryDelayInSeconds
+        {
+            get { lock(_lockObject) { return _retryDelayInSeconds;} }
+            set
+            {
+                if (value <= 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), @"RetryDelayInSeconds value must be greater than zero.");
+                }
+
+                lock (_lockObject)
+                {
+                    _retryDelayInSeconds = value;
+                }
+            }
         }
 
         /// <inheritdoc />
@@ -202,7 +224,7 @@ namespace Hangfire
         {
             context.SetJobParameter("RetryCount", retryAttempt);
 
-            var delay = TimeSpan.FromSeconds(SecondsToDelay(retryAttempt));
+            var delay = GetRetryDelay(retryAttempt);
 
             const int maxMessageLength = 50;
             var exceptionMessage = failedState.Exception.Message.Length > maxMessageLength
@@ -222,6 +244,14 @@ namespace Hangfire
                     $"Failed to process the job '{context.BackgroundJob.Id}': an exception occurred. Retry attempt {retryAttempt} of {Attempts} will be performed in {delay}.",
                     failedState.Exception);
             }
+        }
+
+        private TimeSpan GetRetryDelay(int retryAttempt)
+        {
+            var delayInSeconds = RetryDelayInSeconds == 0 ? SecondsToDelay(retryAttempt) : RetryDelayInSeconds;
+            var timeSpanDelay = TimeSpan.FromSeconds(delayInSeconds);
+
+            return timeSpanDelay;
         }
 
         /// <summary>
