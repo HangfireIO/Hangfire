@@ -88,7 +88,7 @@ namespace Hangfire.Common
                     }
 
                     // Skipping non-generic parameters of assignable types.
-                    if (parameterType.GetTypeInfo().IsAssignableFrom(actualType.GetTypeInfo())) continue;
+                    if (parameterType.GetTypeInfo().Equals(actualType.GetTypeInfo())) continue;
 
                     parameterTypesMatched = false;
                     break;
