@@ -56,6 +56,8 @@ namespace Hangfire.Common
                 methodCandidates.AddRange(type.GetTypeInfo().ImplementedInterfaces.SelectMany(x => x.GetRuntimeMethods()));
             }
 
+            MethodInfo theMostSuitableMatchingMethod = null;
+
             foreach (var methodCandidate in methodCandidates)
             {
                 if (!methodCandidate.Name.Equals(name, StringComparison.Ordinal))
@@ -96,15 +98,19 @@ namespace Hangfire.Common
 
                 if (!parameterTypesMatched) continue;
 
-                // Return first found method candidate with matching parameters.
-                return methodCandidate.ContainsGenericParameters
+                var matchingMethod = methodCandidate.ContainsGenericParameters
                     ? methodCandidate.MakeGenericMethod(genericArguments.ToArray())
                     : methodCandidate;
+
+                //Determining which of overloaded methods is more suitable
+                theMostSuitableMatchingMethod = theMostSuitableMatchingMethod == null
+                    ? matchingMethod
+                    : GetMoreSuitableOverloadedMethod(theMostSuitableMatchingMethod, matchingMethod);
             }
 
-            return null;
+            return theMostSuitableMatchingMethod;
         }
-
+        
         private static string GetFullNameWithoutNamespace(this Type type)
         {
             if (type.IsGenericParameter)
@@ -147,5 +153,29 @@ namespace Hangfire.Common
         {
             return type.GenericTypeArguments.Length > 0 ? type.GenericTypeArguments : type.GenericTypeParameters;
         }
+
+        private static MethodInfo GetMoreSuitableOverloadedMethod(MethodInfo overloadedMethod1, MethodInfo overloadedMethod2)
+        {
+            var method1Parameters = overloadedMethod1.GetParameters();
+            var method2Parameters = overloadedMethod2.GetParameters();
+
+            for (var i = 0; i < method1Parameters.Length; i++)
+            {
+                var method1ParameterType = method1Parameters[i].ParameterType;
+                var method2ParameterType = method2Parameters[i].ParameterType;
+
+                if (method1ParameterType == method2ParameterType)
+                {
+                    continue;
+                }
+
+                return method2ParameterType.IsAssignableFrom(method1ParameterType)
+                    ? overloadedMethod1
+                    : overloadedMethod2;
+            }
+
+            return overloadedMethod1;
+        }
+
     }
 }

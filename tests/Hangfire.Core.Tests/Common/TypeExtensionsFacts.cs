@@ -170,8 +170,19 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(1, method.GetParameters().Length);
             Assert.Equal(typeof(IParent), method.GetParameters()[0].ParameterType);
         }
+
+        [Fact]
+        public void GetNonOpenMatchingMethod_HandlesOveroladingPriority()
+        {
+            var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "Method",
+                new Type[] { typeof(NonGenericClass) });
+
+            Assert.Equal("Method", method.Name);
+            Assert.Equal(1, method.GetParameters().Length);
+            Assert.Equal(typeof(NonGenericClass), method.GetParameters()[0].ParameterType);
+        }
     }
-    
+
     public class GenericClass<T0>
     {
         public class NestedNonGenericClass
@@ -190,7 +201,9 @@ namespace Hangfire.Core.Tests.Common
 
     public interface IChild : IParent { }
 
-    public class NonGenericClass
+    public class BaseClass { }
+
+    public class NonGenericClass : BaseClass
     {
         public void Method() { }
 
@@ -198,9 +211,13 @@ namespace Hangfire.Core.Tests.Common
 
         public void Method(int arg0, int arg1) { }
 
+        public void Method(IParent arg) { }
+
+        public void Method(BaseClass arg) { }
+
         public void Method(NonGenericClass arg) { }
 
-        public void Method(IParent arg) { }
+        public void Method(object arg) { }
 
         public void GenericMethod<T0, T1, T2>(T0 arg0, T1 arg1, T2 arg2) { }
 
