@@ -160,26 +160,12 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void GetNonOpenMatchingMethod_HandlesMethodParameterTypeIsAssignableFromPassedType()
-        {
-            var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "Method",
-                new Type[] { typeof(IChild) });
-
-            Assert.Equal("Method", method.Name);
-            Assert.Equal(typeof(NonGenericClass), method.DeclaringType);
-            Assert.Equal(1, method.GetParameters().Length);
-            Assert.Equal(typeof(IParent), method.GetParameters()[0].ParameterType);
-        }
-
-        [Fact]
-        public void GetNonOpenMatchingMethod_HandlesOveroladingPriority()
+        public void GetNonOpenMatchingMethod_ReturnsNull_WhenMethodParameterTypeIsAssignableFromPassedType()
         {
             var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "Method",
                 new Type[] { typeof(NonGenericClass) });
 
-            Assert.Equal("Method", method.Name);
-            Assert.Equal(1, method.GetParameters().Length);
-            Assert.Equal(typeof(NonGenericClass), method.GetParameters()[0].ParameterType);
+            Assert.Equal(null, method);
         }
     }
 
@@ -201,9 +187,7 @@ namespace Hangfire.Core.Tests.Common
 
     public interface IChild : IParent { }
 
-    public class BaseClass { }
-
-    public class NonGenericClass : BaseClass
+    public class NonGenericClass
     {
         public void Method() { }
 
@@ -212,10 +196,6 @@ namespace Hangfire.Core.Tests.Common
         public void Method(int arg0, int arg1) { }
 
         public void Method(IParent arg) { }
-
-        public void Method(BaseClass arg) { }
-
-        public void Method(NonGenericClass arg) { }
 
         public void Method(object arg) { }
 
