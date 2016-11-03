@@ -169,7 +169,7 @@ namespace Hangfire.Common
                     continue;
                 }
 
-                return method2ParameterType.IsAssignableFrom(method1ParameterType)
+                return method2ParameterType.GetTypeInfo().IsAssignableFrom(method1ParameterType.GetTypeInfo())
                     ? overloadedMethod1
                     : overloadedMethod2;
             }
