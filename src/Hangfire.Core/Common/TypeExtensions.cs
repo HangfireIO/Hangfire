@@ -96,7 +96,7 @@ namespace Hangfire.Common
 
                 if (!parameterTypesMatched) continue;
 
-                // Return first found method candidate with matching parameters
+                // Return first found method candidate with matching parameters.
                 return methodCandidate.ContainsGenericParameters
                     ? methodCandidate.MakeGenericMethod(genericArguments.ToArray())
                     : methodCandidate;
@@ -104,7 +104,7 @@ namespace Hangfire.Common
 
             return null;
         }
-        
+
         private static string GetFullNameWithoutNamespace(this Type type)
         {
             if (type.IsGenericParameter)
