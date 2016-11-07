@@ -30,13 +30,13 @@ namespace Hangfire.Common
             if (!type.GetTypeInfo().IsGenericType)
             {
                 return type.GetFullNameWithoutNamespace()
-                    .ReplacePlusWithDotInNestedTypeName();
+                        .ReplacePlusWithDotInNestedTypeName();
             }
 
             return type.GetGenericTypeDefinition()
-                .GetFullNameWithoutNamespace()
-                .ReplacePlusWithDotInNestedTypeName()
-                .ReplaceGenericParametersInGenericTypeName(type);
+                    .GetFullNameWithoutNamespace()
+                    .ReplacePlusWithDotInNestedTypeName()
+                    .ReplaceGenericParametersInGenericTypeName(type);
         }
 
         public static MethodInfo GetNonOpenMatchingMethod(
