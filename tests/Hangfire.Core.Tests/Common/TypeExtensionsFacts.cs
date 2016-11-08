@@ -175,9 +175,6 @@ namespace Hangfire.Core.Tests.Common
                 new[] { typeof(IEnumerable<int>) });
 
             Assert.Equal("OtherGenericMethod", method.Name);
-            Assert.Equal(typeof(NonGenericClass), method.DeclaringType);
-            Assert.Equal(true, method.IsGenericMethod);
-            Assert.Equal(false, method.ContainsGenericParameters);
             Assert.Equal(1, method.GetParameters().Length);
             Assert.Equal(typeof(IEnumerable<int>), method.GetParameters()[0].ParameterType);
         }
@@ -189,9 +186,6 @@ namespace Hangfire.Core.Tests.Common
                 new[] { typeof(List<IEnumerable<int>>) });
 
             Assert.Equal("OtherGenericMethod", method.Name);
-            Assert.Equal(typeof(NonGenericClass), method.DeclaringType);
-            Assert.Equal(true, method.IsGenericMethod);
-            Assert.Equal(false, method.ContainsGenericParameters);
             Assert.Equal(1, method.GetParameters().Length);
             Assert.Equal(typeof(List<IEnumerable<int>>), method.GetParameters()[0].ParameterType);
         }
@@ -203,9 +197,6 @@ namespace Hangfire.Core.Tests.Common
                 new[] { typeof(Tuple<int, double>) });
 
             Assert.Equal("OtherGenericMethod", method.Name);
-            Assert.Equal(typeof(NonGenericClass), method.DeclaringType);
-            Assert.Equal(true, method.IsGenericMethod);
-            Assert.Equal(false, method.ContainsGenericParameters);
             Assert.Equal(1, method.GetParameters().Length);
             Assert.Equal(typeof(Tuple<int, double>), method.GetParameters()[0].ParameterType);
         }
@@ -217,9 +208,6 @@ namespace Hangfire.Core.Tests.Common
                 new[] { typeof(Tuple<int, double, float>) });
 
             Assert.Equal("OneMoreGenericMethod", method.Name);
-            Assert.Equal(typeof(NonGenericClass), method.DeclaringType);
-            Assert.Equal(true, method.IsGenericMethod);
-            Assert.Equal(false, method.ContainsGenericParameters);
             Assert.Equal(1, method.GetParameters().Length);
             Assert.Equal(typeof(Tuple<int, double, float>), method.GetParameters()[0].ParameterType);
         }
@@ -231,9 +219,6 @@ namespace Hangfire.Core.Tests.Common
                 new[] { typeof(int), typeof(int) });
 
             Assert.Equal("GenericMethod", method.Name);
-            Assert.Equal(typeof(NonGenericClass), method.DeclaringType);
-            Assert.Equal(true, method.IsGenericMethod);
-            Assert.Equal(false, method.ContainsGenericParameters);
             Assert.Equal(2, method.GetParameters().Length);
             Assert.Equal(typeof(int), method.GetParameters()[0].ParameterType);
             Assert.Equal(typeof(int), method.GetParameters()[1].ParameterType);
@@ -246,9 +231,6 @@ namespace Hangfire.Core.Tests.Common
                 new[] { typeof(int), typeof(NonGenericClass), typeof(double) });
 
             Assert.Equal("GenericMethod", method.Name);
-            Assert.Equal(typeof(NonGenericClass), method.DeclaringType);
-            Assert.Equal(true, method.IsGenericMethod);
-            Assert.Equal(false, method.ContainsGenericParameters);
             Assert.Equal(3, method.GetParameters().Length);
             Assert.Equal(typeof(int), method.GetParameters()[0].ParameterType);
             Assert.Equal(typeof(NonGenericClass), method.GetParameters()[1].ParameterType);
@@ -262,9 +244,6 @@ namespace Hangfire.Core.Tests.Common
                 new[] { typeof(Tuple<double, List<int>>)  });
 
             Assert.Equal("GenericMethod", method.Name);
-            Assert.Equal(typeof(NonGenericClass), method.DeclaringType);
-            Assert.Equal(true, method.IsGenericMethod);
-            Assert.Equal(false, method.ContainsGenericParameters);
             Assert.Equal(1, method.GetParameters().Length);
             Assert.Equal(typeof(Tuple<double,List<int>>), method.GetParameters()[0].ParameterType);
         }

@@ -91,7 +91,7 @@ namespace Hangfire.Common
                         continue;
                     }
 
-                    // Skipping non-generic parameters of equals types.
+                    // Skipping non-generic parameters of equal types.
                     if (parameterType.GetTypeInfo().Equals(actualType.GetTypeInfo())) continue;
 
                     parameterTypesMatched = false;
@@ -119,17 +119,9 @@ namespace Hangfire.Common
             var typeInfo = type.GetTypeInfo();
             var actualTypeInfo = actualType.GetTypeInfo();
 
-            var typeMatched = IsTypeMatched(typeInfo, actualTypeInfo);
+            if (!IsTypeMatched(typeInfo, actualTypeInfo)) return false;
 
-            if (!typeMatched)
-            {
-                return false;
-            }
-
-            if (!typeInfo.ContainsGenericParameters)
-            {
-                return true;
-            }
+            if (!typeInfo.ContainsGenericParameters) return true;
 
             if (typeInfo.IsGenericParameter)
             {
@@ -143,17 +135,14 @@ namespace Hangfire.Common
 
             if (typeInfo.IsGenericType && typeInfo.ContainsGenericParameters)
             {
-                for (var index = 0; index < typeInfo.GenericTypeArguments.Length; index++)
+                for (var i = 0; i < typeInfo.GenericTypeArguments.Length; i++)
                 {
-                    var genericTypeArgument = typeInfo.GenericTypeArguments[index];
-                    var actualGenericArgument = actualTypeInfo.GenericTypeArguments[index];
+                    var genericTypeArgument = typeInfo.GenericTypeArguments[i];
+                    var actualGenericArgument = actualTypeInfo.GenericTypeArguments[i];
 
-                    typeMatched = genericTypeArgument.TryGetGenericArguments(actualGenericArgument, ref methodGenricArguments);
+                    var typeMatched = genericTypeArgument.TryGetGenericArguments(actualGenericArgument, ref methodGenricArguments);
 
-                    if (!typeMatched)
-                    {
-                        return false;
-                    }
+                    if (!typeMatched) return false;
                 }
             }
 
@@ -167,7 +156,7 @@ namespace Hangfire.Common
                 return true;
             }
 
-            if (genericParameterType.IsGenericType ^ actualType.IsGenericType)
+            if (genericParameterType.IsGenericType != actualType.IsGenericType)
             {
                 return false;
             }
