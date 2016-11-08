@@ -84,7 +84,7 @@ namespace Hangfire.Common
                     if (parameterType.GetTypeInfo().ContainsGenericParameters)
                     {
                         // Skipping generic parameters as we can use actual type.
-                        parameterTypesMatched = parameterType.TryGetGenericArguments(actualType, ref methodGenericArguments);
+                        parameterTypesMatched = TryGetGenericArguments(parameterType, actualType, methodGenericArguments);
 
                         if (!parameterTypesMatched) break;
 
@@ -114,7 +114,7 @@ namespace Hangfire.Common
             return type.GenericTypeArguments.Length > 0 ? type.GenericTypeArguments : type.GenericTypeParameters;
         }
 
-        private static bool TryGetGenericArguments(this Type type, Type actualType, ref Dictionary<Type, Type> methodGenricArguments)
+        private static bool TryGetGenericArguments(Type type, Type actualType, Dictionary<Type, Type> methodGenricArguments)
         {
             var typeInfo = type.GetTypeInfo();
             var actualTypeInfo = actualType.GetTypeInfo();
@@ -140,7 +140,7 @@ namespace Hangfire.Common
                     var genericTypeArgument = typeInfo.GenericTypeArguments[i];
                     var actualGenericArgument = actualTypeInfo.GenericTypeArguments[i];
 
-                    var typeMatched = genericTypeArgument.TryGetGenericArguments(actualGenericArgument, ref methodGenricArguments);
+                    var typeMatched = TryGetGenericArguments(genericTypeArgument, actualGenericArgument, methodGenricArguments);
 
                     if (!typeMatched) return false;
                 }
@@ -149,7 +149,7 @@ namespace Hangfire.Common
             return true;
         }
 
-        private static bool IsTypeMatched(this TypeInfo genericParameterType, TypeInfo actualType)
+        private static bool IsTypeMatched(TypeInfo genericParameterType, TypeInfo actualType)
         {
             if (genericParameterType.IsGenericParameter)
             {
