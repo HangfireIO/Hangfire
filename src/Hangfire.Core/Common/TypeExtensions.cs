@@ -53,7 +53,8 @@ namespace Hangfire.Common
 
             if (type.GetTypeInfo().IsInterface)
             {
-                methodCandidates.AddRange(type.GetTypeInfo().ImplementedInterfaces.SelectMany(x => x.GetRuntimeMethods()));
+                methodCandidates.AddRange(type.GetTypeInfo()
+                    .ImplementedInterfaces.SelectMany(x => x.GetRuntimeMethods()));
             }
 
             foreach (var methodCandidate in methodCandidates)
@@ -71,7 +72,8 @@ namespace Hangfire.Common
 
                 var parameterTypesMatched = true;
 
-                var methodGenericArguments = methodCandidate.GetGenericArguments().ToDictionary(arg => arg, arg => (Type) null);
+                var methodGenericArguments = methodCandidate.GetGenericArguments()
+                    .ToDictionary(arg => arg, arg => (Type) null);
 
                 // Determining whether we can use this method candidate with
                 // current parameter types.
@@ -99,10 +101,15 @@ namespace Hangfire.Common
                 }
 
                 if (!parameterTypesMatched) continue;
+                
+                var sortedGenericArguments = methodGenericArguments
+                    .OrderBy(arg => arg.Key.GenericParameterPosition)
+                    .Select(arg => arg.Value)
+                    .ToArray();
 
                 // Return first found method candidate with matching parameters.
                 return methodCandidate.ContainsGenericParameters
-                    ? methodCandidate.MakeGenericMethod(methodGenericArguments.Values.ToArray())
+                    ? methodCandidate.MakeGenericMethod(sortedGenericArguments)
                     : methodCandidate;
             }
 
