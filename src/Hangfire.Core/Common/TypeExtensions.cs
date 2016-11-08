@@ -83,20 +83,14 @@ namespace Hangfire.Common
 
                     if (parameterType.GetTypeInfo().ContainsGenericParameters)
                     {
-                        try
-                        {
-                            // Skipping generic parameters as we can use actual type.
-                            var currentGenericArguments = parameterType.GetGenericArgumentsByGenericParameter(actualType);
+                        // Skipping generic parameters as we can use actual type.
+                        parameterTypesMatched = parameterType.TryGetGenericArguments(actualType, ref methodGenericArguments);
 
-                            methodGenericArguments.MergeGenericArguments(currentGenericArguments);
-                            continue;
-                        }
-                        catch (InvalidOperationException)
+                        if (!parameterTypesMatched)
                         {
-                            parameterTypesMatched = false;
                             break;
                         }
-                       
+                        continue;
                     }
 
                     // Skipping non-generic parameters of equals types.
@@ -122,7 +116,7 @@ namespace Hangfire.Common
             return type.GenericTypeArguments.Length > 0 ? type.GenericTypeArguments : type.GenericTypeParameters;
         }
 
-        private static Dictionary<Type, Type> GetGenericArgumentsByGenericParameter(this Type type, Type actualType)
+        private static bool TryGetGenericArguments(this Type type, Type actualType, ref Dictionary<Type, Type> methodGenricArguments)
         {
             var typeInfo = type.GetTypeInfo();
             var actualTypeInfo = actualType.GetTypeInfo();
@@ -131,53 +125,41 @@ namespace Hangfire.Common
 
             if (!typeMatched)
             {
-                throw new InvalidOperationException("Actual type is not matched to parameter type");
+                return false;
             }
 
             if (!typeInfo.ContainsGenericParameters)
             {
-                return new Dictionary<Type, Type>();
+                return true;
             }
 
             if (typeInfo.IsGenericParameter)
             {
-                return new Dictionary<Type, Type> {{type, actualType}};
+                //Return false if this generic parameter has been identified and it's not the same as actual type
+                if (methodGenricArguments[type] != null && methodGenricArguments[type] != actualType)
+                {
+                    return false;
+                }
+                methodGenricArguments[type] = actualType;
             }
 
             if (typeInfo.IsGenericType && typeInfo.ContainsGenericParameters)
             {
-                var typeGenericArguments = new Dictionary<Type, Type>();
-                
                 for (var index = 0; index < typeInfo.GenericTypeArguments.Length; index++)
                 {
                     var genericTypeArgument = typeInfo.GenericTypeArguments[index];
                     var actualGenericArgument = actualTypeInfo.GenericTypeArguments[index];
 
-                    var currentGenericArguments = GetGenericArgumentsByGenericParameter(genericTypeArgument, actualGenericArgument);
+                    typeMatched = genericTypeArgument.TryGetGenericArguments(actualGenericArgument, ref methodGenricArguments);
 
-                    typeGenericArguments.MergeGenericArguments(currentGenericArguments);
+                    if (!typeMatched)
+                    {
+                        return false;
+                    }
                 }
-                return typeGenericArguments;
             }
 
-            return new Dictionary<Type, Type>();
-        }
-
-        private static void MergeGenericArguments(
-            this Dictionary<Type, Type> genericArguments,
-            Dictionary<Type, Type> addingGenericArguments)
-        {
-            foreach (var genericArgument in addingGenericArguments)
-            {
-                if (genericArguments.ContainsKey(genericArgument.Key) && 
-                    genericArguments[genericArgument.Key] != null &&
-                    genericArguments[genericArgument.Key] != genericArgument.Value)
-                {
-                    throw new InvalidOperationException("This generic parameter has been already identified as different type");
-                }
-
-                genericArguments[genericArgument.Key] = genericArgument.Value;
-            }
+            return true;
         }
 
         private static bool IsTypeMatched(this TypeInfo genericParameterType, TypeInfo actualType)
