@@ -86,10 +86,8 @@ namespace Hangfire.Common
                         // Skipping generic parameters as we can use actual type.
                         parameterTypesMatched = parameterType.TryGetGenericArguments(actualType, ref methodGenericArguments);
 
-                        if (!parameterTypesMatched)
-                        {
-                            break;
-                        }
+                        if (!parameterTypesMatched) break;
+
                         continue;
                     }
 
