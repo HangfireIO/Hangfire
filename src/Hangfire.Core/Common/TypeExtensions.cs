@@ -72,45 +72,31 @@ namespace Hangfire.Common
 
                 var parameterTypesMatched = true;
 
-                var methodGenericArguments = methodCandidate.GetGenericArguments()
-                    .ToDictionary(arg => arg, arg => (Type) null);
-
+                var genericArguments = methodCandidate.ContainsGenericParameters
+                    ? new Type[methodCandidate.GetGenericArguments().Length]
+                    : null;
+                
                 // Determining whether we can use this method candidate with
                 // current parameter types.
                 for (var i = 0; i < parameters.Length; i++)
                 {
-                    var parameter = parameters[i];
-                    var parameterType = parameter.ParameterType;
-                    var actualType = parameterTypes[i];
+                    var parameterType = parameters[i].ParameterType.GetTypeInfo();
+                    var actualType = parameterTypes[i].GetTypeInfo();
 
-                    if (parameterType.GetTypeInfo().ContainsGenericParameters)
+                    if (!TypesMatchRecursive(parameterType, actualType, genericArguments))
                     {
-                        // Skipping generic parameters as we can use actual type.
-                        parameterTypesMatched = TryGetGenericArguments(parameterType, actualType, methodGenericArguments);
-
-                        if (!parameterTypesMatched) break;
-
-                        continue;
+                        parameterTypesMatched = false;
+                        break;
                     }
-
-                    // Skipping non-generic parameters of equal types.
-                    if (parameterType.GetTypeInfo().Equals(actualType.GetTypeInfo())) continue;
-
-                    parameterTypesMatched = false;
-                    break;
                 }
 
-                if (!parameterTypesMatched) continue;
-                
-                var sortedGenericArguments = methodGenericArguments
-                    .OrderBy(arg => arg.Key.GenericParameterPosition)
-                    .Select(arg => arg.Value)
-                    .ToArray();
-
-                // Return first found method candidate with matching parameters.
-                return methodCandidate.ContainsGenericParameters
-                    ? methodCandidate.MakeGenericMethod(sortedGenericArguments)
-                    : methodCandidate;
+                if (parameterTypesMatched)
+                {
+                    // Return first found method candidate with matching parameters.
+                    return genericArguments != null
+                        ? methodCandidate.MakeGenericMethod(genericArguments)
+                        : methodCandidate;
+                }
             }
 
             return null;
@@ -121,60 +107,44 @@ namespace Hangfire.Common
             return type.GenericTypeArguments.Length > 0 ? type.GenericTypeArguments : type.GenericTypeParameters;
         }
 
-        private static bool TryGetGenericArguments(Type type, Type actualType, Dictionary<Type, Type> methodGenricArguments)
+        private static bool TypesMatchRecursive(TypeInfo parameterType, TypeInfo actualType, IList<Type> genericArguments)
         {
-            var typeInfo = type.GetTypeInfo();
-            var actualTypeInfo = actualType.GetTypeInfo();
-
-            if (!IsTypeMatched(typeInfo, actualTypeInfo)) return false;
-
-            if (!typeInfo.ContainsGenericParameters) return true;
-
-            if (typeInfo.IsGenericParameter)
+            if (parameterType.IsGenericParameter)
             {
-                //Return false if this generic parameter has been identified and it's not the same as actual type
-                if (methodGenricArguments[type] != null && methodGenricArguments[type] != actualType)
+                var position = parameterType.GenericParameterPosition;
+                
+                // Return false if this generic parameter has been identified and it's not the same as actual type
+                if (genericArguments[position] != null && genericArguments[position].GetTypeInfo() != actualType)
                 {
                     return false;
                 }
-                methodGenricArguments[type] = actualType;
-            }
 
-            if (typeInfo.IsGenericType && typeInfo.ContainsGenericParameters)
-            {
-                for (var i = 0; i < typeInfo.GenericTypeArguments.Length; i++)
-                {
-                    var genericTypeArgument = typeInfo.GenericTypeArguments[i];
-                    var actualGenericArgument = actualTypeInfo.GenericTypeArguments[i];
-
-                    var typeMatched = TryGetGenericArguments(genericTypeArgument, actualGenericArgument, methodGenricArguments);
-
-                    if (!typeMatched) return false;
-                }
-            }
-
-            return true;
-        }
-
-        private static bool IsTypeMatched(TypeInfo genericParameterType, TypeInfo actualType)
-        {
-            if (genericParameterType.IsGenericParameter)
-            {
+                genericArguments[position] = actualType.AsType();
                 return true;
             }
 
-            if (genericParameterType.IsGenericType != actualType.IsGenericType)
+            if (parameterType.ContainsGenericParameters)
             {
-                return false;
+                if (!actualType.IsGenericType || parameterType.GetGenericTypeDefinition() != actualType.GetGenericTypeDefinition())
+                {
+                    return false;
+                }
+
+                for (var i = 0; i < parameterType.GenericTypeArguments.Length; i++)
+                {
+                    var parameterGenericArgument = parameterType.GenericTypeArguments[i];
+                    var actualGenericArgument = actualType.GenericTypeArguments[i];
+
+                    if (!TypesMatchRecursive(parameterGenericArgument.GetTypeInfo(), actualGenericArgument.GetTypeInfo(), genericArguments))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
             }
 
-            if (genericParameterType.IsGenericType && genericParameterType.ContainsGenericParameters)
-            {
-                return genericParameterType.GetGenericTypeDefinition().GetTypeInfo()
-                    .Equals(actualType.GetGenericTypeDefinition().GetTypeInfo());
-            }
-
-            return genericParameterType.Equals(actualType);
+            return parameterType == actualType;
         }
 
         private static string GetFullNameWithoutNamespace(this Type type)
