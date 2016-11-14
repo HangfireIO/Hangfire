@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
@@ -169,8 +170,27 @@ namespace Hangfire
 
             return new ConfigurationEntry<T>(entry);
         }
+		public static IGlobalConfiguration UseRecurringJob(
+			[NotNull] this IGlobalConfiguration configuration,
+			[NotNull] params Type[] types)
+		{
+			return UseRecurringJob(configuration, () => types);
+		}
 
-        private class ConfigurationEntry<T> : IGlobalConfiguration<T>
+		public static IGlobalConfiguration UseRecurringJob(
+			[NotNull] this IGlobalConfiguration configuration,
+			[NotNull] Func<IEnumerable<Type>> typesProvider)
+		{
+			if (typesProvider == null) throw new ArgumentNullException(nameof(typesProvider));
+
+			IRecurringJobBuilder builder = new RecurringJobBuilder(new RecurringJobRegistry());
+
+			builder.Build(typesProvider);
+
+			return configuration;
+		}
+
+		private class ConfigurationEntry<T> : IGlobalConfiguration<T>
         {
             public ConfigurationEntry(T entry)
             {
