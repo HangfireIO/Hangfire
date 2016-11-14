@@ -33,7 +33,6 @@ namespace Hangfire
 
             foreach (var type in typesProvider())
             {
-                var typeInfo = type.GetTypeInfo();
 #if NETFULL
                 foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static))
 #else
