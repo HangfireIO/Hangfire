@@ -4,8 +4,19 @@ using System.Reflection;
 
 namespace Hangfire
 {
+	/// <summary>
+	/// Register <see cref="RecurringJob"/> dynamically.
+	/// <see cref="IRecurringJobRegistry"/> interface.
+	/// </summary>
 	public class RecurringJobRegistry : IRecurringJobRegistry
 	{
+		/// <summary>
+		/// Register RecurringJob via <see cref="MethodInfo"/>.
+		/// </summary>
+		/// <param name="method">The specified method marked by <see cref="RecurringJobAttribute"/> </param>
+		/// <param name="cron">Cron expressions</param>
+		/// <param name="timeZone"><see cref="TimeZoneInfo"/></param>
+		/// <param name="queue">Queue name</param>
 		public void Register(MethodInfo method, string cron, TimeZoneInfo timeZone, string queue)
 		{
 			if (method == null) throw new ArgumentNullException(nameof(method));
