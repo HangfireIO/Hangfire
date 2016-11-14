@@ -38,6 +38,19 @@ namespace Hangfire.SqlServer.Tests
                 Assert.Equal("timeout", exception.ParamName);
             });
         }
+        
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenTimeoutTooLargeForLock()
+        {
+            UseConnection(connection =>
+            {
+                var storage = CreateStorage(connection);
+                var tooLargeTimeout = TimeSpan.FromDays(25);
+                var exception = Assert.Throws<ArgumentException>(() => new SqlServerDistributedLock(storage, "hello", tooLargeTimeout));
+
+                Assert.Equal("timeout", exception.ParamName);
+            });
+        }
 
         [Fact, CleanDatabase]
         public void Ctor_ThrowsAnException_WhenResourceIsNullOrEmpty()
