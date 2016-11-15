@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -171,7 +172,17 @@ namespace Hangfire.Storage
 #if NETFULL
                     try
                     {
-                        var converter = System.ComponentModel.TypeDescriptor.GetConverter(type);
+                        var converter = TypeDescriptor.GetConverter(type);
+
+                        // ReferenceConverter can't correctly convert the serialized
+                        // data. This may happen when FromJson method threw an exception,
+                        // we should rethrow it instead of trying to deserialize.
+                        if (converter.GetType() == typeof(ReferenceConverter))
+                        {
+                            ExceptionDispatchInfo.Capture(jsonException).Throw();
+                            throw;
+                        }
+
                         value = converter.ConvertFromInvariantString(argument);
                     }
                     catch (Exception)

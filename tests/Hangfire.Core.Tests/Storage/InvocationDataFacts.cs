@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Hangfire.Common;
 using Hangfire.Storage;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Hangfire.Core.Tests.Storage
@@ -126,7 +128,24 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(typeof(IChild), job.Type);
         }
 
+        [Fact]
+        public void Deserialize_RethrowsJsonException_InsteadOfNullValue_WhenReferenceConverterChosen()
+        {
+            var serializedData = new InvocationData(
+                typeof(InvocationDataFacts).AssemblyQualifiedName,
+                "ListMethod",
+                JobHelper.ToJson(new [] { typeof(IList<string>) }),
+                JobHelper.ToJson(new [] { "asdfasdf" }));
+
+            var exception = Assert.Throws<JobLoadException>(() => serializedData.Deserialize());
+            Assert.IsType<JsonReaderException>(exception.InnerException);
+        }
+
         public static void Sample(string arg)
+        {
+        }
+
+        public static void ListMethod(IList<string> arg)
         {
         }
 
