@@ -1,7 +1,7 @@
-{
+﻿{
     "dependencies": {
         "Owin": "1.0",
-        "CronExpressionDescriptor": "1.17.0",
+        "CronExpressionDescriptor": "1.21.0",
         "Newtonsoft.Json": "5.0.1",
         "Microsoft.Owin": "3.0.1",
         "MoreLinq.Source.MoreEnumerable.Pairwise": "1.0.1",
