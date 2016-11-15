@@ -14,6 +14,9 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.7
+• Fixed – "An invalid application lock time-out was passed to xp_userlock" exception when lock timeout is too high.
+    
 1.6.6
 • Fixed – SqlServerJobQueue class doesn't use obsolete InvisibilityTimeout parameter anymore.
     

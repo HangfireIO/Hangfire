@@ -19,6 +19,20 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.7
+
+Hangfire.Core
+• Fixed – ArgumentException when using complex arguments in generic methods like IList&lt;T&gt;.
+• Fixed – Wrong choice of the overload when multiple methods match the given arguments.
+• Fixed – HtmlHelper.ToHumanDuration incorrectly formats fractional seconds.
+• Fixed – Inconsistent constructors' accessibility for different context classes.
+
+Hangfire.SqlServer
+• Fixed – "An invalid application lock time-out was passed to xp_userlock" exception when lock timeout is too high.
+
+Hangfire.AspNetCore
+• Fixed – Parameterless AspNetCoreJobActivator.BeginScope method now returns SimpleJobActivatorScope instance.
+
 1.6.6
 
 Hangfire.Core

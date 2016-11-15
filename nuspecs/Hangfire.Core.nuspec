@@ -14,6 +14,12 @@
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.7
+• Fixed – ArgumentException when using complex arguments in generic methods like IList&lt;T&gt;.
+• Fixed – Wrong choice of the overload when multiple methods match the given arguments.
+• Fixed – HtmlHelper.ToHumanDuration incorrectly formats fractional seconds.
+• Fixed – Inconsistent constructors' accessibility for different context classes.
+    
 1.6.6
 • Fixed – Hangfire.Core, Hangfire.SqlServer and Hangfire.SqlServer.Msmq marked as CLS-compliant.
 • Fixed – Generic methods cause ArgumentNullException when scoped variable is used in expression.
