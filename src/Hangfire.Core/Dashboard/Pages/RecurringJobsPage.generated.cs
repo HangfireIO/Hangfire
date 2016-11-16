@@ -381,7 +381,7 @@ WriteLiteral("\r\n");
 #if NETFULL
                                             try
                                             {
-                                                cronDescription = CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.Cron, new CronExpressionDescriptor.Options {ThrowExceptionOnParseError = false});
+                                                cronDescription = CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.Cron, new CronExpressionDescriptor.Options { ThrowExceptionOnParseError = false });
                                             }
                                             catch (FormatException)
                                             {
