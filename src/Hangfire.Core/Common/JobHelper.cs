@@ -23,24 +23,44 @@ namespace Hangfire.Common
 {
     public static class JobHelper
     {
-        private static JsonSerializerSettings _serializerSettings;
+        private static JsonSerializerSettings _coreSerializerSettings;
+	    private static JsonSerializerSettings _arugumentsSerializerSettings;
 
-        public static void SetSerializerSettings(JsonSerializerSettings setting)
+		internal static void SetCoreSerializerSettings(JsonSerializerSettings setting)
+		{
+			_coreSerializerSettings = setting;
+		}
+
+		[Obsolete("Please use 'SetCoreSerializerSettings' method instead. Will be removed in version 2.0.0.")]
+		public static void SetSerializerSettings(JsonSerializerSettings setting)
         {
-            _serializerSettings = setting;
+            _coreSerializerSettings = setting;
+	        _arugumentsSerializerSettings = _arugumentsSerializerSettings ?? setting;
         }
 
-        public static string ToJson(object value)
+		public static void SetArgumentsSerializerSettings(JsonSerializerSettings setting)
+		{
+			_arugumentsSerializerSettings = setting;
+		}
+
+		public static string ToJson(object value)
         {
             return value != null
-                ? JsonConvert.SerializeObject(value, _serializerSettings)
+                ? JsonConvert.SerializeObject(value, _coreSerializerSettings)
                 : null;
         }
+
+	    public static string ArgumentsToJson(object value)
+	    {
+			return value != null
+			   ? JsonConvert.SerializeObject(value, _arugumentsSerializerSettings)
+			   : null;
+		}
 
         public static T FromJson<T>(string value)
         {
             return value != null
-                ? JsonConvert.DeserializeObject<T>(value, _serializerSettings)
+                ? JsonConvert.DeserializeObject<T>(value, _coreSerializerSettings)
                 : default(T);
         }
 
@@ -49,11 +69,18 @@ namespace Hangfire.Common
             if (type == null) throw new ArgumentNullException(nameof(type));
 
             return value != null
-                ? JsonConvert.DeserializeObject(value, type, _serializerSettings)
+                ? JsonConvert.DeserializeObject(value, type, _coreSerializerSettings)
                 : null;
         }
 
-        private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+		public static T ArgumentsFromJson<T>(string value)
+		{
+			return value != null
+				? JsonConvert.DeserializeObject<T>(value, _arugumentsSerializerSettings)
+				: default(T);
+		}
+
+		private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         public static long ToTimestamp(DateTime value)
         {
