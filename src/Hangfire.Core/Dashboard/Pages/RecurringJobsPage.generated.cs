@@ -381,9 +381,9 @@ WriteLiteral("\r\n");
 #if NETFULL
                                             try
                                             {
-                                                cronDescription = CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.Cron);
+                                                cronDescription = string.IsNullOrEmpty(job.Cron) ? null : CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.Cron);
                                             }
-                                            catch (Exception ex) when (ex is FormatException || ex is MissingFieldException)
+                                            catch (FormatException)
                                             {
                                             }
 #endif
