@@ -31,10 +31,13 @@ namespace Hangfire.SqlServer
 
         private const string DistributedLockKey = "locks:expirationmanager";
         private static readonly TimeSpan DefaultLockTimeout = TimeSpan.FromMinutes(5);
-
-        // The value should be low enough to prevent INDEX SCAN operator,
-        // see https://github.com/HangfireIO/Hangfire/issues/628
-        private const int NumberOfRecordsInSinglePass = 100;
+        
+        // This value should be high enough to optimize the deletion as much, as possible,
+        // reducing the number of queries. But low enough to cause lock escalations (it
+        // appears, when ~5000 locks were taken, but this number is a subject of version).
+        // Note, that lock escalation may also happen during the cascade deletions for
+        // State (3-5 rows/job usually) and JobParameters (2-3 rows/job usually) tables.
+        private const int NumberOfRecordsInSinglePass = 1000;
         
         private static readonly string[] ProcessedTables =
         {
@@ -68,12 +71,18 @@ namespace Hangfire.SqlServer
 
                     try
                     {
-                        ExecuteNonQuery(
-                            connection,
-                            GetQuery(_storage.SchemaName, table),
-                            cancellationToken,
-                            new SqlParameter("@count", NumberOfRecordsInSinglePass),
-                            new SqlParameter("@now", DateTime.UtcNow));
+                        int affected;
+
+                        do
+                        {
+                            affected = ExecuteNonQuery(
+                                connection,
+                                GetQuery(_storage.SchemaName, table),
+                                cancellationToken,
+                                new SqlParameter("@count", NumberOfRecordsInSinglePass),
+                                new SqlParameter("@now", DateTime.UtcNow));
+
+                        } while (affected == NumberOfRecordsInSinglePass);
                     }
                     finally
                     {
@@ -94,18 +103,37 @@ namespace Hangfire.SqlServer
 
         private static string GetQuery(string schemaName, string table)
         {
+            // Okay, let me explain all the bells and whistles in this query:
+            //
+            // SET TRANSACTION... is to prevent a query from running, when a
+            // higher isolation level was set, for example, when it was leaked:
+            // http://www.levibotelho.com/development/plugging-isolation-leaks-in-sql-server.
+            //
+            // LOOP JOIN hint is here to prevent merge or hash joins, that
+            // cause index scan operators, and they are unacceptable, because
+            // may block running background jobs.
+            //
+            // OPTIMIZE FOR instructs engine to generate better plan that
+            // causes much fewer logical reads, because of additional sorting
+            // before querying data in nested loops. The value was discovered
+            // in practice.
+            //
+            // READPAST hint is used to simply skip blocked records, because
+            // it's better to ignore them instead of waiting for unlock.
+            //
+            // TOP is to prevent lock escalations that may cause background
+            // processing to stop, and to avoid larger batches to rollback
+            // in case of connection/process termination.
+
             return
 $@"set transaction isolation level read committed;
-set nocount on;
-while (1 = 1)
-begin
-    delete top (@count) from [{schemaName}].[{table}] with (readpast) where ExpireAt < @now;
-    if @@ROWCOUNT = 0 break;
-end";
+delete top (@count) from [{schemaName}].[{table}] with (readpast) 
+where ExpireAt < @now
+option (loop join, optimize for (@count = 20000));";
         }
 
         private static int ExecuteNonQuery(
-            DbConnection connection, 
+            DbConnection connection,
             string commandText,
             CancellationToken cancellationToken,
             params SqlParameter[] parameters)
@@ -116,14 +144,17 @@ end";
                 command.Parameters.AddRange(parameters);
                 command.CommandTimeout = 0;
 
-                var registration = cancellationToken.Register(command.Cancel);
-                try
+                using (cancellationToken.Register(state => ((SqlCommand)state).Cancel(), command))
                 {
-                    return command.ExecuteNonQuery();
-                }
-                finally
-                {
-                    registration.Dispose();
+                    try
+                    {
+                        return command.ExecuteNonQuery();
+                    }
+                    catch (SqlException) when (cancellationToken.IsCancellationRequested)
+                    {
+                        // Exception was triggered due to the Cancel method call, ignoring
+                        return 0;
+                    }
                 }
             }
         }

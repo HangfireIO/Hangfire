@@ -7,7 +7,7 @@
 #   - Section names should be unique on each level.
 
 # Don't edit manually! Use `build.bat version` command instead!
-version: 1.6.4-build-0{build}
+version: 1.6.7-build-0{build}
 
 os: Visual Studio 2015
 
@@ -21,6 +21,10 @@ environment:
   Hangfire_SqlServer_ConnectionStringTemplate: Server=.\SQL2008R2SP2;Database={0};User Id=sa;Password=Password12!
   COVERALLS_REPO_TOKEN: 
     secure: oE4uB475V9hPzKmm+ZRP+1BacnMFOE98a/2tVeFieYJi5BbYG6X3VM+p6vKIQZdd
+  COVERITY_TOKEN:
+    secure: r3yBqxgALySnCK9W6uiStqoadsqYtrWQolzxGDVKF74=
+  COVERITY_EMAIL:
+    secure: wf51HXCiUYxuTe+eo3uQOxqyptSLrH4IEqq0958Rmx8=
 
 # enable service required for tests
 services:
@@ -48,12 +52,12 @@ cache:
 
 # to run your custom scripts instead of automatic MSBuild
 build_script:
-  - build.bat pack
-  - dotnet restore
-  - dotnet test tests/Hangfire.Core.Tests
+  - build.bat ci
 
 after_build:
-  - packages\coveralls.io.1.3.4\tools\coveralls.net --opencover coverage.xml
+  - "SET PATH=C:\\Python34;C:\\Python34\\Scripts;%PATH%"
+  - pip install codecov
+  - codecov -f coverage.xml
 
 #---------------------------------#
 #       tests configuration       #
@@ -87,3 +91,11 @@ deploy:
       secure: 8BQmcR1hP9MoxvrmXJKMtlRyX6LI36H9ZTU8fSEetvzMGCl1PUlXKZRUGq+GVMja
     on:
       appveyor_repo_tag: true
+
+notifications:
+  - provider: Slack
+    incoming_webhook:
+      secure: bqJhjmwwsSMJ/8imZJBOOtwbsNF51p24M8HZlIx1+asIHHUhXWHrP9vkuOPK3OnqNopmloLOOBoaEpYAkClkDuEC61a5Go5NY9KSSB9UMjk=
+    on_build_success: false
+    on_build_failure: true
+    on_build_status_changed: true

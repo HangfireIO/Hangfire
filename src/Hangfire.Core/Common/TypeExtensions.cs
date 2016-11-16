@@ -1,7 +1,25 @@
-﻿using System;
+﻿// This file is part of Hangfire.
+// Copyright © 2014 Sergey Odinokov.
+// 
+// Hangfire is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as 
+// published by the Free Software Foundation, either version 3 
+// of the License, or any later version.
+// 
+// Hangfire is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public 
+// License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
+
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Hangfire.Annotations;
 
 namespace Hangfire.Common
 {
@@ -19,6 +37,114 @@ namespace Hangfire.Common
                     .GetFullNameWithoutNamespace()
                     .ReplacePlusWithDotInNestedTypeName()
                     .ReplaceGenericParametersInGenericTypeName(type);
+        }
+
+        public static MethodInfo GetNonOpenMatchingMethod(
+            [NotNull] this Type type,
+            [NotNull] string name,
+            [CanBeNull] Type[] parameterTypes)
+        {
+            if (type == null) throw new ArgumentNullException(nameof(type));
+            if (name == null) throw new ArgumentNullException(nameof(name));
+
+            parameterTypes = parameterTypes ?? new Type[0];
+
+            var methodCandidates = new List<MethodInfo>(type.GetRuntimeMethods());
+
+            if (type.GetTypeInfo().IsInterface)
+            {
+                methodCandidates.AddRange(type.GetTypeInfo()
+                    .ImplementedInterfaces.SelectMany(x => x.GetRuntimeMethods()));
+            }
+
+            foreach (var methodCandidate in methodCandidates)
+            {
+                if (!methodCandidate.Name.Equals(name, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                var parameters = methodCandidate.GetParameters();
+                if (parameters.Length != parameterTypes.Length)
+                {
+                    continue;
+                }
+
+                var parameterTypesMatched = true;
+
+                var genericArguments = methodCandidate.ContainsGenericParameters
+                    ? new Type[methodCandidate.GetGenericArguments().Length]
+                    : null;
+                
+                // Determining whether we can use this method candidate with
+                // current parameter types.
+                for (var i = 0; i < parameters.Length; i++)
+                {
+                    var parameterType = parameters[i].ParameterType.GetTypeInfo();
+                    var actualType = parameterTypes[i].GetTypeInfo();
+
+                    if (!TypesMatchRecursive(parameterType, actualType, genericArguments))
+                    {
+                        parameterTypesMatched = false;
+                        break;
+                    }
+                }
+
+                if (parameterTypesMatched)
+                {
+                    // Return first found method candidate with matching parameters.
+                    return genericArguments != null
+                        ? methodCandidate.MakeGenericMethod(genericArguments)
+                        : methodCandidate;
+                }
+            }
+
+            return null;
+        }
+
+        public static Type[] GetAllGenericArguments(this TypeInfo type)
+        {
+            return type.GenericTypeArguments.Length > 0 ? type.GenericTypeArguments : type.GenericTypeParameters;
+        }
+
+        private static bool TypesMatchRecursive(TypeInfo parameterType, TypeInfo actualType, IList<Type> genericArguments)
+        {
+            if (parameterType.IsGenericParameter)
+            {
+                var position = parameterType.GenericParameterPosition;
+                
+                // Return false if this generic parameter has been identified and it's not the same as actual type
+                if (genericArguments[position] != null && genericArguments[position].GetTypeInfo() != actualType)
+                {
+                    return false;
+                }
+
+                genericArguments[position] = actualType.AsType();
+                return true;
+            }
+
+            if (parameterType.ContainsGenericParameters)
+            {
+                if (!actualType.IsGenericType || parameterType.GetGenericTypeDefinition() != actualType.GetGenericTypeDefinition())
+                {
+                    return false;
+                }
+
+                for (var i = 0; i < parameterType.GenericTypeArguments.Length; i++)
+                {
+                    var parameterGenericArgument = parameterType.GenericTypeArguments[i];
+                    var actualGenericArgument = actualType.GenericTypeArguments[i];
+
+                    if (!TypesMatchRecursive(parameterGenericArgument.GetTypeInfo(), actualGenericArgument.GetTypeInfo(), genericArguments))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            return parameterType == actualType;
         }
 
         private static string GetFullNameWithoutNamespace(this Type type)
@@ -57,11 +183,6 @@ namespace Hangfire.Common
             });
 
             return typeName;
-        }
-
-        public static Type[] GetAllGenericArguments(this TypeInfo type)
-        {
-            return type.GenericTypeArguments.Length > 0 ? type.GenericTypeArguments : type.GenericTypeParameters;
         }
     }
 }

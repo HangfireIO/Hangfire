@@ -14,6 +14,27 @@
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.7
+• Fixed – ArgumentException when using complex arguments in generic methods like IList&lt;T&gt;.
+• Fixed – Wrong choice of the overload when multiple methods match the given arguments.
+• Fixed – HtmlHelper.ToHumanDuration incorrectly formats fractional seconds.
+• Fixed – Inconsistent constructors' accessibility for different context classes.
+    
+1.6.6
+• Fixed – Hangfire.Core, Hangfire.SqlServer and Hangfire.SqlServer.Msmq marked as CLS-compliant.
+• Fixed – Generic methods cause ArgumentNullException when scoped variable is used in expression.
+    
+1.6.5
+• Added – Chinese language to Dashboard UI.
+• Changed – Default upper limit of worker number is 20.
+• Changed – Default value for DashboardJobListLimit is now 10000.
+• Fixed – Deserialization exception in continuations, when TypeNameHandling.All option is used.
+• Fixed – I18N is not working, because there are no localized resources in NuGet packages.
+• Fixed – Infinite redirect loops, when authenticated, but not authorized user accesses Dashboard UI.
+• Fixed – "The type ... exists in both..." issue when building Hangfire, related to Newtonsoft.Json.
+• Fixed – Use the given type's method, when scope variable is passed to a job expression.
+• Fixed – Very rare resource leaks detected by Coverity Scan.
+    
 1.6.3
 • Fixed – Add missing `RecurringJob.AddOrUpdate` method overloads to prevent CS4014 warnings.
 • Fixed – `ToGenericTypeString` method now handles types with no namespace correctly.
@@ -78,10 +99,14 @@
     <file src="net45\Hangfire.Core.dll" target="lib\net45" />
     <file src="net45\Hangfire.Core.xml" target="lib\net45" />
     <file src="net45\Hangfire.Core.pdb" target="lib\net45" />
+
+    <file src="net45\**\Hangfire.Core.resources.dll" target="lib\net45" />
     
     <file src="netstandard1.3\Hangfire.Core.dll" target="lib\netstandard1.3" />
     <file src="netstandard1.3\Hangfire.Core.xml" target="lib\netstandard1.3" />
     <file src="netstandard1.3\Hangfire.Core.pdb" target="lib\netstandard1.3" />
+
+    <file src="netstandard1.3\**\Hangfire.Core.resources.dll" target="lib\netstandard1.3" />
     
     <file src="..\src\Hangfire.Core\**\*.cs;..\src\Hangfire.Core\**\*.cshtml" target="src" exclude="**\obj*\**\*.cs" />
   </files>

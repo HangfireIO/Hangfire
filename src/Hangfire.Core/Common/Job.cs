@@ -351,7 +351,7 @@ namespace Hangfire.Common
 
                 // If an expression tree is based on interface, we should use its own
                 // MethodInfo instance, based on the same method name and parameter types.
-                method = type.GetRuntimeMethod(
+                method = type.GetNonOpenMatchingMethod(
                     callExpression.Method.Name,
                     callExpression.Method.GetParameters().Select(x => x.ParameterType).ToArray());
             }

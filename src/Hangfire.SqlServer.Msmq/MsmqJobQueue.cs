@@ -40,20 +40,16 @@ namespace Hangfire.SqlServer.Msmq
         public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken)
         {
             string jobId = null;
-            IMsmqTransaction transaction;
             var queueIndex = 0;
 
             do
             {
                 cancellationToken.ThrowIfCancellationRequested();
-
-                var queueName = queues[queueIndex];
-
-                transaction = CreateTransaction();
+                var transaction = CreateTransaction();
                 
-                using (var messageQueue = GetMessageQueue(queueName))
+                try
                 {
-                    try
+                    using (var messageQueue = GetMessageQueue(queues[queueIndex]))
                     {
                         var message = queueIndex == queues.Length - 1
                             ? transaction.Receive(messageQueue, SyncReceiveTimeout)
@@ -61,22 +57,23 @@ namespace Hangfire.SqlServer.Msmq
 
                         jobId = message.Label;
 
+                        return new MsmqFetchedJob(transaction, jobId);
                     }
-                    catch (MessageQueueException ex)
+                }
+                catch (MessageQueueException ex) when (ex.MessageQueueErrorCode == MessageQueueErrorCode.IOTimeout)
+                {
+                    // Receive timeout occurred, we should just switch to the next queue
+                }
+                finally
+                {
+                    if (jobId == null)
                     {
                         transaction.Dispose();
-
-                        if (ex.MessageQueueErrorCode != MessageQueueErrorCode.IOTimeout)
-                        {
-                            throw;
-                        }
                     }
                 }
 
                 queueIndex = (queueIndex + 1) % queues.Length;
-            } while (jobId == null);
-
-            return new MsmqFetchedJob(transaction, jobId);
+            } while (true);
         }
 
         public void Enqueue(IDbConnection connection, string queue, string jobId)

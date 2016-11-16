@@ -78,16 +78,14 @@ namespace Hangfire.Dashboard
                         if (options.AuthorizationFilters.Any(filter => !filter.Authorize(owinContext.Environment)))
 #pragma warning restore 618
                         {
-                            owinContext.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
-                            return owinContext.Response.WriteAsync("401 Unauthorized");
+                            return Unauthorized(owinContext);
                         }
                     }
                     else
                     {
                         if (options.Authorization.Any(filter => !filter.Authorize(context)))
                         {
-                            owinContext.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
-                            return owinContext.Response.WriteAsync("401 Unauthorized");
+                            return Unauthorized(owinContext);
                         }
                     }
 
@@ -102,6 +100,15 @@ namespace Hangfire.Dashboard
 
                     return findResult.Item1.Dispatch(context);
                 };
+        }
+
+        private static Task Unauthorized(IOwinContext owinContext)
+        {
+            owinContext.Response.StatusCode = owinContext.Authentication.User.Identity.IsAuthenticated
+                ? (int)HttpStatusCode.Forbidden
+                : (int)HttpStatusCode.Unauthorized;
+
+            return Task.FromResult(0);
         }
     }
 }

@@ -76,7 +76,7 @@ namespace Hangfire.SqlServer
         {
             QueueCommand((connection, transaction) => connection.Execute(
                 $@"update [{_storage.SchemaName}].Job set ExpireAt = @expireAt where Id = @id",
-                new { expireAt = DateTime.UtcNow.Add(expireIn), id = jobId },
+                new { expireAt = DateTime.UtcNow.Add(expireIn), id = int.Parse(jobId) },
                 transaction));
         }
 
@@ -84,7 +84,7 @@ namespace Hangfire.SqlServer
         {
             QueueCommand((connection, transaction) => connection.Execute(
                 $@"update [{_storage.SchemaName}].Job set ExpireAt = NULL where Id = @id",
-                new { id = jobId },
+                new { id = int.Parse(jobId) },
                 transaction));
         }
 
@@ -99,12 +99,12 @@ update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @
                 addAndSetStateSql,
                 new
                 {
-                    jobId = jobId,
+                    jobId = int.Parse(jobId),
                     name = state.Name,
                     reason = state.Reason,
                     createdAt = DateTime.UtcNow,
                     data = JobHelper.ToJson(state.SerializeData()),
-                    id = jobId
+                    id = int.Parse(jobId)
                 },
                 transaction));
         }
@@ -119,7 +119,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
                 addStateSql,
                 new
                 {
-                    jobId = jobId, 
+                    jobId = int.Parse(jobId), 
                     name = state.Name,
                     reason = state.Reason,
                     createdAt = DateTime.UtcNow, 
@@ -233,7 +233,7 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
         {
             string trimSql =
 $@";with cte as (
-    select row_number() over (order by Id desc) as row_num, [Key] 
+    select row_number() over (order by Id desc) as row_num
     from [{_storage.SchemaName}].List
     where [Key] = @key)
 delete from cte where row_num not between @start and @end";

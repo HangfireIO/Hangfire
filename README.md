@@ -1,12 +1,14 @@
-Hangfire [![Official Site](https://img.shields.io/badge/site-hangfire.io-blue.svg)](http://hangfire.io) [![Latest version](https://img.shields.io/nuget/v/Hangfire.svg)](https://www.nuget.org/packages?q=hangfire) [![License LGPLv3](https://img.shields.io/badge/license-LGPLv3-green.svg)](http://www.gnu.org/licenses/lgpl-3.0.html) 
+Hangfire 
 =========
+
+[![Official Site](https://img.shields.io/badge/site-hangfire.io-blue.svg)](http://hangfire.io) [![Latest version](https://img.shields.io/nuget/v/Hangfire.svg)](https://www.nuget.org/packages?q=hangfire) [![License LGPLv3](https://img.shields.io/badge/license-LGPLv3-green.svg)](http://www.gnu.org/licenses/lgpl-3.0.html) [![Coverage Status](https://coveralls.io/repos/github/HangfireIO/Hangfire/badge.svg?branch=master)](https://coveralls.io/github/HangfireIO/Hangfire?branch=master) [![Coverity Scan Build Status](https://scan.coverity.com/projects/4423/badge.svg)](https://scan.coverity.com/projects/hangfireio-hangfire)
 
 ## Build Status
 
 &nbsp; | `master` | `dev`
 --- | --- | --- 
-**Windows** | [![Windows Build Status](https://img.shields.io/appveyor/ci/odinserj/hangfire-525/master.svg)](https://ci.appveyor.com/project/odinserj/hangfire-525)  | [![Windows Build Status](https://img.shields.io/appveyor/ci/odinserj/hangfire-525/dev.svg)](https://ci.appveyor.com/project/odinserj/hangfire-525) 
-**Linux / OS X** | [![Travis CI Build Status](https://img.shields.io/travis/HangfireIO/Hangfire/master.svg)](https://travis-ci.org/HangfireIO/Hangfire) | [![Linux and OS X Build Status](https://img.shields.io/travis/HangfireIO/Hangfire/dev.svg)](https://travis-ci.org/HangfireIO/Hangfire)
+**Windows** | [![Windows Build Status](https://ci.appveyor.com/api/projects/status/70m632jkycqpnsp9/branch/master?svg=true)](https://ci.appveyor.com/project/odinserj/hangfire-525)  | [![Windows Build Status](https://ci.appveyor.com/api/projects/status/70m632jkycqpnsp9/branch/dev?svg=true)](https://ci.appveyor.com/project/odinserj/hangfire-525) 
+**Linux / OS X** | [![Travis CI Build Status](https://travis-ci.org/HangfireIO/Hangfire.svg?branch=master)](https://travis-ci.org/HangfireIO/Hangfire) | [![Linux and OS X Build Status](https://travis-ci.org/HangfireIO/Hangfire.svg?branch=dev)](https://travis-ci.org/HangfireIO/Hangfire)
 
 ## Overview
 

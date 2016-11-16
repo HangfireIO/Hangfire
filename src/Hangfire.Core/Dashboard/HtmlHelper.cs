@@ -188,7 +188,7 @@ namespace Hangfire.Dashboard
                     builder.Append(duration.Value.Seconds);
                     if (duration.Value.Milliseconds > 0)
                     {
-                        builder.Append($".{duration.Value.Milliseconds}");
+                        builder.Append($".{duration.Value.Milliseconds.ToString().PadLeft(3, '0')}");
                     }
 
                     builder.Append("s ");

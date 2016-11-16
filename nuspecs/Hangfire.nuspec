@@ -19,6 +19,52 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.7
+
+Hangfire.Core
+• Fixed – ArgumentException when using complex arguments in generic methods like IList&lt;T&gt;.
+• Fixed – Wrong choice of the overload when multiple methods match the given arguments.
+• Fixed – HtmlHelper.ToHumanDuration incorrectly formats fractional seconds.
+• Fixed – Inconsistent constructors' accessibility for different context classes.
+
+Hangfire.SqlServer
+• Fixed – "An invalid application lock time-out was passed to xp_userlock" exception when lock timeout is too high.
+
+Hangfire.AspNetCore
+• Fixed – Parameterless AspNetCoreJobActivator.BeginScope method now returns SimpleJobActivatorScope instance.
+
+1.6.6
+
+Hangfire.Core
+• Fixed – Hangfire.Core, Hangfire.SqlServer and Hangfire.SqlServer.Msmq marked as CLS-compliant.
+• Fixed – Generic methods cause ArgumentNullException when scoped variable is used in expression.
+
+Hangfire.SqlServer
+• Fixed – SqlServerJobQueue class doesn't use obsolete InvisibilityTimeout parameter anymore.
+    
+1.6.5
+
+Hangfire.Core
+• Added – Chinese language to Dashboard UI.
+• Changed – Default upper limit of worker number is 20.
+• Changed – Default value for DashboardJobListLimit is now 10000.
+• Fixed – Deserialization exception in continuations, when TypeNameHandling.All option is used.
+• Fixed – I18N is not working, because there are no localized resources in NuGet packages.
+• Fixed – Infinite redirect loops, when authenticated, but not authorized user accesses Dashboard UI.
+• Fixed – "The type ... exists in both..." issue when building Hangfire, related to Newtonsoft.Json.
+• Fixed – Use the given type's method, when scope variable is passed to a job expression.
+• Fixed – Very rare resource leaks detected by Coverity Scan.
+
+Hangfire.SqlServer
+• Fixed – Different timeout issues after making performance optimizations.
+• Fixed – SQL timeouts while getting a connection, when using default settings and >= 8 CPU cores.
+• Fixed – ExpirationManager is bloated by SqlError instances, when there are a lot of messages from server.
+• Fixed – Counters query returned inconsistent results during CountersAggregator executions.
+• Performance – Added missing NOLOCK hint for monitoring queries when using SqlServer-based queues.
+• Performance – ExpirationManager is forced to use index seek operations for cascade deletions.
+• Performance – CountersAggregator now uses clustered index scan to issue less logical reads.
+• Performance – Paging queries in dashboard now use CTEs to utilize less logical reads.
+    
 1.6.4
 
 Hangfire.SqlServer

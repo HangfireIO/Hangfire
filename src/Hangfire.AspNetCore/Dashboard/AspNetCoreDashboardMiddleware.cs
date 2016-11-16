@@ -61,8 +61,11 @@ namespace Hangfire.Dashboard
             {
                 if (!filter.Authorize(context))
                 {
-                    httpContext.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
-                    return httpContext.Response.WriteAsync("401 Unauthorized");
+                    httpContext.Response.StatusCode = httpContext.User.Identity.IsAuthenticated
+                        ? (int) HttpStatusCode.Forbidden
+                        : (int) HttpStatusCode.Unauthorized;
+
+                    return Task.FromResult(0);
                 }
             }
 

@@ -310,18 +310,19 @@ select * from [{_storage.SchemaName}].State with (nolock) where JobId = @id orde
         public StatisticsDto GetStatistics()
         {
             string sql = String.Format(@"
+set transaction isolation level read committed;
 select count(Id) from [{0}].Job with (nolock) where StateName = N'Enqueued';
 select count(Id) from [{0}].Job with (nolock) where StateName = N'Failed';
 select count(Id) from [{0}].Job with (nolock) where StateName = N'Processing';
 select count(Id) from [{0}].Job with (nolock) where StateName = N'Scheduled';
 select count(Id) from [{0}].Server with (nolock);
 select sum(s.[Value]) from (
-    select sum([Value]) as [Value] from [{0}].Counter with (nolock) where [Key] = N'stats:succeeded'
+    select sum([Value]) as [Value] from [{0}].Counter with (readpast) where [Key] = N'stats:succeeded'
     union all
     select [Value] from [{0}].AggregatedCounter with (nolock) where [Key] = N'stats:succeeded'
 ) as s;
 select sum(s.[Value]) from (
-    select sum([Value]) as [Value] from [{0}].Counter with (nolock) where [Key] = N'stats:deleted'
+    select sum([Value]) as [Value] from [{0}].Counter with (readpast) where [Key] = N'stats:deleted'
     union all
     select [Value] from [{0}].AggregatedCounter with (nolock) where [Key] = N'stats:deleted'
 ) as s;
@@ -334,17 +335,17 @@ select count(*) from [{0}].[Set] with (nolock) where [Key] = N'recurring-jobs';
                 var stats = new StatisticsDto();
                 using (var multi = connection.QueryMultiple(sql))
                 {
-                    stats.Enqueued = multi.Read<int>().Single();
-                    stats.Failed = multi.Read<int>().Single();
-                    stats.Processing = multi.Read<int>().Single();
-                    stats.Scheduled = multi.Read<int>().Single();
+                    stats.Enqueued = multi.ReadSingle<int>();
+                    stats.Failed = multi.ReadSingle<int>();
+                    stats.Processing = multi.ReadSingle<int>();
+                    stats.Scheduled = multi.ReadSingle<int>();
 
-                    stats.Servers = multi.Read<int>().Single();
+                    stats.Servers = multi.ReadSingle<int>();
 
-                    stats.Succeeded = multi.Read<long?>().SingleOrDefault() ?? 0;
-                    stats.Deleted = multi.Read<long?>().SingleOrDefault() ?? 0;
+                    stats.Succeeded = multi.ReadSingleOrDefault<long?>() ?? 0;
+                    stats.Deleted = multi.ReadSingleOrDefault<long?>() ?? 0;
 
-                    stats.Recurring = multi.Read<int>().Single();
+                    stats.Recurring = multi.ReadSingle<int>();
                 }
                 return stats;
             });
@@ -462,10 +463,9 @@ where j.Id in @jobIds";
                 ? $@"select count(j.Id) from (select top (@limit) Id from [{_storage.SchemaName}].Job with (nolock) where StateName = @state) as j"
                 : $@"select count(Id) from [{_storage.SchemaName}].Job with (nolock) where StateName = @state";
 
-            var count = connection.Query<int>(
+            var count = connection.ExecuteScalar<int>(
                  sqlQuery,
-                 new { state = stateName, limit = _jobListLimit })
-                 .Single();
+                 new { state = stateName, limit = _jobListLimit });
 
             return count;
         }
@@ -493,12 +493,18 @@ where j.Id in @jobIds";
             Func<SqlJob, Job, Dictionary<string, string>, TDto> selector)
         {
             string jobsSql = 
-$@"select * from (
-  select j.*, s.Reason as StateReason, s.Data as StateData, row_number() over (order by j.Id desc) as row_num
+$@";with cte as 
+(
+  select j.Id, row_number() over (order by j.Id desc) as row_num
   from [{_storage.SchemaName}].Job j with (nolock, forceseek)
-  left join [{_storage.SchemaName}].State s with (nolock) on j.StateId = s.Id
   where j.StateName = @stateName
-) as j where j.row_num between @start and @end";
+)
+select j.Id, j.InvocationData, j.Arguments, s.Reason as StateReason, s.Data as StateData
+from [{_storage.SchemaName}].Job j with (nolock)
+inner join cte on cte.Id = j.Id 
+left join [{_storage.SchemaName}].State s with (nolock) on j.StateId = s.Id
+where cte.row_num between @start and @end
+order by j.Id desc";
 
             var jobs = connection.Query<SqlJob>(
                         jobsSql,

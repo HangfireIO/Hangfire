@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -48,7 +49,7 @@ namespace Hangfire.Storage
             {
                 var type = System.Type.GetType(Type, throwOnError: true, ignoreCase: true);
                 var parameterTypes = JobHelper.FromJson<Type[]>(ParameterTypes);
-                var method = GetNonOpenMatchingMethod(type, Method, parameterTypes);
+                var method = type.GetNonOpenMatchingMethod(Method, parameterTypes);
                 
                 if (method == null)
                 {
@@ -171,7 +172,17 @@ namespace Hangfire.Storage
 #if NETFULL
                     try
                     {
-                        var converter = System.ComponentModel.TypeDescriptor.GetConverter(type);
+                        var converter = TypeDescriptor.GetConverter(type);
+
+                        // ReferenceConverter can't correctly convert the serialized
+                        // data. This may happen when FromJson method threw an exception,
+                        // we should rethrow it instead of trying to deserialize.
+                        if (converter.GetType() == typeof(ReferenceConverter))
+                        {
+                            ExceptionDispatchInfo.Capture(jsonException).Throw();
+                            throw;
+                        }
+
                         value = converter.ConvertFromInvariantString(argument);
                     }
                     catch (Exception)
@@ -212,71 +223,6 @@ namespace Hangfire.Storage
 
             value = dateTime;
             return result;
-        }
-
-        private static IEnumerable<MethodInfo> GetAllMethods(Type type)
-        {
-            var methods = new List<MethodInfo>(type.GetRuntimeMethods());
-
-            if (type.GetTypeInfo().IsInterface)
-            {
-                methods.AddRange(type.GetTypeInfo().ImplementedInterfaces.SelectMany(x => x.GetRuntimeMethods()));
-            }
-
-            return methods;
-        }
-        
-        private static MethodInfo GetNonOpenMatchingMethod(Type type, string name, Type[] parameterTypes)
-        {
-            var methodCandidates = GetAllMethods(type);
-
-            foreach (var methodCandidate in methodCandidates)
-            {
-                if (!methodCandidate.Name.Equals(name, StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                var parameters = methodCandidate.GetParameters();
-                if (parameters.Length != parameterTypes.Length)
-                {
-                    continue;
-                }
-
-                var parameterTypesMatched = true;
-                var genericArguments = new List<Type>();
-
-                // Determining whether we can use this method candidate with
-                // current parameter types.
-                for (var i = 0; i < parameters.Length; i++)
-                {
-                    var parameter = parameters[i];
-                    var parameterType = parameter.ParameterType;
-                    var actualType = parameterTypes[i];
-
-                    // Skipping generic parameters as we can use actual type.
-                    if (parameterType.IsGenericParameter)
-                    {
-                        genericArguments.Add(actualType);
-                        continue;
-                    }
-
-                    // Skipping non-generic parameters of assignable types.
-                    if (parameterType.GetTypeInfo().IsAssignableFrom(actualType.GetTypeInfo())) continue;
-
-                    parameterTypesMatched = false;
-                    break;
-                }
-
-                if (!parameterTypesMatched) continue;
-
-                // Return first found method candidate with matching parameters.
-                return methodCandidate.ContainsGenericParameters 
-                    ? methodCandidate.MakeGenericMethod(genericArguments.ToArray()) 
-                    : methodCandidate;
-            }
-
-            return null;
         }
     }
 }

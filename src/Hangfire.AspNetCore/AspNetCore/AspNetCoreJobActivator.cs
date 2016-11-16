@@ -34,5 +34,12 @@ namespace Hangfire.AspNetCore
         {
             return new AspNetCoreJobActivatorScope(_serviceScopeFactory.CreateScope());
         }
+
+#pragma warning disable CS0672 // Member overrides obsolete member
+        public override JobActivatorScope BeginScope()
+#pragma warning restore CS0672 // Member overrides obsolete member
+        {
+            return new AspNetCoreJobActivatorScope(_serviceScopeFactory.CreateScope());
+        }
     }
 }
