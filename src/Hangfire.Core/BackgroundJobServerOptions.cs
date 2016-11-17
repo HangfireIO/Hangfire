@@ -27,8 +27,6 @@ namespace Hangfire
         // https://github.com/HangfireIO/Hangfire/issues/246
         private const int MaxDefaultWorkerCount = 20;
 
-        private static readonly TimeSpan MaxServerTimeout = TimeSpan.FromHours(24);
-
         private int _workerCount;
         private string[] _queues;
         private TimeSpan _serverTimeout;
@@ -66,7 +64,7 @@ namespace Hangfire
             set
             {
                 if (value == null) throw new ArgumentNullException(nameof(value));
-                if (value.Length == 0) throw new ArgumentException("You should specify at least one queue to listen.", nameof(value));
+                if (value.Length == 0) throw new ArgumentOutOfRangeException("You should specify at least one queue to listen.", nameof(value));
 
                 _queues = value;
             }
@@ -82,7 +80,7 @@ namespace Hangfire
             get { return _serverTimeout; }
             set
             {
-                if (value > MaxServerTimeout) throw new ArgumentException($"The specified server timeout is too large. Please supply a server timeout equal to or less than {MaxServerTimeout.Hours} hours", nameof(value));
+                if (value > ServerWatchdog.MaxServerTimeout) throw new ArgumentException($"The specified server timeout is too large. Please supply a server timeout equal to or less than {ServerWatchdogMaxServerTimeout.Hours} hours", nameof(value));
 
                 _serverTimeout = value;
 

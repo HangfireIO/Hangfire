@@ -23,6 +23,7 @@ namespace Hangfire.Server
     {
         public static readonly TimeSpan DefaultCheckInterval = TimeSpan.FromMinutes(5);
         public static readonly TimeSpan DefaultServerTimeout = TimeSpan.FromMinutes(5);
+        public static readonly TimeSpan MaxServerTimeout = TimeSpan.FromHours(24);
 
         private static readonly ILog Logger = LogProvider.For<ServerWatchdog>();
 
