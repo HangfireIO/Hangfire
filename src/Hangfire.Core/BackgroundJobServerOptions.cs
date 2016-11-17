@@ -27,8 +27,11 @@ namespace Hangfire
         // https://github.com/HangfireIO/Hangfire/issues/246
         private const int MaxDefaultWorkerCount = 20;
 
+        private static readonly TimeSpan MaxServerTimeout = TimeSpan.FromHours(24);
+
         private int _workerCount;
         private string[] _queues;
+        private TimeSpan _serverTimeout;
 
         public BackgroundJobServerOptions()
         {
@@ -72,8 +75,19 @@ namespace Hangfire
         public TimeSpan ShutdownTimeout { get; set; }
         public TimeSpan SchedulePollingInterval { get; set; }
         public TimeSpan HeartbeatInterval { get; set; }
-        public TimeSpan ServerTimeout { get; set; }
         public TimeSpan ServerCheckInterval { get; set; }
+
+        public TimeSpan ServerTimeout
+        {
+            get { return _serverTimeout; }
+            set
+            {
+                if (value > MaxServerTimeout) throw new ArgumentException($"The specified server timeout is too large. Please supply a server timeout equal to or less than {MaxServerTimeout.Hours} hours", nameof(value));
+
+                _serverTimeout = value;
+
+            }
+        }
 
         [Obsolete("Please use `ServerTimeout` or `ServerCheckInterval` options instead. Will be removed in 2.0.0.")]
         public ServerWatchdogOptions ServerWatchdogOptions { get; set; }

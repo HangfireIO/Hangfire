@@ -53,6 +53,15 @@ namespace Hangfire.Core.Tests.Server
                 () => options.Queues = new string[0]);
         }
 
+        [Fact]
+        public void ServerTimeout_ThrowsAnException_WhenValueIsTooLarge()
+        {
+            var options = CreateOptions();
+        
+            Assert.Throws<ArgumentException>(
+                () => options.ServerTimeout = TimeSpan.FromHours(25));
+        }
+
         private static BackgroundJobServerOptions CreateOptions()
         {
             return new BackgroundJobServerOptions();
