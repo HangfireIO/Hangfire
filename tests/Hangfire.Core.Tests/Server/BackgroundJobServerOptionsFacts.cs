@@ -59,7 +59,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var options = CreateOptions();
         
-            Assert.Throws<ArgumentException>(
+            Assert.Throws<ArgumentOutOfRangeException>(
                 () => options.ServerTimeout = TimeSpan.FromHours(25));
         }
 

@@ -64,7 +64,7 @@ namespace Hangfire
             set
             {
                 if (value == null) throw new ArgumentNullException(nameof(value));
-                if (value.Length == 0) throw new ArgumentOutOfRangeException("You should specify at least one queue to listen.", nameof(value));
+                if (value.Length == 0) throw new ArgumentException("You should specify at least one queue to listen.", nameof(value));
 
                 _queues = value;
             }
@@ -80,7 +80,7 @@ namespace Hangfire
             get { return _serverTimeout; }
             set
             {
-                if (value > ServerWatchdog.MaxServerTimeout) throw new ArgumentException($"The specified server timeout is too large. Please supply a server timeout equal to or less than {ServerWatchdogMaxServerTimeout.Hours} hours", nameof(value));
+                if (value > ServerWatchdog.MaxServerTimeout) throw new ArgumentOutOfRangeException($"The specified server timeout is too large. Please supply a server timeout equal to or less than {ServerWatchdog.MaxServerTimeout.Hours} hours", nameof(value));
 
                 _serverTimeout = value;
 

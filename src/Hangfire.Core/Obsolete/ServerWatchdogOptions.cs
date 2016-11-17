@@ -36,7 +36,7 @@ namespace Hangfire.Server
             get { return _serverTimeout; }
             set
             {
-                if (value > ServerWatchdog.MaxServerTimeout) throw new ArgumentOutOfRangeException($"The specified server timeout is too large. Please supply a server timeout equal to or less than {MaxServerTimeout.Hours} hours", nameof(value));
+                if (value > ServerWatchdog.MaxServerTimeout) throw new ArgumentOutOfRangeException($"The specified server timeout is too large. Please supply a server timeout equal to or less than {ServerWatchdog.MaxServerTimeout.Hours} hours", nameof(value));
 
                 _serverTimeout = value; 
             }
