@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
@@ -30,6 +31,10 @@ namespace Hangfire
         private int _workerCount;
         private string[] _queues;
         private TimeSpan _serverTimeout;
+        private TimeSpan _serverCheckInterval;
+        private TimeSpan _heartbeatInterval;
+        private TimeSpan _shutdownTimeout;
+        private TimeSpan _schedulePollingInterval;
 
         public BackgroundJobServerOptions()
         {
@@ -70,17 +75,68 @@ namespace Hangfire
             }
         }
 
-        public TimeSpan ShutdownTimeout { get; set; }
-        public TimeSpan SchedulePollingInterval { get; set; }
-        public TimeSpan HeartbeatInterval { get; set; }
-        public TimeSpan ServerCheckInterval { get; set; }
+        public TimeSpan ShutdownTimeout
+        {
+            get { return _shutdownTimeout; }
+            set
+            {
+                if (value != Timeout.InfiniteTimeSpan && value < TimeSpan.Zero || value.TotalMilliseconds > Int32.MaxValue)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), $"ShutdownTimeout must be either equal to or less than {Int32.MaxValue} milliseconds and non-negative or infinite");
+                }
+                _shutdownTimeout = value;
+            }
+        }
+
+        public TimeSpan SchedulePollingInterval
+        {
+            get { return _schedulePollingInterval; }
+            set
+            {
+                if (value != Timeout.InfiniteTimeSpan && value < TimeSpan.Zero || value.TotalMilliseconds > Int32.MaxValue)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), $"SchedulePollingInterval must be either equal to or less than {Int32.MaxValue} milliseconds and non-negative or infinite");
+                }
+
+                _schedulePollingInterval = value;
+            }
+        }
+
+        public TimeSpan HeartbeatInterval
+        {
+            get { return _heartbeatInterval; }
+            set
+            {
+                if (value < TimeSpan.Zero || value > ServerWatchdog.MaxServerCheckInterval)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), $"HeartbeatInterval must be either non-negative and equal to or less than {ServerWatchdog.MaxHeartbeatInterval.Hours} hours");
+                }
+                _heartbeatInterval = value;
+            }
+        }
+
+        public TimeSpan ServerCheckInterval
+        {
+            get { return _serverCheckInterval; }
+            set
+            {
+                if (value < TimeSpan.Zero || value > ServerWatchdog.MaxServerCheckInterval)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), $"ServerCheckInterval must be either non-negative and equal to or less than {ServerWatchdog.MaxServerCheckInterval.Hours} hours");
+                }
+                _serverCheckInterval = value;
+            }
+        }
 
         public TimeSpan ServerTimeout
         {
             get { return _serverTimeout; }
             set
             {
-                if (value > ServerWatchdog.MaxServerTimeout) throw new ArgumentOutOfRangeException($"The specified server timeout is too large. Please supply a server timeout equal to or less than {ServerWatchdog.MaxServerTimeout.Hours} hours", nameof(value));
+                if (value < TimeSpan.Zero || value > ServerWatchdog.MaxServerTimeout)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), $"ServerTimeout must be either non-negative and equal to or less than {ServerWatchdog.MaxServerTimeout.Hours} hours");
+                }
 
                 _serverTimeout = value;
 

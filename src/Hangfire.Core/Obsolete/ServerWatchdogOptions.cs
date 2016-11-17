@@ -24,8 +24,9 @@ namespace Hangfire.Server
     public class ServerWatchdogOptions
     {
         private TimeSpan _serverTimeout;
+        private TimeSpan _checkInterval;
 
-	    public ServerWatchdogOptions()
+        public ServerWatchdogOptions()
         {
             ServerTimeout = ServerWatchdog.DefaultServerTimeout;
             CheckInterval = ServerWatchdog.DefaultCheckInterval;
@@ -36,12 +37,27 @@ namespace Hangfire.Server
             get { return _serverTimeout; }
             set
             {
-                if (value > ServerWatchdog.MaxServerTimeout) throw new ArgumentOutOfRangeException($"The specified server timeout is too large. Please supply a server timeout equal to or less than {ServerWatchdog.MaxServerTimeout.Hours} hours", nameof(value));
+                if (value < TimeSpan.Zero || value > ServerWatchdog.MaxServerTimeout)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), $"ServerTimeout must be either non-negative and equal to or less than {ServerWatchdog.MaxServerTimeout.Hours} hours");
+                }
 
-                _serverTimeout = value; 
+                _serverTimeout = value;
             }
         }
 
-        public TimeSpan CheckInterval { get; set; }
+        public TimeSpan CheckInterval
+        {
+            get { return _checkInterval; }
+            set
+            {
+                if (value < TimeSpan.Zero || value > ServerWatchdog.MaxServerCheckInterval)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), $"CheckInterval must be either non-negative and equal to or less than {ServerWatchdog.MaxServerCheckInterval.Hours} hours");
+
+                };
+                _checkInterval = value;
+            }
+        }
     }
 }
