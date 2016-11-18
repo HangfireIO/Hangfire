@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
 using System.Threading;
-using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Server;
 using Hangfire.Storage;
@@ -107,7 +105,7 @@ namespace Hangfire.Common
                         try
                         {
                             value = argument != null
-                                ? JobHelper.FromJson(argument, parameter.ParameterType)
+                                ? JobHelper.ArgumentFromJson(argument, parameter.ParameterType)
                                 : null;
                         }
                         catch (Exception)

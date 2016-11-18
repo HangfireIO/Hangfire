@@ -31,7 +31,7 @@ namespace Hangfire.Common
             _coreSerializerSettings = setting;
         }
 
-        [Obsolete("Please use 'SetCoreSerializerSettings' method instead. Will be removed in version 2.0.0.")]
+        [Obsolete("Please use 'SetArgumentsSerializerSettings' method instead. Will be removed in version 2.0.0.")]
         public static void SetSerializerSettings(JsonSerializerSettings setting)
         {
             _coreSerializerSettings = setting;
@@ -45,12 +45,9 @@ namespace Hangfire.Common
 
         public static string ToJson(object value)
         {
-            return ToJson(value, _coreSerializerSettings);
-        }
-
-        public static string ArgumentsToJson(object value)
-        {
-            return ToJson(value, _arugumentsSerializerSettings);
+            return value != null
+                ? JsonConvert.SerializeObject(value, _coreSerializerSettings)
+                : null;
         }
 
         public static T FromJson<T>(string value)
@@ -69,11 +66,20 @@ namespace Hangfire.Common
                 : null;
         }
 
-        public static T ArgumentsFromJson<T>(string value)
+        public static string ArgumentToJson(object value)
         {
             return value != null
-                ? JsonConvert.DeserializeObject<T>(value, _arugumentsSerializerSettings)
-                : default(T);
+               ? JsonConvert.SerializeObject(value, _arugumentsSerializerSettings)
+               : null;
+        }
+
+        public static object ArgumentFromJson(string value, [NotNull] Type type)
+        {
+            if (type == null) throw new ArgumentNullException(nameof(type));
+
+            return value != null
+                ? JsonConvert.DeserializeObject(value, type, _arugumentsSerializerSettings)
+                : null;
         }
 
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -113,13 +119,6 @@ namespace Hangfire.Common
             }
 
             return DeserializeDateTime(value);
-        }
-
-        private static string ToJson(object value, JsonSerializerSettings serializerSettings)
-        {
-            return value != null
-                ? JsonConvert.SerializeObject(value, serializerSettings)
-                : null;
         }
     }
 }

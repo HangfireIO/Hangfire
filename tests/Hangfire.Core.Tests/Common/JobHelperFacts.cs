@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using System.Runtime.Serialization.Formatters;
 using Hangfire.Annotations;
 using Hangfire.Common;
@@ -29,20 +28,6 @@ namespace Hangfire.Core.Tests.Common
         {
             var result = JobHelper.ToJson("hello");
             Assert.Equal("\"hello\"", result);
-        }
-
-        [Fact]
-        public void ArgumentsToJson_EncodesNullValueAsNull()
-        {
-            var result = JobHelper.ArgumentsToJson(null);
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public void ArgumentsToJson_EncodesGivenValue_ToJsonString()
-        {
-            var result = JobHelper.ArgumentsToJson("Simple string");
-            Assert.Equal("\"Simple string\"", result);
         }
 
         [Fact]
@@ -144,21 +129,28 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void ForSerializeUseDefaultConfigurationOfJsonNet()
+        public void ArgumentToJson_ReturnsNull_WhenValueIsNull()
         {
-            var result = JobHelper.ToJson(new ClassA("A"));
-            Assert.Equal(@"{""PropertyA"":""A""}", result);
+            var result = JobHelper.ArgumentToJson(null);
+            Assert.Null(result);
         }
 
         [Fact]
-        public void ArgumentsToJson_ReturnCorrectValue_WhenArgumentsSerializerSettingsIsNotDefined()
+        public void ArgumentToJson_ReturnCorrectResult_WhenValueIsString()
         {
-            var result = JobHelper.ArgumentsToJson(new ClassA("B"));
+            var result = JobHelper.ArgumentToJson("Simple string");
+            Assert.Equal("\"Simple string\"", result);
+        }
+
+        [Fact]
+        public void ArgumentToJson_ReturnsCorrectValue_WhenValueIsCustomObject()
+        {
+            var result = JobHelper.ArgumentToJson(new ClassA("B"));
             Assert.Equal(@"{""PropertyA"":""B""}", result);
         }
 
         [Fact, CleanJsonSerializersSettings]
-        public void ArgumentsToJson_ReturnCorrectValue_WhenArgumentsSerializerSettingsIsDefined()
+        public void ArgumentToJson_ReturnCorrectValue_WhenArgumentsSerializerSettingsIsDefined()
         {
             JobHelper.SetArgumentsSerializerSettings(new JsonSerializerSettings
             {
@@ -166,12 +158,12 @@ namespace Hangfire.Core.Tests.Common
                 TypeNameHandling = TypeNameHandling.All
             });
 
-            var result = JobHelper.ArgumentsToJson(new ClassA("A"));
+            var result = JobHelper.ArgumentToJson(new ClassA("A"));
             Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"",""propertyA"":""A""}", result);
         }
 
         [Fact, CleanJsonSerializersSettings]
-        public void ArgumentsToJson_HandlesCoreSerizlizerSettingsDoNotOverwriteArgumentsSerializerSettings()
+        public void ArgumentToJson_HandlesCoreSerizlizerSettingsDoNotOverwriteArgumentsSerializerSettings()
         {
             JobHelper.SetArgumentsSerializerSettings(new JsonSerializerSettings
             {
@@ -181,16 +173,69 @@ namespace Hangfire.Core.Tests.Common
             JobHelper.SetCoreSerializerSettings(new JsonSerializerSettings
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                TypeNameHandling = TypeNameHandling.None
             });
 
-            var result = JobHelper.ArgumentsToJson(new ClassA("A"));
+            var result = JobHelper.ArgumentToJson(new ClassA("A"));
             Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""A""}", result);
+        }
+
+        [Fact]
+        public void ArgumentFromJson_ThrowsAnException_WhenTypeIsNull()
+        {
+            Assert.Throws<ArgumentNullException>(() => JobHelper.ArgumentFromJson("1", null));
+        }
+
+        [Fact]
+        public void ArgumentFromJson_ReturnsCorrectValue_WhenValueIsString()
+        {
+            var result = (string)JobHelper.ArgumentFromJson("\"hello\"", typeof(string));
+            Assert.Equal("hello", result);
+        }
+
+        [Fact]
+        public void ArgumentFromJson_ReturnsNull_WhenValueIsNull()
+        {
+            var result = (string)JobHelper.ArgumentFromJson(null, typeof(string));
+            Assert.Null(result);
+        }
+
+        [Fact, CleanJsonSerializersSettings]
+        public void ArgumentFromJson_RetrunsObject_WhenTypeIsCustomClass()
+        {
+            var argumentJson = @"{""$type"":""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""A""}";
+
+            var argumentValue = JobHelper.ArgumentFromJson(argumentJson, typeof(ClassA)) as ClassA;
+            Assert.NotNull(argumentValue);
+            Assert.Equal("A", argumentValue.PropertyA);
+        }
+
+        [Fact, CleanJsonSerializersSettings]
+        public void ArgumentFromJson_RetrunsObject_WhenTypeIsInterface()
+        {
+            JobHelper.SetArgumentsSerializerSettings(new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.All
+            });
+
+            var argumentJson = @"{""$type"":""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""A""}";
+
+            var argumentValue = JobHelper.ArgumentFromJson(argumentJson, typeof(IClass)) as ClassA;
+            Assert.NotNull(argumentValue);
+            Assert.Equal("A", argumentValue.PropertyA);
+        }
+
+        [Fact]
+        public void ForSerializeUseDefaultConfigurationOfJsonNet()
+        {
+            var result = JobHelper.ToJson(new ClassA("A"));
+            Assert.Equal(@"{""PropertyA"":""A""}", result);
         }
 
         [Fact, CleanJsonSerializersSettings]
         public void ForSerializeCanUseCustomConfigurationOfJsonNet()
         {
-            JobHelper.SetSerializerSettings(new JsonSerializerSettings
+            JobHelper.SetCoreSerializerSettings(new JsonSerializerSettings
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             });
@@ -202,7 +247,7 @@ namespace Hangfire.Core.Tests.Common
         [Fact, CleanJsonSerializersSettings]
         public void ForDeserializeCanUseCustomConfigurationOfJsonNet()
         {
-            JobHelper.SetSerializerSettings(new JsonSerializerSettings
+            JobHelper.SetCoreSerializerSettings(new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.Objects
             });
@@ -214,7 +259,7 @@ namespace Hangfire.Core.Tests.Common
         [Fact, CleanJsonSerializersSettings]
         public void ForDeserializeCanUseCustomConfigurationOfJsonNetWithInvocationData()
         {
-            JobHelper.SetSerializerSettings(new JsonSerializerSettings
+            JobHelper.SetCoreSerializerSettings(new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.All,
                 TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple
@@ -235,13 +280,29 @@ namespace Hangfire.Core.Tests.Common
         [Fact, CleanJsonSerializersSettings]
         public void ForDeserializeWithGenericMethodCanUseCustomConfigurationOfJsonNet()
         {
-            JobHelper.SetSerializerSettings(new JsonSerializerSettings
+            JobHelper.SetCoreSerializerSettings(new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.Objects
             });
 
             var result = (ClassA)JobHelper.FromJson(@"{ ""$type"": ""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"", ""propertyA"":""A"" }", typeof(IClass));
             Assert.Equal("A", result.PropertyA);
+        }
+
+        [Fact, CleanJsonSerializersSettings]
+        public void SetSerializerSettings_SetsBothArgumentAndCoreSerializerSettings()
+        {
+#pragma warning disable 618
+            JobHelper.SetSerializerSettings(new JsonSerializerSettings
+#pragma warning restore 618
+            {
+                TypeNameHandling = TypeNameHandling.All
+            });
+
+            var coreSerializerResult = JobHelper.ToJson(new ClassA("A"));
+            var argumentsSerializerResult = JobHelper.ArgumentToJson(new ClassA("A"));
+            Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""A""}", coreSerializerResult);
+            Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""A""}", argumentsSerializerResult);
         }
 
         private interface IClass

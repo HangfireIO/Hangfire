@@ -78,8 +78,8 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(JobHelper.ToJson(new[] { "\"Hello\"" }), invocationData.Arguments);
         }
 
-        [Fact]
-        public void Serialize_CorrectlySerializesTheData_WhenArgumentsJsonSerializerSettingsIsDefined()
+        [Fact, CleanJsonSerializersSettings]
+        public void Serialize_CorrectlySerializesTheData_WhenArgumentJsonSerializerSettingsIsDefined()
         {
             JobHelper.SetArgumentsSerializerSettings(new JsonSerializerSettings
             {
@@ -93,7 +93,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(typeof(InvocationDataFacts).AssemblyQualifiedName, invocationData.Type);
             Assert.Equal("ListMethod", invocationData.Method);
             Assert.Equal(JobHelper.ToJson(new[] { typeof(IList<string>) }), invocationData.ParameterTypes);
-            Assert.Equal(JobHelper.ToJson(new [] {JobHelper.ArgumentsToJson(new List<string>{"Hello"})}), invocationData.Arguments);
+            Assert.Equal(JobHelper.ToJson(new [] {JobHelper.ArgumentToJson(new List<string>{"Hello"})}), invocationData.Arguments);
         }
 
         [Fact]

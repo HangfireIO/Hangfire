@@ -99,7 +99,7 @@ namespace Hangfire.Storage
                     }
                     else
                     {
-                        value = JobHelper.ArgumentsToJson(argument);
+                        value = JobHelper.ArgumentToJson(argument);
                     }
                 }
                 else
@@ -152,7 +152,7 @@ namespace Hangfire.Storage
             try
             {
                 value = argument != null
-                    ? JobHelper.FromJson(argument, type)
+                    ? JobHelper.ArgumentFromJson(argument, type)
                     : null;
             }
             catch (Exception
