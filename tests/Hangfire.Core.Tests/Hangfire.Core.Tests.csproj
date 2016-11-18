@@ -150,6 +150,7 @@
     <Compile Include="Storage\InvocationDataFacts.cs" />
     <Compile Include="Storage\MonitoringTypeFacts.cs" />
     <Compile Include="Storage\StorageConnectionExtensionsFacts.cs" />
+    <Compile Include="Utils\CleanJsonSerializerSettingsAttribute.cs" />
     <Compile Include="Utils\CultureHelper.cs" />
     <Compile Include="Utils\GlobalLockAttribute.cs" />
     <Compile Include="Utils\PlatformHelper.cs" />

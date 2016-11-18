@@ -44,17 +44,13 @@ namespace Hangfire.Common
 		}
 
 		public static string ToJson(object value)
-        {
-            return value != null
-                ? JsonConvert.SerializeObject(value, _coreSerializerSettings)
-                : null;
-        }
+		{
+		    return ToJson(value, _coreSerializerSettings);
+		}
 
 	    public static string ArgumentsToJson(object value)
 	    {
-			return value != null
-			   ? JsonConvert.SerializeObject(value, _arugumentsSerializerSettings)
-			   : null;
+			return ToJson(value, _arugumentsSerializerSettings);
 		}
 
         public static T FromJson<T>(string value)
@@ -117,6 +113,13 @@ namespace Hangfire.Common
             }
 
             return DeserializeDateTime(value);
+        }
+
+        private static string ToJson(object value, JsonSerializerSettings serializerSettings)
+        {
+            return value != null
+                ? JsonConvert.SerializeObject(value, serializerSettings)
+                : null;
         }
     }
 }

@@ -32,6 +32,20 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void ArgumentsToJson_EncodesNullValueAsNull()
+        {
+            var result = JobHelper.ArgumentsToJson(null);
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void ArgumentsToJson_EncodesGivenValue_ToJsonString()
+        {
+            var result = JobHelper.ArgumentsToJson("Simple string");
+            Assert.Equal("\"Simple string\"", result);
+        }
+
+        [Fact]
         public void FromJson_DecodesNullAsDefaultValue()
         {
             var stringResult = JobHelper.FromJson<string>(null);
@@ -137,85 +151,76 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void ForArgumnetsSerializeUseDefaultConfigurationOfJsonNet()
+        {
+            var result = JobHelper.ArgumentsToJson(new ClassA("B"));
+            Assert.Equal(@"{""PropertyA"":""B""}", result);
+        }
+
+        [Fact, CleanJsonSerializersSettings]
         public void ForSerializeCanUseCustomConfigurationOfJsonNet()
         {
-            try
+            JobHelper.SetSerializerSettings(new JsonSerializerSettings
             {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            });
+
+            var result = JobHelper.ToJson(new ClassA("A"));
+            Assert.Equal(@"{""propertyA"":""A""}", result);
+        }
+
+        [Fact, CleanJsonSerializersSettings]
+        public void ArgumentsToJson_ReturnCorrectValue_WhenArgumentsSerializerSettingsWasDefined()
+        {
                 JobHelper.SetSerializerSettings(new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
 
                 var result = JobHelper.ToJson(new ClassA("A"));
                 Assert.Equal(@"{""propertyA"":""A""}", result);
-            }
-            finally
-            {
-                JobHelper.SetSerializerSettings(null);
-            }
         }
 
-        [Fact]
+        [Fact, CleanJsonSerializersSettings]
         public void ForDeserializeCanUseCustomConfigurationOfJsonNet()
         {
-            try
+            JobHelper.SetSerializerSettings(new JsonSerializerSettings
             {
-                JobHelper.SetSerializerSettings(new JsonSerializerSettings
-                {
-                    TypeNameHandling = TypeNameHandling.Objects
-                });
+                TypeNameHandling = TypeNameHandling.Objects
+            });
 
-                var result = (ClassA)JobHelper.FromJson<IClass>(@"{ ""$type"": ""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"", ""propertyA"":""A"" }");
-                Assert.Equal("A", result.PropertyA);
-            }
-            finally
-            {
-                JobHelper.SetSerializerSettings(null);
-            }
+            var result = (ClassA)JobHelper.FromJson<IClass>(@"{ ""$type"": ""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"", ""propertyA"":""A"" }");
+            Assert.Equal("A", result.PropertyA);
         }
 
-        [Fact]
+        [Fact, CleanJsonSerializersSettings]
         public void ForDeserializeCanUseCustomConfigurationOfJsonNetWithInvocationData()
         {
-            try
+            JobHelper.SetSerializerSettings(new JsonSerializerSettings
             {
-                JobHelper.SetSerializerSettings(new JsonSerializerSettings
-                {
-                    TypeNameHandling = TypeNameHandling.All,
-                    TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple
-                });
+                TypeNameHandling = TypeNameHandling.All,
+                TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple
+            });
 
-                var method = typeof (BackgroundJob).GetMethod("DoWork");
-                var args = new object[] { "123", "Test" };
-                var job = new Job(typeof(BackgroundJob), method, args);
+            var method = typeof(BackgroundJob).GetMethod("DoWork");
+            var args = new object[] { "123", "Test" };
+            var job = new Job(typeof(BackgroundJob), method, args);
 
-                var invocationData = InvocationData.Serialize(job);
-                var deserializedJob = invocationData.Deserialize();
+            var invocationData = InvocationData.Serialize(job);
+            var deserializedJob = invocationData.Deserialize();
 
-                Assert.Equal(typeof(BackgroundJob), deserializedJob.Type);
-                Assert.Equal(method, deserializedJob.Method);
-                Assert.Equal(args, deserializedJob.Args);
-            }
-            finally
-            {
-                JobHelper.SetSerializerSettings(null);
-            }
+            Assert.Equal(typeof(BackgroundJob), deserializedJob.Type);
+            Assert.Equal(method, deserializedJob.Method);
+            Assert.Equal(args, deserializedJob.Args);
         }
 
-        [Fact]
+        [Fact, CleanJsonSerializersSettings]
         public void ForDeserializeWithGenericMethodCanUseCustomConfigurationOfJsonNet()
         {
-            try
+            JobHelper.SetSerializerSettings(new JsonSerializerSettings
             {
-                JobHelper.SetSerializerSettings(new JsonSerializerSettings
-                {
-                    TypeNameHandling = TypeNameHandling.Objects
-                });
+                TypeNameHandling = TypeNameHandling.Objects
+            });
 
-                var result = (ClassA)JobHelper.FromJson(@"{ ""$type"": ""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"", ""propertyA"":""A"" }", typeof(IClass));
-                Assert.Equal("A", result.PropertyA);
-            }
-            finally
-            {
-                JobHelper.SetSerializerSettings(null);
-            }
+            var result = (ClassA)JobHelper.FromJson(@"{ ""$type"": ""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"", ""propertyA"":""A"" }", typeof(IClass));
+            Assert.Equal("A", result.PropertyA);
         }
 
         private interface IClass
