@@ -24,34 +24,34 @@ namespace Hangfire.Common
     public static class JobHelper
     {
         private static JsonSerializerSettings _coreSerializerSettings;
-	    private static JsonSerializerSettings _arugumentsSerializerSettings;
+        private static JsonSerializerSettings _arugumentsSerializerSettings;
 
-		internal static void SetCoreSerializerSettings(JsonSerializerSettings setting)
-		{
-			_coreSerializerSettings = setting;
-		}
-
-		[Obsolete("Please use 'SetCoreSerializerSettings' method instead. Will be removed in version 2.0.0.")]
-		public static void SetSerializerSettings(JsonSerializerSettings setting)
+        internal static void SetCoreSerializerSettings(JsonSerializerSettings setting)
         {
             _coreSerializerSettings = setting;
-	        _arugumentsSerializerSettings = _arugumentsSerializerSettings ?? setting;
         }
 
-		public static void SetArgumentsSerializerSettings(JsonSerializerSettings setting)
-		{
-			_arugumentsSerializerSettings = setting;
-		}
+        [Obsolete("Please use 'SetCoreSerializerSettings' method instead. Will be removed in version 2.0.0.")]
+        public static void SetSerializerSettings(JsonSerializerSettings setting)
+        {
+            _coreSerializerSettings = setting;
+            _arugumentsSerializerSettings = _arugumentsSerializerSettings ?? setting;
+        }
 
-		public static string ToJson(object value)
-		{
-		    return ToJson(value, _coreSerializerSettings);
-		}
+        public static void SetArgumentsSerializerSettings(JsonSerializerSettings setting)
+        {
+            _arugumentsSerializerSettings = setting;
+        }
 
-	    public static string ArgumentsToJson(object value)
-	    {
-			return ToJson(value, _arugumentsSerializerSettings);
-		}
+        public static string ToJson(object value)
+        {
+            return ToJson(value, _coreSerializerSettings);
+        }
+
+        public static string ArgumentsToJson(object value)
+        {
+            return ToJson(value, _arugumentsSerializerSettings);
+        }
 
         public static T FromJson<T>(string value)
         {
@@ -69,19 +69,19 @@ namespace Hangfire.Common
                 : null;
         }
 
-		public static T ArgumentsFromJson<T>(string value)
-		{
-			return value != null
-				? JsonConvert.DeserializeObject<T>(value, _arugumentsSerializerSettings)
-				: default(T);
-		}
+        public static T ArgumentsFromJson<T>(string value)
+        {
+            return value != null
+                ? JsonConvert.DeserializeObject<T>(value, _arugumentsSerializerSettings)
+                : default(T);
+        }
 
-		private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         public static long ToTimestamp(DateTime value)
         {
             TimeSpan elapsedTime = value - Epoch;
-            return (long)elapsedTime.TotalSeconds;
+            return (long) elapsedTime.TotalSeconds;
         }
 
         public static DateTime FromTimestamp(long value)
