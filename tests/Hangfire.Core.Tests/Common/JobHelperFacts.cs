@@ -180,6 +180,24 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""A""}", result);
         }
 
+        [Fact, CleanJsonSerializersSettings]
+        public void ArgumentToJson_HandlesArgumentsSerizlizerSettingsDoNotOverwriteCoreSerializerSettings()
+        {
+            JobHelper.SetCoreSerializerSettings(new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.None
+            });
+
+            JobHelper.SetArgumentsSerializerSettings(new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                TypeNameHandling = TypeNameHandling.All
+            });
+
+            var result = JobHelper.ToJson(new ClassA("A"));
+            Assert.Equal(@"{""PropertyA"":""A""}", result);
+        }
+
         [Fact]
         public void ArgumentFromJson_ThrowsAnException_WhenTypeIsNull()
         {
