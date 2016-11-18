@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters;
 using Hangfire.Common;
 using Hangfire.Storage;
 using Newtonsoft.Json;
@@ -75,6 +76,24 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal("Sample", invocationData.Method);
             Assert.Equal(JobHelper.ToJson(new[] { typeof(string) }), invocationData.ParameterTypes);
             Assert.Equal(JobHelper.ToJson(new[] { "\"Hello\"" }), invocationData.Arguments);
+        }
+
+        [Fact]
+        public void Serialize_CorrectlySerializesTheData_WhenArgumentsJsonSerializerSettingsIsDefined()
+        {
+            JobHelper.SetArgumentsSerializerSettings(new JsonSerializerSettings
+            {
+                TypeNameAssemblyFormat = FormatterAssemblyStyle.Full,
+                TypeNameHandling = TypeNameHandling.All
+            });
+            var job = Job.FromExpression(() => ListMethod(new List<string> { "Hello"}));
+
+            var invocationData = InvocationData.Serialize(job);
+
+            Assert.Equal(typeof(InvocationDataFacts).AssemblyQualifiedName, invocationData.Type);
+            Assert.Equal("ListMethod", invocationData.Method);
+            Assert.Equal(JobHelper.ToJson(new[] { typeof(IList<string>) }), invocationData.ParameterTypes);
+            Assert.Equal(JobHelper.ToJson(new [] {JobHelper.ArgumentsToJson(new List<string>{"Hello"})}), invocationData.Arguments);
         }
 
         [Fact]

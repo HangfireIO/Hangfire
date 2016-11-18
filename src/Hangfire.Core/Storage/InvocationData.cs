@@ -99,7 +99,7 @@ namespace Hangfire.Storage
                     }
                     else
                     {
-                        value = JobHelper.ToJson(argument);
+                        value = JobHelper.ArgumentsToJson(argument);
                     }
                 }
                 else

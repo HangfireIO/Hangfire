@@ -151,10 +151,40 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void ForArgumnetsSerializeUseDefaultConfigurationOfJsonNet()
+        public void ArgumentsToJson_ReturnCorrectValue_WhenArgumentsSerializerSettingsIsNotDefined()
         {
             var result = JobHelper.ArgumentsToJson(new ClassA("B"));
             Assert.Equal(@"{""PropertyA"":""B""}", result);
+        }
+
+        [Fact, CleanJsonSerializersSettings]
+        public void ArgumentsToJson_ReturnCorrectValue_WhenArgumentsSerializerSettingsIsDefined()
+        {
+            JobHelper.SetArgumentsSerializerSettings(new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                TypeNameHandling = TypeNameHandling.All
+            });
+
+            var result = JobHelper.ArgumentsToJson(new ClassA("A"));
+            Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"",""propertyA"":""A""}", result);
+        }
+
+        [Fact, CleanJsonSerializersSettings]
+        public void ArgumentsToJson_HandlesCoreSerizlizerSettingsDoNotOverwriteArgumentsSerializerSettings()
+        {
+            JobHelper.SetArgumentsSerializerSettings(new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.All
+            });
+
+            JobHelper.SetCoreSerializerSettings(new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            });
+
+            var result = JobHelper.ArgumentsToJson(new ClassA("A"));
+            Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""A""}", result);
         }
 
         [Fact, CleanJsonSerializersSettings]
@@ -167,15 +197,6 @@ namespace Hangfire.Core.Tests.Common
 
             var result = JobHelper.ToJson(new ClassA("A"));
             Assert.Equal(@"{""propertyA"":""A""}", result);
-        }
-
-        [Fact, CleanJsonSerializersSettings]
-        public void ArgumentsToJson_ReturnCorrectValue_WhenArgumentsSerializerSettingsWasDefined()
-        {
-                JobHelper.SetSerializerSettings(new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
-
-                var result = JobHelper.ToJson(new ClassA("A"));
-                Assert.Equal(@"{""propertyA"":""A""}", result);
         }
 
         [Fact, CleanJsonSerializersSettings]
