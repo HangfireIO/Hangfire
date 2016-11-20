@@ -131,7 +131,7 @@
             var yAxis = new Rickshaw.Graph.Axis.Y({
                 graph: this._graph,
                 tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
-                tickTreatment: 'glow'
+                ticksTreatment: 'glow'
             });
             
             var hoverDetail = new Rickshaw.Graph.HoverDetail({
