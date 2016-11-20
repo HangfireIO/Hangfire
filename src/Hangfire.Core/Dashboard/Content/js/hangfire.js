@@ -245,13 +245,12 @@
 
         Page.prototype._createRealtimeGraph = function(elementId) {
             var realtimeElement = document.getElementById(elementId);
-            var succeeded = parseInt($(realtimeElement).data('succeeded'));
-            var failed = parseInt($(realtimeElement).data('failed'));
-
-            var succeededStr = $(realtimeElement).data('succeeded-string');
-            var failedStr = $(realtimeElement).data('failed-string');
-
             if (realtimeElement) {
+                var succeeded = parseInt($(realtimeElement).data('succeeded'));
+                var failed = parseInt($(realtimeElement).data('failed'));
+
+                var succeededStr = $(realtimeElement).data('succeeded-string');
+                var failedStr = $(realtimeElement).data('failed-string');
                 var realtimeGraph = new Hangfire.RealtimeGraph(realtimeElement, succeeded, failed, succeededStr, failedStr);
 
                 this._poller.addListener(function (data) {
