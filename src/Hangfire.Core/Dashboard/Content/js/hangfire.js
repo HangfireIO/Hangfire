@@ -36,19 +36,60 @@
         return Metrics;
     })();
 
+    var BaseGraph = function () {
+        this.height = 200;
+    };
+
+    BaseGraph.prototype.update = function () {
+        var graph = this._graph;
+
+        var width = $(graph.element).innerWidth();
+        if (width !== graph.width) {
+            graph.configure({
+                width: width,
+                height: this.height
+            });
+        }
+
+        graph.update();
+    };
+
+    BaseGraph.prototype._initGraph = function (element, settings, xSettings, ySettings) {
+        var graph = this._graph = new Rickshaw.Graph($.extend({
+            element: element,
+            width: $(element).innerWidth(),
+            height: this.height,
+            interpolation: 'linear',
+            stroke: true
+        }, settings));
+
+        this._hoverDetail = new Rickshaw.Graph.HoverDetail({
+            graph: graph,
+            yFormatter: function (y) { return Math.floor(y); },
+            xFormatter: function (x) { return moment(new Date(x * 1000)).format("LLLL"); }
+        });
+
+        if (xSettings) {
+            this._xAxis = new Rickshaw.Graph.Axis.Time($.extend({ graph: graph }, xSettings));
+        }
+
+        if (ySettings) {
+            this._yAxis = new Rickshaw.Graph.Axis.Y($.extend({
+                graph: graph,
+                tickFormat: Rickshaw.Fixtures.Number.formatKMBT
+            }, ySettings));
+        }
+
+        graph.render();
+    }
+
     hangfire.RealtimeGraph = (function() {
         function RealtimeGraph(element, succeeded, failed, succeededStr, failedStr) {
             this._succeeded = succeeded;
             this._failed = failed;
-            
-            this._graph = new Rickshaw.Graph({
-                element: element,
-                width: $(element).innerWidth(),
-                height: 200,
-                renderer: 'bar',
-                interpolation: 'linear',
-                stroke: true,
 
+            this._initGraph(element, {
+                renderer: 'bar',
                 series: new Rickshaw.Series.FixedDuration([
                         { name: failedStr, color: '#d9534f' },
                         { name: succeededStr, color: '#5cb85c' }
@@ -56,21 +97,10 @@
                     undefined,
                     { timeInterval: 2000, maxDataPoints: 100 }
                 )
-            });
-
-            var yAxis = new Rickshaw.Graph.Axis.Y({
-                graph: this._graph,
-                tickFormat: Rickshaw.Fixtures.Number.formatKMBT
-            });
-
-            var hoverDetail = new Rickshaw.Graph.HoverDetail({
-                graph: this._graph,
-                yFormatter: function (y) { return Math.floor(y); },
-                xFormatter: function (x) { return moment(new Date(x * 1000)).format("LLLL"); }
-            });
-
-            this._graph.render();
+            }, null, {});
         }
+
+        RealtimeGraph.prototype = Object.create(BaseGraph.prototype);
 
         RealtimeGraph.prototype.appendHistory = function (statistics) {
             var newSucceeded = parseInt(statistics["succeeded:count"].intValue);
@@ -88,32 +118,13 @@
             this._failed = newFailed;
         };
 
-        RealtimeGraph.prototype.update = function() {
-            var graph = this._graph;
-
-            var width = $(graph.element).innerWidth();
-            if (width !== graph.width) {
-                graph.configure({
-                    width: width,
-                    height: 200
-                });
-            }
-
-            graph.update();
-        };
-
         return RealtimeGraph;
     })();
 
     hangfire.HistoryGraph = (function() {
         function HistoryGraph(element, succeeded, failed, succeededStr, failedStr) {
-            this._graph = new Rickshaw.Graph({
-                element: element,
-                width: $(element).innerWidth(),
-                height: 200,
+            this._initGraph(element, {
                 renderer: 'area',
-                interpolation: 'linear',
-                stroke: true,
                 series: [
                     {
                         color: '#d9534f',
@@ -125,37 +136,10 @@
                         name: succeededStr
                     }
                 ]
-            });
-
-            var xAxis = new Rickshaw.Graph.Axis.Time({ graph: this._graph });
-            var yAxis = new Rickshaw.Graph.Axis.Y({
-                graph: this._graph,
-                tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
-                ticksTreatment: 'glow'
-            });
-            
-            var hoverDetail = new Rickshaw.Graph.HoverDetail({
-                graph: this._graph,
-                yFormatter: function (y) { return Math.floor(y); },
-                xFormatter: function (x) { return moment(new Date(x * 1000)).format("LLLL"); }
-            });
-
-            this._graph.render();
+            }, {}, { ticksTreatment: 'glow' });
         }
 
-        HistoryGraph.prototype.update = function() {
-            var graph = this._graph;
-
-            var width = $(graph.element).innerWidth();
-            if (width !== graph.width) {
-                graph.configure({
-                    width: width,
-                    height: 200
-                });
-            }
-
-            graph.update();
-        };
+        HistoryGraph.prototype = Object.create(BaseGraph.prototype);
 
         return HistoryGraph;
     })();
