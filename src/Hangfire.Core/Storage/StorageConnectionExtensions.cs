@@ -77,7 +77,8 @@ namespace Hangfire.Storage
                 var dto = new RecurringJobDto
                 {
                     Id = id,
-                    Cron = hash["Cron"]
+                    Cron = hash["Cron"],
+                    Queue = hash["Queue"]
                 };
 
                 try
