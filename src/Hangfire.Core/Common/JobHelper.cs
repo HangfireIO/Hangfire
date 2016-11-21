@@ -26,11 +26,6 @@ namespace Hangfire.Common
         private static JsonSerializerSettings _coreSerializerSettings;
         private static JsonSerializerSettings _arugumentsSerializerSettings;
 
-        internal static void SetCoreSerializerSettings(JsonSerializerSettings setting)
-        {
-            _coreSerializerSettings = setting;
-        }
-
         [Obsolete("Please use 'SetArgumentsSerializerSettings' method instead. Will be removed in version 2.0.0.")]
         public static void SetSerializerSettings(JsonSerializerSettings setting)
         {

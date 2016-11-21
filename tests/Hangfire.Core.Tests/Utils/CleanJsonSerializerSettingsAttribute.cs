@@ -10,7 +10,6 @@ namespace Hangfire.Core.Tests
         public override void After(MethodInfo methodUnderTest)
         {
            JobHelper.SetArgumentsSerializerSettings(null);
-           JobHelper.SetCoreSerializerSettings(null);
         }
     }
 }
