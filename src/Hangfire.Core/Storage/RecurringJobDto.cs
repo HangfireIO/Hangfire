@@ -23,6 +23,7 @@ namespace Hangfire.Storage
     {
         public string Id { get; set; }
         public string Cron { get; set; }
+        public string Queue { get; set; }
         public Job Job { get; set; }
         public JobLoadException LoadException { get; set; }
         public DateTime? NextExecution { get; set; }
