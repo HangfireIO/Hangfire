@@ -185,13 +185,12 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void SchedulePollingInterval_DoesNotThrowAnException_WhenValueIsInfinite()
+        public void SchedulePollingInterval_ThrowsAnException_WhenValueIsInfinite()
         {
             var options = CreateOptions();
 
-            options.SchedulePollingInterval = Timeout.InfiniteTimeSpan;
-
-            Assert.Equal(Timeout.InfiniteTimeSpan, options.SchedulePollingInterval);
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => options.SchedulePollingInterval = Timeout.InfiniteTimeSpan);
         }
 
         private static BackgroundJobServerOptions CreateOptions()

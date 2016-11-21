@@ -80,7 +80,7 @@ namespace Hangfire
             get { return _shutdownTimeout; }
             set
             {
-                if (value != Timeout.InfiniteTimeSpan && value < TimeSpan.Zero || value.TotalMilliseconds > Int32.MaxValue)
+                if ((value < TimeSpan.Zero && value != Timeout.InfiniteTimeSpan) || value.TotalMilliseconds > Int32.MaxValue)
                 {
                     throw new ArgumentOutOfRangeException(nameof(value), $"ShutdownTimeout must be either equal to or less than {Int32.MaxValue} milliseconds and non-negative or infinite");
                 }
@@ -93,9 +93,9 @@ namespace Hangfire
             get { return _schedulePollingInterval; }
             set
             {
-                if (value != Timeout.InfiniteTimeSpan && value < TimeSpan.Zero || value.TotalMilliseconds > Int32.MaxValue)
+                if (value < TimeSpan.Zero || value.TotalMilliseconds > Int32.MaxValue)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), $"SchedulePollingInterval must be either equal to or less than {Int32.MaxValue} milliseconds and non-negative or infinite");
+                    throw new ArgumentOutOfRangeException(nameof(value), $"SchedulePollingInterval must be non-negative and either equal to or less than {Int32.MaxValue} milliseconds");
                 }
 
                 _schedulePollingInterval = value;
