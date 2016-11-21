@@ -77,8 +77,7 @@ namespace Hangfire.Storage
                 var dto = new RecurringJobDto
                 {
                     Id = id,
-                    Cron = hash["Cron"],
-                    Queue = hash["Queue"]
+                    Cron = hash["Cron"]
                 };
 
                 try
@@ -105,6 +104,11 @@ namespace Hangfire.Storage
                     {
                         dto.LastJobState = stateData.Name;
                     }
+                }
+                
+                if (hash.ContainsKey("Queue"))
+                {
+                    dto.Queue = hash["Queue"]
                 }
 
                 if (hash.ContainsKey("LastExecution"))
