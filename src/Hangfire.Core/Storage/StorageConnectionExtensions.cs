@@ -108,7 +108,7 @@ namespace Hangfire.Storage
                 
                 if (hash.ContainsKey("Queue"))
                 {
-                    dto.Queue = hash["Queue"]
+                    dto.Queue = hash["Queue"];
                 }
 
                 if (hash.ContainsKey("LastExecution"))
