@@ -107,6 +107,7 @@
     <Compile Include="Mocks\ElectStateContextMock.cs" />
     <Compile Include="Mocks\PerformContextMock.cs" />
     <Compile Include="Mocks\StateChangeContextMock.cs" />
+    <Compile Include="Obsolete\ServerWatchdogOptionsFacts.cs" />
     <Compile Include="PreserveCultureAttributeFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueueAttributeFacts.cs" />
