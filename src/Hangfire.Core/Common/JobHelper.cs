@@ -25,17 +25,29 @@ namespace Hangfire.Common
     {
         private static JsonSerializerSettings _coreSerializerSettings;
         private static JsonSerializerSettings _arugumentsSerializerSettings;
+        private static JsonSerializerSettings _parametersSerializerSettings;
 
-        [Obsolete("Please use 'SetArgumentsSerializerSettings' method instead. Will be removed in version 2.0.0.")]
-        public static void SetSerializerSettings(JsonSerializerSettings setting)
+        [Obsolete(@"This method is here for compatibility reasons.
+Please use 'SetArgumentsSerializerSettings', 'SerializeArgument', 'DeserializeArgument' instead 
+to serialize/deserialize arguments.
+Please use 'SetParametersSerializerSettings', 'SerializeParameter', 'DeserializeParameter' instead 
+to serialize/deserialize job parameters.
+Will be removed in version 2.0.0.")]
+        public static void SetSerializerSettings(JsonSerializerSettings settings)
         {
-            _coreSerializerSettings = setting;
-            _arugumentsSerializerSettings = _arugumentsSerializerSettings ?? setting;
+            _coreSerializerSettings = settings;
+            _arugumentsSerializerSettings = settings;
+            _parametersSerializerSettings = settings;
         }
 
-        public static void SetArgumentsSerializerSettings(JsonSerializerSettings setting)
+        public static void SetArgumentsSerializerSettings(JsonSerializerSettings settings)
         {
-            _arugumentsSerializerSettings = setting;
+            _arugumentsSerializerSettings = settings;
+        }
+
+        public static void SetParametersSerializerSettings(JsonSerializerSettings settings)
+        {
+            _parametersSerializerSettings = settings;
         }
 
         public static string ToJson(object value)
@@ -61,19 +73,49 @@ namespace Hangfire.Common
                 : null;
         }
 
-        public static string ArgumentToJson(object value)
+        public static string SerializeArgument(object value)
         {
             return value != null
                ? JsonConvert.SerializeObject(value, _arugumentsSerializerSettings)
                : null;
         }
 
-        public static object ArgumentFromJson(string value, [NotNull] Type type)
+        public static T DeserializeArgument<T>(string value)
+        {
+            return value != null
+                ? JsonConvert.DeserializeObject<T>(value, _arugumentsSerializerSettings)
+                : default(T);
+        }
+
+        public static object DeserializeArgument(string value, [NotNull] Type type)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
 
             return value != null
                 ? JsonConvert.DeserializeObject(value, type, _arugumentsSerializerSettings)
+                : null;
+        }
+
+        public static T DeserializeParameter<T>(string value)
+        {
+            return value != null
+                ? JsonConvert.DeserializeObject<T>(value, _parametersSerializerSettings)
+                : default(T);
+        }
+
+        public static string SerializeParameter(object value)
+        {
+            return value != null
+               ? JsonConvert.SerializeObject(value, _parametersSerializerSettings)
+               : null;
+        }
+
+        public static object DeserializeParameter(string value, [NotNull] Type type)
+        {
+            if (type == null) throw new ArgumentNullException(nameof(type));
+
+            return value != null
+                ? JsonConvert.DeserializeObject(value, type, _parametersSerializerSettings)
                 : null;
         }
 
