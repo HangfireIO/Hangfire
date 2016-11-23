@@ -209,45 +209,6 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void DeserializeArgumentGeneric_ReturnsCorrectValue_WhenValueIsString()
-        {
-            var result = JobHelper.DeserializeArgument<string>("\"Hi!\"");
-            Assert.Equal("Hi!", result);
-        }
-
-        [Fact]
-        public void DeserializeArgumentGeneric_ReturnsNull_WhenValueIsNull()
-        {
-            var result = JobHelper.DeserializeArgument<object>(null);
-            Assert.Null(result);
-        }
-
-        [Fact, CleanJsonSerializersSettings]
-        public void DeserializeArgumentGeneric_RetrunsObject_WhenGenericArgumentIsCustomClass()
-        {
-            var argumentJson = @"{""PropertyA"":""A""}";
-
-            var argumentValue = JobHelper.DeserializeArgument<ClassA>(argumentJson);
-            Assert.NotNull(argumentValue);
-            Assert.Equal("A", argumentValue.PropertyA);
-        }
-
-        [Fact, CleanJsonSerializersSettings]
-        public void DeserializeArgumentGeneric_ReturnsObject_WhenGenericArgumentIsInterface()
-        {
-            JobHelper.SetArgumentsSerializerSettings(new JsonSerializerSettings
-            {
-                TypeNameHandling = TypeNameHandling.Objects
-            });
-
-            var argumentJson = @"{""$type"":""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""A""}";
-
-            var argumentValue = JobHelper.DeserializeArgument<IClass>(argumentJson) as ClassA;
-            Assert.NotNull(argumentValue);
-            Assert.Equal("A", argumentValue.PropertyA);
-        }
-
-        [Fact]
         public void SerializeParameter_ReturnsNull_WhenValueIsNull()
         {
             var result = JobHelper.SerializeParameter(null);
@@ -279,51 +240,6 @@ namespace Hangfire.Core.Tests.Common
 
             var result = JobHelper.SerializeParameter(new ClassA("A"));
             Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"",""propertyA"":""A""}", result);
-        }
-
-        [Fact]
-        public void DeserializeParameter_ThrowsAnException_WhenTypeIsNull()
-        {
-            Assert.Throws<ArgumentNullException>(() => JobHelper.DeserializeParameter("1", null));
-        }
-
-        [Fact]
-        public void DeserializeParameter_ReturnsCorrectValue_WhenValueIsString()
-        {
-            var result = (string)JobHelper.DeserializeParameter("\"hello\"", typeof(string));
-            Assert.Equal("hello", result);
-        }
-
-        [Fact]
-        public void DeserializeParameter_ReturnsNull_WhenValueIsNull()
-        {
-            var result = (string)JobHelper.DeserializeParameter(null, typeof(string));
-            Assert.Null(result);
-        }
-
-        [Fact, CleanJsonSerializersSettings]
-        public void DeserializeParameter_RetrunsObject_WhenTypeIsCustomClass()
-        {
-            var argumentJson = @"{""PropertyA"":""A""}";
-
-            var argumentValue = JobHelper.DeserializeParameter(argumentJson, typeof(ClassA)) as ClassA;
-            Assert.NotNull(argumentValue);
-            Assert.Equal("A", argumentValue.PropertyA);
-        }
-
-        [Fact, CleanJsonSerializersSettings]
-        public void DeserializeParameter_ReturnsObject_WhenTypeIsInterface()
-        {
-            JobHelper.SetParametersSerializerSettings(new JsonSerializerSettings
-            {
-                TypeNameHandling = TypeNameHandling.Objects
-            });
-
-            var argumentJson = @"{""$type"":""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""A""}";
-
-            var argumentValue = JobHelper.DeserializeParameter(argumentJson, typeof(IClass)) as ClassA;
-            Assert.NotNull(argumentValue);
-            Assert.Equal("A", argumentValue.PropertyA);
         }
 
         [Fact]

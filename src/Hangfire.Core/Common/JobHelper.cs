@@ -27,11 +27,9 @@ namespace Hangfire.Common
         private static JsonSerializerSettings _arugumentsSerializerSettings;
         private static JsonSerializerSettings _parametersSerializerSettings;
 
-        [Obsolete(@"This method is here for compatibility reasons.
-Please use 'SetArgumentsSerializerSettings', 'SerializeArgument', 'DeserializeArgument' instead 
-to serialize/deserialize arguments.
-Please use 'SetParametersSerializerSettings', 'SerializeParameter', 'DeserializeParameter' instead 
-to serialize/deserialize job parameters.
+        [Obsolete(@"This method is here for compatibility reasons. 
+Please use 'SetArgumentsSerializerSettings', 'SetParametersSerializerSettings' methods instead.
+It will be impossible to affect 'ToJson', 'FromJson' methods behavior in version 2.0.0.
 Will be removed in version 2.0.0.")]
         public static void SetSerializerSettings(JsonSerializerSettings settings)
         {
@@ -63,36 +61,6 @@ Will be removed in version 2.0.0.")]
         public static object FromJson(string value, [NotNull] Type type)
         {
             return Deserialize(value, type, _coreSerializerSettings);
-        }
-
-        public static string SerializeArgument(object value)
-        {
-            return Serialize(value, _arugumentsSerializerSettings);
-        }
-
-        public static T DeserializeArgument<T>(string value)
-        {
-            return Deserialize<T>(value, _arugumentsSerializerSettings);
-        }
-
-        public static object DeserializeArgument(string value, [NotNull] Type type)
-        {
-            return Deserialize(value, type, _arugumentsSerializerSettings);
-        }
-
-        public static string SerializeParameter(object value)
-        {
-            return Serialize(value, _parametersSerializerSettings);
-        }
-
-        public static object DeserializeParameter(string value, [NotNull] Type type)
-        {
-            return Deserialize(value, type, _parametersSerializerSettings);
-        }
-
-        public static T DeserializeParameter<T>(string value)
-        {
-            return Deserialize<T>(value, _parametersSerializerSettings);
         }
 
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -132,6 +100,26 @@ Will be removed in version 2.0.0.")]
             }
 
             return DeserializeDateTime(value);
+        }
+
+        internal static string SerializeArgument(object value)
+        {
+            return Serialize(value, _arugumentsSerializerSettings);
+        }
+
+        internal static object DeserializeArgument(string value, [NotNull] Type type)
+        {
+            return Deserialize(value, type, _arugumentsSerializerSettings);
+        }
+
+        internal static string SerializeParameter(object value)
+        {
+            return Serialize(value, _parametersSerializerSettings);
+        }
+
+        internal static T DeserializeParameter<T>(string value)
+        {
+            return Deserialize<T>(value, _parametersSerializerSettings);
         }
 
         private static string Serialize(object value, JsonSerializerSettings settings)
