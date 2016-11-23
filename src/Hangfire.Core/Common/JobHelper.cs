@@ -52,71 +52,47 @@ Will be removed in version 2.0.0.")]
 
         public static string ToJson(object value)
         {
-            return value != null
-                ? JsonConvert.SerializeObject(value, _coreSerializerSettings)
-                : null;
+            return Serialize(value, _coreSerializerSettings);
         }
 
         public static T FromJson<T>(string value)
         {
-            return value != null
-                ? JsonConvert.DeserializeObject<T>(value, _coreSerializerSettings)
-                : default(T);
+            return Deserialize<T>(value, _coreSerializerSettings);
         }
 
         public static object FromJson(string value, [NotNull] Type type)
         {
-            if (type == null) throw new ArgumentNullException(nameof(type));
-
-            return value != null
-                ? JsonConvert.DeserializeObject(value, type, _coreSerializerSettings)
-                : null;
+            return Deserialize(value, type, _coreSerializerSettings);
         }
 
         public static string SerializeArgument(object value)
         {
-            return value != null
-               ? JsonConvert.SerializeObject(value, _arugumentsSerializerSettings)
-               : null;
+            return Serialize(value, _arugumentsSerializerSettings);
         }
 
         public static T DeserializeArgument<T>(string value)
         {
-            return value != null
-                ? JsonConvert.DeserializeObject<T>(value, _arugumentsSerializerSettings)
-                : default(T);
+            return Deserialize<T>(value, _arugumentsSerializerSettings);
         }
 
         public static object DeserializeArgument(string value, [NotNull] Type type)
         {
-            if (type == null) throw new ArgumentNullException(nameof(type));
-
-            return value != null
-                ? JsonConvert.DeserializeObject(value, type, _arugumentsSerializerSettings)
-                : null;
-        }
-
-        public static T DeserializeParameter<T>(string value)
-        {
-            return value != null
-                ? JsonConvert.DeserializeObject<T>(value, _parametersSerializerSettings)
-                : default(T);
+            return Deserialize(value, type, _arugumentsSerializerSettings);
         }
 
         public static string SerializeParameter(object value)
         {
-            return value != null
-               ? JsonConvert.SerializeObject(value, _parametersSerializerSettings)
-               : null;
+            return Serialize(value, _parametersSerializerSettings);
         }
 
         public static object DeserializeParameter(string value, [NotNull] Type type)
         {
-            if (type == null) throw new ArgumentNullException(nameof(type));
+            return Deserialize(value, type, _parametersSerializerSettings);
+        }
 
-            return value != null
-                ? JsonConvert.DeserializeObject(value, type, _parametersSerializerSettings)
-                : null;
+        public static T DeserializeParameter<T>(string value)
+        {
+            return Deserialize<T>(value, _parametersSerializerSettings);
         }
 
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -156,6 +132,29 @@ Will be removed in version 2.0.0.")]
             }
 
             return DeserializeDateTime(value);
+        }
+
+        private static string Serialize(object value, JsonSerializerSettings settings)
+        {
+            return value != null
+               ? JsonConvert.SerializeObject(value, settings)
+               : null;
+        }
+
+        private static object Deserialize(string value, [NotNull] Type type, JsonSerializerSettings settings)
+        {
+            if (type == null) throw new ArgumentNullException(nameof(type));
+
+            return value != null
+                ? JsonConvert.DeserializeObject(value, type, settings)
+                : null;
+        }
+
+        private static T Deserialize<T>(string value, JsonSerializerSettings settings)
+        {
+            return value != null
+                ? JsonConvert.DeserializeObject<T>(value, settings)
+                : default(T);
         }
     }
 }

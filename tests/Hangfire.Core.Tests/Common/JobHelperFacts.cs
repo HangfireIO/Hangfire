@@ -269,7 +269,7 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact, CleanJsonSerializersSettings]
-        public void SSerializeParameter_ReturnCorrectValue_WhenArgumentsSerializerSettingsIsDefined()
+        public void SerializeParameter_ReturnCorrectValue_WhenArgumentsSerializerSettingsIsDefined()
         {
             JobHelper.SetParametersSerializerSettings(new JsonSerializerSettings
             {
@@ -336,7 +336,7 @@ namespace Hangfire.Core.Tests.Common
         [Fact]
         public void DeserializeParameterGeneric_ReturnsNull_WhenValueIsNull()
         {
-            var result = JobHelper.DeserializeArgument<object>(null);
+            var result = JobHelper.DeserializeParameter<object>(null);
             Assert.Null(result);
         }
 
@@ -345,7 +345,7 @@ namespace Hangfire.Core.Tests.Common
         {
             var argumentJson = @"{""PropertyA"":""A""}";
 
-            var argumentValue = JobHelper.DeserializeArgument<ClassA>(argumentJson);
+            var argumentValue = JobHelper.DeserializeParameter<ClassA>(argumentJson);
             Assert.NotNull(argumentValue);
             Assert.Equal("A", argumentValue.PropertyA);
         }
