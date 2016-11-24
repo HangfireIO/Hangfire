@@ -130,7 +130,7 @@ namespace Hangfire.Dashboard
                         foreach (var item in (IEnumerable)argumentValue)
                         {
                             var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
-                            renderedItems.Add(argumentRenderer.Render(isJson, item.ToString(),
+                            renderedItems.Add(argumentRenderer.Render(isJson, item?.ToString(),
                                 JobHelper.ToJson(item)));
                         }
 
