@@ -125,6 +125,17 @@ namespace Hangfire.Common
 
             if (parameterType.ContainsGenericParameters)
             {
+                if (parameterType.IsArray)
+                {
+                    // Return false if parameterType is array whereas actualType isn't
+                    if (!actualType.IsArray) return false;
+
+                    var parameterElementType = parameterType.GetElementType();
+                    var actualElementType = actualType.GetElementType();
+
+                    return TypesMatchRecursive(parameterElementType.GetTypeInfo(), actualElementType.GetTypeInfo(), genericArguments);
+                }
+
                 if (!actualType.IsGenericType || parameterType.GetGenericTypeDefinition() != actualType.GetGenericTypeDefinition())
                 {
                     return false;

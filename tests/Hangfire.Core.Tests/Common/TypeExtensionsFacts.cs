@@ -265,6 +265,35 @@ namespace Hangfire.Core.Tests.Common
 
             Assert.Equal(null, method);
         }
+
+        [Fact]
+        public void GetNonOpenMatchingMethod_ReturnsCorrectMethod_WhenParameterTypeIsGenericArray()
+        {
+            var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "GenericMethod",
+                new[] { typeof(string[]) });
+
+            Assert.Equal("GenericMethod", method.Name);
+            Assert.Equal(typeof(string[]), method.GetParameters()[0].ParameterType);
+        }
+
+        [Fact]
+        public void GetNonOpenMatchingMethod_ReturnsCorrectMethod_WhenParameterTypeIsComplicatedGenericArray()
+        {
+            var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "GenericMethod",
+                new[] { typeof(List<int>[]) });
+
+            Assert.Equal("GenericMethod", method.Name);
+            Assert.Equal(typeof(List<int>[]), method.GetParameters()[0].ParameterType);
+        }
+
+        [Fact]
+        public void GetNonOpenMatchingMethod_ReturnsNull_WhenMatchingGenricMethodNotBeFound()
+        {
+            var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "GenericMethod",
+                new[] { typeof(Tuple<List<int>, string>) });
+
+            Assert.Null(method);
+        }
     }
 
     public class GenericClass<T1>
@@ -314,6 +343,10 @@ namespace Hangfire.Core.Tests.Common
         public void GenericMethod<T>(int arg0, T arg1, double arg2) { }
 
         public void GenericMethod<T>(Tuple<T, List<int>> arg) { }
+
+        public void GenericMethod<T>(T[] arg) { }
+
+        public void GenericMethod<T>(List<T>[] arg) { }
 
         public class NestedNonGenericClass
         {
