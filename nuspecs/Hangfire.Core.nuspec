@@ -33,10 +33,10 @@
 • Fixed – Generic methods cause ArgumentNullException when scoped variable is used in expression.
     
 1.6.5
-• Added – Chinese language to Dashboard UI.
+• Added – Chinese language to Dashboard UI (by @andy-zhouyou).
 • Changed – Default upper limit of worker number is 20.
 • Changed – Default value for DashboardJobListLimit is now 10000.
-• Fixed – Deserialization exception in continuations, when TypeNameHandling.All option is used.
+• Fixed – Deserialization exception in continuations, when TypeNameHandling.All option is used (by @MaksimSimkin).
 • Fixed – I18N is not working, because there are no localized resources in NuGet packages.
 • Fixed – Infinite redirect loops, when authenticated, but not authorized user accesses Dashboard UI.
 • Fixed – "The type ... exists in both..." issue when building Hangfire, related to Newtonsoft.Json.
