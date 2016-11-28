@@ -105,6 +105,11 @@ namespace Hangfire.Storage
                         dto.LastJobState = stateData.Name;
                     }
                 }
+                
+                if (hash.ContainsKey("Queue"))
+                {
+                    dto.Queue = hash["Queue"];
+                }
 
                 if (hash.ContainsKey("LastExecution"))
                 {
