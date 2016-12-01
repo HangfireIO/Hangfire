@@ -48,7 +48,7 @@ namespace Hangfire.Storage
             try
             {
                 var type = System.Type.GetType(Type, throwOnError: true, ignoreCase: true);
-                var parameterTypes = JobHelper.FromJson<Type[]>(ParameterTypes);
+                var parameterTypes = JobHelper.Deserialize<Type[]>(ParameterTypes);
                 var method = type.GetNonOpenMatchingMethod(Method, parameterTypes);
                 
                 if (method == null)
@@ -57,7 +57,7 @@ namespace Hangfire.Storage
                         $"The type `{type.FullName}` does not contain a method with signature `{Method}({String.Join(", ", parameterTypes.Select(x => x.Name))})`");
                 }
 
-                var serializedArguments = JobHelper.FromJson<string[]>(Arguments);
+                var serializedArguments = JobHelper.Deserialize<string[]>(Arguments);
                 var arguments = DeserializeArguments(method, serializedArguments);
 
                 return new Job(type, method, arguments);
@@ -73,8 +73,8 @@ namespace Hangfire.Storage
             return new InvocationData(
                 job.Type.AssemblyQualifiedName,
                 job.Method.Name,
-                JobHelper.ToJson(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()),
-                JobHelper.ToJson(SerializeArguments(job.Args)));
+                JobHelper.Serialize(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()),
+                JobHelper.Serialize(SerializeArguments(job.Args)));
         }
 
         internal static string[] SerializeArguments(IReadOnlyCollection<object> arguments)

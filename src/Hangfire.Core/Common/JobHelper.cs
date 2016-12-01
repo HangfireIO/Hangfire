@@ -16,31 +16,61 @@
 
 using System;
 using System.Globalization;
+using System.Runtime.ExceptionServices;
+using System.Runtime.Serialization.Formatters;
 using Hangfire.Annotations;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Hangfire.Common
 {
     public static class JobHelper
     {
-        private static JsonSerializerSettings _serializerSettings;
+        private const TypeNameHandling DefaulTypeNameHandling = TypeNameHandling.None;
+
+        private static readonly Func<TypeNameHandling, JsonSerializerSettings> CoreSerializerSettingsFactory =
+            typeNameHandling => new JsonSerializerSettings
+            {
+                TypeNameHandling = typeNameHandling,
+                TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
+
+                DateFormatHandling = DateFormatHandling.IsoDateFormat,
+                DateFormatString = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFFK",
+
+                Formatting = Formatting.None,
+                CheckAdditionalContent = false,
+
+                ConstructorHandling = ConstructorHandling.Default,
+                ReferenceLoopHandling = ReferenceLoopHandling.Error,
+                MissingMemberHandling = MissingMemberHandling.Ignore,
+                NullValueHandling = NullValueHandling.Include,
+                DefaultValueHandling = DefaultValueHandling.Include,
+                ObjectCreationHandling = ObjectCreationHandling.Auto,
+                PreserveReferencesHandling = PreserveReferencesHandling.None,
+                Culture = CultureInfo.InvariantCulture,
+                Binder = new DefaultSerializationBinder()
+            };
+
+        private static readonly JsonSerializerSettings CoreSerializerSettings = CoreSerializerSettingsFactory(DefaulTypeNameHandling);
+
+        private static JsonSerializerSettings _argumentsAndParametersSerializerSettings;
 
         public static void SetSerializerSettings(JsonSerializerSettings setting)
         {
-            _serializerSettings = setting;
+            _argumentsAndParametersSerializerSettings = setting;
         }
 
         public static string ToJson(object value)
         {
             return value != null
-                ? JsonConvert.SerializeObject(value, _serializerSettings)
+                ? JsonConvert.SerializeObject(value, _argumentsAndParametersSerializerSettings)
                 : null;
         }
 
         public static T FromJson<T>(string value)
         {
             return value != null
-                ? JsonConvert.DeserializeObject<T>(value, _serializerSettings)
+                ? JsonConvert.DeserializeObject<T>(value, _argumentsAndParametersSerializerSettings)
                 : default(T);
         }
 
@@ -49,7 +79,7 @@ namespace Hangfire.Common
             if (type == null) throw new ArgumentNullException(nameof(type));
 
             return value != null
-                ? JsonConvert.DeserializeObject(value, type, _serializerSettings)
+                ? JsonConvert.DeserializeObject(value, type, _argumentsAndParametersSerializerSettings)
                 : null;
         }
 
@@ -58,7 +88,7 @@ namespace Hangfire.Common
         public static long ToTimestamp(DateTime value)
         {
             TimeSpan elapsedTime = value - Epoch;
-            return (long)elapsedTime.TotalSeconds;
+            return (long) elapsedTime.TotalSeconds;
         }
 
         public static DateTime FromTimestamp(long value)
@@ -90,6 +120,46 @@ namespace Hangfire.Common
             }
 
             return DeserializeDateTime(value);
+        }
+
+        internal static string Serialize(object value, TypeNameHandling typeNameHandling = DefaulTypeNameHandling)
+        {
+            if (value == null) return null;
+
+            var serializerSettings = GetSerializerSettings(typeNameHandling);
+
+            return JsonConvert.SerializeObject(value, serializerSettings);
+        }
+
+        internal static T Deserialize<T>(string value, TypeNameHandling typeNameHandling = DefaulTypeNameHandling)
+        {
+            if (value == null) return default(T);
+
+            var serializerSettings = GetSerializerSettings(typeNameHandling);
+            
+            try
+            {
+                return JsonConvert.DeserializeObject<T>(value, serializerSettings);
+            }
+            catch (Exception jsonException)
+            {
+                try
+                {
+                    return FromJson<T>(value);
+                }
+                catch (Exception)
+                {
+                    ExceptionDispatchInfo.Capture(jsonException).Throw();
+                    throw;
+                }
+            }
+        }
+
+        private static JsonSerializerSettings GetSerializerSettings(TypeNameHandling typeNameHandling)
+        {
+            return typeNameHandling == DefaulTypeNameHandling
+                ? CoreSerializerSettings
+                : CoreSerializerSettingsFactory(typeNameHandling);
         }
     }
 }

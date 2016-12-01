@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters;
 using Hangfire.Common;
 using Hangfire.Storage;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Xunit;
 
 namespace Hangfire.Core.Tests.Storage
@@ -141,11 +143,62 @@ namespace Hangfire.Core.Tests.Storage
             Assert.IsType<JsonReaderException>(exception.InnerException);
         }
 
+        [Fact, CleanJsonSerializersSettings]
+        public void Deserialize_HandlesChangingCoreSerializerSettings()
+        {
+            var previousSerializerSettings = new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.All,
+                TypeNameAssemblyFormat = FormatterAssemblyStyle.Full,
+
+                DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
+
+                Formatting = Formatting.Indented,
+
+                NullValueHandling = NullValueHandling.Ignore,
+                DefaultValueHandling = DefaultValueHandling.Ignore,
+            };
+
+            JobHelper.SetSerializerSettings(previousSerializerSettings);
+
+            var serializedData = new InvocationData(
+                typeof(InvocationDataFacts).AssemblyQualifiedName,
+                "ComplicatedMethod",
+                JobHelper.ToJson(new[]
+                {
+                    typeof(IList<string>),
+                    typeof(SomeClass)
+                }),
+                JobHelper.ToJson(new[]
+                {
+                    JobHelper.ToJson(new List<string> { "one", "two" }),
+                    JobHelper.ToJson(new SomeClass { StringValue = "value" })
+                }));
+
+            var job = serializedData.Deserialize();
+
+            Assert.Equal(typeof(InvocationDataFacts), job.Type);
+            Assert.Equal(2, job.Args.Count);
+
+            Assert.Equal(typeof(List<string>), job.Args[0].GetType());
+            Assert.Equal("one", (job.Args[0] as List<string>)?[0]);
+            Assert.Equal("two", (job.Args[0] as List<string>)?[1]);
+
+            Assert.Equal(typeof(SomeClass), job.Args[1].GetType());
+            Assert.Equal("value", (job.Args[1] as SomeClass)?.StringValue);
+            Assert.Equal(0, (job.Args[1] as SomeClass)?.DefaultValue);
+            Assert.Equal(null, (job.Args[1] as SomeClass)?.NullObject);
+        }
+
         public static void Sample(string arg)
         {
         }
 
         public static void ListMethod(IList<string> arg)
+        {
+        }
+
+        public static void ComplicatedMethod(IList<string> arg, SomeClass objArg)
         {
         }
 
@@ -163,5 +216,15 @@ namespace Hangfire.Core.Tests.Storage
         public interface IChild : IParent
         {
         }
+
+        public class SomeClass
+        {
+            public string StringValue { get; set; }
+
+            public object NullObject { get; set; }
+
+            public int DefaultValue { get; set; }
+        }
+        
     }
 }

@@ -2,6 +2,7 @@
   "dependencies": {
     "Moq": "4.6.36-alpha",
     "Moq.Sequences.NoNUnit": "1.0.1",
+    "Newtonsoft.Json": "5.0.5",
     "xunit": "2.2.0-beta2-build3300"
   },
   "runtimes": {

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization.Formatters;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
+using Newtonsoft.Json;
 using Xunit;
 
 // ReSharper disable AssignNullToNotNullAttribute
@@ -285,6 +287,36 @@ namespace Hangfire.Core.Tests
             _transaction.Verify(x => x.RemoveFromSet("recurring-jobs", _id));
             _transaction.Verify(x => x.RemoveHash($"recurring-job:{_id}"));
             _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact, CleanJsonSerializersSettings]
+        public void HandlesChangingCoreSerializerSettings()
+        {
+            var previousSerializerSettings = new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.All,
+                TypeNameAssemblyFormat = FormatterAssemblyStyle.Full,
+
+                DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
+
+                Formatting = Formatting.Indented,
+
+                NullValueHandling = NullValueHandling.Ignore,
+                DefaultValueHandling = DefaultValueHandling.Ignore,
+            };
+            JobHelper.SetSerializerSettings(previousSerializerSettings);
+
+            var initialJob = Job.FromExpression(() => Console.WriteLine());
+            var invocationData = InvocationData.Serialize(initialJob);
+
+            var serializedInvocationData = JobHelper.ToJson(invocationData);
+
+            var deserializedInvocationData = JobHelper.Deserialize<InvocationData>(serializedInvocationData);
+            var deserializedJob = deserializedInvocationData.Deserialize();
+
+            Assert.Equal(initialJob.Args, deserializedJob.Args);
+            Assert.Equal(initialJob.Method, deserializedJob.Method);
+            Assert.Equal(initialJob.Type, deserializedJob.Type);
         }
 
         private RecurringJobManager CreateManager()

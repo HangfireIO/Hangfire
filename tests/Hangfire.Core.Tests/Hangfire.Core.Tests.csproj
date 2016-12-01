@@ -52,7 +52,7 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <Private>True</Private>
-      <HintPath>..\..\packages\Newtonsoft.Json.5.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\packages\Newtonsoft.Json.5.0.5\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -93,6 +93,7 @@
     <Compile Include="Common\JobHelperFacts.cs" />
     <Compile Include="Common\JobLoadExceptionFacts.cs" />
     <Compile Include="Common\TypeExtensionsFacts.cs" />
+    <Compile Include="ContinuationsSupportAttributeFacts.cs" />
     <Compile Include="CronFacts.cs" />
     <Compile Include="Dashboard\HtmlHelperFacts.cs" />
     <Compile Include="LatencyTimeoutAttributeFacts.cs" />
@@ -130,9 +131,11 @@
     <Compile Include="Server\ServerHeartbeatFacts.cs" />
     <Compile Include="Server\ServerWatchdogFacts.cs" />
     <Compile Include="Server\WorkerFacts.cs" />
+    <Compile Include="States\AwaitingStateFacts.cs" />
     <Compile Include="States\CoreStateMachineFacts.cs" />
     <Compile Include="States\DeletedStateFacts.cs" />
     <Compile Include="States\DeletedStateHandlerFacts.cs" />
+    <Compile Include="States\ElectStateContextFacts.cs" />
     <Compile Include="States\EnqueuedStateFacts.cs" />
     <Compile Include="States\EnqueuedStateHandlerFacts.cs" />
     <Compile Include="States\FailedStateFacts.cs" />
@@ -141,7 +144,6 @@
     <Compile Include="States\ProcessingStateFacts.cs" />
     <Compile Include="States\ScheduledStateFacts.cs" />
     <Compile Include="States\ApplyStateContextFacts.cs" />
-    <Compile Include="States\ElectStateContextFacts.cs" />
     <Compile Include="States\StateMachineFacts.cs" />
     <Compile Include="States\StateHandlerCollectionFacts.cs" />
     <Compile Include="States\BackgroundJobStateChangerFacts.cs" />
@@ -151,6 +153,7 @@
     <Compile Include="Storage\InvocationDataFacts.cs" />
     <Compile Include="Storage\MonitoringTypeFacts.cs" />
     <Compile Include="Storage\StorageConnectionExtensionsFacts.cs" />
+    <Compile Include="Utils\CleanJsonSerializerSettingsAttribute.cs" />
     <Compile Include="Utils\CultureHelper.cs" />
     <Compile Include="Utils\GlobalLockAttribute.cs" />
     <Compile Include="Utils\PlatformHelper.cs" />
