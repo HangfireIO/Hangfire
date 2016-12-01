@@ -23,7 +23,6 @@ using System.Transactions;
 #endif
 using Dapper;
 using Hangfire.Annotations;
-using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
 
@@ -106,7 +105,7 @@ update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @
                     name = state.Name,
                     reason = state.Reason,
                     createdAt = DateTime.UtcNow,
-                    data = JobHelper.ToJson(state.SerializeData()),
+                    data = SerializationHelper.Serialize(state.SerializeData()),
                     id = long.Parse(jobId)
                 },
                 transaction,
@@ -127,7 +126,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
                     name = state.Name,
                     reason = state.Reason,
                     createdAt = DateTime.UtcNow, 
-                    data = JobHelper.ToJson(state.SerializeData())
+                    data = SerializationHelper.Serialize(state.SerializeData())
                 },
                 transaction,
                 _storage.CommandTimeout));

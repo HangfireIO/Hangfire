@@ -24,6 +24,7 @@ using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.SqlServer.Entities;
 using Hangfire.Storage;
+using Newtonsoft.Json;
 
 // ReSharper disable RedundantAnonymousTypePropertyName
 
@@ -90,7 +91,7 @@ values (@invocationData, @arguments, @createdAt, @expireAt)";
                     createJobSql,
                     new
                     {
-                        invocationData = JobHelper.ToJson(invocationData),
+                        invocationData = SerializationHelper.Serialize(invocationData),
                         arguments = invocationData.Arguments,
                         createdAt = createdAt,
                         expireAt = createdAt.Add(expireIn)
@@ -137,7 +138,7 @@ $@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.Schema
                 if (jobData == null) return null;
 
                 // TODO: conversion exception could be thrown.
-                var invocationData = JobHelper.FromJson<InvocationData>(jobData.InvocationData);
+                var invocationData = SerializationHelper.Deserialize<InvocationData>(jobData.InvocationData);
                 invocationData.Arguments = jobData.Arguments;
 
                 Job job = null;
@@ -181,7 +182,7 @@ where j.Id = @jobId";
                 }
 
                 var data = new Dictionary<string, string>(
-                    JobHelper.FromJson<Dictionary<string, string>>(sqlState.Data),
+                    SerializationHelper.Deserialize<Dictionary<string, string>>(sqlState.Data),
                     StringComparer.OrdinalIgnoreCase);
 
                 return new StateData
@@ -309,7 +310,7 @@ using (VALUES (@id, @data, @heartbeat)) as Source (Id, Data, Heartbeat)
 on Target.Id = Source.Id
 when matched then update set Data = Source.Data, LastHeartbeat = Source.Heartbeat
 when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat);",
-                    new { id = serverId, data = JobHelper.ToJson(data), heartbeat = DateTime.UtcNow },
+                    new { id = serverId, data = SerializationHelper.Serialize(data), heartbeat = DateTime.UtcNow },
                     commandTimeout: _storage.CommandTimeout);
             });
         }

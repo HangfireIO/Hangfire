@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Runtime.Serialization.Formatters;
 using System.Threading;
 using Dapper;
 using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.Storage;
 using Moq;
+using Newtonsoft.Json;
 using Xunit;
 // ReSharper disable PossibleNullReferenceException
 
@@ -1328,6 +1330,68 @@ values (@key, @value, @expireAt, 0.0)";
                 Assert.True(TimeSpan.FromMinutes(59) < result);
                 Assert.True(result < TimeSpan.FromMinutes(61));
             });
+        }
+
+        [Fact, CleanJsonSerializersSettings]
+        public void HandlesChangingDeserializationMethodOfStateData()
+        {
+            var previousSerializerSettings = new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.All,
+                TypeNameAssemblyFormat = FormatterAssemblyStyle.Full,
+
+                DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
+
+                Formatting = Formatting.Indented,
+
+                NullValueHandling = NullValueHandling.Ignore,
+                DefaultValueHandling = DefaultValueHandling.Ignore
+            };
+            JobHelper.SetSerializerSettings(previousSerializerSettings);
+            var stateData = new Dictionary<string, string>
+            {
+                { "key1", "value1" },
+                { "key2", null }
+            };
+            var serializedData = JobHelper.ToJson(stateData);
+
+            var deserializedStateData = SerializationHelper.Deserialize<Dictionary<string, string>>(serializedData);
+
+            Assert.NotNull(deserializedStateData);
+            Assert.Equal(2, deserializedStateData.Count);
+
+            Assert.Equal("value1", deserializedStateData["key1"]);
+            Assert.Equal(null, deserializedStateData["key2"]);
+        }
+
+        [Fact]
+        public void HandlesChangingDeserializationMethodOfInvocationData()
+        {
+            var previousSerializerSettings = new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.All,
+                TypeNameAssemblyFormat = FormatterAssemblyStyle.Full,
+
+                DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
+
+                Formatting = Formatting.Indented,
+
+                NullValueHandling = NullValueHandling.Ignore,
+                DefaultValueHandling = DefaultValueHandling.Ignore
+            };
+            JobHelper.SetSerializerSettings(previousSerializerSettings);
+
+            var initialJob = Job.FromExpression(() => Console.WriteLine());
+            var invocationData = InvocationData.Serialize(initialJob);
+
+            var serializedInvocationData = JobHelper.ToJson(invocationData);
+
+            var deserializedStateData = SerializationHelper.Deserialize<InvocationData>(serializedInvocationData);
+            var deserializedJob = deserializedStateData.Deserialize();
+
+            Assert.Equal(initialJob.Args, deserializedJob.Args);
+            Assert.Equal(initialJob.Method, deserializedJob.Method);
+            Assert.Equal(initialJob.Type, deserializedJob.Type);
         }
 
         private void UseConnections(Action<SqlConnection, SqlServerConnection> action)

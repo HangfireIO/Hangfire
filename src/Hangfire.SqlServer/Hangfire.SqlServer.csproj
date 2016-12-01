@@ -68,6 +68,7 @@
     <Compile Include="IPersistentJobQueue.cs" />
     <Compile Include="IPersistentJobQueueMonitoringApi.cs" />
     <Compile Include="IPersistentJobQueueProvider.cs" />
+    <Compile Include="SerializationHelper.cs" />
     <Compile Include="PersistentJobQueueProviderCollection.cs" />
     <Compile Include="SqlServerJobQueue.cs" />
     <Compile Include="SqlServerFetchedJob.cs" />
