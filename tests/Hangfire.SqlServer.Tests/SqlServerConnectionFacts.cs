@@ -1333,7 +1333,7 @@ values (@key, @value, @expireAt, 0.0)";
         [Fact, CleanJsonSerializersSettings]
         public void HandlesChangingProcessOfStateDataSerialization()
         {
-            SerializationHelper.SetUserSerializerSettings(SerializerSettingsHelper.DangerousSettings);
+            GlobalConfiguration.Configuration.UseSerializationSettings(SerializerSettingsHelper.DangerousSettings);
             var stateData = new Dictionary<string, string>
             {
                 { "key1", "value1" },
@@ -1353,7 +1353,7 @@ values (@key, @value, @expireAt, 0.0)";
         [Fact, CleanJsonSerializersSettings]
         public void HandlesChangingProcessOfInvocationDataSerialization()
         {
-            SerializationHelper.SetUserSerializerSettings(SerializerSettingsHelper.DangerousSettings);
+            GlobalConfiguration.Configuration.UseSerializationSettings(SerializerSettingsHelper.DangerousSettings);
 
             var initialJob = Job.FromExpression(() => Console.WriteLine());
             var invocationData = InvocationData.Serialize(initialJob);

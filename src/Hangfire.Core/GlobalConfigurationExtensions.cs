@@ -17,10 +17,12 @@
 using System;
 using System.ComponentModel;
 using Hangfire.Annotations;
+using Hangfire.Common;
 using Hangfire.Dashboard;
 using Hangfire.Dashboard.Pages;
 using Hangfire.Logging;
 using Hangfire.Logging.LogProviders;
+using Newtonsoft.Json;
 
 namespace Hangfire
 {
@@ -154,6 +156,22 @@ namespace Hangfire
 
             DashboardMetrics.AddMetric(metric);
             HomePage.Metrics.Add(metric);
+
+            return configuration;
+        }
+
+        /// <summary>
+        /// These settings is used to serialize user data like arguments or parameters.
+        /// You can use <see cref="SerializationHelper.Serialize(object, SerializationOption)"/> with <see cref="SerializationOption.User"/> option
+        /// to serialize with specified settings
+        /// </summary>
+        public static IGlobalConfiguration UseSerializationSettings(
+            [NotNull] this IGlobalConfiguration configuration,
+            JsonSerializerSettings settings)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            SerializationHelper.SetUserSerializerSettings(settings);
 
             return configuration;
         }

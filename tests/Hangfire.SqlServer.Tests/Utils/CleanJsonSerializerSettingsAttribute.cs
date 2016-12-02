@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Hangfire.Common;
 using Newtonsoft.Json;
 using Xunit.Sdk;
 
@@ -9,7 +8,7 @@ namespace Hangfire.SqlServer.Tests
     {
         public override void After(MethodInfo methodUnderTest)
         {
-            SerializationHelper.SetUserSerializerSettings(null);
+            GlobalConfiguration.Configuration.UseSerializationSettings(null);
             JsonConvert.DefaultSettings = null;
         }
     }

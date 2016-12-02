@@ -23,25 +23,25 @@ namespace Hangfire.Common
 {
     public static class JobHelper
     {
-        [Obsolete("Please use `SerializationHelper.SetUserSerializationSettings` instead. Will be removed in 2.0.0")]
+        [Obsolete("Please use `GlobalConfiguration.UseSerializationSettings` instead. Will be removed in 2.0.0")]
         public static void SetSerializerSettings(JsonSerializerSettings setting)
         {
             SerializationHelper.SetUserSerializerSettings(setting);
         }
 
-        [Obsolete("Please use `SerializationHelper.Serialize` instead. Will be removed in 2.0.0")]
+        [Obsolete("Please use `SerializationHelper.Serialize` with appropriate serialization option instead. Will be removed in 2.0.0")]
         public static string ToJson(object value)
         {
             return SerializationHelper.Serialize(value, SerializationOption.User);
         }
 
-        [Obsolete("Please use `SerializationHelper.Deserialize` instead. Will be removed in 2.0.0")]
+        [Obsolete("Please use `SerializationHelper.Deserialize` with appropriate serialization option instead. Will be removed in 2.0.0")]
         public static T FromJson<T>(string value)
         {
             return SerializationHelper.Deserialize<T>(value, SerializationOption.User);
         }
 
-        [Obsolete("Please use `SerializationHelper.Deserialize` instead. Will be removed in 2.0.0")]
+        [Obsolete("Please use `SerializationHelper.Deserialize` with appropriate serialization option instead. Will be removed in 2.0.0")]
         public static object FromJson(string value, [NotNull] Type type)
         {
             return SerializationHelper.Deserialize(value, type, SerializationOption.User);

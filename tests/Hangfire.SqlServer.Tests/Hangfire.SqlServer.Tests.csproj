@@ -78,7 +78,6 @@
     <Compile Include="SqlServerMonitoringApiFacts.cs" />
     <Compile Include="Utils\CleanJsonSerializerSettingsAttribute.cs" />
     <Compile Include="CountersAggregatorFacts.cs" />
-    <Compile Include="SeralizationHelperFacts.cs" />
     <Compile Include="PersistentJobQueueProviderCollectionFacts.cs" />
     <Compile Include="SqlServerConnectionFacts.cs" />
     <Compile Include="ExpirationManagerFacts.cs" />

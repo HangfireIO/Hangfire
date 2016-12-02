@@ -97,6 +97,7 @@
     <Compile Include="ContinuationsSupportAttributeFacts.cs" />
     <Compile Include="CronFacts.cs" />
     <Compile Include="Dashboard\HtmlHelperFacts.cs" />
+    <Compile Include="GloabalConfigurationExtensionsFacts.cs" />
     <Compile Include="LatencyTimeoutAttributeFacts.cs" />
     <Compile Include="GlobalStateHandlersFacts.cs" />
     <Compile Include="JobActivatorFacts.cs" />

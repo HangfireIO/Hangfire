@@ -45,17 +45,6 @@ namespace Hangfire.Common
         }
 
         /// <summary>
-        /// Sets settings for user data serialization like arguments and parameters.
-        /// Use <see cref="Serialize(object, SerializationOption)"/> with <see cref="SerializationOption.User"/> option
-        /// to serialize with user settings
-        /// </summary>
-        public static void SetUserSerializerSettings(JsonSerializerSettings settings)
-        {
-            _userSerializerSettings = settings;
-        }
-
-
-        /// <summary>
         /// Serializes data with <see cref="SerializationOption.Default"/> option.
         /// Use this method to serialize internal data. Using isolated settings that can't be changed from user code.
         /// </summary>
@@ -197,6 +186,11 @@ namespace Hangfire.Common
             serializerSettings.Culture = CultureInfo.InvariantCulture;
             serializerSettings.Binder = new DefaultSerializationBinder();
             serializerSettings.Context = new StreamingContext();
+        }
+
+        internal static void SetUserSerializerSettings(JsonSerializerSettings settings)
+        {
+            _userSerializerSettings = settings;
         }
 
         private static JsonSerializerSettings GetSerializerSettings(SerializationOption serializationOption)
