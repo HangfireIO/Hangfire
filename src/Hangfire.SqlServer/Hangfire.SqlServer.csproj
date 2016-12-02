@@ -59,6 +59,7 @@
     <Compile Include="CountersAggregator.cs" />
     <Compile Include="EnqueuedAndFetchedCountDto.cs" />
     <Compile Include="Entities\SqlHash.cs" />
+    <Compile Include="Entities\SqlSet.cs" />
     <Compile Include="ExpirationManager.cs" />
     <Compile Include="Entities\JobParameter.cs" />
     <Compile Include="Entities\SqlJob.cs" />

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -20,7 +22,7 @@ namespace Hangfire.Core.Tests.States
             _context = new ApplyStateContextMock
             {
                 BackgroundJob = { Id = JobId },
-                NewStateObject = new ScheduledState(_enqueueAt)
+                NewStateObject = new ScheduledState(_enqueueAt, "new_queue")
             };
 
             _transaction = new Mock<IWriteOnlyTransaction>();
@@ -34,22 +36,28 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
-        public void Apply_ShouldAddTheJob_ToTheScheduleSet_WithTheCorrectScore()
+        public void Apply_ShouldAddTheJob_ToTheScheduleSet_WithTheCorrectScore_AndInTheRightQueue()
         {
             var handler = new ScheduledState.Handler();
             handler.Apply(_context.Object, _transaction.Object);
 
             _transaction.Verify(x => x.AddToSet(
                 "schedule", JobId, JobHelper.ToTimestamp(_enqueueAt)));
+
+            _transaction.Verify(x => x.SetRangeInHash(
+                It.Is<string>(keyName => keyName == $"scheduled-job:{JobId}"),
+                It.Is<Dictionary<string, string>>(
+                    hash => hash.ContainsKey("Queue") && hash["Queue"] == "new_queue")));
         }
 
         [Fact]
-        public void Unapply_ShouldRemoveTheJob_FromTheScheduledSet()
+        public void Unapply_ShouldRemoveTheJob_FromTheScheduledSetAndHash()
         {
             var handler = new ScheduledState.Handler();
             handler.Unapply(_context.Object, _transaction.Object);
 
             _transaction.Verify(x => x.RemoveFromSet("schedule", JobId));
+            _transaction.Verify(x => x.RemoveHash($"scheduled-job:{JobId}"));
         }
 
         [Fact]

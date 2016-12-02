@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.Server;
+using Hangfire.States;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
@@ -29,6 +30,8 @@ namespace Hangfire.Core.Tests.Common
         private readonly string[] _arguments;
         private readonly Mock<JobActivator> _activator;
         private readonly Mock<IJobCancellationToken> _token;
+        private const string _customClassQueueName = "custom_class_queue";
+        private const string _customMethodQueueName = "custom_method_queue";
         
         public JobFacts()
         {
@@ -72,13 +75,23 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void Ctor_InitializesAllProperties()
+        public void Ctor_ThrowsAnException_WhenQueueNameIsNull()
         {
-            var job = new Job(_type, _method, _arguments);
+            Assert.Throws<ArgumentNullException>(
+                // ReSharper disable once AssignNullToNotNullAttribute
+                () => new Job(_type, _method, _arguments, null));
+        }
+        
+
+        [Fact]
+        public void Ctor_InitializesAllProperties_InCustomQueue()
+        {
+            var job = new Job(_type, _method, _arguments, _customMethodQueueName);
 
             Assert.Same(_type, job.Type);
             Assert.Same(_method, job.Method);
             Assert.True(_arguments.SequenceEqual(job.Arguments));
+            Assert.Equal(_customMethodQueueName, job.QueueName);
         }
 
         [Fact]
@@ -87,6 +100,15 @@ namespace Hangfire.Core.Tests.Common
             var job = new Job(_type, _method);
 
             Assert.Empty(job.Arguments);
+        }
+
+        [Fact]
+        public void Ctor_HasDefaultValueForQueue()
+        {
+            var job = new Job(_type, _method);
+
+            Assert.Empty(job.Arguments);
+            Assert.Equal(EnqueuedState.DefaultQueue, job.QueueName);
         }
 
         [Fact]
@@ -143,12 +165,35 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void FromExpression_Func_ReturnsTheJob()
+        public void FromExpression_Func_ReturnsTheJob_InDefaultQueue()
         {
             var job = Job.FromExpression(() => AsyncMethod());
 
             Assert.Equal(typeof(JobFacts), job.Type);
             Assert.Equal("AsyncMethod", job.Method.Name);
+            Assert.Equal(EnqueuedState.DefaultQueue, job.QueueName);
+        }
+
+        [Fact]
+        public void FromExpression_Func_ReturnsTheJob_InClassQueue()
+        {
+            var customQueuedInstance = new InstanceInCustomQueue();
+            var job = Job.FromExpression(() => customQueuedInstance.MethodUsingClassQueue());
+
+            Assert.Equal(typeof(InstanceInCustomQueue), job.Type);
+            Assert.Equal("MethodUsingClassQueue", job.Method.Name);
+            Assert.Equal(_customClassQueueName, job.QueueName);
+        }
+
+        [Fact]
+        public void FromExpression_Func_ReturnsTheJob_InMethodQueue()
+        {
+            var customQueuedInstance = new InstanceInCustomQueue();
+            var job = Job.FromExpression(() => customQueuedInstance.MethodUsingMethodQueue());
+
+            Assert.Equal(typeof(InstanceInCustomQueue), job.Type);
+            Assert.Equal("MethodUsingMethodQueue", job.Method.Name);
+            Assert.Equal(_customMethodQueueName, job.QueueName);
         }
 
         [Fact]
@@ -221,12 +266,33 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void FromInstanceExpression_Action_ReturnsCorrectResult()
+        public void FromInstanceExpression_Action_ReturnsCorrectResult_InDefaultQueue()
         {
             var job = Job.FromExpression<Instance>(x => x.Method());
 
             Assert.Equal(typeof(Instance), job.Type);
             Assert.Equal("Method", job.Method.Name);
+            Assert.Equal(EnqueuedState.DefaultQueue, job.QueueName);
+        }
+
+        [Fact]
+        public void FromInstanceExpression_Action_ReturnsCorrectResult_InClassQueue()
+        {
+            var job = Job.FromExpression<InstanceInCustomQueue>(x => x.MethodUsingClassQueue());
+
+            Assert.Equal(typeof(InstanceInCustomQueue), job.Type);
+            Assert.Equal("MethodUsingClassQueue", job.Method.Name);
+            Assert.Equal(_customClassQueueName, job.QueueName);
+        }
+
+        [Fact]
+        public void FromInstanceExpression_Action_ReturnsCorrectResult_InMethodQueue()
+        {
+            var job = Job.FromExpression<InstanceInCustomQueue>(x => x.MethodUsingMethodQueue());
+
+            Assert.Equal(typeof(InstanceInCustomQueue), job.Type);
+            Assert.Equal("MethodUsingMethodQueue", job.Method.Name);
+            Assert.Equal(_customMethodQueueName, job.QueueName);
         }
 
         [Fact]
@@ -683,7 +749,7 @@ namespace Hangfire.Core.Tests.Common
             var source = new TaskCompletionSource<bool>();
             return source.Task;
         }
-
+        
         public async void AsyncVoidMethod()
         {
             await Task.Yield();
@@ -730,6 +796,22 @@ namespace Hangfire.Core.Tests.Common
                 await Task.Yield();
 
                 return FunctionReturningValue();
+            }
+        }
+
+        [TestType]
+        [Queue(_customClassQueueName)]
+        public class InstanceInCustomQueue
+        {
+            public void MethodUsingClassQueue()
+            {
+                
+            }
+
+            [Queue(_customMethodQueueName)]
+            public void MethodUsingMethodQueue()
+            {
+                
             }
         }
 

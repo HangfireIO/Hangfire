@@ -75,17 +75,6 @@ namespace Hangfire.Core.Tests
 
             Assert.Equal("job", exception.ParamName);
         }
-
-        [Fact]
-        public void AddOrUpdate_ThrowsAnException_WhenQueueNameIsNull()
-        {
-            var manager = CreateManager();
-
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => manager.AddOrUpdate(_id, _job, Cron.Daily(), TimeZoneInfo.Local, null));
-
-            Assert.Equal("queue", exception.ParamName);
-        }
         
         [Fact]
         public void AddOrUpdate_ThrowsAnException_WhenCronExpressionIsNull()
@@ -143,24 +132,13 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void AddOrUpdate_ThrowsAnException_WhenQueueIsNull()
-        {
-            var manager = CreateManager();
-
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => manager.AddOrUpdate(_id, _job, _cronExpression, TimeZoneInfo.Utc, null));
-
-            Assert.Equal("queue", exception.ParamName);
-        }
-
-        [Fact]
         public void AddOrUpdate_AddsAJob_ToTheRecurringJobsSet()
         {
             var manager = CreateManager();
 
             manager.AddOrUpdate(_id, _job, _cronExpression);
 
-            _transaction.Verify(x => x.AddToSet("recurring-jobs", _id));
+            _transaction.Verify(x => x.AddToSetQueue("recurring-jobs", _id, _job.QueueName));
         }
 
         [Fact]

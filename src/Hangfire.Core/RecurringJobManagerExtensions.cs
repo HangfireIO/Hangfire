@@ -37,28 +37,22 @@ namespace Hangfire
             [NotNull] string recurringJobId,
             [NotNull] Job job,
             [NotNull] string cronExpression,
-            [NotNull] TimeZoneInfo timeZone)
-        {
-            AddOrUpdate(manager, recurringJobId, job, cronExpression, timeZone, EnqueuedState.DefaultQueue);
-        }
-
-        public static void AddOrUpdate(
-            [NotNull] this IRecurringJobManager manager,
-            [NotNull] string recurringJobId,
-            [NotNull] Job job,
-            [NotNull] string cronExpression,
             [NotNull] TimeZoneInfo timeZone,
-            [NotNull] string queue)
+            string queue = null)
         {
             if (manager == null) throw new ArgumentNullException(nameof(manager));
             if (timeZone == null) throw new ArgumentNullException(nameof(timeZone));
-            if (queue == null) throw new ArgumentNullException(nameof(queue));
+
+            if (queue != null)
+            {
+                job.OverrideQueueName(queue);
+            }
 
             manager.AddOrUpdate(
                 recurringJobId,
                 job,
                 cronExpression,
-                new RecurringJobOptions { QueueName = queue, TimeZone = timeZone });
+                new RecurringJobOptions { TimeZone = timeZone });
         }
     }
 }

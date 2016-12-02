@@ -1,6 +1,7 @@
 ﻿using System;
 using Hangfire.Common;
 using Hangfire.States;
+using Hangfire.Storage;
 using Moq;
 using Xunit;
 
@@ -19,6 +20,18 @@ namespace Hangfire.Core.Tests
         {
             _client = new Mock<IBackgroundJobClient>();
             _state = new Mock<IState>();
+
+            var job = Job.FromExpression<TestJob>(x => x.TestMethod());
+
+            var jobData = new JobData { Job = job };
+
+            var connection = new Mock<IStorageConnection>();
+            connection.Setup(x => x.GetJobData(JobId)).Returns(jobData);
+
+            var storage = new Mock<JobStorage>();
+            storage.Setup(x => x.GetConnection()).Returns(connection.Object);
+
+            JobStorage.Current = storage.Object;
         }
 
         [Fact]
@@ -110,7 +123,19 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow)));
+                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow
+                                               && state.QueueName == EnqueuedState.DefaultQueue)));
+        }
+
+        [Fact]
+        public void StaticSchedule_ShouldCreateAJobInTheScheduledState_InTheCorrectQueue()
+        {
+            _client.Object.Schedule(() => StaticMethod(), TimeSpan.FromDays(1), "new_queue");
+
+            _client.Verify(x => x.Create(
+                It.IsNotNull<Job>(),
+                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow
+                                               && state.QueueName == "new_queue")));
         }
 
         [Fact]
@@ -153,7 +178,20 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow)));
+                It.Is<ScheduledState>(
+                    state => state.EnqueueAt > DateTime.UtcNow && state.QueueName == EnqueuedState.DefaultQueue)));
+        }
+
+        [Fact]
+        public void InstanceSchedule_ShouldCreateAJobInTheScheduledState_InTheCorrectQueue()
+        {
+            _client.Object.Schedule<BackgroundJobClientExtensionsFacts>(
+                x => x.InstanceMethod(), TimeSpan.FromDays(1), "new_queue");
+
+            _client.Verify(x => x.Create(
+                It.IsNotNull<Job>(),
+                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow
+                                               && state.QueueName == "new_queue")));
         }
 
         [Fact]
@@ -238,19 +276,49 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void Requeue_ChangesTheStateOfAJob_ToEnqueued()
+        public void Requeue_ChangesTheStateOfAJob_ToEnqueued_InDefaultQueue()
         {
             _client.Object.Requeue(JobId);
 
-            _client.Verify(x => x.ChangeState(JobId, It.IsAny<EnqueuedState>(), null));
+            _client.Verify(
+                x =>
+                    x.ChangeState(JobId, It.Is<EnqueuedState>(state => state.Queue == EnqueuedState.DefaultQueue),
+                        null));
         }
 
         [Fact]
-        public void Requeue_WithFromState_ChangesTheStateOfAJob_ToEnqueued_FromTheGivenState()
+        public void Requeue_WithFromState_ChangesTheStateOfAJob_ToEnqueued_InDefaultQueue_FromTheGivenState()
         {
             _client.Object.Requeue(JobId, FailedState.StateName);
 
-            _client.Verify(x => x.ChangeState(JobId, It.IsAny<EnqueuedState>(), FailedState.StateName));
+            _client.Verify(
+                x =>
+                    x.ChangeState(JobId, It.Is<EnqueuedState>(state => state.Queue == EnqueuedState.DefaultQueue),
+                        FailedState.StateName));
+        }
+
+        [Fact]
+        public void Requeue_ChangesTheStateOfAJob_ToEnqueued_InCustomQueue()
+        {
+            var customQueueName = "custom_queue";
+            _client.Object.Requeue(JobId, null, customQueueName);
+
+            _client.Verify(
+                x =>
+                    x.ChangeState(JobId, It.Is<EnqueuedState>(state => state.Queue == customQueueName),
+                        null));
+        }
+
+        [Fact]
+        public void Requeue_WithFromState_ChangesTheStateOfAJob_ToEnqueued_InCustomQueue_FromTheGivenState()
+        {
+            var customQueueName = "custom_queue";
+            _client.Object.Requeue(JobId, FailedState.StateName, customQueueName);
+
+            _client.Verify(
+                x =>
+                    x.ChangeState(JobId, It.Is<EnqueuedState>(state => state.Queue == customQueueName),
+                        FailedState.StateName));
         }
 
         public static void StaticMethod()
@@ -259,6 +327,11 @@ namespace Hangfire.Core.Tests
 
         public void InstanceMethod()
         {
+        }
+
+        public class TestJob
+        {
+            public void TestMethod() { }
         }
     }
 }

@@ -63,6 +63,7 @@ namespace Hangfire.Core.Tests
 
             Assert.IsType<ScheduledState>(_context.Object.CandidateState);
             Assert.True(((ScheduledState)_context.Object.CandidateState).EnqueueAt > DateTime.UtcNow);
+            Assert.True(((ScheduledState)_context.Object.CandidateState).QueueName == "default");
             Assert.Contains("1 of 1", _context.Object.CandidateState.Reason);
 
             _connection.Verify(x => x.SetJobParameter(JobId, "RetryCount", "1"));
@@ -127,7 +128,7 @@ namespace Hangfire.Core.Tests
 
         private static AutomaticRetryAttribute CreateFilter()
         {
-            return new AutomaticRetryAttribute { Attempts = 1 };
+            return new AutomaticRetryAttribute() { Attempts = 1 };
         }
     }
 }
