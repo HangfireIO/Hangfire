@@ -426,6 +426,14 @@ namespace Hangfire.Common
                     throw new NotSupportedException(
                         "Parameters, passed by reference, are not supported: there is no guarantee that specified method will be invoked inside the same process.");
                 }
+
+                var parameterTypeInfo = parameter.ParameterType.GetTypeInfo();
+                
+                if (parameterTypeInfo.IsSubclassOf(typeof(Delegate)) || parameterTypeInfo.IsSubclassOf(typeof(Expression)))
+                {
+                    throw new NotSupportedException(
+                        "Anonymous functions, delegates and lambda expressions aren't supported in job method parameters: it's very hard to serialize them and all their scope in general.");
+                }
             }
         }
 
