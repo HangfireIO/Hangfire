@@ -86,7 +86,7 @@ values (@invocationData, @arguments, @createdAt, @expireAt)";
 
             return _storage.UseConnection(connection =>
             {
-                var jobId = connection.ExecuteScalar<int>(
+                var jobId = connection.ExecuteScalar<long>(
                     createJobSql,
                     new
                     {
@@ -104,7 +104,7 @@ values (@invocationData, @arguments, @createdAt, @expireAt)";
                     {
                         parameterArray[parameterIndex++] = new
                         {
-                            jobId = int.Parse(jobId),
+                            jobId = long.Parse(jobId),
                             name = parameter.Key,
                             value = parameter.Value
                         };
@@ -130,7 +130,7 @@ $@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.Schema
 
             return _storage.UseConnection(connection =>
             {
-                var jobData = connection.Query<SqlJob>(sql, new { id = int.Parse(id) })
+                var jobData = connection.Query<SqlJob>(sql, new { id = long.Parse(id) })
                     .SingleOrDefault();
 
                 if (jobData == null) return null;
@@ -173,7 +173,7 @@ where j.Id = @jobId";
 
             return _storage.UseConnection(connection =>
             {
-                var sqlState = connection.Query<SqlState>(sql, new { jobId = int.Parse(jobId) }).SingleOrDefault();
+                var sqlState = connection.Query<SqlState>(sql, new { jobId = long.Parse(jobId) }).SingleOrDefault();
                 if (sqlState == null)
                 {
                     return null;
@@ -205,7 +205,7 @@ using (VALUES (@jobId, @name, @value)) as Source (JobId, Name, Value)
 on Target.JobId = Source.JobId AND Target.Name = Source.Name
 when matched then update set Value = Source.Value
 when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.Name, Source.Value);",
-                    new { jobId = int.Parse(id), name, value });
+                    new { jobId = long.Parse(id), name, value });
             });
         }
 
@@ -216,7 +216,7 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
 
             return _storage.UseConnection(connection => connection.ExecuteScalar<string>(
                 $@"select top (1) Value from [{_storage.SchemaName}].JobParameter with (readcommittedlock) where JobId = @id and Name = @name",
-                new { id = int.Parse(id), name = name }));
+                new { id = long.Parse(id), name = name }));
         }
 
         public override HashSet<string> GetAllItemsFromSet(string key)

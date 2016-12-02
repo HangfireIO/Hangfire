@@ -76,7 +76,7 @@ namespace Hangfire.SqlServer
         {
             QueueCommand((connection, transaction) => connection.Execute(
                 $@"update [{_storage.SchemaName}].Job set ExpireAt = @expireAt where Id = @id",
-                new { expireAt = DateTime.UtcNow.Add(expireIn), id = int.Parse(jobId) },
+                new { expireAt = DateTime.UtcNow.Add(expireIn), id = long.Parse(jobId) },
                 transaction));
         }
 
@@ -84,7 +84,7 @@ namespace Hangfire.SqlServer
         {
             QueueCommand((connection, transaction) => connection.Execute(
                 $@"update [{_storage.SchemaName}].Job set ExpireAt = NULL where Id = @id",
-                new { id = int.Parse(jobId) },
+                new { id = long.Parse(jobId) },
                 transaction));
         }
 
@@ -99,12 +99,12 @@ update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @
                 addAndSetStateSql,
                 new
                 {
-                    jobId = int.Parse(jobId),
+                    jobId = long.Parse(jobId),
                     name = state.Name,
                     reason = state.Reason,
                     createdAt = DateTime.UtcNow,
                     data = JobHelper.ToJson(state.SerializeData()),
-                    id = int.Parse(jobId)
+                    id = long.Parse(jobId)
                 },
                 transaction));
         }
@@ -119,7 +119,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
                 addStateSql,
                 new
                 {
-                    jobId = int.Parse(jobId), 
+                    jobId = long.Parse(jobId), 
                     name = state.Name,
                     reason = state.Reason,
                     createdAt = DateTime.UtcNow, 

@@ -13,6 +13,7 @@ using Moq;
 using Newtonsoft.Json;
 using Xunit;
 
+// ReSharper disable LocalizableElement
 // ReSharper disable AssignNullToNotNullAttribute
 
 #pragma warning disable 618
@@ -372,6 +373,20 @@ namespace Hangfire.Core.Tests.Common
         {
             Assert.Throws<NotSupportedException>(
                 () => Job.FromExpression(() => PrivateMethod()));
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenMethodParametersContainADelegate()
+        {
+            Assert.Throws<NotSupportedException>(
+                () => Job.FromExpression(() => DelegateMethod(() => Console.WriteLine("Hey delegate!"))));
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenMethodParametersContainAnExpression()
+        {
+            Assert.Throws<NotSupportedException>(
+                () => Job.FromExpression(() => ExpressionMethod(() => Console.WriteLine("Hey expression!"))));
         }
 
         [Fact]
@@ -753,6 +768,14 @@ namespace Hangfire.Core.Tests.Common
         public async void AsyncVoidMethod()
         {
             await Task.Yield();
+        }
+
+        public void DelegateMethod(Action action)
+        {
+        }
+
+        public void ExpressionMethod(Expression<Action> expression)
+        {
         }
 
         public interface ICommandDispatcher
