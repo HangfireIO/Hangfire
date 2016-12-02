@@ -18,7 +18,7 @@ using System;
 
 namespace Hangfire.SqlServer.Entities
 {
-    internal class SqlSet
+    public class SqlSet
     {
         public int Id { get; set; }
         public string Key { get; set; }

@@ -511,7 +511,7 @@ order by [Id] desc";
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (queueName == null) throw new ArgumentNullException(nameof(queueName));
             if (toScore < fromScore) throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.");
-
+            
             return _storage.UseConnection(connection =>
             {
                 var result = connection.Query<SqlSet>(
