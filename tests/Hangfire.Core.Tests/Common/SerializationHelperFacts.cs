@@ -237,7 +237,7 @@ namespace Hangfire.Core.Tests.Common
                 DefaultValueHandling = DefaultValueHandling.Ignore,
                 ObjectCreationHandling = ObjectCreationHandling.Replace,
                 PreserveReferencesHandling = PreserveReferencesHandling.All,
-                Culture = CultureInfo.GetCultureInfo("de"),
+                Culture = new CultureInfo("de"),
                 Binder = new CustomSerializerBinder(),
             };
 

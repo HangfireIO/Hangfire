@@ -1,4 +1,7 @@
 ﻿using System;
+#if !NETFULL
+using System.Reflection;
+#endif
 using System.Runtime.Serialization.Formatters;
 using Hangfire.Annotations;
 using Hangfire.Common;
