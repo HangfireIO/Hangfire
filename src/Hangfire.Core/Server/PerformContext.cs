@@ -80,7 +80,7 @@ namespace Hangfire.Server
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            Connection.SetJobParameter(BackgroundJob.Id, name, JobHelper.ToJson(value));
+            Connection.SetJobParameter(BackgroundJob.Id, name, SerializationHelper.Serialize(value,SerializationOption.User));
         }
 
         public T GetJobParameter<T>(string name)
@@ -89,7 +89,7 @@ namespace Hangfire.Server
 
             try
             {
-                return JobHelper.FromJson<T>(Connection.GetJobParameter(BackgroundJob.Id, name));
+                return SerializationHelper.Deserialize<T>(Connection.GetJobParameter(BackgroundJob.Id, name), SerializationOption.User);
             }
             catch (Exception ex)
             {

@@ -61,7 +61,6 @@
     <Compile Include="IPersistentJobQueueMonitoringApi.cs" />
     <Compile Include="IPersistentJobQueueProvider.cs" />
     <Compile Include="PersistentJobQueueProviderCollection.cs" />
-    <Compile Include="SerializationHelper.cs" />
     <Compile Include="SqlServerConnection.cs" />
     <Compile Include="SqlServerDistributedLock.cs" />
     <Compile Include="SqlServerDistributedLockException.cs" />

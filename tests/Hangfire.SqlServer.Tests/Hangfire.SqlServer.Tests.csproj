@@ -91,6 +91,7 @@
     <Compile Include="Utils\ConnectionUtils.cs" />
     <Compile Include="Utils\CleanDatabaseAttribute.cs" />
     <Compile Include="SqlServerWriteOnlyTransactionFacts.cs" />
+    <Compile Include="Utils\SerializerSettingsHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

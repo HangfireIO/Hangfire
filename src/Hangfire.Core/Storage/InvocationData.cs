@@ -48,7 +48,7 @@ namespace Hangfire.Storage
             try
             {
                 var type = System.Type.GetType(Type, throwOnError: true, ignoreCase: true);
-                var parameterTypes = JobHelper.Deserialize<Type[]>(ParameterTypes);
+                var parameterTypes = SerializationHelper.Deserialize<Type[]>(ParameterTypes);
                 var method = type.GetNonOpenMatchingMethod(Method, parameterTypes);
                 
                 if (method == null)
@@ -57,7 +57,7 @@ namespace Hangfire.Storage
                         $"The type `{type.FullName}` does not contain a method with signature `{Method}({String.Join(", ", parameterTypes.Select(x => x.Name))})`");
                 }
 
-                var serializedArguments = JobHelper.Deserialize<string[]>(Arguments);
+                var serializedArguments = SerializationHelper.Deserialize<string[]>(Arguments);
                 var arguments = DeserializeArguments(method, serializedArguments);
 
                 return new Job(type, method, arguments);
@@ -73,8 +73,8 @@ namespace Hangfire.Storage
             return new InvocationData(
                 job.Type.AssemblyQualifiedName,
                 job.Method.Name,
-                JobHelper.Serialize(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()),
-                JobHelper.Serialize(SerializeArguments(job.Args)));
+                SerializationHelper.Serialize(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()),
+                SerializationHelper.Serialize(SerializeArguments(job.Args)));
         }
 
         internal static string[] SerializeArguments(IReadOnlyCollection<object> arguments)
@@ -99,7 +99,7 @@ namespace Hangfire.Storage
                     }
                     else
                     {
-                        value = JobHelper.ToJson(argument);
+                        value = SerializationHelper.Serialize(argument, SerializationOption.User);
                     }
                 }
                 else
@@ -152,7 +152,7 @@ namespace Hangfire.Storage
             try
             {
                 value = argument != null
-                    ? JobHelper.FromJson(argument, type)
+                    ? SerializationHelper.Deserialize(argument, type, SerializationOption.User)
                     : null;
             }
             catch (Exception

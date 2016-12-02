@@ -92,6 +92,7 @@
     <Compile Include="Common\JobFilterProviderCollectionFacts.cs" />
     <Compile Include="Common\JobHelperFacts.cs" />
     <Compile Include="Common\JobLoadExceptionFacts.cs" />
+    <Compile Include="Common\SerializationHelperFacts.cs" />
     <Compile Include="Common\TypeExtensionsFacts.cs" />
     <Compile Include="ContinuationsSupportAttributeFacts.cs" />
     <Compile Include="CronFacts.cs" />
@@ -156,6 +157,7 @@
     <Compile Include="Utils\CleanJsonSerializerSettingsAttribute.cs" />
     <Compile Include="Utils\CultureHelper.cs" />
     <Compile Include="Utils\GlobalLockAttribute.cs" />
+    <Compile Include="Utils\SerializerSettingsHelper.cs" />
     <Compile Include="Utils\PlatformHelper.cs" />
     <Compile Include="Utils\SequenceAttribute.cs" />
     <Compile Include="Utils\StaticLockAttribute.cs" />

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -494,7 +493,7 @@ namespace Hangfire.Core.Tests.Common
 	        var method = type.GetMethod("MethodWithDateTimeArgument");
 
             Assert.Throws<JsonReaderException>(
-                () => new Job(type, method, new []{ JobHelper.ToJson("sdfa") }));
+                () => new Job(type, method, new []{ SerializationHelper.Serialize("sdfa") }));
         }
 
         [Fact, StaticLock]

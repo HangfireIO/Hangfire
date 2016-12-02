@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.Serialization.Formatters;
 using Hangfire.Common;
 using Hangfire.Storage;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using Xunit;
 
 namespace Hangfire.Core.Tests.Storage
@@ -21,8 +19,8 @@ namespace Hangfire.Core.Tests.Storage
             var serializedData = new InvocationData(
                 type.AssemblyQualifiedName,
                 methodInfo.Name,
-                JobHelper.ToJson(new [] { typeof(string) }),
-                JobHelper.ToJson(new [] { JobHelper.ToJson("Hello") }));
+                SerializationHelper.Serialize(new [] { typeof(string) }),
+                SerializationHelper.Serialize(new [] { SerializationHelper.Serialize("Hello", SerializationOption.User) }));
 
             var job = serializedData.Deserialize();
 
@@ -59,7 +57,7 @@ namespace Hangfire.Core.Tests.Storage
             var serializedData = new InvocationData(
                 typeof(InvocationDataFacts).AssemblyQualifiedName,
                 "NonExistingMethod",
-                JobHelper.ToJson(new [] { typeof(string) }),
+                SerializationHelper.Serialize(new [] { typeof(string) }),
                 "");
 
             Assert.Throws<JobLoadException>(
@@ -75,8 +73,8 @@ namespace Hangfire.Core.Tests.Storage
 
             Assert.Equal(typeof(InvocationDataFacts).AssemblyQualifiedName, invocationData.Type);
             Assert.Equal("Sample", invocationData.Method);
-            Assert.Equal(JobHelper.ToJson(new[] { typeof(string) }), invocationData.ParameterTypes);
-            Assert.Equal(JobHelper.ToJson(new[] { "\"Hello\"" }), invocationData.Arguments);
+            Assert.Equal(SerializationHelper.Serialize(new[] { typeof(string) }), invocationData.ParameterTypes);
+            Assert.Equal(SerializationHelper.Serialize(new[] { "\"Hello\"" }), invocationData.Arguments);
         }
 
         [Fact]
@@ -108,8 +106,8 @@ namespace Hangfire.Core.Tests.Storage
             var serializedData = new InvocationData(
                 typeof(IParent).AssemblyQualifiedName,
                 "Method",
-                JobHelper.ToJson(new Type[0]),
-                JobHelper.ToJson(new string[0]));
+                SerializationHelper.Serialize(new Type[0]),
+                SerializationHelper.Serialize(new string[0]));
 
             var job = serializedData.Deserialize();
 
@@ -122,8 +120,8 @@ namespace Hangfire.Core.Tests.Storage
             var serializedData = new InvocationData(
                 typeof(IChild).AssemblyQualifiedName,
                 "Method",
-                JobHelper.ToJson(new Type[0]),
-                JobHelper.ToJson(new string[0]));
+                SerializationHelper.Serialize(new Type[0]),
+                SerializationHelper.Serialize(new string[0]));
 
             var job = serializedData.Deserialize();
 
@@ -136,44 +134,31 @@ namespace Hangfire.Core.Tests.Storage
             var serializedData = new InvocationData(
                 typeof(InvocationDataFacts).AssemblyQualifiedName,
                 "ListMethod",
-                JobHelper.ToJson(new [] { typeof(IList<string>) }),
-                JobHelper.ToJson(new [] { "asdfasdf" }));
+                SerializationHelper.Serialize(new [] { typeof(IList<string>) }),
+                SerializationHelper.Serialize(new [] { "asdfasdf" }));
 
             var exception = Assert.Throws<JobLoadException>(() => serializedData.Deserialize());
             Assert.IsType<JsonReaderException>(exception.InnerException);
         }
 
         [Fact, CleanJsonSerializersSettings]
-        public void Deserialize_HandlesChangingCoreSerializerSettings()
+        public void Deserialize_HandlesChangingProcessOfInternalDataSerialization()
         {
-            var previousSerializerSettings = new JsonSerializerSettings
-            {
-                TypeNameHandling = TypeNameHandling.All,
-                TypeNameAssemblyFormat = FormatterAssemblyStyle.Full,
-
-                DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
-
-                Formatting = Formatting.Indented,
-
-                NullValueHandling = NullValueHandling.Ignore,
-                DefaultValueHandling = DefaultValueHandling.Ignore,
-            };
-
-            JobHelper.SetSerializerSettings(previousSerializerSettings);
+            SerializationHelper.SetUserSerializerSettings(SerializerSettingsHelper.DangerousSettings);
 
             var serializedData = new InvocationData(
                 typeof(InvocationDataFacts).AssemblyQualifiedName,
                 "ComplicatedMethod",
-                JobHelper.ToJson(new[]
+                SerializationHelper.Serialize(new[]
                 {
                     typeof(IList<string>),
                     typeof(SomeClass)
-                }),
-                JobHelper.ToJson(new[]
+                }, SerializationOption.User),
+                SerializationHelper.Serialize(new[]
                 {
-                    JobHelper.ToJson(new List<string> { "one", "two" }),
-                    JobHelper.ToJson(new SomeClass { StringValue = "value" })
-                }));
+                    SerializationHelper.Serialize(new List<string> { "one", "two" }, SerializationOption.User),
+                    SerializationHelper.Serialize(new SomeClass { StringValue = "value" }, SerializationOption.User)
+                }, SerializationOption.User));
 
             var job = serializedData.Deserialize();
 

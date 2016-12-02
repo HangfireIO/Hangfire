@@ -23,6 +23,7 @@ using System.Transactions;
 #endif
 using Dapper;
 using Hangfire.Annotations;
+using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
 

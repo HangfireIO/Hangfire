@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization.Formatters;
 using Hangfire.Common;
-using Newtonsoft.Json;
 using Xunit;
 using static Hangfire.ContinuationsSupportAttribute;
 
@@ -10,30 +8,17 @@ namespace Hangfire.Core.Tests
     public class ContinuationsSupportAttributeFacts
     {
         [Fact, CleanJsonSerializersSettings]
-        public void HandlesChangingCoreSerializerSettings()
+        public void HandlesChangingProcessOfInternalDataSerialization()
         {
-            var previousSerializerSettings = new JsonSerializerSettings
-            {
-                TypeNameHandling = TypeNameHandling.All,
-                TypeNameAssemblyFormat = FormatterAssemblyStyle.Full,
+            SerializationHelper.SetUserSerializerSettings(SerializerSettingsHelper.DangerousSettings);
 
-                DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
-
-                Formatting = Formatting.Indented,
-
-                NullValueHandling = NullValueHandling.Ignore,
-                DefaultValueHandling = DefaultValueHandling.Ignore
-            };
-
-            JobHelper.SetSerializerSettings(previousSerializerSettings);
-
-            var continuationsJson = JobHelper.ToJson(new List<Continuation>
+            var continuationsJson = SerializationHelper.Serialize(new List<Continuation>
             {
                 new Continuation {JobId = "1", Options = JobContinuationOptions.OnAnyFinishedState},
                 new Continuation {JobId = "3214324", Options = JobContinuationOptions.OnlyOnSucceededState}
-            });
+            }, SerializationOption.User);
 
-            var continuations = JobHelper.Deserialize<List<Continuation>>(continuationsJson);
+            var continuations = SerializationHelper.Deserialize<List<Continuation>>(continuationsJson);
 
             Assert.Equal(2, continuations.Count);
             Assert.Equal("1", continuations[0].JobId);

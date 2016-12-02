@@ -171,7 +171,7 @@ namespace Hangfire.States
 
                 try
                 {
-                    serializedResult = JobHelper.ToJson(Result);
+                    serializedResult = SerializationHelper.Serialize(Result, SerializationOption.User);
                 }
                 catch (Exception)
                 {

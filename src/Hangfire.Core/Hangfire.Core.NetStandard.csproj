@@ -107,6 +107,7 @@
     <Compile Include="Common\JobHelper.cs" />
     <Compile Include="Common\JobLoadException.cs" />
     <Compile Include="Common\ReflectedAttributeCache.cs" />
+    <Compile Include="Common\SerializationHelper.cs" />
     <Compile Include="Common\TypeExtensions.cs" />
     <Compile Include="ContinuationsSupportAttribute.cs" />
     <Compile Include="Cron.cs" />

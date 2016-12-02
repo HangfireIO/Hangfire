@@ -44,7 +44,7 @@ namespace Hangfire.Core.Tests.Server
             _recurringJob = new Dictionary<string, string>
             {
                 { "Cron", "* * * * *" },
-                { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) },
+                { "Job", SerializationHelper.Serialize(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) },
                 { "TimeZoneId", timeZone1.Id }
             };
 
@@ -190,7 +190,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             _recurringJob["Job"] =
-                JobHelper.ToJson(new InvocationData("SomeType", "SomeMethod", "Parameters", "arguments"));
+                SerializationHelper.Serialize(new InvocationData("SomeType", "SomeMethod", "Parameters", "arguments"));
 
             var scheduler = CreateScheduler();
 

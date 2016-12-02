@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Reflection;
-using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters;
 using Hangfire.Annotations;
 using Hangfire.Common;
@@ -8,6 +6,7 @@ using Hangfire.Storage;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xunit;
+#pragma warning disable 618
 
 // ReSharper disable AssignNullToNotNullAttribute
 
@@ -140,10 +139,13 @@ namespace Hangfire.Core.Tests.Common
         [Fact, CleanJsonSerializersSettings]
         public void ForSerializeCanUseCustomConfigurationOfJsonNet()
         {
-                JobHelper.SetSerializerSettings(new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+            JobHelper.SetSerializerSettings(new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            });
 
-                var result = JobHelper.ToJson(new ClassA("A"));
-                Assert.Equal(@"{""propertyA"":""A""}", result);
+            var result = JobHelper.ToJson(new ClassA("A"));
+            Assert.Equal(@"{""propertyA"":""A""}", result);
         }
 
         [Fact, CleanJsonSerializersSettings]
@@ -185,120 +187,10 @@ namespace Hangfire.Core.Tests.Common
             JobHelper.SetSerializerSettings(new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.Objects,
-
             });
 
             var result = (ClassA)JobHelper.FromJson(@"{ ""$type"": ""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"", ""propertyA"":""A"" }", typeof(IClass));
             Assert.Equal("A", result.PropertyA);
-        }
-
-        [Fact]
-        public void Serialize_ReturnsNull_WnehValueIsNull()
-        {
-            Assert.Null(JobHelper.Serialize(null));
-        }
-
-        [Fact]
-        public void Serialize_ReturnsCorrectResult_WhenValueIsString()
-        {
-            var result = JobHelper.Serialize("Simple string");
-            Assert.Equal("\"Simple string\"", result);
-        }
-
-        [Fact]
-        public void Serialize_ReturnsCorrectValue_WhenValueIsCustomObject()
-        {
-            var result = JobHelper.Serialize(new ClassA("B"));
-            Assert.Equal(@"{""PropertyA"":""B""}", result);
-        }
-
-        [Fact]
-        public void Serialize_ReturnsCorrectJson_WhenTypeNameHandlingIsSet()
-        {
-            var result = JobHelper.Serialize(new ClassA("B"), TypeNameHandling.All);
-            Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""B""}", result);
-        }
-
-        [Fact, CleanJsonSerializersSettings]
-        public void Serialize_HandleJsonDefaultSettingsDoesNotAffect()
-        {
-            JsonConvert.DefaultSettings = () => new JsonSerializerSettings
-            {
-                TypeNameHandling = TypeNameHandling.All,
-                NullValueHandling = NullValueHandling.Ignore,
-                DefaultValueHandling = DefaultValueHandling.Include,
-                Binder = new CustomSerializerBinder(),
-                DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
-                DateFormatString = "ddMMyyyy"
-            };
-
-            var result = JobHelper.Serialize(new ClassB { StringValue = "B", DateTimeValue = new DateTime(1961, 4, 12)});
-            Assert.Equal(@"{""StringValue"":""B"",""NullValue"":null,""DefaultValue"":0,""DateTimeValue"":""1961-04-12T00:00:00""}", result);
-        }
-
-        [Fact]
-        public void Deserialize_ReturnsNull_WhenValueIsNull()
-        {
-            var result = JobHelper.Deserialize<object>(null);
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public void Deserialize_ReturnsDefaultValue_WhenGenericArgumentIsValueType()
-        {
-            var result = JobHelper.Deserialize<int>(null);
-            Assert.Equal(0, result);
-        }
-
-        [Fact]
-        public void Deserialize_ReturnsCorrectValue_WhenValueIsString()
-        {
-            var result = JobHelper.Deserialize<string>("\"hello\"");
-            Assert.Equal("hello", result);
-        }
-
-        [Fact]
-        public void Deserialize_RetrunsCorrectObject_WhenTypeIsCustomClass()
-        {
-            var argumentJson = @"{""PropertyA"":""A""}";
-
-            var argumentValue = JobHelper.Deserialize<ClassA>(argumentJson);
-            Assert.NotNull(argumentValue);
-            Assert.Equal("A", argumentValue.PropertyA);
-        }
-
-        [Fact]
-        public void Deserialize_RetrunsCorrectObject_WhenTypeNameHandlingIsSet()
-        {
-            var argumentJson = @"{""PropertyA"":""A""}";
-
-            var argumentValue = JobHelper.Deserialize<ClassA>(argumentJson, TypeNameHandling.All);
-            Assert.NotNull(argumentValue);
-            Assert.Equal("A", argumentValue.PropertyA);
-        }
-
-        [Fact, CleanJsonSerializersSettings]
-        public void Deserialize_HandlesUsingArgumentsSerializerSettings_WhenUsingCoreSettingsThrewException()
-        {
-            JobHelper.SetSerializerSettings(new JsonSerializerSettings
-            {
-                TypeNameHandling = TypeNameHandling.All,
-                Binder = new CustomSerializerBinder()
-            });
-            var argumentJson = JobHelper.ToJson(new ClassA("A"));
-
-            var argumentValue = JobHelper.Deserialize<ClassA>(argumentJson, TypeNameHandling.All);
-
-            Assert.NotNull(argumentValue);
-            Assert.Equal("A", argumentValue.PropertyA);
-        }
-
-        [Fact, CleanJsonSerializersSettings]
-        public void Deserialize_RethrowsJsonException_WhenValueHasIncorrectFormat()
-        {
-            var argumentJson = "asdfaljsadkfh";
-
-            Assert.Throws<JsonReaderException>(() => JobHelper.Deserialize<ClassA>(argumentJson));
         }
 
         private interface IClass
@@ -322,36 +214,5 @@ namespace Hangfire.Core.Tests.Common
             {
             }
         }
-
-        private class ClassB
-        {
-            // ReSharper disable once UnusedAutoPropertyAccessor.Local
-            public string StringValue { get; set; }
-
-            // ReSharper disable once UnusedMember.Local
-            public object NullValue { get; set; }
-
-            // ReSharper disable once UnusedMember.Local
-            public int DefaultValue { get; set; }
-
-            // ReSharper disable once UnusedAutoPropertyAccessor.Local
-            public DateTime? DateTimeValue { get; set; }
-        }
-
-        private class CustomSerializerBinder: SerializationBinder
-        {
-            public override void BindToName(Type serializedType, out string assemblyName, out string typeName)
-            {
-                assemblyName = "someAssembly";
-                typeName = serializedType.FullName.ToUpper();
-            }
-
-            public override Type BindToType(string assemblyName, string typeName)
-            {
-                return typeof(ClassA);
-            }
-        }
-
-        
     }
 }

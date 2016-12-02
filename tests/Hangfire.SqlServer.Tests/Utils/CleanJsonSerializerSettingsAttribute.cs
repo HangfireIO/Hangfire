@@ -9,7 +9,7 @@ namespace Hangfire.SqlServer.Tests
     {
         public override void After(MethodInfo methodUnderTest)
         {
-            JobHelper.SetSerializerSettings(null);
+            SerializationHelper.SetUserSerializerSettings(null);
             JsonConvert.DefaultSettings = null;
         }
     }

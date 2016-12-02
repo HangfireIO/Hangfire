@@ -179,8 +179,8 @@ namespace Hangfire.States
         ///         <term><c>NextState</c></term>
         ///         <term><see cref="IState"/></term>
         ///         <term>
-        ///             <see cref="JobHelper.Deserialize{T}(string, TypeNameHandling)"/> with 
-        ///             <see cref="TypeNameHandling.Objects"/>
+        ///             <see cref="SerializationHelper.Deserialize{T}(string, SerializationOption)"/> with 
+        ///             <see cref="SerializationOption.DefaultWithTypes"/>
         ///         </term>
         ///         <description>Please see the <see cref="NextState"/> property.</description>
         ///     </item>
@@ -199,7 +199,7 @@ namespace Hangfire.States
             return new Dictionary<string, string>
             {
                 { "ParentId", ParentId },
-                { "NextState", JobHelper.Serialize(NextState, TypeNameHandling.Objects ) },
+                { "NextState", SerializationHelper.Serialize(NextState, SerializationOption.DefaultWithTypes) },
                 { "Options", Options.ToString("G") },
                 { "Expiration", Expiration.ToString() }
             };

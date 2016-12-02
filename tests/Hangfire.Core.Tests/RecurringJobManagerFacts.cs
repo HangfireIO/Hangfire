@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization.Formatters;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
-using Newtonsoft.Json;
 using Xunit;
 
 // ReSharper disable AssignNullToNotNullAttribute
@@ -225,7 +223,7 @@ namespace Hangfire.Core.Tests
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}"))
                 .Returns(new Dictionary<string, string>
                 {
-                    { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) }
+                    { "Job", SerializationHelper.Serialize(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) }
                 });
 
             var manager = CreateManager();
@@ -244,7 +242,7 @@ namespace Hangfire.Core.Tests
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}"))
                 .Returns(new Dictionary<string, string>
                 {
-                    { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) },
+                    { "Job",SerializationHelper.Serialize(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) },
                     { "Queue", "my_queue" }
                 });
 
@@ -290,28 +288,16 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact, CleanJsonSerializersSettings]
-        public void HandlesChangingCoreSerializerSettings()
+        public void HandlesChangingProcessOfInvocationDataSerialization()
         {
-            var previousSerializerSettings = new JsonSerializerSettings
-            {
-                TypeNameHandling = TypeNameHandling.All,
-                TypeNameAssemblyFormat = FormatterAssemblyStyle.Full,
-
-                DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
-
-                Formatting = Formatting.Indented,
-
-                NullValueHandling = NullValueHandling.Ignore,
-                DefaultValueHandling = DefaultValueHandling.Ignore,
-            };
-            JobHelper.SetSerializerSettings(previousSerializerSettings);
+            SerializationHelper.SetUserSerializerSettings(SerializerSettingsHelper.DangerousSettings);
 
             var initialJob = Job.FromExpression(() => Console.WriteLine());
             var invocationData = InvocationData.Serialize(initialJob);
 
-            var serializedInvocationData = JobHelper.ToJson(invocationData);
+            var serializedInvocationData = SerializationHelper.Serialize(invocationData, SerializationOption.User);
 
-            var deserializedInvocationData = JobHelper.Deserialize<InvocationData>(serializedInvocationData);
+            var deserializedInvocationData = SerializationHelper.Deserialize<InvocationData>(serializedInvocationData);
             var deserializedJob = deserializedInvocationData.Deserialize();
 
             Assert.Equal(initialJob.Args, deserializedJob.Args);

@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Runtime.Serialization.Formatters;
 using System.Threading;
 using Dapper;
 using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.Storage;
 using Moq;
-using Newtonsoft.Json;
 using Xunit;
 // ReSharper disable PossibleNullReferenceException
 
@@ -143,7 +141,7 @@ namespace Hangfire.SqlServer.Tests
                 Assert.Equal(null, (int?) sqlJob.StateId);
                 Assert.Equal(null, (string) sqlJob.StateName);
 
-                var invocationData = JobHelper.FromJson<InvocationData>((string)sqlJob.InvocationData);
+                var invocationData = SerializationHelper.Deserialize<InvocationData>((string)sqlJob.InvocationData);
                 invocationData.Arguments = sqlJob.Arguments;
 
                 var job = invocationData.Deserialize();
@@ -197,7 +195,7 @@ select scope_identity() as Id";
                     arrangeSql,
                     new
                     {
-                        invocationData = JobHelper.ToJson(InvocationData.Serialize(job)),
+                        invocationData = SerializationHelper.Serialize(InvocationData.Serialize(job)),
                         stateName = "Succeeded",
                         arguments = "['Arguments']"
                     }).Single();
@@ -258,7 +256,7 @@ select @JobId as Id;";
 
                 var jobId = (int)sql.Query(
                     arrangeSql,
-                    new { name = "Name", reason = "Reason", @data = JobHelper.ToJson(data) }).Single().Id;
+                    new { name = "Name", reason = "Reason", @data = SerializationHelper.Serialize(data) }).Single().Id;
 
                 var result = connection.GetStateData(jobId.ToString());
                 Assert.NotNull(result);
@@ -295,7 +293,7 @@ select @JobId as Id;";
 
                 var jobId = (int)sql.Query(
                     arrangeSql,
-                    new { name = "Name", reason = "Reason", @data = JobHelper.ToJson(data) }).Single().Id;
+                    new { name = "Name", reason = "Reason", @data = SerializationHelper.Serialize(data) }).Single().Id;
 
                 var result = connection.GetStateData(jobId.ToString());
                 Assert.NotNull(result);
@@ -318,7 +316,7 @@ select scope_identity() as Id";
                     arrangeSql,
                     new
                     {
-                        invocationData = JobHelper.ToJson(new InvocationData(null, null, null, null)),
+                        invocationData = SerializationHelper.Serialize(new InvocationData(null, null, null, null)),
                         stateName = "Succeeded",
                         arguments = "['Arguments']"
                     }).Single();
@@ -1333,27 +1331,15 @@ values (@key, @value, @expireAt, 0.0)";
         }
 
         [Fact, CleanJsonSerializersSettings]
-        public void HandlesChangingDeserializationMethodOfStateData()
+        public void HandlesChangingProcessOfStateDataSerialization()
         {
-            var previousSerializerSettings = new JsonSerializerSettings
-            {
-                TypeNameHandling = TypeNameHandling.All,
-                TypeNameAssemblyFormat = FormatterAssemblyStyle.Full,
-
-                DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
-
-                Formatting = Formatting.Indented,
-
-                NullValueHandling = NullValueHandling.Ignore,
-                DefaultValueHandling = DefaultValueHandling.Ignore
-            };
-            JobHelper.SetSerializerSettings(previousSerializerSettings);
+            SerializationHelper.SetUserSerializerSettings(SerializerSettingsHelper.DangerousSettings);
             var stateData = new Dictionary<string, string>
             {
                 { "key1", "value1" },
                 { "key2", null }
             };
-            var serializedData = JobHelper.ToJson(stateData);
+            var serializedData = SerializationHelper.Serialize(stateData, SerializationOption.User);
 
             var deserializedStateData = SerializationHelper.Deserialize<Dictionary<string, string>>(serializedData);
 
@@ -1364,27 +1350,15 @@ values (@key, @value, @expireAt, 0.0)";
             Assert.Equal(null, deserializedStateData["key2"]);
         }
 
-        [Fact]
-        public void HandlesChangingDeserializationMethodOfInvocationData()
+        [Fact, CleanJsonSerializersSettings]
+        public void HandlesChangingProcessOfInvocationDataSerialization()
         {
-            var previousSerializerSettings = new JsonSerializerSettings
-            {
-                TypeNameHandling = TypeNameHandling.All,
-                TypeNameAssemblyFormat = FormatterAssemblyStyle.Full,
-
-                DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
-
-                Formatting = Formatting.Indented,
-
-                NullValueHandling = NullValueHandling.Ignore,
-                DefaultValueHandling = DefaultValueHandling.Ignore
-            };
-            JobHelper.SetSerializerSettings(previousSerializerSettings);
+            SerializationHelper.SetUserSerializerSettings(SerializerSettingsHelper.DangerousSettings);
 
             var initialJob = Job.FromExpression(() => Console.WriteLine());
             var invocationData = InvocationData.Serialize(initialJob);
 
-            var serializedInvocationData = JobHelper.ToJson(invocationData);
+            var serializedInvocationData = SerializationHelper.Serialize(invocationData, SerializationOption.User);
 
             var deserializedStateData = SerializationHelper.Deserialize<InvocationData>(serializedInvocationData);
             var deserializedJob = deserializedStateData.Deserialize();

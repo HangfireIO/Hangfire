@@ -107,7 +107,7 @@ namespace Hangfire.Common
                         try
                         {
                             value = argument != null
-                                ? JobHelper.FromJson(argument, parameter.ParameterType)
+                                ? SerializationHelper.Deserialize(argument, parameter.ParameterType, SerializationOption.User)
                                 : null;
                         }
                         catch (Exception)

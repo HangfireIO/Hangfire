@@ -82,7 +82,7 @@ namespace Hangfire.Storage
 
                 try
                 {
-                    var invocationData = JobHelper.Deserialize<InvocationData>(hash["Job"]);
+                    var invocationData = SerializationHelper.Deserialize<InvocationData>(hash["Job"]);
                     dto.Job = invocationData.Deserialize();
                 }
                 catch (JobLoadException ex)
