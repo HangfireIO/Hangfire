@@ -22,16 +22,24 @@
 1.6.7
 
 Hangfire.Core
-• Fixed – ArgumentException when using complex arguments in generic methods like IList&lt;T&gt;.
-• Fixed – Wrong choice of the overload when multiple methods match the given arguments.
-• Fixed – HtmlHelper.ToHumanDuration incorrectly formats fractional seconds.
-• Fixed – Inconsistent constructors' accessibility for different context classes.
+• Fixed – ArgumentException when using complex arguments in generic methods like "IList&lt;T&gt;" (by @aidmsu).
+• Fixed – Generic arrays like "T[]" aren't supported in background job arguments (by @aidmsu).
+• Fixed – Wrong choice of the overload when multiple methods match the given arguments (by @aidmsu).
+• Fixed – Null values for arguments when there are errors during the JSON deserialization.
+• Fixed – Window resize cause errors and uncontrolled growth of event and poll listeners (by @Yarmonov).
+• Fixed – HtmlHelper.ToHumanDuration incorrectly formats fractional seconds (by @pieceofsummer).
+• Fixed – Exception in Dashboard UI when CRON expression is null by an accident (by @aidmsu).
+• Fixed – Error in Dashboard UI when rendering an array that contains a null element (by @djfoz).
+• Fixed – Inconsistent constructors' accessibility for different context classes (by @pieceofsummer).
+• Fixed – Decrease the max default workers count to "20" in tests (by patrykpiotrmarek).
+• Fixed – Inconsistent EOL characters in some files of a project (by @aidmsu).
+• Fixed – Make Queue name accessible from RecurringJobDto (by @swordfish6975).
 
 Hangfire.SqlServer
-• Fixed – "An invalid application lock time-out was passed to xp_userlock" exception when lock timeout is too high.
+• Fixed – Validation added to avoid "An invalid application lock time-out" exceptions (by t0mburton).
 
 Hangfire.AspNetCore
-• Fixed – Parameterless AspNetCoreJobActivator.BeginScope method now returns SimpleJobActivatorScope instance.
+• Fixed – Parameterless AspNetCoreJobActivator.BeginScope method now returns a correct instance (by @pieceofsummer).
 
 1.6.6
 
@@ -45,10 +53,10 @@ Hangfire.SqlServer
 1.6.5
 
 Hangfire.Core
-• Added – Chinese language to Dashboard UI.
+• Added – Chinese language to Dashboard UI (by @andy-zhouyou).
 • Changed – Default upper limit of worker number is 20.
 • Changed – Default value for DashboardJobListLimit is now 10000.
-• Fixed – Deserialization exception in continuations, when TypeNameHandling.All option is used.
+• Fixed – Deserialization exception in continuations, when TypeNameHandling.All option is used (by @MaksimSimkin).
 • Fixed – I18N is not working, because there are no localized resources in NuGet packages.
 • Fixed – Infinite redirect loops, when authenticated, but not authorized user accesses Dashboard UI.
 • Fixed – "The type ... exists in both..." issue when building Hangfire, related to Newtonsoft.Json.

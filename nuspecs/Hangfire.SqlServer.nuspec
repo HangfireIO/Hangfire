@@ -15,7 +15,7 @@
     <releaseNotes>http://hangfire.io/blog/
     
 1.6.7
-• Fixed – "An invalid application lock time-out was passed to xp_userlock" exception when lock timeout is too high.
+• Fixed – Validation added to avoid "An invalid application lock time-out" exceptions (by t0mburton).
     
 1.6.6
 • Fixed – SqlServerJobQueue class doesn't use obsolete InvisibilityTimeout parameter anymore.

@@ -15,7 +15,7 @@
     <releaseNotes>http://hangfire.io/blog/
     
 1.6.7
-• Fixed – Parameterless AspNetCoreJobActivator.BeginScope method now returns SimpleJobActivatorScope instance.
+• Fixed – Parameterless AspNetCoreJobActivator.BeginScope method now returns a correct instance (by @pieceofsummer).
     
 1.6.1
 • Fixed – Add missing `GetHttpContext` extension method for the .NET Core platform.
