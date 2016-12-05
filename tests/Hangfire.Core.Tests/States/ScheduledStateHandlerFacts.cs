@@ -41,13 +41,8 @@ namespace Hangfire.Core.Tests.States
             var handler = new ScheduledState.Handler();
             handler.Apply(_context.Object, _transaction.Object);
 
-            _transaction.Verify(x => x.AddToSet(
-                "schedule", JobId, JobHelper.ToTimestamp(_enqueueAt)));
-
-            _transaction.Verify(x => x.SetRangeInHash(
-                It.Is<string>(keyName => keyName == $"scheduled-job:{JobId}"),
-                It.Is<Dictionary<string, string>>(
-                    hash => hash.ContainsKey("Queue") && hash["Queue"] == "new_queue")));
+            _transaction.Verify(x => x.AddToSetQueue(
+                "schedule", JobId, "new_queue", JobHelper.ToTimestamp(_enqueueAt)));
         }
 
         [Fact]
@@ -57,7 +52,6 @@ namespace Hangfire.Core.Tests.States
             handler.Unapply(_context.Object, _transaction.Object);
 
             _transaction.Verify(x => x.RemoveFromSet("schedule", JobId));
-            _transaction.Verify(x => x.RemoveHash($"scheduled-job:{JobId}"));
         }
 
         [Fact]
