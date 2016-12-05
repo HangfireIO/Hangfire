@@ -24,9 +24,33 @@ namespace Hangfire
 {
     public static partial class RecurringJob
     {
-        private static readonly Lazy<RecurringJobManager> Instance = new Lazy<RecurringJobManager>(
+        private static readonly Lazy<IRecurringJobManager> Instance = new Lazy<IRecurringJobManager>(
             () => new RecurringJobManager());
 
+        private static readonly Func<IRecurringJobManager> DefaultFactory
+            = () => Instance.Value;
+
+        private static Func<IRecurringJobManager> _clientFactory;
+        private static readonly object ClientFactoryLock = new object();
+
+        internal static Func<IRecurringJobManager> ClientFactory
+        {
+            get
+            {
+                lock (ClientFactoryLock)
+                {
+                    return _clientFactory ?? DefaultFactory;
+                }
+            }
+            set
+            {
+                lock (ClientFactoryLock)
+                {
+                    _clientFactory = value;
+                }
+            }
+        }
+
         public static void AddOrUpdate(
             Expression<Action> methodCall,
             Func<string> cronExpression,
@@ -45,7 +69,8 @@ namespace Hangfire
             var job = Job.FromExpression(methodCall);
             var id = GetRecurringJobId(job);
 
-            Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+            var client = ClientFactory();
+            client.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void AddOrUpdate<T>(
@@ -66,7 +91,8 @@ namespace Hangfire
             var job = Job.FromExpression(methodCall);
             var id = GetRecurringJobId(job);
 
-            Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+            var client = ClientFactory();
+            client.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
         
         public static void AddOrUpdate(
@@ -87,7 +113,9 @@ namespace Hangfire
             string queue = null)
         {
             var job = Job.FromExpression(methodCall);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+
+            var client = ClientFactory();
+            client.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
         
         public static void AddOrUpdate<T>(
@@ -108,7 +136,9 @@ namespace Hangfire
             string queue = null)
         {
             var job = Job.FromExpression(methodCall);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+
+            var client = ClientFactory();
+            client.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void AddOrUpdate(
@@ -129,7 +159,8 @@ namespace Hangfire
             var job = Job.FromExpression(methodCall);
             var id = GetRecurringJobId(job);
 
-            Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+            var client = ClientFactory();
+            client.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void AddOrUpdate<T>(
@@ -150,7 +181,8 @@ namespace Hangfire
             var job = Job.FromExpression(methodCall);
             var id = GetRecurringJobId(job);
 
-            Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+            var client = ClientFactory();
+            client.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void AddOrUpdate(
@@ -171,7 +203,9 @@ namespace Hangfire
             string queue = null)
         {
             var job = Job.FromExpression(methodCall);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+
+            var client = ClientFactory();
+            client.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void AddOrUpdate<T>(
@@ -192,17 +226,21 @@ namespace Hangfire
             string queue = null)
         {
             var job = Job.FromExpression(methodCall);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+
+            var client = ClientFactory();
+            client.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void RemoveIfExists(string recurringJobId)
         {
-            Instance.Value.RemoveIfExists(recurringJobId);
+            var client = ClientFactory();
+            client.RemoveIfExists(recurringJobId);
         }
 
         public static void Trigger(string recurringJobId)
         {
-            Instance.Value.Trigger(recurringJobId);
+            var client = ClientFactory();
+            client.Trigger(recurringJobId);
         }
 
         private static string GetRecurringJobId(Job job)

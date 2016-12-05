@@ -142,6 +142,17 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void AddOrUpdate_AddsAJob_ToTheRecurringJobsSet_InCustomQueue()
+        {
+            var manager = CreateManager();
+
+            manager.AddOrUpdate(_id, _job, _cronExpression, TimeZoneInfo.Utc, "custom_queue");
+
+            Assert.Equal("custom_queue", _job.QueueName);
+            _transaction.Verify(x => x.AddToSetQueue("recurring-jobs", _id, _job.QueueName));
+        }
+
+        [Fact]
         public void AddOrUpdate_SetsTheRecurringJobEntry()
         {
             var manager = CreateManager();
