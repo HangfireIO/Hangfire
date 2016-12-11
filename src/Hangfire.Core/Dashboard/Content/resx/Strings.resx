@@ -418,17 +418,32 @@
   <data name="SucceededJobsPage_NoJobs" xml:space="preserve">
     <value>No succeeded jobs found.</value>
   </data>
+  <data name="SkippedJobsPage_NoJobs" xml:space="preserve">
+    <value>No skipped jobs found.</value>
+  </data>
   <data name="SucceededJobsPage_Table_Succeeded" xml:space="preserve">
     <value>Succeeded</value>
+  </data>
+  <data name="SkippedJobsPage_Table_Skipped" xml:space="preserve">
+    <value>Skipped</value>
   </data>
   <data name="SucceededJobsPage_Table_TotalDuration" xml:space="preserve">
     <value>Total Duration</value>
   </data>
+  <data name="SkippedJobsPage_Table_Reason" xml:space="preserve">
+    <value>Skip Reason</value>
+  </data>
   <data name="SucceededJobsPage_Title" xml:space="preserve">
     <value>Succeeded Jobs</value>
   </data>
+  <data name="SkippedJobsPage_Title" xml:space="preserve">
+    <value>Skipped Jobs</value>
+  </data>
   <data name="JobsSidebarMenu_Awaiting" xml:space="preserve">
     <value>Awaiting</value>
+  </data>
+  <data name="JobsSidebarMenu_Skipped" xml:space="preserve">
+    <value>Skipped</value>
   </data>
   <data name="JobsSidebarMenu_Deleted" xml:space="preserve">
     <value>Deleted</value>

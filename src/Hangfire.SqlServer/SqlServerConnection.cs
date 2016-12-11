@@ -233,6 +233,23 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
             });
         }
 
+
+        public override HashSet<string> GetLastStateForJobId(string jobId)
+        {
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
+
+            return _storage.UseConnection(connection =>
+            {
+                var result = connection.Query<string>(
+                    $@" Select TOP 1 Name from [{_storage.SchemaName}].[State] with (readcommittedlock) where [JobId] = @JobId ORDER BY CreatedAt DESC ",
+                    new { JobId = jobId });
+
+                return new HashSet<string>(result);
+            });
+        }
+
+
+
         public override string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));

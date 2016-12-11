@@ -181,6 +181,22 @@ namespace Hangfire.SqlServer
                 }));
         }
 
+        public JobList<SkippedJobDto> SkippedJobs(int @from, int count)
+        {
+            return UseConnection(connection => GetJobs(
+                connection,
+                from,
+                count,
+                SkippedState.StateName,
+                (sqlJob, job, stateData) => new SkippedJobDto
+                {
+                    Job = job,
+                    Reason = sqlJob.StateReason,
+                    SkippedAt = JobHelper.DeserializeNullableDateTime(stateData["SkippedAt"])
+                }));
+        }
+
+
         public JobList<DeletedJobDto> DeletedJobs(int @from, int count)
         {
             return UseConnection(connection => GetJobs(
@@ -301,6 +317,12 @@ select * from [{_storage.SchemaName}].State with (nolock) where JobId = @id orde
                 GetNumberOfJobsByStateName(connection, SucceededState.StateName));
         }
 
+        public long SkippedListCount()
+        {
+            return UseConnection(connection =>
+                GetNumberOfJobsByStateName(connection, SkippedState.StateName));
+        }
+
         public long DeletedListCount()
         {
             return UseConnection(connection => 
@@ -315,6 +337,7 @@ select count(Id) from [{0}].Job with (nolock) where StateName = N'Enqueued';
 select count(Id) from [{0}].Job with (nolock) where StateName = N'Failed';
 select count(Id) from [{0}].Job with (nolock) where StateName = N'Processing';
 select count(Id) from [{0}].Job with (nolock) where StateName = N'Scheduled';
+select count(Id) from [{0}].Job with (nolock) where StateName = N'Skipped';
 select count(Id) from [{0}].Server with (nolock);
 select sum(s.[Value]) from (
     select sum([Value]) as [Value] from [{0}].Counter with (readpast) where [Key] = N'stats:succeeded'
@@ -339,7 +362,7 @@ select count(*) from [{0}].[Set] with (nolock) where [Key] = N'recurring-jobs';
                     stats.Failed = multi.ReadSingle<int>();
                     stats.Processing = multi.ReadSingle<int>();
                     stats.Scheduled = multi.ReadSingle<int>();
-
+                    stats.Skipped = multi.ReadSingle<int>();
                     stats.Servers = multi.ReadSingle<int>();
 
                     stats.Succeeded = multi.ReadSingleOrDefault<long?>() ?? 0;

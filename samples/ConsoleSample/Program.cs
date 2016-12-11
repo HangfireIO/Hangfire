@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
+using Hangfire.Common;
 
 namespace ConsoleSample
 {
@@ -21,6 +22,13 @@ namespace ConsoleSample
             RecurringJob.AddOrUpdate("Hawaiian", () => Console.WriteLine("Hawaiian"),  "15 08 * * *", TimeZoneInfo.FindSystemTimeZoneById("Hawaiian Standard Time"));
             RecurringJob.AddOrUpdate("UTC", () => Console.WriteLine("UTC"), "15 18 * * *");
             RecurringJob.AddOrUpdate("Russian", () => Console.WriteLine("Russian"), "15 21 * * *", TimeZoneInfo.Local);
+            
+            // Add Long Running job with functionality to Skip Multiple Instance
+            LongRunningJob longRunningJob = new LongRunningJob();
+            var hangFireJob = new Job(longRunningJob.GetType(), longRunningJob.GetType().GetMethod("RunFor2Min"));
+            var manager = new RecurringJobManager();
+            manager.AddOrUpdate("longRunningJob", hangFireJob, Cron.MinuteInterval(1));
+            manager.AddOrUpdate("longRunningJobSkipMultipleInstance", hangFireJob, Cron.MinuteInterval(1), true);
 
             var options = new BackgroundJobServerOptions
             {

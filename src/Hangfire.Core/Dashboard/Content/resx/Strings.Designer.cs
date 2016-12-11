@@ -8,8 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System.Reflection;
-
 namespace Hangfire.Dashboard.Resources {
     using System;
     
@@ -41,7 +39,7 @@ namespace Hangfire.Dashboard.Resources {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Hangfire.Dashboard.Content.resx.Strings", typeof(Strings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Hangfire.Dashboard.Content.resx.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -658,6 +656,15 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Skipped.
+        /// </summary>
+        public static string JobsSidebarMenu_Skipped {
+            get {
+                return ResourceManager.GetString("JobsSidebarMenu_Skipped", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Succeeded.
         /// </summary>
         public static string JobsSidebarMenu_Succeeded {
@@ -1203,6 +1210,42 @@ namespace Hangfire.Dashboard.Resources {
         public static string ServersPage_Title {
             get {
                 return ResourceManager.GetString("ServersPage_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No skipped jobs found..
+        /// </summary>
+        public static string SkippedJobsPage_NoJobs {
+            get {
+                return ResourceManager.GetString("SkippedJobsPage_NoJobs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Skip Reason.
+        /// </summary>
+        public static string SkippedJobsPage_Table_Reason {
+            get {
+                return ResourceManager.GetString("SkippedJobsPage_Table_Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Skipped.
+        /// </summary>
+        public static string SkippedJobsPage_Table_Skipped {
+            get {
+                return ResourceManager.GetString("SkippedJobsPage_Table_Skipped", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Skipped Jobs.
+        /// </summary>
+        public static string SkippedJobsPage_Title {
+            get {
+                return ResourceManager.GetString("SkippedJobsPage_Title", resourceCulture);
             }
         }
         

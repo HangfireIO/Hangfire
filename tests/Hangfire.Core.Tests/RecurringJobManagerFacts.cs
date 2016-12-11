@@ -293,5 +293,37 @@ namespace Hangfire.Core.Tests
         }
 
         public static void Method() { }
+
+
+        [Fact]
+        public void AddOrUpdateWithDisableConcurrentExecution_AddsAJob_WithConcurrentFlagFalse()
+        {
+            var manager = CreateManager();
+
+            manager.AddOrUpdate(_id, _job, _cronExpression);
+            _transaction.Verify(x => x.SetRangeInHash(
+                $"recurring-job:{_id}",
+                It.Is<Dictionary<string, string>>(rj =>
+                    rj["Cron"] == "* * * * *"
+                    && !String.IsNullOrEmpty(rj["Job"])
+                    && rj["DisableConcurrentExecution"] == "False"
+                   )));
+        }
+
+
+        [Fact]
+        public void AddOrUpdateWithDisableConcurrentExecution_AddsAJob_WithConcurrentFlagTrue()
+        {
+            var manager = CreateManager();
+
+            manager.AddOrUpdate(_id, _job, _cronExpression,true);
+            _transaction.Verify(x => x.SetRangeInHash(
+                $"recurring-job:{_id}",
+                It.Is<Dictionary<string, string>>(rj =>
+                    rj["Cron"] == "* * * * *"
+                    && !String.IsNullOrEmpty(rj["Job"])
+                    && rj["DisableConcurrentExecution"] == "True"
+                   )));
+        }
     }
 }

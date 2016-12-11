@@ -172,7 +172,34 @@ namespace Hangfire.Server
                 var changedFields = new Dictionary<string, string>();
 
                 var lastInstant = GetLastInstant(recurringJob, nowInstant);
-                
+
+
+                // Get the Job state for last Job  and for DisableConcurrentExecution = true, skip the job if job is currently processing/enqueued
+                if (recurringJob.ContainsKey("LastJobId") && 
+                    recurringJob.ContainsKey("DisableConcurrentExecution") &&
+                    recurringJob["DisableConcurrentExecution"]=="True")
+
+                {
+                    var currentJobInstance = connection.GetLastStateForJobId(recurringJob["LastJobId"]);
+                    if (currentJobInstance.ToList().First() == "Processing" || currentJobInstance.ToList().First() == "Enqueued")
+                    {
+                        var state = new SkippedState { Reason = "Executing Job Instance Found. Skipping Job Execution" };
+                        var context = new CreateContext(storage, connection, job, state);
+                        context.Parameters["RecurringJobId"] = recurringJobId;
+                        var backgroundJob = _factory.Create(context);
+                        var jobId = backgroundJob?.Id;
+                        if (String.IsNullOrEmpty(jobId))
+                        {
+                            Logger.Debug($"Recurring job '{recurringJobId}' execution at '{nowInstant.NowInstant}' has been canceled.");
+                        }
+                        changedFields.Add("NextExecution", nowInstant.NextInstant.HasValue ? JobHelper.SerializeDateTime(nowInstant.NextInstant.Value) : null);
+                        connection.SetRangeInHash(
+                            $"recurring-job:{recurringJobId}",
+                            changedFields);
+                        return;
+                    }
+                }
+
                 if (nowInstant.GetNextInstants(lastInstant).Any())
                 {
                     var state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
