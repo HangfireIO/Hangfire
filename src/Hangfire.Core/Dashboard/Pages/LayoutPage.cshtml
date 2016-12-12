@@ -62,7 +62,7 @@
                         </a>
                     </li>
                     <li>@Storage</li>
-                    <li>@String.Format(Strings.LayoutPage_Footer_Time, DateTime.UtcNow)</li>
+                    <li>@Strings.LayoutPage_Footer_Time @Html.LocalTime(DateTime.UtcNow)</li>
                     <li>@String.Format(Strings.LayoutPage_Footer_Generatedms, GenerationTime.Elapsed.TotalMilliseconds.ToString("N"))</li>
                 </ul>
             </div>

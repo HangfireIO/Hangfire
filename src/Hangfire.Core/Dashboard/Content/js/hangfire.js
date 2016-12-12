@@ -70,9 +70,12 @@
         });
 
         if (xSettings) {
-            this._xAxis = new Rickshaw.Graph.Axis.Time($.extend({ graph: graph }, xSettings));
+            this._xAxis = new Rickshaw.Graph.Axis.Time($.extend({
+              graph: graph,
+              timeFixture: new Rickshaw.Fixtures.Time.Local()
+            }, xSettings));
         }
-
+        
         if (ySettings) {
             this._yAxis = new Rickshaw.Graph.Axis.Y($.extend({
                 graph: graph,
@@ -297,6 +300,16 @@
                         var time = moment(timestamp, 'X');
                         $this.prop('title', time.format('llll'))
                             .attr('data-container', 'body');
+                    }
+                });
+
+                $('*[data-moment-local]').each(function () {
+                    var $this = $(this);
+                    var timestamp = $this.data('moment-local');
+
+                    if (timestamp) {
+                        var time = moment(timestamp, 'X');
+                        $this.html(time.format('l LTS'));
                     }
                 });
             };
