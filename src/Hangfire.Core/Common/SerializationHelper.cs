@@ -5,7 +5,6 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters;
 using Hangfire.Annotations;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace Hangfire.Common
 {
@@ -184,8 +183,17 @@ namespace Hangfire.Common
             serializerSettings.ObjectCreationHandling = ObjectCreationHandling.Auto;
             serializerSettings.PreserveReferencesHandling = PreserveReferencesHandling.None;
             serializerSettings.Culture = CultureInfo.InvariantCulture;
-            serializerSettings.Binder = new DefaultSerializationBinder();
             serializerSettings.Context = new StreamingContext();
+
+            var defaultJsonSerializer = new JsonSerializer();
+
+            serializerSettings.ContractResolver = defaultJsonSerializer.ContractResolver;
+#pragma warning disable 618
+            serializerSettings.ReferenceResolver = defaultJsonSerializer.ReferenceResolver;
+#pragma warning restore 618
+            serializerSettings.Binder = defaultJsonSerializer.Binder;
+
+            serializerSettings.MaxDepth = Int32.MaxValue;
         }
 
         internal static void SetUserSerializerSettings(JsonSerializerSettings settings)
