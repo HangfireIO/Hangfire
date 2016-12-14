@@ -136,7 +136,7 @@ namespace Hangfire
             
             for (var i = 0; i < _options.WorkerCount; i++)
             {
-                processes.Add(new Worker(_options.Queues, performer, stateChanger));
+                processes.Add(new Worker(_options.Queues, performer, stateChanger, _options.WorkerSetup, _options.WorkerTearDown));
             }
             
             processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger));

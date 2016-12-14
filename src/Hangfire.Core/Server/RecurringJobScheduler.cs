@@ -108,6 +108,18 @@ namespace Hangfire.Server
         }
 
         /// <inheritdoc />
+        public void Setup()
+        {
+            // No setup needed.
+        }
+
+        /// <inheritdoc />
+        public void TearDown()
+        {
+            // No tear-down needed.
+        }
+
+        /// <inheritdoc />
         public void Execute(BackgroundProcessContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));

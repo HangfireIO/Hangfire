@@ -137,6 +137,16 @@ namespace Hangfire.Server
             return GetType().Name;
         }
 
+        public void Setup()
+        {
+            // No setup needed.
+        }
+
+        public void TearDown()
+        {
+            // No tear-down needed.
+        }
+
         void IBackgroundProcess.Execute(BackgroundProcessContext context)
         {
             using (var connection = context.Storage.GetConnection())
