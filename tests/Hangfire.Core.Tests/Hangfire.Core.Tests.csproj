@@ -118,6 +118,7 @@
     <Compile Include="Server\BackgroundProcessContextFacts.cs" />
     <Compile Include="Server\BackgroundProcessingServerFacts.cs" />
     <Compile Include="Server\BackgroundJobPerformerFacts.cs" />
+    <Compile Include="Server\BackgroundProcessingServerOptionsFacts.cs" />
     <Compile Include="Server\InfiniteLoopComponentFacts.cs" />
     <Compile Include="Server\CoreBackgroundJobPerformerFacts.cs" />
     <Compile Include="Server\RecurringJobSchedulerFacts.cs" />

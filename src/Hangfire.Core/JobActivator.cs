@@ -89,6 +89,8 @@ namespace Hangfire
             {
                 foreach (var disposable in _disposables)
                 {
+                    //TODO: handle possible user exceptions.
+
                     disposable.Dispose();
                 }
             }

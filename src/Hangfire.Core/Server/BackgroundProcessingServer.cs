@@ -54,6 +54,9 @@ namespace Hangfire.Server
         private readonly BackgroundProcessingServerOptions _options;
         private readonly Task _bootstrapTask;
 
+        private bool _stopped;
+        private bool _disposed;
+
         public BackgroundProcessingServer([NotNull] IEnumerable<IBackgroundProcess> processes)
             : this(JobStorage.Current, processes)
         {
@@ -90,9 +93,9 @@ namespace Hangfire.Server
         /// <param name="properties"></param>
         /// <param name="options"></param>
         public BackgroundProcessingServer(
-            [NotNull] JobStorage storage, 
+            [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> processes,
-            [NotNull] IDictionary<string, object> properties, 
+            [NotNull] IDictionary<string, object> properties,
             [NotNull] BackgroundProcessingServerOptions options)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -107,7 +110,7 @@ namespace Hangfire.Server
             _processes.AddRange(processes);
 
             var context = new BackgroundProcessContext(
-                GetGloballyUniqueServerId(), 
+                GetGloballyUniqueServerId(),
                 storage,
                 properties,
                 _cts.Token);
@@ -117,11 +120,24 @@ namespace Hangfire.Server
 
         public void SendStop()
         {
-            _cts.Cancel();
+            if (_stopped || _disposed) return;
+
+            try
+            {
+                _cts.Cancel();
+            }
+            catch (AggregateException ex)
+            {
+                Logger.WarnException("Exception has been thrown during server shutdown.", ex);
+            }
+
+            _stopped = true;
         }
 
         public void Dispose()
         {
+            if (_disposed) return;
+
             SendStop();
 
             // TODO: Dispose _cts
@@ -130,6 +146,8 @@ namespace Hangfire.Server
             {
                 Logger.Warn("Processing server takes too long to shutdown. Performing ungraceful shutdown.");
             }
+
+            _disposed = true;
         }
 
         public override string ToString()

@@ -54,7 +54,7 @@ namespace Hangfire.SqlServer
         private readonly Timer _timer;
         private readonly object _lockObject = new object();
 
-        private bool _completed;
+        private bool _disposed;
 
         public SqlServerDistributedLock([NotNull] SqlServerStorage storage, [NotNull] string resource, TimeSpan timeout)
         {
@@ -89,9 +89,9 @@ namespace Hangfire.SqlServer
 
         public void Dispose()
         {
-            if (_completed) return;
+            if (_disposed) return;
 
-            _completed = true;
+            _disposed = true;
 
             if (!AcquiredLocks.Value.ContainsKey(_resource)) return;
 
