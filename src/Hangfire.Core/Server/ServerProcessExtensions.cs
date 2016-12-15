@@ -87,7 +87,24 @@ namespace Hangfire.Server
 
             try
             {
-                process.Execute(context);
+                IBackgroundProcess backgroundProcess = process as IBackgroundProcess;
+                try
+                {
+                    if (backgroundProcess != null)
+                    {
+                        backgroundProcess.Setup();
+                        logger.Debug($"Background process '{process}' setup complete.");
+                    }
+                    process.Execute(context);
+                }
+                finally
+                {
+                    if (backgroundProcess != null)
+                    {
+                        backgroundProcess.TearDown();
+                        logger.Debug($"Background process '{process}' tear-down complete.");
+                    }
+                }
             }
             catch (Exception ex)
             {
