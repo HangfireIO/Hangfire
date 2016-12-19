@@ -246,9 +246,17 @@ WriteLiteral("</th>\r\n                                <th>");
             
             #line default
             #line hidden
-WriteLiteral("</th>\r\n                                <th class=\"align-right\">ScheduledJobsPage_" +
-"Table_Scheduled</th>\r\n                            </tr>\r\n                       " +
-" </thead>\r\n");
+WriteLiteral("</th>\r\n                                <th class=\"align-right\">");
+
+
+            
+            #line 66 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                                                   Write(Strings.ScheduledJobsPage_Table_Scheduled);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</th>\r\n                            </tr>\r\n                        </thead>\r\n");
 
 
             
