@@ -16,6 +16,7 @@
 
 using System;
 using System.Threading;
+using Hangfire.Server;
 
 namespace Hangfire
 {
@@ -45,6 +46,12 @@ namespace Hangfire
             try
             {
                 DisposeScope();
+            }
+            catch (Exception ex)
+            {
+                throw new JobPerformanceException(
+                    "Job has been performed, but an exception occurred during disposal.",
+                    ex);
             }
             finally
             {

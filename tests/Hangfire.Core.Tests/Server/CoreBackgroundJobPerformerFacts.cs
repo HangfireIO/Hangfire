@@ -222,7 +222,7 @@ namespace Hangfire.Core.Tests.Server
             _context.BackgroundJob.Job = Job.FromExpression<BrokenDispose>(x => x.Method());
             var performer = CreatePerformer();
             
-            Assert.Throws<InvalidOperationException>(
+            Assert.Throws<JobPerformanceException>(
                 () => performer.Perform(_context.Object));
 
             Assert.True(_methodInvoked);
