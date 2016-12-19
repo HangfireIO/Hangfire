@@ -97,6 +97,26 @@ namespace Hangfire.Core.Tests.Server
             component2.Verify(x => x.Execute(It.IsNotNull<BackgroundProcessContext>()), Times.AtLeast(5));
         }
 
+        [Fact]
+        public void Dispose_DoesNotThrowException_WhenShutdownTimeoutIsIncorrect()
+        {
+            // Arrange
+            var options = new BackgroundProcessingServerOptions
+            {
+                ShutdownTimeout = TimeSpan.FromHours(-5)
+            };
+
+            // Act
+            using (CreateServer(options))
+            {
+            }
+        }
+
+        private BackgroundProcessingServer CreateServer(BackgroundProcessingServerOptions options)
+        {
+            return new BackgroundProcessingServer(_storage.Object, _processes, _properties, options);
+        }
+
         private BackgroundProcessingServer CreateServer()
         {
             return new BackgroundProcessingServer(_storage.Object, _processes, _properties);

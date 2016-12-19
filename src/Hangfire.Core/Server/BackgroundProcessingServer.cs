@@ -54,7 +54,6 @@ namespace Hangfire.Server
         private readonly BackgroundProcessingServerOptions _options;
         private readonly Task _bootstrapTask;
 
-        private bool _stopped;
         private bool _disposed;
 
         public BackgroundProcessingServer([NotNull] IEnumerable<IBackgroundProcess> processes)
@@ -120,7 +119,7 @@ namespace Hangfire.Server
 
         public void SendStop()
         {
-            if (_stopped || _disposed) return;
+            if (_disposed) throw new ObjectDisposedException(GetType().FullName);
 
             try
             {
@@ -128,10 +127,9 @@ namespace Hangfire.Server
             }
             catch (AggregateException ex)
             {
-                Logger.WarnException("Cancellation token callbacks were processed with errors.", ex);
+                Logger.WarnException(@"CancellationTokenSource.Cancel() method threw an exception during a server shutdown. 
+It can be related to user-defined CancellationToken's callback threw exception. If this isn't your case please contact the Hangfire developers.", ex);
             }
-
-            _stopped = true;
         }
 
         public void Dispose()
@@ -142,7 +140,20 @@ namespace Hangfire.Server
 
             // TODO: Dispose _cts
 
-            if (!_bootstrapTask.Wait(_options.ShutdownTimeout))
+            // Check ShutdownTimeout value. If it can cause an exception use default value.
+            var shutdownTimeout = _options.ShutdownTimeout;
+
+            if ((shutdownTimeout < TimeSpan.Zero && shutdownTimeout != Timeout.InfiniteTimeSpan) ||
+                shutdownTimeout.TotalMilliseconds > Int32.MaxValue)
+            {
+                Logger.Warn($@"ShutdownTimeout equals {_options.ShutdownTimeout.Milliseconds} milliseconds and it't incorret. 
+This value must be either equal to or less than {Int32.MaxValue} milliseconds and non-negative or infinite.
+Will be used default value: {DefaultShutdownTimeout} milliseconds");
+
+                shutdownTimeout = DefaultShutdownTimeout;
+            }
+
+            if (!_bootstrapTask.Wait(shutdownTimeout))
             {
                 Logger.Warn("Processing server takes too long to shutdown. Performing ungraceful shutdown.");
             }

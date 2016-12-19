@@ -86,14 +86,7 @@ namespace Hangfire.SqlServer
                     }
                     finally
                     {
-                        try
-                        {
-                            SqlServerDistributedLock.Release(connection, DistributedLockKey);
-                        }
-                        catch (Exception ex) when (ex is SqlException || ex is SqlServerDistributedLockException)
-                        {
-                            Logger.WarnException($"Could not release a lock on the resource '{DistributedLockKey}'.", ex);
-                        }
+                        SqlServerDistributedLock.Release(connection, DistributedLockKey);
                     }
                 });
 

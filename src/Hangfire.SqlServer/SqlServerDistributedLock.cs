@@ -112,39 +112,10 @@ namespace Hangfire.SqlServer
 
                 _timer?.Dispose();
 
-                try
-                {
-                    Release(_connection, _resource);
-                }
-                catch (Exception ex) when (ex is SqlException || ex is SqlServerDistributedLockException)
-                {
-                    Logger.WarnException($"Could not release a lock on the resource '{_resource}' during object disposing.", ex);
-                }
-                finally
-                {
-                    _storage.ReleaseConnection(_connection);
-                    _connection = null;
-                }
-            }
-        }
+                Release(_connection, _resource);
 
-        private void ExecuteKeepAliveQuery(object obj)
-        {
-            lock (_lockObject)
-            {
-                try
-                {
-                    _connection?.Execute("SELECT 1;");
-                }
-                catch
-                {
-                    // Connection is broken. This means that distributed lock
-                    // was released, and we can't guarantee the safety property
-                    // for the code that is wrapped with this block. So it was
-                    // a bad idea to have a separate connection for just
-                    // distributed lock.
-                    // TODO: Think about distributed locks and connections.
-                }
+                _storage.ReleaseConnection(_connection);
+                _connection = null;
             }
         }
 
@@ -183,25 +154,59 @@ namespace Hangfire.SqlServer
 
         internal static void Release(IDbConnection connection, string resource)
         {
-            // When the connection was closed the lock was released automatically.
-            if (connection.State == ConnectionState.Closed) return;
+            var couldNotReleaseLockMessageTemplate = $@"Could not release a lock on the resource '{resource}'. {0} 
+If this problem happens often please contact the Hangfire developers.";
+
+            // Connection was broken. This means that distributed lock
+            // was released, and we can't guarantee the safety property
+            // for the code that is wrapped with this block.
+            if (connection.State == ConnectionState.Closed)
+            {
+                Logger.Warn(string.Format(couldNotReleaseLockMessageTemplate, "Connection was closed and the lock is not currently held."));
+            }
 
             var parameters = new DynamicParameters();
             parameters.Add("@Resource", resource);
             parameters.Add("@LockOwner", LockOwner);
             parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
 
-            connection.Execute(
+            try
+            {
+                connection.Execute(
                 @"sp_releaseapplock",
                 parameters,
                 commandType: CommandType.StoredProcedure);
+            }
+            catch (SqlException ex)
+            {
+                Logger.WarnException(string.Format(couldNotReleaseLockMessageTemplate, string.Empty), ex);
+            }
 
             var releaseResult = parameters.Get<int>("@Result");
 
             if (releaseResult < 0)
             {
-                throw new SqlServerDistributedLockException(
-                    $"Could not release a lock on the resource '{resource}': Server returned the '{releaseResult}' error.");
+                Logger.Warn(string.Format(couldNotReleaseLockMessageTemplate, $"Server returned the '{releaseResult}' error."));
+            }
+        }
+
+        private void ExecuteKeepAliveQuery(object obj)
+        {
+            lock (_lockObject)
+            {
+                try
+                {
+                    _connection?.Execute("SELECT 1;");
+                }
+                catch
+                {
+                    // Connection is broken. This means that distributed lock
+                    // was released, and we can't guarantee the safety property
+                    // for the code that is wrapped with this block. So it was
+                    // a bad idea to have a separate connection for just
+                    // distributed lock.
+                    // TODO: Think about distributed locks and connections.
+                }
             }
         }
     }
