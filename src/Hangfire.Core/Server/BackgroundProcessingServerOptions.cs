@@ -41,7 +41,7 @@ namespace Hangfire.Server
             {
                 if ((value < TimeSpan.Zero && value != Timeout.InfiniteTimeSpan) || value.TotalMilliseconds > Int32.MaxValue)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), $"ShutdownTimeout must be either equal to or less than {Int32.MaxValue} milliseconds and non-negative or infinite");
+                    throw new ArgumentOutOfRangeException(nameof(value), $"ShutdownTimeout must be either equal to or less than {Int32.MaxValue} milliseconds and non-negative or infinite.");
                 }
                 _shutdownTimeout = value;
             }
@@ -54,7 +54,7 @@ namespace Hangfire.Server
             {
                 if (value < TimeSpan.Zero || value > ServerWatchdog.MaxServerCheckInterval)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), $"HeartbeatInterval must be either non-negative and equal to or less than {ServerWatchdog.MaxHeartbeatInterval.Hours} hours");
+                    throw new ArgumentOutOfRangeException(nameof(value), $"HeartbeatInterval must be either non-negative and equal to or less than {ServerWatchdog.MaxHeartbeatInterval.Hours} hours.");
                 }
                 _heartbeatInterval = value;
             }
@@ -67,7 +67,7 @@ namespace Hangfire.Server
             {
                 if (value < TimeSpan.Zero || value > ServerWatchdog.MaxServerCheckInterval)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), $"ServerCheckInterval must be either non-negative and equal to or less than {ServerWatchdog.MaxServerCheckInterval.Hours} hours");
+                    throw new ArgumentOutOfRangeException(nameof(value), $"ServerCheckInterval must be either non-negative and equal to or less than {ServerWatchdog.MaxServerCheckInterval.Hours} hours.");
                 }
                 _serverCheckInterval = value;
             }
@@ -80,7 +80,7 @@ namespace Hangfire.Server
             {
                 if (value < TimeSpan.Zero || value > ServerWatchdog.MaxServerTimeout)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), $"ServerTimeout must be either non-negative and equal to or less than {ServerWatchdog.MaxServerTimeout.Hours} hours");
+                    throw new ArgumentOutOfRangeException(nameof(value), $"ServerTimeout must be either non-negative and equal to or less than {ServerWatchdog.MaxServerTimeout.Hours} hours.");
                 }
                 _serverTimeout = value;
             }

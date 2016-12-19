@@ -17,9 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Threading;
 using Dapper;
 using Hangfire.Annotations;
+using Hangfire.Logging;
 using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
@@ -29,6 +31,8 @@ namespace Hangfire.SqlServer
         private const string LockMode = "Exclusive";
         private const string LockOwner = "Session";
         private const int CommandTimeoutAdditionSeconds = 1;
+
+        private static readonly ILog Logger = LogProvider.For<SqlServerDistributedLock>();
 
         // Connections to SQL Azure Database that are idle for 30 minutes 
         // or longer will be terminated. And since we are using separate
@@ -104,13 +108,17 @@ namespace Hangfire.SqlServer
                 // Timer callback may be invoked after the Dispose method call,
                 // so we are using lock to avoid unsynchronized calls.
 
+                AcquiredLocks.Value.Remove(_resource);
+
+                _timer?.Dispose();
+
                 try
                 {
-                    AcquiredLocks.Value.Remove(_resource);
-
-                    _timer?.Dispose();
-
                     Release(_connection, _resource);
+                }
+                catch (Exception ex) when (ex is SqlException || ex is SqlServerDistributedLockException)
+                {
+                    Logger.WarnException($"Could not release a lock on the resource '{_resource}' during object disposing.", ex);
                 }
                 finally
                 {
@@ -175,6 +183,9 @@ namespace Hangfire.SqlServer
 
         internal static void Release(IDbConnection connection, string resource)
         {
+            // When the connection was closed the lock was released automatically.
+            if (connection.State == ConnectionState.Closed) return;
+
             var parameters = new DynamicParameters();
             parameters.Add("@Resource", resource);
             parameters.Add("@LockOwner", LockOwner);

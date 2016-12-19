@@ -128,7 +128,7 @@ namespace Hangfire.Server
             }
             catch (AggregateException ex)
             {
-                Logger.WarnException("Exception has been thrown during server shutdown.", ex);
+                Logger.WarnException("Cancellation token callbacks were processed with errors.", ex);
             }
 
             _stopped = true;
@@ -174,9 +174,17 @@ namespace Hangfire.Server
             }
             finally
             {
-                using (var connection = context.Storage.GetConnection())
+                try
                 {
-                    connection.RemoveServer(context.ServerId);
+                    using (var connection = context.Storage.GetConnection())
+                    {
+                        connection.RemoveServer(context.ServerId);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.WarnException($@"Couldn't remove server {context.ServerId}. The server can be displayed on 'Server' page of Dashboard for a while. 
+The server won't perform any jobs and won't affect other servers.", ex);
                 }
             }
         }
