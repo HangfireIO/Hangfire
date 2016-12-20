@@ -379,14 +379,187 @@ BEGIN
 
 	SET @CURRENT_SCHEMA_VERSION = 5;
 END
-	
-/*IF @CURRENT_SCHEMA_VERSION = 5
+
+IF @CURRENT_SCHEMA_VERSION = 5
 BEGIN
 	PRINT 'Installing schema version 6';
 
-	-- Insert migration here
+	-- Modify [$(HangFireSchema)].[AggregatedCounter].[Id] type to bigint
+
+	ALTER TABLE [$(HangFireSchema)].[AggregatedCounter] DROP CONSTRAINT [PK_HangFire_CounterAggregated];
+	PRINT 'Dropped constraint [PK_HangFire_CounterAggregated] to modify the [$(HangFireSchema)].[AggregatedCounter].[Id] column';
+
+	ALTER TABLE [$(HangFireSchema)].[AggregatedCounter] ALTER COLUMN [Id] bigint;
+	PRINT 'Modified [$(HangFireSchema)].[AggregatedCounter].[Id] type to bigint';
+
+	ALTER TABLE [$(HangFireSchema)].[AggregatedCounter] ADD CONSTRAINT [PK_HangFire_CounterAggregated] PRIMARY KEY CLUSTERED ([Id] ASC);
+	PRINT 'Re-created constraint [PK_HangFire_CounterAggregated]';
+
+	-- Modify [$(HangFireSchema)].[Counter].[Id] type to bigint
+
+	ALTER TABLE [$(HangFireSchema)].[Counter] DROP CONSTRAINT [PK_HangFire_Counter];
+	PRINT 'Dropped constraint [PK_HangFire_Counter] to modify the [$(HangFireSchema)].[Counter].[Id] column';
+
+	ALTER TABLE [$(HangFireSchema)].[Counter] ALTER COLUMN [Id] bigint;
+	PRINT 'Modified [$(HangFireSchema)].[Counter].[Id] type to bigint';
+
+	ALTER TABLE [$(HangFireSchema)].[Counter] ADD CONSTRAINT [PK_HangFire_Counter] PRIMARY KEY CLUSTERED ([Id] ASC);
+	PRINT 'Re-created constraint [PK_HangFire_Counter]';
+
+	-- Modify [$(HangFireSchema)].[Hash].[Id] type to bigint
+
+	ALTER TABLE [$(HangFireSchema)].[Hash] DROP CONSTRAINT [PK_HangFire_Hash];
+	PRINT 'Dropped constraint [PK_HangFire_Hash] to modify the [$(HangFireSchema)].[Hash].[Id] column';
+
+	DROP INDEX [IX_HangFire_Hash_ExpireAt] ON [$(HangFireSchema)].[Hash];
+	PRINT 'Dropped index [IX_HangFire_Hash_ExpireAt] ] to modify the [$(HangFireSchema)].[Hash].[Id] column';
+
+	ALTER TABLE [$(HangFireSchema)].[Hash] ALTER COLUMN [Id] bigint;
+	PRINT 'Modified [$(HangFireSchema)].[Hash].[Id] type to bigint';
+
+	ALTER TABLE [$(HangFireSchema)].[Hash] ADD CONSTRAINT [PK_HangFire_Hash] PRIMARY KEY CLUSTERED ([Id] ASC);
+	PRINT 'Re-created constraint [PK_HangFire_Hash]';
+
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Hash_ExpireAt] ON [$(HangFireSchema)].[Hash] ([ExpireAt])
+	INCLUDE ([Id]);
+	PRINT 'Re-created index [IX_HangFire_Hash_ExpireAt]';
+
+	-- Modify [$(HangFireSchema)].[Job].[Id] type to bigint
+	
+	ALTER TABLE [$(HangFireSchema)].[JobParameter] DROP CONSTRAINT [FK_HangFire_JobParameter_Job];
+	PRINT 'Dropped constraint [FK_HangFire_JobParameter_Job] to modify the [$(HangFireSchema)].[JobParameter].[JobId] column';
+
+	DROP INDEX [IX_HangFire_JobParameter_JobIdAndName] ON [$(HangFireSchema)].[JobParameter];
+	PRINT 'Dropped index [IX_HangFire_JobParameter_JobIdAndName] to modify the [$(HangFireSchema)].[JobParameter].[JobId] column';
+
+	ALTER TABLE [$(HangFireSchema)].[JobParameter] ALTER COLUMN [JobId] bigint;
+	PRINT 'Modified [$(HangFireSchema)].[JobParameter].[JobId] type to bigint to modify [$(HangFireSchema)].[Job].[Id] type to bigint';
+	
+	ALTER TABLE [$(HangFireSchema)].[State] DROP CONSTRAINT [FK_HangFire_State_Job];
+	PRINT 'Dropped constraint [FK_HangFire_State_Job] to modify the [$(HangFireSchema)].[State].[JobId] column';
+
+	DROP INDEX [IX_HangFire_State_JobId] ON [$(HangFireSchema)].[State];
+	PRINT 'Dropped index [IX_HangFire_State_JobId] to modify the [$(HangFireSchema)].[State].[JobId] column';
+
+	ALTER TABLE [$(HangFireSchema)].[State] ALTER COLUMN [JobId] bigint;
+	PRINT 'Modified [$(HangFireSchema)].[State].[JobId] type to bigint to modify [$(HangFireSchema)].[Job].[Id] type to bigint';
+
+	ALTER TABLE [$(HangFireSchema)].[Job] DROP CONSTRAINT [PK_HangFire_Job];
+	PRINT 'Dropped constraint [PK_HangFire_Job] to modify the [$(HangFireSchema)].[Job].[Id] column';
+
+	DROP INDEX [IX_HangFire_Job_ExpireAt] ON [$(HangFireSchema)].[Job];
+	PRINT 'Dropped index [IX_HangFire_Job_ExpireAt] to modify the [$(HangFireSchema)].[Job].[Id] column';
+
+	ALTER TABLE [$(HangFireSchema)].[Job] ALTER COLUMN [Id] bigint;
+	PRINT 'Modified [$(HangFireSchema)].[Job].[Id] type to bigint';
+
+	ALTER TABLE [$(HangFireSchema)].[Job] ADD CONSTRAINT [PK_HangFire_Job] PRIMARY KEY CLUSTERED ([Id] ASC);
+	PRINT 'Re-created constraint [PK_HangFire_Job]';
+
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Job_ExpireAt] ON [$(HangFireSchema)].[Job] ([ExpireAt])
+	INCLUDE ([Id]);
+	PRINT 'Re-created index [IX_HangFire_Job_ExpireAt]';
+
+	ALTER TABLE [$(HangFireSchema)].[JobParameter] ADD CONSTRAINT [FK_HangFire_JobParameter_Job] FOREIGN KEY([JobId])
+		REFERENCES [$(HangFireSchema)].[Job] ([Id])
+		ON UPDATE CASCADE
+		ON DELETE CASCADE;
+	PRINT 'Re-created constraint [FK_HangFire_JobParameter_Job]';
+
+	CREATE NONCLUSTERED INDEX [IX_HangFire_JobParameter_JobIdAndName] ON [$(HangFireSchema)].[JobParameter] (
+		[JobId] ASC,
+		[Name] ASC
+	);
+	PRINT 'Re-created index [IX_HangFire_JobParameter_JobIdAndName]';
+
+	ALTER TABLE [$(HangFireSchema)].[State] ADD CONSTRAINT [FK_HangFire_State_Job] FOREIGN KEY([JobId])
+		REFERENCES [$(HangFireSchema)].[Job] ([Id])
+		ON UPDATE CASCADE
+		ON DELETE CASCADE;
+	PRINT 'Re-created constraint [FK_HangFire_JobParameter_Job]';
+
+	CREATE NONCLUSTERED INDEX [IX_HangFire_State_JobId] ON [$(HangFireSchema)].[State] ([JobId] ASC);
+	PRINT 'Re-created index [IX_HangFire_State_JobId]';
+
+	-- Modify [$(HangFireSchema)].[JobParameter].[Id] type to bigint
+
+	ALTER TABLE [$(HangFireSchema)].[JobParameter] DROP CONSTRAINT [PK_HangFire_JobParameter];
+	PRINT 'Dropped constraint [PK_HangFire_JobParameter] to modify the [$(HangFireSchema)].[JobParameter].[Id] column';
+
+	ALTER TABLE [$(HangFireSchema)].[JobParameter] ALTER COLUMN [Id] bigint;
+	PRINT 'Modified [$(HangFireSchema)].[JobParameter].[Id] type to bigint';
+
+	ALTER TABLE [$(HangFireSchema)].[JobParameter] ADD CONSTRAINT [PK_HangFire_JobParameter] PRIMARY KEY CLUSTERED ([Id] ASC);
+	PRINT 'Re-created constraint [PK_HangFire_JobParameter]';
+
+	-- Modify [$(HangFireSchema)].[JobQueue].[Id] type to bigint
+
+	ALTER TABLE [$(HangFireSchema)].[JobQueue] DROP CONSTRAINT [PK_HangFire_JobQueue];
+	PRINT 'Dropped constraint [PK_HangFire_JobQueue] to modify the [$(HangFireSchema)].[JobQueue].[Id] column';
+
+	ALTER TABLE [$(HangFireSchema)].[JobQueue] ALTER COLUMN [Id] bigint;
+	PRINT 'Modified [$(HangFireSchema)].[JobQueue].[Id] type to bigint';
+
+	ALTER TABLE [$(HangFireSchema)].[JobQueue] ADD CONSTRAINT [PK_HangFire_JobQueue] PRIMARY KEY CLUSTERED ([Id] ASC);
+	PRINT 'Re-created constraint [PK_HangFire_JobQueue]';
+
+	-- Modify [$(HangFireSchema)].[List].[Id] type to bigint
+
+	ALTER TABLE [$(HangFireSchema)].[List] DROP CONSTRAINT [PK_HangFire_List];
+	PRINT 'Dropped constraint [PK_HangFire_List] to modify the [$(HangFireSchema)].[List].[Id] column';
+
+	DROP INDEX [IX_HangFire_List_ExpireAt] ON [$(HangFireSchema)].[List];
+	PRINT 'Dropped index [IX_HangFire_List_ExpireAt] to modify the [$(HangFireSchema)].[List].[Id] column';
+
+	ALTER TABLE [$(HangFireSchema)].[List] ALTER COLUMN [Id] bigint;
+	PRINT 'Modified [$(HangFireSchema)].[List].[Id] type to bigint';
+
+	ALTER TABLE [$(HangFireSchema)].[List] ADD CONSTRAINT [PK_HangFire_List] PRIMARY KEY CLUSTERED ([Id] ASC);
+	PRINT 'Re-created constraint [PK_HangFire_List]';
+
+	CREATE NONCLUSTERED INDEX [IX_HangFire_List_ExpireAt] ON [$(HangFireSchema)].[List] ([ExpireAt])
+	INCLUDE ([Id]);
+	PRINT 'Re-created index [IX_HangFire_List_ExpireAt]';
+
+	-- Modify [$(HangFireSchema)].[Set].[Id] type to bigint
+
+	ALTER TABLE [$(HangFireSchema)].[Set] DROP CONSTRAINT [PK_HangFire_Set];
+	PRINT 'Dropped constraint [PK_HangFire_Set] to modify the [$(HangFireSchema)].[Set].[Id] column';
+
+	DROP INDEX [IX_HangFire_Set_ExpireAt] ON [$(HangFireSchema)].[Set];
+	PRINT 'Dropped index [IX_HangFire_Set_ExpireAt] to modify the [$(HangFireSchema)].[Set].[Id] column';
+
+	ALTER TABLE [$(HangFireSchema)].[Set] ALTER COLUMN [Id] bigint;
+	PRINT 'Modified [$(HangFireSchema)].[Set].[Id] type to bigint';
+
+	ALTER TABLE [$(HangFireSchema)].[Set] ADD CONSTRAINT [PK_HangFire_Set] PRIMARY KEY CLUSTERED ([Id] ASC);
+	PRINT 'Re-created constraint [PK_HangFire_Set]';
+
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Set_ExpireAt] ON [$(HangFireSchema)].[Set] ([ExpireAt])
+	INCLUDE ([Id]);
+	PRINT 'Re-created index [IX_HangFire_Set_ExpireAt]';
+
+	-- Modify [$(HangFireSchema)].[State].[Id] type to bigint
+
+	ALTER TABLE [$(HangFireSchema)].[State] DROP CONSTRAINT [PK_HangFire_State];
+	PRINT 'Dropped constraint [PK_HangFire_State] to modify the [$(HangFireSchema)].[State].[Id] column';
+
+	ALTER TABLE [$(HangFireSchema)].[State] ALTER COLUMN [Id] bigint;
+	PRINT 'Modified [$(HangFireSchema)].[State].[Id] type to bigint';
+
+	ALTER TABLE [$(HangFireSchema)].[State] ADD CONSTRAINT [PK_HangFire_State] PRIMARY KEY CLUSTERED ([Id] ASC);
+	PRINT 'Re-created constraint [PK_HangFire_State]';
 
 	SET @CURRENT_SCHEMA_VERSION = 6;
+END	
+
+/*IF @CURRENT_SCHEMA_VERSION = 6
+BEGIN
+	PRINT 'Installing schema version 7';
+
+	-- Insert migration here
+
+	SET @CURRENT_SCHEMA_VERSION = 7;
 END*/
 
 UPDATE [$(HangFireSchema)].[Schema] SET [Version] = @CURRENT_SCHEMA_VERSION
