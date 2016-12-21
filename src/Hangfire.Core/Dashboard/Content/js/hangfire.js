@@ -203,28 +203,11 @@
                 config.pollInterval);
 
             this._initialize(config.locale);
-            this._createGraphs();
+
+            this.realtimeGraph = this._createRealtimeGraph('realtimeGraph');
+            this.historyGraph = this._createHistoryGraph('historyGraph');
+
             this._poller.start();
-        }
-
-        Page.prototype._createGraphs = function() {
-            var realtime = this.realtimeGraph = this._createRealtimeGraph('realtimeGraph');
-            var history = this.historyGraph = this._createHistoryGraph('historyGraph');
-
-            var debounce = function (fn, timeout) {
-                var timeoutId = -1;
-                return function() {
-                    if (timeoutId > -1) {
-                        window.clearTimeout(timeoutId);
-                    }
-                    timeoutId = window.setTimeout(fn, timeout);
-                };
-            };
-
-            window.onresize = debounce(function () {
-                realtime.update();
-                history.update();
-            }, 125);
         };
 
         Page.prototype._createRealtimeGraph = function(elementId) {
@@ -239,6 +222,10 @@
 
                 this._poller.addListener(function (data) {
                     realtimeGraph.appendHistory(data);
+                });
+
+                $(window).resize(function() {
+                    realtimeGraph.update();
                 });
 
                 return realtimeGraph;
@@ -268,7 +255,13 @@
                 var succeededStr = $(historyElement).data('succeeded-string');
                 var failedStr = $(historyElement).data('failed-string');
 
-                return new Hangfire.HistoryGraph(historyElement, succeeded, failed, succeededStr, failedStr);
+                var historyGraph = new Hangfire.HistoryGraph(historyElement, succeeded, failed, succeededStr, failedStr);
+
+                $(window).resize(function () {
+                    historyGraph.update();
+                });
+
+                return historyGraph;
             }
 
             return null;

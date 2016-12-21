@@ -211,8 +211,9 @@ namespace Hangfire.SqlServer
                 var enqueuedJobIds = tuple.Monitoring.GetEnqueuedJobIds(tuple.Queue, 0, 5);
                 var counters = tuple.Monitoring.GetEnqueuedAndFetchedCount(tuple.Queue);
 
+                // TODO: Remove the Select method call to support `bigint`.
                 var firstJobs = UseConnection(connection => 
-                    EnqueuedJobs(connection, enqueuedJobIds.ToArray()));
+                    EnqueuedJobs(connection, enqueuedJobIds.Select(x => (long)x).ToArray()));
 
                 result.Add(new QueueWithTopEnqueuedJobsDto
                 {
@@ -231,7 +232,8 @@ namespace Hangfire.SqlServer
             var queueApi = GetQueueApi(queue);
             var enqueuedJobIds = queueApi.GetEnqueuedJobIds(queue, from, perPage);
 
-            return UseConnection(connection => EnqueuedJobs(connection, enqueuedJobIds.ToArray()));
+            // TODO: Remove the Select method call to support `bigint`.
+            return UseConnection(connection => EnqueuedJobs(connection, enqueuedJobIds.Select(x => (long)x).ToArray()));
         }
 
         public JobList<FetchedJobDto> FetchedJobs(string queue, int @from, int perPage)
@@ -239,7 +241,8 @@ namespace Hangfire.SqlServer
             var queueApi = GetQueueApi(queue);
             var fetchedJobIds = queueApi.GetFetchedJobIds(queue, from, perPage);
 
-            return UseConnection(connection => FetchedJobs(connection, fetchedJobIds));
+            // TODO: Remove the Select method call to support `bigint`.
+            return UseConnection(connection => FetchedJobs(connection, fetchedJobIds.Select(x => (long)x).ToArray()));
         }
 
         public IDictionary<DateTime, long> HourlySucceededJobs()
@@ -428,7 +431,7 @@ where [Key] in @keys";
             return _storage.UseConnection(action);
         }
 
-        private JobList<EnqueuedJobDto> EnqueuedJobs(DbConnection connection, int[] jobIds)
+        private JobList<EnqueuedJobDto> EnqueuedJobs(DbConnection connection, long[] jobIds)
         {
             string enqueuedJobsSql = 
 $@"select j.*, s.Reason as StateReason, s.Data as StateData 
@@ -542,7 +545,7 @@ order by j.Id desc";
             return new JobList<TDto>(result);
         }
 
-        private JobList<FetchedJobDto> FetchedJobs(DbConnection connection, IEnumerable<int> jobIds)
+        private JobList<FetchedJobDto> FetchedJobs(DbConnection connection, IEnumerable<long> jobIds)
         { 
             string fetchedJobsSql = 
 $@"select j.*, s.Reason as StateReason, s.Data as StateData 
