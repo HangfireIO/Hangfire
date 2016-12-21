@@ -1,17 +1,17 @@
 ﻿// This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
-// 
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
@@ -22,7 +22,7 @@ using Hangfire.Storage.Monitoring;
 
 namespace Hangfire.Dashboard
 {
-    public abstract class RazorPage 
+    public abstract class RazorPage
     {
         private Lazy<StatisticsDto> _statisticsLazy;
 
@@ -42,6 +42,7 @@ namespace Hangfire.Dashboard
         public JobStorage Storage { get; internal set; }
         public string AppPath { get; internal set; }
         public int StatsPollingInterval { get; internal set; }
+        public string ExtraCssUrl { get; internal set; }
         public Stopwatch GenerationTime { get; private set; }
 
         public StatisticsDto Statistics
@@ -79,6 +80,7 @@ namespace Hangfire.Dashboard
             Storage = parentPage.Storage;
             AppPath = parentPage.AppPath;
             StatsPollingInterval = parentPage.StatsPollingInterval;
+            ExtraCssUrl = parentPage.ExtraCssUrl;
             Url = parentPage.Url;
 
             GenerationTime = parentPage.GenerationTime;
@@ -93,6 +95,7 @@ namespace Hangfire.Dashboard
             Storage = context.Storage;
             AppPath = context.Options.AppPath;
             StatsPollingInterval = context.Options.StatsPollingInterval;
+            ExtraCssUrl = context.Options.ExtraCssUrl;
             Url = new UrlHelper(context);
 
             _statisticsLazy = new Lazy<StatisticsDto>(() =>
@@ -127,15 +130,15 @@ namespace Hangfire.Dashboard
         private string TransformText(string body)
         {
             _body = body;
-            
+
             Execute();
-            
+
             if (Layout != null)
             {
                 Layout.Assign(this);
                 return Layout.TransformText(_content.ToString());
             }
-            
+
             return _content.ToString();
         }
 
