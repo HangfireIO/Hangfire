@@ -287,7 +287,7 @@
     <value>Generado: {0}ms</value>
   </data>
   <data name="LayoutPage_Footer_Time" xml:space="preserve">
-    <value>Hora: {0} GMT</value>
+    <value>Hora:</value>
   </data>
   <data name="Paginator_Next" xml:space="preserve">
     <value>Siguiente</value>
