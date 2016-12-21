@@ -247,7 +247,7 @@ namespace Hangfire
         /// <param name="interval">The number of months to wait between every activation.</param>
         public static string MonthInterval(int interval)
         {
-            return $"0 0 0 */{interval} *";
+            return $"0 0 1 */{interval} *";
         }
 
 #if NETFULL
