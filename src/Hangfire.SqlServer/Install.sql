@@ -16,7 +16,7 @@
 
 SET NOCOUNT ON
 DECLARE @TARGET_SCHEMA_VERSION INT;
-SET @TARGET_SCHEMA_VERSION = 5;
+SET @TARGET_SCHEMA_VERSION = 6;
 
 PRINT 'Installing Hangfire SQL objects...';
 
@@ -426,6 +426,8 @@ BEGIN
 
 	-- Modify [$(HangFireSchema)].[Job].[Id] type to bigint
 	
+	ALTER TABLE [$(HangFireSchema)].[JobQueue] ALTER COLUMN [JobId] bigint;
+
 	ALTER TABLE [$(HangFireSchema)].[JobParameter] DROP CONSTRAINT [FK_HangFire_JobParameter_Job];
 	PRINT 'Dropped constraint [FK_HangFire_JobParameter_Job] to modify the [$(HangFireSchema)].[JobParameter].[JobId] column';
 
@@ -540,6 +542,8 @@ BEGIN
 	PRINT 'Re-created index [IX_HangFire_Set_ExpireAt]';
 
 	-- Modify [$(HangFireSchema)].[State].[Id] type to bigint
+	ALTER TABLE [$(HangFireSchema)].[Job] ALTER COLUMN [StateId] bigint;
+	PRINT 'Modified [$(HangFireSchema)].[Job].[StateId] type to bigint to modify the [$(HangFireSchema)].[State].[Id] column';
 
 	ALTER TABLE [$(HangFireSchema)].[State] DROP CONSTRAINT [PK_HangFire_State];
 	PRINT 'Dropped constraint [PK_HangFire_State] to modify the [$(HangFireSchema)].[State].[Id] column';
@@ -557,7 +561,7 @@ END
 BEGIN
 	PRINT 'Installing schema version 7';
 
-	-- Insert migration here
+	 Insert migration here
 
 	SET @CURRENT_SCHEMA_VERSION = 7;
 END*/

@@ -18,10 +18,8 @@ namespace Hangfire.SqlServer
 {
     public class EnqueuedAndFetchedCountDto
     {
-        // TODO: Change return type to `long` to support `bigint` type.
         public int? EnqueuedCount { get; set; }
 
-        // TODO: Change return type to `long` to support `bigint` type.
         public int? FetchedCount { get; set; }
     }
 }
