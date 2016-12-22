@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using Dapper;
+using Hangfire.Common;
 using Hangfire.Storage;
 using Moq;
-using Newtonsoft.Json;
 using Xunit;
 
 // ReSharper disable AssignNullToNotNullAttribute
@@ -37,7 +37,8 @@ namespace Hangfire.SqlServer.Tests
 
         public void SkippedJobsShouldReturnTheSkippedJobs()
         {
-            var invocationString = JsonConvert.SerializeObject(new InvocationData(null, null, null, null));
+
+            var invocationString = JobHelper.ToJson(new InvocationData(null, null, null, null));
             var dictionKeys = new Dictionary<string, string> { { "SkippedAt", "2016-12-10T18:54:08.5562518Z" } };
 
             const string preRequisteJobSql = @"
@@ -69,7 +70,7 @@ values (@id, @name,@Reason, @CreatedAt, @Data)";
                         Name = "Skipped",
                         Reason = "Skipped",
                         CreatedAt = (DateTime?) DateTime.UtcNow.AddMinutes(60),
-                        Data =JsonConvert.SerializeObject(dictionKeys)
+                        Data =JobHelper.ToJson(dictionKeys)
                     }
                 });
                 // Act
