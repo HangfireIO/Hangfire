@@ -517,4 +517,19 @@
   <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
     <value>Completados</value>
   </data>
+  <data name="JobsSidebarMenu_Skipped" xml:space="preserve">
+    <value>Omitido</value>
+  </data>
+  <data name="SkippedJobsPage_NoJobs" xml:space="preserve">
+    <value>No skipped jobs found.</value>
+  </data>
+  <data name="SkippedJobsPage_Table_Reason" xml:space="preserve">
+    <value>Saltar la razón</value>
+  </data>
+  <data name="SkippedJobsPage_Table_Skipped" xml:space="preserve">
+    <value>Omitido</value>
+  </data>
+  <data name="SkippedJobsPage_Title" xml:space="preserve">
+    <value>Empleos Desactivados</value>
+  </data>
 </root>

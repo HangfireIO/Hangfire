@@ -1330,6 +1330,45 @@ values (@key, @value, @expireAt, 0.0)";
             });
         }
 
+        [Fact, CleanDatabase]
+        public void GetLastStateForJobIdGetsTheLastState()
+        {
+
+            const string preRequisteJobSql = @"
+DBCC CHECKIDENT ('HangFire.[Job]', RESEED, 0);
+insert into HangFire.[Job] ( [StateId], [StateName], [InvocationData],[Arguments],[CreatedAt],[ExpireAt])
+values ( 9,'Succeeded','MOCK','MOCKInvo', @CreatedAt, null)";
+
+            const string preRequisteStateSql = @"
+insert into HangFire.[State] ([JobId], [Name], [Reason], [CreatedAt],[Data])
+values (@id, @name,@Reason, @CreatedAt, null)";
+
+            // PreRequisite 
+            UseConnections((sql, connection) =>
+            {
+                sql.Execute(preRequisteJobSql, new[]
+                {
+                    new { CreatedAt = (DateTime?) DateTime.UtcNow.AddMinutes(60) }
+
+                });
+
+                sql.Execute(preRequisteStateSql, new[]
+                {
+                    new
+                    {
+                        id = 1,
+                        Name = "Succeeded",
+                        Reason = "NULL",
+                        CreatedAt = (DateTime?) DateTime.UtcNow.AddMinutes(60)
+                    }
+                });
+
+                // Act
+                var result = connection.GetLastStateForJobId("1");
+                Assert.Equal(result.First().ToString(), "Succeeded");
+            });
+        }
+
         private void UseConnections(Action<SqlConnection, SqlServerConnection> action)
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())

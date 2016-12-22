@@ -111,5 +111,10 @@ namespace Hangfire.Storage
         {
             throw new NotSupportedException();
         }
+
+        public virtual HashSet<string> GetLastStateForJobId(string jobId)
+        {
+            throw new NotSupportedException();
+        }
     }
 }

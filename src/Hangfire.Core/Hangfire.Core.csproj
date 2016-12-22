@@ -92,6 +92,11 @@
     <Compile Include="Dashboard\Owin\OwinDashboardContextExtensions.cs" />
     <Compile Include="Dashboard\Owin\OwinDashboardRequest.cs" />
     <Compile Include="Dashboard\Owin\OwinDashboardResponse.cs" />
+    <Compile Include="Dashboard\Pages\SkippedJobs.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SkippedJobs.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="Obsolete\RequestDispatcherWrapper.cs" />
     <Compile Include="JobActivatorContext.cs" />
     <Compile Include="IRecurringJobManager.cs" />
@@ -355,6 +360,7 @@
     <Compile Include="Common\JobFilterAttributeFilterProvider.cs" />
     <Compile Include="Common\JobFilterInfo.cs" />
     <Compile Include="States\IStateMachine.cs" />
+    <Compile Include="States\SkippedState.cs" />
     <Compile Include="States\StateMachine.cs" />
     <Compile Include="States\StateChangeContext.cs" />
     <Compile Include="States\StateHandlerCollection.cs" />
@@ -394,6 +400,7 @@
     <Compile Include="Storage\Monitoring\QueueWithTopEnqueuedJobsDto.cs" />
     <Compile Include="Storage\Monitoring\ScheduledJobDto.cs" />
     <Compile Include="Storage\Monitoring\ServerDto.cs" />
+    <Compile Include="Storage\Monitoring\SkippedJobDto.cs" />
     <Compile Include="Storage\Monitoring\StateHistoryDto.cs" />
     <Compile Include="Storage\Monitoring\StatisticsDto.cs" />
     <Compile Include="Storage\Monitoring\SucceededJobDto.cs" />
@@ -497,6 +504,10 @@
     <None Include="Dashboard\Pages\ServersPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>ServersPage.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\SkippedJobs.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>SkippedJobs.generated.cs</LastGenOutput>
     </None>
     <None Include="Dashboard\Pages\SucceededJobs.cshtml">
       <Generator>RazorGenerator</Generator>
