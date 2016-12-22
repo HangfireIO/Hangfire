@@ -108,14 +108,39 @@ namespace Hangfire.SqlServer
                 // Timer callback may be invoked after the Dispose method call,
                 // so we are using lock to avoid unsynchronized calls.
 
-                AcquiredLocks.Value.Remove(_resource);
+                try
+                {
+                    AcquiredLocks.Value.Remove(_resource);
 
-                _timer?.Dispose();
+                    _timer?.Dispose();
 
-                Release(_connection, _resource);
+                    Release(_connection, _resource);
+                }
+                finally
+                {
+                    _storage.ReleaseConnection(_connection);
+                    _connection = null;
+                }
+            }
+        }
 
-                _storage.ReleaseConnection(_connection);
-                _connection = null;
+        private void ExecuteKeepAliveQuery(object obj)
+        {
+            lock (_lockObject)
+            {
+                try
+                {
+                    _connection?.Execute("SELECT 1;");
+                }
+                catch
+                {
+                    // Connection is broken. This means that distributed lock
+                    // was released, and we can't guarantee the safety property
+                    // for the code that is wrapped with this block. So it was
+                    // a bad idea to have a separate connection for just
+                    // distributed lock.
+                    // TODO: Think about distributed locks and connections.
+                }
             }
         }
 
@@ -154,15 +179,14 @@ namespace Hangfire.SqlServer
 
         internal static void Release(IDbConnection connection, string resource)
         {
-            var couldNotReleaseLockMessageTemplate = $@"Could not release a lock on the resource '{resource}'. {0} 
-If this problem happens often please contact the Hangfire developers.";
+            var couldNotReleaseLockMessageTemplate = $@"Could not release a lock on the resource '{resource}'. {0}If this problem happens often please contact the Hangfire developers.";
 
             // Connection was broken. This means that distributed lock
             // was released, and we can't guarantee the safety property
             // for the code that is wrapped with this block.
             if (connection.State == ConnectionState.Closed)
             {
-                Logger.Warn(string.Format(couldNotReleaseLockMessageTemplate, "Connection was closed and the lock is not currently held."));
+                Logger.Warn(string.Format(couldNotReleaseLockMessageTemplate, "Connection was closed and the lock is not currently held. "));
             }
 
             var parameters = new DynamicParameters();
@@ -186,27 +210,7 @@ If this problem happens often please contact the Hangfire developers.";
 
             if (releaseResult < 0)
             {
-                Logger.Warn(string.Format(couldNotReleaseLockMessageTemplate, $"Server returned the '{releaseResult}' error."));
-            }
-        }
-
-        private void ExecuteKeepAliveQuery(object obj)
-        {
-            lock (_lockObject)
-            {
-                try
-                {
-                    _connection?.Execute("SELECT 1;");
-                }
-                catch
-                {
-                    // Connection is broken. This means that distributed lock
-                    // was released, and we can't guarantee the safety property
-                    // for the code that is wrapped with this block. So it was
-                    // a bad idea to have a separate connection for just
-                    // distributed lock.
-                    // TODO: Think about distributed locks and connections.
-                }
+                Logger.Warn(string.Format(couldNotReleaseLockMessageTemplate, $"Server returned the '{releaseResult}' error. "));
             }
         }
     }

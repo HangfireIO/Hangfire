@@ -92,9 +92,9 @@ namespace Hangfire.Server
         /// <param name="properties"></param>
         /// <param name="options"></param>
         public BackgroundProcessingServer(
-            [NotNull] JobStorage storage,
+            [NotNull] JobStorage storage, 
             [NotNull] IEnumerable<IBackgroundProcess> processes,
-            [NotNull] IDictionary<string, object> properties,
+            [NotNull] IDictionary<string, object> properties, 
             [NotNull] BackgroundProcessingServerOptions options)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -109,7 +109,7 @@ namespace Hangfire.Server
             _processes.AddRange(processes);
 
             var context = new BackgroundProcessContext(
-                GetGloballyUniqueServerId(),
+                GetGloballyUniqueServerId(), 
                 storage,
                 properties,
                 _cts.Token);
@@ -123,12 +123,11 @@ namespace Hangfire.Server
 
             try
             {
-                _cts.Cancel();
+                _cts.Cancel(throwOnFirstException: false);
             }
             catch (AggregateException ex)
             {
-                Logger.WarnException(@"CancellationTokenSource.Cancel() method threw an exception during a server shutdown. 
-It can be related to user-defined CancellationToken's callback threw exception. If this isn't your case please contact the Hangfire developers.", ex);
+                Logger.WarnException(@"Exception has been thrown during a server shutdown. It can be caused by user code registered using the ServerShutdown cancellation token. Try to modify code in order to not to throw any exceptions.", ex);
             }
         }
 
@@ -146,9 +145,7 @@ It can be related to user-defined CancellationToken's callback threw exception. 
             if ((shutdownTimeout < TimeSpan.Zero && shutdownTimeout != Timeout.InfiniteTimeSpan) ||
                 shutdownTimeout.TotalMilliseconds > Int32.MaxValue)
             {
-                Logger.Warn($@"ShutdownTimeout equals {_options.ShutdownTimeout.Milliseconds} milliseconds and it't incorret. 
-This value must be either equal to or less than {Int32.MaxValue} milliseconds and non-negative or infinite.
-Will be used default value: {DefaultShutdownTimeout} milliseconds");
+                Logger.Warn($@"ShutdownTimeout equals {_options.ShutdownTimeout.Milliseconds} milliseconds and it's incorrect. This value must be either equal to or less than {Int32.MaxValue} milliseconds and non-negative or infinite. Will be used default value: {DefaultShutdownTimeout} milliseconds.");
 
                 shutdownTimeout = DefaultShutdownTimeout;
             }
@@ -194,8 +191,7 @@ Will be used default value: {DefaultShutdownTimeout} milliseconds");
                 }
                 catch (Exception ex)
                 {
-                    Logger.WarnException($@"Couldn't remove server {context.ServerId}. The server can be displayed on 'Server' page of Dashboard for a while. 
-The server won't perform any jobs and won't affect other servers.", ex);
+                    Logger.WarnException($@"Couldn't remove server {context.ServerId}. The server can be displayed on 'Server' page of Dashboard for a while but it won't perform any jobs and won't affect other servers.", ex);
                 }
             }
         }
