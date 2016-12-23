@@ -49,13 +49,13 @@ values ('key', 1, @expireAt)";
                 var cts = new CancellationTokenSource();
                 cts.Cancel();
 
-                connection.Query($"DBCC CHECKIDENT('HangFire.AggregatedCounter', RESEED, {int.MaxValue});");
+                connection.Query($"DBCC CHECKIDENT('HangFire.AggregatedCounter', RESEED, {int.MaxValue + 1L});");
 
                 // Act
                 aggregator.Execute(cts.Token);
 
                 // Assert
-                Assert.Equal(int.MaxValue + 1L, connection.Query<long>(@"select Id from HangFire.AggregatedCounter").Single());
+                Assert.True(int.MaxValue < connection.Query<long>(@"select Id from HangFire.AggregatedCounter").Single());
             }
         }
 

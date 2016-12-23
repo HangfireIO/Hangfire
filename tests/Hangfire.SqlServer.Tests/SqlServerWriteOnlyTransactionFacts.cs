@@ -967,13 +967,13 @@ values (@key, @expireAt)";
         {
             UseConnection(sql =>
             {
-                sql.Query($"DBCC CHECKIDENT('HangFire.Counter', RESEED, {int.MaxValue});");
+                sql.Query($"DBCC CHECKIDENT('HangFire.Counter', RESEED, {int.MaxValue + 1L});");
 
                 Commit(sql, x => x.IncrementCounter("my-key"));
 
                 var record = sql.Query("select * from HangFire.Counter").Single();
 
-                Assert.Equal(int.MaxValue + 1L, record.Id);
+                Assert.True(int.MaxValue < record.Id);
             });
         }
 
@@ -982,13 +982,13 @@ values (@key, @expireAt)";
         {
             UseConnection(sql =>
             {
-                sql.Query($"DBCC CHECKIDENT('HangFire.List', RESEED, {int.MaxValue});");
+                sql.Query($"DBCC CHECKIDENT('HangFire.List', RESEED, {int.MaxValue + 1L});");
 
                 Commit(sql, x => x.InsertToList("my-key", "my-value"));
 
                 var record = sql.Query("select * from HangFire.List").Single();
 
-                Assert.Equal(int.MaxValue + 1L, record.Id);
+                Assert.True(int.MaxValue < record.Id);
             });
         }
 
@@ -997,13 +997,13 @@ values (@key, @expireAt)";
         {
             UseConnection(sql =>
             {
-                sql.Query($"DBCC CHECKIDENT('HangFire.Set', RESEED, {int.MaxValue});");
+                sql.Query($"DBCC CHECKIDENT('HangFire.Set', RESEED, {int.MaxValue + 1L});");
                 var items = new List<string> { "1" };
 
                 Commit(sql, x => x.AddRangeToSet("my-set", items));
 
                 var record = sql.Query(@"select * from HangFire.[Set] where [Key] = N'my-set'").Single();
-                Assert.Equal(int.MaxValue + 1L, record.Id);
+                Assert.True(int.MaxValue < record.Id);
             });
         }
 

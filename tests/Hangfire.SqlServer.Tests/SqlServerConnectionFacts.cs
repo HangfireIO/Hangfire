@@ -1401,7 +1401,7 @@ update HangFire.Job set StateId = @stateId;";
             UseConnections((sql, connection) =>
             {
                 // Arrange
-                sql.Query($"DBCC CHECKIDENT('HangFire.Job', RESEED, {int.MaxValue});");
+                sql.Query($"DBCC CHECKIDENT('HangFire.Job', RESEED, {int.MaxValue + 1L});");
 
                 // Act
                 var createdAt = new DateTime(2012, 12, 12);
@@ -1412,7 +1412,7 @@ update HangFire.Job set StateId = @stateId;";
                     TimeSpan.FromDays(1));
 
                 // Assert
-                Assert.Equal((int.MaxValue + 1L).ToString(), jobId);
+                Assert.True(int.MaxValue < long.Parse(jobId));
             });
         }
 
@@ -1453,7 +1453,7 @@ select scope_identity() as Id";
                 // Arrange
                 var job = sql.Query(arrangeSql).Single();
                 string jobId = job.Id.ToString();
-                sql.Query($"DBCC CHECKIDENT('HangFire.JobParameter', RESEED, {int.MaxValue});");
+                sql.Query($"DBCC CHECKIDENT('HangFire.JobParameter', RESEED, {int.MaxValue + 1L});");
 
                 // Act
                 connection.SetJobParameter(jobId, "Name", "Value");
@@ -1463,7 +1463,7 @@ select scope_identity() as Id";
                     new { id = jobId, name = "Name" }).Single();
 
                 // Assert
-                Assert.Equal(int.MaxValue + 1L, parameter.Id);
+                Assert.True(int.MaxValue < parameter.Id);
             });
         }
 
@@ -1502,7 +1502,7 @@ values (@id, @jobId, @name, @value)";
             UseConnections((sql, connection) =>
             {
                 // Arrange
-                sql.Query($"DBCC CHECKIDENT('HangFire.Hash', RESEED, {int.MaxValue});");
+                sql.Query($"DBCC CHECKIDENT('HangFire.Hash', RESEED, {int.MaxValue + 1L});");
 
                 // Act
                 connection.SetRangeInHash("some-hash", new Dictionary<string, string>
@@ -1515,7 +1515,7 @@ values (@id, @jobId, @name, @value)";
                     new { key = "some-hash" }).Single();
 
                 // Assert
-                Assert.Equal(int.MaxValue + 1L, result.Id);
+                Assert.True(int.MaxValue < result.Id);
             });
         }
 

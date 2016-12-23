@@ -336,12 +336,12 @@ values (scope_identity(), @queue)";
             UseConnection(connection =>
             {
                 var queue = CreateJobQueue(connection);
-                connection.Query($"DBCC CHECKIDENT('HangFire.JobQueue', RESEED, {int.MaxValue});");
+                connection.Query($"DBCC CHECKIDENT('HangFire.JobQueue', RESEED, {int.MaxValue + 1L});");
 
                 queue.Enqueue(connection, "default", "1");
 
                 var record = connection.Query("select * from HangFire.JobQueue").Single();
-                Assert.Equal(int.MaxValue + 1L, record.Id);
+                Assert.True(int.MaxValue  < record.Id);
             });
         }
 
