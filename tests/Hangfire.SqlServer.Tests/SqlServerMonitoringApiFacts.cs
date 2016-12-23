@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using Dapper;
 using Hangfire.Common;
 using Hangfire.Storage;
@@ -33,46 +34,45 @@ namespace Hangfire.SqlServer.Tests
 
 
 
-        [Fact, CleanDatabase]
+        [Fact,CleanDatabase]
 
         public void SkippedJobsShouldReturnTheSkippedJobs()
         {
 
             var invocationString = JobHelper.ToJson(new InvocationData(null, null, null, null));
             var dictionKeys = new Dictionary<string, string> { { "SkippedAt", "2016-12-10T18:54:08.5562518Z" } };
-
             const string preRequisteJobSql = @"
-DBCC CHECKIDENT ('HangFire.[Job]', RESEED, 0);
-DBCC CHECKIDENT ('HangFire.[State]', RESEED, 0);
 insert into HangFire.[Job] ( [StateId], [StateName], [InvocationData],[Arguments],[CreatedAt],[ExpireAt])
-values ( 1,'Skipped',@Invocation,'', @CreatedAt, null)";
-
+values ( 1,'Skipped',@Invocation,'', @CreatedAt, null);
+select scope_identity() as Id";
 
             const string preRequisteStateSql = @"
 insert into HangFire.[State] ([JobId], [Name], [Reason], [CreatedAt],[Data])
-values (@id, @name,@Reason, @CreatedAt, @Data)";
+values (@id, @name,@Reason, @CreatedAt, @Data) ;
+Update HangFire.[Job] SET StateId = (select scope_identity() as Id) Where Id = @id
+";
 
             // PreRequisite 
             UseConnections((sql, connection) =>
             {
-                sql.Execute(preRequisteJobSql, new[]
+                var jobId =
+                    sql.Query(preRequisteJobSql,
+                            new
+                            {
+                                CreatedAt = (DateTime?) DateTime.UtcNow.AddMinutes(60),
+                                Invocation = invocationString
+                            })
+                        .Single()
+                        .Id.ToString();
+                sql.Query(preRequisteStateSql, new
                 {
-                    new { CreatedAt = (DateTime?) DateTime.UtcNow.AddMinutes(60), Invocation=invocationString }
-
-
+                    id = jobId,
+                    Name = "Skipped",
+                    Reason = "Skipped",
+                    CreatedAt = (DateTime?) DateTime.UtcNow.AddMinutes(60),
+                    Data = JobHelper.ToJson(dictionKeys)
                 });
 
-                sql.Execute(preRequisteStateSql, new[]
-                {
-                    new
-                    {
-                        id = 1,
-                        Name = "Skipped",
-                        Reason = "Skipped",
-                        CreatedAt = (DateTime?) DateTime.UtcNow.AddMinutes(60),
-                        Data =JobHelper.ToJson(dictionKeys)
-                    }
-                });
                 // Act
                 var api = new SqlServerMonitoringApi(_storage.Object, null);
                 var skippedModel = api.SkippedJobs(0, 10);
