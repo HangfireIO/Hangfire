@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using Dapper;
@@ -17,7 +16,16 @@ namespace Hangfire.SqlServer.Tests
     public class SqlServerMonitoringApiFacts
     {
         private readonly Mock<SqlServerStorage> _storage;
+        private const string InsertDummyJobSql = @"
+insert into HangFire.[Job] ( [StateId], [StateName], [InvocationData],[Arguments],[CreatedAt],[ExpireAt])
+values ( 1,@StateName,@Invocation,'', @CreatedAt, null);
+select scope_identity() as Id";
 
+        private const string InsertDummyStateForJobSql = @"
+insert into HangFire.[State] ([JobId], [Name], [Reason], [CreatedAt],[Data])
+values (@id, @name,@Reason, @CreatedAt, @Data) ;
+Update HangFire.[Job] SET StateId = (select scope_identity() as Id) Where Id = @id
+";
         public SqlServerMonitoringApiFacts()
         {
             _storage = new Mock<SqlServerStorage>(ConnectionUtils.GetConnectionString());
@@ -35,36 +43,140 @@ namespace Hangfire.SqlServer.Tests
 
 
         [Fact,CleanDatabase]
-
-        public void SkippedJobsShouldReturnTheSkippedJobs()
+        public void ProcessingJobs_ShouldReturnAllTheProcessedJobs()
         {
 
             var invocationString = JobHelper.ToJson(new InvocationData(null, null, null, null));
-            var dictionKeys = new Dictionary<string, string> { { "SkippedAt", "2016-12-10T18:54:08.5562518Z" } };
-            const string preRequisteJobSql = @"
-insert into HangFire.[Job] ( [StateId], [StateName], [InvocationData],[Arguments],[CreatedAt],[ExpireAt])
-values ( 1,'Skipped',@Invocation,'', @CreatedAt, null);
-select scope_identity() as Id";
-
-            const string preRequisteStateSql = @"
-insert into HangFire.[State] ([JobId], [Name], [Reason], [CreatedAt],[Data])
-values (@id, @name,@Reason, @CreatedAt, @Data) ;
-Update HangFire.[Job] SET StateId = (select scope_identity() as Id) Where Id = @id
-";
-
+            var dictionKeys = new Dictionary<string, string> { { "StartedAt", "2016-12-10T18:54:08.5562518Z" }, { "ServerId","1" } };
             // PreRequisite 
             UseConnections((sql, connection) =>
             {
                 var jobId =
-                    sql.Query(preRequisteJobSql,
+                    sql.Query(InsertDummyJobSql,
                             new
                             {
-                                CreatedAt = (DateTime?) DateTime.UtcNow.AddMinutes(60),
-                                Invocation = invocationString
+                                CreatedAt = (DateTime?)DateTime.UtcNow.AddMinutes(60),
+                                Invocation = invocationString,
+                                StateName= "Processing"
                             })
                         .Single()
                         .Id.ToString();
-                sql.Query(preRequisteStateSql, new
+                sql.Query(InsertDummyStateForJobSql, new
+                {
+                    id = jobId,
+                    Name = "Processing",
+                    Reason = "Processing",
+                    CreatedAt = (DateTime?)DateTime.UtcNow.AddMinutes(60),
+                    Data = JobHelper.ToJson(dictionKeys)
+                });
+
+                // Act
+                var api = new SqlServerMonitoringApi(_storage.Object, null);
+                var skippedModel = api.ProcessingJobs(0, 10);
+                // Assert
+                Assert.Equal(skippedModel.Count, 1);
+            });
+        }
+
+
+
+        [Fact, CleanDatabase]
+        public void DeletedJobs_ShouldReturnAllTheDeletedJobs()
+        {
+
+            var invocationString = JobHelper.ToJson(new InvocationData(null, null, null, null));
+            var dictionKeys = new Dictionary<string, string> { { "DeletedAt", "2016-12-10T18:54:08.5562518Z" }, { "ServerId", "1" } };
+            // PreRequisite 
+            UseConnections((sql, connection) =>
+            {
+                var jobId =
+                    sql.Query(InsertDummyJobSql,
+                            new
+                            {
+                                CreatedAt = (DateTime?)DateTime.UtcNow.AddMinutes(60),
+                                Invocation = invocationString,
+                                StateName = "Deleted"
+                            })
+                        .Single()
+                        .Id.ToString();
+                sql.Query(InsertDummyStateForJobSql, new
+                {
+                    id = jobId,
+                    Name = "Deleted",
+                    Reason = "Deleted",
+                    CreatedAt = (DateTime?)DateTime.UtcNow.AddMinutes(60),
+                    Data = JobHelper.ToJson(dictionKeys)
+                });
+
+                // Act
+                var api = new SqlServerMonitoringApi(_storage.Object, null);
+                var skippedModel = api.DeletedJobs(0, 10);
+                // Assert
+                Assert.Equal(skippedModel.Count, 1);
+            });
+        }
+
+
+
+
+        [Fact, CleanDatabase]
+        public void FailedJobs_ShouldReturnAllTheFailedJobs()
+        {
+
+            var invocationString = JobHelper.ToJson(new InvocationData(null, null, null, null));
+            var dictionKeys = new Dictionary<string, string> { { "FailedAt", "2016-12-10T18:54:08.5562518Z" }, { "ExceptionDetails", "D" } , { "ExceptionMessage", "M" } , { "ExceptionType", "T" } };
+            // PreRequisite 
+            UseConnections((sql, connection) =>
+            {
+                var jobId =
+                    sql.Query(InsertDummyJobSql,
+                            new
+                            {
+                                CreatedAt = (DateTime?)DateTime.UtcNow.AddMinutes(60),
+                                Invocation = invocationString,
+                                StateName= "Failed"
+                            })
+                        .Single()
+                        .Id.ToString();
+                sql.Query(InsertDummyStateForJobSql, new
+                {
+                    id = jobId,
+                    Name = "Failed",
+                    Reason = "Failed",
+                    CreatedAt = (DateTime?)DateTime.UtcNow.AddMinutes(60),
+                    Data = JobHelper.ToJson(dictionKeys)
+                });
+
+                // Act
+                var api = new SqlServerMonitoringApi(_storage.Object, null);
+                var skippedModel = api.FailedJobs(0, 10);
+                // Assert
+                Assert.Equal(skippedModel.Count, 1);
+            });
+        }
+
+
+        [Fact,CleanDatabase]
+
+        public void SkippedJobs_ShouldReturnAllTheSkippedJobs()
+        {
+
+            var invocationString = JobHelper.ToJson(new InvocationData(null, null, null, null));
+            var dictionKeys = new Dictionary<string, string> { { "SkippedAt", "2016-12-10T18:54:08.5562518Z" } };
+            // PreRequisite 
+            UseConnections((sql, connection) =>
+            {
+                var jobId =
+                    sql.Query(InsertDummyJobSql,
+                            new
+                            {
+                                CreatedAt = (DateTime?) DateTime.UtcNow.AddMinutes(60),
+                                Invocation = invocationString,
+                                StateName = "Skipped"
+                            })
+                        .Single()
+                        .Id.ToString();
+                sql.Query(InsertDummyStateForJobSql, new
                 {
                     id = jobId,
                     Name = "Skipped",
