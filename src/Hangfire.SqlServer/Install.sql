@@ -432,7 +432,7 @@ BEGIN
 	PRINT 'Dropped constraint [FK_HangFire_JobParameter_Job] to modify the [$(HangFireSchema)].[JobParameter].[JobId] column';
 
 	DROP INDEX [IX_HangFire_JobParameter_JobIdAndName] ON [$(HangFireSchema)].[JobParameter];
-	PRINT 'Dropped index [IX_HangFire_JobParameter_JobIdAndName] to modify the [$(HangFireSchema)].[JobParameter].[JobId] column';
+	PRINT 'Dropped index [IX_HangFire_JobParameter_JobIdAndName]. Unique index will be created instead';
 
 	ALTER TABLE [$(HangFireSchema)].[JobParameter] ALTER COLUMN [JobId] BIGINT;
 	PRINT 'Modified [$(HangFireSchema)].[JobParameter].[JobId] type to BIGINT to modify [$(HangFireSchema)].[Job].[Id] type to BIGINT';
@@ -468,11 +468,11 @@ BEGIN
 		ON DELETE CASCADE;
 	PRINT 'Re-created constraint [FK_HangFire_JobParameter_Job]';
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_JobParameter_JobIdAndName] ON [$(HangFireSchema)].[JobParameter] (
+	CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_JobParameter_JobIdAndName] ON [$(HangFireSchema)].[JobParameter] (
 		[JobId] ASC,
 		[Name] ASC
 	);
-	PRINT 'Re-created index [IX_HangFire_JobParameter_JobIdAndName]';
+	PRINT 'Created unique index [UX_HangFire_JobParameter_JobIdAndName]';
 
 	ALTER TABLE [$(HangFireSchema)].[State] ADD CONSTRAINT [FK_HangFire_State_Job] FOREIGN KEY([JobId])
 		REFERENCES [$(HangFireSchema)].[Job] ([Id])
