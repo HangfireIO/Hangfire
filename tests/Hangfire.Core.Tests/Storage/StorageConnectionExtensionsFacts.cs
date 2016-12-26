@@ -44,5 +44,15 @@ namespace Hangfire.Core.Tests.Storage
                 "job:some-id:state-lock",
                 timeout));
         }
+
+        [Fact]
+        public void GetLastStateForJobIdShouldGetTheLastStateOfPassedJobId()
+        {
+            _connection.Setup(o => o.GetLastStateForJobId(It.IsAny<string>())).Returns(new HashSet<string> { "Processing" }).Verifiable();
+            var result = _connection.Object.GetLastStateForJobId("1");
+            Assert.NotNull(result);
+            Assert.Equal(result.ToList().First() , "Processing");
+            _connection.VerifyAll();
+        }
     }
 }
