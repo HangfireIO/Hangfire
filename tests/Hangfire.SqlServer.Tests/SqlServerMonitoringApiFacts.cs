@@ -16,6 +16,8 @@ namespace Hangfire.SqlServer.Tests
     public class SqlServerMonitoringApiFacts
     {
         private readonly Mock<SqlServerStorage> _storage;
+        private readonly PersistentJobQueueProviderCollection _queueProviders;
+        private readonly Mock<IPersistentJobQueueMonitoringApi> _sqlServerJobQueueMonitoringApi;
         private const string InsertDummyJobSql = @"
 insert into HangFire.[Job] ( [StateId], [StateName], [InvocationData],[Arguments],[CreatedAt],[ExpireAt])
 values ( 1,@StateName,@Invocation,'', @CreatedAt, null);
@@ -28,7 +30,15 @@ Update HangFire.[Job] SET StateId = (select scope_identity() as Id) Where Id = @
 ";
         public SqlServerMonitoringApiFacts()
         {
+            var defaultProvider = new Mock<IPersistentJobQueueProvider>();
+            defaultProvider.Setup(x => x.GetJobQueue())
+                .Returns(new Mock<IPersistentJobQueue>().Object);
+            _sqlServerJobQueueMonitoringApi = new Mock<IPersistentJobQueueMonitoringApi>();
+            _sqlServerJobQueueMonitoringApi.Setup(t => t.GetQueues()).Returns(new List<string>());
+            defaultProvider.Setup(t => t.GetJobQueueMonitoringApi()).Returns(_sqlServerJobQueueMonitoringApi.Object);
+            _queueProviders = new PersistentJobQueueProviderCollection(defaultProvider.Object);
             _storage = new Mock<SqlServerStorage>(ConnectionUtils.GetConnectionString());
+            _storage.Setup(t => t.QueueProviders).Returns(_queueProviders);
         }
 
         [Fact]
@@ -72,9 +82,12 @@ Update HangFire.[Job] SET StateId = (select scope_identity() as Id) Where Id = @
 
                 // Act
                 var api = new SqlServerMonitoringApi(_storage.Object, null);
-                var skippedModel = api.ProcessingJobs(0, 10);
+                var model = api.ProcessingJobs(0, 10);
+                var modelCount = api.ProcessingCount();
                 // Assert
-                Assert.Equal(skippedModel.Count, 1);
+                Assert.Equal(model.Count, 1);
+                Assert.Equal(modelCount, 1);
+            
             });
         }
 
@@ -107,12 +120,15 @@ Update HangFire.[Job] SET StateId = (select scope_identity() as Id) Where Id = @
                     CreatedAt = (DateTime?)DateTime.UtcNow.AddMinutes(60),
                     Data = JobHelper.ToJson(dictionKeys)
                 });
-
                 // Act
                 var api = new SqlServerMonitoringApi(_storage.Object, null);
-                var skippedModel = api.DeletedJobs(0, 10);
+                var model = api.DeletedJobs(0, 10);
+                var modelCount = api.DeletedListCount();
                 // Assert
-                Assert.Equal(skippedModel.Count, 1);
+                Assert.Equal(model.Count, 1);
+                Assert.Equal(modelCount, 1);
+              
+              
             });
         }
 
@@ -149,9 +165,13 @@ Update HangFire.[Job] SET StateId = (select scope_identity() as Id) Where Id = @
 
                 // Act
                 var api = new SqlServerMonitoringApi(_storage.Object, null);
-                var skippedModel = api.FailedJobs(0, 10);
+                var model = api.FailedJobs(0, 10);
+                var modelCount = api.FailedCount();
                 // Assert
-                Assert.Equal(skippedModel.Count, 1);
+                Assert.Equal(model.Count, 1);
+                Assert.Equal(modelCount, 1);
+
+
             });
         }
 
@@ -188,11 +208,52 @@ Update HangFire.[Job] SET StateId = (select scope_identity() as Id) Where Id = @
                 // Act
                 var api = new SqlServerMonitoringApi(_storage.Object, null);
                 var skippedModel = api.SkippedJobs(0, 10);
+                var skippedCount = api.SkippedListCount();
                 // Assert
                 Assert.Equal(skippedModel.Count, 1);
+                Assert.Equal(skippedCount, 1);
             });
         }
 
+
+
+        [Fact, CleanDatabase]
+
+        public void GetStatistics_ShouldRetriveAllTheStatus_IncludesSkippedJobs()
+        {
+
+            var invocationString = JobHelper.ToJson(new InvocationData(null, null, null, null));
+            var dictionKeys = new Dictionary<string, string> { { "SkippedAt", "2016-12-10T18:54:08.5562518Z" } };
+            // PreRequisite 
+            UseConnections((sql, connection) =>
+            {
+                var jobId =
+                    sql.Query(InsertDummyJobSql,
+                            new
+                            {
+                                CreatedAt = (DateTime?)DateTime.UtcNow.AddMinutes(60),
+                                Invocation = invocationString,
+                                StateName = "Skipped"
+                            })
+                        .Single()
+                        .Id.ToString();
+                sql.Query(InsertDummyStateForJobSql, new
+                {
+                    id = jobId,
+                    Name = "Skipped",
+                    Reason = "Skipped",
+                    CreatedAt = (DateTime?)DateTime.UtcNow.AddMinutes(60),
+                    Data = JobHelper.ToJson(dictionKeys)
+                });
+
+                // Act
+                var api = new SqlServerMonitoringApi(_storage.Object, null);
+                var statisticsModel = api.GetStatistics();
+
+                //Validate
+                Assert.Equal(statisticsModel.Skipped, 1);
+            });
+        }
 
 
         private static void UseConnections(Action<SqlConnection, SqlServerConnection> action)
