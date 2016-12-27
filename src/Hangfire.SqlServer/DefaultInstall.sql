@@ -422,8 +422,9 @@ BEGIN
 	PRINT 'Re-created constraint [PK_HangFire_Hash]';
 
 	CREATE NONCLUSTERED INDEX [IX_HangFire_Hash_ExpireAt] ON [HangFire].[Hash] ([ExpireAt])
-	INCLUDE ([Id]);
-	PRINT 'Re-created index [IX_HangFire_Hash_ExpireAt]';
+	INCLUDE ([Id])
+	WHERE [ExpireAt] IS NOT NULL;
+	PRINT 'Re-created index [IX_HangFire_Hash_ExpireAt]. Made the index only for rows with non-null ExpireAt value';
 
 	-- Modify [HangFire].[Job].[Id] type to BIGINT
 	
@@ -433,7 +434,7 @@ BEGIN
 	PRINT 'Dropped constraint [FK_HangFire_JobParameter_Job] to modify the [HangFire].[JobParameter].[JobId] column';
 
 	DROP INDEX [IX_HangFire_JobParameter_JobIdAndName] ON [HangFire].[JobParameter];
-	PRINT 'Dropped index [IX_HangFire_JobParameter_JobIdAndName]. Unique index will be created instead.';
+	PRINT 'Dropped index [IX_HangFire_JobParameter_JobIdAndName]. Unique index will be created instead';
 
 	ALTER TABLE [HangFire].[JobParameter] ALTER COLUMN [JobId] BIGINT;
 	PRINT 'Modified [HangFire].[JobParameter].[JobId] type to BIGINT to modify [HangFire].[Job].[Id] type to BIGINT';
@@ -460,8 +461,9 @@ BEGIN
 	PRINT 'Re-created constraint [PK_HangFire_Job]';
 
 	CREATE NONCLUSTERED INDEX [IX_HangFire_Job_ExpireAt] ON [HangFire].[Job] ([ExpireAt])
-	INCLUDE ([Id]);
-	PRINT 'Re-created index [IX_HangFire_Job_ExpireAt]';
+	INCLUDE ([Id])
+	WHERE [ExpireAt] IS NOT NULL;
+	PRINT 'Re-created index [IX_HangFire_Job_ExpireAt]. Made the index only for rows with non-null ExpireAt value';
 
 	ALTER TABLE [HangFire].[JobParameter] ADD CONSTRAINT [FK_HangFire_JobParameter_Job] FOREIGN KEY([JobId])
 		REFERENCES [HangFire].[Job] ([Id])
@@ -521,8 +523,9 @@ BEGIN
 	PRINT 'Re-created constraint [PK_HangFire_List]';
 
 	CREATE NONCLUSTERED INDEX [IX_HangFire_List_ExpireAt] ON [HangFire].[List] ([ExpireAt])
-	INCLUDE ([Id]);
-	PRINT 'Re-created index [IX_HangFire_List_ExpireAt]';
+	INCLUDE ([Id])
+	WHERE [ExpireAt] IS NOT NULL;
+	PRINT 'Re-created index [IX_HangFire_List_ExpireAt]. Made the index only for rows with non-null ExpireAt value';
 
 	-- Modify [HangFire].[Set].[Id] type to BIGINT
 
@@ -539,8 +542,9 @@ BEGIN
 	PRINT 'Re-created constraint [PK_HangFire_Set]';
 
 	CREATE NONCLUSTERED INDEX [IX_HangFire_Set_ExpireAt] ON [HangFire].[Set] ([ExpireAt])
-	INCLUDE ([Id]);
-	PRINT 'Re-created index [IX_HangFire_Set_ExpireAt]';
+	INCLUDE ([Id])
+	WHERE [ExpireAt] IS NOT NULL;
+	PRINT 'Re-created index [IX_HangFire_Set_ExpireAt]. Made the index only for rows with non-null ExpireAt value';
 
 	-- Modify [HangFire].[State].[Id] type to BIGINT
 
