@@ -1,11 +1,11 @@
 # Travis-CI Build for Hangfire
 # see travis-ci.org for details
 
-#language: csharp
-language: cpp
+language: csharp
 sudo: required
 dist: trusty
-
+mono: latest
+    
 os:  
   - linux
   - osx
@@ -38,6 +38,7 @@ before_install:
   - export DOTNET_INSTALL_DIR="$PWD/.dotnetcli"
   - export PATH="$DOTNET_INSTALL_DIR:$PATH"  
   
+  
 install:
   - travis_retry curl -sSL https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.sh | bash /dev/stdin --version "$CLI_VERSION" --install-dir "$DOTNET_INSTALL_DIR"
 
@@ -48,14 +49,13 @@ install:
 
 # Run the build script
 script:
+  - chmod +x .nuget/NuGet.exe
+  - travis_retry nuget install .nuget/packages.config -OutputDirectory packages
+  - travis_retry nuget restore Hangfire.Mono.sln -verbosity detailed -disableparallelprocessing
   - travis_retry dotnet restore --disable-parallel
   - dotnet test tests/Hangfire.Core.Tests -verbose
- 
-# Tests on Mono disabled – waiting for https://github.com/NuGet/Home/issues/3085
-# - travis_retry mono .nuget/NuGet.exe install .nuget/packages.config -OutputDirectory packages
-# - travis_retry mono .nuget/NuGet.exe install .
-# - xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
-# - mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll
+  - sudo xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
+  - mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll
 
 notifications:
   slack:
