@@ -9,13 +9,18 @@ matrix:
   include:
     - dotnet: 1.0.0-preview2-003121
       mono: none
+      os: linux
+      env: DOTNETCORE=1
+    - dotnet: 1.0.0-preview2-003121
+      mono: none
+      os: osx
       env: DOTNETCORE=1
     - mono: latest
+      os: linux
       env: IS_MONO=true
-    
-os:  
-  - linux
-  - osx
+    - mono: latest
+      os: osx
+      env: IS_MONO=true
 
 env:  
   global:
@@ -52,13 +57,13 @@ before_install:
 
 # Run the build script
 script:
-  - if test "IS_MONO" == "true"; then chmod +x .nuget/NuGet.exe; fi
-  - if test "IS_MONO" == "true"; then travis_retry nuget install .nuget/packages.config -OutputDirectory packages; fi
-  - if test "IS_MONO" == "true"; then travis_retry nuget restore Hangfire.Mono.sln -verbosity detailed -disableparallelprocessing; fi
-  - if test "IS_MONO" == "true"; then xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln; fi
-  - if test "IS_MONO" == "true"; then mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll; fi
-  - if test "DOTNETCORE" == "1"; then travis_retry dotnet restore --disable-parallel; fi
-  - if test "DOTNETCORE" == "1"; then dotnet test tests/Hangfire.Core.Tests -verbose; fi
+  - if test "$IS_MONO" == "true"; then chmod +x .nuget/NuGet.exe; fi
+  - if test "$IS_MONO" == "true"; then travis_retry nuget install .nuget/packages.config -OutputDirectory packages; fi
+  - if test "$IS_MONO" == "true"; then travis_retry nuget restore Hangfire.Mono.sln -verbosity detailed -disableparallelprocessing; fi
+  - if test "$IS_MONO" == "true"; then xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln; fi
+  - if test "$IS_MONO" == "true"; then mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll; fi
+  - if test "$DOTNETCORE" == "1"; then travis_retry dotnet restore --disable-parallel; fi
+  - if test "$DOTNETCORE" == "1"; then dotnet test tests/Hangfire.Core.Tests -verbose; fi
 
 notifications:
   slack:
