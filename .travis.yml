@@ -54,7 +54,7 @@ script:
   - travis_retry nuget restore Hangfire.Mono.sln -verbosity detailed -disableparallelprocessing
   - travis_retry dotnet restore --disable-parallel
   - dotnet test tests/Hangfire.Core.Tests -verbose
-  - sudo xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
+  - xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
   - mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll
 
 notifications:
