@@ -4,7 +4,14 @@
 language: csharp
 sudo: required
 dist: trusty
-mono: latest
+
+matrix:
+  include:
+    - dotnet: 1.0.0-preview2-003121
+      mono: none
+      env: DOTNETCORE=1
+    - mono: latest
+      env: IS_MONO=true
     
 os:  
   - linux
@@ -37,10 +44,6 @@ before_install:
   - if test "$TRAVIS_OS_NAME" == "osx"; then ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/; ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/; fi
   - export DOTNET_INSTALL_DIR="$PWD/.dotnetcli"
   - export PATH="$DOTNET_INSTALL_DIR:$PATH"  
-  
-  
-install:
-  - travis_retry curl -sSL https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.sh | bash /dev/stdin --version "$CLI_VERSION" --install-dir "$DOTNET_INSTALL_DIR"
 
 #cache: 
 # - apt
@@ -49,13 +52,13 @@ install:
 
 # Run the build script
 script:
-  - chmod +x .nuget/NuGet.exe
-  - travis_retry nuget install .nuget/packages.config -OutputDirectory packages
-  - travis_retry nuget restore Hangfire.Mono.sln -verbosity detailed -disableparallelprocessing
-  - travis_retry dotnet restore --disable-parallel
-  - dotnet test tests/Hangfire.Core.Tests -verbose
-  - xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
-  - mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll
+  - if test "IS_MONO" == "true"; then chmod +x .nuget/NuGet.exe; fi
+  - if test "IS_MONO" == "true"; then travis_retry nuget install .nuget/packages.config -OutputDirectory packages; fi
+  - if test "IS_MONO" == "true"; then travis_retry nuget restore Hangfire.Mono.sln -verbosity detailed -disableparallelprocessing; fi
+  - if test "IS_MONO" == "true"; then xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln; fi
+  - if test "IS_MONO" == "true"; then mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll; fi
+  - if test "DOTNETCORE" == "1"; then travis_retry dotnet restore --disable-parallel; fi
+  - if test "DOTNETCORE" == "1"; then dotnet test tests/Hangfire.Core.Tests -verbose; fi
 
 notifications:
   slack:
