@@ -16,12 +16,6 @@ namespace Hangfire.Core.Tests
         {
             _client = new Mock<IBackgroundJobClient>();
         }
-
-        [Fact]
-        public void FailedTest()
-        {
-            Assert.True(false);
-        }
         
         [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
         public void Enqueue_CreatesAJobInEnqueuedState()
