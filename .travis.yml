@@ -10,15 +10,17 @@ matrix:
     - dotnet: 1.0.0-preview2-003121
       mono: none
       os: linux
-      env: DOTNETCORE=1
+      env: NET_PLATFORM=netcore
     - dotnet: 1.0.0-preview2-003121
       mono: none
       os: osx
-      env: DOTNETCORE=1
+      env: NET_PLATFORM=netcore
     - mono: latest
       os: linux
+      env: NET_PLATFORM=mono
     - mono: latest
       os: osx
+      env: NET_PLATFORM=mono
 
 env:  
   global:
@@ -55,13 +57,13 @@ before_install:
 
 # Run the build script
 script:
-  - if test mono == "latest"; then chmod +x .nuget/NuGet.exe; fi
-  - if test mono == "latest"; then travis_retry nuget install .nuget/packages.config -OutputDirectory packages; fi
-  - if test mono == "latest"; then travis_retry nuget restore Hangfire.Mono.sln -verbosity detailed -disableparallelprocessing; fi
-  - if test mono == "latest"; then xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln; fi
-  - if test mono == "latest"; then mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll; fi
-  - if test "$DOTNETCORE" == "1"; then travis_retry dotnet restore --disable-parallel; fi
-  - if test "$DOTNETCORE" == "1"; then dotnet test tests/Hangfire.Core.Tests -verbose; fi
+  - if test "$NET_PLATFORM" == "mono"; then chmod +x .nuget/NuGet.exe; fi
+  - if test "$NET_PLATFORM" == "mono"; then travis_retry nuget install .nuget/packages.config -OutputDirectory packages; fi
+  - if test "$NET_PLATFORM" == "mono"; then travis_retry nuget restore Hangfire.Mono.sln -verbosity detailed -disableparallelprocessing; fi
+  - if test "$NET_PLATFORM" == "mono"; then xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln; fi
+  - if test "$NET_PLATFORM" == "mono"; then mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll; fi
+  - if test "$NET_PLATFORM" == "netcore"; then travis_retry dotnet restore --disable-parallel; fi
+  - if test "$NET_PLATFORM" == "netcore"; then dotnet test tests/Hangfire.Core.Tests -verbose; fi
 
 notifications:
   slack:
