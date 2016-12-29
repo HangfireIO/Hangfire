@@ -33,6 +33,10 @@ branches:
     - master
     - dev
 
+# Make sure build dependencies are installed.
+before_install:  
+  - if test "$TRAVIS_OS_NAME" == "osx"; then ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/; ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/; fi
+
 # Run the build script
 script:
   - if test "$NET_PLATFORM" == "mono"; 
