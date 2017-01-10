@@ -22,11 +22,6 @@ matrix:
       os: osx
       env: NET_PLATFORM=mono
 
-env:  
-  global:
-    - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-    - DOTNET_CLI_TELEMETRY_OPTOUT: 1
-
 # Only watch the master branch.
 branches:
   only:
