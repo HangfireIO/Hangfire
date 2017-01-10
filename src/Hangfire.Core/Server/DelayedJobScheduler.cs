@@ -19,6 +19,7 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
+using Hangfire.Storage;
 
 namespace Hangfire.Server
 {
@@ -144,39 +145,55 @@ namespace Hangfire.Server
         private bool EnqueueNextScheduledJob(BackgroundProcessContext context)
         {
             using (var connection = context.Storage.GetConnection())
-            using (connection.AcquireDistributedLock("locks:schedulepoller", DefaultLockTimeout))
             {
-                var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
+                IDisposable distributedLock;
 
-                // TODO: it is very slow. Add batching.
-                var jobId = connection.GetFirstByLowestScoreFromSet("schedule", 0, timestamp);
-
-                if (jobId == null)
+                try
                 {
-                    // No more scheduled jobs pending.
+                    distributedLock = connection.AcquireDistributedLock("locks:schedulepoller", DefaultLockTimeout);
+                }
+                catch (DistributedLockTimeoutException)
+                {
+                    // DistributedLockTimeoutException here doesn't mean that delayed jobs weren't enqueued.
+                    // It just means another Hangfire server did this work.
+
                     return false;
                 }
-                
-                var appliedState = _stateChanger.ChangeState(new StateChangeContext(
-                    context.Storage,
-                    connection,
-                    jobId,
-                    new EnqueuedState { Reason = $"Triggered by {ToString()}" }, 
-                    ScheduledState.StateName));
 
-                if (appliedState == null)
+                using (distributedLock)
                 {
-                    // When a background job with the given id does not exist, we should
-                    // remove its id from a schedule manually. This may happen when someone
-                    // modifies a storage bypassing Hangfire API.
-                    using (var transaction = connection.CreateWriteTransaction())
-                    {
-                        transaction.RemoveFromSet("schedule", jobId);
-                        transaction.Commit();
-                    }
-                }
+                    var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
 
-                return true;
+                    // TODO: it is very slow. Add batching.
+                    var jobId = connection.GetFirstByLowestScoreFromSet("schedule", 0, timestamp);
+
+                    if (jobId == null)
+                    {
+                        // No more scheduled jobs pending.
+                        return false;
+                    }
+
+                    var appliedState = _stateChanger.ChangeState(new StateChangeContext(
+                        context.Storage,
+                        connection,
+                        jobId,
+                        new EnqueuedState { Reason = $"Triggered by {ToString()}" },
+                        ScheduledState.StateName));
+
+                    if (appliedState == null)
+                    {
+                        // When a background job with the given id does not exist, we should
+                        // remove its id from a schedule manually. This may happen when someone
+                        // modifies a storage bypassing Hangfire API.
+                        using (var transaction = connection.CreateWriteTransaction())
+                        {
+                            transaction.RemoveFromSet("schedule", jobId);
+                            transaction.Commit();
+                        }
+                    }
+
+                    return true;
+                }
             }
         }
     }
