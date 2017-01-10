@@ -20,6 +20,7 @@ using System.Data.SqlClient;
 using System.Threading;
 using Hangfire.Logging;
 using Hangfire.Server;
+using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
 {
@@ -67,7 +68,18 @@ namespace Hangfire.SqlServer
 
                 _storage.UseConnection(connection =>
                 {
-                    SqlServerDistributedLock.Acquire(connection, DistributedLockKey, DefaultLockTimeout);
+                    try
+                    {
+                        SqlServerDistributedLock.Acquire(connection, DistributedLockKey, DefaultLockTimeout);
+                    }
+                    catch (DistributedLockTimeoutException)
+                    {
+                        // DistributedLockTimeoutException here doesn't mean that outdated records weren't removed.
+                        // It just means another Hangfire server did this work.
+
+                        cancellationToken.WaitHandle.WaitOne(_checkInterval);
+                        return;
+                    }
 
                     try
                     {
