@@ -385,85 +385,138 @@ IF @CURRENT_SCHEMA_VERSION = 5
 BEGIN
 	PRINT 'Installing schema version 6';
 
-	-- Modify [HangFire].[AggregatedCounter].[Id] type to BIGINT
-
-	ALTER TABLE [HangFire].[AggregatedCounter] DROP CONSTRAINT [PK_HangFire_CounterAggregated];
-	PRINT 'Dropped constraint [PK_HangFire_CounterAggregated] to modify the [HangFire].[AggregatedCounter].[Id] column';
-
-	ALTER TABLE [HangFire].[AggregatedCounter] ALTER COLUMN [Id] BIGINT;
-	PRINT 'Modified [HangFire].[AggregatedCounter].[Id] type to BIGINT';
-
-	ALTER TABLE [HangFire].[AggregatedCounter] ADD CONSTRAINT [PK_HangFire_CounterAggregated] PRIMARY KEY CLUSTERED ([Id] ASC);
-	PRINT 'Re-created constraint [PK_HangFire_CounterAggregated]';
-
-	-- Modify [HangFire].[Counter].[Id] type to BIGINT
-
-	ALTER TABLE [HangFire].[Counter] DROP CONSTRAINT [PK_HangFire_Counter];
-	PRINT 'Dropped constraint [PK_HangFire_Counter] to modify the [HangFire].[Counter].[Id] column';
-
-	ALTER TABLE [HangFire].[Counter] ALTER COLUMN [Id] BIGINT;
-	PRINT 'Modified [HangFire].[Counter].[Id] type to BIGINT';
-
-	ALTER TABLE [HangFire].[Counter] ADD CONSTRAINT [PK_HangFire_Counter] PRIMARY KEY CLUSTERED ([Id] ASC);
-	PRINT 'Re-created constraint [PK_HangFire_Counter]';
-
-	-- Modify [HangFire].[Hash].[Id] type to BIGINT
-
-	ALTER TABLE [HangFire].[Hash] DROP CONSTRAINT [PK_HangFire_Hash];
-	PRINT 'Dropped constraint [PK_HangFire_Hash] to modify the [HangFire].[Hash].[Id] column';
+	-- Dropping `IX_HangFire_XXX_ExpireAt` indexes before migrating to the BIGINT type, because all of 
+	-- them include the Id columns by mistake. We'll recreate them later without the inclusion.
 
 	DROP INDEX [IX_HangFire_Hash_ExpireAt] ON [HangFire].[Hash];
 	PRINT 'Dropped index [IX_HangFire_Hash_ExpireAt] ] to modify the [HangFire].[Hash].[Id] column';
 
-	ALTER TABLE [HangFire].[Hash] ALTER COLUMN [Id] BIGINT;
-	PRINT 'Modified [HangFire].[Hash].[Id] type to BIGINT';
+	DROP INDEX [IX_HangFire_Job_ExpireAt] ON [HangFire].[Job];
+	PRINT 'Dropped index [IX_HangFire_Job_ExpireAt] to modify the [HangFire].[Job].[Id] column';
 
-	ALTER TABLE [HangFire].[Hash] ADD CONSTRAINT [PK_HangFire_Hash] PRIMARY KEY CLUSTERED ([Id] ASC);
-	PRINT 'Re-created constraint [PK_HangFire_Hash]';
+	DROP INDEX [IX_HangFire_List_ExpireAt] ON [HangFire].[List];
+	PRINT 'Dropped index [IX_HangFire_List_ExpireAt] to modify the [HangFire].[List].[Id] column';
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_Hash_ExpireAt] ON [HangFire].[Hash] ([ExpireAt])
-	INCLUDE ([Id])
-	WHERE [ExpireAt] IS NOT NULL;
-	PRINT 'Re-created index [IX_HangFire_Hash_ExpireAt]. Made the index only for rows with non-null ExpireAt value';
+	DROP INDEX [IX_HangFire_Set_ExpireAt] ON [HangFire].[Set];
+	PRINT 'Dropped index [IX_HangFire_Set_ExpireAt] to modify the [HangFire].[Set].[Id] column';
 
-	-- Modify [HangFire].[Job].[Id] type to BIGINT
-	
-	ALTER TABLE [HangFire].[JobQueue] ALTER COLUMN [JobId] BIGINT;
-
-	ALTER TABLE [HangFire].[JobParameter] DROP CONSTRAINT [FK_HangFire_JobParameter_Job];
-	PRINT 'Dropped constraint [FK_HangFire_JobParameter_Job] to modify the [HangFire].[JobParameter].[JobId] column';
+	-- Dropping indexes that based on JobId column before migrating to the BITINT type. We'll recreate them
+	-- later in the migration.
 
 	DROP INDEX [IX_HangFire_JobParameter_JobIdAndName] ON [HangFire].[JobParameter];
 	PRINT 'Dropped index [IX_HangFire_JobParameter_JobIdAndName]. Unique index will be created instead';
 
-	ALTER TABLE [HangFire].[JobParameter] ALTER COLUMN [JobId] BIGINT;
-	PRINT 'Modified [HangFire].[JobParameter].[JobId] type to BIGINT to modify [HangFire].[Job].[Id] type to BIGINT';
-	
-	ALTER TABLE [HangFire].[State] DROP CONSTRAINT [FK_HangFire_State_Job];
-	PRINT 'Dropped constraint [FK_HangFire_State_Job] to modify the [HangFire].[State].[JobId] column';
-
 	DROP INDEX [IX_HangFire_State_JobId] ON [HangFire].[State];
 	PRINT 'Dropped index [IX_HangFire_State_JobId] to modify the [HangFire].[State].[JobId] column';
 
-	ALTER TABLE [HangFire].[State] ALTER COLUMN [JobId] BIGINT;
-	PRINT 'Modified [HangFire].[State].[JobId] type to BIGINT to modify [HangFire].[Job].[Id] type to BIGINT';
+	-- Dropping foreign key constraints based on the JobId column. We'll recreate them later in the migration.
+
+	ALTER TABLE [HangFire].[JobParameter] DROP CONSTRAINT [FK_HangFire_JobParameter_Job];
+	PRINT 'Dropped constraint [FK_HangFire_JobParameter_Job] to modify the [HangFire].[JobParameter].[JobId] column';
+
+	ALTER TABLE [HangFire].[State] DROP CONSTRAINT [FK_HangFire_State_Job];
+	PRINT 'Dropped constraint [FK_HangFire_State_Job] to modify the [HangFire].[State].[JobId] column';
+
+	-- Dropping primary key constraints based on INT identifiers. We'll recreate them later in the migration.
+
+	ALTER TABLE [HangFire].[AggregatedCounter] DROP CONSTRAINT [PK_HangFire_CounterAggregated];
+	PRINT 'Dropped constraint [PK_HangFire_CounterAggregated] to modify the [HangFire].[AggregatedCounter].[Id] column';
+
+	ALTER TABLE [HangFire].[Counter] DROP CONSTRAINT [PK_HangFire_Counter];
+	PRINT 'Dropped constraint [PK_HangFire_Counter] to modify the [HangFire].[Counter].[Id] column';
+
+	ALTER TABLE [HangFire].[Hash] DROP CONSTRAINT [PK_HangFire_Hash];
+	PRINT 'Dropped constraint [PK_HangFire_Hash] to modify the [HangFire].[Hash].[Id] column';
 
 	ALTER TABLE [HangFire].[Job] DROP CONSTRAINT [PK_HangFire_Job];
 	PRINT 'Dropped constraint [PK_HangFire_Job] to modify the [HangFire].[Job].[Id] column';
 
-	DROP INDEX [IX_HangFire_Job_ExpireAt] ON [HangFire].[Job];
-	PRINT 'Dropped index [IX_HangFire_Job_ExpireAt] to modify the [HangFire].[Job].[Id] column';
+	ALTER TABLE [HangFire].[JobParameter] DROP CONSTRAINT [PK_HangFire_JobParameter];
+	PRINT 'Dropped constraint [PK_HangFire_JobParameter] to modify the [HangFire].[JobParameter].[Id] column';
+
+	ALTER TABLE [HangFire].[JobQueue] DROP CONSTRAINT [PK_HangFire_JobQueue];
+	PRINT 'Dropped constraint [PK_HangFire_JobQueue] to modify the [HangFire].[JobQueue].[Id] column';
+
+	ALTER TABLE [HangFire].[List] DROP CONSTRAINT [PK_HangFire_List];
+	PRINT 'Dropped constraint [PK_HangFire_List] to modify the [HangFire].[List].[Id] column';
+
+	ALTER TABLE [HangFire].[Set] DROP CONSTRAINT [PK_HangFire_Set];
+	PRINT 'Dropped constraint [PK_HangFire_Set] to modify the [HangFire].[Set].[Id] column';
+
+	ALTER TABLE [HangFire].[State] DROP CONSTRAINT [PK_HangFire_State];
+	PRINT 'Dropped constraint [PK_HangFire_State] to modify the [HangFire].[State].[Id] column';
+
+	-- Modifying all the INT identifiers to use the BIGINT type.
+
+	ALTER TABLE [HangFire].[AggregatedCounter] ALTER COLUMN [Id] BIGINT;
+	PRINT 'Modified [HangFire].[AggregatedCounter].[Id] type to BIGINT';
+
+	ALTER TABLE [HangFire].[Counter] ALTER COLUMN [Id] BIGINT;
+	PRINT 'Modified [HangFire].[Counter].[Id] type to BIGINT';
+
+	ALTER TABLE [HangFire].[Hash] ALTER COLUMN [Id] BIGINT;
+	PRINT 'Modified [HangFire].[Hash].[Id] type to BIGINT';
 
 	ALTER TABLE [HangFire].[Job] ALTER COLUMN [Id] BIGINT;
 	PRINT 'Modified [HangFire].[Job].[Id] type to BIGINT';
 
+	ALTER TABLE [HangFire].[Job] ALTER COLUMN [StateId] BIGINT;
+	PRINT 'Modified [HangFire].[Job].[StateId] type to BIGINT to modify the [HangFire].[State].[Id] column';
+
+	ALTER TABLE [HangFire].[JobParameter] ALTER COLUMN [Id] BIGINT;
+	PRINT 'Modified [HangFire].[JobParameter].[Id] type to BIGINT';
+
+	ALTER TABLE [HangFire].[JobParameter] ALTER COLUMN [JobId] BIGINT;
+	PRINT 'Modified [HangFire].[JobParameter].[JobId] type to BIGINT to modify [HangFire].[Job].[Id] type to BIGINT';
+
+	ALTER TABLE [HangFire].[JobQueue] ALTER COLUMN [Id] BIGINT;
+	PRINT 'Modified [HangFire].[JobQueue].[Id] type to BIGINT';
+
+	ALTER TABLE [HangFire].[JobQueue] ALTER COLUMN [JobId] BIGINT;
+	PRINT 'Modified [HangFire].[JobQueue].[JobId] type to BIGINT';
+
+	ALTER TABLE [HangFire].[List] ALTER COLUMN [Id] BIGINT;
+	PRINT 'Modified [HangFire].[List].[Id] type to BIGINT';
+
+	ALTER TABLE [HangFire].[Set] ALTER COLUMN [Id] BIGINT;
+	PRINT 'Modified [HangFire].[Set].[Id] type to BIGINT';
+
+	ALTER TABLE [HangFire].[State] ALTER COLUMN [Id] BIGINT;
+	PRINT 'Modified [HangFire].[State].[Id] type to BIGINT';
+
+	ALTER TABLE [HangFire].[State] ALTER COLUMN [JobId] BIGINT;
+	PRINT 'Modified [HangFire].[State].[JobId] type to BIGINT to modify [HangFire].[Job].[Id] type to BIGINT';
+
+	-- Adding back all the Primary Key constraints that were dropped earlier.
+
+	ALTER TABLE [HangFire].[AggregatedCounter] ADD CONSTRAINT [PK_HangFire_CounterAggregated] PRIMARY KEY CLUSTERED ([Id] ASC);
+	PRINT 'Re-created constraint [PK_HangFire_CounterAggregated]';
+
+	ALTER TABLE [HangFire].[Counter] ADD CONSTRAINT [PK_HangFire_Counter] PRIMARY KEY CLUSTERED ([Id] ASC);
+	PRINT 'Re-created constraint [PK_HangFire_Counter]';
+
+	ALTER TABLE [HangFire].[Hash] ADD CONSTRAINT [PK_HangFire_Hash] PRIMARY KEY CLUSTERED ([Id] ASC);
+	PRINT 'Re-created constraint [PK_HangFire_Hash]';
+
 	ALTER TABLE [HangFire].[Job] ADD CONSTRAINT [PK_HangFire_Job] PRIMARY KEY CLUSTERED ([Id] ASC);
 	PRINT 'Re-created constraint [PK_HangFire_Job]';
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_Job_ExpireAt] ON [HangFire].[Job] ([ExpireAt])
-	INCLUDE ([Id])
-	WHERE [ExpireAt] IS NOT NULL;
-	PRINT 'Re-created index [IX_HangFire_Job_ExpireAt]. Made the index only for rows with non-null ExpireAt value';
+	ALTER TABLE [HangFire].[JobParameter] ADD CONSTRAINT [PK_HangFire_JobParameter] PRIMARY KEY CLUSTERED ([Id] ASC);
+	PRINT 'Re-created constraint [PK_HangFire_JobParameter]';
+
+	ALTER TABLE [HangFire].[JobQueue] ADD CONSTRAINT [PK_HangFire_JobQueue] PRIMARY KEY CLUSTERED ([Id] ASC);
+	PRINT 'Re-created constraint [PK_HangFire_JobQueue]';
+
+	ALTER TABLE [HangFire].[List] ADD CONSTRAINT [PK_HangFire_List] PRIMARY KEY CLUSTERED ([Id] ASC);
+	PRINT 'Re-created constraint [PK_HangFire_List]';
+
+	ALTER TABLE [HangFire].[Set] ADD CONSTRAINT [PK_HangFire_Set] PRIMARY KEY CLUSTERED ([Id] ASC);
+	PRINT 'Re-created constraint [PK_HangFire_Set]';
+
+	ALTER TABLE [HangFire].[State] ADD CONSTRAINT [PK_HangFire_State] PRIMARY KEY CLUSTERED ([Id] ASC);
+	PRINT 'Re-created constraint [PK_HangFire_State]';
+
+	-- Adding back all the Foreign Key constraints that were dropped earlier.
 
 	ALTER TABLE [HangFire].[JobParameter] ADD CONSTRAINT [FK_HangFire_JobParameter_Job] FOREIGN KEY([JobId])
 		REFERENCES [HangFire].[Job] ([Id])
@@ -471,94 +524,47 @@ BEGIN
 		ON DELETE CASCADE;
 	PRINT 'Re-created constraint [FK_HangFire_JobParameter_Job]';
 
-	CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_JobParameter_JobIdAndName] ON [HangFire].[JobParameter] (
-		[JobId] ASC,
-		[Name] ASC
-	);
-	PRINT 'Created unique index [UX_HangFire_JobParameter_JobIdAndName]';
-
 	ALTER TABLE [HangFire].[State] ADD CONSTRAINT [FK_HangFire_State_Job] FOREIGN KEY([JobId])
 		REFERENCES [HangFire].[Job] ([Id])
 		ON UPDATE CASCADE
 		ON DELETE CASCADE;
 	PRINT 'Re-created constraint [FK_HangFire_JobParameter_Job]';
 
+	-- Adding back all the indexes based on JobId that were dropped earlier.
+
+	CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_JobParameter_JobIdAndName] ON [HangFire].[JobParameter] (
+		[JobId] ASC,
+		[Name] ASC
+	);
+	PRINT 'Created unique index [UX_HangFire_JobParameter_JobIdAndName]';
+
 	CREATE NONCLUSTERED INDEX [IX_HangFire_State_JobId] ON [HangFire].[State] ([JobId] ASC);
 	PRINT 'Re-created index [IX_HangFire_State_JobId]';
 
-	-- Modify [HangFire].[JobParameter].[Id] type to BIGINT
+	-- Adding back all the indexes for ExpireAt column that were dropped earlier.
 
-	ALTER TABLE [HangFire].[JobParameter] DROP CONSTRAINT [PK_HangFire_JobParameter];
-	PRINT 'Dropped constraint [PK_HangFire_JobParameter] to modify the [HangFire].[JobParameter].[Id] column';
+	-- TODO: AggregatedCounter.ExpireAt index should be created
+	-- TODO: Counter.ExpireAt index should be created
 
-	ALTER TABLE [HangFire].[JobParameter] ALTER COLUMN [Id] BIGINT;
-	PRINT 'Modified [HangFire].[JobParameter].[Id] type to BIGINT';
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Hash_ExpireAt] ON [HangFire].[Hash] ([ExpireAt])
+	INCLUDE ([Id])
+	WHERE [ExpireAt] IS NOT NULL;
+	PRINT 'Re-created index [IX_HangFire_Hash_ExpireAt]. Made the index only for rows with non-null ExpireAt value';
 
-	ALTER TABLE [HangFire].[JobParameter] ADD CONSTRAINT [PK_HangFire_JobParameter] PRIMARY KEY CLUSTERED ([Id] ASC);
-	PRINT 'Re-created constraint [PK_HangFire_JobParameter]';
-
-	-- Modify [HangFire].[JobQueue].[Id] type to BIGINT
-
-	ALTER TABLE [HangFire].[JobQueue] DROP CONSTRAINT [PK_HangFire_JobQueue];
-	PRINT 'Dropped constraint [PK_HangFire_JobQueue] to modify the [HangFire].[JobQueue].[Id] column';
-
-	ALTER TABLE [HangFire].[JobQueue] ALTER COLUMN [Id] BIGINT;
-	PRINT 'Modified [HangFire].[JobQueue].[Id] type to BIGINT';
-
-	ALTER TABLE [HangFire].[JobQueue] ADD CONSTRAINT [PK_HangFire_JobQueue] PRIMARY KEY CLUSTERED ([Id] ASC);
-	PRINT 'Re-created constraint [PK_HangFire_JobQueue]';
-
-	-- Modify [HangFire].[List].[Id] type to BIGINT
-
-	ALTER TABLE [HangFire].[List] DROP CONSTRAINT [PK_HangFire_List];
-	PRINT 'Dropped constraint [PK_HangFire_List] to modify the [HangFire].[List].[Id] column';
-
-	DROP INDEX [IX_HangFire_List_ExpireAt] ON [HangFire].[List];
-	PRINT 'Dropped index [IX_HangFire_List_ExpireAt] to modify the [HangFire].[List].[Id] column';
-
-	ALTER TABLE [HangFire].[List] ALTER COLUMN [Id] BIGINT;
-	PRINT 'Modified [HangFire].[List].[Id] type to BIGINT';
-
-	ALTER TABLE [HangFire].[List] ADD CONSTRAINT [PK_HangFire_List] PRIMARY KEY CLUSTERED ([Id] ASC);
-	PRINT 'Re-created constraint [PK_HangFire_List]';
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Job_ExpireAt] ON [HangFire].[Job] ([ExpireAt])
+	INCLUDE ([Id])
+	WHERE [ExpireAt] IS NOT NULL;
+	PRINT 'Re-created index [IX_HangFire_Job_ExpireAt]. Made the index only for rows with non-null ExpireAt value';
 
 	CREATE NONCLUSTERED INDEX [IX_HangFire_List_ExpireAt] ON [HangFire].[List] ([ExpireAt])
 	INCLUDE ([Id])
 	WHERE [ExpireAt] IS NOT NULL;
 	PRINT 'Re-created index [IX_HangFire_List_ExpireAt]. Made the index only for rows with non-null ExpireAt value';
 
-	-- Modify [HangFire].[Set].[Id] type to BIGINT
-
-	ALTER TABLE [HangFire].[Set] DROP CONSTRAINT [PK_HangFire_Set];
-	PRINT 'Dropped constraint [PK_HangFire_Set] to modify the [HangFire].[Set].[Id] column';
-
-	DROP INDEX [IX_HangFire_Set_ExpireAt] ON [HangFire].[Set];
-	PRINT 'Dropped index [IX_HangFire_Set_ExpireAt] to modify the [HangFire].[Set].[Id] column';
-
-	ALTER TABLE [HangFire].[Set] ALTER COLUMN [Id] BIGINT;
-	PRINT 'Modified [HangFire].[Set].[Id] type to BIGINT';
-
-	ALTER TABLE [HangFire].[Set] ADD CONSTRAINT [PK_HangFire_Set] PRIMARY KEY CLUSTERED ([Id] ASC);
-	PRINT 'Re-created constraint [PK_HangFire_Set]';
-
 	CREATE NONCLUSTERED INDEX [IX_HangFire_Set_ExpireAt] ON [HangFire].[Set] ([ExpireAt])
 	INCLUDE ([Id])
 	WHERE [ExpireAt] IS NOT NULL;
 	PRINT 'Re-created index [IX_HangFire_Set_ExpireAt]. Made the index only for rows with non-null ExpireAt value';
-
-	-- Modify [HangFire].[State].[Id] type to BIGINT
-
-	ALTER TABLE [HangFire].[Job] ALTER COLUMN [StateId] BIGINT;
-	PRINT 'Modified [HangFire].[Job].[StateId] type to BIGINT to modify the [HangFire].[State].[Id] column';
-
-	ALTER TABLE [HangFire].[State] DROP CONSTRAINT [PK_HangFire_State];
-	PRINT 'Dropped constraint [PK_HangFire_State] to modify the [HangFire].[State].[Id] column';
-
-	ALTER TABLE [HangFire].[State] ALTER COLUMN [Id] BIGINT;
-	PRINT 'Modified [HangFire].[State].[Id] type to BIGINT';
-
-	ALTER TABLE [HangFire].[State] ADD CONSTRAINT [PK_HangFire_State] PRIMARY KEY CLUSTERED ([Id] ASC);
-	PRINT 'Re-created constraint [PK_HangFire_State]';
 
 	SET @CURRENT_SCHEMA_VERSION = 6;
 END	
@@ -584,10 +590,10 @@ PRINT 'Hangfire SQL objects installed';
 END TRY
 BEGIN CATCH
     DECLARE @ERROR NVARCHAR(MAX);
-	SET @ERROR = ERROR_MESSAGE();
+	SET @ERROR = CHAR(13) + CHAR(10) + ERROR_MESSAGE() + CHAR(13) + CHAR(10) + CHAR(13) + CHAR(10);
 
 	if @@TRANCOUNT > 0
 		ROLLBACK TRANSACTION
 
-	RAISERROR(N'Hangfire database migration script failed: %s Changes were rolled back, please fix the problem and re-run the script again.', 11, 1, @ERROR);
+	RAISERROR(N'Hangfire database migration script failed: %sChanges were rolled back, please fix the problem and re-run the script again.', 11, 1, @ERROR);
 END CATCH
