@@ -237,7 +237,17 @@ WriteLiteral("</li>\r\n                    <li>");
 
             
             #line 65 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                   Write(String.Format(Strings.LayoutPage_Footer_Time, DateTime.UtcNow));
+                   Write(Strings.LayoutPage_Footer_Time);
+
+            
+            #line default
+            #line hidden
+WriteLiteral(" ");
+
+
+            
+            #line 65 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                                                   Write(Html.LocalTime(DateTime.UtcNow));
 
             
             #line default

@@ -140,9 +140,11 @@ namespace Hangfire.Server
                             ex);
                     }
                 }
-
-                _throttler.Delay(context.CancellationToken);
             }
+
+            // The code above may be completed in less than a second. Default throttler use
+            // the second resolution, and without an extra delay, CPU and DB bursts may happen.
+            _throttler.Delay(context.CancellationToken);
         }
 
         /// <inheritdoc />

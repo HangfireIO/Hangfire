@@ -288,7 +288,7 @@
     <value>耗时: {0}ms</value>
   </data>
   <data name="LayoutPage_Footer_Time" xml:space="preserve">
-    <value>时间: {0} GMT</value>
+    <value>时间:</value>
   </data>
   <data name="Paginator_Next" xml:space="preserve">
     <value>下一步</value>
