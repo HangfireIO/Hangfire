@@ -685,7 +685,7 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Time: {0} GMT.
+        ///   Looks up a localized string similar to Time:.
         /// </summary>
         public static string LayoutPage_Footer_Time {
             get {
