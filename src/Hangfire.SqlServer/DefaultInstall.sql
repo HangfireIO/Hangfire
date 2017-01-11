@@ -547,22 +547,18 @@ BEGIN
 	-- TODO: Counter.ExpireAt index should be created
 
 	CREATE NONCLUSTERED INDEX [IX_HangFire_Hash_ExpireAt] ON [HangFire].[Hash] ([ExpireAt])
-	INCLUDE ([Id])
 	WHERE [ExpireAt] IS NOT NULL;
 	PRINT 'Re-created index [IX_HangFire_Hash_ExpireAt]. Made the index only for rows with non-null ExpireAt value';
 
 	CREATE NONCLUSTERED INDEX [IX_HangFire_Job_ExpireAt] ON [HangFire].[Job] ([ExpireAt])
-	INCLUDE ([Id])
 	WHERE [ExpireAt] IS NOT NULL;
 	PRINT 'Re-created index [IX_HangFire_Job_ExpireAt]. Made the index only for rows with non-null ExpireAt value';
 
 	CREATE NONCLUSTERED INDEX [IX_HangFire_List_ExpireAt] ON [HangFire].[List] ([ExpireAt])
-	INCLUDE ([Id])
 	WHERE [ExpireAt] IS NOT NULL;
 	PRINT 'Re-created index [IX_HangFire_List_ExpireAt]. Made the index only for rows with non-null ExpireAt value';
 
 	CREATE NONCLUSTERED INDEX [IX_HangFire_Set_ExpireAt] ON [HangFire].[Set] ([ExpireAt])
-	INCLUDE ([Id])
 	WHERE [ExpireAt] IS NOT NULL;
 	PRINT 'Re-created index [IX_HangFire_Set_ExpireAt]. Made the index only for rows with non-null ExpireAt value';
 
