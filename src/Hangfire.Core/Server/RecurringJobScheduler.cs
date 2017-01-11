@@ -114,52 +114,32 @@ namespace Hangfire.Server
 
             _throttler.Throttle(context.CancellationToken);
 
-            using (var connection = context.Storage.GetConnection())
+            UseConnectionDistributedLock(context.Storage, connection =>
             {
-                IDisposable distributedLock;
+                var recurringJobIds = connection.GetAllItemsFromSet("recurring-jobs");
 
-                try
+                foreach (var recurringJobId in recurringJobIds)
                 {
-                    distributedLock = connection.AcquireDistributedLock("recurring-jobs:lock", LockTimeout);
-                }
-                catch (DistributedLockTimeoutException)
-                {
-                    // DistributedLockTimeoutException here doesn't mean that recurring jobs weren't scheduled.
-                    // It just means another Hangfire server did this work.
+                    var recurringJob = connection.GetAllEntriesFromHash(
+                        $"recurring-job:{recurringJobId}");
 
-                    _throttler.Delay(context.CancellationToken);
-                    return;
-                }
-
-                using (distributedLock)
-                {
-                    var recurringJobIds = connection.GetAllItemsFromSet("recurring-jobs");
-
-                    foreach (var recurringJobId in recurringJobIds)
+                    if (recurringJob == null)
                     {
-                        var recurringJob = connection.GetAllEntriesFromHash(
-                            $"recurring-job:{recurringJobId}");
-
-                        if (recurringJob == null)
-                        {
-                            continue;
-                        }
-
-                        try
-                        {
-                            TryScheduleJob(context.Storage, connection, recurringJobId, recurringJob);
-                        }
-                        catch (JobLoadException ex)
-                        {
-                            Logger.WarnException(
-                                $"Recurring job '{recurringJobId}' can not be scheduled due to job load exception.",
-                                ex);
-                        }
+                        continue;
                     }
 
-                    _throttler.Delay(context.CancellationToken);
+                    try
+                    {
+                        TryScheduleJob(context.Storage, connection, recurringJobId, recurringJob);
+                    }
+                    catch (JobLoadException ex)
+                    {
+                        Logger.WarnException(
+                            $"Recurring job '{recurringJobId}' can not be scheduled due to job load exception.",
+                            ex);
+                    }
                 }
-            }
+            });
 
             // The code above may be completed in less than a second. Default throttler use
             // the second resolution, and without an extra delay, CPU and DB bursts may happen.
@@ -244,6 +224,20 @@ namespace Hangfire.Server
                     ex);
             }
 
+        }
+
+        private void UseConnectionDistributedLock(JobStorage storage, Action<IStorageConnection> action)
+        {
+            using (var connection = storage.GetConnection())
+            {
+                connection.UseDistributedLock(
+                    "recurring-jobs:lock",
+                    LockTimeout,
+                    action,
+                    // DistributedLockTimeoutException here doesn't mean that recurring jobs weren't scheduled.
+                    // It just means another Hangfire server did this work.
+                    throwTimeoutException: false);
+            }
         }
 
         private static DateTime GetLastInstant(IReadOnlyDictionary<string, string> recurringJob, IScheduleInstant instant)
