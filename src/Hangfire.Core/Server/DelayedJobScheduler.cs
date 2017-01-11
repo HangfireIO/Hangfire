@@ -182,15 +182,19 @@ namespace Hangfire.Server
 
         private T UseConnectionDistributedLock<T>(JobStorage storage, Func<IStorageConnection, T> action)
         {
-            using (var connection = storage.GetConnection())
+            try
             {
-                return connection.UseDistributedLock(
-                    "locks:schedulepoller",
-                    DefaultLockTimeout,
-                    action,
-                    // DistributedLockTimeoutException here doesn't mean that delayed jobs weren't enqueued.
-                    // It just means another Hangfire server did this work.
-                    throwTimeoutException: false);
+                using (var connection = storage.GetConnection())
+                using (connection.AcquireDistributedLock("locks:schedulepoller", DefaultLockTimeout))
+                {
+                    return action(connection);
+                }
+            }
+            catch (DistributedLockTimeoutException e) when (e.Resource == "locks:schedulepoller")
+            {
+                // DistributedLockTimeoutException here doesn't mean that delayed jobs weren't enqueued.
+                // It just means another Hangfire server did this work.
+                return default(T);
             }
         }
     }
