@@ -36,6 +36,52 @@ namespace Hangfire.Storage
                 timeout);
         }
 
+        public static T UseDistributedLock<T>(
+           [NotNull] this IStorageConnection connection,
+           string resource,
+           TimeSpan timeout,
+           Func<IStorageConnection, T> action,
+           bool throwTimeoutException
+           )
+        {
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+
+            try
+            {
+                using (connection.AcquireDistributedLock(resource, timeout))
+                {
+                    return action(connection);
+                }
+            }
+            catch (DistributedLockTimeoutException e) when (e.Resource == resource)
+            {
+                if (throwTimeoutException) throw;
+
+                return default(T);
+            }
+        }
+
+        public static void UseDistributedLock(
+          [NotNull] this IStorageConnection connection,
+          string resource,
+          TimeSpan timeout,
+          Action<IStorageConnection> action,
+          bool throwTimeoutException
+          )
+        {
+            UseDistributedLock(
+                connection,
+                resource,
+                timeout,
+                storageConnection =>
+                {
+                    action(storageConnection);
+                    return true;
+                },
+                throwTimeoutException
+            );
+        }
+
         public static long GetRecurringJobCount([NotNull] this JobStorageConnection connection)
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));

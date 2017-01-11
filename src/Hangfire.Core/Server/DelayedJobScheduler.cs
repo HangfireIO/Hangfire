@@ -144,56 +144,53 @@ namespace Hangfire.Server
 
         private bool EnqueueNextScheduledJob(BackgroundProcessContext context)
         {
-            using (var connection = context.Storage.GetConnection())
+            return UseConnectionDistributedLock(context.Storage, connection =>
             {
-                IDisposable distributedLock;
+                var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
 
-                try
-                {
-                    distributedLock = connection.AcquireDistributedLock("locks:schedulepoller", DefaultLockTimeout);
-                }
-                catch (DistributedLockTimeoutException)
-                {
-                    // DistributedLockTimeoutException here doesn't mean that delayed jobs weren't enqueued.
-                    // It just means another Hangfire server did this work.
+                // TODO: it is very slow. Add batching.
+                var jobId = connection.GetFirstByLowestScoreFromSet("schedule", 0, timestamp);
 
+                if (jobId == null)
+                {
+                    // No more scheduled jobs pending.
                     return false;
                 }
 
-                using (distributedLock)
+                var appliedState = _stateChanger.ChangeState(new StateChangeContext(
+                    context.Storage,
+                    connection,
+                    jobId,
+                    new EnqueuedState { Reason = $"Triggered by {ToString()}" },
+                    ScheduledState.StateName));
+
+                if (appliedState == null)
                 {
-                    var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
-
-                    // TODO: it is very slow. Add batching.
-                    var jobId = connection.GetFirstByLowestScoreFromSet("schedule", 0, timestamp);
-
-                    if (jobId == null)
+                    // When a background job with the given id does not exist, we should
+                    // remove its id from a schedule manually. This may happen when someone
+                    // modifies a storage bypassing Hangfire API.
+                    using (var transaction = connection.CreateWriteTransaction())
                     {
-                        // No more scheduled jobs pending.
-                        return false;
+                        transaction.RemoveFromSet("schedule", jobId);
+                        transaction.Commit();
                     }
-
-                    var appliedState = _stateChanger.ChangeState(new StateChangeContext(
-                        context.Storage,
-                        connection,
-                        jobId,
-                        new EnqueuedState { Reason = $"Triggered by {ToString()}" },
-                        ScheduledState.StateName));
-
-                    if (appliedState == null)
-                    {
-                        // When a background job with the given id does not exist, we should
-                        // remove its id from a schedule manually. This may happen when someone
-                        // modifies a storage bypassing Hangfire API.
-                        using (var transaction = connection.CreateWriteTransaction())
-                        {
-                            transaction.RemoveFromSet("schedule", jobId);
-                            transaction.Commit();
-                        }
-                    }
-
-                    return true;
                 }
+
+                return true;
+            });
+        }
+
+        private T UseConnectionDistributedLock<T>(JobStorage storage, Func<IStorageConnection, T> action)
+        {
+            using (var connection = storage.GetConnection())
+            {
+                return connection.UseDistributedLock(
+                    "locks:schedulepoller",
+                    DefaultLockTimeout,
+                    action,
+                    // DistributedLockTimeoutException here doesn't mean that delayed jobs weren't enqueued.
+                    // It just means another Hangfire server did this work.
+                    throwTimeoutException: false);
             }
         }
     }
