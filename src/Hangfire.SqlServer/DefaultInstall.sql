@@ -385,11 +385,19 @@ IF @CURRENT_SCHEMA_VERSION = 5
 BEGIN
 	PRINT 'Installing schema version 6';
 
+	-- Remove unnecessary indexes – there's an alternative for each.
+
+	DROP INDEX [IX_HangFire_Hash_Key] ON [HangFire].[Hash]
+	PRINT 'Dropped unnecessary index [IX_HangFire_Hash_Key], because [UX_HangFire_Hash_Key_Field] is enough';
+
+	DROP INDEX [IX_HangFire_Set_Key] ON [HangFire].[Set]
+	PRINT 'Dropped unnecessary index [IX_HangFire_Set_Key], because [UX_HangFire_Set_KeyAndValue] is enough';
+
 	-- Dropping `IX_HangFire_XXX_ExpireAt` indexes before migrating to the BIGINT type, because all of 
 	-- them include the Id columns by mistake. We'll recreate them later without the inclusion.
 
 	DROP INDEX [IX_HangFire_Hash_ExpireAt] ON [HangFire].[Hash];
-	PRINT 'Dropped index [IX_HangFire_Hash_ExpireAt] ] to modify the [HangFire].[Hash].[Id] column';
+	PRINT 'Dropped index [IX_HangFire_Hash_ExpireAt] to modify the [HangFire].[Hash].[Id] column';
 
 	DROP INDEX [IX_HangFire_Job_ExpireAt] ON [HangFire].[Job];
 	PRINT 'Dropped index [IX_HangFire_Job_ExpireAt] to modify the [HangFire].[Job].[Id] column';
