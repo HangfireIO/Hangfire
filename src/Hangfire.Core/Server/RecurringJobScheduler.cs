@@ -228,15 +228,18 @@ namespace Hangfire.Server
 
         private void UseConnectionDistributedLock(JobStorage storage, Action<IStorageConnection> action)
         {
-            using (var connection = storage.GetConnection())
+            try
             {
-                connection.UseDistributedLock(
-                    "recurring-jobs:lock",
-                    LockTimeout,
-                    action,
-                    // DistributedLockTimeoutException here doesn't mean that recurring jobs weren't scheduled.
-                    // It just means another Hangfire server did this work.
-                    throwTimeoutException: false);
+                using (var connection = storage.GetConnection())
+                using (connection.AcquireDistributedLock("recurring-jobs:lock", LockTimeout))
+                {
+                    action(connection);
+                }
+            }
+            catch (DistributedLockTimeoutException e) when (e.Resource == "recurring-jobs:lock")
+            {
+                // DistributedLockTimeoutException here doesn't mean that recurring jobs weren't scheduled.
+                // It just means another Hangfire server did this work.
             }
         }
 
