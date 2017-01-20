@@ -25,7 +25,8 @@ namespace Hangfire
             [NotNull] string recurringJobId, 
             [NotNull] Job job, 
             [NotNull] string cronExpression, 
-            [NotNull] RecurringJobOptions options);
+            [NotNull] RecurringJobOptions options,
+            CronStringFormat cronStringFormat = CronStringFormat.Default);
 
         void Trigger([NotNull] string recurringJobId);
         void RemoveIfExists([NotNull] string recurringJobId);

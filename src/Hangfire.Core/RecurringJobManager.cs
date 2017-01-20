@@ -25,6 +25,13 @@ using NCrontab.Advanced;
 
 namespace Hangfire
 {
+    public enum CronStringFormat
+    {
+        Default = 0,
+        WithYears = 1,
+        WithSeconds = 2,
+        WithSecondsAndYears = 3
+    }
     /// <summary>
     /// Represents a recurring job manager that allows to create, update
     /// or delete recurring jobs.
@@ -53,14 +60,14 @@ namespace Hangfire
             _factory = factory;
         }
 
-        public void AddOrUpdate(string recurringJobId, Job job, string cronExpression, RecurringJobOptions options)
+        public void AddOrUpdate(string recurringJobId, Job job, string cronExpression, RecurringJobOptions options, CronStringFormat cronStringFormat = CronStringFormat.Default)
         {
             if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
             if (job == null) throw new ArgumentNullException(nameof(job));
             if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
             if (options == null) throw new ArgumentNullException(nameof(options));
             
-            ValidateCronExpression(cronExpression);
+            ValidateCronExpression(cronExpression, cronStringFormat);
 
             using (var connection = _storage.GetConnection())
             {
@@ -131,11 +138,11 @@ namespace Hangfire
             }
         }
 
-        private static void ValidateCronExpression(string cronExpression)
+        private static void ValidateCronExpression(string cronExpression, Hangfire.CronStringFormat cronStringFormat)
         {
             try
             {
-                var schedule = CrontabSchedule.Parse(cronExpression);
+                var schedule = CrontabSchedule.Parse(cronExpression, (NCrontab.Advanced.Enumerations.CronStringFormat)cronStringFormat);
                 schedule.GetNextOccurrence(DateTime.UtcNow);
             }
             catch (Exception ex)

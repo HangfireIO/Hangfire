@@ -27,19 +27,10 @@ namespace Hangfire
             [NotNull] this IRecurringJobManager manager,
             [NotNull] string recurringJobId,
             [NotNull] Job job,
-            [NotNull] string cronExpression)
-        {
-            AddOrUpdate(manager, recurringJobId, job, cronExpression, TimeZoneInfo.Utc);
-        }
-
-        public static void AddOrUpdate(
-            [NotNull] this IRecurringJobManager manager,
-            [NotNull] string recurringJobId,
-            [NotNull] Job job,
             [NotNull] string cronExpression,
-            [NotNull] TimeZoneInfo timeZone)
+            CronStringFormat cronStringFormat = CronStringFormat.Default)
         {
-            AddOrUpdate(manager, recurringJobId, job, cronExpression, timeZone, EnqueuedState.DefaultQueue);
+            AddOrUpdate(manager, recurringJobId, job, cronExpression, TimeZoneInfo.Utc, cronStringFormat);
         }
 
         public static void AddOrUpdate(
@@ -48,7 +39,19 @@ namespace Hangfire
             [NotNull] Job job,
             [NotNull] string cronExpression,
             [NotNull] TimeZoneInfo timeZone,
-            [NotNull] string queue)
+            CronStringFormat cronStringFormat = CronStringFormat.Default)
+        {
+            AddOrUpdate(manager, recurringJobId, job, cronExpression, timeZone, EnqueuedState.DefaultQueue, cronStringFormat);
+        }
+
+        public static void AddOrUpdate(
+            [NotNull] this IRecurringJobManager manager,
+            [NotNull] string recurringJobId,
+            [NotNull] Job job,
+            [NotNull] string cronExpression,
+            [NotNull] TimeZoneInfo timeZone,
+            [NotNull] string queue,
+            CronStringFormat cronStringFormat = CronStringFormat.Default)
         {
             if (manager == null) throw new ArgumentNullException(nameof(manager));
             if (timeZone == null) throw new ArgumentNullException(nameof(timeZone));
@@ -58,7 +61,8 @@ namespace Hangfire
                 recurringJobId,
                 job,
                 cronExpression,
-                new RecurringJobOptions { QueueName = queue, TimeZone = timeZone });
+                new RecurringJobOptions { QueueName = queue, TimeZone = timeZone },
+                cronStringFormat);
         }
     }
 }
