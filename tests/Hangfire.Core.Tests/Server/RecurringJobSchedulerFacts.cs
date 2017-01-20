@@ -7,7 +7,7 @@ using Hangfire.Server;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
-using NCrontab;
+using NCrontab.Advanced;
 using Xunit;
 
 namespace Hangfire.Core.Tests.Server

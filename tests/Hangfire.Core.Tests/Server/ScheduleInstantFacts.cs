@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Hangfire.Server;
-using NCrontab;
+using NCrontab.Advanced;
 using Xunit;
 
 namespace Hangfire.Core.Tests.Server

@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Annotations;
-using NCrontab;
+using NCrontab.Advanced;
 
 namespace Hangfire.Server
 {

@@ -3,6 +3,7 @@
   "dependencies": {
     "Dapper": "1.50.1",
     "Microsoft.NETCore.Portable.Compatibility": "1.0.1",
+    "NCrontab.Advanced": "1.2.3.3",
     "NETStandard.Library": "1.6.0"
   },
   "frameworks": {

@@ -23,7 +23,7 @@ using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
-using NCrontab;
+using NCrontab.Advanced;
 
 namespace Hangfire.Server
 {
