@@ -38,5 +38,15 @@ namespace Hangfire.Dashboard
         
         public DashboardRequest Request { get; protected set; }
         public DashboardResponse Response { get; protected set; }
+
+        public virtual IBackgroundJobClient GetBackgroundJobClient()
+        {
+            return new BackgroundJobClient(Storage);
+        }
+
+        public virtual IRecurringJobManager GetRecurringJobManager()
+        {
+            return new RecurringJobManager(Storage);
+        }
     }
 }
