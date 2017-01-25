@@ -128,6 +128,35 @@ namespace Hangfire.Core.Tests
                                                 It.Is<RecurringJobOptions>(v => v.TimeZone.Equals(TimeZoneInfo.Utc))));
         }
 
+        [Fact]
+        public void AddOrUpdate_ShouldReferenceClassQueueAttribute_WhenMethodAttributeIsUnavailable()
+        {
+            Expression<Action<TestClass>> methodCall = x => x.TestInstanceMethod();
+
+            RecurringJob.AddOrUpdate<TestClass>(methodCall, TestClass.StaticGetCronExpression);
+
+            _client.Verify(x => x.AddOrUpdate(
+                It.IsAny<string>(),
+                It.Is<Job>(v => v.QueueName == "foo"),
+                It.Is<string>(v => v == string.Empty),
+                It.Is<RecurringJobOptions>(v => v.TimeZone.Equals(TimeZoneInfo.Utc))));
+        }
+
+        [Fact]
+        public void AddOrUpdate_ShouldReferenceMethodQueueAttribute_WhenMethodAttributeIsAvailable()
+        {
+            Expression<Action<TestClass>> methodCall = x => x.TestDecoratedInstanceMethod();
+
+            RecurringJob.AddOrUpdate<TestClass>(methodCall, TestClass.StaticGetCronExpression);
+
+            _client.Verify(x => x.AddOrUpdate(
+                It.IsAny<string>(),
+                It.Is<Job>(v => v.QueueName == "bar"),
+                It.Is<string>(v => v == string.Empty),
+                It.Is<RecurringJobOptions>(v => v.TimeZone.Equals(TimeZoneInfo.Utc))));
+        }
+
+        [Queue("foo")]
         public class TestClass
         {
             public static string StaticGetCronExpression()
@@ -137,8 +166,7 @@ namespace Hangfire.Core.Tests
 
             public static void TestStaticMethod()
             {
-
-
+                return;
             }
 
             public static Task TestStaticTaskMethod()
@@ -152,9 +180,15 @@ namespace Hangfire.Core.Tests
                 return string.Empty;
             }
 
+            [Queue("bar")]
+            public void TestDecoratedInstanceMethod()
+            {
+                return;
+            }
+
             public void TestInstanceMethod()
             {
-
+                return;
             }
 
             public Task TestInstanceTaskMethod()
