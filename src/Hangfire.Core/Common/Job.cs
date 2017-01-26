@@ -372,7 +372,8 @@ namespace Hangfire.Common
             }
 
             var type = explicitType ?? callExpression.Method.DeclaringType;
-            var method = callExpression.Method;
+            var argumentTypes = callExpression.Method.GetParameters().Select(x => x.ParameterType).ToArray();
+            var method = type.GetNonOpenMatchingMethod(callExpression.Method.Name, argumentTypes);
 
             if (explicitType == null && callExpression.Object != null)
             {

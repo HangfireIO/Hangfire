@@ -131,9 +131,7 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void AddOrUpdate_ShouldReferenceClassQueueAttribute_WhenMethodAttributeIsUnavailable()
         {
-            Expression<Action<TestClass>> methodCall = x => x.TestInstanceMethod();
-
-            RecurringJob.AddOrUpdate<TestClass>(methodCall, TestClass.StaticGetCronExpression);
+            RecurringJob.AddOrUpdate<TestClass>(x => x.TestInstanceMethod(), TestClass.StaticGetCronExpression, TimeZoneInfo.Utc);
 
             _client.Verify(x => x.AddOrUpdate(
                 It.IsAny<string>(),
@@ -145,9 +143,7 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void AddOrUpdate_ShouldReferenceMethodQueueAttribute_WhenMethodAttributeIsAvailable()
         {
-            Expression<Action<TestClass>> methodCall = x => x.TestDecoratedInstanceMethod();
-
-            RecurringJob.AddOrUpdate<TestClass>(methodCall, TestClass.StaticGetCronExpression);
+            RecurringJob.AddOrUpdate<TestClass>(x => x.TestDecoratedInstanceMethod(), TestClass.StaticGetCronExpression, TimeZoneInfo.Utc);
 
             _client.Verify(x => x.AddOrUpdate(
                 It.IsAny<string>(),
@@ -157,7 +153,7 @@ namespace Hangfire.Core.Tests
         }
 
         [Queue("foo")]
-        public class TestClass
+        public class TestClass : BaseClass
         {
             public static string StaticGetCronExpression()
             {
@@ -181,7 +177,7 @@ namespace Hangfire.Core.Tests
             }
 
             [Queue("bar")]
-            public void TestDecoratedInstanceMethod()
+            public override void TestDecoratedInstanceMethod()
             {
                 return;
             }
@@ -195,6 +191,14 @@ namespace Hangfire.Core.Tests
             {
                 var source = new TaskCompletionSource<bool>();
                 return source.Task;
+            }
+        }
+
+        public class BaseClass
+        {
+            public virtual void TestDecoratedInstanceMethod()
+            {
+                return;
             }
         }
     }
