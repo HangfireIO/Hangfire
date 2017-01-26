@@ -14,6 +14,9 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.8
+• Fixed – Use `long` where possible instead of `int` for background job identifiers, full support will be in 1.7.0.
+    
 1.6.7
 • Fixed – Validation added to avoid "An invalid application lock time-out" exceptions (by t0mburton).
     

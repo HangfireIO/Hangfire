@@ -19,6 +19,20 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.8
+
+Hangfire.Core
+• Fixed – `Cron.MonthInterval` now returns correct CRON expression.
+• Fixed – Throw `NotSupportedException` early, when arguments contain delegate or expression.
+• Fixed – Connection and distributed lock kept longer than necessary in `RecurringJobScheduler`.
+• Fixed – Use local date/times everywhere in Dashboard UI.
+• Fixed – Call chart update only when it exists in Dashboard UI to prevent JavaScript errors.
+• Fixed – Scheduled column title is now displaying correctly in Dashboard UI.
+• Fixed – Typo "Nexts jobs" should be "Next jobs" in Dashboard UI (by @danielabbatt).
+
+Hangfire.SqlServer
+• Fixed – Use `long` where possible instead of `int` for background job identifiers, full support will be in 1.7.0.
+    
 1.6.7
 
 Hangfire.Core

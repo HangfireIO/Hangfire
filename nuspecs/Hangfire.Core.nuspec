@@ -14,6 +14,15 @@
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.8
+• Fixed – `Cron.MonthInterval` now returns correct CRON expression.
+• Fixed – Throw `NotSupportedException` early, when arguments contain delegate or expression.
+• Fixed – Connection and distributed lock kept longer than necessary in `RecurringJobScheduler`.
+• Fixed – Use local date/times everywhere in Dashboard UI.
+• Fixed – Call chart update only when it exists in Dashboard UI to prevent JavaScript errors.
+• Fixed – Scheduled column title is now displaying correctly in Dashboard UI.
+• Fixed – Typo "Nexts jobs" should be "Next jobs" in Dashboard UI (by @danielabbatt).
+    
 1.6.7
 • Fixed – ArgumentException when using complex arguments in generic methods like "IList&lt;T&gt;" (by @aidmsu).
 • Fixed – Generic arrays like "T[]" aren't supported in background job arguments (by @aidmsu).
