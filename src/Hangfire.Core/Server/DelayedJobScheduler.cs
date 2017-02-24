@@ -68,7 +68,7 @@ namespace Hangfire.Server
         /// </remarks>
         public static readonly TimeSpan DefaultPollingDelay = TimeSpan.FromSeconds(15);
 
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.For<DelayedJobScheduler>();
         private static readonly TimeSpan DefaultLockTimeout = TimeSpan.FromMinutes(1);
 
         private readonly IBackgroundJobStateChanger _stateChanger;

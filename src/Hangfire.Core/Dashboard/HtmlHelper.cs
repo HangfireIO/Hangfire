@@ -21,6 +21,8 @@ using System.Net;
 using System.Text;
 using Hangfire.Common;
 using System.ComponentModel;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 using Hangfire.Dashboard.Pages;
 using Hangfire.Dashboard.Resources;
@@ -104,21 +106,22 @@ namespace Hangfire.Dashboard
                 return Strings.Common_CannotFindTargetMethod;
             }
 
-            var displayNameAttribute = Attribute.GetCustomAttribute(job.Method, typeof(DisplayNameAttribute), true) as DisplayNameAttribute;
+#if NETFULL
+            var displayNameAttribute = job.Method.GetCustomAttribute(typeof(DisplayNameAttribute)) as DisplayNameAttribute;
+            if (displayNameAttribute != null && displayNameAttribute.DisplayName != null)
+            {
+                try
+                {
+                    return String.Format(displayNameAttribute.DisplayName, job.Args.ToArray());
+                }
+                catch (FormatException)
+                {
+                    return displayNameAttribute.DisplayName;
+                }
+            }
+#endif
 
-            if (displayNameAttribute?.DisplayName == null)
-            {
-                return job.ToString();
-            }
-
-            try
-            {
-                return String.Format(displayNameAttribute.DisplayName, job.Args.ToArray());
-            }
-            catch (FormatException)
-            {
-                return displayNameAttribute.DisplayName;
-            }
+            return job.ToString();
         }
 
         public NonEscapedString StateLabel(string stateName)
@@ -144,6 +147,16 @@ namespace Hangfire.Dashboard
         public NonEscapedString RelativeTime(DateTime value)
         {
             return Raw($"<span data-moment=\"{JobHelper.ToTimestamp(value)}\">{value}</span>");
+        }
+
+        public NonEscapedString MomentTitle(DateTime time, string value)
+        {
+            return Raw($"<span data-moment-title=\"{JobHelper.ToTimestamp(time)}\">{value}</span>");
+        }
+
+        public NonEscapedString LocalTime(DateTime value)
+        {
+            return Raw($"<span data-moment-local=\"{JobHelper.ToTimestamp(value)}\">{value}</span>");
         }
 
         public string ToHumanDuration(TimeSpan? duration, bool displaySign = true)
@@ -180,7 +193,7 @@ namespace Hangfire.Dashboard
                     builder.Append(duration.Value.Seconds);
                     if (duration.Value.Milliseconds > 0)
                     {
-                        builder.Append($".{duration.Value.Milliseconds}");
+                        builder.Append($".{duration.Value.Milliseconds.ToString().PadLeft(3, '0')}");
                     }
 
                     builder.Append("s ");
@@ -212,10 +225,21 @@ namespace Hangfire.Dashboard
         public NonEscapedString QueueLabel(string queue)
         {
             var label = queue != null 
-                ? $"<span class=\"label label-queue label-primary\">{queue}</span>" 
-                : $"<span class=\"label label-queue label-danger\"><i>{Strings.Common_Unknown}</i></span>";
+                ? $"<a class=\"text-uppercase\" href=\"{_page.Url.Queue(queue)}\">{queue}</a>" 
+                : $"<span class=\"label label-danger\"><i>{Strings.Common_Unknown}</i></span>";
 
             return new NonEscapedString(label);
+        }
+
+        public NonEscapedString ServerId(string serverId)
+        {
+            var parts = serverId.Split(':');
+            var shortenedId = parts.Length > 1
+                ? String.Join(":", parts.Take(parts.Length - 1))
+                : serverId;
+
+            return new NonEscapedString(
+                $"<span class=\"labe label-defult text-uppercase\" title=\"{serverId}\">{shortenedId}</span>");
         }
 
         private static readonly StackTraceHtmlFragments StackTraceHtmlFragments = new StackTraceHtmlFragments
@@ -232,7 +256,14 @@ namespace Hangfire.Dashboard
 
         public NonEscapedString StackTrace(string stackTrace)
         {
-            return new NonEscapedString(StackTraceFormatter.FormatHtml(stackTrace, StackTraceHtmlFragments));
+            try
+            {
+                return new NonEscapedString(StackTraceFormatter.FormatHtml(stackTrace, StackTraceHtmlFragments));
+            }
+            catch (RegexMatchTimeoutException)
+            {
+                return new NonEscapedString(HtmlEncode(stackTrace));
+            }
         }
 
         public string HtmlEncode(string text)

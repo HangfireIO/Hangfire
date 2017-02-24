@@ -77,6 +77,17 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void AddOrUpdate_ThrowsAnException_WhenQueueNameIsNull()
+        {
+            var manager = CreateManager();
+
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => manager.AddOrUpdate(_id, _job, Cron.Daily(), TimeZoneInfo.Local, null));
+
+            Assert.Equal("queue", exception.ParamName);
+        }
+        
+        [Fact]
         public void AddOrUpdate_ThrowsAnException_WhenCronExpressionIsNull()
         {
             var manager = CreateManager();
@@ -250,7 +261,8 @@ namespace Hangfire.Core.Tests
         {
             var manager = CreateManager();
 
-            Assert.DoesNotThrow(() => manager.Trigger(_id));
+            manager.Trigger(_id);
+
             _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
         }
 

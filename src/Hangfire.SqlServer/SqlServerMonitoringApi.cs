@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
-using System.Transactions;
 using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Common;
@@ -123,7 +122,7 @@ namespace Hangfire.SqlServer
             return UseConnection<IList<ServerDto>>(connection =>
             {
                 var servers = connection.Query<Entities.Server>(
-                    $@"select * from [{_storage.SchemaName}].Server")
+                    $@"select * from [{_storage.SchemaName}].Server with (nolock)")
                     .ToList();
 
                 var result = new List<ServerDto>();
@@ -212,7 +211,9 @@ namespace Hangfire.SqlServer
                 var enqueuedJobIds = tuple.Monitoring.GetEnqueuedJobIds(tuple.Queue, 0, 5);
                 var counters = tuple.Monitoring.GetEnqueuedAndFetchedCount(tuple.Queue);
 
-                var firstJobs = UseConnection(connection => EnqueuedJobs(connection, enqueuedJobIds));
+                // TODO: Remove the Select method call to support `bigint`.
+                var firstJobs = UseConnection(connection => 
+                    EnqueuedJobs(connection, enqueuedJobIds.Select(x => (long)x).ToArray()));
 
                 result.Add(new QueueWithTopEnqueuedJobsDto
                 {
@@ -231,7 +232,8 @@ namespace Hangfire.SqlServer
             var queueApi = GetQueueApi(queue);
             var enqueuedJobIds = queueApi.GetEnqueuedJobIds(queue, from, perPage);
 
-            return UseConnection(connection => EnqueuedJobs(connection, enqueuedJobIds));
+            // TODO: Remove the Select method call to support `bigint`.
+            return UseConnection(connection => EnqueuedJobs(connection, enqueuedJobIds.Select(x => (long)x).ToArray()));
         }
 
         public JobList<FetchedJobDto> FetchedJobs(string queue, int @from, int perPage)
@@ -239,7 +241,8 @@ namespace Hangfire.SqlServer
             var queueApi = GetQueueApi(queue);
             var fetchedJobIds = queueApi.GetFetchedJobIds(queue, from, perPage);
 
-            return UseConnection(connection => FetchedJobs(connection, fetchedJobIds));
+            // TODO: Remove the Select method call to support `bigint`.
+            return UseConnection(connection => FetchedJobs(connection, fetchedJobIds.Select(x => (long)x).ToArray()));
         }
 
         public IDictionary<DateTime, long> HourlySucceededJobs()
@@ -258,11 +261,10 @@ namespace Hangfire.SqlServer
         {
             return UseConnection(connection =>
             {
-
                 string sql = $@"
-select * from [{_storage.SchemaName}].Job where Id = @id
-select * from [{_storage.SchemaName}].JobParameter where JobId = @id
-select * from [{_storage.SchemaName}].State where JobId = @id order by Id desc";
+select * from [{_storage.SchemaName}].Job with (nolock) where Id = @id
+select * from [{_storage.SchemaName}].JobParameter with (nolock) where JobId = @id
+select * from [{_storage.SchemaName}].State with (nolock) where JobId = @id order by Id desc";
 
                 using (var multi = connection.QueryMultiple(sql, new { id = jobId }))
                 {
@@ -311,40 +313,42 @@ select * from [{_storage.SchemaName}].State where JobId = @id order by Id desc";
         public StatisticsDto GetStatistics()
         {
             string sql = String.Format(@"
-select count(Id) from [{0}].Job where StateName = N'Enqueued';
-select count(Id) from [{0}].Job where StateName = N'Failed';
-select count(Id) from [{0}].Job where StateName = N'Processing';
-select count(Id) from [{0}].Job where StateName = N'Scheduled';
-select count(Id) from [{0}].Server;
+set transaction isolation level read committed;
+select count(Id) from [{0}].Job with (nolock) where StateName = N'Enqueued';
+select count(Id) from [{0}].Job with (nolock) where StateName = N'Failed';
+select count(Id) from [{0}].Job with (nolock) where StateName = N'Processing';
+select count(Id) from [{0}].Job with (nolock) where StateName = N'Scheduled';
+select count(Id) from [{0}].Server with (nolock);
 select sum(s.[Value]) from (
-    select sum([Value]) as [Value] from [{0}].Counter where [Key] = N'stats:succeeded'
+    select sum([Value]) as [Value] from [{0}].Counter with (readpast) where [Key] = N'stats:succeeded'
     union all
-    select [Value] from [{0}].AggregatedCounter where [Key] = N'stats:succeeded'
+    select [Value] from [{0}].AggregatedCounter with (nolock) where [Key] = N'stats:succeeded'
 ) as s;
 select sum(s.[Value]) from (
-    select sum([Value]) as [Value] from [{0}].Counter where [Key] = N'stats:deleted'
+    select sum([Value]) as [Value] from [{0}].Counter with (readpast) where [Key] = N'stats:deleted'
     union all
-    select [Value] from [{0}].AggregatedCounter where [Key] = N'stats:deleted'
+    select [Value] from [{0}].AggregatedCounter with (nolock) where [Key] = N'stats:deleted'
 ) as s;
-select count(*) from [{0}].[Set] where [Key] = N'recurring-jobs';
-", _storage.SchemaName);
+
+select count(*) from [{0}].[Set] with (nolock) where [Key] = N'recurring-jobs';
+                ", _storage.SchemaName);
 
             var statistics = UseConnection(connection =>
             {
                 var stats = new StatisticsDto();
                 using (var multi = connection.QueryMultiple(sql))
                 {
-                    stats.Enqueued = multi.Read<int>().Single();
-                    stats.Failed = multi.Read<int>().Single();
-                    stats.Processing = multi.Read<int>().Single();
-                    stats.Scheduled = multi.Read<int>().Single();
+                    stats.Enqueued = multi.ReadSingle<int>();
+                    stats.Failed = multi.ReadSingle<int>();
+                    stats.Processing = multi.ReadSingle<int>();
+                    stats.Scheduled = multi.ReadSingle<int>();
 
-                    stats.Servers = multi.Read<int>().Single();
+                    stats.Servers = multi.ReadSingle<int>();
 
-                    stats.Succeeded = multi.Read<long?>().SingleOrDefault() ?? 0;
-                    stats.Deleted = multi.Read<long?>().SingleOrDefault() ?? 0;
+                    stats.Succeeded = multi.ReadSingleOrDefault<long?>() ?? 0;
+                    stats.Deleted = multi.ReadSingleOrDefault<long?>() ?? 0;
 
-                    stats.Recurring = multi.Read<int>().Single();
+                    stats.Recurring = multi.ReadSingle<int>();
                 }
                 return stats;
             });
@@ -356,9 +360,7 @@ select count(*) from [{0}].[Set] where [Key] = N'recurring-jobs';
             return statistics;
         }
 
-        private Dictionary<DateTime, long> GetHourlyTimelineStats(
-            DbConnection connection,
-            string type)
+        private Dictionary<DateTime, long> GetHourlyTimelineStats(DbConnection connection, string type)
         {
             var endDate = DateTime.UtcNow;
             var dates = new List<DateTime>();
@@ -373,9 +375,7 @@ select count(*) from [{0}].[Set] where [Key] = N'recurring-jobs';
             return GetTimelineStats(connection, keyMaps);
         }
 
-        private Dictionary<DateTime, long> GetTimelineStats(
-            DbConnection connection,
-            string type)
+        private Dictionary<DateTime, long> GetTimelineStats(DbConnection connection, string type)
         {
             var endDate = DateTime.UtcNow.Date;
             var dates = new List<DateTime>();
@@ -390,11 +390,12 @@ select count(*) from [{0}].[Set] where [Key] = N'recurring-jobs';
             return GetTimelineStats(connection, keyMaps);
         }
 
-        private Dictionary<DateTime, long> GetTimelineStats(DbConnection connection,
+        private Dictionary<DateTime, long> GetTimelineStats(
+            DbConnection connection,
             IDictionary<string, DateTime> keyMaps)
         {
             string sqlQuery =
-$@"select [Key], [Value] as [Count] from [{_storage.SchemaName}].AggregatedCounter
+$@"select [Key], [Value] as [Count] from [{_storage.SchemaName}].AggregatedCounter with (nolock)
 where [Key] in @keys";
 
             var valuesMap = connection.Query(
@@ -427,26 +428,28 @@ where [Key] in @keys";
 
         private T UseConnection<T>(Func<DbConnection, T> action)
         {
-            return _storage.UseTransaction(action, IsolationLevel.ReadUncommitted);
+            return _storage.UseConnection(action);
         }
 
-        private JobList<EnqueuedJobDto> EnqueuedJobs(
-            DbConnection connection,
-            IEnumerable<int> jobIds)
+        private JobList<EnqueuedJobDto> EnqueuedJobs(DbConnection connection, long[] jobIds)
         {
             string enqueuedJobsSql = 
 $@"select j.*, s.Reason as StateReason, s.Data as StateData 
-from [{_storage.SchemaName}].Job j
-left join [{_storage.SchemaName}].State s on s.Id = j.StateId
+from [{_storage.SchemaName}].Job j with (nolock)
+left join [{_storage.SchemaName}].State s with (nolock) on s.Id = j.StateId
 where j.Id in @jobIds";
 
             var jobs = connection.Query<SqlJob>(
                 enqueuedJobsSql,
                 new { jobIds = jobIds })
-                .ToList();
+                .ToDictionary(x => x.Id, x => x);
 
+            var sortedSqlJobs = jobIds
+                .Select(jobId => jobs.ContainsKey(jobId) ? jobs[jobId] : new SqlJob { Id = jobId })
+                .ToList();
+            
             return DeserializeJobs(
-                jobs,
+                sortedSqlJobs,
                 (sqlJob, job, stateData) => new EnqueuedJobDto
                 {
                     Job = job,
@@ -460,13 +463,12 @@ where j.Id in @jobIds";
         private long GetNumberOfJobsByStateName(DbConnection connection, string stateName)
         {
             var sqlQuery = _jobListLimit.HasValue
-                ? $@"select count(j.Id) from (select top (@limit) Id from [{_storage.SchemaName}].Job where StateName = @state) as j"
-                : $@"select count(Id) from [{_storage.SchemaName}].Job where StateName = @state";
+                ? $@"select count(j.Id) from (select top (@limit) Id from [{_storage.SchemaName}].Job with (nolock) where StateName = @state) as j"
+                : $@"select count(Id) from [{_storage.SchemaName}].Job with (nolock) where StateName = @state";
 
-            var count = connection.Query<int>(
+            var count = connection.ExecuteScalar<int>(
                  sqlQuery,
-                 new { state = stateName, limit = _jobListLimit })
-                 .Single();
+                 new { state = stateName, limit = _jobListLimit });
 
             return count;
         }
@@ -494,12 +496,18 @@ where j.Id in @jobIds";
             Func<SqlJob, Job, Dictionary<string, string>, TDto> selector)
         {
             string jobsSql = 
-$@"select * from (
-  select j.*, s.Reason as StateReason, s.Data as StateData, row_number() over (order by j.Id desc) as row_num
-  from [{_storage.SchemaName}].Job j with (forceseek)
-  left join [{_storage.SchemaName}].State s on j.StateId = s.Id
+$@";with cte as 
+(
+  select j.Id, row_number() over (order by j.Id desc) as row_num
+  from [{_storage.SchemaName}].Job j with (nolock, forceseek)
   where j.StateName = @stateName
-) as j where j.row_num between @start and @end";
+)
+select j.Id, j.InvocationData, j.Arguments, s.Reason as StateReason, s.Data as StateData
+from [{_storage.SchemaName}].Job j with (nolock)
+inner join cte on cte.Id = j.Id 
+left join [{_storage.SchemaName}].State s with (nolock) on j.StateId = s.Id
+where cte.row_num between @start and @end
+order by j.Id desc";
 
             var jobs = connection.Query<SqlJob>(
                         jobsSql,
@@ -514,16 +522,21 @@ $@"select * from (
             Func<SqlJob, Job, Dictionary<string, string>, TDto> selector)
         {
             var result = new List<KeyValuePair<string, TDto>>(jobs.Count);
-
+            
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var job in jobs)
             {
-                var deserializedData = JobHelper.FromJson<Dictionary<string, string>>(job.StateData);
-                var stateData = deserializedData != null
-                    ? new Dictionary<string, string>(deserializedData, StringComparer.OrdinalIgnoreCase)
-                    : null;
+                var dto = default(TDto);
+                
+                if (job.InvocationData != null)
+                {
+                    var deserializedData = JobHelper.FromJson<Dictionary<string, string>>(job.StateData);
+                    var stateData = deserializedData != null
+                        ? new Dictionary<string, string>(deserializedData, StringComparer.OrdinalIgnoreCase)
+                        : null;
 
-                var dto = selector(job, DeserializeJob(job.InvocationData, job.Arguments), stateData);
+                    dto = selector(job, DeserializeJob(job.InvocationData, job.Arguments), stateData);
+                }
 
                 result.Add(new KeyValuePair<string, TDto>(
                     job.Id.ToString(), dto));
@@ -532,14 +545,12 @@ $@"select * from (
             return new JobList<TDto>(result);
         }
 
-        private JobList<FetchedJobDto> FetchedJobs(
-            DbConnection connection,
-            IEnumerable<int> jobIds)
-        {
+        private JobList<FetchedJobDto> FetchedJobs(DbConnection connection, IEnumerable<long> jobIds)
+        { 
             string fetchedJobsSql = 
 $@"select j.*, s.Reason as StateReason, s.Data as StateData 
-from [{_storage.SchemaName}].Job j
-left join [{_storage.SchemaName}].State s on s.Id = j.StateId
+from [{_storage.SchemaName}].Job j with (nolock)
+left join [{_storage.SchemaName}].State s with (nolock) on s.Id = j.StateId
 where j.Id in @jobIds";
 
             var jobs = connection.Query<SqlJob>(
@@ -565,3 +576,4 @@ where j.Id in @jobIds";
         }
     }
 }
+

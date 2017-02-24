@@ -60,7 +60,7 @@ namespace Hangfire.SqlServer
 
             if (!_storage.IsExistingConnection(_connection))
             {
-                _timer = new Timer(ExecuteKeepAliveQuery, null, TimeSpan.Zero, KeepAliveInterval);
+                _timer = new Timer(ExecuteKeepAliveQuery, null, KeepAliveInterval, KeepAliveInterval);
             }
         }
 
@@ -69,12 +69,18 @@ namespace Hangfire.SqlServer
 
         public void RemoveFromQueue()
         {
-            _transaction.Commit();
+            lock (_lockObject)
+            {
+                _transaction.Commit();
+            }
         }
 
         public void Requeue()
         {
-            _transaction.Rollback();
+            lock (_lockObject)
+            {
+                _transaction.Rollback();
+            }
         }
 
         public void Dispose()
@@ -96,7 +102,7 @@ namespace Hangfire.SqlServer
             {
                 try
                 {
-                    _connection?.Execute("SELECT 1;");
+                    _connection?.Execute("SELECT 1;", transaction: _transaction);
                 }
                 catch
                 {

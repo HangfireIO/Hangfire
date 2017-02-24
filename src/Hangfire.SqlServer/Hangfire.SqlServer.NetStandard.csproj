@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{1513919A-5746-46CE-B8C6-C2FDB3361C2D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Hangfire.SqlServer</RootNamespace>
+    <AssemblyName>Hangfire.SqlServer</AssemblyName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+    <BaseIntermediateOutputPath>obj\netstandard1.3\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>1591</NoWarn>
+    <OutputPath>bin\Debug\netstandard1.3\</OutputPath>
+    <DocumentationFile>bin\Debug\netstandard1.3\Hangfire.SqlServer.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>1591</NoWarn>
+    <OutputPath>bin\Release\netstandard1.3\</OutputPath>
+    <DocumentationFile>bin\Release\netstandard1.3\Hangfire.SqlServer.xml</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- A reference to the entire .NET Framework is automatically included -->
+    <None Include="packages.config" />
+    <None Include="project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Constants.cs" />
+    <Compile Include="CountersAggregator.cs" />
+    <Compile Include="EnqueuedAndFetchedCountDto.cs" />
+    <Compile Include="Entities\JobParameter.cs" />
+    <Compile Include="Entities\Server.cs" />
+    <Compile Include="Entities\ServerData.cs" />
+    <Compile Include="Entities\SqlHash.cs" />
+    <Compile Include="Entities\SqlJob.cs" />
+    <Compile Include="Entities\SqlState.cs" />
+    <Compile Include="ExpirationManager.cs" />
+    <Compile Include="IPersistentJobQueue.cs" />
+    <Compile Include="IPersistentJobQueueMonitoringApi.cs" />
+    <Compile Include="IPersistentJobQueueProvider.cs" />
+    <Compile Include="PersistentJobQueueProviderCollection.cs" />
+    <Compile Include="SqlServerConnection.cs" />
+    <Compile Include="SqlServerDistributedLock.cs" />
+    <Compile Include="SqlServerDistributedLockException.cs" />
+    <Compile Include="SqlServerFetchedJob.cs" />
+    <Compile Include="SqlServerJobQueue.cs" />
+    <Compile Include="SqlServerJobQueueMonitoringApi.cs" />
+    <Compile Include="SqlServerJobQueueProvider.cs" />
+    <Compile Include="SqlServerMonitoringApi.cs" />
+    <Compile Include="SqlServerObjectsInstaller.cs" />
+    <Compile Include="SqlServerStorage.cs" />
+    <Compile Include="SqlServerStorageExtensions.cs" />
+    <Compile Include="SqlServerStorageOptions.cs" />
+    <Compile Include="SqlServerWriteOnlyTransaction.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DefaultInstall.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>DefaultInstall.sql</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DefaultInstall.sql">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DefaultInstall.tt</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Install.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Hangfire.Core\Hangfire.Core.NetStandard.csproj">
+      <Project>{2a528f3a-5120-430a-b881-e265fa09abb5}</Project>
+      <Name>Hangfire.Core.NetStandard</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -26,8 +26,11 @@ namespace Hangfire.SqlServer
     internal class CountersAggregator : IServerComponent
 #pragma warning restore 618
     {
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
-
+        private static readonly ILog Logger = LogProvider.For<CountersAggregator>();
+        
+        // This number should be high enough to aggregate counters efficiently,
+        // but low enough to not to cause large amount of row locks to be taken.
+        // Lock escalation to page locks may pause the background processing.
         private const int NumberOfRecordsInSinglePass = 1000;
         private static readonly TimeSpan DelayBetweenPasses = TimeSpan.FromMilliseconds(500);
 
@@ -65,6 +68,8 @@ namespace Hangfire.SqlServer
                 // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
             } while (removedCount >= NumberOfRecordsInSinglePass);
 
+            Logger.Trace("Records from the 'Counter' table aggregated.");
+
             cancellationToken.WaitHandle.WaitOne(_interval);
         }
 
@@ -86,12 +91,13 @@ $@"DECLARE @RecordsToAggregate TABLE
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED
 BEGIN TRAN
 
-DELETE TOP (@count) [{storage.SchemaName}].[Counter] with (readpast)
+DELETE TOP (@count) C
 OUTPUT DELETED.[Key], DELETED.[Value], DELETED.[ExpireAt] INTO @RecordsToAggregate
+FROM [{storage.SchemaName}].[Counter] C WITH (READPAST, XLOCK, INDEX(0))
 
 SET NOCOUNT ON
 
-;MERGE [{storage.SchemaName}].[AggregatedCounter] AS [Target]
+;MERGE [{storage.SchemaName}].[AggregatedCounter] WITH (HOLDLOCK) AS [Target]
 USING (
 	SELECT [Key], SUM([Value]) as [Value], MAX([ExpireAt]) AS [ExpireAt] FROM @RecordsToAggregate
 	GROUP BY [Key]) AS [Source] ([Key], [Value], [ExpireAt])

@@ -1,5 +1,5 @@
 ﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright © 2016 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -15,11 +15,20 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Hangfire.Dashboard
 {
-    public interface IAuthorizationFilter
+    public abstract class DashboardRequest
     {
-        bool Authorize(IDictionary<string, object> owinEnvironment);
+        public abstract string Method { get; }
+        public abstract string Path { get; }
+        public abstract string PathBase { get; }
+
+        public abstract string LocalIpAddress { get; }
+        public abstract string RemoteIpAddress { get; }
+
+        public abstract string GetQuery(string key);
+        public abstract Task<IList<string>> GetFormValuesAsync(string key);
     }
 }

@@ -73,7 +73,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             _timeZone = GetNewYorkTimeZone();
-            _now = TimeZoneInfo.ConvertTimeToUtc(new DateTime(2016, 3, 13, 1, 0, 0), _timeZone);
+            _now = TimeZoneInfo.ConvertTime(new DateTime(2016, 3, 13, 1, 0, 0), _timeZone, TimeZoneInfo.Utc);
             _schedule = CrontabSchedule.Parse("0 * * * *");
             
             var instant = CreateInstant();
@@ -90,13 +90,13 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             _timeZone = GetNewYorkTimeZone();
-            _now = TimeZoneInfo.ConvertTimeToUtc(new DateTime(2016, 3, 13, 3, 0, 0), _timeZone);
+            _now = TimeZoneInfo.ConvertTime(new DateTime(2016, 3, 13, 3, 0, 0), _timeZone, TimeZoneInfo.Utc);
             _schedule = CrontabSchedule.Parse("0 * * * *");
 
             var instant = CreateInstant();
 
             // Act
-            var last = TimeZoneInfo.ConvertTimeToUtc(new DateTime(2016, 3, 13, 1, 0, 0), _timeZone);
+            var last = TimeZoneInfo.ConvertTime(new DateTime(2016, 3, 13, 1, 0, 0), _timeZone, TimeZoneInfo.Utc);
             var value = instant.GetNextInstants(last).ToList();
 
             // Assert
@@ -165,8 +165,7 @@ namespace Hangfire.Core.Tests.Server
 
         private static TimeZoneInfo GetNewYorkTimeZone()
         {
-            var isRunningMono = Type.GetType("Mono.Runtime") != null;
-            var timeZoneId = isRunningMono ? "America/New_York" : "Eastern Standard Time";
+            var timeZoneId = PlatformHelper.IsRunningOnWindows() ? "Eastern Standard Time" : "America/New_York";
 
             return TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
         }

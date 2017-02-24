@@ -90,7 +90,8 @@ namespace Hangfire.Core.Tests.Server
         {
             var token = CreateToken();
 
-            Assert.DoesNotThrow(token.ThrowIfCancellationRequested);
+            // Does not throw
+            token.ThrowIfCancellationRequested();
         }
 
         [Fact]

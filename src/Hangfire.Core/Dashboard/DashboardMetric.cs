@@ -20,7 +20,7 @@ namespace Hangfire.Dashboard
 {
     public class DashboardMetric
     {
-        public DashboardMetric(string name, Func<RazorPage, Metric> func)
+        public DashboardMetric(string name, Func<RazorPage, Metric> func) 
             : this(name, name, func)
         {
         }

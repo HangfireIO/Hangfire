@@ -56,7 +56,8 @@ namespace Hangfire.Core.Tests.Client
         [Fact]
         public void Ctor_DoesNotThrowAnException_WhenStateIsNull()
         {
-            Assert.DoesNotThrow(() => new CreateContext(_storage.Object, _connection.Object, _job, null, null));
+            // Does not throw
+            new CreateContext(_storage.Object, _connection.Object, _job, null, null);
         }
 
         [Fact]

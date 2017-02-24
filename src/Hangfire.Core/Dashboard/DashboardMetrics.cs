@@ -63,7 +63,7 @@ namespace Hangfire.Dashboard
 
         public static readonly DashboardMetric ServerCount = new DashboardMetric(
             "servers:count", 
-            Strings.Metrics_Servers,
+            "Metrics_Servers",
             page => new Metric(page.Statistics.Servers.ToString("N0"))
             {
                 Style = page.Statistics.Servers == 0 ? MetricStyle.Warning : MetricStyle.Default,
@@ -75,12 +75,12 @@ namespace Hangfire.Dashboard
 
         public static readonly DashboardMetric RecurringJobCount = new DashboardMetric(
             "recurring:count",
-            Strings.Metrics_RecurringJobs,
+            "Metrics_RecurringJobs",
             page => new Metric(page.Statistics.Recurring.ToString("N0")));
 
         public static readonly DashboardMetric RetriesCount = new DashboardMetric(
             "retries:count",
-             Strings.Metrics_Retries,
+             "Metrics_Retries",
             page =>
             {
                 long retryCount;
@@ -103,6 +103,7 @@ namespace Hangfire.Dashboard
 
         public static readonly DashboardMetric EnqueuedCountOrNull = new DashboardMetric(
             "enqueued:count-or-null",
+            "Metrics_EnqueuedCountOrNull",
             page => page.Statistics.Enqueued > 0 || page.Statistics.Failed == 0
                 ? new Metric(page.Statistics.Enqueued.ToString("N0"))
                 {
@@ -113,18 +114,19 @@ namespace Hangfire.Dashboard
 
         public static readonly DashboardMetric FailedCountOrNull = new DashboardMetric(
             "failed:count-or-null",
+            "Metrics_FailedJobs",
             page => page.Statistics.Failed > 0
                 ? new Metric(page.Statistics.Failed.ToString("N0"))
                 {
                     Style = MetricStyle.Danger,
                     Highlighted = true,
-                    Title =
-                        $"{page.Statistics.Failed} failed job(s) found. Retry or delete them manually."
+                    Title = string.Format(Strings.Metrics_FailedCountOrNull, page.Statistics.Failed)
                 }
                 : null);
 
         public static readonly DashboardMetric EnqueuedAndQueueCount = new DashboardMetric(
             "enqueued-queues:count",
+            "Metrics_EnqueuedQueuesCount",
             page => new Metric($"{page.Statistics.Enqueued:N0} / {page.Statistics.Queues:N0}")
             {
                 Style = page.Statistics.Enqueued > 0 ? MetricStyle.Info : MetricStyle.Default,
@@ -133,7 +135,7 @@ namespace Hangfire.Dashboard
 
         public static readonly DashboardMetric ScheduledCount = new DashboardMetric(
             "scheduled:count",
-            Strings.Metrics_ScheduledJobs,
+            "Metrics_ScheduledJobs",
             page => new Metric(page.Statistics.Scheduled.ToString("N0"))
             {
                 Style = page.Statistics.Scheduled > 0 ? MetricStyle.Info : MetricStyle.Default
@@ -141,7 +143,7 @@ namespace Hangfire.Dashboard
 
         public static readonly DashboardMetric ProcessingCount = new DashboardMetric(
             "processing:count",
-            Strings.Metrics_ProcessingJobs,
+            "Metrics_ProcessingJobs",
             page => new Metric(page.Statistics.Processing.ToString("N0"))
             {
                 Style = page.Statistics.Processing > 0 ? MetricStyle.Warning : MetricStyle.Default
@@ -149,7 +151,7 @@ namespace Hangfire.Dashboard
 
         public static readonly DashboardMetric SucceededCount = new DashboardMetric(
             "succeeded:count",
-            Strings.Metrics_SucceededJobs,
+            "Metrics_SucceededJobs",
             page => new Metric(page.Statistics.Succeeded.ToString("N0"))
             {
                 IntValue = page.Statistics.Succeeded
@@ -157,7 +159,7 @@ namespace Hangfire.Dashboard
 
         public static readonly DashboardMetric FailedCount = new DashboardMetric(
             "failed:count",
-            Strings.Metrics_FailedJobs,
+            "Metrics_FailedJobs",
             page => new Metric(page.Statistics.Failed.ToString("N0"))
             {
                 IntValue = page.Statistics.Failed,
@@ -167,11 +169,12 @@ namespace Hangfire.Dashboard
 
         public static readonly DashboardMetric DeletedCount = new DashboardMetric(
             "deleted:count",
-             Strings.Metrics_DeletedJobs,
+             "Metrics_DeletedJobs",
             page => new Metric(page.Statistics.Deleted.ToString("N0")));
 
         public static readonly DashboardMetric AwaitingCount = new DashboardMetric(
             "awaiting:count",
+            "Metrics_AwaitingCount",
             page =>
             {
                 long awaitingCount = -1;

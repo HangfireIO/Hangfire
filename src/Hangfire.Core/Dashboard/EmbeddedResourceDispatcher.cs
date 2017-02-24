@@ -18,11 +18,10 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
-using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
-    internal class EmbeddedResourceDispatcher : IRequestDispatcher
+    internal class EmbeddedResourceDispatcher : IDashboardDispatcher
     {
         private readonly Assembly _assembly;
         private readonly string _resourceName;
@@ -41,24 +40,22 @@ namespace Hangfire.Dashboard
             _contentType = contentType;
         }
 
-        public Task Dispatch(RequestDispatcherContext context)
+        public Task Dispatch(DashboardContext context)
         {
-            var owinContext = new OwinContext(context.OwinEnvironment);
+            context.Response.ContentType = _contentType;
+            context.Response.SetExpire(DateTimeOffset.Now.AddYears(1));
 
-            owinContext.Response.ContentType = _contentType;
-            owinContext.Response.Expires = DateTime.Now.AddYears(1);
-
-            WriteResponse(owinContext.Response);
+            WriteResponse(context.Response);
 
             return Task.FromResult(true);
         }
 
-        protected virtual void WriteResponse(IOwinResponse response)
+        protected virtual void WriteResponse(DashboardResponse response)
         {
             WriteResource(response, _assembly, _resourceName);
         }
 
-        protected void WriteResource(IOwinResponse response, Assembly assembly, string resourceName)
+        protected void WriteResource(DashboardResponse response, Assembly assembly, string resourceName)
         {
             using (var inputStream = assembly.GetManifestResourceStream(resourceName))
             {

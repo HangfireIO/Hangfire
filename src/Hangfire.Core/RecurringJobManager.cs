@@ -59,7 +59,7 @@ namespace Hangfire
             if (job == null) throw new ArgumentNullException(nameof(job));
             if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
             if (options == null) throw new ArgumentNullException(nameof(options));
-
+            
             ValidateCronExpression(cronExpression);
 
             using (var connection = _storage.GetConnection())
@@ -103,11 +103,14 @@ namespace Hangfire
                 {
                     return;
                 }
-
+                
                 var job = JobHelper.FromJson<InvocationData>(hash["Job"]).Deserialize();
                 IDictionary<string, object> initialParams = null;
                 if (hash.ContainsKey("InitialParams") && !string.IsNullOrEmpty(hash["InitialParams"]))
+                {
                     initialParams = JobHelper.FromJson<IDictionary<string, object>>(hash["InitialParams"]);
+                }
+
                 var state = new EnqueuedState { Reason = "Triggered using recurring job manager" };
 
                 if (hash.ContainsKey("Queue"))
@@ -115,7 +118,9 @@ namespace Hangfire
                     state.Queue = hash["Queue"];
                 }
 
-                _factory.Create(new CreateContext(_storage, connection, job, state, initialParams));
+                var context = new CreateContext(_storage, connection, job, state, initialParams);
+                context.Parameters["RecurringJobId"] = recurringJobId;
+                _factory.Create(context);
             }
         }
 

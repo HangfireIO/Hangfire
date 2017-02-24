@@ -28,10 +28,10 @@ namespace Hangfire
 {
     public class ContinuationsSupportAttribute : JobFilterAttribute, IElectStateFilter, IApplyStateFilter
     {
-        private static readonly TimeSpan AddJobLockTimeout = TimeSpan.FromSeconds(1);
-        private static readonly TimeSpan ContinuationStateFetchTimeout = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan AddJobLockTimeout = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan ContinuationStateFetchTimeout = TimeSpan.FromSeconds(30);
 
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.For<ContinuationsSupportAttribute>();
 
         private readonly HashSet<string> _knownFinalStates;
         private readonly IBackgroundJobStateChanger _stateChanger;
@@ -241,7 +241,7 @@ namespace Hangfire
         {
         }
 
-        private struct Continuation
+        internal struct Continuation
         {
             public string JobId { get; set; }
             public JobContinuationOptions Options { get; set; }

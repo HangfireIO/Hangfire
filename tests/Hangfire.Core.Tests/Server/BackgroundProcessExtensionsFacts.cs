@@ -20,21 +20,21 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void CreateTask_ThrowsAnException_WhenProcessIsNull()
         {
-            var exception = Assert.Throws<ArgumentNullException>(
+            var exception = Assert.ThrowsAsync<ArgumentNullException>(
                 // ReSharper disable once AssignNullToNotNullAttribute
                 () => ServerProcessExtensions.CreateTask(null, _context.Object));
 
-            Assert.Equal("process", exception.ParamName);
+            Assert.Equal("process", exception.Result.ParamName);
         }
 
         [Fact]
         public void CreateTask_ThrowsAnException_WhenProcessIsOfCustomType()
         {
             var process = CreateProcess<IServerProcess>();
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(
+            var exception = Assert.ThrowsAsync<ArgumentOutOfRangeException>(
                 () => process.Object.CreateTask(_context.Object));
 
-            Assert.Equal("process", exception.ParamName);
+            Assert.Equal("process", exception.Result.ParamName);
         }
 
         [Fact]
@@ -74,7 +74,8 @@ namespace Hangfire.Core.Tests.Server
             process.Setup(x => x.Execute(It.IsAny<BackgroundProcessContext>())).Throws<InvalidOperationException>();
             var task = process.Object.CreateTask(_context.Object);
 
-            Assert.DoesNotThrow(() => task.Wait());
+            // Does not throw
+            task.Wait();
         }
 
         private Mock<T> CreateProcess<T>()

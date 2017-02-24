@@ -41,7 +41,9 @@
             </div>
         }
         <h3>@Strings.HomePage_RealtimeGraph</h3>
-        <div id="realtimeGraph" data-succeeded="@Statistics.Succeeded" data-failed="@Statistics.Failed"></div>
+        <div id="realtimeGraph" data-succeeded="@Statistics.Succeeded" data-failed="@Statistics.Failed"
+             data-succeeded-string="@Strings.HomePage_GraphHover_Succeeded"
+             data-failed-string="@Strings.HomePage_GraphHover_Failed"></div>
         <div style="display: none;">
             <span data-metric="succeeded:count"></span>
             <span data-metric="failed:count"></span>
@@ -59,7 +61,9 @@
         {
             <div id="historyGraph"
                  data-succeeded="@JsonConvert.SerializeObject(succeeded)"
-                 data-failed="@JsonConvert.SerializeObject(failed)">
+                 data-failed="@JsonConvert.SerializeObject(failed)"
+                 data-succeeded-string="@Strings.HomePage_GraphHover_Succeeded"
+                 data-failed-string="@Strings.HomePage_GraphHover_Failed">
             </div>
         }
     </div>

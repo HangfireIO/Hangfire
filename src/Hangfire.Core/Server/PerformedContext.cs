@@ -24,7 +24,7 @@ namespace Hangfire.Server
     /// </summary>
     public class PerformedContext : PerformContext
     {
-        internal PerformedContext(
+        public PerformedContext(
             PerformContext context,
             object result,
             bool canceled,

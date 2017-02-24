@@ -2,27 +2,30 @@
 @using System
 @using System.Collections.Generic
 @using System.Linq
+@using Hangfire
 @using Hangfire.Common
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @using Hangfire.Dashboard.Resources
 @using Hangfire.States
 @using Hangfire.Storage
+@using Hangfire.Storage.Monitoring
 @inherits RazorPage
 @{
-        var monitor = Storage.GetMonitoringApi();
-        var job = monitor.JobDetails(JobId);
+    var monitor = Storage.GetMonitoringApi();
+    var job = monitor.JobDetails(JobId);
+    
+    string title = null;
 
-        string title = null;
-
-        if (job != null)
-        {
-            title = job.Job != null ? Html.JobName(job.Job) : null;
-        }
-
-        title = title ?? Strings.Common_Job;
-        Layout = new LayoutPage(title);
+    if (job != null)
+    {
+        title = job.Job != null ? Html.JobName(job.Job) : null;
+        job.History.Add(new StateHistoryDto { StateName = "Created", CreatedAt = job.CreatedAt ?? default(DateTime) });
     }
+
+    title = title ?? Strings.Common_Job;
+    Layout = new LayoutPage(title);
+}
 
 <div class="row">
     <div class="col-md-3">
@@ -33,12 +36,14 @@
 
         @if (job == null)
         {
-            @: @String.Format(Strings.JobDetailsPage_JobExpired, JobId)
+            <div class="alert alert-warning">
+                @String.Format(Strings.JobDetailsPage_JobExpired, JobId)
+            </div>
         }
         else
         {
-            var currentState = job.History.Count > 0 ? job.History[0] : null;
-            if (currentState != null && currentState.StateName == ProcessingState.StateName)
+            var currentState = job.History[0];
+            if (currentState.StateName == ProcessingState.StateName)
             {
                 var server = monitor.Servers().FirstOrDefault(x => x.Name == currentState.Data["ServerId"]);
                 if (server == null)
@@ -64,13 +69,6 @@
 
             <div class="job-snippet">
                 <div class="job-snippet-code">
-                    @if (job.CreatedAt.HasValue)
-                    {
-                        <div class="pull-right job-creation-date">
-                            @Strings.JobDetailsPage_Created @Html.RelativeTime(job.CreatedAt.Value)
-                        </div>
-                    }
-
                     <pre><code><span class="comment">// @Strings.JobDetailsPage_JobId: @Html.JobId(JobId.ToString(), false)</span>
 @JobMethodCallRenderer.Render(job.Job)
 </code></pre>
@@ -90,128 +88,123 @@
                 }
             </div>
 
-            List<Continuation> continuations;
-
-            using (var connection = Storage.GetConnection())
+            if (job.Properties.ContainsKey("Continuations"))
             {
-                continuations = JobHelper.FromJson<List<Continuation>>(connection.GetJobParameter(
-                    JobId, "Continuations")) ?? new List<Continuation>();
+                List<ContinuationsSupportAttribute.Continuation> continuations;
+
+                using (var connection = Storage.GetConnection())
+                {
+                    continuations = JobHelper.FromJson<List<ContinuationsSupportAttribute.Continuation>>(connection.GetJobParameter(
+                        JobId, "Continuations")) ?? new List<ContinuationsSupportAttribute.Continuation>();
+                }
+
+                if (continuations.Count > 0)
+                {
+                    <h3>@Strings.Common_Continuations</h3>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th class="min-width">@Strings.Common_Id</th>
+                                <th class="min-width">@Strings.Common_Condition</th>
+                                <th class="min-width">@Strings.Common_State</th>
+                                <th>@Strings.Common_Job</th>
+                                <th class="align-right">@Strings.Common_Created</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var continuation in continuations)
+                            {
+                                JobData jobData;
+
+                                using (var connection = Storage.GetConnection())
+                                {
+                                    jobData = connection.GetJobData(continuation.JobId);
+                                }
+
+                                <tr>
+                                    @if (jobData == null)
+                                    {
+                                        <td colspan="5"><em>@String.Format(Strings.JobDetailsPage_JobExpired, continuation.JobId)</em></td>
+                                    }
+                                    else
+                                    {
+                                        <td class="min-width">@Html.JobIdLink(continuation.JobId)</td>
+                                        <td class="min-width"><code>@continuation.Options.ToString("G")</code></td>
+                                        <td class="min-width">@Html.StateLabel(jobData.State)</td>
+                                        <td class="word-break">@Html.JobNameLink(continuation.JobId, jobData.Job)</td>
+                                        <td class="align-right">@Html.RelativeTime(jobData.CreatedAt)</td>
+                                    }
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                }
             }
 
-            if (continuations.Count > 0)
-            {
-                <h3>@Strings.Common_Continuations</h3>
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th class="min-width">@Strings.Common_Id</th>
-                        <th class="min-width">@Strings.Common_Condition</th>
-                        <th class="min-width">@Strings.Common_State</th>
-                        <th>@Strings.Common_Job</th>
-                        <th class="align-right">@Strings.Common_Created</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach (var continuation in continuations)
-                    {
-                        JobData jobData;
-
-                        using (var connection = Storage.GetConnection())
-                        {
-                            jobData = connection.GetJobData(continuation.JobId);
-                        }
-
-                        <tr>
-                            @if (jobData == null)
-                            {
-                                <td colspan="5"><em>@String.Format(Strings.JobDetailsPage_JobExpired, continuation.JobId)</em></td>
-                            }
-                            else
-                            {
-                                <td class="min-width">
-                                    @Html.JobIdLink(continuation.JobId)
-                                </td>
-                                <td class="min-width">
-                                    <code>@continuation.Options.ToString("G")</code>
-                                </td>
-                                <td class="min-width">
-                                    @Html.StateLabel(jobData.State)
-                                </td>
-                                <td>
-                                    @Html.JobNameLink(continuation.JobId, jobData.Job)
-                                </td>
-                                <td class="align-right">
-                                    @Html.RelativeTime(jobData.CreatedAt)
-                                </td>
-                            }
-                        </tr>
-                    }
-                    </tbody>
-                </table>
-            }
-
-            if (job.History.Count > 0)
-            {
-                <h3>
+            <h3>
+                @if (job.History.Count > 1)
+                {
                     <span class="job-snippet-buttons pull-right">
                         <button class="btn btn-sm btn-default" data-ajax="@Url.To("/jobs/actions/requeue/" + JobId)" data-loading-text="@Strings.Common_Enqueueing">@Strings.JobDetailsPage_Requeue</button>
                         <button class="btn btn-sm btn-death" data-ajax="@Url.To("/jobs/actions/delete/" + JobId)" data-loading-text="@Strings.Common_Deleting" data-confirm="@Strings.JobDetailsPage_DeleteConfirm">@Strings.Common_Delete</button>
                     </span>
+                }
 
-                    @Strings.JobDetailsPage_State
-                </h3>
+                @Strings.JobDetailsPage_State
+            </h3>
 
-                var index = 0;
+            var index = 0;
 
-                DateTime[] entriesCreationTime = job.History.Select(x => x.CreatedAt).ToArray();
-                var nextEntry = 1;
+            foreach (var entry in job.History)
+            {
+                var accentColor = JobHistoryRenderer.GetForegroundStateColor(entry.StateName);
+                var backgroundColor = JobHistoryRenderer.GetBackgroundStateColor(entry.StateName);
 
-                foreach (var entry in job.History)
-                {
-                    var accentColor = JobHistoryRenderer.GetForegroundStateColor(entry.StateName);
-                    var backgroundColor = JobHistoryRenderer.GetBackgroundStateColor(entry.StateName);
+                <div class="state-card" style="@(index == 0 ? $"border-color: {accentColor}" : null)">
+                    <h4 class="state-card-title" style="@(index == 0 ? $"color: {accentColor}" : null)">
+                        <small class="pull-right text-muted">
+                            @if (index == job.History.Count - 1)
+                            {
+                                @Html.RelativeTime(entry.CreatedAt)
+                            }
+                            else
+                            {
+                                var duration = Html.ToHumanDuration(entry.CreatedAt - job.History[index + 1].CreatedAt);
 
-                    <div class="state-card" style="@(index == 0 ? $"border-color: {accentColor}" : null)">
-                        <h4 class="state-card-title">
-                            <small class="pull-right text-muted">
-                                @{
-                                    var duration = Html.ToHumanDuration(entry.CreatedAt - (nextEntry < entriesCreationTime.Length ? entriesCreationTime[nextEntry] : job.CreatedAt));
-                                    nextEntry++;
-                                }
-
-                                @if (index == 0)
+                                if (index == 0)
                                 {
-                                    @Html.Raw($"{Html.RelativeTime(entry.CreatedAt)} (<span data-moment-title=\"{JobHelper.ToTimestamp(entry.CreatedAt)}\">{duration}</span>)")
+                                    @: @Html.RelativeTime(entry.CreatedAt) (@duration)
                                 }
                                 else
                                 {
-                                    @: @duration
+                                    @: @Html.MomentTitle(entry.CreatedAt, duration)
                                 }
-                            </small>
+                            }
+                        </small>
 
-                            <span style="@(index == 0 ? $"color: {accentColor}" : null)">@entry.StateName</span>
-                        </h4>
+                        @entry.StateName
+                    </h4>
 
+                    @if (!String.IsNullOrWhiteSpace(entry.Reason))
+                    {
+                        <p class="state-card-text text-muted">@entry.Reason</p>
+                    }
 
-                        @if (!String.IsNullOrWhiteSpace(entry.Reason))
-                        {
-                            <p class="state-card-text text-muted">@entry.Reason</p>
-                        }
+                    @{
+                        var rendered = Html.RenderHistory(entry.StateName, entry.Data);
+                    }
 
-                        @{
-                            var rendered = Html.RenderHistory(entry.StateName, entry.Data);
-                        }
+                    @if (rendered != null)
+                    {
+                        <div class="state-card-body" style="@(index == 0 ? $"background-color: {backgroundColor}" : null)">
+                            @rendered
+                        </div>
+                    }
+                </div>
 
-                        @if (rendered != null)
-                        {
-                            <div class="job-history-body" style="@(index == 0 ? $"background-color: {backgroundColor}" : null)">
-                                @rendered
-                            </div>
-                        }
-                    </div>
-
-                    index++;
-                }
+                index++;
             }
         }
     </div>

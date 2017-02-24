@@ -23,7 +23,7 @@ namespace Hangfire
 {
     public class JobActivatorContext
     {
-        internal JobActivatorContext(
+        public JobActivatorContext(
             [NotNull] IStorageConnection connection,
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IJobCancellationToken cancellationToken)

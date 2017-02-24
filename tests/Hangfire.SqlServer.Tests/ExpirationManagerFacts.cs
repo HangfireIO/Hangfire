@@ -9,18 +9,12 @@ namespace Hangfire.SqlServer.Tests
 {
     public class ExpirationManagerFacts
     {
-        private readonly CancellationToken _token;
-
-        public ExpirationManagerFacts()
-        {
-            var cts = new CancellationTokenSource();
-            _token = cts.Token;
-        }
-
+        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+        
         [Fact]
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
-            Assert.Throws<ArgumentNullException>(() => new ExpirationManager(null));
+            Assert.Throws<ArgumentNullException>(() => new ExpirationManager(null, TimeSpan.Zero));
         }
 
         [Fact, CleanDatabase]
@@ -31,7 +25,7 @@ namespace Hangfire.SqlServer.Tests
                 var entryId = CreateExpirationEntry(connection, DateTime.UtcNow.AddMonths(-1));
                 var manager = CreateManager(connection);
 
-                manager.Execute(_token);
+                manager.Execute(_cts.Token);
 
                 Assert.True(IsEntryExpired(connection, entryId));
             }
@@ -45,7 +39,7 @@ namespace Hangfire.SqlServer.Tests
                 var entryId = CreateExpirationEntry(connection, null);
                 var manager = CreateManager(connection);
 
-                manager.Execute(_token);
+                manager.Execute(_cts.Token);
 
                 Assert.False(IsEntryExpired(connection, entryId));
             }
@@ -56,10 +50,10 @@ namespace Hangfire.SqlServer.Tests
         {
             using (var connection = CreateConnection())
             {
-                var entryId = CreateExpirationEntry(connection, DateTime.Now.AddMonths(1));
+                var entryId = CreateExpirationEntry(connection, DateTime.UtcNow.AddMonths(1));
                 var manager = CreateManager(connection);
 
-                manager.Execute(_token);
+                manager.Execute(_cts.Token);
 
                 Assert.False(IsEntryExpired(connection, entryId));
             }
@@ -79,7 +73,7 @@ values ('key', 1, @expireAt)";
                 var manager = CreateManager(connection);
 
                 // Act
-                manager.Execute(_token);
+                manager.Execute(_cts.Token);
 
                 // Assert
                 Assert.Equal(0, connection.Query<int>(@"select count(*) from HangFire.Counter").Single());
@@ -98,9 +92,9 @@ values ('', '', getutcdate(), @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
                 var manager = CreateManager(connection);
-
+                _cts.CancelAfter(TimeSpan.FromSeconds(10));
                 // Act
-                manager.Execute(_token);
+                manager.Execute(_cts.Token);
 
                 // Assert
                 Assert.Equal(0, connection.Query<int>(@"select count(*) from HangFire.Job").Single());
@@ -121,7 +115,7 @@ values ('key', @expireAt)";
                 var manager = CreateManager(connection);
 
                 // Act
-                manager.Execute(_token);
+                manager.Execute(_cts.Token);
 
                 // Assert
                 Assert.Equal(0, connection.Query<int>(@"select count(*) from HangFire.List").Single());
@@ -142,7 +136,7 @@ values ('key', 0, '', @expireAt)";
                 var manager = CreateManager(connection);
 
                 // Act
-                manager.Execute(_token);
+                manager.Execute(_cts.Token);
 
                 // Assert
                 Assert.Equal(0, connection.Query<int>(@"select count(*) from HangFire.[Set]").Single());
@@ -163,7 +157,7 @@ values ('key', 'field', '', @expireAt)";
                 var manager = CreateManager(connection);
 
                 // Act
-                manager.Execute(_token);
+                manager.Execute(_cts.Token);
 
                 // Assert
                 Assert.Equal(0, connection.Query<int>(@"select count(*) from HangFire.Hash").Single());

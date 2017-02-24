@@ -23,7 +23,7 @@
         @Html.JobsSidebar()
     </div>
     <div class="col-md-9">
-        @Html.Breadcrumbs(Queue.ToUpperInvariant(), new Dictionary<string, string>
+        @Html.Breadcrumbs(Strings.FetchedJobsPage_Title, new Dictionary<string, string>
         {
             { "Queues", Url.LinkToQueues() },
             { Queue.ToUpperInvariant(), Url.Queue(Queue) }
@@ -63,44 +63,56 @@
                 @Html.PerPageSelector(pager)
             </div>
 
-            <table class="table">
-                <thead>
-                <tr>
-                    <th class="min-width">
-                        <input type="checkbox" class="js-jobs-list-select-all"/>
-                    </th>
-                    <th class="min-width">@Strings.Common_Id</th>
-                    <th class="min-width">@Strings.Common_State</th>
-                    <th>@Strings.Common_Job</th>
-                    <th class="align-right">@Strings.Common_Fetched</th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach (var job in fetchedJobs)
-                {
-                    <tr class="js-jobs-list-row hover">
-                        <td>
-                            <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
-                        </td>
-                        <td class="min-width">
-                            @Html.JobIdLink(job.Key)
-                        </td>
-                        <td class="min-width">
-                            @Html.StateLabel(job.Value.State)
-                        </td>
-                        <td>
-                            @Html.JobNameLink(job.Key, job.Value.Job)
-                        </td>
-                        <td class="align-right">
-                            @if (job.Value.FetchedAt.HasValue)
-                            {
-                                @Html.RelativeTime(job.Value.FetchedAt.Value)
-                            }
-                        </td>
-                    </tr>
-                }
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="min-width">
+                                <input type="checkbox" class="js-jobs-list-select-all" />
+                            </th>
+                            <th class="min-width">@Strings.Common_Id</th>
+                            <th class="min-width">@Strings.Common_State</th>
+                            <th>@Strings.Common_Job</th>
+                            <th class="align-right">@Strings.Common_Fetched</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var job in fetchedJobs)
+                        {
+                            <tr class="js-jobs-list-row hover @(job.Value == null ? "obsolete-data" : null)">
+                                <td>
+                                    @if (job.Value != null)
+                                    {
+                                        <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
+                                    }
+                                </td>
+                                <td class="min-width">
+                                    @Html.JobIdLink(job.Key)
+                                </td>
+                                @if (job.Value == null)
+                                {
+                                    <td colspan="3"><em>@Strings.Common_JobExpired</em></td>
+                                }
+                                else
+                                {
+                                    <td class="min-width">
+                                        @Html.StateLabel(job.Value.State)
+                                    </td>
+                                    <td class="word-break">
+                                        @Html.JobNameLink(job.Key, job.Value.Job)
+                                    </td>
+                                    <td class="align-right">
+                                        @if (job.Value.FetchedAt.HasValue)
+                                        {
+                                            @Html.RelativeTime(job.Value.FetchedAt.Value)
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
 
             @Html.Paginator(pager)
         </div>

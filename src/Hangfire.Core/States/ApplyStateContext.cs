@@ -24,7 +24,7 @@ namespace Hangfire.States
     public class ApplyStateContext : StateContext
 #pragma warning restore 618
     {
-        internal ApplyStateContext(
+        public ApplyStateContext(
             [NotNull] IWriteOnlyTransaction transaction, 
             [NotNull] ElectStateContext context)
             : this(context.Storage, context.Connection, transaction, context.BackgroundJob, context.CandidateState, context.CurrentState)

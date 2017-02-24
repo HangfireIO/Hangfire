@@ -28,10 +28,10 @@ namespace Hangfire
 {
     public class BackgroundJobServer : IDisposable
     {
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.For<BackgroundJobServer>();
 
         private readonly BackgroundJobServerOptions _options;
-        private readonly IDisposable _processingServer;
+        private readonly BackgroundProcessingServer _processingServer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobServer"/> class
@@ -112,6 +112,12 @@ namespace Hangfire
                 GetProcessingServerOptions());
         }
 
+        public void SendStop()
+        {
+            Logger.Debug("Hangfire Server is stopping...");
+            _processingServer.SendStop();
+        }
+
         public void Dispose()
         {
             _processingServer.Dispose();
@@ -147,7 +153,8 @@ namespace Hangfire
                 HeartbeatInterval = _options.HeartbeatInterval,
 #pragma warning disable 618
                 ServerCheckInterval = _options.ServerWatchdogOptions?.CheckInterval ?? _options.ServerCheckInterval,
-                ServerTimeout = _options.ServerWatchdogOptions?.ServerTimeout ?? _options.ServerTimeout
+                ServerTimeout = _options.ServerWatchdogOptions?.ServerTimeout ?? _options.ServerTimeout,
+                ServerName = _options.ServerName
 #pragma warning restore 618
             };
         }

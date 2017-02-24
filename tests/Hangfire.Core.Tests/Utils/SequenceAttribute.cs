@@ -2,6 +2,7 @@
 using System.Reflection;
 using Moq.Sequences;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Hangfire.Core.Tests
 {

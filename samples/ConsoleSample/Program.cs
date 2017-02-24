@@ -4,8 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
 
-#pragma warning disable 4014
-
 namespace ConsoleSample
 {
     public static class Program

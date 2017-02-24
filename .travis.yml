@@ -1,26 +1,64 @@
 # Travis-CI Build for Hangfire
 # see travis-ci.org for details
 
-language: csharp
+#language: csharp
+language: cpp
 sudo: required
+dist: trusty
 
-# Make sure build dependencies are installed.
-install:
- - travis_retry nuget install .nuget/packages.config -OutputDirectory packages
- - travis_retry nuget restore Hangfire.Mono.sln
- 
-cache: 
- - apt
- - directories:
-   - packages
+os:  
+  - linux
+  - osx
 
-# Run the build script
-script:
- - xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
- - mono ./packages/xunit.runners.1.9.2/tools/xunit.console.clr4.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll
+env:  
+  global:
+    - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+    - DOTNET_CLI_TELEMETRY_OPTOUT: 1
+    - CLI_VERSION=1.0.0-preview2-003121
+  
+addons:  
+  apt:
+    packages:
+    - gettext
+    - libcurl4-openssl-dev
+    - libicu-dev
+    - libssl-dev
+    - libunwind8
+    - zlib1g
 
 # Only watch the master branch.
 branches:
- only:
-   - master
-   - dev
+  only:
+    - master
+    - dev
+
+# Make sure build dependencies are installed.
+before_install:  
+  - if test "$TRAVIS_OS_NAME" == "osx"; then ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/; ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/; fi
+  - export DOTNET_INSTALL_DIR="$PWD/.dotnetcli"
+  - export PATH="$DOTNET_INSTALL_DIR:$PATH"  
+  
+install:
+  - travis_retry curl -sSL https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.sh | bash /dev/stdin --version "$CLI_VERSION" --install-dir "$DOTNET_INSTALL_DIR"
+
+#cache: 
+# - apt
+# - directories:
+#   - packages
+
+# Run the build script
+script:
+  - travis_retry dotnet restore --disable-parallel
+  - dotnet test tests/Hangfire.Core.Tests -verbose
+ 
+# Tests on Mono disabled – waiting for https://github.com/NuGet/Home/issues/3085
+# - travis_retry mono .nuget/NuGet.exe install .nuget/packages.config -OutputDirectory packages
+# - travis_retry mono .nuget/NuGet.exe install .
+# - xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
+# - mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll
+
+notifications:
+  slack:
+    secure: LZuLPI1Cj9DgNAtFsZ/zk1fWBDS2PTHHIjvtCV3Fa9qNajzna2qR6Ui3sM/FQirvoXp0JHAqNYkFDI216YativqabWXZp6dQgw3u64bdlc1IWxQ4C6XHpp8WVe1wsNi19vfwKVHfvaNXpvNp9OGHXkmoTS74arRtPhpzSXO/IXw=
+    on_success: change
+    on_failure: always

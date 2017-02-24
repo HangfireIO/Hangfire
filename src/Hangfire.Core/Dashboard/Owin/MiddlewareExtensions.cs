@@ -69,29 +69,46 @@ namespace Hangfire.Dashboard
                 next =>
                 env =>
                 {
-                    var context = new OwinContext(env);
-                    var dispatcher = routes.FindDispatcher(context.Request.Path.Value);
+                    var owinContext = new OwinContext(env);
+                    var context = new OwinDashboardContext(storage, options, env);
 
-                    if (dispatcher == null)
+#pragma warning disable 618
+                    if (options.AuthorizationFilters != null)
+                    {
+                        if (options.AuthorizationFilters.Any(filter => !filter.Authorize(owinContext.Environment)))
+#pragma warning restore 618
+                        {
+                            return Unauthorized(owinContext);
+                        }
+                    }
+                    else
+                    {
+                        if (options.Authorization.Any(filter => !filter.Authorize(context)))
+                        {
+                            return Unauthorized(owinContext);
+                        }
+                    }
+
+                    var findResult = routes.FindDispatcher(owinContext.Request.Path.Value);
+
+                    if (findResult == null)
                     {
                         return next(env);
                     }
 
-                    if (options.AuthorizationFilters.Any(filter => !filter.Authorize(context.Environment)))
-                    {
-                        context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                        return Task.FromResult(false);
-                    }
+                    context.UriMatch = findResult.Item2;
 
-                    var dispatcherContext = new RequestDispatcherContext(
-                        options.AppPath,
-                        options.StatsPollingInterval,
-                        storage,
-                        context.Environment,
-                        dispatcher.Item2);
-
-                    return dispatcher.Item1.Dispatch(dispatcherContext);
+                    return findResult.Item1.Dispatch(context);
                 };
+        }
+
+        private static Task Unauthorized(IOwinContext owinContext)
+        {
+            owinContext.Response.StatusCode = owinContext.Authentication.User.Identity.IsAuthenticated
+                ? (int)HttpStatusCode.Forbidden
+                : (int)HttpStatusCode.Unauthorized;
+
+            return Task.FromResult(0);
         }
     }
 }

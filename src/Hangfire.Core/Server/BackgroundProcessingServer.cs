@@ -16,7 +16,9 @@
 
 using System;
 using System.Collections.Generic;
+#if NETFULL
 using System.Diagnostics;
+#endif
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,7 +44,7 @@ namespace Hangfire.Server
     public sealed class BackgroundProcessingServer : IBackgroundProcess, IDisposable
     {
         public static readonly TimeSpan DefaultShutdownTimeout = TimeSpan.FromSeconds(15);
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.For<BackgroundProcessingServer>();
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 #pragma warning disable 618
@@ -113,9 +115,16 @@ namespace Hangfire.Server
             _bootstrapTask = WrapProcess(this).CreateTask(context);
         }
 
-        public void Dispose()
+        public void SendStop()
         {
             _cts.Cancel();
+        }
+
+        public void Dispose()
+        {
+            SendStop();
+
+            // TODO: Dispose _cts
 
             if (!_bootstrapTask.Wait(_options.ShutdownTimeout))
             {
@@ -158,18 +167,33 @@ namespace Hangfire.Server
         {
             yield return new ServerHeartbeat(_options.HeartbeatInterval);
             yield return new ServerWatchdog(_options.ServerCheckInterval, _options.ServerTimeout);
-        } 
+        }
+
+        private string GetGloballyUniqueServerId()
+        {
+            var serverName = _options.ServerName
+                ?? Environment.GetEnvironmentVariable("COMPUTERNAME")
+                ?? Environment.GetEnvironmentVariable("HOSTNAME");
+
+            var guid = Guid.NewGuid().ToString();
+
+#if NETFULL
+            if (!String.IsNullOrWhiteSpace(serverName))
+            {
+                serverName += ":" + Process.GetCurrentProcess().Id;
+            }
+#endif
+
+            return !String.IsNullOrWhiteSpace(serverName)
+                ? $"{serverName.ToLowerInvariant()}:{guid}"
+                : guid;
+        }
 
 #pragma warning disable 618
         private static IServerProcess WrapProcess(IServerProcess process)
 #pragma warning restore 618
         {
             return new InfiniteLoopProcess(new AutomaticRetryProcess(process));
-        }
-
-        private static string GetGloballyUniqueServerId()
-        {
-            return $"{Environment.MachineName.ToLowerInvariant()}:{Process.GetCurrentProcess().Id}:{Guid.NewGuid()}";
         }
 
         private static ServerContext GetServerContext(IReadOnlyDictionary<string, object> properties)
