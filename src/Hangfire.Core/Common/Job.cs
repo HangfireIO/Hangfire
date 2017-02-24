@@ -21,6 +21,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Hangfire.Annotations;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace Hangfire.Common
 {
@@ -185,7 +186,7 @@ namespace Hangfire.Common
         {
             return useCache
                 ? ReflectedAttributeCache.GetTypeFilterAttributes(Type)
-                : GetFilterAttributes(Type);
+                : GetFilterAttributes(Type.GetTypeInfo());
         }
 
         internal IEnumerable<JobFilterAttribute> GetMethodFilterAttributes(bool useCache)
@@ -230,38 +231,42 @@ namespace Hangfire.Common
         /// <b>only used to obtain the type</b> for a job. It is not
         /// serialized and not passed across the process boundaries.</note>
         /// </remarks>
-        public static Job FromExpression([InstantHandle] Expression<Action> methodCall)
+        public static Job FromExpression([NotNull, InstantHandle] Expression<Action> methodCall)
         {
-            if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
+            return FromExpression(methodCall, null);
+        }
 
-            var callExpression = methodCall.Body as MethodCallExpression;
-            if (callExpression == null)
-            {
-                throw new ArgumentException("Expression body should be of type `MethodCallExpression`", nameof(methodCall));
-            }
-
-            Type type;
-
-            if (callExpression.Object != null)
-            {
-                var objectValue = GetExpressionValue(callExpression.Object);
-                if (objectValue == null)
-                {
-                    throw new InvalidOperationException("Expression object should be not null.");
-                }
-
-                type = objectValue.GetType();
-            }
-            else
-            {
-                type = callExpression.Method.DeclaringType;
-            }
-            
-            return new Job(
-                // ReSharper disable once AssignNullToNotNullAttribute
-                type,
-                callExpression.Method,
-                GetExpressionValues(callExpression.Arguments));
+        /// <summary>
+        /// Gets a new instance of the <see cref="Job"/> class based on the
+        /// given expression tree of a method call.
+        /// </summary>
+        /// 
+        /// <param name="methodCall">Expression tree of a method call.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> is null.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="methodCall"/> expression body is not of type 
+        /// <see cref="MethodCallExpression"/>.</exception>
+        /// <exception cref="NotSupportedException"><paramref name="methodCall"/> 
+        /// expression contains a method that is not supported.</exception>
+        /// <exception cref="InvalidOperationException"><paramref name="methodCall"/>
+        /// instance object of a given expression points to <see langword="null"/>.
+        /// </exception>
+        /// 
+        /// <remarks>
+        /// <para>The <see cref="Job.Type"/> property of a returning job will 
+        /// point to the type of a given instance object when it is specified, 
+        /// or to the declaring type otherwise. All the arguments are evaluated 
+        /// using the expression compiler that uses caching where possible to 
+        /// decrease the performance penalty.</para>
+        /// 
+        /// <note>Instance object (e.g. <c>() => instance.Method()</c>) is 
+        /// <b>only used to obtain the type</b> for a job. It is not
+        /// serialized and not passed across the process boundaries.</note>
+        /// </remarks>
+        public static Job FromExpression([NotNull, InstantHandle] Expression<Func<Task>> methodCall)
+        {
+            return FromExpression(methodCall, null);
         }
 
         /// <summary>
@@ -284,7 +289,37 @@ namespace Hangfire.Common
         /// that uses caching where possible to decrease the performance 
         /// penalty.</para>
         /// </remarks>
-        public static Job FromExpression<TType>([InstantHandle] Expression<Action<TType>> methodCall)
+        public static Job FromExpression<TType>([NotNull, InstantHandle] Expression<Action<TType>> methodCall)
+        {
+            return FromExpression(methodCall, typeof(TType));
+        }
+
+        /// <summary>
+        /// Gets a new instance of the <see cref="Job"/> class based on the
+        /// given expression tree of an instance method call with explicit
+        /// type specification.
+        /// </summary>
+        /// <typeparam name="TType">Explicit type that should be used on method call.</typeparam>
+        /// <param name="methodCall">Expression tree of a method call on <typeparamref name="TType"/>.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> is null.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="methodCall"/> expression body is not of type 
+        /// <see cref="MethodCallExpression"/>.</exception>
+        /// <exception cref="NotSupportedException"><paramref name="methodCall"/> 
+        /// expression contains a method that is not supported.</exception>
+        /// 
+        /// <remarks>
+        /// <para>All the arguments are evaluated using the expression compiler
+        /// that uses caching where possible to decrease the performance 
+        /// penalty.</para>
+        /// </remarks>
+        public static Job FromExpression<TType>([NotNull, InstantHandle] Expression<Func<TType, Task>> methodCall)
+        {
+            return FromExpression(methodCall, typeof(TType));
+        }
+
+        private static Job FromExpression([NotNull] LambdaExpression methodCall, [CanBeNull] Type explicitType)
         {
             if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
 
@@ -294,9 +329,37 @@ namespace Hangfire.Common
                 throw new ArgumentException("Expression body should be of type `MethodCallExpression`", nameof(methodCall));
             }
 
+            var type = explicitType ?? callExpression.Method.DeclaringType;
+            var method = callExpression.Method;
+
+            if (explicitType == null && callExpression.Object != null)
+            {
+                // Creating a job that is based on a scope variable. We should infer its
+                // type and method based on its value, and not from the expression tree.
+
+                // TODO: BREAKING: Consider removing this special case entirely.
+                // People consider that the whole object is serialized, this is not true.
+
+                var objectValue = GetExpressionValue(callExpression.Object);
+                if (objectValue == null)
+                {
+                    throw new InvalidOperationException("Expression object should be not null.");
+                }
+
+                // TODO: BREAKING: Consider using `callExpression.Object.Type` expression instead.
+                type = objectValue.GetType();
+
+                // If an expression tree is based on interface, we should use its own
+                // MethodInfo instance, based on the same method name and parameter types.
+                method = type.GetNonOpenMatchingMethod(
+                    callExpression.Method.Name,
+                    callExpression.Method.GetParameters().Select(x => x.ParameterType).ToArray());
+            }
+
             return new Job(
-                typeof(TType),
-                callExpression.Method,
+                // ReSharper disable once AssignNullToNotNullAttribute
+                type,
+                method,
                 GetExpressionValues(callExpression.Arguments));
         }
 
@@ -325,7 +388,7 @@ namespace Hangfire.Common
                 throw new NotSupportedException("Global methods are not supported. Use class methods instead.");
             }
 
-            if (!method.DeclaringType.IsAssignableFrom(type))
+            if (!method.DeclaringType.GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
             {
                 throw new ArgumentException(
                     $"The type `{method.DeclaringType}` must be derived from the `{type}` type.",
@@ -362,6 +425,14 @@ namespace Hangfire.Common
                 {
                     throw new NotSupportedException(
                         "Parameters, passed by reference, are not supported: there is no guarantee that specified method will be invoked inside the same process.");
+                }
+
+                var parameterTypeInfo = parameter.ParameterType.GetTypeInfo();
+                
+                if (parameterTypeInfo.IsSubclassOf(typeof(Delegate)) || parameterTypeInfo.IsSubclassOf(typeof(Expression)))
+                {
+                    throw new NotSupportedException(
+                        "Anonymous functions, delegates and lambda expressions aren't supported in job method parameters: it's very hard to serialize them and all their scope in general.");
                 }
             }
         }

@@ -16,7 +16,8 @@ namespace Hangfire.Core.Tests
         [Fact, GlobalLock(Reason = "Access static JobStorage.Current member")]
         public void SetCurrent_DoesNotThrowAnException_WhenValueIsNull()
         {
-            Assert.DoesNotThrow(() => JobStorage.Current = null);
+            // Does not throw
+            JobStorage.Current = null;
         }
 
         [Fact, GlobalLock(Reason = "Access static JobStorage.Current member")]

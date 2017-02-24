@@ -48,20 +48,17 @@ namespace Hangfire.SqlServer.Msmq
             using (var messageQueue = new MessageQueue(String.Format(_pathPattern, queue)))
             {
                 var current = 0;
-                var end = @from + perPage;
+                var end = from + perPage;
                 var enumerator = messageQueue.GetMessageEnumerator2();
-
-                var formatter = new BinaryMessageFormatter();
 
                 while (enumerator.MoveNext())
                 {
-                    if (current >= @from && current < end)
+                    if (current >= from && current < end)
                     {
                         var message = enumerator.Current;
                         if (message == null) continue;
 
-                        message.Formatter = formatter;
-                        result.Add(int.Parse((string)message.Body));
+                        result.Add(int.Parse(message.Label));
                     }
 
                     if (current >= end) break;

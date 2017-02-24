@@ -36,6 +36,7 @@ namespace Hangfire.Common.ExpressionUtil
         protected override Expression VisitConstant(ConstantExpression node)
         {
             // rewrite the constant expression as (TConst)hoistedConstants[i];
+            // coverity[missing_super_call]
             return Expression.Convert(Expression.Property(_hoistedConstantsParamExpr, "Item", Expression.Constant(_numConstantsProcessed++)), node.Type);
         }
     }

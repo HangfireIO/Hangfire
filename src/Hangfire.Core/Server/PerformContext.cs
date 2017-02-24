@@ -28,13 +28,13 @@ namespace Hangfire.Server
     /// </summary>
     public class PerformContext
     {
-        internal PerformContext([NotNull] PerformContext context)
+        public PerformContext([NotNull] PerformContext context)
             : this(context.Connection, context.BackgroundJob, context.CancellationToken)
         {
             Items = context.Items;
         }
 
-        internal PerformContext(
+        public PerformContext(
             [NotNull] IStorageConnection connection, 
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IJobCancellationToken cancellationToken)

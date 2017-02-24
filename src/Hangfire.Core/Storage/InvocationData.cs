@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using Hangfire.Common;
 using Hangfire.Server;
@@ -48,7 +49,7 @@ namespace Hangfire.Storage
             {
                 var type = System.Type.GetType(Type, throwOnError: true, ignoreCase: true);
                 var parameterTypes = JobHelper.FromJson<Type[]>(ParameterTypes);
-                var method = GetNonOpenMatchingMethod(type, Method, parameterTypes);
+                var method = type.GetNonOpenMatchingMethod(Method, parameterTypes);
                 
                 if (method == null)
                 {
@@ -130,7 +131,7 @@ namespace Hangfire.Storage
 
                 if (CoreBackgroundJobPerformer.Substitutions.ContainsKey(parameter.ParameterType))
                 {
-                    value = parameter.ParameterType.IsValueType
+                    value = parameter.ParameterType.GetTypeInfo().IsValueType
                         ? Activator.CreateInstance(parameter.ParameterType)
                         : null;
                 }
@@ -154,7 +155,11 @@ namespace Hangfire.Storage
                     ? JobHelper.FromJson(argument, type)
                     : null;
             }
-            catch (Exception jsonException)
+            catch (Exception
+#if NETFULL
+            jsonException
+#endif
+            )
             {
                 if (type == typeof (object))
                 {
@@ -164,83 +169,60 @@ namespace Hangfire.Storage
                 }
                 else
                 {
+#if NETFULL
                     try
                     {
                         var converter = TypeDescriptor.GetConverter(type);
+
+                        // ReferenceConverter can't correctly convert the serialized
+                        // data. This may happen when FromJson method threw an exception,
+                        // we should rethrow it instead of trying to deserialize.
+                        if (converter.GetType() == typeof(ReferenceConverter))
+                        {
+                            ExceptionDispatchInfo.Capture(jsonException).Throw();
+                            throw;
+                        }
+
                         value = converter.ConvertFromInvariantString(argument);
                     }
                     catch (Exception)
                     {
-                        throw jsonException;
+                        ExceptionDispatchInfo.Capture(jsonException).Throw();
+                        throw;
                     }
+#else
+                    DateTime dateTime;
+                    if (type == typeof(DateTime) && ParseDateTimeArgument(argument, out dateTime))
+                    {
+                        value = dateTime;
+                    }
+                    else
+                    {
+                        throw;
+                    }
+#endif
                 }
             }
             return value;
         }
 
-        private static IEnumerable<MethodInfo> GetAllMethods(Type type)
+        internal static bool ParseDateTimeArgument(string argument, out DateTime value)
         {
-            var methods = new List<MethodInfo>(type.GetMethods());
+            DateTime dateTime;
+            var result = DateTime.TryParse(argument, out dateTime);
 
-            if (type.IsInterface)
+            if (!result)
             {
-                methods.AddRange(type.GetInterfaces().SelectMany(x => x.GetMethods()));
+                result = DateTime.TryParseExact(
+                    argument, 
+                    "MM/dd/yyyy HH:mm:ss.ffff", 
+                    CultureInfo.CurrentCulture,
+                    DateTimeStyles.None, 
+                    out dateTime);
             }
 
-            return methods;
-        }
-        
-        private static MethodInfo GetNonOpenMatchingMethod(Type type, string name, Type[] parameterTypes)
-        {
-            var methodCandidates = GetAllMethods(type);
-
-            foreach (var methodCandidate in methodCandidates)
-            {
-                if (!methodCandidate.Name.Equals(name, StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                var parameters = methodCandidate.GetParameters();
-                if (parameters.Length != parameterTypes.Length)
-                {
-                    continue;
-                }
-
-                var parameterTypesMatched = true;
-                var genericArguments = new List<Type>();
-
-                // Determining whether we can use this method candidate with
-                // current parameter types.
-                for (var i = 0; i < parameters.Length; i++)
-                {
-                    var parameter = parameters[i];
-                    var parameterType = parameter.ParameterType;
-                    var actualType = parameterTypes[i];
-
-                    // Skipping generic parameters as we can use actual type.
-                    if (parameterType.IsGenericParameter)
-                    {
-                        genericArguments.Add(actualType);
-                        continue;
-                    }
-
-                    // Skipping non-generic parameters of assignable types.
-                    if (parameterType.IsAssignableFrom(actualType)) continue;
-
-                    parameterTypesMatched = false;
-                    break;
-                }
-
-                if (!parameterTypesMatched) continue;
-
-                // Return first found method candidate with matching parameters.
-                return methodCandidate.ContainsGenericParameters 
-                    ? methodCandidate.MakeGenericMethod(genericArguments.ToArray()) 
-                    : methodCandidate;
-            }
-
-            return null;
+            value = dateTime;
+            return result;
         }
     }
 }

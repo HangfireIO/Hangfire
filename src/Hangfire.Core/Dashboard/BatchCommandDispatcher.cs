@@ -17,29 +17,32 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
-    internal class BatchCommandDispatcher : IRequestDispatcher
+    internal class BatchCommandDispatcher : IDashboardDispatcher
     {
-        private readonly Action<RequestDispatcherContext, string> _command;
+        private readonly Action<DashboardContext, string> _command;
 
-        public BatchCommandDispatcher(Action<RequestDispatcherContext, string> command)
+        public BatchCommandDispatcher(Action<DashboardContext, string> command)
         {
             _command = command;
         }
 
-        public async Task Dispatch(RequestDispatcherContext context)
+#if NETFULL
+        [Obsolete("Use the `BatchCommandDispatcher(Action<DashboardContext>, string)` instead. Will be removed in 2.0.0.")]
+        public BatchCommandDispatcher(Action<RequestDispatcherContext, string> command)
         {
-            var owinContext = new OwinContext(context.OwinEnvironment);
+            _command = (context, jobId) => command(RequestDispatcherContext.FromDashboardContext(context), jobId);
+        }
+#endif
 
-            var form = await owinContext.ReadFormSafeAsync();
-            var jobIds = form.GetValues("jobs[]");
-
-            if (jobIds == null)
+        public async Task Dispatch(DashboardContext context)
+        {
+            var jobIds = await context.Request.GetFormValuesAsync("jobs[]");
+            if (jobIds.Count == 0)
             {
-                owinContext.Response.StatusCode = 422;
+                context.Response.StatusCode = 422;
                 return;
             }
 
@@ -48,7 +51,7 @@ namespace Hangfire.Dashboard
                 _command(context, jobId);
             }
 
-            owinContext.Response.StatusCode = (int)HttpStatusCode.NoContent;
+            context.Response.StatusCode = (int)HttpStatusCode.NoContent;
         }
     }
 }

@@ -68,10 +68,10 @@ namespace Hangfire.Server
             
             return _schedule
                 .GetNextOccurrences(
-                    TimeZoneInfo.ConvertTimeFromUtc(lastInstant, _timeZone),
-                    TimeZoneInfo.ConvertTimeFromUtc(NowInstant.AddSeconds(1), _timeZone))
+                    TimeZoneInfo.ConvertTime(lastInstant, TimeZoneInfo.Utc, _timeZone),
+                    TimeZoneInfo.ConvertTime(NowInstant.AddSeconds(1), TimeZoneInfo.Utc, _timeZone))
                 .Where(x => !_timeZone.IsInvalidTime(x))
-                .Select(x => TimeZoneInfo.ConvertTimeToUtc(x, _timeZone))
+                .Select(x => TimeZoneInfo.ConvertTime(x, _timeZone, TimeZoneInfo.Utc))
                 .ToList();
         }
     }

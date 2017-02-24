@@ -27,7 +27,7 @@ namespace ConsoleSample
         {
         }
 
-        [AutomaticRetry(Attempts = 0)]
+        [AutomaticRetry(Attempts = 0), LatencyTimeout(30)]
         public void Error()
         {
             Console.WriteLine("Beginning error task...");

@@ -15,7 +15,11 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+#if NETFULL
 using System.Transactions;
+#else
+using System.Data;
+#endif
 
 namespace Hangfire.SqlServer
 {
@@ -31,10 +35,10 @@ namespace Hangfire.SqlServer
 #pragma warning disable 618
             InvisibilityTimeout = TimeSpan.FromMinutes(30);
 #pragma warning restore 618
-            JobExpirationCheckInterval = TimeSpan.FromHours(1);
+            JobExpirationCheckInterval = TimeSpan.FromMinutes(30);
             CountersAggregateInterval = TimeSpan.FromMinutes(5);
             PrepareSchemaIfNecessary = true;
-            DashboardJobListLimit = 50000;
+            DashboardJobListLimit = 10000;
             _schemaName = Constants.DefaultSchema;
             TransactionTimeout = TimeSpan.FromMinutes(1);
         }

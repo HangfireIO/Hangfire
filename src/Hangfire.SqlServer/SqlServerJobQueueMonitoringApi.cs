@@ -18,7 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+#if NETFULL
 using System.Transactions;
+#else
+using System.Data;
+#endif
 using Dapper;
 using Hangfire.Annotations;
 
@@ -44,15 +48,15 @@ namespace Hangfire.SqlServer
 
         public IEnumerable<string> GetQueues()
         {
-            string sqlQuery = $@"select distinct(Queue) from [{_storage.SchemaName}].JobQueue";
+            string sqlQuery = $@"select distinct(Queue) from [{_storage.SchemaName}].JobQueue with (nolock)";
 
             lock (_cacheLock)
             {
                 if (_queuesCache.Count == 0 || _cacheUpdated.Add(QueuesCacheTimeout) < DateTime.UtcNow)
                 {
-                    var result = UseTransaction(connection =>
+                    var result = UseTransaction((connection, transaction) =>
                     {
-                        return connection.Query(sqlQuery).Select(x => (string) x.Queue).ToList();
+                        return connection.Query(sqlQuery, transaction: transaction).Select(x => (string) x.Queue).ToList();
                     });
 
                     _queuesCache = result;
@@ -68,18 +72,20 @@ namespace Hangfire.SqlServer
             string sqlQuery =
 $@"select r.JobId from (
   select jq.JobId, row_number() over (order by jq.Id) as row_num 
-  from [{_storage.SchemaName}].JobQueue jq
+  from [{_storage.SchemaName}].JobQueue jq with (nolock)
   where jq.Queue = @queue
 ) as r
 where r.row_num between @start and @end";
 
-            return UseTransaction(connection =>
+            return UseTransaction((connection, transaction) =>
             {
+                // TODO: Remove cast to `int` to support `bigint`.
                 return connection.Query<JobIdDto>(
                     sqlQuery,
-                    new { queue = queue, start = from + 1, end = @from + perPage })
+                    new { queue = queue, start = from + 1, end = @from + perPage },
+                    transaction)
                     .ToList()
-                    .Select(x => x.JobId)
+                    .Select(x => (int)x.JobId)
                     .ToList();
             });
         }
@@ -92,11 +98,11 @@ where r.row_num between @start and @end";
         public EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue)
         {
             string sqlQuery = $@"
-select count(Id) from [{_storage.SchemaName}].JobQueue where [Queue] = @queue";
+select count(Id) from [{_storage.SchemaName}].JobQueue with (nolock) where [Queue] = @queue";
 
-            return UseTransaction(connection =>
+            return UseTransaction((connection, transaction) =>
             {
-                var result = connection.Query<int>(sqlQuery, new { queue = queue }).Single();
+                var result = connection.ExecuteScalar<int>(sqlQuery, new { queue = queue }, transaction);
 
                 return new EnqueuedAndFetchedCountDto
                 {
@@ -105,7 +111,7 @@ select count(Id) from [{_storage.SchemaName}].JobQueue where [Queue] = @queue";
             });
         }
 
-        private T UseTransaction<T>(Func<DbConnection, T> func)
+        private T UseTransaction<T>(Func<DbConnection, DbTransaction, T> func)
         {
             return _storage.UseTransaction(func, IsolationLevel.ReadUncommitted);
         }
@@ -113,7 +119,7 @@ select count(Id) from [{_storage.SchemaName}].JobQueue where [Queue] = @queue";
         private class JobIdDto
         {
             [UsedImplicitly]
-            public int JobId { get; set; }
+            public long JobId { get; set; }
         }
     }
 }

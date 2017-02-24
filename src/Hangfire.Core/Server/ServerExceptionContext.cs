@@ -24,7 +24,7 @@ namespace Hangfire.Server
     /// </summary>
     public class ServerExceptionContext : PerformContext
     {
-        internal ServerExceptionContext(
+        public ServerExceptionContext(
             PerformContext context, 
             Exception exception)
             : base(context)

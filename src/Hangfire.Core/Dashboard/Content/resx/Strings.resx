@@ -271,7 +271,7 @@
                         also re-queue or delete it manually.</value>
   </data>
   <data name="JobDetailsPage_JobExpired" xml:space="preserve">
-    <value>The job with id '{0}' has expired or could not be found on the server.</value>
+    <value>Background job '{0}' has expired or could not be found on the server.</value>
   </data>
   <data name="JobDetailsPage_JobFinished_Warning_Html" xml:space="preserve">
     <value>&lt;strong&gt;The job is finished&lt;/strong&gt;.
@@ -286,14 +286,11 @@
   <data name="LayoutPage_Back" xml:space="preserve">
     <value>Back to site</value>
   </data>
-  <data name="LayoutPage_Brand" xml:space="preserve">
-    <value>Hangfire Dashboard</value>
-  </data>
   <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
     <value>Generated: {0}ms</value>
   </data>
   <data name="LayoutPage_Footer_Time" xml:space="preserve">
-    <value>Time: {0} GMT</value>
+    <value>Time:</value>
   </data>
   <data name="Paginator_Next" xml:space="preserve">
     <value>Next</value>
@@ -329,7 +326,7 @@
     <value>Length</value>
   </data>
   <data name="QueuesPage_Table_NextsJobs" xml:space="preserve">
-    <value>Nexts jobs</value>
+    <value>Next jobs</value>
   </data>
   <data name="QueuesPage_Table_Queue" xml:space="preserve">
     <value>Queue</value>
@@ -507,5 +504,23 @@
   </data>
   <data name="Common_Continuations" xml:space="preserve">
     <value>Continuations</value>
+  </data>
+  <data name="Metrics_AwaitingCount" xml:space="preserve">
+    <value>Awaiting</value>
+  </data>
+  <data name="Metrics_EnqueuedCountOrNull" xml:space="preserve">
+    <value>Enqueued</value>
+  </data>
+  <data name="Metrics_EnqueuedQueuesCount" xml:space="preserve">
+    <value>Enqueued / Queues</value>
+  </data>
+  <data name="Metrics_FailedCountOrNull" xml:space="preserve">
+    <value>{0} failed job(s) found. Retry or delete them manually.</value>
+  </data>
+  <data name="HomePage_GraphHover_Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
+    <value>Succeeded</value>
   </data>
 </root>

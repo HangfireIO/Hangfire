@@ -24,7 +24,7 @@ namespace Hangfire.Client
     /// </summary>
     public class ClientExceptionContext : CreateContext
     {
-        internal ClientExceptionContext(CreateContext createContext, Exception exception)
+        public ClientExceptionContext(CreateContext createContext, Exception exception)
             : base(createContext)
         {
             if (exception == null) throw new ArgumentNullException(nameof(exception));

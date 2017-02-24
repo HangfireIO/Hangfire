@@ -20,7 +20,7 @@ namespace Hangfire.Server
 {
     internal class ServerHeartbeat : IBackgroundProcess
     {
-        public static readonly TimeSpan DefaultHeartbeatInterval = TimeSpan.FromSeconds(5);
+        public static readonly TimeSpan DefaultHeartbeatInterval = TimeSpan.FromSeconds(30);
 
         private readonly TimeSpan _heartbeatInterval;
 

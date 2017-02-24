@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Server;
@@ -49,7 +51,7 @@ namespace Hangfire.Common
                 }
 
                 var deserializedArguments = DeserializeArguments(cancellationToken);
-                result = InvokeMethod(instance, deserializedArguments);
+                result = InvokeMethod(instance, deserializedArguments, cancellationToken.ShutdownToken);
             }
             finally
             {
@@ -96,7 +98,7 @@ namespace Hangfire.Common
 
                     object value;
 
-                    if (typeof(IJobCancellationToken).IsAssignableFrom(parameter.ParameterType))
+                    if (typeof(IJobCancellationToken).GetTypeInfo().IsAssignableFrom(parameter.ParameterType.GetTypeInfo()))
                     {
                         value = cancellationToken;
                     }
@@ -118,8 +120,20 @@ namespace Hangfire.Common
                             }
                             else
                             {
+#if NETFULL
                                 var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
                                 value = converter.ConvertFromInvariantString(argument);
+#else
+                                DateTime dateTime;
+                                if (parameter.ParameterType == typeof(DateTime) && InvocationData.ParseDateTimeArgument(argument, out dateTime))
+                                {
+                                    value = dateTime;
+                                }
+                                else
+                                {
+                                    throw;
+                                }
+#endif
                             }
                         }
                     }
@@ -138,7 +152,7 @@ namespace Hangfire.Common
         }
 
         [Obsolete("Will be removed in 2.0.0")]
-        private object InvokeMethod(object instance, object[] deserializedArguments)
+        private object InvokeMethod(object instance, object[] deserializedArguments, CancellationToken shutdownToken)
         {
             try
             {
@@ -146,17 +160,8 @@ namespace Hangfire.Common
             }
             catch (TargetInvocationException ex)
             {
-                if (ex.InnerException is OperationCanceledException && !(ex.InnerException is TaskCanceledException))
-                {
-                    // `OperationCanceledException` and its descendants are used
-                    // to notify a worker that job performance was canceled,
-                    // so we should not wrap this exception and throw it as-is.
-                    throw ex.InnerException;
-                }
-
-                throw new JobPerformanceException(
-                    "An exception occurred during performance of the job.",
-                    ex.InnerException);
+                CoreBackgroundJobPerformer.HandleJobPerformanceException(ex.InnerException, shutdownToken);
+                throw;
             }
         }
 

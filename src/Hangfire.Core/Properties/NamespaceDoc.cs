@@ -60,18 +60,8 @@ namespace Hangfire.Common
 namespace Hangfire.Dashboard
 {
     /// <summary>
-    /// The Hangfire.Dashboard namespaces contain types that allow you to
-    /// restrict an access to the Dashboard UI by implementing the <see cref="IAuthorizationFilter"/>
-    /// interface, as well as customize it by adding new pages, menu items, metrics, routes.
-    /// </summary>
-    [CompilerGenerated]
-    class NamespaceGroupDoc
-    {
-    }
-
-    /// <summary>
     /// The <see cref="Hangfire.Dashboard"/> namespace contains types that allow you to
-    /// restrict an access to the Dashboard UI by implementing the <see cref="IAuthorizationFilter"/>
+    /// restrict an access to the Dashboard UI by implementing the <see cref="IDashboardAuthorizationFilter"/>
     /// interface, as well as customize it by adding new pages, menu items, metrics, routes.
     /// </summary>
     [CompilerGenerated]

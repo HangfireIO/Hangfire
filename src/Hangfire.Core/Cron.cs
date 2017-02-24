@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using CronExpressionDescriptor;
 using System;
 
 namespace Hangfire
@@ -230,7 +229,7 @@ namespace Hangfire
         /// <param name="interval">The number of hours to wait between every activation.</param>
         public static string HourInterval(int interval)
         {
-            return $"* */{interval} * * *";
+            return $"0 */{interval} * * *";
         }
 
         /// <summary>
@@ -239,7 +238,7 @@ namespace Hangfire
         /// <param name="interval">The number of days to wait between every activation.</param>
         public static string DayInterval(int interval)
         {
-            return $"* * */{interval} * *";
+            return $"0 0 */{interval} * *";
         }
 
         /// <summary>
@@ -248,9 +247,10 @@ namespace Hangfire
         /// <param name="interval">The number of months to wait between every activation.</param>
         public static string MonthInterval(int interval)
         {
-            return $"* * * */{interval} *";
+            return $"0 0 1 */{interval} *";
         }
 
+#if NETFULL
         /// <summary>
         /// Converts a Cron expression string into a description.
         /// </summary>
@@ -275,7 +275,8 @@ namespace Hangfire
                 }
             }
 
-            return ExpressionDescriptor.GetDescription(cronExpression);
+            return CronExpressionDescriptor.ExpressionDescriptor.GetDescription(cronExpression);
         }
+#endif
     }
 }
