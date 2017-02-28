@@ -60,7 +60,12 @@ namespace Hangfire
             _factory = factory;
         }
 
-        public void AddOrUpdate(string recurringJobId, Job job, string cronExpression, RecurringJobOptions options, CronStringFormat cronStringFormat = CronStringFormat.Default)
+        public void AddOrUpdate(string recurringJobId, Job job, string cronExpression, RecurringJobOptions options)
+        {
+            AddOrUpdate(recurringJobId, job, cronExpression, CronStringFormat.Default, options);
+        }
+
+        public void AddOrUpdate(string recurringJobId, Job job, string cronExpression, CronStringFormat cronStringFormat, RecurringJobOptions options)
         {
             if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
             if (job == null) throw new ArgumentNullException(nameof(job));

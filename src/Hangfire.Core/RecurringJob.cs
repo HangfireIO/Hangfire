@@ -31,68 +31,124 @@ namespace Hangfire
             Expression<Action> methodCall,
             Func<string> cronExpression,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue,
-            CronStringFormat cronStringFormat = CronStringFormat.Default)
+            string queue = EnqueuedState.DefaultQueue)
         {
-            AddOrUpdate(methodCall, cronExpression(), timeZone, queue, cronStringFormat);
+            AddOrUpdate(methodCall, cronExpression(), CronStringFormat.Default, timeZone, queue);
+        }
+
+        public static void AddOrUpdate(
+            Expression<Action> methodCall,
+            Func<string> cronExpression,
+            CronStringFormat cronStringFormat,
+            TimeZoneInfo timeZone = null,
+            string queue = EnqueuedState.DefaultQueue)
+        {
+            AddOrUpdate(methodCall, cronExpression(), cronStringFormat, timeZone, queue);
+        }
+
+        public static void AddOrUpdate<T>(
+           Expression<Action<T>> methodCall,
+           Func<string> cronExpression,
+           TimeZoneInfo timeZone = null,
+           string queue = EnqueuedState.DefaultQueue)
+        {
+            AddOrUpdate(methodCall, cronExpression(), CronStringFormat.Default, timeZone, queue);
         }
 
         public static void AddOrUpdate<T>(
             Expression<Action<T>> methodCall,
             Func<string> cronExpression,
+            CronStringFormat cronStringFormat,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue,
-            CronStringFormat cronStringFormat = CronStringFormat.Default)
+            string queue = EnqueuedState.DefaultQueue)
         {
-            AddOrUpdate(methodCall, cronExpression(), timeZone, queue, cronStringFormat);
+            AddOrUpdate(methodCall, cronExpression(), cronStringFormat, timeZone, queue);
+        }
+
+        public static void AddOrUpdate(
+           Expression<Action> methodCall,
+           string cronExpression,
+           TimeZoneInfo timeZone = null,
+           string queue = EnqueuedState.DefaultQueue)
+        {
+            AddOrUpdate(methodCall, cronExpression, CronStringFormat.Default, timeZone, queue);
         }
 
         public static void AddOrUpdate(
             Expression<Action> methodCall,
             string cronExpression,
+            CronStringFormat cronStringFormat,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue,
-            CronStringFormat cronStringFormat = CronStringFormat.Default)
+            string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             var id = GetRecurringJobId(job);
 
-            Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue, cronStringFormat);
+            Instance.Value.AddOrUpdate(id, job, cronExpression, cronStringFormat, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void AddOrUpdate<T>(
             Expression<Action<T>> methodCall,
             string cronExpression,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue,
-            CronStringFormat cronStringFormat = CronStringFormat.Default)
+            string queue = EnqueuedState.DefaultQueue)
+        {
+            AddOrUpdate(methodCall, cronExpression, CronStringFormat.Default, timeZone, queue);
+        }
+
+        public static void AddOrUpdate<T>(
+            Expression<Action<T>> methodCall,
+            string cronExpression,
+            CronStringFormat cronStringFormat,
+            TimeZoneInfo timeZone = null,
+            string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             var id = GetRecurringJobId(job);
 
-            Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue, cronStringFormat);
+            Instance.Value.AddOrUpdate(id, job, cronExpression, cronStringFormat, timeZone ?? TimeZoneInfo.Utc, queue);
+        }
+
+        public static void AddOrUpdate(
+           string recurringJobId,
+           Expression<Action> methodCall,
+           Func<string> cronExpression,
+           TimeZoneInfo timeZone = null,
+           string queue = EnqueuedState.DefaultQueue)
+        {
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), CronStringFormat.Default, timeZone, queue);
         }
 
         public static void AddOrUpdate(
             string recurringJobId,
             Expression<Action> methodCall,
             Func<string> cronExpression,
+            CronStringFormat cronStringFormat,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue,
-            CronStringFormat cronStringFormat = CronStringFormat.Default)
+            string queue = EnqueuedState.DefaultQueue)
         {
-            AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue, cronStringFormat);
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), cronStringFormat, timeZone, queue);
+        }
+
+        public static void AddOrUpdate<T>(
+           string recurringJobId,
+           Expression<Action<T>> methodCall,
+           Func<string> cronExpression,
+           TimeZoneInfo timeZone = null,
+           string queue = EnqueuedState.DefaultQueue)
+        {
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), CronStringFormat.Default, timeZone, queue);
         }
 
         public static void AddOrUpdate<T>(
             string recurringJobId,
             Expression<Action<T>> methodCall,
             Func<string> cronExpression,
+            CronStringFormat cronStringFormat,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue,
-            CronStringFormat cronStringFormat = CronStringFormat.Default)
+            string queue = EnqueuedState.DefaultQueue)
         {
-            AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue, cronStringFormat);
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), cronStringFormat, timeZone, queue);
         }
 
         public static void AddOrUpdate(
@@ -100,11 +156,21 @@ namespace Hangfire
             Expression<Action> methodCall,
             string cronExpression,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue,
-            CronStringFormat cronStringFormat = CronStringFormat.Default)
+            string queue = EnqueuedState.DefaultQueue)
+        {
+            AddOrUpdate(recurringJobId, methodCall, cronExpression, CronStringFormat.Default, timeZone, queue);
+        }
+
+        public static void AddOrUpdate(
+            string recurringJobId,
+            Expression<Action> methodCall,
+            string cronExpression,
+            CronStringFormat cronStringFormat,
+            TimeZoneInfo timeZone = null,
+            string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue, cronStringFormat);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, cronStringFormat, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void AddOrUpdate<T>(
@@ -112,68 +178,127 @@ namespace Hangfire
             Expression<Action<T>> methodCall,
             string cronExpression,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue,
-            CronStringFormat cronStringFormat = CronStringFormat.Default)
+            string queue = EnqueuedState.DefaultQueue)
+        {
+            AddOrUpdate(recurringJobId, methodCall, cronExpression, CronStringFormat.Default, timeZone, queue);
+        }
+
+        public static void AddOrUpdate<T>(
+            string recurringJobId,
+            Expression<Action<T>> methodCall,
+            string cronExpression,
+            CronStringFormat cronStringFormat,
+            TimeZoneInfo timeZone = null,
+            string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue, cronStringFormat);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, cronStringFormat, timeZone ?? TimeZoneInfo.Utc, queue);
+        }
+
+        public static void AddOrUpdate(
+           Expression<Func<Task>> methodCall,
+           Func<string> cronExpression,
+           TimeZoneInfo timeZone = null,
+           string queue = EnqueuedState.DefaultQueue)
+        {
+            AddOrUpdate(methodCall, cronExpression(), CronStringFormat.Default, timeZone, queue);
         }
 
         public static void AddOrUpdate(
             Expression<Func<Task>> methodCall,
             Func<string> cronExpression,
+            CronStringFormat cronStringFormat,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue,
-            CronStringFormat cronStringFormat = CronStringFormat.Default)
+            string queue = EnqueuedState.DefaultQueue)
         {
-            AddOrUpdate(methodCall, cronExpression(), timeZone, queue, cronStringFormat);
+            AddOrUpdate(methodCall, cronExpression(), cronStringFormat, timeZone, queue);
+        }
+
+        public static void AddOrUpdate<T>(
+           Expression<Func<T, Task>> methodCall,
+           Func<string> cronExpression,
+           TimeZoneInfo timeZone = null,
+           string queue = EnqueuedState.DefaultQueue)
+        {
+            AddOrUpdate(methodCall, cronExpression(), CronStringFormat.Default, timeZone, queue);
         }
 
         public static void AddOrUpdate<T>(
             Expression<Func<T, Task>> methodCall,
             Func<string> cronExpression,
+            CronStringFormat cronStringFormat,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue,
-            CronStringFormat cronStringFormat = CronStringFormat.Default)
+            string queue = EnqueuedState.DefaultQueue)
         {
-            AddOrUpdate(methodCall, cronExpression(), timeZone, queue, cronStringFormat);
+            AddOrUpdate(methodCall, cronExpression(), cronStringFormat, timeZone, queue);
         }
 
         public static void AddOrUpdate(
-            Expression<Func<Task>> methodCall,
-            string cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue,
-            CronStringFormat cronStringFormat = CronStringFormat.Default)
+           Expression<Func<Task>> methodCall,
+           string cronExpression,
+           TimeZoneInfo timeZone = null,
+           string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             var id = GetRecurringJobId(job);
 
-            Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue, cronStringFormat);
+            Instance.Value.AddOrUpdate(id, job, cronExpression, CronStringFormat.Default, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
-        public static void AddOrUpdate<T>(
-            Expression<Func<T, Task>> methodCall,
+        public static void AddOrUpdate(
+            Expression<Func<Task>> methodCall,
             string cronExpression,
+            CronStringFormat cronStringFormat,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue,
-            CronStringFormat cronStringFormat = CronStringFormat.Default)
+            string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             var id = GetRecurringJobId(job);
 
-            Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue, cronStringFormat);
+            Instance.Value.AddOrUpdate(id, job, cronExpression, cronStringFormat, timeZone ?? TimeZoneInfo.Utc, queue);
         }
-        
+
+        public static void AddOrUpdate<T>(
+           Expression<Func<T, Task>> methodCall,
+           string cronExpression,
+           TimeZoneInfo timeZone = null,
+           string queue = EnqueuedState.DefaultQueue)
+        {
+            AddOrUpdate(methodCall, cronExpression, CronStringFormat.Default, timeZone, queue);
+        }
+
+        public static void AddOrUpdate<T>(
+            Expression<Func<T, Task>> methodCall,
+            string cronExpression,
+            CronStringFormat cronStringFormat,
+            TimeZoneInfo timeZone = null,
+            string queue = EnqueuedState.DefaultQueue)
+        {
+            var job = Job.FromExpression(methodCall);
+            var id = GetRecurringJobId(job);
+
+            Instance.Value.AddOrUpdate(id, job, cronExpression, cronStringFormat, timeZone ?? TimeZoneInfo.Utc, queue);
+        }
+
         public static void AddOrUpdate(
             string recurringJobId,
             Expression<Func<Task>> methodCall,
             Func<string> cronExpression,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue,
-            CronStringFormat cronStringFormat = CronStringFormat.Default)
+            string queue = EnqueuedState.DefaultQueue)
         {
-            AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue, cronStringFormat);
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), CronStringFormat.Default, timeZone, queue);
+        }
+
+        public static void AddOrUpdate(
+            string recurringJobId,
+            Expression<Func<Task>> methodCall,
+            Func<string> cronExpression,
+            CronStringFormat cronStringFormat,
+            TimeZoneInfo timeZone = null,
+            string queue = EnqueuedState.DefaultQueue)
+        {
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), cronStringFormat, timeZone, queue);
         }
 
         public static void AddOrUpdate<T>(
@@ -181,10 +306,20 @@ namespace Hangfire
             Expression<Func<T, Task>> methodCall,
             Func<string> cronExpression,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue,
-            CronStringFormat cronStringFormat = CronStringFormat.Default)
+            string queue = EnqueuedState.DefaultQueue)
         {
-            AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue, cronStringFormat);
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), CronStringFormat.Default, timeZone, queue);
+        }
+
+        public static void AddOrUpdate<T>(
+            string recurringJobId,
+            Expression<Func<T, Task>> methodCall,
+            Func<string> cronExpression,
+            CronStringFormat cronStringFormat,
+            TimeZoneInfo timeZone = null,
+            string queue = EnqueuedState.DefaultQueue)
+        {
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), cronStringFormat, timeZone, queue);
         }
 
         public static void AddOrUpdate(
@@ -192,11 +327,21 @@ namespace Hangfire
             Expression<Func<Task>> methodCall,
             string cronExpression,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue,
-            CronStringFormat cronStringFormat = CronStringFormat.Default)
+            string queue = EnqueuedState.DefaultQueue)
+        {
+            AddOrUpdate(recurringJobId, methodCall, cronExpression, CronStringFormat.Default, timeZone, queue);
+        }
+
+        public static void AddOrUpdate(
+            string recurringJobId,
+            Expression<Func<Task>> methodCall,
+            string cronExpression,
+            CronStringFormat cronStringFormat,
+            TimeZoneInfo timeZone = null,
+            string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue, cronStringFormat);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, cronStringFormat, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void AddOrUpdate<T>(
@@ -204,11 +349,21 @@ namespace Hangfire
             Expression<Func<T, Task>> methodCall,
             string cronExpression,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue,
-            CronStringFormat cronStringFormat = CronStringFormat.Default)
+            string queue = EnqueuedState.DefaultQueue)
+        {
+            AddOrUpdate(recurringJobId, methodCall, cronExpression, CronStringFormat.Default, timeZone, queue);
+        }
+
+        public static void AddOrUpdate<T>(
+            string recurringJobId,
+            Expression<Func<T, Task>> methodCall,
+            string cronExpression,
+            CronStringFormat cronStringFormat,
+            TimeZoneInfo timeZone = null,
+            string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue, cronStringFormat);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, cronStringFormat, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void RemoveIfExists(string recurringJobId)
