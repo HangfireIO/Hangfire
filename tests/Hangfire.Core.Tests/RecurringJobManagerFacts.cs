@@ -37,6 +37,24 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void Ctor_Can_Instantiate_Lazily()
+        {
+
+            Lazy<RecurringJobManager> Instance = new Lazy<RecurringJobManager>(
+            () => new RecurringJobManager());
+        }
+
+        [Fact]
+        public void ThrowsException_When_Job_Is_Null()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+            {
+                new RecurringJobManager(null);
+            });
+            Assert.Equal("storage", exception.ParamName);
+        }
+
+        [Fact]
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
@@ -66,12 +84,48 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void AddOrUpdate_ThrowsAnException_WhenIdIsNull_CronstringFormat()
+        {
+            var manager = CreateManager();
+
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => manager.AddOrUpdate(null, _job, Cron.Daily(), CronStringFormat.Default));
+
+            Assert.Equal("recurringJobId", exception.ParamName);
+        }
+
+        [Fact]
+        public void AddorUpdate_CanAdd_NoException_CronstringFormat()
+        {
+            var manager = CreateManager();
+            manager.AddOrUpdate(_id, _job, Cron.Daily(), CronStringFormat.Default, TimeZoneInfo.Local);
+        }
+
+        [Fact]
+        public void AddorUpdate_CanAdd_NoException()
+        {
+            var manager = CreateManager();
+            manager.AddOrUpdate(_id, _job, Cron.Daily(), TimeZoneInfo.Local, "queue");
+        }
+
+        [Fact]
         public void AddOrUpdate_ThrowsAnException_WhenJobIsNull()
         {
             var manager = CreateManager();
 
             var exception = Assert.Throws<ArgumentNullException>(
                 () => manager.AddOrUpdate(_id, null, Cron.Daily()));
+
+            Assert.Equal("job", exception.ParamName);
+        }
+
+        [Fact]
+        public void AddOrUpdate_ThrowsAnException_WhenJobIsNull_CronstringFormat()
+        {
+            var manager = CreateManager();
+
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => manager.AddOrUpdate(_id, null, Cron.Daily(), CronStringFormat.Default));
 
             Assert.Equal("job", exception.ParamName);
         }
@@ -86,212 +140,354 @@ namespace Hangfire.Core.Tests
 
             Assert.Equal("queue", exception.ParamName);
         }
-        
+
         [Fact]
-        public void AddOrUpdate_ThrowsAnException_WhenCronExpressionIsNull()
+        public void AddOrUpdate_ThrowsAnException_WhenQueueNameIsNull_CronstringFormat()
         {
             var manager = CreateManager();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => manager.AddOrUpdate(_id, _job, null));
-
-            Assert.Equal("cronExpression", exception.ParamName);
-        }
-
-        [Fact]
-        public void AddOrUpdate_ThrowsAnException_WhenCronExpressionIsInvalid()
-        {
-            var manager = CreateManager();
-
-            var exception = Assert.Throws<ArgumentException>(
-                () => manager.AddOrUpdate(_id, _job, "* * *"));
-
-            Assert.Equal("cronExpression", exception.ParamName);
-        }
-
-        [Fact]
-        public void AddOrUpdate_ThrowsAnException_WhenCronExpression_HaveInvalidParts()
-        {
-            var manager = CreateManager();
-
-            var exception = Assert.Throws<ArgumentException>(
-                () => manager.AddOrUpdate(_id, _job, "* * * * 9999"));
-
-            Assert.Equal("cronExpression", exception.ParamName);
-        }
-
-        [Fact]
-        public void AddOrUpdate_ThrowsAnException_WhenTimeZoneIsNull()
-        {
-            var manager = CreateManager();
-
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => manager.AddOrUpdate(_id, _job, _cronExpression, (TimeZoneInfo) null));
-
-            Assert.Equal("timeZone", exception.ParamName);
-        }
-
-        [Fact]
-        public void AddOrUpdate_ThrowsAnException_WhenOptionsArgumentIsNull()
-        {
-            var manager = CreateManager();
-
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => manager.AddOrUpdate(_id, _job, _cronExpression, null));
-
-            Assert.Equal("options", exception.ParamName);
-        }
-
-        [Fact]
-        public void AddOrUpdate_ThrowsAnException_WhenQueueIsNull()
-        {
-            var manager = CreateManager();
-
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => manager.AddOrUpdate(_id, _job, _cronExpression, TimeZoneInfo.Utc, null));
+                () => manager.AddOrUpdate(_id, _job, Cron.Daily(), CronStringFormat.Default, TimeZoneInfo.Local, null));
 
             Assert.Equal("queue", exception.ParamName);
         }
 
         [Fact]
-        public void AddOrUpdate_AddsAJob_ToTheRecurringJobsSet()
+        public void AddOrUpdate_ThrowsAnException_WhenManagerIsNull_CronstingFormat()
         {
-            var manager = CreateManager();
+            IRecurringJobManager manager = null;
 
-            manager.AddOrUpdate(_id, _job, _cronExpression);
-
-            _transaction.Verify(x => x.AddToSet("recurring-jobs", _id));
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => manager.AddOrUpdate(_id, _job, Cron.Daily(), CronStringFormat.Default, TimeZoneInfo.Local, "queue"));
+            Assert.Equal("manager", exception.ParamName);
         }
 
-        [Fact]
-        public void AddOrUpdate_SetsTheRecurringJobEntry()
-        {
-            var manager = CreateManager();
+    [Fact]
+    public void AddOrUpdate_ThrowsAnException_WhenCronExpressionIsNull()
+    {
+        var manager = CreateManager();
 
-            manager.AddOrUpdate(_id, _job, _cronExpression);
+        var exception = Assert.Throws<ArgumentNullException>(
+            () => manager.AddOrUpdate(_id, _job, null));
 
-            _transaction.Verify(x => x.SetRangeInHash(
+        Assert.Equal("cronExpression", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddOrUpdate_ThrowsAnException_WhenCronExpressionIsNull_CronstringFormat()
+    {
+        var manager = CreateManager();
+
+        var exception = Assert.Throws<ArgumentNullException>(
+            () => manager.AddOrUpdate(_id, _job, null, CronStringFormat.Default));
+
+        Assert.Equal("cronExpression", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddOrUpdate_ThrowsAnException_WhenCronExpressionIsInvalid()
+    {
+        var manager = CreateManager();
+
+        var exception = Assert.Throws<ArgumentException>(
+            () => manager.AddOrUpdate(_id, _job, "* * *"));
+
+        Assert.Equal("cronExpression", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddOrUpdate_ThrowsAnException_WhenCronExpressionIsInvalid_CronstringFormat()
+    {
+        var manager = CreateManager();
+
+        var exception = Assert.Throws<ArgumentException>(
+            () => manager.AddOrUpdate(_id, _job, "* * *", CronStringFormat.Default));
+
+        Assert.Equal("cronExpression", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddOrUpdate_ThrowsAnException_WhenCronExpression_HaveInvalidParts()
+    {
+        var manager = CreateManager();
+
+        var exception = Assert.Throws<ArgumentException>(
+            () => manager.AddOrUpdate(_id, _job, "* * * * 9999"));
+
+        Assert.Equal("cronExpression", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddOrUpdate_ThrowsAnException_WhenCronExpression_HaveInvalidParts_CronstringFormat()
+    {
+        var manager = CreateManager();
+
+        var exception = Assert.Throws<ArgumentException>(
+            () => manager.AddOrUpdate(_id, _job, "* * * * 9999", CronStringFormat.Default));
+
+        Assert.Equal("cronExpression", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddOrUpdate_ThrowsAnException_WhenTimeZoneIsNull()
+    {
+        var manager = CreateManager();
+
+        var exception = Assert.Throws<ArgumentNullException>(
+            () => manager.AddOrUpdate(_id, _job, _cronExpression, (TimeZoneInfo)null));
+
+        Assert.Equal("timeZone", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddOrUpdate_ThrowsAnException_WhenTimeZoneIsNull_CronstringFormat()
+    {
+        var manager = CreateManager();
+
+        var exception = Assert.Throws<ArgumentNullException>(
+            () => manager.AddOrUpdate(_id, _job, _cronExpression, CronStringFormat.Default, (TimeZoneInfo)null));
+
+        Assert.Equal("timeZone", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddOrUpdate_ThrowsAnException_WhenOptionsArgumentIsNull()
+    {
+        var manager = CreateManager();
+
+        var exception = Assert.Throws<ArgumentNullException>(
+            () => manager.AddOrUpdate(_id, _job, _cronExpression, null));
+
+        Assert.Equal("options", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddOrUpdate_ThrowsAnException_WhenOptionsArgumentIsNull_CronstringFormat()
+    {
+        var manager = CreateManager();
+
+        var exception = Assert.Throws<ArgumentNullException>(
+            () => manager.AddOrUpdate(_id, _job, _cronExpression, CronStringFormat.Default, null));
+
+        Assert.Equal("options", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddOrUpdate_ThrowsAnException_WhenQueueIsNull()
+    {
+        var manager = CreateManager();
+
+        var exception = Assert.Throws<ArgumentNullException>(
+            () => manager.AddOrUpdate(_id, _job, _cronExpression, TimeZoneInfo.Utc, null));
+
+        Assert.Equal("queue", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddOrUpdate_ThrowsAnException_WhenQueueIsNull_CronstringFormat()
+    {
+        var manager = CreateManager();
+
+        var exception = Assert.Throws<ArgumentNullException>(
+            () => manager.AddOrUpdate(_id, _job, _cronExpression, CronStringFormat.Default, TimeZoneInfo.Utc, null));
+
+        Assert.Equal("queue", exception.ParamName);
+    }
+
+    [Fact]
+    public void AddOrUpdate_AddsAJob_ToTheRecurringJobsSet()
+    {
+        var manager = CreateManager();
+
+        manager.AddOrUpdate(_id, _job, _cronExpression);
+
+        _transaction.Verify(x => x.AddToSet("recurring-jobs", _id));
+    }
+
+    [Fact]
+    public void AddOrUpdate_AddsAJob_ToTheRecurringJobsSet_CronstringFormat()
+    {
+        var manager = CreateManager();
+
+        manager.AddOrUpdate(_id, _job, _cronExpression, CronStringFormat.Default);
+
+        _transaction.Verify(x => x.AddToSet("recurring-jobs", _id));
+    }
+
+    [Fact]
+    public void AddOrUpdate_SetsTheRecurringJobEntry()
+    {
+        var manager = CreateManager();
+
+        manager.AddOrUpdate(_id, _job, _cronExpression);
+
+        _transaction.Verify(x => x.SetRangeInHash(
+            $"recurring-job:{_id}",
+            It.Is<Dictionary<string, string>>(rj =>
+                rj["Cron"] == "* * * * *"
+                && !String.IsNullOrEmpty(rj["Job"])
+                && JobHelper.DeserializeDateTime(rj["CreatedAt"]) > DateTime.UtcNow.AddMinutes(-1))));
+    }
+
+    [Fact]
+    public void AddOrUpdate_SetsTheRecurringJobEntry_CronstringFormat()
+    {
+        var manager = CreateManager();
+
+        manager.AddOrUpdate(_id, _job, _cronExpression, CronStringFormat.Default);
+
+        _transaction.Verify(x => x.SetRangeInHash(
+            $"recurring-job:{_id}",
+            It.Is<Dictionary<string, string>>(rj =>
+                rj["Cron"] == "* * * * *"
+                && !String.IsNullOrEmpty(rj["Job"])
+                && JobHelper.DeserializeDateTime(rj["CreatedAt"]) > DateTime.UtcNow.AddMinutes(-1))));
+    }
+
+    [Fact]
+    public void AddOrUpdate_CommitsTransaction()
+    {
+        var manager = CreateManager();
+
+        manager.AddOrUpdate(_id, _job, _cronExpression);
+
+        _transaction.Verify(x => x.Commit());
+    }
+
+    [Fact]
+    public void AddOrUpdate_CommitsTransaction_CronstringFormat()
+    {
+        var manager = CreateManager();
+
+        manager.AddOrUpdate(_id, _job, _cronExpression, CronStringFormat.Default);
+
+        _transaction.Verify(x => x.Commit());
+    }
+
+    [Fact]
+    public void AddOrUpdate_DoesNotUpdateCreatedAtValue_OfExistingJobs()
+    {
+        // Arrange
+        _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}"))
+            .Returns(new Dictionary<string, string>());
+
+        var manager = CreateManager();
+
+        // Act
+        manager.AddOrUpdate(_id, _job, _cronExpression);
+
+        // Assert
+        _transaction.Verify(
+            x => x.SetRangeInHash(
                 $"recurring-job:{_id}",
-                It.Is<Dictionary<string, string>>(rj => 
-                    rj["Cron"] == "* * * * *"
-                    && !String.IsNullOrEmpty(rj["Job"])
-                    && JobHelper.DeserializeDateTime(rj["CreatedAt"]) > DateTime.UtcNow.AddMinutes(-1))));
-        }
+                It.Is<Dictionary<string, string>>(rj => rj.ContainsKey("CreatedAt"))),
+            Times.Never);
+    }
 
-        [Fact]
-        public void AddOrUpdate_CommitsTransaction()
-        {
-            var manager = CreateManager();
+    [Fact]
+    public void AddOrUpdate_DoesNotUpdateCreatedAtValue_OfExistingJobs_CronstringFormat()
+    {
+        // Arrange
+        _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}"))
+            .Returns(new Dictionary<string, string>());
 
-            manager.AddOrUpdate(_id, _job, _cronExpression);
+        var manager = CreateManager();
 
-            _transaction.Verify(x => x.Commit());
-        }
+        // Act
+        manager.AddOrUpdate(_id, _job, _cronExpression, CronStringFormat.Default);
 
-        [Fact]
-        public void AddOrUpdate_DoesNotUpdateCreatedAtValue_OfExistingJobs()
-        {
-            // Arrange
-            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}"))
-                .Returns(new Dictionary<string, string>());
+        // Assert
+        _transaction.Verify(
+            x => x.SetRangeInHash(
+                $"recurring-job:{_id}",
+                It.Is<Dictionary<string, string>>(rj => rj.ContainsKey("CreatedAt"))),
+            Times.Never);
+    }
 
-            var manager = CreateManager();
+    [Fact]
+    public void Trigger_ThrowsAnException_WhenIdIsNull()
+    {
+        var manager = CreateManager();
 
-            // Act
-            manager.AddOrUpdate(_id, _job, _cronExpression);
+        Assert.Throws<ArgumentNullException>(() => manager.Trigger(null));
+    }
 
-            // Assert
-            _transaction.Verify(
-                x => x.SetRangeInHash(
-                    $"recurring-job:{_id}",
-                    It.Is<Dictionary<string, string>>(rj => rj.ContainsKey("CreatedAt"))),
-                Times.Never);
-        }
-
-        [Fact]
-        public void Trigger_ThrowsAnException_WhenIdIsNull()
-        {
-            var manager = CreateManager();
-
-            Assert.Throws<ArgumentNullException>(() => manager.Trigger(null));
-        }
-
-        [Fact]
-        public void Trigger_EnqueuesScheduledJob()
-        {
-            // Arrange
-            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}"))
-                .Returns(new Dictionary<string, string>
-                {
+    [Fact]
+    public void Trigger_EnqueuesScheduledJob()
+    {
+        // Arrange
+        _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}"))
+            .Returns(new Dictionary<string, string>
+            {
                     { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) }
-                });
+            });
 
-            var manager = CreateManager();
+        var manager = CreateManager();
 
-            // Act
-            manager.Trigger(_id);
+        // Act
+        manager.Trigger(_id);
 
-            // Assert
-            _factory.Verify(x => x.Create(It.Is<CreateContext>(context => context.InitialState is EnqueuedState)));
-        }
+        // Assert
+        _factory.Verify(x => x.Create(It.Is<CreateContext>(context => context.InitialState is EnqueuedState)));
+    }
 
-        [Fact]
-        public void Trigger_EnqueuedJobToTheSpecificQueue_IfSpecified()
-        {
-            // Arrange
-            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}"))
-                .Returns(new Dictionary<string, string>
-                {
+    [Fact]
+    public void Trigger_EnqueuedJobToTheSpecificQueue_IfSpecified()
+    {
+        // Arrange
+        _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}"))
+            .Returns(new Dictionary<string, string>
+            {
                     { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) },
                     { "Queue", "my_queue" }
-                });
+            });
 
-            var manager = CreateManager();
+        var manager = CreateManager();
 
-            // Act
-            manager.Trigger(_id);
+        // Act
+        manager.Trigger(_id);
 
-            // Assert
-            _factory.Verify(x => x.Create(It.Is<CreateContext>(context =>
-                ((EnqueuedState)context.InitialState).Queue == "my_queue")));
-        }
-
-        [Fact]
-        public void Trigger_DoesNotThrowIfJobDoesNotExist()
-        {
-            var manager = CreateManager();
-
-            manager.Trigger(_id);
-
-            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
-        }
-
-        [Fact]
-        public void RemoveIfExists_ThrowsAnException_WhenIdIsNull()
-        {
-            var manager = CreateManager();
-
-            Assert.Throws<ArgumentNullException>(
-                () => manager.RemoveIfExists(null));
-        }
-
-        [Fact]
-        public void RemoveIfExists_RemovesEntriesAndCommitsTheTransaction()
-        {
-            var manager = CreateManager();
-
-            manager.RemoveIfExists(_id);
-
-            _transaction.Verify(x => x.RemoveFromSet("recurring-jobs", _id));
-            _transaction.Verify(x => x.RemoveHash($"recurring-job:{_id}"));
-            _transaction.Verify(x => x.Commit());
-        }
-
-        private RecurringJobManager CreateManager()
-        {
-            return new RecurringJobManager(_storage.Object, _factory.Object);
-        }
-
-        public static void Method() { }
+        // Assert
+        _factory.Verify(x => x.Create(It.Is<CreateContext>(context =>
+            ((EnqueuedState)context.InitialState).Queue == "my_queue")));
     }
+
+    [Fact]
+    public void Trigger_DoesNotThrowIfJobDoesNotExist()
+    {
+        var manager = CreateManager();
+
+        manager.Trigger(_id);
+
+        _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
+    }
+
+    [Fact]
+    public void RemoveIfExists_ThrowsAnException_WhenIdIsNull()
+    {
+        var manager = CreateManager();
+
+        Assert.Throws<ArgumentNullException>(
+            () => manager.RemoveIfExists(null));
+    }
+
+    [Fact]
+    public void RemoveIfExists_RemovesEntriesAndCommitsTheTransaction()
+    {
+        var manager = CreateManager();
+
+        manager.RemoveIfExists(_id);
+
+        _transaction.Verify(x => x.RemoveFromSet("recurring-jobs", _id));
+        _transaction.Verify(x => x.RemoveHash($"recurring-job:{_id}"));
+        _transaction.Verify(x => x.Commit());
+    }
+
+    private RecurringJobManager CreateManager()
+    {
+        return new RecurringJobManager(_storage.Object, _factory.Object);
+    }
+
+    public static void Method() { }
+}
 }
