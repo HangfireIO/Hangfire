@@ -108,6 +108,13 @@ namespace Hangfire.Core.Tests
             manager.AddOrUpdate(_id, _job, Cron.Daily(), TimeZoneInfo.Local, "queue");
         }
 
+         [Fact]
+        public void AddorUpdate_CanAdd_NoException2()
+        {
+            var manager = CreateManager();
+            manager.AddOrUpdate(_id, _job, Cron.Daily(), TimeZoneInfo.Local);
+        }
+
         [Fact]
         public void AddOrUpdate_ThrowsAnException_WhenJobIsNull()
         {
