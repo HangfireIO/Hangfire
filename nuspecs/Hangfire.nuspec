@@ -19,6 +19,11 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.9
+
+Hangfire.SqlServer
+• Fixed – `TimeoutException` on large arguments or large batches via `SqlServerOptions.CommandTimeout`.
+
 1.6.8
 
 Hangfire.Core
