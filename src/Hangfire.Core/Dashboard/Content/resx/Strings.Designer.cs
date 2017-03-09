@@ -8,8 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System.Reflection;
-
 namespace Hangfire.Dashboard.Resources {
     using System;
     
@@ -41,7 +39,7 @@ namespace Hangfire.Dashboard.Resources {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Hangfire.Dashboard.Content.resx.Strings", typeof(Strings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Hangfire.Dashboard.Content.resx.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -640,6 +638,15 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Manual.
+        /// </summary>
+        public static string JobsSidebarMenu_Manual {
+            get {
+                return ResourceManager.GetString("JobsSidebarMenu_Manual", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Processing.
         /// </summary>
         public static string JobsSidebarMenu_Processing {
@@ -955,7 +962,7 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Nexts jobs.
+        ///   Looks up a localized string similar to Next jobs.
         /// </summary>
         public static string QueuesPage_Table_NextsJobs {
             get {

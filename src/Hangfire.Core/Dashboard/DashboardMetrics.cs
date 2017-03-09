@@ -41,6 +41,7 @@ namespace Hangfire.Dashboard
             AddMetric(FailedCount);
             AddMetric(DeletedCount);
             AddMetric(AwaitingCount);
+            AddMetric(ManualCount);
         }
 
         public static void AddMetric([NotNull] DashboardMetric metric)
@@ -62,7 +63,7 @@ namespace Hangfire.Dashboard
         }
 
         public static readonly DashboardMetric ServerCount = new DashboardMetric(
-            "servers:count", 
+            "servers:count",
             "Metrics_Servers",
             page => new Metric(page.Statistics.Servers.ToString("N0"))
             {
@@ -193,5 +194,10 @@ namespace Hangfire.Dashboard
                     Style = awaitingCount > 0 ? MetricStyle.Info : MetricStyle.Default
                 };
             });
+
+        public static readonly DashboardMetric ManualCount = new DashboardMetric(
+            "manual:count",
+            "Metrics_ManualCount",
+            page => new Metric(page.Statistics.Manual.ToString("N0")));
     }
 }

@@ -44,8 +44,8 @@ namespace Hangfire
     /// <threadsafety static="true" instance="false" />
     public partial class BackgroundJob
     {
-        private static readonly Lazy<IBackgroundJobClient> CachedClient 
-            = new Lazy<IBackgroundJobClient>(() => new BackgroundJobClient()); 
+        private static readonly Lazy<IBackgroundJobClient> CachedClient
+            = new Lazy<IBackgroundJobClient>(() => new BackgroundJobClient());
 
         private static readonly Func<IBackgroundJobClient> DefaultFactory
             = () => CachedClient.Value;
@@ -144,6 +144,42 @@ namespace Hangfire
         }
 
         /// <summary>
+        /// Creates a new manual job based on a given method call expression.
+        /// </summary>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <returns>Unique identifier of a background job.</returns>
+        /// 
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="methodCall"/> is <see langword="null"/>.
+        /// </exception>
+        /// 
+        /// <seealso cref="ManualState"/>
+        /// <seealso cref="O:Hangfire.IBackgroundJobClient.Stash"/>
+        public static string Stash([NotNull, InstantHandle] Expression<Action> methodCall)
+        {
+            var client = ClientFactory();
+            return client.Stash(methodCall);
+        }
+
+        /// <summary>
+        /// Creates a new manual job based on a given method call expression.
+        /// </summary>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <returns>Unique identifier of a background job.</returns>
+        /// 
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="methodCall"/> is <see langword="null"/>.
+        /// </exception>
+        /// 
+        /// <seealso cref="ManualState"/>
+        /// <seealso cref="O:Hangfire.IBackgroundJobClient.Stash"/>
+        public static string Stash<T>([NotNull, InstantHandle] Expression<Action<T>> methodCall)
+        {
+            var client = ClientFactory();
+            return client.Stash(methodCall);
+        }
+
+        /// <summary>
         /// Creates a new background job based on a specified method
         /// call expression and schedules it to be enqueued after a given delay.
         /// </summary>
@@ -152,8 +188,8 @@ namespace Hangfire
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
         /// <returns>Unique identifier of the created job.</returns>
         public static string Schedule(
-            [NotNull, InstantHandle] Expression<Action> methodCall, 
-            TimeSpan delay)
+                    [NotNull, InstantHandle] Expression<Action> methodCall,
+                    TimeSpan delay)
         {
             var client = ClientFactory();
             return client.Schedule(methodCall, delay);
@@ -184,7 +220,7 @@ namespace Hangfire
         /// <param name="enqueueAt">The moment of time at which the job will be enqueued.</param>
         /// <returns>Unique identifier of a created job.</returns>
         public static string Schedule(
-            [NotNull, InstantHandle] Expression<Action> methodCall, 
+            [NotNull, InstantHandle] Expression<Action> methodCall,
             DateTimeOffset enqueueAt)
         {
             var client = ClientFactory();
@@ -217,7 +253,7 @@ namespace Hangfire
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
         /// <returns>Unique identifier of the created job.</returns>
         public static string Schedule<T>(
-            [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             TimeSpan delay)
         {
             var client = ClientFactory();
@@ -251,7 +287,7 @@ namespace Hangfire
         /// <param name="enqueueAt">The moment of time at which the job will be enqueued.</param>
         /// <returns>Unique identifier of a created job.</returns>
         public static string Schedule<T>(
-            [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             DateTimeOffset enqueueAt)
         {
             var client = ClientFactory();
@@ -304,7 +340,7 @@ namespace Hangfire
             var client = ClientFactory();
             return client.Delete(jobId, fromState);
         }
-        
+
         /// <summary>
         /// Changes state of a job with the specified <paramref name="jobId"/>
         /// to the <see cref="EnqueuedState"/>.
@@ -342,7 +378,7 @@ namespace Hangfire
         /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
         /// <returns>Unique identifier of a created job.</returns>
         public static string ContinueWith(
-            [NotNull] string parentId, 
+            [NotNull] string parentId,
             [NotNull, InstantHandle] Expression<Action> methodCall)
         {
             var client = ClientFactory();
@@ -357,7 +393,7 @@ namespace Hangfire
         /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
         /// <returns>Unique identifier of a created job.</returns>
         public static string ContinueWith<T>(
-            [NotNull] string parentId, 
+            [NotNull] string parentId,
             [NotNull, InstantHandle] Expression<Action<T>> methodCall)
         {
             var client = ClientFactory();
@@ -372,8 +408,8 @@ namespace Hangfire
         /// <param name="options">Continuation options.</param>
         /// <returns>Unique identifier of a created job.</returns>
         public static string ContinueWith(
-            [NotNull] string parentId, 
-            [NotNull, InstantHandle] Expression<Action> methodCall, 
+            [NotNull] string parentId,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
             JobContinuationOptions options)
         {
             var client = ClientFactory();
@@ -405,8 +441,8 @@ namespace Hangfire
         /// <param name="options">Continuation options.</param>
         /// <returns>Unique identifier of a created job.</returns>
         public static string ContinueWith<T>(
-            [NotNull] string parentId, 
-            [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
+            [NotNull] string parentId,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             JobContinuationOptions options)
         {
             var client = ClientFactory();

@@ -523,4 +523,7 @@
   <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
     <value>Succeeded</value>
   </data>
+  <data name="JobsSidebarMenu_Manual" xml:space="preserve">
+    <value>Manual</value>
+  </data>
 </root>
