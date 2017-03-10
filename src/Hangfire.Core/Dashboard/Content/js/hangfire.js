@@ -1,4 +1,11 @@
 (function (hangfire) {
+
+    hangfire.config = {
+        pollInterval: $("#hangfireConfig").data("pollinterval"),
+        pollUrl: $("#hangfireConfig").data("pollurl"),
+        locale: $("#hangfireConfig").data("locale")
+    };
+
     hangfire.Metrics = (function() {
         function Metrics() {
             this._metrics = {};
