@@ -1,5 +1,4 @@
 (function (hangfire) {
-    debugger;
     hangfire.config = {
         pollInterval: $("#hangfireConfig").data("pollinterval"),
         pollUrl: $("#hangfireConfig").data("pollurl"),
