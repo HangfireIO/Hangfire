@@ -1,9 +1,9 @@
 (function (hangfire) {
-
+    debugger;
     hangfire.config = {
         pollInterval: $("#hangfireConfig").data("pollinterval"),
         pollUrl: $("#hangfireConfig").data("pollurl"),
-        locale: $("#hangfireConfig").data("locale")
+        locale: document.documentElement.lang
     };
 
     hangfire.Metrics = (function() {

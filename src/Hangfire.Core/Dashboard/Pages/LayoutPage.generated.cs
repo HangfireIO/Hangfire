@@ -283,21 +283,11 @@ WriteLiteral("\"\r\n             data-pollurl=\"");
             
             #line default
             #line hidden
-WriteLiteral("\"\r\n             data-locale=\"");
-
-
-            
-            #line 74 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                     Write(CultureInfo.CurrentUICulture);
-
-            
-            #line default
-            #line hidden
 WriteLiteral("\">\r\n        </div>\r\n\r\n        <script src=\"");
 
 
             
-            #line 77 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 76 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                 Write(Url.To($"/js{version.Major}{version.Minor}{version.Build}"));
 
             
