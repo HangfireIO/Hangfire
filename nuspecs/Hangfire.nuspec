@@ -19,6 +19,14 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.10
+
+Hangfire.Core
+• Fixed – Duplicate job continuations aren't added anymore, when outer transaction has failed.
+• Fixed – Existing duplicate continuations don't lead to `ArgumentException`: the same key already added.
+• Fixed – Replace inline script, because it may violate the Content Security Policy (by @Beczka).
+• Fixed – Don't skip records in RecurringJobsPage (by @reaction1989).
+    
 1.6.9
 
 Hangfire.SqlServer
