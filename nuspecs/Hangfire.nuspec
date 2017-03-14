@@ -19,6 +19,12 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.11
+
+Hangfire.Core
+• Fixed – `NullReferenceException` in dashboard when `owinContext.Auth.User` is `null`.
+• Fixed – Regression related to missing CSS and JS resources in dashboard appeared in 1.6.10.
+    
 1.6.10
 
 Hangfire.Core
