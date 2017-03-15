@@ -26,7 +26,7 @@ namespace Hangfire
 
         public DisableConcurrentExecutionAttribute(int timeoutInSeconds)
         {
-            if (timeoutInSeconds < 0) throw new ArgumentException("Timeout argument value should be greater that zero.");
+            if (!(timeoutInSeconds >= 0)) throw new ArgumentException("Timeout argument cannot be negative.");
 
             _timeoutInSeconds = timeoutInSeconds;
         }
