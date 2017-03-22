@@ -19,6 +19,12 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.12
+
+Hangfire.Core
+• Fixed – Buggy state filters may cause background job to be infinitely retried.
+• Fixed – Transient exception during Processing-Succeeded state transition may cause unexpected retry.
+    
 1.6.11
 
 Hangfire.Core
