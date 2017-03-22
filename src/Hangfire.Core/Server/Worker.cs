@@ -130,6 +130,8 @@ namespace Hangfire.Server
                             fetchedJob.JobId, 
                             state, 
                             ProcessingState.StateName));
+
+                        // TODO: Log error, when applied state is FailedState
                     }
 
                     // Checkpoint #4. The job was performed, and it is in the one
@@ -137,6 +139,7 @@ namespace Hangfire.Server
                     // It should not be re-queued, but we still need to remove its
                     // processing information.
 
+                    // TODO: Handle exception, don't re-queue, since already enqueued
                     fetchedJob.RemoveFromQueue();
 
                     // Success point. No things must be done after previous command
@@ -155,6 +158,7 @@ namespace Hangfire.Server
                         Logger.DebugException("An exception occurred while processing a job. It will be re-queued.", ex);
                     }
 
+                    // TODO: Handle exception, should not hide the original one
                     fetchedJob.Requeue();
                     throw;
                 }

@@ -25,7 +25,10 @@ namespace Hangfire.States
 {
     public class BackgroundJobStateChanger : IBackgroundJobStateChanger
     {
+        private const int MaxStateChangeAttempts = 10;
         private static readonly TimeSpan JobLockTimeout = TimeSpan.FromMinutes(15);
+
+        private readonly IStateMachine _coreStateMachine;
         private readonly IStateMachine _stateMachine;
 
         public BackgroundJobStateChanger()
@@ -34,14 +37,16 @@ namespace Hangfire.States
         }
 
         public BackgroundJobStateChanger([NotNull] IJobFilterProvider filterProvider)
-            : this(new StateMachine(filterProvider))
+            : this(filterProvider, new CoreStateMachine())
         {
         }
 
-        internal BackgroundJobStateChanger([NotNull] IStateMachine stateMachine)
+        internal BackgroundJobStateChanger([NotNull] IJobFilterProvider filterProvider, [NotNull] IStateMachine stateMachine)
         {
             if (stateMachine == null) throw new ArgumentNullException(nameof(stateMachine));
-            _stateMachine = stateMachine;
+
+            _coreStateMachine = stateMachine;
+            _stateMachine = new StateMachine(filterProvider, stateMachine);
         }
         
         public IState ChangeState(StateChangeContext context)
@@ -100,22 +105,54 @@ namespace Hangfire.States
         private IState ChangeState(
             StateChangeContext context, BackgroundJob backgroundJob, IState toState, string oldStateName)
         {
+            Exception exception = null;
+
+            for (var i = 0; i < MaxStateChangeAttempts; i++)
+            {
+                try
+                {
+                    using (var transaction = context.Connection.CreateWriteTransaction())
+                    {
+                        var applyContext = new ApplyStateContext(
+                            context.Storage,
+                            context.Connection,
+                            transaction,
+                            backgroundJob,
+                            toState,
+                            oldStateName);
+
+                        var appliedState = _stateMachine.ApplyState(applyContext);
+
+                        transaction.Commit();
+
+                        return appliedState;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+                }
+            }
+
+            var failedState = new FailedState(exception)
+            {
+                Reason = $"Failed to change state to a '{toState.Name}' one due to an exception after {MaxStateChangeAttempts} retry attempts"
+            };
+
             using (var transaction = context.Connection.CreateWriteTransaction())
             {
-                var applyContext = new ApplyStateContext(
+                _coreStateMachine.ApplyState(new ApplyStateContext(
                     context.Storage,
                     context.Connection,
                     transaction,
                     backgroundJob,
-                    toState,
-                    oldStateName);
-
-                var appliedState = _stateMachine.ApplyState(applyContext);
+                    failedState,
+                    oldStateName));
 
                 transaction.Commit();
-
-                return appliedState;
             }
+
+            return failedState;
         }
 
         private static JobData GetJobData(StateChangeContext context)
