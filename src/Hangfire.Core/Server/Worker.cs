@@ -139,7 +139,6 @@ namespace Hangfire.Server
                     // It should not be re-queued, but we still need to remove its
                     // processing information.
 
-                    // TODO: Handle exception, don't re-queue, since already enqueued
                     fetchedJob.RemoveFromQueue();
 
                     // Success point. No things must be done after previous command
@@ -158,10 +157,21 @@ namespace Hangfire.Server
                         Logger.DebugException("An exception occurred while processing a job. It will be re-queued.", ex);
                     }
 
-                    // TODO: Handle exception, should not hide the original one
-                    fetchedJob.Requeue();
+                    Requeue(fetchedJob);
                     throw;
                 }
+            }
+        }
+
+        private static void Requeue(IFetchedJob fetchedJob)
+        {
+            try
+            {
+                fetchedJob.Requeue();
+            }
+            catch (Exception ex)
+            {
+                Logger.WarnException($"Failed to immediately re-queue the background job '{fetchedJob.JobId}'. Next invocation may be delayed, if invisibility timeout is used", ex);
             }
         }
 
