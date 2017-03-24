@@ -14,6 +14,9 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.13
+• Fixed – Don't hide errors occurred while running SQL migrations.
+    
 1.6.9
 • Fixed – `TimeoutException` on large arguments or large batches via `SqlServerOptions.CommandTimeout`.
 

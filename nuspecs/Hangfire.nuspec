@@ -19,6 +19,14 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.13
+
+Hangfire.Core
+• Fixed – Don't throw NullReferenceException, when state was changed on Processing page.
+
+Hangfire.SqlServer
+• Fixed – Don't hide errors occurred while running SQL migrations.
+    
 1.6.12
 
 Hangfire.Core
