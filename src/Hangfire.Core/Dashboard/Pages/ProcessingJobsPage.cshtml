@@ -86,23 +86,30 @@
                                             <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
                                         }
                                     </td>
-                                    <td class="min-width">
-                                        @Html.ServerId(job.Value.ServerId)
-                                    </td>
-                                    <td class="word-break">
-                                        @if (servers.All(x => x.Name != job.Value.ServerId || x.Heartbeat < DateTime.UtcNow.AddMinutes(-1)))
-                                        {
-                                            <span title="@Strings.ProcessingJobsPage_Aborted" class="glyphicon glyphicon-warning-sign" style="font-size: 10px;"></span>
-                                        }
+                                    @if (!job.Value.InProcessingState)
+                                    {
+                                        <td colspan="3">@Strings.Common_JobStateChanged_Text</td>
+                                    }
+                                    else
+                                    {
+                                        <td class="min-width">
+                                            @Html.ServerId(job.Value.ServerId)
+                                        </td>
+                                        <td class="word-break">
+                                            @if (servers.All(x => x.Name != job.Value.ServerId || x.Heartbeat < DateTime.UtcNow.AddMinutes(-1)))
+                                            {
+                                                <span title="@Strings.ProcessingJobsPage_Aborted" class="glyphicon glyphicon-warning-sign" style="font-size: 10px;"></span>
+                                            }
 
-                                        @Html.JobNameLink(job.Key, job.Value.Job)
-                                    </td>
-                                    <td class="align-right">
-                                        @if (job.Value.StartedAt.HasValue)
-                                        {
-                                            @Html.RelativeTime(job.Value.StartedAt.Value)
-                                        }
-                                    </td>
+                                            @Html.JobNameLink(job.Key, job.Value.Job)
+                                        </td>
+                                        <td class="align-right">
+                                            @if (job.Value.StartedAt.HasValue)
+                                            {
+                                                @Html.RelativeTime(job.Value.StartedAt.Value)
+                                            }
+                                        </td>
+                                    }
                                 </tr>
                             }
                         </tbody>

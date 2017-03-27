@@ -263,43 +263,31 @@ WriteLiteral("</li>\r\n                    <li>");
             #line default
             #line hidden
 WriteLiteral("</li>\r\n                </ul>\r\n            </div>\r\n        </div>\r\n        \r\n     " +
-"   <script>\r\n            (function (hangFire) {\r\n                hangFire.config" +
-" = {\r\n                    pollInterval: ");
+"   <div id=\"hangfireConfig\"\r\n             data-pollinterval=\"");
 
 
             
-            #line 74 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                             Write(StatsPollingInterval);
-
-            
-            #line default
-            #line hidden
-WriteLiteral(",\r\n                    pollUrl: \'");
-
-
-            
-            #line 75 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                          Write(Url.To("/stats"));
+            #line 72 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                           Write(StatsPollingInterval);
 
             
             #line default
             #line hidden
-WriteLiteral("\',\r\n                    locale: \'");
+WriteLiteral("\"\r\n             data-pollurl=\"");
+
+
+            
+            #line 73 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                       Write(Url.To("/stats"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n        </div>\r\n\r\n        <script src=\"");
 
 
             
             #line 76 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                        Write(CultureInfo.CurrentUICulture);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\'\r\n                };\r\n            })(window.Hangfire = window.Hangfire || {});\r\n" +
-"        </script>\r\n        <script src=\"");
-
-
-            
-            #line 80 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                 Write(Url.To($"/js{version.Major}{version.Minor}{version.Build}"));
 
             

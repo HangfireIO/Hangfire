@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Hangfire.Common;
 using Hangfire.States;
@@ -21,6 +22,7 @@ namespace Hangfire.Core.Tests.States
         private readonly Mock<IStorageConnection> _connection;
         private readonly Job _job;
         private readonly Mock<IState> _state;
+        private readonly Mock<IJobFilterProvider> _filterProvider;
         private readonly Mock<IStateMachine> _stateMachine;
         private readonly Mock<IDisposable> _distributedLock;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
@@ -30,6 +32,8 @@ namespace Hangfire.Core.Tests.States
         public BackgroundJobStateChangerFacts()
         {
             _stateMachine = new Mock<IStateMachine>();
+            _filterProvider = new Mock<IJobFilterProvider>();
+            _filterProvider.Setup(x => x.GetFilters(It.IsAny<Job>())).Returns(Enumerable.Empty<JobFilter>());
 
             _job = Job.FromExpression(() => Console.WriteLine());
             _state = new Mock<IState>();
@@ -71,12 +75,21 @@ namespace Hangfire.Core.Tests.States
             _stateMachine.Setup(x => x.ApplyState(It.IsNotNull<ApplyStateContext>()))
                 .Returns(_context.NewState.Object);
         }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenFilterProviderIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new BackgroundJobStateChanger(null));
+
+            Assert.Equal("filterProvider", exception.ParamName);
+        }
         
         [Fact]
         public void Ctor_ThrowsAnException_WhenStateMachineNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundJobStateChanger((IStateMachine)null));
+                () => new BackgroundJobStateChanger(_filterProvider.Object, null));
 
             Assert.Equal("stateMachine", exception.ParamName);
         }
@@ -313,9 +326,36 @@ namespace Hangfire.Core.Tests.States
             Assert.Same(result, anotherState.Object);
         }
 
+        [Fact]
+        public void ChangeState_MovesJobToFailedState_AfterSomeRetryAttempts_WhenThereIsAnException()
+        {
+            // Arrange
+            _stateMachine
+                .Setup(x => x.ApplyState(It.Is<ApplyStateContext>(context => context.NewState == _state.Object)))
+                .Throws<Exception>();
+
+            var stateChanger = CreateStateChanger();
+
+            // Act
+            var result = stateChanger.ChangeState(_context.Object);
+
+            // Assert
+            Assert.IsType<FailedState>(result);
+
+            _transaction.Verify(x => x.Commit(), Times.Once);
+
+            _stateMachine.Verify(
+                x => x.ApplyState(It.Is<ApplyStateContext>(context => context.NewState == result)), 
+                Times.Once);
+
+            _stateMachine.Verify(
+                x => x.ApplyState(It.Is<ApplyStateContext>(context => context.NewState == _state.Object)),
+                Times.AtLeast(2));
+        }
+
         private BackgroundJobStateChanger CreateStateChanger()
         {
-            return new BackgroundJobStateChanger(_stateMachine.Object);
+            return new BackgroundJobStateChanger(_filterProvider.Object, _stateMachine.Object);
         }
     }
 }

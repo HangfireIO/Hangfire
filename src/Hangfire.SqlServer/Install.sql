@@ -21,7 +21,6 @@ SET @TARGET_SCHEMA_VERSION = 5;
 PRINT 'Installing Hangfire SQL objects...';
 
 BEGIN TRANSACTION;
-BEGIN TRY;
 
 -- Acquire exclusive lock to prevent deadlocks caused by schema creation / version update
 DECLARE @SchemaLockResult INT;
@@ -397,14 +396,3 @@ PRINT 'Hangfire database schema installed';
 
 COMMIT TRANSACTION;
 PRINT 'Hangfire SQL objects installed';
-
-END TRY
-BEGIN CATCH
-    DECLARE @ERROR NVARCHAR(MAX);
-	SET @ERROR = ERROR_MESSAGE();
-
-	if @@TRANCOUNT > 0
-		ROLLBACK TRANSACTION
-
-	RAISERROR(N'Hangfire database migration script failed: %s Changes were rolled back, please fix the problem and re-run the script again.', 11, 1, @ERROR);
-END CATCH

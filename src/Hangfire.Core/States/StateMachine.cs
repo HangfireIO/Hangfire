@@ -20,6 +20,7 @@ using Hangfire.Common;
 
 namespace Hangfire.States
 {
+    // TODO: Merge this class with BackgroundJobStateChanger in 2.0.0
     public class StateMachine : IStateMachine
     {
         private readonly IJobFilterProvider _filterProvider;

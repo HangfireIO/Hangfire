@@ -14,6 +14,23 @@
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.13
+• Fixed – Don't throw NullReferenceException, when state was changed on Processing page.
+    
+1.6.12
+• Fixed – Buggy state filters may cause background job to be infinitely retried.
+• Fixed – Transient exception during Processing-Succeeded state transition may cause unexpected retry.
+    
+1.6.11
+• Fixed – `NullReferenceException` in dashboard when OWIN's or ASP.NET Core's `User` is `null`.
+• Fixed – Regression related to missing CSS and JS resources in dashboard appeared in 1.6.10.
+    
+1.6.10
+• Fixed – Duplicate job continuations aren't added anymore, when outer transaction has failed.
+• Fixed – Existing duplicate continuations don't lead to `ArgumentException`: the same key already added.
+• Fixed – Replace inline script, because it may violate the Content Security Policy (by @Beczka).
+• Fixed – Don't skip records in RecurringJobsPage (by @reaction1989).
+    
 1.6.8
 • Fixed – `Cron.MonthInterval` now returns correct CRON expression.
 • Fixed – Throw `NotSupportedException` early, when arguments contain delegate or expression.
