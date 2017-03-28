@@ -71,6 +71,7 @@ namespace Hangfire
                 recurringJob["Cron"] = cronExpression;
                 recurringJob["TimeZoneId"] = options.TimeZone.Id;
                 recurringJob["Queue"] = options.QueueName;
+                recurringJob["DisableConcurrentExecution"] = options.DisableConcurrentExecution.ToString();
 
                 var existingJob = connection.GetAllEntriesFromHash($"recurring-job:{recurringJobId}");
                 if (existingJob == null)

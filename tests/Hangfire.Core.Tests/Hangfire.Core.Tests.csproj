@@ -141,6 +141,7 @@
     <Compile Include="States\ScheduledStateFacts.cs" />
     <Compile Include="States\ApplyStateContextFacts.cs" />
     <Compile Include="States\ElectStateContextFacts.cs" />
+    <Compile Include="States\SkippedStateFacts.cs" />
     <Compile Include="States\StateMachineFacts.cs" />
     <Compile Include="States\StateHandlerCollectionFacts.cs" />
     <Compile Include="States\BackgroundJobStateChangerFacts.cs" />

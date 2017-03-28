@@ -143,6 +143,7 @@ namespace Hangfire.Dashboard
                 (client, jobId) => client.ChangeState(jobId, CreateEnqueuedState(), DeletedState.StateName));
 
             Routes.AddRazorPage("/jobs/awaiting", x => new AwaitingJobsPage());
+            Routes.AddRazorPage("/jobs/skipped", x => new SkippedJobs());
             Routes.AddClientBatchCommand("/jobs/awaiting/enqueue", (client, jobId) => client.ChangeState(
                 jobId, CreateEnqueuedState(), AwaitingState.StateName));
             Routes.AddClientBatchCommand("/jobs/awaiting/delete", (client, jobId) => client.ChangeState(
