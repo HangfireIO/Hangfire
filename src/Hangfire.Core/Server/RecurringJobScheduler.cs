@@ -191,7 +191,7 @@ namespace Hangfire.Server
 
                     if (String.IsNullOrEmpty(jobId))
                     {
-                        Logger.Debug($"Recurring job '{recurringJobId}' execution at '{nowInstant.NowInstant}' has been canceled.");
+                        Logger.Debug("Recurring job '{recurringJobId}' execution at '{nowInstant}' has been canceled.", recurringJobId, nowInstant.NowInstant);
                     }
 
                     changedFields.Add("LastExecution", JobHelper.SerializeDateTime(nowInstant.NowInstant));
