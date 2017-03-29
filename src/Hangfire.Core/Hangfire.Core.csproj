@@ -69,7 +69,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AppBuilderExtensions.cs" />
-    <Compile Include="App_Packages\LibLog.1.4\LibLog.cs" />
+    <Compile Include="App_Packages\LibLog.4.2.6\LibLog.cs" />
     <Compile Include="AttemptsExceededAction.cs" />
     <Compile Include="App_Packages\StackTraceFormatter\StackTraceFormatter.cs" />
     <Compile Include="App_Packages\StackTraceParser\StackTraceParser.cs" />

@@ -22,7 +22,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoWarn>1591</NoWarn>
@@ -44,7 +44,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="App_Packages\LibLog.1.4\LibLog.cs" />
+    <Compile Include="App_Packages\LibLog.4.2.6\LibLog.cs" />
     <Compile Include="App_Packages\NCrontab\CrontabException.cs" />
     <Compile Include="App_Packages\NCrontab\CrontabField.cs" />
     <Compile Include="App_Packages\NCrontab\CrontabFieldImpl.cs" />
