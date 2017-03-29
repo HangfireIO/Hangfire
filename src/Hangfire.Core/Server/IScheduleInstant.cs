@@ -15,7 +15,6 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 
 namespace Hangfire.Server
 {
@@ -23,6 +22,6 @@ namespace Hangfire.Server
     {
         DateTime NowInstant { get; }
         DateTime? NextInstant { get; }
-        IEnumerable<DateTime> GetNextInstants(DateTime lastInstant);
+        bool ShouldSchedule(DateTime lastInstant);
     }
 }

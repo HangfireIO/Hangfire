@@ -16,14 +16,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
-using NCrontab;
+using Cronos;
 
 namespace Hangfire.Server
 {
@@ -69,7 +68,7 @@ namespace Hangfire.Server
         private static readonly ILog Logger = LogProvider.For<RecurringJobScheduler>();
         
         private readonly IBackgroundJobFactory _factory;
-        private readonly Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> _instantFactory;
+        private readonly Func<CronExpression, TimeZoneInfo, IScheduleInstant> _instantFactory;
         private readonly IThrottler _throttler;
 
         /// <summary>
@@ -95,7 +94,7 @@ namespace Hangfire.Server
 
         internal RecurringJobScheduler(
             [NotNull] IBackgroundJobFactory factory,
-            [NotNull] Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> instantFactory,
+            [NotNull] Func<CronExpression, TimeZoneInfo, IScheduleInstant> instantFactory,
             [NotNull] IThrottler throttler)
         {
             if (factory == null) throw new ArgumentNullException(nameof(factory));
@@ -162,7 +161,7 @@ namespace Hangfire.Server
             var serializedJob = JobHelper.FromJson<InvocationData>(recurringJob["Job"]);
             var job = serializedJob.Deserialize();
             var cron = recurringJob["Cron"];
-            var cronSchedule = CrontabSchedule.Parse(cron);
+            var cronExpression = CronExpression.Parse(cron);
 
             try
             {
@@ -170,12 +169,12 @@ namespace Hangfire.Server
                     ? TimeZoneInfo.FindSystemTimeZoneById(recurringJob["TimeZoneId"])
                     : TimeZoneInfo.Utc;
 
-                var nowInstant = _instantFactory(cronSchedule, timeZone);
+                var nowInstant = _instantFactory(cronExpression, timeZone);
+                var lastInstant = GetLastInstant(recurringJob, nowInstant);
+
                 var changedFields = new Dictionary<string, string>();
 
-                var lastInstant = GetLastInstant(recurringJob, nowInstant);
-                
-                if (nowInstant.GetNextInstants(lastInstant).Any())
+                if (nowInstant.ShouldSchedule(lastInstant))
                 {
                     var state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
                     if (recurringJob.ContainsKey("Queue") && !String.IsNullOrEmpty(recurringJob["Queue"]))
@@ -227,7 +226,7 @@ namespace Hangfire.Server
 
         }
 
-        private static DateTime GetLastInstant(IReadOnlyDictionary<string, string> recurringJob, IScheduleInstant instant)
+        private static DateTime GetLastInstant(IReadOnlyDictionary<string, string> recurringJob, IScheduleInstant nowInstant)
         {
             DateTime lastInstant;
 
@@ -246,7 +245,7 @@ namespace Hangfire.Server
             }
             else
             {
-                lastInstant = instant.NowInstant.AddSeconds(-1);
+                lastInstant = nowInstant.NowInstant.AddSeconds(-1);
             }
 
             return lastInstant;

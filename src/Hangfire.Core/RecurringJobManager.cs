@@ -21,7 +21,7 @@ using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
-using NCrontab;
+using Cronos;
 
 namespace Hangfire
 {
@@ -135,8 +135,8 @@ namespace Hangfire
         {
             try
             {
-                var schedule = CrontabSchedule.Parse(cronExpression);
-                schedule.GetNextOccurrence(DateTime.UtcNow);
+                var expression = CronExpression.Parse(cronExpression);
+                expression.GetNextOccurrence(DateTime.UtcNow);
             }
             catch (Exception ex)
             {

@@ -15,64 +15,47 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Hangfire.Annotations;
-using NCrontab;
+using Cronos;
 
 namespace Hangfire.Server
 {
     internal class ScheduleInstant : IScheduleInstant
     {
         private readonly TimeZoneInfo _timeZone;
-        private readonly CrontabSchedule _schedule;
+        private readonly CronExpression _cronExpression;
 
-        public static Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> Factory =
+        public static Func<CronExpression, TimeZoneInfo, IScheduleInstant> Factory =
             (schedule, timeZone) => new ScheduleInstant(DateTime.UtcNow, timeZone, schedule);
 
-        public ScheduleInstant(DateTime nowInstant, TimeZoneInfo timeZone, [NotNull] CrontabSchedule schedule)
+        public ScheduleInstant(DateTime nowInstant, TimeZoneInfo timeZone, [NotNull] CronExpression cronExpression)
         {
-            if (schedule == null) throw new ArgumentNullException(nameof(schedule));
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
             if (nowInstant.Kind != DateTimeKind.Utc)
             {
                 throw new ArgumentException("Only DateTime values in UTC should be passed.", nameof(nowInstant));
             }
 
             _timeZone = timeZone;
-            _schedule = schedule;
+            _cronExpression = cronExpression;
 
             NowInstant = nowInstant.AddSeconds(-nowInstant.Second);
 
-            var nextOccurrences = _schedule.GetNextOccurrences(
-                TimeZoneInfo.ConvertTime(NowInstant, TimeZoneInfo.Utc, _timeZone),
-                DateTime.MaxValue);
-
-            foreach (var nextOccurrence in nextOccurrences)
-            {
-                if (_timeZone.IsInvalidTime(nextOccurrence)) continue;
-
-                NextInstant = TimeZoneInfo.ConvertTime(nextOccurrence, _timeZone, TimeZoneInfo.Utc);
-                break;
-            }
+            NextInstant = _cronExpression.GetNextOccurrence(NowInstant, _timeZone);
         }
 
         public DateTime NowInstant { get; }
         public DateTime? NextInstant { get; }
 
-        public IEnumerable<DateTime> GetNextInstants(DateTime lastInstant)
+        public bool ShouldSchedule(DateTime lastInstant)
         {
             if (lastInstant.Kind != DateTimeKind.Utc)
             {
                 throw new ArgumentException("Only DateTime values in UTC should be passed.", nameof(lastInstant));
             }
+            var nextOccurrence = _cronExpression.GetNextOccurrence(lastInstant, _timeZone);
             
-            return _schedule
-                .GetNextOccurrences(
-                    TimeZoneInfo.ConvertTime(lastInstant, TimeZoneInfo.Utc, _timeZone),
-                    TimeZoneInfo.ConvertTime(NowInstant.AddSeconds(1), TimeZoneInfo.Utc, _timeZone))
-                .Where(x => !_timeZone.IsInvalidTime(x))
-                .Select(x => TimeZoneInfo.ConvertTime(x, _timeZone, TimeZoneInfo.Utc))
-                .ToList();
+            return nextOccurrence <= NowInstant;
         }
     }
 }

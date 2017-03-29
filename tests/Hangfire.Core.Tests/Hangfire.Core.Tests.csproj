@@ -46,8 +46,8 @@
       <HintPath>..\..\packages\Moq.Sequences.NoNUnit.1.0.1\lib\Moq.Sequences.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NCrontab, Version=3.1.19111.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\ncrontab.3.1.0\lib\net45\NCrontab.dll</HintPath>
+    <Reference Include="Cronos, Version=0.4.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Cronos.0.4.1\lib\net45\Cronos.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -121,10 +121,10 @@
     <Compile Include="Server\InfiniteLoopComponentFacts.cs" />
     <Compile Include="Server\CoreBackgroundJobPerformerFacts.cs" />
     <Compile Include="Server\RecurringJobSchedulerFacts.cs" />
-    <Compile Include="Server\ScheduleInstantFacts.cs" />
     <Compile Include="Server\PerformContextFacts.cs" />
     <Compile Include="Server\DelayedJobSchedulerFacts.cs" />
     <Compile Include="Server\BackgroundProcessExtensionsFacts.cs" />
+    <Compile Include="Server\ScheduleInstantFacts.cs" />
     <Compile Include="Server\ServerJobCancellationTokenFacts.cs" />
     <Compile Include="Server\AutomaticRetryProcessFacts.cs" />
     <Compile Include="Server\ServerHeartbeatFacts.cs" />

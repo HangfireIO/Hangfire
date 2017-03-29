@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using Cronos;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
-using NCrontab;
 using Xunit;
 
 namespace Hangfire.Core.Tests.Server
@@ -18,7 +17,7 @@ namespace Hangfire.Core.Tests.Server
 
         private readonly Mock<IStorageConnection> _connection;
         private readonly Dictionary<string, string> _recurringJob;
-        private Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> _instantFactory; 
+        private Func<CronExpression, TimeZoneInfo, IScheduleInstant> _instantFactory; 
         private readonly Mock<IThrottler> _throttler;
         private readonly Mock<IScheduleInstant> _instant;
         private readonly BackgroundProcessContextMock _context;
@@ -33,7 +32,7 @@ namespace Hangfire.Core.Tests.Server
 
             // Setting up the successful path
             _instant = new Mock<IScheduleInstant>();
-            _instant.Setup(x => x.GetNextInstants(It.IsAny<DateTime>())).Returns(new[] { _instant.Object.NowInstant });
+            _instant.Setup(x => x.ShouldSchedule(It.IsAny<DateTime>())).Returns(true);
             _instant.Setup(x => x.NowInstant).Returns(DateTime.UtcNow);
             _instant.Setup(x => x.NextInstant).Returns(_instant.Object.NowInstant);
 
@@ -148,7 +147,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_DoesNotEnqueueRecurringJob_AndDoesNotUpdateIt_ButNextExecution_WhenItIsNotATimeToRunIt()
         {
-            _instant.Setup(x => x.GetNextInstants(It.IsAny<DateTime>())).Returns(Enumerable.Empty<DateTime>);
+            _instant.Setup(x => x.ShouldSchedule(It.IsAny<DateTime>())).Returns(false);
             var scheduler = CreateScheduler();
 
             scheduler.Execute(_context.Object);
@@ -171,7 +170,7 @@ namespace Hangfire.Core.Tests.Server
 
             scheduler.Execute(_context.Object);
 
-            _instant.Verify(x => x.GetNextInstants(time));
+            _instant.Verify(x => x.ShouldSchedule(time));
         }
         
         [Fact]
@@ -256,7 +255,7 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
 
             // Assert
-            _instant.Verify(x => x.GetNextInstants(createdAt), Times.Once);
+            _instant.Verify(x => x.ShouldSchedule(createdAt), Times.Once);
         }
 
         [Fact]
@@ -310,7 +309,7 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
 
             // Assert
-            _instant.Verify(x => x.GetNextInstants(
+            _instant.Verify(x => x.ShouldSchedule(
                 It.Is<DateTime>(time => time < nextExecution)));
         }
 

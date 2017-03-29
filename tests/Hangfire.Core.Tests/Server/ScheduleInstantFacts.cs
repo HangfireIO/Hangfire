@@ -1,21 +1,20 @@
 ﻿using System;
-using System.Linq;
+using Cronos;
 using Hangfire.Server;
-using NCrontab;
 using Xunit;
 
 namespace Hangfire.Core.Tests.Server
 {
     public class ScheduleInstantFacts
     {
-        private CrontabSchedule _schedule;
+        private CronExpression _schedule;
         private TimeZoneInfo _timeZone;
         private DateTime _now;
 
         public ScheduleInstantFacts()
         {
             _now = new DateTime(2012, 12, 12, 12, 12, 0, DateTimeKind.Utc);
-            _schedule = CrontabSchedule.Parse("* * * * *");
+            _schedule = CronExpression.Parse("* * * * *");
             _timeZone = TimeZoneInfo.Utc;
         }
 
@@ -44,7 +43,7 @@ namespace Hangfire.Core.Tests.Server
 // ReSharper disable once AssignNullToNotNullAttribute
                 () => new ScheduleInstant(_now, _timeZone, null));
 
-            Assert.Equal("schedule", exception.ParamName);
+            Assert.Equal("cronExpression", exception.ParamName);
         }
 
         [Fact]
@@ -74,7 +73,7 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             _timeZone = GetNewYorkTimeZone();
             _now = TimeZoneInfo.ConvertTime(new DateTime(2016, 3, 13, 1, 0, 0), _timeZone, TimeZoneInfo.Utc);
-            _schedule = CrontabSchedule.Parse("0 * * * *");
+            _schedule = CronExpression.Parse("0 * * * *");
             
             var instant = CreateInstant();
 
@@ -86,73 +85,68 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void GetNextInstants_DoesntThrow_NearDaylightSavings()
+        public void ShouldSchedule_DoesntThrow_NearDaylightSavings()
         {
             // Arrange
             _timeZone = GetNewYorkTimeZone();
             _now = TimeZoneInfo.ConvertTime(new DateTime(2016, 3, 13, 3, 0, 0), _timeZone, TimeZoneInfo.Utc);
-            _schedule = CrontabSchedule.Parse("0 * * * *");
+            _schedule = CronExpression.Parse("0 * * * *");
 
             var instant = CreateInstant();
 
             // Act
             var last = TimeZoneInfo.ConvertTime(new DateTime(2016, 3, 13, 1, 0, 0), _timeZone, TimeZoneInfo.Utc);
-            var value = instant.GetNextInstants(last).ToList();
+            var shouldSchedule = instant.ShouldSchedule(last);
 
             // Assert
-            Assert.Equal(1, value.Count);
-            Assert.Equal(last.AddHours(1), value[0]);
+            Assert.True(shouldSchedule);
         }
 
         [Fact]
-        public void GetNextInstants_ThrowsAnException_WhenLastTime_IsNotUtc()
+        public void ShouldSchedule_ThrowsAnException_WhenLastTime_IsNotUtc()
         {
             var instant = CreateInstant();
 
-            Assert.Throws<ArgumentException>(() => instant.GetNextInstants(DateTime.Now));
+            Assert.Throws<ArgumentException>(() => instant.ShouldSchedule(DateTime.Now));
         }
 
         [Fact]
-        public void GetNextInstants_ReturnsCollectionOfScheduleMatches_BetweenLocalTime_AndLastMatchingTime()
+        public void ShouldSchedule_ReturnsTrue_WhenThereAreOccurrencesBetweenNowInstantAndLastInstant()
         {
             var time = new DateTime(2012, 12, 12, 00, 00, 00, DateTimeKind.Utc);
             var instant = CreateInstant(time);
 
-            var matches = instant.GetNextInstants(time.AddMinutes(-3)).ToList();
-
-            Assert.Equal(3, matches.Count);
-            Assert.Equal(time.AddMinutes(-2), matches[0]);
-            Assert.Equal(time.AddMinutes(-1), matches[1]);
-            Assert.Equal(time, matches[2]);
+            var shouldSchedule = instant.ShouldSchedule(time.AddMinutes(-3));
+            Assert.True(shouldSchedule);
         }
 
         [Fact]
-        public void GetNextInstants_ReturnsEmptyCollection_WhenLastInstantIsNow()
+        public void ShouldSchedule_ReturnsFalse_WhenLastInstantIsNow()
         {
             var time = new DateTime(2012, 12, 12, 00, 00, 00, DateTimeKind.Utc);
             var instant = CreateInstant(time);
 
-            var matches = instant.GetNextInstants(_now).ToList();
+            var shouldSchedule = instant.ShouldSchedule(_now);
 
             // LastInstant should be excluded
-            Assert.Equal(0, matches.Count);
+            Assert.False(shouldSchedule);
         }
 
         [Fact]
-        public void GetNextInstants_ReturnsEmptyCollection_WhenGivenIntervalDoesNotSatisfyTheSchedule()
+        public void GetNextInstants_ReturnsFalse_WhenGivenIntervalDoesNotSatisfyTheSchedule()
         {
             var time = new DateTime(2012, 12, 12, 00, 01, 00, DateTimeKind.Utc);
-            var instant = new ScheduleInstant(time, TimeZoneInfo.Utc, CrontabSchedule.Parse("0 * * * *"));
+            var instant = new ScheduleInstant(time, TimeZoneInfo.Utc, CronExpression.Parse("0 * * * *"));
 
-            var matches = instant.GetNextInstants(time.AddMinutes(50));
+            var shouldSchedule = instant.ShouldSchedule(time.AddMinutes(50));
 
-            Assert.Empty(matches);
+            Assert.False(shouldSchedule);
         }
 
         [Fact]
         public void Factory_ReturnsCorrectlyInitializedInstant()
         {
-            var instant = ScheduleInstant.Factory(CrontabSchedule.Parse("* * * * *"), _timeZone);
+            var instant = ScheduleInstant.Factory(CronExpression.Parse("* * * * *"), _timeZone);
 
             Assert.True(DateTime.UtcNow.AddMinutes(-2) < instant.NowInstant);
             Assert.True(instant.NowInstant < DateTime.UtcNow.AddMinutes(2));
