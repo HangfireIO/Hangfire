@@ -124,7 +124,6 @@
     <Compile Include="Server\PerformContextFacts.cs" />
     <Compile Include="Server\DelayedJobSchedulerFacts.cs" />
     <Compile Include="Server\BackgroundProcessExtensionsFacts.cs" />
-    <Compile Include="Server\ScheduleInstantFacts.cs" />
     <Compile Include="Server\ServerJobCancellationTokenFacts.cs" />
     <Compile Include="Server\AutomaticRetryProcessFacts.cs" />
     <Compile Include="Server\ServerHeartbeatFacts.cs" />

@@ -17,12 +17,15 @@ namespace Hangfire.Core.Tests.Server
 
         private readonly Mock<IStorageConnection> _connection;
         private readonly Dictionary<string, string> _recurringJob;
-        private Func<CronExpression, TimeZoneInfo, IScheduleInstant> _instantFactory; 
         private readonly Mock<IThrottler> _throttler;
-        private readonly Mock<IScheduleInstant> _instant;
         private readonly BackgroundProcessContextMock _context;
         private readonly Mock<IBackgroundJobFactory> _factory;
         private readonly BackgroundJobMock _backgroundJobMock;
+
+        private static readonly string _expressionString = "* * * * *";
+        private readonly CronExpression _cronExpression = CronExpression.Parse(_expressionString);
+        private readonly DateTime _nowInstant = new DateTime(2017, 03, 30, 15, 30, 0, DateTimeKind.Utc);
+        private readonly DateTime _nextInstant;
 
         public RecurringJobSchedulerFacts()
         {
@@ -31,20 +34,17 @@ namespace Hangfire.Core.Tests.Server
             _throttler = new Mock<IThrottler>();
 
             // Setting up the successful path
-            _instant = new Mock<IScheduleInstant>();
-            _instant.Setup(x => x.ShouldSchedule(It.IsAny<DateTime>())).Returns(true);
-            _instant.Setup(x => x.NowInstant).Returns(DateTime.UtcNow);
-            _instant.Setup(x => x.NextInstant).Returns(_instant.Object.NowInstant);
 
-            var timeZone1 = TimeZoneInfo.Local;
+            var timeZone = TimeZoneInfo.Local;
 
-            _instantFactory = (schedule, timeZone) => _instant.Object;
+            // ReSharper disable once PossibleInvalidOperationException
+            _nextInstant = _cronExpression.GetNextOccurrence(_nowInstant, timeZone).Value;
 
             _recurringJob = new Dictionary<string, string>
             {
-                { "Cron", "* * * * *" },
+                { "Cron", _expressionString },
                 { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) },
-                { "TimeZoneId", timeZone1.Id }
+                { "TimeZoneId", timeZone.Id }
             };
 
             _connection = new Mock<IStorageConnection>();
@@ -67,19 +67,9 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(null, _instantFactory, _throttler.Object));
+                () => new RecurringJobScheduler(null, _throttler.Object));
 
             Assert.Equal("factory", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenInstantFactoryIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-// ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(_factory.Object, null, _throttler.Object));
-
-            Assert.Equal("instantFactory", exception.ParamName);
         }
 
         [Fact]
@@ -87,7 +77,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(_factory.Object, _instantFactory, null));
+                () => new RecurringJobScheduler(_factory.Object, null));
 
             Assert.Equal("throttler", exception.ParamName);
         }
@@ -135,20 +125,19 @@ namespace Hangfire.Core.Tests.Server
                 jobKey,
                 It.Is<Dictionary<string, string>>(rj =>
                     rj.ContainsKey("LastExecution") && rj["LastExecution"]
-                        == JobHelper.SerializeDateTime(_instant.Object.NowInstant))));
+                        == JobHelper.SerializeDateTime(_nowInstant))));
 
             _connection.Verify(x => x.SetRangeInHash(
                 jobKey,
                 It.Is<Dictionary<string, string>>(rj =>
                     rj.ContainsKey("NextExecution") && rj["NextExecution"]
-                        == JobHelper.SerializeDateTime(_instant.Object.NowInstant))));
+                        == JobHelper.SerializeDateTime(_nextInstant))));
         }
 
         [Fact]
         public void Execute_DoesNotEnqueueRecurringJob_AndDoesNotUpdateIt_ButNextExecution_WhenItIsNotATimeToRunIt()
         {
-            _instant.Setup(x => x.ShouldSchedule(It.IsAny<DateTime>())).Returns(false);
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(_nowInstant);
 
             scheduler.Execute(_context.Object);
 
@@ -158,19 +147,20 @@ namespace Hangfire.Core.Tests.Server
                 $"recurring-job:{RecurringJobId}",
                 It.Is<Dictionary<string, string>>(rj =>
                     rj.ContainsKey("NextExecution") && rj["NextExecution"]
-                        == JobHelper.SerializeDateTime(_instant.Object.NextInstant.Value))));
+                        == JobHelper.SerializeDateTime(_nextInstant))));
         }
 
         [Fact]
         public void Execute_TakesIntoConsideration_LastExecutionTime_ConvertedToLocalTimezone()
         {
-            var time = DateTime.UtcNow;
+            var time = _nowInstant;
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(time);
+
             var scheduler = CreateScheduler();
 
             scheduler.Execute(_context.Object);
 
-            _instant.Verify(x => x.ShouldSchedule(time));
+            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
         }
         
         [Fact]
@@ -202,30 +192,9 @@ namespace Hangfire.Core.Tests.Server
         {
             var timeZoneId = PlatformHelper.IsRunningOnWindows() ? "Hawaiian Standard Time" : "Pacific/Honolulu";
 
-            _instantFactory = (schedule, timeZoneInfo) =>
-            {
-                if (timeZoneInfo.Id != timeZoneId) throw new InvalidOperationException("Invalid timezone");
-                return _instant.Object;
-            };
             // Arrange
             var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
             _recurringJob["TimeZoneId"] = timeZone.Id;
-            var scheduler = CreateScheduler();
-
-            // Act & Assert does not throw
-            scheduler.Execute(_context.Object);
-        }
-
-        [Fact]
-        public void Execute_GetInstance_UseUtcTimeZone_WhenItIsNotProvided()
-        {
-            // Arrange
-            _instantFactory = (schedule, timeZoneInfo) =>
-            {
-                if (!timeZoneInfo.Equals(TimeZoneInfo.Utc)) throw new InvalidOperationException("Invalid timezone");
-                return _instant.Object;
-            };
-            _recurringJob.Remove("TimeZoneId");
             var scheduler = CreateScheduler();
 
             // Act & Assert does not throw
@@ -244,18 +213,18 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_GetNextInstants_IsCalledWithCreatedAtTime_IfExists()
+        public void Execute_UsesGivenCreatedAtTime()
         {
             // Arrange
-            var createdAt = DateTime.UtcNow.AddHours(-3);
+            var createdAt = _nowInstant.AddHours(-3);
             _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(createdAt);
+
             var scheduler = CreateScheduler();
 
             // Act
             scheduler.Execute(_context.Object);
 
-            // Assert
-            _instant.Verify(x => x.ShouldSchedule(createdAt), Times.Once);
+            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Once);
         }
 
         [Fact]
@@ -295,10 +264,10 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_PassesNextExecutionTime_ToGetNextInstants_WhenBothLastExecutionAndCreatedAtAreNotAvailable()
+        public void Execute_UsesNextExecutionTime_WhenBothLastExecutionAndCreatedAtAreNotAvailable()
         {
             // Arrange
-            var nextExecution = DateTime.UtcNow.AddHours(-10);
+            var nextExecution = _nowInstant.AddHours(-10);
             _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(nextExecution);
             _recurringJob.Remove("CreatedAt");
             _recurringJob.Remove("LastExecution");
@@ -308,17 +277,28 @@ namespace Hangfire.Core.Tests.Server
             // Act
             scheduler.Execute(_context.Object);
 
-            // Assert
-            _instant.Verify(x => x.ShouldSchedule(
-                It.Is<DateTime>(time => time < nextExecution)));
+            _connection.Verify(x => x.SetRangeInHash(
+                $"recurring-job:{RecurringJobId}",
+                It.Is<Dictionary<string, string>>(rj =>
+                    rj.ContainsKey("LastExecution") && rj["LastExecution"]
+                    == JobHelper.SerializeDateTime(_nowInstant))));
         }
 
-        private RecurringJobScheduler CreateScheduler()
+        private RecurringJobScheduler CreateScheduler(DateTime? lastExecution = null)
         {
-            return new RecurringJobScheduler(
+            var scheduler = new RecurringJobScheduler(
                 _factory.Object,
-                _instantFactory,
-                _throttler.Object);
+                _throttler.Object)
+            {
+                TestNowInstant = _nowInstant
+            };
+
+            if (lastExecution.HasValue)
+            {
+                _recurringJob.Add("LastExecution", JobHelper.SerializeDateTime(lastExecution.Value));
+            }
+
+            return scheduler;
         }
     }
 }

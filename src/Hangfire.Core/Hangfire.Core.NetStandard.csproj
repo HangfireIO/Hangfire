@@ -322,7 +322,6 @@
     <Compile Include="Server\IBackgroundProcess.cs" />
     <Compile Include="Server\IBackgroundProcessWrapper.cs" />
     <Compile Include="Server\InfiniteLoopProcess.cs" />
-    <Compile Include="Server\IScheduleInstant.cs" />
     <Compile Include="Server\IServerExceptionFilter.cs" />
     <Compile Include="Server\IServerFilter.cs" />
     <Compile Include="Server\IThrottler.cs" />
@@ -332,7 +331,6 @@
     <Compile Include="Server\PerformedContext.cs" />
     <Compile Include="Server\PerformingContext.cs" />
     <Compile Include="Server\RecurringJobScheduler.cs" />
-    <Compile Include="Server\ScheduleInstant.cs" />
     <Compile Include="Server\ServerContext.cs" />
     <Compile Include="Server\ServerExceptionContext.cs" />
     <Compile Include="Server\ServerHeartbeat.cs" />
