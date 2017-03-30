@@ -83,6 +83,17 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void Execute_ThrowsAnException_WhenContextIsNull()
+        {
+            var scheduler = CreateScheduler();
+
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var exception = Assert.Throws<ArgumentNullException>(() => scheduler.Execute(null));
+
+            Assert.Equal("context", exception.ParamName);
+        }
+
+        [Fact]
         public void Execute_EnqueuesAJob_WhenItIsTimeToRunIt()
         {
             var scheduler = CreateScheduler();
