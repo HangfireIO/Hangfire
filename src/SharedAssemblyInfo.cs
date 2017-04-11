@@ -9,4 +9,4 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // Don't edit manually! Use `build.bat version` command instead!
-[assembly: AssemblyVersion("1.6.8")]
+[assembly: AssemblyVersion("1.6.13")]

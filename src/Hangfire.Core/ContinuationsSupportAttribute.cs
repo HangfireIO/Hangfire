@@ -97,7 +97,19 @@ namespace Hangfire
             using (connection.AcquireDistributedJobLock(parentId, AddJobLockTimeout))
             {
                 var continuations = GetContinuations(connection, parentId);
-                continuations.Add(new Continuation { JobId = context.BackgroundJob.Id, Options = awaitingState.Options });
+
+                // Continuation may be already added. This may happen, when outer transaction
+                // was failed after adding a continuation last time, since the addition is
+                // performed outside of an outer transaction.
+                if (!continuations.Exists(x => x.JobId == context.BackgroundJob.Id))
+                {
+                    continuations.Add(new Continuation { JobId = context.BackgroundJob.Id, Options = awaitingState.Options });
+
+                    // Set continuation only after ensuring that parent job still
+                    // exists. Otherwise we could create add non-expiring (garbage)
+                    // parameter for the parent job.
+                    SetContinuations(connection, parentId, continuations);
+                }
 
                 var jobData = connection.GetJobData(parentId);
                 if (jobData == null)
@@ -110,11 +122,6 @@ namespace Hangfire
                 }
 
                 var currentState = connection.GetStateData(parentId);
-
-                // Set continuation only after ensuring that parent job still
-                // exists. Otherwise we could create add non-expiring (garbage)
-                // parameter for the parent job.
-                SetContinuations(connection, parentId, continuations);
 
                 if (currentState != null && _knownFinalStates.Contains(currentState.Name))
                 {
@@ -151,30 +158,37 @@ namespace Hangfire
                 // the state of a continuation, we should simply skip it.
                 if (currentState.Name != AwaitingState.StateName) continue;
 
+                IState nextState;
+
                 if (continuation.Options.HasFlag(JobContinuationOptions.OnlyOnSucceededState) &&
                     context.CandidateState.Name != SucceededState.StateName)
                 {
-                    nextStates.Add(continuation.JobId, new DeletedState { Reason = "Continuation condition was not met" });
-                    continue;
+                    nextState = new DeletedState { Reason = "Continuation condition was not met" };
                 }
-
-                IState nextState;
-
-                try
+                else
                 {
-                    nextState = JsonConvert.DeserializeObject<IState>(
-                        currentState.Data["NextState"],
-                        new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Objects });
-                }
-                catch (Exception ex)
-                {
-                    nextState = new FailedState(ex)
+                    try
                     {
-                        Reason = "An error occurred while deserializing the continuation"
-                    };
+                        nextState = JsonConvert.DeserializeObject<IState>(
+                            currentState.Data["NextState"],
+                            new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Objects });
+                    }
+                    catch (Exception ex)
+                    {
+                        nextState = new FailedState(ex)
+                        {
+                            Reason = "An error occurred while deserializing the continuation"
+                        };
+                    }
                 }
 
-                nextStates.Add(continuation.JobId, nextState);
+                if (!nextStates.ContainsKey(continuation.JobId))
+                {
+                    // Duplicate continuations possible, when they were added before version 1.6.10.
+                    // Please see details in comments for the AddContinuation method near the line
+                    // with checking for existence (continuations.Exists).
+                    nextStates.Add(continuation.JobId, nextState);
+                }
             }
             
             foreach (var tuple in nextStates)

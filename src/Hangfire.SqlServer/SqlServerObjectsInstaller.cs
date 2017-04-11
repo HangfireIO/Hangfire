@@ -60,7 +60,7 @@ namespace Hangfire.SqlServer
             {
                 try
                 {
-                    connection.Execute(script);
+                    connection.Execute(script, commandTimeout: 0);
                     break;
                 }
                 catch (DbException ex)
@@ -76,7 +76,7 @@ namespace Hangfire.SqlServer
                 }
             }
 #else
-            connection.Execute(script);
+            connection.Execute(script, commandTimeout: 0);
 #endif
 
             Log.Info("Hangfire SQL objects installed.");

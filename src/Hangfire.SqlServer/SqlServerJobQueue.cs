@@ -74,7 +74,8 @@ where Queue in @queues";
                     fetchedJob = connection.Query<FetchedJob>(
                         fetchJobSqlTemplate,
                         new { queues = queues },
-                        transaction).SingleOrDefault();
+                        transaction,
+                        commandTimeout: _storage.CommandTimeout).SingleOrDefault();
 
                     if (fetchedJob != null)
                     {
@@ -117,7 +118,7 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
 #if !NETFULL
                 , transaction
 #endif
-                );
+                , commandTimeout: _storage.CommandTimeout);
         }
 
         [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]

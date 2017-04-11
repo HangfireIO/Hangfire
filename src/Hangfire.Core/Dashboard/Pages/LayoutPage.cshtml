@@ -68,15 +68,11 @@
             </div>
         </div>
         
-        <script>
-            (function (hangFire) {
-                hangFire.config = {
-                    pollInterval: @StatsPollingInterval,
-                    pollUrl: '@(Url.To("/stats"))',
-                    locale: '@CultureInfo.CurrentUICulture'
-                };
-            })(window.Hangfire = window.Hangfire || {});
-        </script>
+        <div id="hangfireConfig"
+             data-pollinterval="@StatsPollingInterval"
+             data-pollurl="@(Url.To("/stats"))">
+        </div>
+
         <script src="@Url.To($"/js{version.Major}{version.Minor}{version.Build}")"></script>
     </body>
 </html>
