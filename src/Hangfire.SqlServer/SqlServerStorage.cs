@@ -96,6 +96,7 @@ namespace Hangfire.SqlServer
         public virtual PersistentJobQueueProviderCollection QueueProviders { get; private set; }
 
         internal string SchemaName => _options.SchemaName;
+        internal int? CommandTimeout => _options.CommandTimeout.HasValue ? (int)_options.CommandTimeout.Value.TotalSeconds : (int?)null;
 
         public override IMonitoringApi GetMonitoringApi()
         {

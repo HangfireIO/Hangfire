@@ -19,6 +19,39 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.13
+
+Hangfire.Core
+• Fixed – Don't throw NullReferenceException, when state was changed on Processing page.
+
+Hangfire.SqlServer
+• Fixed – Don't hide errors occurred while running SQL migrations.
+    
+1.6.12
+
+Hangfire.Core
+• Fixed – Buggy state filters may cause background job to be infinitely retried.
+• Fixed – Transient exception during Processing-Succeeded state transition may cause unexpected retry.
+    
+1.6.11
+
+Hangfire.Core
+• Fixed – `NullReferenceException` in dashboard when OWIN's or ASP.NET Core's `User` is `null`.
+• Fixed – Regression related to missing CSS and JS resources in dashboard appeared in 1.6.10.
+    
+1.6.10
+
+Hangfire.Core
+• Fixed – Duplicate job continuations aren't added anymore, when outer transaction has failed.
+• Fixed – Existing duplicate continuations don't lead to `ArgumentException`: the same key already added.
+• Fixed – Replace inline script, because it may violate the Content Security Policy (by @Beczka).
+• Fixed – Don't skip records in RecurringJobsPage (by @reaction1989).
+    
+1.6.9
+
+Hangfire.SqlServer
+• Fixed – `TimeoutException` on large arguments or large batches via `SqlServerOptions.CommandTimeout`.
+
 1.6.8
 
 Hangfire.Core
