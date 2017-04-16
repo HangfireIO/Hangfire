@@ -130,6 +130,8 @@ Building the sources
 
 To build a solution and get assembly files, just run the following command. All build artifacts, including `*.pdb` files, will be placed into the `build` folder. **Before proposing a pull request, please use this command to ensure everything is ok.** Btw, you can execute this command from the Package Manager Console window.
 
+Note that the build command will run the unit and integration tests as well so by default you will need SQL Server Express installed (not LocalDB) with default instance name of SQLExpress. Also ensure your dev machine has MSMQ installed so that the MSMQ unit tests pass. If you don't have MSMQ installed then it will try to run the RabbitMQ tests.
+
 ```
 build
 ```
