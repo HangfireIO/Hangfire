@@ -249,9 +249,8 @@ namespace Hangfire
         // delayed_job uses the same basic formula
         private static int SecondsToDelay(long retryCount)
         {
-            var random = new Random();
             return (int)Math.Round(
-                Math.Pow(retryCount - 1, 4) + 15 + random.Next(30) * retryCount);
+                Math.Pow(retryCount - 1, 4) + 43 * retryCount);
         }
     }
 }
