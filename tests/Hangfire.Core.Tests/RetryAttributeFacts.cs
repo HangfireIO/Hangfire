@@ -47,6 +47,20 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void Ctor_ThorsAnException_WhenRetryDelayInSecondsIsNegative()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => new AutomaticRetryAttribute { RetryDelayInSeconds = -1 });
+        }
+
+        [Fact]
+        public void Ctor_ThorsAnException_WhenRetryDelayInSecondsIsZero()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => new AutomaticRetryAttribute { RetryDelayInSeconds = 0 });
+        }
+
+        [Fact]
         public void OnStateElection_DoesNotChangeState_IfRetryAttemptsIsSetToZero()
         {
             var filter = new AutomaticRetryAttribute { Attempts = 0 };
