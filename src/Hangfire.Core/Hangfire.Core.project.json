@@ -6,7 +6,7 @@
         "Microsoft.Owin": "3.0.1",
         "MoreLinq.Source.MoreEnumerable.Pairwise": "1.0.1",
         "LibLog": "1.5.0",
-        "Cronos": "0.4.1",
+        "Cronos": "0.5.1",
         "StackTraceFormatter.Source": "1.1.0",
         "StackTraceParser.Source": "1.2.0"
     },
