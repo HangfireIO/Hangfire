@@ -66,11 +66,16 @@ namespace Hangfire.Server
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
         private static readonly ILog Logger = LogProvider.For<RecurringJobScheduler>();
-        
+
+        private static readonly Func<DateTime> DefaultNowInstantFactory = () =>
+        {
+            var now = DateTime.UtcNow;
+            return now.AddSeconds(-now.Second);
+        };
+
         private readonly IBackgroundJobFactory _factory;
         private readonly IThrottler _throttler;
-
-        internal DateTime? TestNowInstant;
+        private readonly Func<DateTime> _nowInstantFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RecurringJobScheduler"/>
@@ -89,18 +94,21 @@ namespace Hangfire.Server
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
         public RecurringJobScheduler([NotNull] IBackgroundJobFactory factory)
-            : this(factory, new EveryMinuteThrottler())
+            : this(factory, DefaultNowInstantFactory, new EveryMinuteThrottler())
         {
         }
 
         internal RecurringJobScheduler(
             [NotNull] IBackgroundJobFactory factory,
+            [NotNull] Func<DateTime> nowInstantFactory,
             [NotNull] IThrottler throttler)
         {
             if (factory == null) throw new ArgumentNullException(nameof(factory));
+            if (nowInstantFactory == null) throw new ArgumentNullException(nameof(nowInstantFactory));
             if (throttler == null) throw new ArgumentNullException(nameof(throttler));
             
             _factory = factory;
+            _nowInstantFactory = nowInstantFactory;
             _throttler = throttler;
         }
 
@@ -167,7 +175,7 @@ namespace Hangfire.Server
                     ? TimeZoneInfo.FindSystemTimeZoneById(recurringJob["TimeZoneId"])
                     : TimeZoneInfo.Utc;
 
-                var nowInstant = GetNowInstant();
+                var nowInstant = _nowInstantFactory();
                 var lastInstant = GetLastInstant(recurringJob, nowInstant);
 
                 var changedFields = new Dictionary<string, string>();
@@ -226,12 +234,6 @@ namespace Hangfire.Server
                     ex);
             }
 
-        }
-
-        private DateTime GetNowInstant()
-        {
-            var now = TestNowInstant ?? DateTime.UtcNow;
-            return now.AddSeconds(-now.Second);
         }
 
         private static DateTime GetLastInstant(IReadOnlyDictionary<string, string> recurringJob, DateTime nowInstant)

@@ -17,6 +17,7 @@ namespace Hangfire.Core.Tests.Server
 
         private readonly Mock<IStorageConnection> _connection;
         private readonly Dictionary<string, string> _recurringJob;
+        private readonly Func<DateTime> _nowInstantFactory;
         private readonly Mock<IThrottler> _throttler;
         private readonly BackgroundProcessContextMock _context;
         private readonly Mock<IBackgroundJobFactory> _factory;
@@ -36,6 +37,8 @@ namespace Hangfire.Core.Tests.Server
             // Setting up the successful path
 
             var timeZone = TimeZoneInfo.Local;
+
+            _nowInstantFactory = () => _nowInstant;
 
             // ReSharper disable once PossibleInvalidOperationException
             _nextInstant = _cronExpression.GetNextOccurrence(_nowInstant, timeZone).Value;
@@ -67,9 +70,19 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(null, _throttler.Object));
+                () => new RecurringJobScheduler(null, _nowInstantFactory, _throttler.Object));
 
             Assert.Equal("factory", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenNowInstantFactoryIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                // ReSharper disable once AssignNullToNotNullAttribute
+                () => new RecurringJobScheduler(_factory.Object, null, _throttler.Object));
+
+            Assert.Equal("nowInstantFactory", exception.ParamName);
         }
 
         [Fact]
@@ -77,7 +90,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(_factory.Object, null));
+                () => new RecurringJobScheduler(_factory.Object, _nowInstantFactory, null));
 
             Assert.Equal("throttler", exception.ParamName);
         }
@@ -299,10 +312,8 @@ namespace Hangfire.Core.Tests.Server
         {
             var scheduler = new RecurringJobScheduler(
                 _factory.Object,
-                _throttler.Object)
-            {
-                TestNowInstant = _nowInstant
-            };
+                _nowInstantFactory,
+                _throttler.Object);
 
             if (lastExecution.HasValue)
             {
