@@ -7,20 +7,16 @@ dist: trusty
 
 matrix:
   include:
-    - dotnet: 1.0.0-preview2-003121
+    - dotnet: 1.0.1
       mono: none
       os: linux
-      env: NET_PLATFORM=netcore
-    - dotnet: 1.0.0-preview2-003121
+    - dotnet: 1.0.1
       mono: none
       os: osx
-      env: NET_PLATFORM=netcore
     - mono: latest
       os: linux
-      env: NET_PLATFORM=mono
     - mono: latest
       os: osx
-      env: NET_PLATFORM=mono
 
 # Only watch the master branch.
 branches:
@@ -28,22 +24,16 @@ branches:
     - master
     - dev
 
-# Make sure build dependencies are installed.
-before_install:  
-  - if test "$TRAVIS_OS_NAME" == "osx"; then ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/; ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/; fi
-
 # Run the build script
 script:
-  - if test "$NET_PLATFORM" == "mono"; 
+  - if hash mono 2>/dev/null; 
     then 
         chmod +x .nuget/NuGet.exe;
         travis_retry nuget install .nuget/packages.config -OutputDirectory packages;
         travis_retry nuget restore Hangfire.Mono.sln;
         xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln;
         mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll -verbose;
-    fi
-  - if test "$NET_PLATFORM" == "netcore"; 
-    then 
+    else
         travis_retry dotnet restore --disable-parallel; 
         dotnet test tests/Hangfire.Core.Tests -verbose;
     fi
