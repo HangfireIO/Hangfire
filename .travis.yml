@@ -34,7 +34,7 @@ script:
         xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln;
         mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll -verbose;
     else
-        travis_retry dotnet restore --disable-parallel; 
+        travis_retry dotnet restore Hangfire.sln --disable-parallel; 
         dotnet test tests/Hangfire.Core.Tests -verbose;
     fi
 
