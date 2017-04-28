@@ -33,7 +33,7 @@
         "NETStandard.Library": "1.6.0",
         "System.Threading.Thread": "4.0.0",
         "Newtonsoft.Json": "9.0.1",
-        "Cronos": "0.5.1" 
+        "Cronos": "0.6.0" 
     },
     "frameworks": {
         "netstandard1.3": {}
