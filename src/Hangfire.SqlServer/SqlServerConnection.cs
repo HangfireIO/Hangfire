@@ -84,7 +84,7 @@ values (@invocationData, @arguments, @createdAt, @expireAt)";
 
             var invocationData = InvocationData.Serialize(job);
 
-            return _storage.UseConnection(connection =>
+            return _storage.UseTransaction((connection, transaction) =>
             {
                 var jobId = connection.ExecuteScalar<long>(
                     createJobSql,
@@ -94,7 +94,11 @@ values (@invocationData, @arguments, @createdAt, @expireAt)";
                         arguments = invocationData.Arguments,
                         createdAt = createdAt,
                         expireAt = createdAt.Add(expireIn)
-                    }).ToString();
+                    }
+#if !NETFULL
+                    , transaction
+#endif
+                    ).ToString();
 
                 if (parameters.Count > 0)
                 {
@@ -114,11 +118,15 @@ values (@invocationData, @arguments, @createdAt, @expireAt)";
 $@"insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value)
 values (@jobId, @name, @value)";
 
-                    connection.Execute(insertParameterSql, parameterArray);
+                    connection.Execute(insertParameterSql, parameterArray
+#if !NETFULL
+                        , transaction
+#endif
+                    );
                 }
 
                 return jobId;
-            });
+            }, null);
         }
 
         public override JobData GetJobData(string id)
