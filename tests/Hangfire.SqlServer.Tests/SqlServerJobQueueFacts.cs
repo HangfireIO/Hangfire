@@ -330,21 +330,6 @@ values (scope_identity(), @queue)";
             });
         }
 
-        [Fact, CleanDatabase]
-        public void Enqueue_HandlesJobQueueIdCanExceedIntMax()
-        {
-            UseConnection(connection =>
-            {
-                var queue = CreateJobQueue(connection);
-                connection.Query($"DBCC CHECKIDENT('HangFire.JobQueue', RESEED, {int.MaxValue + 1L});");
-
-                queue.Enqueue(connection, "default", "1");
-
-                var record = connection.Query("select * from HangFire.JobQueue").Single();
-                Assert.True(int.MaxValue  < record.Id);
-            });
-        }
-
         private static CancellationToken CreateTimingOutCancellationToken()
         {
             var source = new CancellationTokenSource(TimeSpan.FromSeconds(10));

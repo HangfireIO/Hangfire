@@ -74,18 +74,32 @@ namespace Hangfire.SqlServer
 
         public override void ExpireJob(string jobId, TimeSpan expireIn)
         {
-            QueueCommand((connection, transaction) => connection.Execute(
-                $@"update [{_storage.SchemaName}].Job set ExpireAt = @expireAt where Id = @id",
-                new { expireAt = DateTime.UtcNow.Add(expireIn), id = long.Parse(jobId) },
-                transaction));
+            var expireAt = DateTime.UtcNow.Add(expireIn);
+
+            QueueCommand((connection, transaction) =>
+            {
+                connection.Execute(
+                    $@"
+update [{_storage.SchemaName}].Job set ExpireAt = @expireAt where Id = @id;
+update [{_storage.SchemaName}].JobParameter set ExpireAt = @expireAt where JobId = @id;
+update [{_storage.SchemaName}].State set ExpireAt = @expireAt where JobId = @id;",
+                    new { expireAt = expireAt, id = long.Parse(jobId) },
+                    transaction);
+            });
         }
 
         public override void PersistJob(string jobId)
         {
-            QueueCommand((connection, transaction) => connection.Execute(
-                $@"update [{_storage.SchemaName}].Job set ExpireAt = NULL where Id = @id",
-                new { id = long.Parse(jobId) },
-                transaction));
+            QueueCommand((connection, transaction) =>
+            {
+                connection.Execute(
+                    $@"
+update [{_storage.SchemaName}].Job set ExpireAt = NULL where Id = @id;
+update [{_storage.SchemaName}].JobParameter set ExpireAt = NULL where JobId = @id;
+update [{_storage.SchemaName}].State set ExpireAt = NULL where JobId = @id;",
+                    new { id = long.Parse(jobId) },
+                    transaction);
+            });
         }
 
         public override void SetJobState(string jobId, IState state)

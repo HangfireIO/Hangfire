@@ -1441,51 +1441,22 @@ values (@jobId, '', '', getutcdate())";
         }
 
         [Fact, CleanDatabase]
-        public void SetJobParameter_HandlesJobParameterIdCanExceedInt32Max()
-        {
-            const string arrangeSql = @"
-insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
-values ('', '', getutcdate())
-select scope_identity() as Id";
-
-            UseConnections((sql, connection) =>
-            {
-                // Arrange
-                var job = sql.Query(arrangeSql).Single();
-                string jobId = job.Id.ToString();
-                sql.Query($"DBCC CHECKIDENT('HangFire.JobParameter', RESEED, {int.MaxValue + 1L});");
-
-                // Act
-                connection.SetJobParameter(jobId, "Name", "Value");
-
-                var parameter = sql.Query(
-                    "select * from HangFire.JobParameter where JobId = @id and Name = @name",
-                    new { id = jobId, name = "Name" }).Single();
-
-                // Assert
-                Assert.True(int.MaxValue < parameter.Id);
-            });
-        }
-
-        [Fact, CleanDatabase]
-        public void GetJobParameter_ReturnsParameterValue_WhenJobIdAndJobParameterIdAreLongValues()
+        public void GetJobParameter_ReturnsParameterValue_WhenJobIdIsLong()
         {
             const string arrangeSql = @"
 SET IDENTITY_INSERT HangFire.Job ON
 insert into HangFire.Job (Id, InvocationData, Arguments, CreatedAt)
 values (@jobId, '', '', getutcdate())
 SET IDENTITY_INSERT HangFire.Job OFF
-SET IDENTITY_INSERT HangFire.JobParameter ON
-insert into HangFire.JobParameter (Id, JobId, Name, Value)
-values (@id, @jobId, @name, @value)";
+insert into HangFire.JobParameter (JobId, Name, Value)
+values (@jobId, @name, @value)";
 
             UseConnections((sql, connection) =>
             {
                 sql.Query(
                     arrangeSql, 
                     new
-                    { 
-                        id = int.MaxValue + 1L,
+                    {
                         jobId = int.MaxValue + 1L,
                         name = "name", value = "value"
                     });
@@ -1493,29 +1464,6 @@ values (@id, @jobId, @name, @value)";
                 var value = connection.GetJobParameter((int.MaxValue + 1L).ToString(), "name");
 
                 Assert.Equal("value", value);
-            });
-        }
-
-        [Fact, CleanDatabase]
-        public void SetRangeInHash_HandlesHashIdCanExceedInt32Max()
-        {
-            UseConnections((sql, connection) =>
-            {
-                // Arrange
-                sql.Query($"DBCC CHECKIDENT('HangFire.Hash', RESEED, {int.MaxValue + 1L});");
-
-                // Act
-                connection.SetRangeInHash("some-hash", new Dictionary<string, string>
-                {
-                    { "Key", "Value" }
-                });
-
-                var result = sql.Query(
-                    "select * from HangFire.Hash where [Key] = @key",
-                    new { key = "some-hash" }).Single();
-
-                // Assert
-                Assert.True(int.MaxValue < result.Id);
             });
         }
 

@@ -963,21 +963,6 @@ values (@key, @expireAt)";
         }
 
         [Fact, CleanDatabase]
-        public void IncrementCounter_AddsRecordToCounterTable_WhenIdExceedLongValue()
-        {
-            UseConnection(sql =>
-            {
-                sql.Query($"DBCC CHECKIDENT('HangFire.Counter', RESEED, {int.MaxValue + 1L});");
-
-                Commit(sql, x => x.IncrementCounter("my-key"));
-
-                var record = sql.Query("select * from HangFire.Counter").Single();
-
-                Assert.True(int.MaxValue < record.Id);
-            });
-        }
-
-        [Fact, CleanDatabase]
         public void InsertToList_HandlesListIdCanExceedInt32Max()
         {
             UseConnection(sql =>
@@ -988,21 +973,6 @@ values (@key, @expireAt)";
 
                 var record = sql.Query("select * from HangFire.List").Single();
 
-                Assert.True(int.MaxValue < record.Id);
-            });
-        }
-
-        [Fact, CleanDatabase]
-        public void AddRangeToSet_HandlesSetIdCanExceedInt32Max()
-        {
-            UseConnection(sql =>
-            {
-                sql.Query($"DBCC CHECKIDENT('HangFire.Set', RESEED, {int.MaxValue + 1L});");
-                var items = new List<string> { "1" };
-
-                Commit(sql, x => x.AddRangeToSet("my-set", items));
-
-                var record = sql.Query(@"select * from HangFire.[Set] where [Key] = N'my-set'").Single();
                 Assert.True(int.MaxValue < record.Id);
             });
         }

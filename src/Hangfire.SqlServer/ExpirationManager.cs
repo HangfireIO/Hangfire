@@ -43,8 +43,10 @@ namespace Hangfire.SqlServer
         {
             "AggregatedCounter",
             "Job",
+            "JobParameter",
             "List",
             "Set",
+            "State",
             "Hash",
         };
 

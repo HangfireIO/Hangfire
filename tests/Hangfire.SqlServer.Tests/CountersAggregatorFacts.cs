@@ -33,32 +33,6 @@ values ('key', 1, @expireAt)";
             }
         }
 
-        [Fact, CleanDatabase]
-        public void CountersAggregator_HandlesAggregatorIdCanExceedInt32Max()
-        {
-            const string createSql = @"
-insert into HangFire.Counter ([Key], [Value], ExpireAt) 
-values ('key', 1, @expireAt)";
-
-            using (var connection = CreateConnection())
-            {
-                // Arrange
-                connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddHours(1) });
-
-                var aggregator = CreateAggregator(connection);
-                var cts = new CancellationTokenSource();
-                cts.Cancel();
-
-                connection.Query($"DBCC CHECKIDENT('HangFire.AggregatedCounter', RESEED, {int.MaxValue + 1L});");
-
-                // Act
-                aggregator.Execute(cts.Token);
-
-                // Assert
-                Assert.True(int.MaxValue < connection.Query<long>(@"select Id from HangFire.AggregatedCounter").Single());
-            }
-        }
-
         private static SqlConnection CreateConnection()
         {
             return ConnectionUtils.CreateConnection();
