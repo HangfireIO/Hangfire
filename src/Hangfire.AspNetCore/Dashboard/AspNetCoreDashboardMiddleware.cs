@@ -61,7 +61,9 @@ namespace Hangfire.Dashboard
             {
                 if (!filter.Authorize(context))
                 {
-                    httpContext.Response.StatusCode = httpContext.User.Identity.IsAuthenticated
+                    var isAuthenticated = httpContext.User?.Identity?.IsAuthenticated;
+
+                    httpContext.Response.StatusCode = isAuthenticated == true
                         ? (int) HttpStatusCode.Forbidden
                         : (int) HttpStatusCode.Unauthorized;
 

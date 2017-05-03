@@ -130,6 +130,8 @@ namespace Hangfire.Server
                             fetchedJob.JobId, 
                             state, 
                             ProcessingState.StateName));
+
+                        // TODO: Log error, when applied state is FailedState
                     }
 
                     // Checkpoint #4. The job was performed, and it is in the one
@@ -155,9 +157,21 @@ namespace Hangfire.Server
                         Logger.DebugException("An exception occurred while processing a job. It will be re-queued.", ex);
                     }
 
-                    fetchedJob.Requeue();
+                    Requeue(fetchedJob);
                     throw;
                 }
+            }
+        }
+
+        private static void Requeue(IFetchedJob fetchedJob)
+        {
+            try
+            {
+                fetchedJob.Requeue();
+            }
+            catch (Exception ex)
+            {
+                Logger.WarnException($"Failed to immediately re-queue the background job '{fetchedJob.JobId}'. Next invocation may be delayed, if invisibility timeout is used", ex);
             }
         }
 

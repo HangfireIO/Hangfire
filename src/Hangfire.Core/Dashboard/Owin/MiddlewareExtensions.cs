@@ -104,7 +104,9 @@ namespace Hangfire.Dashboard
 
         private static Task Unauthorized(IOwinContext owinContext)
         {
-            owinContext.Response.StatusCode = owinContext.Authentication.User.Identity.IsAuthenticated
+            var isAuthenticated = owinContext.Authentication?.User?.Identity?.IsAuthenticated;
+
+            owinContext.Response.StatusCode = isAuthenticated == true
                 ? (int)HttpStatusCode.Forbidden
                 : (int)HttpStatusCode.Unauthorized;
 

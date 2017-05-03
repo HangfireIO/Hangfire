@@ -122,7 +122,7 @@ namespace Hangfire.SqlServer
             return UseConnection<IList<ServerDto>>(connection =>
             {
                 var servers = connection.Query<Entities.Server>(
-                    $@"select * from [{_storage.SchemaName}].Server with (nolock)")
+                    $@"select * from [{_storage.SchemaName}].Server with (nolock)", commandTimeout: _storage.CommandTimeout)
                     .ToList();
 
                 var result = new List<ServerDto>();
@@ -264,7 +264,7 @@ select * from [{_storage.SchemaName}].Job with (nolock, forceseek) where Id = @i
 select * from [{_storage.SchemaName}].JobParameter with (nolock, forceseek) where JobId = @id
 select * from [{_storage.SchemaName}].State with (nolock, forceseek) where JobId = @id order by Id desc";
 
-                using (var multi = connection.QueryMultiple(sql, new { id = jobId }))
+                using (var multi = connection.QueryMultiple(sql, new { id = jobId }, commandTimeout: _storage.CommandTimeout))
                 {
                     var job = multi.Read<SqlJob>().SingleOrDefault();
                     if (job == null) return null;
@@ -334,7 +334,7 @@ select count(*) from [{0}].[Set] with (nolock, forceseek) where [Key] = N'recurr
             var statistics = UseConnection(connection =>
             {
                 var stats = new StatisticsDto();
-                using (var multi = connection.QueryMultiple(sql))
+                using (var multi = connection.QueryMultiple(sql, commandTimeout: _storage.CommandTimeout))
                 {
                     stats.Enqueued = multi.ReadSingle<int>();
                     stats.Failed = multi.ReadSingle<int>();
@@ -398,7 +398,8 @@ where [Key] in @keys";
 
             var valuesMap = connection.Query(
                 sqlQuery,
-                new { keys = keyMaps.Keys })
+                new { keys = keyMaps.Keys },
+                commandTimeout: _storage.CommandTimeout)
                 .ToDictionary(x => (string)x.Key, x => (long)x.Count);
 
             foreach (var key in keyMaps.Keys)
@@ -439,7 +440,8 @@ where j.Id in @jobIds";
 
             var jobs = connection.Query<SqlJob>(
                 enqueuedJobsSql,
-                new { jobIds = jobIds })
+                new { jobIds = jobIds },
+                commandTimeout: _storage.CommandTimeout)
                 .ToDictionary(x => x.Id, x => x);
 
             var sortedSqlJobs = jobIds
@@ -466,7 +468,8 @@ where j.Id in @jobIds";
 
             var count = connection.ExecuteScalar<int>(
                  sqlQuery,
-                 new { state = stateName, limit = _jobListLimit });
+                 new { state = stateName, limit = _jobListLimit },
+                 commandTimeout: _storage.CommandTimeout);
 
             return count;
         }
@@ -509,7 +512,8 @@ order by j.Id desc";
 
             var jobs = connection.Query<SqlJob>(
                         jobsSql,
-                        new { stateName = stateName, start = @from + 1, end = @from + count })
+                        new { stateName = stateName, start = @from + 1, end = @from + count },
+                        commandTimeout: _storage.CommandTimeout)
                         .ToList();
 
             return DeserializeJobs(jobs, selector);
@@ -553,7 +557,8 @@ where j.Id in @jobIds";
 
             var jobs = connection.Query<SqlJob>(
                 fetchedJobsSql,
-                new { jobIds = jobIds })
+                new { jobIds = jobIds },
+                commandTimeout: _storage.CommandTimeout)
                 .ToList();
 
             var result = new List<KeyValuePair<string, FetchedJobDto>>(jobs.Count);

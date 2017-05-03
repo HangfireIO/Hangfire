@@ -73,7 +73,7 @@ namespace Hangfire.Server
                     _logger.Log(
                         logLevel,
                         // ReSharper disable once AccessToModifiedClosure
-                        () => $"Error occurred during execution of '{_innerProcess}' process. Execution will be retried (attempt {i + 1} of {MaxRetryAttempts}) in {nextTry} seconds.",
+                        () => $"Error occurred during execution of '{_innerProcess}' process. Execution will be retried (attempt #{i + 1}) in {nextTry} seconds.",
                         ex);
 
                     context.Wait(nextTry);
