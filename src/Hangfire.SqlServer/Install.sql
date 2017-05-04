@@ -577,8 +577,8 @@ BEGIN
 	WHERE [ExpireAt] IS NOT NULL;
 	PRINT 'Re-created index [IX_HangFire_Set_ExpireAt]. Made the index only for rows with non-null ExpireAt value';
 
-	ALTER TABLE [$(HangFireSchema)].[JobParameter] ADD [ExpireAt] SMALLDATETIME NULL;
-	ALTER TABLE [$(HangFireSchema)].[State] ADD [ExpireAt] SMALLDATETIME NULL;
+	ALTER TABLE [$(HangFireSchema)].[JobParameter] ADD [ExpireAt] DATETIME NULL;
+	ALTER TABLE [$(HangFireSchema)].[State] ADD [ExpireAt] DATETIME NULL;
 
 	UPDATE [$(HangFireSchema)].[State]
 	SET [ExpireAt] = (SELECT [ExpireAt] FROM [$(HangFireSchema)].[Job] j WHERE j.[Id] = [JobId]);

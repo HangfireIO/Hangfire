@@ -578,8 +578,8 @@ BEGIN
 	WHERE [ExpireAt] IS NOT NULL;
 	PRINT 'Re-created index [IX_HangFire_Set_ExpireAt]. Made the index only for rows with non-null ExpireAt value';
 
-	ALTER TABLE [HangFire].[JobParameter] ADD [ExpireAt] SMALLDATETIME NULL;
-	ALTER TABLE [HangFire].[State] ADD [ExpireAt] SMALLDATETIME NULL;
+	ALTER TABLE [HangFire].[JobParameter] ADD [ExpireAt] DATETIME NULL;
+	ALTER TABLE [HangFire].[State] ADD [ExpireAt] DATETIME NULL;
 
 	UPDATE [HangFire].[State]
 	SET [ExpireAt] = (SELECT [ExpireAt] FROM [HangFire].[Job] j WHERE j.[Id] = [JobId]);
