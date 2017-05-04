@@ -581,11 +581,11 @@ BEGIN
 	ALTER TABLE [HangFire].[JobParameter] ADD [ExpireAt] DATETIME NULL;
 	ALTER TABLE [HangFire].[State] ADD [ExpireAt] DATETIME NULL;
 
-	UPDATE [HangFire].[State]
-	SET [ExpireAt] = (SELECT [ExpireAt] FROM [HangFire].[Job] j WHERE j.[Id] = [JobId]);
+	EXEC (N'UPDATE [HangFire].[JobParameter]
+	SET [ExpireAt] = (SELECT [ExpireAt] FROM [HangFire].[Job] j WHERE j.[Id] = [JobId]);');
 
-	UPDATE [HangFire].[JobParameter]
-	SET [ExpireAt] = (SELECT [ExpireAt] FROM [HangFire].[Job] j WHERE j.[Id] = [JobId]);
+	EXEC (N'UPDATE [HangFire].[State]
+	SET [ExpireAt] = (SELECT [ExpireAt] FROM [HangFire].[Job] j WHERE j.[Id] = [JobId]);');
 
 	EXEC (N'CREATE NONCLUSTERED INDEX [IX_HangFire_JobParameter_ExpireAt] ON [HangFire].[JobParameter] ([ExpireAt])
 	WHERE [ExpireAt] IS NOT NULL;');

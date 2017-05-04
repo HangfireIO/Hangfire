@@ -580,11 +580,11 @@ BEGIN
 	ALTER TABLE [$(HangFireSchema)].[JobParameter] ADD [ExpireAt] DATETIME NULL;
 	ALTER TABLE [$(HangFireSchema)].[State] ADD [ExpireAt] DATETIME NULL;
 
-	UPDATE [$(HangFireSchema)].[State]
-	SET [ExpireAt] = (SELECT [ExpireAt] FROM [$(HangFireSchema)].[Job] j WHERE j.[Id] = [JobId]);
+	EXEC (N'UPDATE [$(HangFireSchema)].[JobParameter]
+	SET [ExpireAt] = (SELECT [ExpireAt] FROM [$(HangFireSchema)].[Job] j WHERE j.[Id] = [JobId]);');
 
-	UPDATE [$(HangFireSchema)].[JobParameter]
-	SET [ExpireAt] = (SELECT [ExpireAt] FROM [$(HangFireSchema)].[Job] j WHERE j.[Id] = [JobId]);
+	EXEC (N'UPDATE [$(HangFireSchema)].[State]
+	SET [ExpireAt] = (SELECT [ExpireAt] FROM [$(HangFireSchema)].[Job] j WHERE j.[Id] = [JobId]);');
 
 	EXEC (N'CREATE NONCLUSTERED INDEX [IX_HangFire_JobParameter_ExpireAt] ON [HangFire].[JobParameter] ([ExpireAt])
 	WHERE [ExpireAt] IS NOT NULL;');
