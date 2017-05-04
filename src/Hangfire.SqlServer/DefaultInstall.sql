@@ -601,6 +601,8 @@ BEGIN
 	CREATE NONCLUSTERED INDEX [IX_HangFire_Set_Score] ON [HangFire].[Set] ([Score])
 	WHERE [Score] IS NOT NULL;
 
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Server_LastHeartbeat] ON [HangFire].[Server] ([LastHeartbeat]);
+
 	SET @CURRENT_SCHEMA_VERSION = 6;
 END	
 
