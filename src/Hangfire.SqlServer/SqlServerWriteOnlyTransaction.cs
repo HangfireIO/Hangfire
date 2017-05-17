@@ -80,10 +80,7 @@ namespace Hangfire.SqlServer
             QueueCommand((connection, transaction) =>
             {
                 connection.Execute(
-                    $@"
-update [{_storage.SchemaName}].Job set ExpireAt = @expireAt where Id = @id;
-update [{_storage.SchemaName}].JobParameter set ExpireAt = @expireAt where JobId = @id;
-update [{_storage.SchemaName}].State set ExpireAt = @expireAt where JobId = @id;",
+                    $@"update J set ExpireAt = @expireAt from [{_storage.SchemaName}].Job J with (forceseek) where Id = @id;",
                     new { expireAt = expireAt, id = long.Parse(jobId) },
                     transaction,
                     _storage.CommandTimeout);
@@ -95,10 +92,7 @@ update [{_storage.SchemaName}].State set ExpireAt = @expireAt where JobId = @id;
             QueueCommand((connection, transaction) =>
             {
                 connection.Execute(
-                    $@"
-update [{_storage.SchemaName}].Job set ExpireAt = NULL where Id = @id;
-update [{_storage.SchemaName}].JobParameter set ExpireAt = NULL where JobId = @id;
-update [{_storage.SchemaName}].State set ExpireAt = NULL where JobId = @id;",
+                    $@"update J set ExpireAt = NULL from [{_storage.SchemaName}].Job J with (forceseek) where Id = @id;",
                     new { id = long.Parse(jobId) },
                     transaction,
                     _storage.CommandTimeout);
