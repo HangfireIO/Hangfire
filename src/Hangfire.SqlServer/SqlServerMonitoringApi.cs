@@ -478,7 +478,7 @@ where j.Id in @jobIds";
 
         private static Job DeserializeJob(string invocationData, string arguments)
         {
-            var data = JobHelper.FromJson<InvocationData>(invocationData);
+            var data = InvocationData.Deserialize(invocationData);
             data.Arguments = arguments;
 
             try

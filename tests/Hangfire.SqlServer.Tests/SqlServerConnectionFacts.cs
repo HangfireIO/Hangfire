@@ -141,7 +141,7 @@ namespace Hangfire.SqlServer.Tests
                 Assert.Equal(null, (int?) sqlJob.StateId);
                 Assert.Equal(null, (string) sqlJob.StateName);
 
-                var invocationData = JobHelper.FromJson<InvocationData>((string)sqlJob.InvocationData);
+                var invocationData = InvocationData.Deserialize((string)sqlJob.InvocationData);
                 invocationData.Arguments = sqlJob.Arguments;
 
                 var job = invocationData.Deserialize();

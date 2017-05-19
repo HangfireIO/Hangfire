@@ -24,11 +24,14 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using Hangfire.Common;
 using Hangfire.Server;
+using Newtonsoft.Json;
 
 namespace Hangfire.Storage
 {
     public class InvocationData
     {
+        private static readonly string[] SystemAssemblyNames = { "mscorlib", "System.Private.CoreLib" };
+
         public InvocationData(
             string type, string method, string parameterTypes, string arguments)
         {
@@ -71,10 +74,33 @@ namespace Hangfire.Storage
         public static InvocationData Serialize(Job job)
         {
             return new InvocationData(
-                job.Type.AssemblyQualifiedName,
+                SerializeType(job.Type),
                 job.Method.Name,
-                JobHelper.ToJson(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()),
+                SerializeTypes(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()),
                 JobHelper.ToJson(SerializeArguments(job.Args)));
+        }
+
+        public static InvocationData Deserialize(string serializedInvocationData)
+        {
+            if (serializedInvocationData.StartsWith("{"))
+            {
+                // It's here for backward compatiblity. In earlier version of Hangfire
+                // InvocationData object was serialized as json object.
+                return JobHelper.FromJson<InvocationData>(serializedInvocationData);
+            }
+
+            var invocationDataValues = JobHelper.FromJson<string[]>(serializedInvocationData);
+
+            return new InvocationData(
+                invocationDataValues[0],
+                invocationDataValues[1],
+                invocationDataValues[2],
+                invocationDataValues[3]);
+        }
+
+        public string Serialize()
+        {
+            return JobHelper.ToJson(new[] { Type, Method, ParameterTypes, Arguments});
         }
 
         internal static string[] SerializeArguments(IReadOnlyCollection<object> arguments)
@@ -223,6 +249,49 @@ namespace Hangfire.Storage
 
             value = dateTime;
             return result;
+        }
+
+        private static string SerializeTypes(IList<Type> types)
+        {
+            return types != null
+                ? $"[{string.Join(",", types.Select(type => JobHelper.ToJson(SerializeType(type))))}]"
+                : null;
+        }
+
+        private static string SerializeType(Type type, bool withAssemblyName = true)
+        {
+            var prefix = string.Empty;
+
+            if (type.DeclaringType != null)
+            {
+                prefix = SerializeType(type.DeclaringType, false) + "+";
+            }
+            else if (type.Namespace != null)
+            {
+                prefix = type.Namespace + ".";
+            }
+
+            var typeName = prefix + type.Name;
+
+            if (type.GenericTypeArguments.Length > 0)
+            {
+                var serializedTypeArgs = string.Join(",", type.GenericTypeArguments.Select(typeArg =>
+                {
+                    var serializedType = SerializeType(typeArg);
+                    return $"[{serializedType}]";
+                }));
+
+                typeName += $"[{serializedTypeArgs}]";
+            }
+
+            var assemblyName = type.GetTypeInfo().Assembly.GetName().Name;
+
+            if (withAssemblyName && !SystemAssemblyNames.Contains(assemblyName))
+            {
+                typeName += ", " + assemblyName;
+            }
+
+            return typeName;
         }
     }
 }
