@@ -353,7 +353,8 @@ namespace Hangfire.Common
                 // MethodInfo instance, based on the same method name and parameter types.
                 method = type.GetNonOpenMatchingMethod(
                     callExpression.Method.Name,
-                    callExpression.Method.GetParameters().Select(x => x.ParameterType).ToArray());
+                    callExpression.Method.GetParameters().Select(x => x.ParameterType).ToArray(),
+                    callExpression.Method.GetGenericArguments());
             }
 
             return new Job(
