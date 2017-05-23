@@ -553,8 +553,11 @@ BEGIN
 	);
 	PRINT 'Re-created constraint [PK_HangFire_JobParameter]';
 
-	CREATE CLUSTERED INDEX [CX_HangFire_JobQueue] ON [$(HangFireSchema)].[JobQueue] ([Queue]);
-	PRINT 'Created clustered index [CX_HangFire_JobQueue]';
+	ALTER TABLE [$(HangFireSchema)].[JobQueue] ADD CONSTRAINT [PK_HangFire_JobQueue] PRIMARY KEY CLUSTERED (
+		[Queue] ASC,
+		[Id] ASC
+	);
+	PRINT 'Re-created constraint [PK_HangFire_JobQueue]';
 
 	ALTER TABLE [$(HangFireSchema)].[List] ADD CONSTRAINT [PK_HangFire_List] PRIMARY KEY CLUSTERED (
 		[Key] ASC,
@@ -575,9 +578,6 @@ BEGIN
 	PRINT 'Re-created constraint [PK_HangFire_State]';
 
 	-- Creating secondary, nonclustered indexes
-
-	CREATE NONCLUSTERED INDEX [IX_HangFire_JobQueue_Id] ON [$(HangFireSchema)].[JobQueue] ([Id]);
-	PRINT 'Created index [IX_HangFire_JobQueue_Id]';
 
 	CREATE NONCLUSTERED INDEX [IX_HangFire_JobQueue_FetchedAt] ON [$(HangFireSchema)].[JobQueue] ([FetchedAt])
 	WHERE [FetchedAt] IS NOT NULL;
