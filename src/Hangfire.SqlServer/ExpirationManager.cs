@@ -132,7 +132,7 @@ set transaction isolation level read committed;
 ) as q
 order by {String.Join(", ", keys)})
 
-delete from cte with (paglock, readpast)";
+delete from cte with (paglock)";
         }
 
         private static int ExecuteNonQuery(
