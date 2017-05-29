@@ -34,7 +34,7 @@ namespace Hangfire.Client
 
         public BackgroundJob Create(CreateContext context)
         {
-            var parameters = context.Parameters.ToDictionary(x => x.Key, x => JobHelper.ToJson(x.Value));
+            var parameters = context.Parameters.ToDictionary(x => x.Key, x => JobHelper.SerializeParameter(x.Value));
 
             var createdAt = DateTime.UtcNow;
             var jobId = context.Connection.CreateExpiredJob(

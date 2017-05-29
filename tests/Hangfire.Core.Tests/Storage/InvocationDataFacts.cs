@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters;
 using Hangfire.Common;
 using Hangfire.Storage;
 using Newtonsoft.Json;
@@ -10,6 +11,37 @@ namespace Hangfire.Core.Tests.Storage
 {
     public class InvocationDataFacts
     {
+        [Fact]
+        public void Serialize_CorrectlySerializesTheData()
+        {
+            var job = Job.FromExpression(() => Sample("Hello"));
+
+            var invocationData = InvocationData.Serialize(job);
+
+            Assert.Equal(typeof(InvocationDataFacts).AssemblyQualifiedName, invocationData.Type);
+            Assert.Equal("Sample", invocationData.Method);
+            Assert.Equal(JobHelper.ToJson(new[] { typeof(string) }), invocationData.ParameterTypes);
+            Assert.Equal(JobHelper.ToJson(new[] { "\"Hello\"" }), invocationData.Arguments);
+        }
+
+        [Fact, CleanJsonSerializersSettings]
+        public void Serialize_CorrectlySerializesTheData_WhenArgumentJsonSerializerSettingsIsDefined()
+        {
+            JobHelper.SetArgumentsSerializerSettings(new JsonSerializerSettings
+            {
+                TypeNameAssemblyFormat = FormatterAssemblyStyle.Full,
+                TypeNameHandling = TypeNameHandling.All
+            });
+            var job = Job.FromExpression(() => ListMethod(new List<string> { "Hello" }));
+
+            var invocationData = InvocationData.Serialize(job);
+
+            Assert.Equal(typeof(InvocationDataFacts).AssemblyQualifiedName, invocationData.Type);
+            Assert.Equal("ListMethod", invocationData.Method);
+            Assert.Equal(JobHelper.ToJson(new[] { typeof(IList<string>) }), invocationData.ParameterTypes);
+            Assert.Equal(JobHelper.ToJson(new[] { JobHelper.SerializeArgument(new List<string> { "Hello" }) }), invocationData.Arguments);
+        }
+
         [Fact]
         public void Deserialize_CorrectlyDeserializes_AllTheData()
         {
@@ -62,19 +94,6 @@ namespace Hangfire.Core.Tests.Storage
 
             Assert.Throws<JobLoadException>(
                 () => serializedData.Deserialize());
-        }
-
-        [Fact]
-        public void Serialize_CorrectlySerializesTheData()
-        {
-            var job = Job.FromExpression(() => Sample("Hello"));
-
-            var invocationData = InvocationData.Serialize(job);
-
-            Assert.Equal(typeof(InvocationDataFacts).AssemblyQualifiedName, invocationData.Type);
-            Assert.Equal("Sample", invocationData.Method);
-            Assert.Equal(JobHelper.ToJson(new[] { typeof(string) }), invocationData.ParameterTypes);
-            Assert.Equal(JobHelper.ToJson(new[] { "\"Hello\"" }), invocationData.Arguments);
         }
 
         [Fact]
@@ -139,6 +158,28 @@ namespace Hangfire.Core.Tests.Storage
 
             var exception = Assert.Throws<JobLoadException>(() => serializedData.Deserialize());
             Assert.IsType<JsonReaderException>(exception.InnerException);
+        }
+
+        [Fact, CleanJsonSerializersSettings]
+        public void Deserialize_ReturnsCorrect_WhenArugmentsJsonSerializerSttingsIsDefined()
+        {
+            JobHelper.SetArgumentsSerializerSettings(new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.All
+            });
+
+            var serializedData = new InvocationData(
+                typeof(InvocationDataFacts).AssemblyQualifiedName,
+                "ListMethod",
+                JobHelper.ToJson(new[] { typeof(IList<string>) }),
+                JobHelper.ToJson(new[] { JobHelper.SerializeArgument(new List<string> { "I'm correct"}) }));
+
+            var job = serializedData.Deserialize();
+
+            Assert.Equal(typeof(InvocationDataFacts), job.Type);
+            Assert.Equal("ListMethod", job.Method.Name);
+            Assert.Equal(1, job.Args.Count);
+            Assert.Equal(new List<string> { "I'm correct" }, job.Args[0]);
         }
 
         public static void Sample(string arg)

@@ -107,7 +107,7 @@ namespace Hangfire.Dashboard
 
                     try
                     {
-                        argumentValue = JobHelper.FromJson(argument, parameter.ParameterType);
+                        argumentValue = JobHelper.DeserializeArgument(argument, parameter.ParameterType);
                     }
                     catch (Exception)
                     {

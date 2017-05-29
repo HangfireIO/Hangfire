@@ -130,92 +130,173 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void ForSerializeUseDefaultConfigurationOfJsonNet()
+        public void SerializeArgument_ReturnsNull_WhenValueIsNull()
         {
-            var result = JobHelper.ToJson(new ClassA("A"));
-            Assert.Equal(@"{""PropertyA"":""A""}", result);
+            var result = JobHelper.SerializeArgument(null);
+            Assert.Null(result);
         }
 
         [Fact]
-        public void ForSerializeCanUseCustomConfigurationOfJsonNet()
+        public void SerializeArgument_ReturnCorrectResult_WhenValueIsString()
         {
-            try
-            {
-                JobHelper.SetSerializerSettings(new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
-
-                var result = JobHelper.ToJson(new ClassA("A"));
-                Assert.Equal(@"{""propertyA"":""A""}", result);
-            }
-            finally
-            {
-                JobHelper.SetSerializerSettings(null);
-            }
+            var result = JobHelper.SerializeArgument("Simple string");
+            Assert.Equal("\"Simple string\"", result);
         }
 
         [Fact]
-        public void ForDeserializeCanUseCustomConfigurationOfJsonNet()
+        public void SerializeArgument_ReturnsCorrectValue_WhenValueIsCustomObject()
         {
-            try
-            {
-                JobHelper.SetSerializerSettings(new JsonSerializerSettings
-                {
-                    TypeNameHandling = TypeNameHandling.Objects
-                });
+            var result = JobHelper.SerializeArgument(new ClassA("B"));
+            Assert.Equal(@"{""PropertyA"":""B""}", result);
+        }
 
-                var result = (ClassA)JobHelper.FromJson<IClass>(@"{ ""$type"": ""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"", ""propertyA"":""A"" }");
-                Assert.Equal("A", result.PropertyA);
-            }
-            finally
+        [Fact, CleanJsonSerializersSettings]
+        public void SerializeArgument_ReturnCorrectValue_WhenArgumentsSerializerSettingsIsDefined()
+        {
+            JobHelper.SetArgumentsSerializerSettings(new JsonSerializerSettings
             {
-                JobHelper.SetSerializerSettings(null);
-            }
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                TypeNameHandling = TypeNameHandling.All
+            });
+
+            var result = JobHelper.SerializeArgument(new ClassA("A"));
+            Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"",""propertyA"":""A""}", result);
         }
 
         [Fact]
-        public void ForDeserializeCanUseCustomConfigurationOfJsonNetWithInvocationData()
+        public void DeserializeArgument_ThrowsAnException_WhenTypeIsNull()
         {
-            try
-            {
-                JobHelper.SetSerializerSettings(new JsonSerializerSettings
-                {
-                    TypeNameHandling = TypeNameHandling.All,
-                    TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple
-                });
-
-                var method = typeof (BackgroundJob).GetMethod("DoWork");
-                var args = new object[] { "123", "Test" };
-                var job = new Job(typeof(BackgroundJob), method, args);
-
-                var invocationData = InvocationData.Serialize(job);
-                var deserializedJob = invocationData.Deserialize();
-
-                Assert.Equal(typeof(BackgroundJob), deserializedJob.Type);
-                Assert.Equal(method, deserializedJob.Method);
-                Assert.Equal(args, deserializedJob.Args);
-            }
-            finally
-            {
-                JobHelper.SetSerializerSettings(null);
-            }
+            Assert.Throws<ArgumentNullException>(() => JobHelper.DeserializeArgument("1", null));
         }
 
         [Fact]
-        public void ForDeserializeWithGenericMethodCanUseCustomConfigurationOfJsonNet()
+        public void DeserializeArgument_ReturnsCorrectValue_WhenValueIsString()
         {
-            try
-            {
-                JobHelper.SetSerializerSettings(new JsonSerializerSettings
-                {
-                    TypeNameHandling = TypeNameHandling.Objects
-                });
+            var result = (string)JobHelper.DeserializeArgument("\"hello\"", typeof(string));
+            Assert.Equal("hello", result);
+        }
 
-                var result = (ClassA)JobHelper.FromJson(@"{ ""$type"": ""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"", ""propertyA"":""A"" }", typeof(IClass));
-                Assert.Equal("A", result.PropertyA);
-            }
-            finally
+        [Fact]
+        public void DeserializeArgument_ReturnsNull_WhenValueIsNull()
+        {
+            var result = (string)JobHelper.DeserializeArgument(null, typeof(string));
+            Assert.Null(result);
+        }
+
+        [Fact, CleanJsonSerializersSettings]
+        public void DeserializeArgument_RetrunsObject_WhenTypeIsCustomClass()
+        {
+            var argumentJson = @"{""PropertyA"":""A""}";
+
+            var argumentValue = JobHelper.DeserializeArgument(argumentJson, typeof(ClassA)) as ClassA;
+            Assert.NotNull(argumentValue);
+            Assert.Equal("A", argumentValue.PropertyA);
+        }
+
+        [Fact, CleanJsonSerializersSettings]
+        public void DeserializeArgument_ReturnsObject_WhenTypeIsInterface()
+        {
+            JobHelper.SetArgumentsSerializerSettings(new JsonSerializerSettings
             {
-                JobHelper.SetSerializerSettings(null);
-            }
+                TypeNameHandling = TypeNameHandling.All
+            });
+
+            var argumentJson = @"{""$type"":""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""A""}";
+
+            var argumentValue = JobHelper.DeserializeArgument(argumentJson, typeof(IClass)) as ClassA;
+            Assert.NotNull(argumentValue);
+            Assert.Equal("A", argumentValue.PropertyA);
+        }
+
+        [Fact]
+        public void SerializeParameter_ReturnsNull_WhenValueIsNull()
+        {
+            var result = JobHelper.SerializeParameter(null);
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void SerializeParameter_ReturnCorrectResult_WhenValueIsString()
+        {
+            var result = JobHelper.SerializeParameter("Simple string");
+            Assert.Equal("\"Simple string\"", result);
+        }
+
+        [Fact]
+        public void SerializeParameter_ReturnsCorrectValue_WhenValueIsCustomObject()
+        {
+            var result = JobHelper.SerializeParameter(new ClassA("B"));
+            Assert.Equal(@"{""PropertyA"":""B""}", result);
+        }
+
+        [Fact, CleanJsonSerializersSettings]
+        public void SerializeParameter_ReturnCorrectValue_WhenArgumentsSerializerSettingsIsDefined()
+        {
+            JobHelper.SetParametersSerializerSettings(new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                TypeNameHandling = TypeNameHandling.All
+            });
+
+            var result = JobHelper.SerializeParameter(new ClassA("A"));
+            Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"",""propertyA"":""A""}", result);
+        }
+
+        [Fact]
+        public void DeserializeParameterGeneric_ReturnsCorrectValue_WhenValueIsString()
+        {
+            var result = JobHelper.DeserializeParameter<string>("\"Hi!\"");
+            Assert.Equal("Hi!", result);
+        }
+
+        [Fact]
+        public void DeserializeParameterGeneric_ReturnsNull_WhenValueIsNull()
+        {
+            var result = JobHelper.DeserializeParameter<object>(null);
+            Assert.Null(result);
+        }
+
+        [Fact, CleanJsonSerializersSettings]
+        public void DeserializeParameterGeneric_RetrunsObject_WhenGenericArgumentIsCustomClass()
+        {
+            var argumentJson = @"{""PropertyA"":""A""}";
+
+            var argumentValue = JobHelper.DeserializeParameter<ClassA>(argumentJson);
+            Assert.NotNull(argumentValue);
+            Assert.Equal("A", argumentValue.PropertyA);
+        }
+
+        [Fact, CleanJsonSerializersSettings]
+        public void DeserializeParameter_ReturnsObject_WhenGenericArgumentIsInterface()
+        {
+            JobHelper.SetParametersSerializerSettings(new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Objects
+            });
+
+            var argumentJson = @"{""$type"":""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""A""}";
+
+            var argumentValue = JobHelper.DeserializeParameter<IClass>(argumentJson) as ClassA;
+            Assert.NotNull(argumentValue);
+            Assert.Equal("A", argumentValue.PropertyA);
+        }
+
+        [Fact, CleanJsonSerializersSettings]
+        public void SetSerializerSettings_SetsArgumentAndParameterAndCoreSerializerSettings()
+        {
+#pragma warning disable 618
+            JobHelper.SetSerializerSettings(new JsonSerializerSettings
+#pragma warning restore 618
+            {
+                TypeNameHandling = TypeNameHandling.All
+            });
+
+            var coreSerializerResult = JobHelper.ToJson(new ClassA("A"));
+            var argumentsSerializerResult = JobHelper.SerializeArgument(new ClassA("A"));
+            var parametersSerializerResult = JobHelper.SerializeParameter(new ClassA("A"));
+            Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""A""}", coreSerializerResult);
+            Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""A""}", argumentsSerializerResult);
+            Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""A""}", parametersSerializerResult);
         }
 
         private interface IClass

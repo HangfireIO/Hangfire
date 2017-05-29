@@ -81,12 +81,12 @@ namespace Hangfire.States
 
         public void SetJobParameter<T>(string name, T value)
         {
-            Connection.SetJobParameter(BackgroundJob.Id, name, JobHelper.ToJson(value));
+            Connection.SetJobParameter(BackgroundJob.Id, name, JobHelper.SerializeParameter(value));
         }
 
         public T GetJobParameter<T>(string name)
         {
-            return JobHelper.FromJson<T>(Connection.GetJobParameter(
+            return JobHelper.DeserializeParameter<T>(Connection.GetJobParameter(
                 BackgroundJob.Id, name));
         }
     }
