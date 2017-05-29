@@ -24,7 +24,7 @@ Task Merge -Depends Test -Description "Run ILMerge /internalize to merge assembl
     # Remove `*.pdb` file to be able to prepare NuGet symbol packages.
 	Remove-File ((Get-SrcOutputDir "Hangfire.SqlServer") + "\Dapper.pdb")
     
-    Merge-Assembly "Hangfire.Core" @("NCrontab", "CronExpressionDescriptor", "Microsoft.Owin")
+    Merge-Assembly "Hangfire.Core" @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
     Merge-Assembly "Hangfire.SqlServer" @("Dapper")
 }
 

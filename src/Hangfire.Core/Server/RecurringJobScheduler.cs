@@ -16,14 +16,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
-using NCrontab;
+using Cronos;
 
 namespace Hangfire.Server
 {
@@ -67,10 +66,16 @@ namespace Hangfire.Server
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
         private static readonly ILog Logger = LogProvider.For<RecurringJobScheduler>();
-        
+
+        private static readonly Func<DateTime> DefaultNowInstantFactory = () =>
+        {
+            var now = DateTime.UtcNow;
+            return now.AddSeconds(-now.Second);
+        };
+
         private readonly IBackgroundJobFactory _factory;
-        private readonly Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> _instantFactory;
         private readonly IThrottler _throttler;
+        private readonly Func<DateTime> _nowInstantFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RecurringJobScheduler"/>
@@ -89,21 +94,21 @@ namespace Hangfire.Server
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
         public RecurringJobScheduler([NotNull] IBackgroundJobFactory factory)
-            : this(factory, ScheduleInstant.Factory, new EveryMinuteThrottler())
+            : this(factory, DefaultNowInstantFactory, new EveryMinuteThrottler())
         {
         }
 
         internal RecurringJobScheduler(
             [NotNull] IBackgroundJobFactory factory,
-            [NotNull] Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> instantFactory,
+            [NotNull] Func<DateTime> nowInstantFactory,
             [NotNull] IThrottler throttler)
         {
             if (factory == null) throw new ArgumentNullException(nameof(factory));
-            if (instantFactory == null) throw new ArgumentNullException(nameof(instantFactory));
+            if (nowInstantFactory == null) throw new ArgumentNullException(nameof(nowInstantFactory));
             if (throttler == null) throw new ArgumentNullException(nameof(throttler));
             
             _factory = factory;
-            _instantFactory = instantFactory;
+            _nowInstantFactory = nowInstantFactory;
             _throttler = throttler;
         }
 
@@ -162,7 +167,7 @@ namespace Hangfire.Server
             var serializedJob = JobHelper.FromJson<InvocationData>(recurringJob["Job"]);
             var job = serializedJob.Deserialize();
             var cron = recurringJob["Cron"];
-            var cronSchedule = CrontabSchedule.Parse(cron);
+            var cronExpression = CronExpression.Parse(cron);
 
             try
             {
@@ -170,12 +175,14 @@ namespace Hangfire.Server
                     ? TimeZoneInfo.FindSystemTimeZoneById(recurringJob["TimeZoneId"])
                     : TimeZoneInfo.Utc;
 
-                var nowInstant = _instantFactory(cronSchedule, timeZone);
+                var nowInstant = _nowInstantFactory();
+                var lastInstant = GetLastInstant(recurringJob, nowInstant);
+
                 var changedFields = new Dictionary<string, string>();
 
-                var lastInstant = GetLastInstant(recurringJob, nowInstant);
-                
-                if (nowInstant.GetNextInstants(lastInstant).Any())
+                var nextInstant = cronExpression.GetNextOccurrence(lastInstant, timeZone);
+
+                if (nextInstant <= nowInstant)
                 {
                     var state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
                     if (recurringJob.ContainsKey("Queue") && !String.IsNullOrEmpty(recurringJob["Queue"]))
@@ -191,20 +198,22 @@ namespace Hangfire.Server
 
                     if (String.IsNullOrEmpty(jobId))
                     {
-                        Logger.Debug($"Recurring job '{recurringJobId}' execution at '{nowInstant.NowInstant}' has been canceled.");
+                        Logger.Debug($"Recurring job '{recurringJobId}' execution at '{nowInstant}' has been canceled.");
                     }
 
-                    changedFields.Add("LastExecution", JobHelper.SerializeDateTime(nowInstant.NowInstant));
+                    changedFields.Add("LastExecution", JobHelper.SerializeDateTime(nowInstant));
                     changedFields.Add("LastJobId", jobId ?? String.Empty);
+
+                    nextInstant = cronExpression.GetNextOccurrence(nowInstant, timeZone);
                 }
                 
                 // Fixing old recurring jobs that doesn't have the CreatedAt field
                 if (!recurringJob.ContainsKey("CreatedAt"))
                 {
-                    changedFields.Add("CreatedAt", JobHelper.SerializeDateTime(nowInstant.NowInstant));
+                    changedFields.Add("CreatedAt", JobHelper.SerializeDateTime(nowInstant));
                 }
                     
-                changedFields.Add("NextExecution", nowInstant.NextInstant.HasValue ? JobHelper.SerializeDateTime(nowInstant.NextInstant.Value) : null);
+                changedFields.Add("NextExecution", nextInstant.HasValue ? JobHelper.SerializeDateTime(nextInstant.Value) : null);
 
                 connection.SetRangeInHash(
                     $"recurring-job:{recurringJobId}",
@@ -227,7 +236,7 @@ namespace Hangfire.Server
 
         }
 
-        private static DateTime GetLastInstant(IReadOnlyDictionary<string, string> recurringJob, IScheduleInstant instant)
+        private static DateTime GetLastInstant(IReadOnlyDictionary<string, string> recurringJob, DateTime nowInstant)
         {
             DateTime lastInstant;
 
@@ -246,7 +255,7 @@ namespace Hangfire.Server
             }
             else
             {
-                lastInstant = instant.NowInstant.AddSeconds(-1);
+                lastInstant = nowInstant.AddSeconds(-1);
             }
 
             return lastInstant;

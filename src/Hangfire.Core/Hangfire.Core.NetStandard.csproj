@@ -45,14 +45,6 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="App_Packages\LibLog.1.4\LibLog.cs" />
-    <Compile Include="App_Packages\NCrontab\CrontabException.cs" />
-    <Compile Include="App_Packages\NCrontab\CrontabField.cs" />
-    <Compile Include="App_Packages\NCrontab\CrontabFieldImpl.cs" />
-    <Compile Include="App_Packages\NCrontab\CrontabFieldKind.cs" />
-    <Compile Include="App_Packages\NCrontab\CrontabSchedule.cs" />
-    <Compile Include="App_Packages\NCrontab\ErrorHandling.cs" />
-    <Compile Include="App_Packages\NCrontab\ICrontabField.cs" />
-    <Compile Include="App_Packages\NCrontab\StringSeparatorStock.cs" />
     <Compile Include="App_Packages\StackTraceFormatter\StackTraceFormatter.cs" />
     <Compile Include="App_Packages\StackTraceParser\StackTraceParser.cs" />
     <Compile Include="AttemptsExceededAction.cs" />
@@ -330,7 +322,6 @@
     <Compile Include="Server\IBackgroundProcess.cs" />
     <Compile Include="Server\IBackgroundProcessWrapper.cs" />
     <Compile Include="Server\InfiniteLoopProcess.cs" />
-    <Compile Include="Server\IScheduleInstant.cs" />
     <Compile Include="Server\IServerExceptionFilter.cs" />
     <Compile Include="Server\IServerFilter.cs" />
     <Compile Include="Server\IThrottler.cs" />
@@ -340,7 +331,6 @@
     <Compile Include="Server\PerformedContext.cs" />
     <Compile Include="Server\PerformingContext.cs" />
     <Compile Include="Server\RecurringJobScheduler.cs" />
-    <Compile Include="Server\ScheduleInstant.cs" />
     <Compile Include="Server\ServerContext.cs" />
     <Compile Include="Server\ServerExceptionContext.cs" />
     <Compile Include="Server\ServerHeartbeat.cs" />
