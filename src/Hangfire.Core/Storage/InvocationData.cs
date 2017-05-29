@@ -24,24 +24,27 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using Hangfire.Common;
 using Hangfire.Server;
+using Hangfire.States;
 
 namespace Hangfire.Storage
 {
     public class InvocationData
     {
         public InvocationData(
-            string type, string method, string parameterTypes, string arguments)
+            string type, string method, string parameterTypes, string arguments, string queueName = EnqueuedState.DefaultQueue)
         {
             Type = type;
             Method = method;
             ParameterTypes = parameterTypes;
             Arguments = arguments;
+            QueueName = queueName;
         }
 
         public string Type { get; }
         public string Method { get; }
         public string ParameterTypes { get; }
         public string Arguments { get; set; }
+        public string QueueName { get; }
 
         public Job Deserialize()
         {
@@ -60,7 +63,7 @@ namespace Hangfire.Storage
                 var serializedArguments = JobHelper.FromJson<string[]>(Arguments);
                 var arguments = DeserializeArguments(method, serializedArguments);
 
-                return new Job(type, method, arguments);
+                return new Job(type, method, arguments, QueueName);
             }
             catch (Exception ex)
             {
@@ -74,7 +77,8 @@ namespace Hangfire.Storage
                 job.Type.AssemblyQualifiedName,
                 job.Method.Name,
                 JobHelper.ToJson(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()),
-                JobHelper.ToJson(SerializeArguments(job.Args)));
+                JobHelper.ToJson(SerializeArguments(job.Args)),
+                job.QueueName);
         }
 
         internal static string[] SerializeArguments(IReadOnlyCollection<object> arguments)

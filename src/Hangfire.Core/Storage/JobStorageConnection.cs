@@ -49,7 +49,10 @@ namespace Hangfire.Storage
 
         // Sets
         public abstract HashSet<string> GetAllItemsFromSet(string key);
+        public abstract HashSet<string> GetAllItemsFromSetQueue(string key, string queueName);
+
         public abstract string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);
+        public abstract Dictionary<string, double> GetAllValuesWithScoresFromSetQueueWithinScoreRange(string key, string queueName, double fromScore, double toScore);
 
         public virtual long GetSetCount([NotNull] string key)
         {

@@ -71,6 +71,7 @@ namespace Hangfire.Server
         private readonly IBackgroundJobFactory _factory;
         private readonly Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> _instantFactory;
         private readonly IThrottler _throttler;
+        private readonly string[] _queues;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RecurringJobScheduler"/>
@@ -89,22 +90,33 @@ namespace Hangfire.Server
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
         public RecurringJobScheduler([NotNull] IBackgroundJobFactory factory)
-            : this(factory, ScheduleInstant.Factory, new EveryMinuteThrottler())
+            : this(factory, new string[] { EnqueuedState.DefaultQueue })
         {
         }
 
-        internal RecurringJobScheduler(
-            [NotNull] IBackgroundJobFactory factory,
-            [NotNull] Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> instantFactory,
-            [NotNull] IThrottler throttler)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RecurringJobScheduler"/>
+        /// class with custom background job factory and isolates scheduling to an array of queues.
+        /// </summary>
+        /// <param name="factory">Factory that will be used to create background jobs.</param>
+        /// <param name="queues">The queues that the scheduler will create jobs for.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
+        public RecurringJobScheduler([NotNull] IBackgroundJobFactory factory, [NotNull] params string[] queues)
+            : this(factory, ScheduleInstant.Factory, new EveryMinuteThrottler(), queues)
+        {
+        }
+
+        internal RecurringJobScheduler([NotNull] IBackgroundJobFactory factory, [NotNull] Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> instantFactory, [NotNull] IThrottler throttler, params string[] queues)
         {
             if (factory == null) throw new ArgumentNullException(nameof(factory));
             if (instantFactory == null) throw new ArgumentNullException(nameof(instantFactory));
             if (throttler == null) throw new ArgumentNullException(nameof(throttler));
-            
+            if (queues == null) throw new ArgumentNullException(nameof(queues));
+
             _factory = factory;
             _instantFactory = instantFactory;
             _throttler = throttler;
+            _queues = queues;
         }
 
         /// <inheritdoc />
@@ -114,36 +126,42 @@ namespace Hangfire.Server
 
             _throttler.Throttle(context.CancellationToken);
 
-            using (var connection = context.Storage.GetConnection())
-            using (connection.AcquireDistributedLock("recurring-jobs:lock", LockTimeout))
+            foreach (var queueName in _queues)
             {
-                var recurringJobIds = connection.GetAllItemsFromSet("recurring-jobs");
-
-                foreach (var recurringJobId in recurringJobIds)
+                using (var connection = context.Storage.GetConnection())
+                using (connection.AcquireDistributedLock($"recurring-jobs:lock:{ queueName }", LockTimeout))
                 {
-                    var recurringJob = connection.GetAllEntriesFromHash(
-                        $"recurring-job:{recurringJobId}");
-
-                    if (recurringJob == null)
-                    {
-                        continue;
-                    }
-
-                    try
-                    {
-                        TryScheduleJob(context.Storage, connection, recurringJobId, recurringJob);
-                    }
-                    catch (JobLoadException ex)
-                    {
-                        Logger.WarnException(
-                            $"Recurring job '{recurringJobId}' can not be scheduled due to job load exception.",
-                            ex);
-                    }
+                    ScheduleJobsForQueue(context, queueName, connection);
                 }
             }
+        }
 
-            // The code above may be completed in less than a second. Default throttler use
-            // the second resolution, and without an extra delay, CPU and DB bursts may happen.
+        private void ScheduleJobsForQueue(BackgroundProcessContext context, string queueName, IStorageConnection connection)
+        {
+            var recurringJobIds = connection.GetAllItemsFromSetQueue("recurring-jobs", queueName);
+
+            foreach (var recurringJobId in recurringJobIds)
+            {
+                var recurringJob = connection.GetAllEntriesFromHash(
+                    $"recurring-job:{recurringJobId}");
+
+                if (recurringJob == null)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    TryScheduleJob(context.Storage, connection, recurringJobId, recurringJob, queueName);
+                }
+                catch (JobLoadException ex)
+                {
+                    Logger.WarnException(
+                        $"Recurring job '{recurringJobId}' can not be scheduled due to job load exception.",
+                        ex);
+                }
+            }
+            
             _throttler.Delay(context.CancellationToken);
         }
 
@@ -157,7 +175,8 @@ namespace Hangfire.Server
             JobStorage storage,
             IStorageConnection connection, 
             string recurringJobId, 
-            IReadOnlyDictionary<string, string> recurringJob)
+            IReadOnlyDictionary<string, string> recurringJob,
+            string queueName)
         {
             var serializedJob = JobHelper.FromJson<InvocationData>(recurringJob["Job"]);
             var job = serializedJob.Deserialize();
@@ -177,11 +196,7 @@ namespace Hangfire.Server
                 
                 if (nowInstant.GetNextInstants(lastInstant).Any())
                 {
-                    var state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
-                    if (recurringJob.ContainsKey("Queue") && !String.IsNullOrEmpty(recurringJob["Queue"]))
-                    {
-                        state.Queue = recurringJob["Queue"];
-                    }
+                    var state = new EnqueuedState (queueName) { Reason = "Triggered by recurring job scheduler" };
 
                     var context = new CreateContext(storage, connection, job, state);
                     context.Parameters["RecurringJobId"] = recurringJobId;

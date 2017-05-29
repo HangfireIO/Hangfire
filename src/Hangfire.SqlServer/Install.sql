@@ -16,7 +16,7 @@
 
 SET NOCOUNT ON
 DECLARE @TARGET_SCHEMA_VERSION INT;
-SET @TARGET_SCHEMA_VERSION = 5;
+SET @TARGET_SCHEMA_VERSION = 6;
 
 PRINT 'Installing Hangfire SQL objects...';
 
@@ -379,13 +379,24 @@ BEGIN
 	SET @CURRENT_SCHEMA_VERSION = 5;
 END
 	
-/*IF @CURRENT_SCHEMA_VERSION = 5
+IF @CURRENT_SCHEMA_VERSION = 5
 BEGIN
 	PRINT 'Installing schema version 6';
 
-	-- Insert migration here
+	ALTER TABLE [$(HangFireSchema)].[Set]
+	ADD QueueName NVARCHAR(100) NULL;
 
 	SET @CURRENT_SCHEMA_VERSION = 6;
+END
+
+
+/*IF @CURRENT_SCHEMA_VERSION = 6
+BEGIN
+	PRINT 'Installing schema version 7';
+
+	-- Insert migration here
+
+	SET @CURRENT_SCHEMA_VERSION = 7;
 END*/
 
 UPDATE [$(HangFireSchema)].[Schema] SET [Version] = @CURRENT_SCHEMA_VERSION

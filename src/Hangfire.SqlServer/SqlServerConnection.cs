@@ -237,6 +237,21 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
             });
         }
 
+        public override HashSet<string> GetAllItemsFromSetQueue(string key, string queueName)
+        {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (queueName == null) throw new ArgumentNullException(nameof(queueName));
+
+            return _storage.UseConnection(connection =>
+            {
+                var result = connection.Query<string>(
+                    $@"select Value from [{_storage.SchemaName}].[Set] with (readcommittedlock) where [Key] = @key AND QueueName = @queueName",
+                    new { key, queueName });
+
+                return new HashSet<string>(result);
+            });
+        }
+
         public override string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
@@ -500,6 +515,27 @@ where [Key] = @key
 order by [Id] desc";
 
             return _storage.UseConnection(connection => connection.Query<string>(query, new { key = key }, commandTimeout: _storage.CommandTimeout).ToList());
+        }
+
+        public override Dictionary<string, double> GetAllValuesWithScoresFromSetQueueWithinScoreRange(
+            string key, 
+            string queueName, 
+            double fromScore, 
+            double toScore)
+        {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (queueName == null) throw new ArgumentNullException(nameof(queueName));
+            if (toScore < fromScore) throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.");
+            
+            return _storage.UseConnection(connection =>
+            {
+                var result = connection.Query<SqlSet>(
+                    $"select Value, Score from [{_storage.SchemaName}].[Set] with (readcommittedlock) where [Key] = @key and QueueName = @queueName and Score between @from and @to",
+                    new { key, queueName, from = fromScore, to = toScore })
+                    .ToDictionary(x => x.Value, x => x.Score);
+
+                return result.Count != 0 ? result : null;
+            });
         }
     }
 }
