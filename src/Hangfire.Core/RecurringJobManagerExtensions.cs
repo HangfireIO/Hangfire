@@ -29,7 +29,17 @@ namespace Hangfire
             [NotNull] Job job,
             [NotNull] string cronExpression)
         {
-            AddOrUpdate(manager, recurringJobId, job, cronExpression, TimeZoneInfo.Utc);
+            AddOrUpdate(manager, recurringJobId, job, cronExpression, TimeZoneInfo.Utc, false);
+        }
+
+        public static void AddOrUpdate(
+          [NotNull] this IRecurringJobManager manager,
+          [NotNull] string recurringJobId,
+          [NotNull] Job job,
+          [NotNull] string cronExpression,
+          bool disableConcurrentExecution)
+        {
+            AddOrUpdate(manager, recurringJobId, job, cronExpression, TimeZoneInfo.Utc, disableConcurrentExecution);
         }
 
         public static void AddOrUpdate(
@@ -38,8 +48,20 @@ namespace Hangfire
             [NotNull] Job job,
             [NotNull] string cronExpression,
             [NotNull] TimeZoneInfo timeZone)
+
         {
-            AddOrUpdate(manager, recurringJobId, job, cronExpression, timeZone, EnqueuedState.DefaultQueue);
+            AddOrUpdate(manager, recurringJobId, job, cronExpression, timeZone, EnqueuedState.DefaultQueue, false);
+        }
+
+        public static void AddOrUpdate(
+          [NotNull] this IRecurringJobManager manager,
+          [NotNull] string recurringJobId,
+          [NotNull] Job job,
+          [NotNull] string cronExpression,
+          [NotNull] TimeZoneInfo timeZone,
+           bool disableConcurrentExecution)
+        {
+            AddOrUpdate(manager, recurringJobId, job, cronExpression, timeZone, EnqueuedState.DefaultQueue, disableConcurrentExecution);
         }
 
         public static void AddOrUpdate(
@@ -58,7 +80,27 @@ namespace Hangfire
                 recurringJobId,
                 job,
                 cronExpression,
-                new RecurringJobOptions { QueueName = queue, TimeZone = timeZone });
+                new RecurringJobOptions { QueueName = queue, TimeZone = timeZone, DisableConcurrentExecution = false });
+        }
+
+        public static void AddOrUpdate(
+          [NotNull] this IRecurringJobManager manager,
+          [NotNull] string recurringJobId,
+          [NotNull] Job job,
+          [NotNull] string cronExpression,
+          [NotNull] TimeZoneInfo timeZone,
+          [NotNull] string queue,
+          bool disableConcurrentExecution)
+        {
+            if (manager == null) throw new ArgumentNullException(nameof(manager));
+            if (timeZone == null) throw new ArgumentNullException(nameof(timeZone));
+            if (queue == null) throw new ArgumentNullException(nameof(queue));
+
+            manager.AddOrUpdate(
+                recurringJobId,
+                job,
+                cronExpression,
+                new RecurringJobOptions { QueueName = queue, TimeZone = timeZone, DisableConcurrentExecution = disableConcurrentExecution });
         }
     }
 }

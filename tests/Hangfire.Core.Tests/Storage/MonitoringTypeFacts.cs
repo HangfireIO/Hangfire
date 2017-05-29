@@ -43,6 +43,13 @@ namespace Hangfire.Core.Tests.Storage
         }
 
         [Fact]
+        public void SkippedJobDto_Ctor_SetsInSkippedtate()
+        {
+            Assert.True(new SkippedJobDto().IsSkipped);
+        }
+
+
+        [Fact]
         public void JobList_Ctor_ShouldInitializeCollection()
         {
             var list = new JobList<int>(new Dictionary<string, int> { { "1", 2 } });

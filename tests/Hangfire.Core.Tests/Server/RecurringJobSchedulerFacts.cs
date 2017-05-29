@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Client;
 using Hangfire.Common;
+using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -313,6 +315,124 @@ namespace Hangfire.Core.Tests.Server
             _instant.Verify(x => x.GetNextInstants(
                 It.Is<DateTime>(time => time < nextExecution)));
         }
+
+
+        
+
+        [Fact]
+        public void Execute_ShouldSetScheduleTheJobIfDisableConcurrentExecutionIsTrueAndNoExecutingInstanceOfJob()
+        {
+            var recurringJobLongRunning = new Dictionary<string, string>
+            {
+                { "Cron", "* * * * *" },
+                { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) },
+                { "TimeZoneId", TimeZoneInfo.Local.Id },
+                { "DisableConcurrentExecution", Boolean.TrueString }
+            };
+
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{RecurringJobId}"))
+                .Returns(recurringJobLongRunning);
+            _recurringJob["Queue"] = "critical";
+            var scheduler = CreateScheduler();
+            scheduler.Execute(_context.Object);
+            _connection.Verify(
+            x => x.SetRangeInHash(
+                $"recurring-job:{RecurringJobId}",
+                It.Is<Dictionary<string, string>>(rj => rj.ContainsKey("CreatedAt"))),
+            Times.Once);
+        }
+
+
+        [Fact]
+        public void Execute_ShouldScheduleTheJobIfDisableConcurrentExecutionIsFalse()
+        {
+            var recurringJobLongRunning = new Dictionary<string, string>
+            {
+                { "Cron", "* * * * *" },
+                { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) },
+                { "TimeZoneId", TimeZoneInfo.Local.Id },
+                { "DisableConcurrentExecution", Boolean.FalseString }
+            };
+
+
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{RecurringJobId}"))
+                .Returns(recurringJobLongRunning);
+
+            _recurringJob["Queue"] = "critical";
+            var scheduler = CreateScheduler();
+
+            scheduler.Execute(_context.Object);
+
+            _connection.Verify(
+            x => x.SetRangeInHash(
+                $"recurring-job:{RecurringJobId}",
+                It.Is<Dictionary<string, string>>(rj => rj.ContainsKey("CreatedAt"))),
+            Times.Once);
+        }
+
+
+
+        [Fact]
+        public void Execute_ShouldScheduleTheJobToSkippedIfDisableConcurrentExecutionIsTrue_ExecutingInstanceOfJobIsFound()
+        {
+            var recurringJobLongRunning = new Dictionary<string, string>
+            {
+                { "Cron", "* * * * *" },
+                { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) },
+                { "TimeZoneId", TimeZoneInfo.Local.Id },
+                { "DisableConcurrentExecution", Boolean.TrueString },
+                {"LastJobId",  "21"}
+            };
+
+            //Setup
+            _connection.Setup(t => t.GetLastStateForJobId(It.Is<string>(id => id.Equals("21"))))
+                .Returns(new HashSet<string> { "Processing" });
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{RecurringJobId}"))
+                .Returns(recurringJobLongRunning);
+            _recurringJob["Queue"] = "critical";
+            var scheduler = CreateScheduler();
+            //Act
+            scheduler.Execute(_context.Object);
+            //Validate
+            _factory.Verify(x => x.Create(It.Is<CreateContext>(con=>con.InitialState.Name== "Skipped")), Times.Once);
+            _connection.Verify(
+              x => x.SetRangeInHash(
+                  $"recurring-job:{RecurringJobId}",
+                  It.Is<Dictionary<string, string>>(rj => rj.ContainsKey("NextExecution"))),
+              Times.Once);
+        }
+
+        [Fact]
+        public void Execute_ShouldScheduleTheJobToSkippedIfDisableConcurrentExecutionIsTrue_EnqueuedInstanceOfJobIsFound()
+        {
+            var recurringJobLongRunning = new Dictionary<string, string>
+            {
+                { "Cron", "* * * * *" },
+                { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) },
+                { "TimeZoneId", TimeZoneInfo.Local.Id },
+                { "DisableConcurrentExecution", Boolean.TrueString },
+                {"LastJobId",  "21"}
+            };
+
+            //Setup
+            _connection.Setup(t => t.GetLastStateForJobId(It.Is<string>(id => id.Equals("21"))))
+                .Returns(new HashSet<string> { "Enqueued" });
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{RecurringJobId}"))
+                .Returns(recurringJobLongRunning);
+            _recurringJob["Queue"] = "critical";
+            var scheduler = CreateScheduler();
+            //Act
+            scheduler.Execute(_context.Object);
+            //Validate
+            _factory.Verify(x => x.Create(It.Is<CreateContext>(con => con.InitialState.Name == "Skipped")), Times.Once);
+            _connection.Verify(
+              x => x.SetRangeInHash(
+                  $"recurring-job:{RecurringJobId}",
+                  It.Is<Dictionary<string, string>>(rj => rj.ContainsKey("NextExecution"))),
+              Times.Once);
+        }
+
+
 
         private RecurringJobScheduler CreateScheduler()
         {

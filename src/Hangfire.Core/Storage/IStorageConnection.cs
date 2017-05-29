@@ -63,5 +63,6 @@ namespace Hangfire.Storage
 
         [CanBeNull]
         Dictionary<string, string> GetAllEntriesFromHash([NotNull] string key);
+        HashSet<string> GetLastStateForJobId(string jobId);
     }
 }

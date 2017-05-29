@@ -41,6 +41,7 @@ namespace Hangfire.Dashboard
             AddMetric(FailedCount);
             AddMetric(DeletedCount);
             AddMetric(AwaitingCount);
+            AddMetric(SkippedCount);
         }
 
         public static void AddMetric([NotNull] DashboardMetric metric)
@@ -62,7 +63,7 @@ namespace Hangfire.Dashboard
         }
 
         public static readonly DashboardMetric ServerCount = new DashboardMetric(
-            "servers:count", 
+            "servers:count",
             "Metrics_Servers",
             page => new Metric(page.Statistics.Servers.ToString("N0"))
             {
@@ -157,6 +158,15 @@ namespace Hangfire.Dashboard
                 IntValue = page.Statistics.Succeeded
             });
 
+        public static readonly DashboardMetric SkippedCount = new DashboardMetric(
+       "skipped:count",
+       "Metrics_SkippedJobs",
+           page => new Metric(page.Statistics.Skipped.ToString("N0"))
+           {
+               IntValue = page.Statistics.Skipped
+           });
+
+
         public static readonly DashboardMetric FailedCount = new DashboardMetric(
             "failed:count",
             "Metrics_FailedJobs",
@@ -171,6 +181,7 @@ namespace Hangfire.Dashboard
             "deleted:count",
              "Metrics_DeletedJobs",
             page => new Metric(page.Statistics.Deleted.ToString("N0")));
+
 
         public static readonly DashboardMetric AwaitingCount = new DashboardMetric(
             "awaiting:count",
