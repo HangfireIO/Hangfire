@@ -45,7 +45,7 @@ namespace Hangfire
             HeartbeatInterval = ServerHeartbeat.DefaultHeartbeatInterval;
             ServerTimeout = ServerWatchdog.DefaultServerTimeout;
             ServerCheckInterval = ServerWatchdog.DefaultCheckInterval;
-            
+            RecurringJobPollingIntervalInSeconds = RecurringJobScheduler.DefaultRecurringJobPollingInterval;
             FilterProvider = null;
             Activator = null;
         }
@@ -151,5 +151,8 @@ namespace Hangfire
 
         [CanBeNull]
         public JobActivator Activator { get; set; }
+
+        public int RecurringJobPollingIntervalInSeconds { get; set; }
+
     }
 }

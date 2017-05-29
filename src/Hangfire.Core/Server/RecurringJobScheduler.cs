@@ -67,7 +67,7 @@ namespace Hangfire.Server
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
         private static readonly ILog Logger = LogProvider.For<RecurringJobScheduler>();
-        
+        public static readonly int DefaultRecurringJobPollingInterval = 60;
         private readonly IBackgroundJobFactory _factory;
         private readonly Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> _instantFactory;
         private readonly IThrottler _throttler;
@@ -77,19 +77,19 @@ namespace Hangfire.Server
         /// class with default background job factory.
         /// </summary>
         public RecurringJobScheduler()
-            : this(new BackgroundJobFactory())
+            : this(new BackgroundJobFactory(), DefaultRecurringJobPollingInterval)
         {
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RecurringJobScheduler"/>
         /// class with custom background job factory.
         /// </summary>
         /// <param name="factory">Factory that will be used to create background jobs.</param>
-        /// 
+        /// <param name="timeInterval">polling Interval for recurring job scheduler in seconds</param>
         /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
-        public RecurringJobScheduler([NotNull] IBackgroundJobFactory factory)
-            : this(factory, ScheduleInstant.Factory, new EveryMinuteThrottler())
+        public RecurringJobScheduler([NotNull] IBackgroundJobFactory factory, int timeInterval)
+            : this(factory, ScheduleInstant.Factory, new BackgroundJobServerOptionBasedThrottler(timeInterval))
         {
         }
 

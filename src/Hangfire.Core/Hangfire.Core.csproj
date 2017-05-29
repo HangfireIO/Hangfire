@@ -107,6 +107,7 @@
     <Compile Include="Properties\NamespaceDoc.cs" />
     <Compile Include="RecurringJobManagerExtensions.cs" />
     <Compile Include="RecurringJobOptions.cs" />
+    <Compile Include="Server\BackgroundJobServerOptionBasedThrottler.cs" />
     <Compile Include="Server\BackgroundProcessContext.cs" />
     <Compile Include="Obsolete\IServerProcess.cs" />
     <Compile Include="Server\BackgroundProcessingServerOptions.cs" />

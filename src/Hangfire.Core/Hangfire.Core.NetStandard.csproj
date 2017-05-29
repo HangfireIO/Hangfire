@@ -320,6 +320,7 @@
     <Compile Include="RecurringJobOptions.cs" />
     <Compile Include="Server\AutomaticRetryProcess.cs" />
     <Compile Include="Server\BackgroundJobPerformer.cs" />
+    <Compile Include="Server\BackgroundJobServerOptionBasedThrottler.cs" />
     <Compile Include="Server\BackgroundProcessContext.cs" />
     <Compile Include="Server\BackgroundProcessingServer.cs" />
     <Compile Include="Server\BackgroundProcessingServerOptions.cs" />
