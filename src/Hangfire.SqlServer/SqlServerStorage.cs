@@ -65,7 +65,7 @@ namespace Hangfire.SqlServer
 
             _connectionString = GetConnectionString(nameOrConnectionString);
             _options = options;
-            
+
             if (options.PrepareSchemaIfNecessary)
             {
                 using (var connection = CreateAndOpenConnection())
@@ -197,7 +197,7 @@ namespace Hangfire.SqlServer
                 return true;
             }, null);
         }
-        
+
         internal T UseTransaction<T>([InstantHandle] Func<DbConnection, DbTransaction, T> func, IsolationLevel? isolationLevel)
         {
 #if NETFULL
@@ -229,13 +229,18 @@ namespace Hangfire.SqlServer
 
         internal DbConnection CreateAndOpenConnection()
         {
+            SqlConnection connection = null;
+
             if (_existingConnection != null)
             {
                 return _existingConnection;
             }
 
-            var connection = new SqlConnection(_connectionString);
-            connection.Open();
+            using (_options.ImpersonationFunc?.Invoke())
+            {
+                connection = new SqlConnection(_connectionString);
+                connection.Open();
+            }
 
             return connection;
         }
