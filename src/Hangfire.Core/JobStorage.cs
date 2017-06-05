@@ -28,6 +28,7 @@ namespace Hangfire
     {
         private static readonly object LockObject = new object();
         private static JobStorage _current;
+        private static TimeSpan _jobExpirationTimeout = TimeSpan.FromDays(1);
 
         public static JobStorage Current
         {
@@ -52,8 +53,23 @@ namespace Hangfire
             }
         }
 
+        public virtual TimeSpan JobExpirationTimeout
+        {
+            get
+            {
+                return _jobExpirationTimeout;
+            }
+            set
+            {
+                lock (LockObject)
+                {
+                    _jobExpirationTimeout = value;
+                }
+            }
+        }
+
         public abstract IMonitoringApi GetMonitoringApi();
-        
+
         public abstract IStorageConnection GetConnection();
 
 #pragma warning disable 618
