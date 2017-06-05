@@ -72,15 +72,13 @@ namespace Hangfire.Common
                 }
 
 
-                var genericArguments = methodCandidate.ContainsGenericParameters
-                        ? new Type[methodCandidate.GetGenericArguments().Length]
-                        : null;
+                var genericArguments = genericTypes;
 
-                // Determine if it is even possible for these signatures to match based on generics
-                if (genericArguments != null && genericTypes != null)
+                if (methodCandidate.ContainsGenericParameters)
                 {
-                    if (genericTypes.Length != genericArguments.Length)
-                        continue;
+                    var genericArgumentsCount = methodCandidate.GetGenericArguments().Length;
+                    if (genericArguments == null) genericArguments = new Type[genericArgumentsCount];
+                    if (genericArgumentsCount != genericArguments.Length) continue;
                 }
 
                 var parameterTypesMatched = true;
@@ -99,29 +97,21 @@ namespace Hangfire.Common
                     }
                 }
 
-                if (parameterTypesMatched)
+                if (parameterTypesMatched && genericArguments != null)
                 {
-                    if (genericTypes == null || genericTypes.Length == 0)
+                    // Ensure that all genericTypes have been specified
+                    // (this prevents a NullPointerException below)
+                    foreach (var gtype in genericArguments)
                     {
-                        // existing behavior using inference from arguments
-                        genericTypes = genericArguments;
-                    }
-
-                    if (genericTypes != null)
-                    {
-                        // Determine if inferred and specified match
-                        parameterTypesMatched = genericTypes.Zip(genericArguments, (l, r) => r == null || l == r).Aggregate(true, (acc, res) => acc && res);
-                        // last check, Ensure that all genericTypes have been specified
-                        // (this prevents a NullPointerException below)
-                        parameterTypesMatched &= genericTypes.Aggregate(true, (acc, res) => acc && res != null);
+                        parameterTypesMatched &= gtype != null;
                     }
                 }
 
                 if (parameterTypesMatched)
                 {
                     // Return first found method candidate with matching parameters.
-                    return (genericTypes != null && genericTypes.Length > 0)
-                        ? methodCandidate.MakeGenericMethod(genericTypes)
+                    return (genericArguments != null && genericArguments.Length > 0)
+                        ? methodCandidate.MakeGenericMethod(genericArguments)
                         : methodCandidate;
                 }
             }
