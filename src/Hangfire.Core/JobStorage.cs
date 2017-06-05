@@ -28,7 +28,8 @@ namespace Hangfire
     {
         private static readonly object LockObject = new object();
         private static JobStorage _current;
-        private static TimeSpan _jobExpirationTimeout = TimeSpan.FromDays(1);
+
+        private TimeSpan _jobExpirationTimeout = TimeSpan.FromDays(1);
 
         public static JobStorage Current
         {
