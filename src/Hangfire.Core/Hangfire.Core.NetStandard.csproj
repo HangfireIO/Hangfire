@@ -295,7 +295,9 @@
     <Compile Include="IBackgroundJobClient.cs" />
     <Compile Include="IGlobalConfiguration.cs" />
     <Compile Include="IJobCancellationToken.cs" />
+    <Compile Include="IRecurringJobBuilder.cs" />
     <Compile Include="IRecurringJobManager.cs" />
+    <Compile Include="IRecurringJobRegistry.cs" />
     <Compile Include="JobActivator.cs" />
     <Compile Include="JobActivatorContext.cs" />
     <Compile Include="JobActivatorScope.cs" />
@@ -315,9 +317,12 @@
     <Compile Include="Properties\NamespaceDoc.cs" />
     <Compile Include="QueueAttribute.cs" />
     <Compile Include="RecurringJob.cs" />
+    <Compile Include="RecurringJobAttribute.cs" />
+    <Compile Include="RecurringJobBuilder.cs" />
     <Compile Include="RecurringJobManager.cs" />
     <Compile Include="RecurringJobManagerExtensions.cs" />
     <Compile Include="RecurringJobOptions.cs" />
+    <Compile Include="RecurringJobRegistry.cs" />
     <Compile Include="Server\AutomaticRetryProcess.cs" />
     <Compile Include="Server\BackgroundJobPerformer.cs" />
     <Compile Include="Server\BackgroundProcessContext.cs" />

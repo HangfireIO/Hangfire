@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
@@ -64,7 +65,7 @@ namespace Hangfire
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (provider == null) throw new ArgumentNullException(nameof(provider));
-            
+
             return configuration.Use(provider, x => LogProvider.SetCurrentLogProvider(x));
         }
 
@@ -136,7 +137,7 @@ namespace Hangfire
 #endif
 
         public static IGlobalConfiguration<TFilter> UseFilter<TFilter>(
-            [NotNull] this IGlobalConfiguration configuration, 
+            [NotNull] this IGlobalConfiguration configuration,
             [NotNull] TFilter filter)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
@@ -168,6 +169,37 @@ namespace Hangfire
             entryAction(entry);
 
             return new ConfigurationEntry<T>(entry);
+        }
+        /// <summary>
+        /// Build <see cref="RecurringJob"/> automatically within specified interface or class.
+        /// </summary>
+        /// <param name="configuration"><see cref="IGlobalConfiguration"/></param>
+        /// <param name="types">Specified interface or class</param>
+        /// <returns><see cref="IGlobalConfiguration"/></returns>
+        public static IGlobalConfiguration UseRecurringJob(
+            [NotNull] this IGlobalConfiguration configuration,
+            [NotNull] params Type[] types)
+        {
+            return UseRecurringJob(configuration, () => types);
+        }
+
+        /// <summary>
+        /// Build <see cref="RecurringJob"/> automatically within specified interface or class.
+        /// </summary>
+        /// <param name="configuration"><see cref="IGlobalConfiguration"/></param>
+        /// <param name="typesProvider">The provider to get specified interfaces or class.</param>
+        /// <returns><see cref="IGlobalConfiguration"/></returns>
+        public static IGlobalConfiguration UseRecurringJob(
+            [NotNull] this IGlobalConfiguration configuration,
+            [NotNull] Func<IEnumerable<Type>> typesProvider)
+        {
+            if (typesProvider == null) throw new ArgumentNullException(nameof(typesProvider));
+
+            IRecurringJobBuilder builder = new RecurringJobBuilder(new RecurringJobRegistry());
+
+            builder.Build(typesProvider);
+
+            return configuration;
         }
 
         private class ConfigurationEntry<T> : IGlobalConfiguration<T>
