@@ -24,7 +24,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using Hangfire.Common;
 using Hangfire.Server;
-using Newtonsoft.Json;
+using System.Text;
 
 namespace Hangfire.Storage
 {
@@ -253,45 +253,65 @@ namespace Hangfire.Storage
 
         private static string SerializeTypes(IList<Type> types)
         {
-            return types != null
-                ? $"[{string.Join(",", types.Select(type => JobHelper.ToJson(SerializeType(type))))}]"
-                : null;
+            if (types == null) return null;
+
+            var typeNamesBuilder = new StringBuilder();
+            SerializeTypes(typeNamesBuilder, types, '"', '"');
+
+            return typeNamesBuilder.ToString();
         }
 
-        private static string SerializeType(Type type, bool withAssemblyName = true)
+        private static string SerializeType(Type type)
         {
-            var prefix = string.Empty;
+            var typeNameBuilder = new StringBuilder();
+            SerializeType(typeNameBuilder, type);
 
+            return typeNameBuilder.ToString();
+        }
+
+        private static void SerializeTypes(StringBuilder typeNamesBuilder, IList<Type> types, char beginTypeDelimiter, char endTypeDelimiter)
+        {
+            typeNamesBuilder.Append('[');
+            
+            for (var i = 0; i < types.Count; i++)
+            {
+                typeNamesBuilder.Append(beginTypeDelimiter);
+                SerializeType(typeNamesBuilder, types[i]);
+                typeNamesBuilder.Append(endTypeDelimiter);
+
+                if (i != types.Count - 1) typeNamesBuilder.Append(',');
+            }
+
+            typeNamesBuilder.Append(']');
+        }
+
+        private static void SerializeType(StringBuilder typeNameBuilder, Type type, bool withAssemblyName = true)
+        {
             if (type.DeclaringType != null)
             {
-                prefix = SerializeType(type.DeclaringType, false) + "+";
+                SerializeType(typeNameBuilder, type.DeclaringType, false);
+                typeNameBuilder.Append('+');
             }
             else if (type.Namespace != null)
             {
-                prefix = type.Namespace + ".";
+                typeNameBuilder.Append(type.Namespace).Append('.');
             }
 
-            var typeName = prefix + type.Name;
+            typeNameBuilder.Append(type.Name);
 
             if (type.GenericTypeArguments.Length > 0)
             {
-                var serializedTypeArgs = string.Join(",", type.GenericTypeArguments.Select(typeArg =>
-                {
-                    var serializedType = SerializeType(typeArg);
-                    return $"[{serializedType}]";
-                }));
-
-                typeName += $"[{serializedTypeArgs}]";
+                SerializeTypes(typeNameBuilder, type.GenericTypeArguments, '[', ']');
             }
+
+            if (!withAssemblyName) return;
 
             var assemblyName = type.GetTypeInfo().Assembly.GetName().Name;
 
-            if (withAssemblyName && !SystemAssemblyNames.Contains(assemblyName))
+            if (!SystemAssemblyNames.Contains(assemblyName))
             {
-                typeName += ", " + assemblyName;
+                typeNameBuilder.Append(", ").Append(assemblyName);
             }
-
-            return typeName;
         }
     }
 }
