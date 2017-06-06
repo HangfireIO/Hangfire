@@ -86,6 +86,23 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void NextInstant_DoesntThrow_NearEndOfDaylightSavings()
+        {
+            // Arrange
+            _timeZone = GetNewYorkTimeZone();
+            _now = new DateTime(2016, 11, 6, 5, 59, 0, DateTimeKind.Utc);
+            _schedule = CrontabSchedule.Parse("* * * * *");
+            
+            var instant = CreateInstant(_now);
+
+            // Act
+            var value = instant.NextInstant;
+
+            // Assert
+            Assert.Equal(new DateTime(2016, 11, 6, 6, 0, 0), value);
+        }
+
+        [Fact]
         public void GetNextInstants_DoesntThrow_NearDaylightSavings()
         {
             // Arrange
