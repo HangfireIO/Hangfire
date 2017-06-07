@@ -89,5 +89,7 @@ namespace Hangfire.SqlServer
                 _schemaName = value;
             }
         }
+
+        public Func<IDisposable> ImpersonationFunc { get; set; }
     }
 }
