@@ -58,7 +58,10 @@ namespace Hangfire
         {
             get
             {
-                return _jobExpirationTimeout;
+                lock (LockObject)
+                {
+                    return _jobExpirationTimeout;
+                }
             }
             set
             {
