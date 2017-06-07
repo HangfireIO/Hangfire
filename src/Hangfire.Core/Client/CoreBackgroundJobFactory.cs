@@ -41,7 +41,7 @@ namespace Hangfire.Client
                 context.Job,
                 parameters,
                 createdAt,
-                TimeSpan.FromHours(1));
+                TimeSpan.FromDays(30));
 
             var backgroundJob = new BackgroundJob(jobId, context.Job, createdAt);
 
