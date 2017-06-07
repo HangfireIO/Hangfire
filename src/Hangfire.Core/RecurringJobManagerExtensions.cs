@@ -24,12 +24,22 @@ namespace Hangfire
     public static class RecurringJobManagerExtensions
     {
         public static void AddOrUpdate(
+           [NotNull] this IRecurringJobManager manager,
+           [NotNull] string recurringJobId,
+           [NotNull] Job job,
+           [NotNull] string cronExpression)
+        {
+            AddOrUpdate(manager, recurringJobId, job, cronExpression, CronStringFormat.Default, TimeZoneInfo.Utc);
+        }
+
+        public static void AddOrUpdate(
             [NotNull] this IRecurringJobManager manager,
             [NotNull] string recurringJobId,
             [NotNull] Job job,
-            [NotNull] string cronExpression)
+            [NotNull] string cronExpression,
+            [NotNull] CronStringFormat cronStringFormat)
         {
-            AddOrUpdate(manager, recurringJobId, job, cronExpression, TimeZoneInfo.Utc);
+            AddOrUpdate(manager, recurringJobId, job, cronExpression, cronStringFormat, TimeZoneInfo.Utc);
         }
 
         public static void AddOrUpdate(
@@ -39,7 +49,7 @@ namespace Hangfire
             [NotNull] string cronExpression,
             [NotNull] TimeZoneInfo timeZone)
         {
-            AddOrUpdate(manager, recurringJobId, job, cronExpression, timeZone, EnqueuedState.DefaultQueue);
+            AddOrUpdate(manager, recurringJobId, job, cronExpression, CronStringFormat.Default, timeZone, EnqueuedState.DefaultQueue);
         }
 
         public static void AddOrUpdate(
@@ -47,6 +57,29 @@ namespace Hangfire
             [NotNull] string recurringJobId,
             [NotNull] Job job,
             [NotNull] string cronExpression,
+            [NotNull] CronStringFormat cronStringFormat,
+            [NotNull] TimeZoneInfo timeZone)
+        {
+            AddOrUpdate(manager, recurringJobId, job, cronExpression, cronStringFormat, timeZone, EnqueuedState.DefaultQueue);
+        }
+
+        public static void AddOrUpdate(
+           [NotNull] this IRecurringJobManager manager,
+           [NotNull] string recurringJobId,
+           [NotNull] Job job,
+           [NotNull] string cronExpression,
+           [NotNull] TimeZoneInfo timeZone,
+           [NotNull] string queue)
+        {
+            AddOrUpdate(manager, recurringJobId, job, cronExpression, CronStringFormat.Default, timeZone, queue);
+        }
+
+        public static void AddOrUpdate(
+            [NotNull] this IRecurringJobManager manager,
+            [NotNull] string recurringJobId,
+            [NotNull] Job job,
+            [NotNull] string cronExpression,
+            [NotNull] CronStringFormat cronStringFormat,
             [NotNull] TimeZoneInfo timeZone,
             [NotNull] string queue)
         {
@@ -58,6 +91,7 @@ namespace Hangfire
                 recurringJobId,
                 job,
                 cronExpression,
+                cronStringFormat,
                 new RecurringJobOptions { QueueName = queue, TimeZone = timeZone });
         }
     }
