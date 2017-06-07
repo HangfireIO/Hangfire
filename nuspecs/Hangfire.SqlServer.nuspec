@@ -16,6 +16,8 @@
     
 1.6.13
 • Fixed – Don't hide errors occurred while running SQL migrations.
+• Fixed – `KeyNotFoundException` when accessing Deleted Jobs page in Dashboard.
+• Fixed – `SqlServerDistributedLock` leaks connections, when lock acquisition is failed.
     
 1.6.9
 • Fixed – `TimeoutException` on large arguments or large batches via `SqlServerOptions.CommandTimeout`.
