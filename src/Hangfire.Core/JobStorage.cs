@@ -73,7 +73,7 @@ namespace Hangfire
         }
 
         public abstract IMonitoringApi GetMonitoringApi();
-
+        
         public abstract IStorageConnection GetConnection();
 
 #pragma warning disable 618

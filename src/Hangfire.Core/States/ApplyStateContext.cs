@@ -25,7 +25,7 @@ namespace Hangfire.States
 #pragma warning restore 618
     {
         public ApplyStateContext(
-            [NotNull] IWriteOnlyTransaction transaction,
+            [NotNull] IWriteOnlyTransaction transaction, 
             [NotNull] ElectStateContext context)
             : this(context.Storage, context.Connection, transaction, context.BackgroundJob, context.CandidateState, context.CurrentState)
         {
@@ -36,7 +36,7 @@ namespace Hangfire.States
             [NotNull] IStorageConnection connection,
             [NotNull] IWriteOnlyTransaction transaction,
             [NotNull] BackgroundJob backgroundJob,
-            [NotNull] IState newState,
+            [NotNull] IState newState, 
             [CanBeNull] string oldStateName)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -44,7 +44,7 @@ namespace Hangfire.States
             if (transaction == null) throw new ArgumentNullException(nameof(transaction));
             if (backgroundJob == null) throw new ArgumentNullException(nameof(backgroundJob));
             if (newState == null) throw new ArgumentNullException(nameof(newState));
-
+            
             BackgroundJob = backgroundJob;
 
             Storage = storage;
@@ -63,7 +63,7 @@ namespace Hangfire.States
 
         [NotNull]
         public IWriteOnlyTransaction Transaction { get; }
-
+        
         public override BackgroundJob BackgroundJob { get; }
 
         [CanBeNull]
@@ -71,7 +71,7 @@ namespace Hangfire.States
 
         [NotNull]
         public IState NewState { get; }
-
+        
         public TimeSpan JobExpirationTimeout { get; set; }
     }
 }
