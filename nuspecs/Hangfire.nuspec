@@ -22,10 +22,19 @@
 1.6.13
 
 Hangfire.Core
-• Fixed – Don't throw NullReferenceException, when state was changed on Processing page.
+• Fixed – Continuation is fired on a wrong queue, when parent job is finished before the creation.
+• Fixed – Impossible to intercept failed state transition before `AutomaticRetryAttribute`.
+• Fixed – Fixed translation in Chinese localization on home page (by @JustinChia).
+• Fixed – Don't throw `NullReferenceException`, when state has changed during query on Processing page.
+• Fixed – `CreateBatchFailedException`, when batch creation takes longer than 1 hour.
+
+Hangfire.AspNetCore
+• Fixed – Types are resolved using the `GetServiceOrCreateInstance` method (by @Tsabo).
 
 Hangfire.SqlServer
 • Fixed – Don't hide errors occurred while running SQL migrations.
+• Fixed – `KeyNotFoundException` when accessing Deleted Jobs page in Dashboard.
+• Fixed – `SqlServerDistributedLock` leaks connections, when lock acquisition is failed.
     
 1.6.12
 
