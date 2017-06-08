@@ -211,9 +211,8 @@ namespace Hangfire.SqlServer
                 var enqueuedJobIds = tuple.Monitoring.GetEnqueuedJobIds(tuple.Queue, 0, 5);
                 var counters = tuple.Monitoring.GetEnqueuedAndFetchedCount(tuple.Queue);
 
-                // TODO: Remove the Select method call to support `bigint`.
                 var firstJobs = UseConnection(connection => 
-                    EnqueuedJobs(connection, enqueuedJobIds.Select(x => (long)x).ToArray()));
+                    EnqueuedJobs(connection, enqueuedJobIds.ToArray()));
 
                 result.Add(new QueueWithTopEnqueuedJobsDto
                 {
@@ -241,8 +240,7 @@ namespace Hangfire.SqlServer
             var queueApi = GetQueueApi(queue);
             var fetchedJobIds = queueApi.GetFetchedJobIds(queue, from, perPage);
 
-            // TODO: Remove the Select method call to support `bigint`.
-            return UseConnection(connection => FetchedJobs(connection, fetchedJobIds.Select(x => (long)x).ToArray()));
+            return UseConnection(connection => FetchedJobs(connection, fetchedJobIds.ToArray()));
         }
 
         public IDictionary<DateTime, long> HourlySucceededJobs()

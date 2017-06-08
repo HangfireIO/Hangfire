@@ -85,6 +85,19 @@ namespace Hangfire.SqlServer.Msmq.Tests
             Assert.Equal(5, result[1]);
         }
 
+        [Fact, CleanMsmqQueue("my-queue")]
+        public void GetEnqueuedJobIds_ReturnsCorrectResult_WhenJobIdIsLongValue()
+        {
+            MsmqUtils.EnqueueJobId("my-queue", (int.MaxValue + 1L).ToString());
+
+            var api = CreateMonitoringApi();
+
+            var result = api.GetEnqueuedJobIds("my-queue", 0, 1).ToArray();
+
+            Assert.Equal(1, result.Length);
+            Assert.Equal(int.MaxValue + 1L, result[0]);
+        }
+
         private static MsmqJobQueueMonitoringApi CreateMonitoringApi()
         {
             return new MsmqJobQueueMonitoringApi(PathPattern, Queues);

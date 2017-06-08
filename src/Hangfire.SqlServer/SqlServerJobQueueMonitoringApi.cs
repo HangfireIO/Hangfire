@@ -67,7 +67,7 @@ namespace Hangfire.SqlServer
             }  
         }
 
-        public IEnumerable<int> GetEnqueuedJobIds(string queue, int @from, int perPage)
+        public IEnumerable<long> GetEnqueuedJobIds(string queue, int @from, int perPage)
         {
             string sqlQuery =
 $@"select r.JobId from (
@@ -79,21 +79,20 @@ where r.row_num between @start and @end";
 
             return UseTransaction((connection, transaction) =>
             {
-                // TODO: Remove cast to `int` to support `bigint`.
                 return connection.Query<JobIdDto>(
                     sqlQuery,
                     new { queue = queue, start = from + 1, end = @from + perPage },
                     transaction,
                     commandTimeout: _storage.CommandTimeout)
                     .ToList()
-                    .Select(x => (int)x.JobId)
+                    .Select(x => x.JobId)
                     .ToList();
             });
         }
 
-        public IEnumerable<int> GetFetchedJobIds(string queue, int @from, int perPage)
+        public IEnumerable<long> GetFetchedJobIds(string queue, int @from, int perPage)
         {
-            return Enumerable.Empty<int>();
+            return Enumerable.Empty<long>();
         }
 
         public EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue)

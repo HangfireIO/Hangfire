@@ -115,6 +115,33 @@ select scope_identity() as Id;";
         }
 
         [Fact, CleanDatabase]
+        public void Dequeue_FetchesAJob_WhenJobIdIsLongValue()
+        {
+            const string arrangeSql = @"
+insert into HangFire.JobQueue (JobId, Queue)
+values (@jobId, @queue);
+select scope_identity() as Id;";
+
+            // Arrange
+            UseConnection(connection =>
+            {
+                // ReSharper disable once UnusedVariable
+                var id = (int)connection.Query(
+                    arrangeSql,
+                    new { jobId = int.MaxValue + 1L, queue = "default" }).Single().Id;
+                var queue = CreateJobQueue(connection);
+
+                // Act
+                var payload = (SqlServerFetchedJob)queue.Dequeue(
+                    DefaultQueues,
+                    CreateTimingOutCancellationToken());
+
+                // Assert
+                Assert.Equal((int.MaxValue + 1L).ToString(), payload.JobId);
+            });
+        }
+
+        [Fact, CleanDatabase]
         public void Dequeue_ShouldDeleteAJob()
         {
             const string arrangeSql = @"
@@ -286,6 +313,35 @@ values (scope_identity(), @queue)";
                 Assert.Equal("1", record.JobId.ToString());
                 Assert.Equal("default", record.Queue);
                 Assert.Null(record.FetchedAt);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void Enqueue_AddsAJob_WhenIdIsLongValue()
+        {
+            UseConnection(connection =>
+            {
+                var queue = CreateJobQueue(connection);
+                
+                queue.Enqueue(connection, "default", (int.MaxValue + 1L).ToString());
+
+                var record = connection.Query("select * from HangFire.JobQueue").Single();
+                Assert.Equal((int.MaxValue + 1L).ToString(), record.JobId.ToString());
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void Enqueue_HandlesJobQueueIdCanExceedIntMax()
+        {
+            UseConnection(connection =>
+            {
+                var queue = CreateJobQueue(connection);
+                connection.Query($"DBCC CHECKIDENT('HangFire.JobQueue', RESEED, {int.MaxValue + 1L});");
+
+                queue.Enqueue(connection, "default", "1");
+
+                var record = connection.Query("select * from HangFire.JobQueue").Single();
+                Assert.True(int.MaxValue  < record.Id);
             });
         }
 
