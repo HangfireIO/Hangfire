@@ -36,6 +36,16 @@ namespace Hangfire.Server
     public interface IBackgroundProcess : IServerProcess
     {
         /// <summary>
+        /// Performs thread-specific initialization work required when the thread is started.
+        /// </summary>
+        void Setup();
+
+        /// <summary>
+        /// Performs thread-specific cleanup work required when the thread is stopped.
+        /// </summary>
+        void TearDown();
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="context">Context for a background process.</param>

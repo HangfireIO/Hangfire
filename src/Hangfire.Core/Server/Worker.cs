@@ -48,7 +48,10 @@ namespace Hangfire.Server
 
         private readonly IBackgroundJobPerformer _performer;
         private readonly IBackgroundJobStateChanger _stateChanger;
-        
+
+        private readonly Action _setup;
+        private readonly Action _tearDown;
+
         public Worker() : this(EnqueuedState.DefaultQueue)
         {
         }
@@ -61,7 +64,9 @@ namespace Hangfire.Server
         public Worker(
             [NotNull] IEnumerable<string> queues,
             [NotNull] IBackgroundJobPerformer performer, 
-            [NotNull] IBackgroundJobStateChanger stateChanger)
+            [NotNull] IBackgroundJobStateChanger stateChanger,
+            Action setup = null,
+            Action tearDown = null)
         {
             if (queues == null) throw new ArgumentNullException(nameof(queues));
             if (performer == null) throw new ArgumentNullException(nameof(performer));
@@ -70,7 +75,21 @@ namespace Hangfire.Server
             _queues = queues.ToArray();
             _performer = performer;
             _stateChanger = stateChanger;
+            _setup = setup;
+            _tearDown = tearDown;
             _workerId = Guid.NewGuid().ToString();
+        }
+
+        /// <inheritdoc />
+        public void Setup()
+        {
+            _setup?.Invoke();
+        }
+
+        /// <inheritdoc />
+        public void TearDown()
+        {
+            _tearDown?.Invoke();
         }
 
         /// <inheritdoc />

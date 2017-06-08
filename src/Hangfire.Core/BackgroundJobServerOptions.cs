@@ -83,5 +83,11 @@ namespace Hangfire
 
         [CanBeNull]
         public JobActivator Activator { get; set; }
+
+        [CanBeNull]
+        public Action WorkerSetup { get; set; }
+
+        [CanBeNull]
+        public Action WorkerTearDown { get; set; }
     }
 }

@@ -35,6 +35,16 @@ namespace Hangfire.Server
             _serverTimeout = serverTimeout;
         }
 
+        public void Setup()
+        {
+            // No setup needed.
+        }
+
+        public void TearDown()
+        {
+            // No tear-down needed.
+        }
+
         public void Execute(BackgroundProcessContext context)
         {
             using (var connection = context.Storage.GetConnection())

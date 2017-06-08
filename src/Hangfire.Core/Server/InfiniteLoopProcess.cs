@@ -31,6 +31,24 @@ namespace Hangfire.Server
         
         public IServerProcess InnerProcess { get; }
 
+        public void Setup()
+        {
+            IBackgroundProcess backgroundProcess = InnerProcess as IBackgroundProcess;
+            if (backgroundProcess != null)
+            {
+                backgroundProcess.Setup();
+            }
+        }
+
+        public void TearDown()
+        {
+            IBackgroundProcess backgroundProcess = InnerProcess as IBackgroundProcess;
+            if (backgroundProcess != null)
+            {
+                backgroundProcess.TearDown();
+            }
+        }
+
         public void Execute(BackgroundProcessContext context)
         {
             while (!context.IsShutdownRequested)

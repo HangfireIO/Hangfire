@@ -48,6 +48,24 @@ namespace Hangfire.Server
 
         public IServerProcess InnerProcess => _innerProcess;
 
+        public void Setup()
+        {
+            IBackgroundProcess backgroundProcess = _innerProcess as IBackgroundProcess;
+            if (backgroundProcess != null)
+            {
+                backgroundProcess.Setup();
+            }
+        }
+
+        public void TearDown()
+        {
+            IBackgroundProcess backgroundProcess = _innerProcess as IBackgroundProcess;
+            if (backgroundProcess != null)
+            {
+                backgroundProcess.TearDown();
+            }
+        }
+
         public void Execute(BackgroundProcessContext context)
         {
             for (var i = 0; i <= MaxRetryAttempts; i++)
