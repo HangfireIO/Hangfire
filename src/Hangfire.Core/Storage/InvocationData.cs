@@ -74,9 +74,9 @@ namespace Hangfire.Storage
         public static InvocationData Serialize(Job job)
         {
             return new InvocationData(
-                SerializeType(job.Type),
+                SerializeType(job.Type).ToString(),
                 job.Method.Name,
-                SerializeTypes(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()),
+                SerializeTypes(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()).ToString(),
                 JobHelper.ToJson(SerializeArguments(job.Args)));
         }
 
@@ -251,46 +251,32 @@ namespace Hangfire.Storage
             return result;
         }
 
-        private static string SerializeTypes(IList<Type> types)
+        private static StringBuilder SerializeTypes(Type[] types, char beginTypeDelimiter = '"', char endTypeDelimiter = '"', StringBuilder typeNamesBuilder = null)
         {
             if (types == null) return null;
+            if (typeNamesBuilder == null) typeNamesBuilder = new StringBuilder();
 
-            var typeNamesBuilder = new StringBuilder();
-            SerializeTypes(typeNamesBuilder, types, '"', '"');
-
-            return typeNamesBuilder.ToString();
-        }
-
-        private static string SerializeType(Type type)
-        {
-            var typeNameBuilder = new StringBuilder();
-            SerializeType(typeNameBuilder, type);
-
-            return typeNameBuilder.ToString();
-        }
-
-        private static void SerializeTypes(StringBuilder typeNamesBuilder, IList<Type> types, char beginTypeDelimiter, char endTypeDelimiter)
-        {
             typeNamesBuilder.Append('[');
             
-            for (var i = 0; i < types.Count; i++)
+            for (var i = 0; i < types.Length; i++)
             {
                 typeNamesBuilder.Append(beginTypeDelimiter);
-                SerializeType(typeNamesBuilder, types[i]);
+                SerializeType(types[i], true, typeNamesBuilder);
                 typeNamesBuilder.Append(endTypeDelimiter);
 
-                if (i != types.Count - 1) typeNamesBuilder.Append(',');
+                if (i != types.Length - 1) typeNamesBuilder.Append(',');
             }
-
-            typeNamesBuilder.Append(']');
+            
+            return typeNamesBuilder.Append(']');
         }
 
-        private static void SerializeType(StringBuilder typeNameBuilder, Type type, bool withAssemblyName = true)
+        private static StringBuilder SerializeType(Type type, bool withAssemblyName = true, StringBuilder typeNameBuilder = null)
         {
+            typeNameBuilder = typeNameBuilder ?? new StringBuilder();
+
             if (type.DeclaringType != null)
             {
-                SerializeType(typeNameBuilder, type.DeclaringType, false);
-                typeNameBuilder.Append('+');
+                SerializeType(type.DeclaringType, false, typeNameBuilder).Append('+');
             }
             else if (type.Namespace != null)
             {
@@ -301,10 +287,10 @@ namespace Hangfire.Storage
 
             if (type.GenericTypeArguments.Length > 0)
             {
-                SerializeTypes(typeNameBuilder, type.GenericTypeArguments, '[', ']');
+                SerializeTypes(type.GenericTypeArguments, '[', ']', typeNameBuilder);
             }
 
-            if (!withAssemblyName) return;
+            if (!withAssemblyName) return typeNameBuilder;
 
             var assemblyName = type.GetTypeInfo().Assembly.GetName().Name;
 
@@ -312,6 +298,8 @@ namespace Hangfire.Storage
             {
                 typeNameBuilder.Append(", ").Append(assemblyName);
             }
+
+            return typeNameBuilder;
         }
     }
 }
