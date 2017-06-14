@@ -47,12 +47,6 @@ namespace Hangfire
             {
                 DisposeScope();
             }
-            catch (Exception ex)
-            {
-                throw new JobPerformanceException(
-                    "Job has been performed, but an exception occurred during disposal.",
-                    ex);
-            }
             finally
             {
                 _current.Value = null;

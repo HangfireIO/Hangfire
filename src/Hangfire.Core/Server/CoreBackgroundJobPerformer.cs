@@ -44,8 +44,9 @@ namespace Hangfire.Server
 
         public object Perform(PerformContext context)
         {
-            using (var scope = _activator.BeginScope(
-                new JobActivatorContext(context.Connection, context.BackgroundJob, context.CancellationToken)))
+            var scope = _activator.BeginScope(
+                new JobActivatorContext(context.Connection, context.BackgroundJob, context.CancellationToken));
+            try
             {
                 object instance = null;
 
@@ -69,6 +70,19 @@ namespace Hangfire.Server
                 var result = InvokeMethod(context, instance, arguments);
 
                 return result;
+            }
+            finally
+            {
+                try
+                {
+                    scope.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    throw new JobPerformanceException(
+                        "Job has been performed, but an exception occurred during disposal.",
+                        ex);
+                }
             }
         }
 
