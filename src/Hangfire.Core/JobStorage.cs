@@ -54,7 +54,7 @@ namespace Hangfire
             }
         }
 
-        public virtual TimeSpan JobExpirationTimeout
+        public TimeSpan JobExpirationTimeout
         {
             get
             {

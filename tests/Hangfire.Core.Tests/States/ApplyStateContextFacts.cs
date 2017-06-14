@@ -27,7 +27,6 @@ namespace Hangfire.Core.Tests.States
             _backgroundJob = new BackgroundJobMock();
             _newState = new Mock<IState>();
             _newState.Setup(x => x.Name).Returns(NewState);
-            _storage.Setup(x => x.JobExpirationTimeout).CallBase();
         }
 
         [Fact]
