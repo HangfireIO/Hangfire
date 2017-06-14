@@ -115,6 +115,11 @@ namespace Hangfire.SqlServer
             {
                 // DistributedLockTimeoutException here doesn't mean that outdated records weren't removed.
                 // It just means another Hangfire server did this work.
+                Logger.Log(
+                    LogLevel.Debug,
+                    () => $@"An exception was thrown during acquiring distributed lock on the {DistributedLockKey} resource within {DefaultLockTimeout.TotalSeconds} seconds. Outdated records were not removed.
+It will be retried in {_checkInterval.TotalSeconds} seconds.",
+                    e);
             }
         }
 

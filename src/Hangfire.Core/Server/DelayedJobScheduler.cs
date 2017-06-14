@@ -182,18 +182,23 @@ namespace Hangfire.Server
 
         private T UseConnectionDistributedLock<T>(JobStorage storage, Func<IStorageConnection, T> action)
         {
+            var resource = "locks:schedulepoller";
             try
             {
                 using (var connection = storage.GetConnection())
-                using (connection.AcquireDistributedLock("locks:schedulepoller", DefaultLockTimeout))
+                using (connection.AcquireDistributedLock(resource, DefaultLockTimeout))
                 {
                     return action(connection);
                 }
             }
-            catch (DistributedLockTimeoutException e) when (e.Resource == "locks:schedulepoller")
+            catch (DistributedLockTimeoutException e) when (e.Resource == resource)
             {
                 // DistributedLockTimeoutException here doesn't mean that delayed jobs weren't enqueued.
                 // It just means another Hangfire server did this work.
+                Logger.DebugException(
+                    $@"An exception was thrown during acquiring distributed lock on the {resource} resource within {DefaultLockTimeout.TotalSeconds} seconds. The scheduled jobs have not been handled this time.
+It will be retried in {_pollingDelay.TotalSeconds} seconds", 
+                    e);
                 return default(T);
             }
         }
