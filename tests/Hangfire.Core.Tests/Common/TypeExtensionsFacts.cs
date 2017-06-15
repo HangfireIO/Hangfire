@@ -237,14 +237,6 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void GetNonOpenMatchingMethod_HandlesMethodHasNoParametersOrTypes()
-        {
-            var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "GenericMethod",
-                new Type[0]);
-            Assert.Null(method);
-        }
-
-        [Fact]
         public void GetNonOpenMatchingMethod_HandlesMethodHasNoParameters()
         {
             var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "GenericMethod",
@@ -287,14 +279,6 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(null, method);
         }
 
-        [Fact]
-        public void GetNonOpenMatchingMethod_ReturnsNull_WhenParameterTypeIsMatchedByGenericTypeAndNotMatchedByGenericArguments()
-        {
-            var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "OtherGenericMethod",
-                new[] { typeof(List<int>)});
-
-            Assert.Equal(null, method);
-        }
 
         [Fact]
         public void GetNonOpenMatchingMethod_ReturnsCorrectMethod_WhenParameterTypeIsGenericArray()

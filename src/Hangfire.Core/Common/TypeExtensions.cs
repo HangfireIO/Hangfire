@@ -97,16 +97,6 @@ namespace Hangfire.Common
                     }
                 }
 
-                if (parameterTypesMatched && genericArguments != null)
-                {
-                    // Ensure that all genericTypes have been specified
-                    // (this prevents a NullPointerException below)
-                    foreach (var gtype in genericArguments)
-                    {
-                        parameterTypesMatched &= gtype != null;
-                    }
-                }
-
                 if (parameterTypesMatched)
                 {
                     // Return first found method candidate with matching parameters.
