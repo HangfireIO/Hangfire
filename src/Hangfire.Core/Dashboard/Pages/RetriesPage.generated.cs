@@ -176,108 +176,162 @@ WriteLiteral("\r\n                </div>\r\n");
             #line default
             #line hidden
 WriteLiteral("                <div class=\"js-jobs-list\">\r\n                    <div class=\"btn-t" +
-"oolbar btn-toolbar-top\">\r\n                        <button class=\"js-jobs-list-co" +
-"mmand btn btn-sm btn-primary\"\r\n                                data-url=\"");
+"oolbar btn-toolbar-top\">\r\n");
 
 
             
-            #line 54 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                     Write(Url.To("/jobs/scheduled/enqueue"));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\"\r\n                                data-loading-text=\"");
-
-
-            
-            #line 55 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                              Write(Strings.Common_Enqueueing);
+            #line 53 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                         if (Permissions.CanTrigger)
+                        {
 
             
             #line default
             #line hidden
-WriteLiteral("\"\r\n                                disabled=\"disabled\">\r\n                        " +
-"    <span class=\"glyphicon glyphicon-repeat\"></span>\r\n                          " +
-"  ");
+WriteLiteral("                            <button class=\"js-jobs-list-command btn btn-sm btn-pr" +
+"imary\"\r\n                                    data-url=\"");
 
 
             
-            #line 58 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                       Write(Strings.Common_EnqueueButton_Text);
+            #line 56 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                         Write(Url.To("/jobs/scheduled/enqueue"));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                        </button>\r\n\r\n                        <button class=\"js-" +
-"jobs-list-command btn btn-sm btn-default\"\r\n                                data-" +
-"url=\"");
+WriteLiteral("\"\r\n                                    data-loading-text=\"");
+
+
+            
+            #line 57 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                                  Write(Strings.Common_Enqueueing);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\"\r\n                                    disabled=\"disabled\">\r\n                    " +
+"            <span class=\"glyphicon glyphicon-repeat\"></span>\r\n                  " +
+"              ");
+
+
+            
+            #line 60 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                           Write(Strings.Common_EnqueueButton_Text);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                            </button>\r\n");
 
 
             
             #line 62 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                     Write(Url.To("/jobs/scheduled/delete"));
+                        }
 
             
             #line default
             #line hidden
-WriteLiteral("\"\r\n                                data-loading-text=\"");
-
 
             
             #line 63 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                              Write(Strings.Common_Deleting);
+                         if (Permissions.CanDelete)
+                        {
 
             
             #line default
             #line hidden
-WriteLiteral("\"\r\n                                data-confirm=\"");
+WriteLiteral("                            <button class=\"js-jobs-list-command btn btn-sm btn-de" +
+"fault\"\r\n                                    data-url=\"");
 
 
             
-            #line 64 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                         Write(Strings.Common_DeleteConfirm);
+            #line 66 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                         Write(Url.To("/jobs/scheduled/delete"));
 
             
             #line default
             #line hidden
-WriteLiteral("\"\r\n                                disabled=\"disabled\">\r\n                        " +
-"    <span class=\"glyphicon glyphicon-remove\"></span>\r\n                          " +
-"  ");
+WriteLiteral("\"\r\n                                    data-loading-text=\"");
 
 
             
             #line 67 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                       Write(Strings.Common_DeleteSelected);
+                                                  Write(Strings.Common_Deleting);
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                        </button>\r\n\r\n                        ");
+WriteLiteral("\"\r\n                                    data-confirm=\"");
 
 
             
-            #line 70 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 68 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                             Write(Strings.Common_DeleteConfirm);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\"\r\n                                    disabled=\"disabled\">\r\n                    " +
+"            <span class=\"glyphicon glyphicon-remove\"></span>\r\n                  " +
+"              ");
+
+
+            
+            #line 71 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                           Write(Strings.Common_DeleteSelected);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                            </button>\r\n");
+
+
+            
+            #line 73 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                        ");
+
+
+            
+            #line 74 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                    Write(Html.PerPageSelector(pager));
 
             
             #line default
             #line hidden
-WriteLiteral(@"
-                    </div>
-
-                    <div class=""table-responsive"">
-                        <table class=""table table-hover"">
-                            <thead>
-                                <tr>
-                                    <th class=""min-width"">
-                                        <input type=""checkbox"" class=""js-jobs-list-select-all"" />
-                                    </th>
-                                    <th class=""min-width"">");
+WriteLiteral("\r\n                    </div>\r\n\r\n                    <div class=\"table-responsive\"" +
+">\r\n                        <table class=\"table table-hover\">\r\n                  " +
+"          <thead>\r\n                                <tr>\r\n");
 
 
             
-            #line 80 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 81 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                     if (!Permissions.IsReadOnly)
+                                    {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                        <th class=\"min-width\">\r\n                 " +
+"                           <input type=\"checkbox\" class=\"js-jobs-list-select-all" +
+"\"/>\r\n                                        </th>\r\n");
+
+
+            
+            #line 86 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                    }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                    <th class=\"min-width\">");
+
+
+            
+            #line 87 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                                      Write(Strings.Common_Id);
 
             
@@ -287,7 +341,7 @@ WriteLiteral("</th>\r\n                                    <th class=\"min-width
 
 
             
-            #line 81 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 88 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                                      Write(Strings.Common_State);
 
             
@@ -297,7 +351,7 @@ WriteLiteral("</th>\r\n                                    <th>");
 
 
             
-            #line 82 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 89 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                    Write(Strings.Common_Job);
 
             
@@ -307,7 +361,7 @@ WriteLiteral("</th>\r\n                                    <th>");
 
 
             
-            #line 83 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 90 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                    Write(Strings.Common_Reason);
 
             
@@ -317,7 +371,7 @@ WriteLiteral("</th>\r\n                                    <th class=\"align-rig
 
 
             
-            #line 84 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 91 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                                        Write(Strings.Common_Retry);
 
             
@@ -327,7 +381,7 @@ WriteLiteral("</th>\r\n                                    <th class=\"align-rig
 
 
             
-            #line 85 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 92 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                                        Write(Strings.Common_Created);
 
             
@@ -338,7 +392,7 @@ WriteLiteral("</th>\r\n                                </tr>\r\n                
 
 
             
-            #line 89 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 96 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                  foreach (var jobId in jobIds)
                                 {
                                     JobData jobData;
@@ -358,31 +412,51 @@ WriteLiteral("                                    <tr class=\"js-jobs-list-row "
 
 
             
-            #line 100 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 107 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                                             Write(jobData != null ? "hover" : null);
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                                        <td>\r\n                               " +
-"             <input type=\"checkbox\" class=\"js-jobs-list-checkbox\" name=\"jobs[]\" " +
-"value=\"");
+WriteLiteral("\">\r\n");
 
 
             
-            #line 102 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                                                                                                 Write(jobId);
+            #line 108 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                         if (!Permissions.IsReadOnly)
+                                        {
 
             
             #line default
             #line hidden
-WriteLiteral("\" />\r\n                                        </td>\r\n                            " +
-"            <td class=\"min-width\">\r\n                                            " +
-"");
+WriteLiteral("                                            <td>\r\n                               " +
+"                 <input type=\"checkbox\" class=\"js-jobs-list-checkbox\" name=\"jobs" +
+"[]\" value=\"");
 
 
             
-            #line 105 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 111 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                                                                                                     Write(jobId);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\"/>\r\n                                            </td>\r\n");
+
+
+            
+            #line 113 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                        <td class=\"min-width\">\r\n                 " +
+"                           ");
+
+
+            
+            #line 115 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                        Write(Html.JobIdLink(jobId));
 
             
@@ -392,7 +466,7 @@ WriteLiteral("\r\n                                        </td>\r\n");
 
 
             
-            #line 107 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 117 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                          if (jobData == null)
                                         {
 
@@ -404,7 +478,7 @@ WriteLiteral("                                            <td colspan=\"5\"><em>
 
 
             
-            #line 110 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 120 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                         }
                                         else
                                         {
@@ -417,7 +491,7 @@ WriteLiteral("                                            <td class=\"min-width\
 
 
             
-            #line 114 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 124 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                            Write(Html.StateLabel(jobData.State));
 
             
@@ -432,7 +506,7 @@ WriteLiteral("                                            <td class=\"word-break
 
 
             
-            #line 117 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 127 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                            Write(Html.JobNameLink(jobId, jobData.Job));
 
             
@@ -447,7 +521,7 @@ WriteLiteral("                                            <td>\r\n              
 
 
             
-            #line 120 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 130 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                             Write(stateData?.Reason);
 
             
@@ -461,7 +535,7 @@ WriteLiteral("                                            <td class=\"align-righ
 
 
             
-            #line 123 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 133 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                                  if (stateData != null && stateData.Data.ContainsKey("EnqueueAt"))
                                                 {
                                                     
@@ -469,14 +543,14 @@ WriteLiteral("                                            <td class=\"align-righ
             #line default
             #line hidden
             
-            #line 125 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 135 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                                Write(Html.RelativeTime(JobHelper.DeserializeDateTime(stateData.Data["EnqueueAt"])));
 
             
             #line default
             #line hidden
             
-            #line 125 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 135 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                                                                                                                   
                                                 }
 
@@ -492,7 +566,7 @@ WriteLiteral("                                            <td class=\"align-righ
 
 
             
-            #line 129 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 139 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                            Write(Html.RelativeTime(jobData.CreatedAt));
 
             
@@ -502,7 +576,7 @@ WriteLiteral("\r\n                                            </td>\r\n");
 
 
             
-            #line 131 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 141 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                         }
 
             
@@ -512,7 +586,7 @@ WriteLiteral("                                    </tr>\r\n");
 
 
             
-            #line 133 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 143 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                 }
 
             
@@ -523,7 +597,7 @@ WriteLiteral("                            </tbody>\r\n                        </
 
 
             
-            #line 138 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 148 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                Write(Html.Paginator(pager));
 
             
@@ -533,7 +607,7 @@ WriteLiteral("\r\n                </div>\r\n");
 
 
             
-            #line 140 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 150 "..\..\Dashboard\Pages\RetriesPage.cshtml"
             }
 
             
@@ -543,7 +617,7 @@ WriteLiteral("        </div>\r\n    </div>\r\n");
 
 
             
-            #line 143 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 153 "..\..\Dashboard\Pages\RetriesPage.cshtml"
 }
             
             #line default

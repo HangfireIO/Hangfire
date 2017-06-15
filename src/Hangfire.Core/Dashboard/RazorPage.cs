@@ -22,7 +22,7 @@ using Hangfire.Storage.Monitoring;
 
 namespace Hangfire.Dashboard
 {
-    public abstract class RazorPage 
+    public abstract class RazorPage
     {
         private Lazy<StatisticsDto> _statisticsLazy;
 
@@ -55,6 +55,7 @@ namespace Hangfire.Dashboard
 
         internal DashboardRequest Request { private get; set; }
         internal DashboardResponse Response { private get; set; }
+        public DashboardPermissions Permissions { get; private set; }
 
         public string RequestPath => Request.Path;
 
@@ -76,6 +77,7 @@ namespace Hangfire.Dashboard
         {
             Request = parentPage.Request;
             Response = parentPage.Response;
+            Permissions = parentPage.Permissions;
             Storage = parentPage.Storage;
             AppPath = parentPage.AppPath;
             StatsPollingInterval = parentPage.StatsPollingInterval;
@@ -89,7 +91,7 @@ namespace Hangfire.Dashboard
         {
             Request = context.Request;
             Response = context.Response;
-
+            Permissions = context.Permissions;
             Storage = context.Storage;
             AppPath = context.Options.AppPath;
             StatsPollingInterval = context.Options.StatsPollingInterval;

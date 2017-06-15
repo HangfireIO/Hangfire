@@ -94,6 +94,7 @@
     <Compile Include="Common\JobLoadExceptionFacts.cs" />
     <Compile Include="Common\TypeExtensionsFacts.cs" />
     <Compile Include="CronFacts.cs" />
+    <Compile Include="Dashboard\DashboardPermissionsFacts.cs" />
     <Compile Include="Dashboard\HtmlHelperFacts.cs" />
     <Compile Include="LatencyTimeoutAttributeFacts.cs" />
     <Compile Include="GlobalStateHandlersFacts.cs" />

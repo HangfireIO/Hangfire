@@ -159,105 +159,160 @@ WriteLiteral("\r\n        </div>\r\n");
             #line default
             #line hidden
 WriteLiteral("        <div class=\"js-jobs-list\">\r\n            <div class=\"btn-toolbar btn-toolb" +
-"ar-top\">\r\n                <button class=\"js-jobs-list-command btn btn-sm btn-pri" +
-"mary\"\r\n                        data-url=\"");
+"ar-top\">\r\n");
 
 
             
-            #line 47 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                             Write(Url.To("/jobs/enqueued/requeue"));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\"\r\n                        data-loading-text=\"");
-
-
-            
-            #line 48 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                                      Write(Strings.Common_Enqueueing);
+            #line 46 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                 if (Permissions.CanTrigger)
+                {
 
             
             #line default
             #line hidden
-WriteLiteral("\"\r\n                        disabled=\"disabled\">\r\n                    <span class=" +
-"\"glyphicon glyphicon-repeat\"></span>\r\n                    ");
+WriteLiteral("                    <button class=\"js-jobs-list-command btn btn-sm btn-primary\"\r\n" +
+"                            data-url=\"");
 
 
             
-            #line 51 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-               Write(Strings.Common_RequeueJobs);
+            #line 49 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                                 Write(Url.To("/jobs/enqueued/requeue"));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                </button>\r\n\r\n                <button class=\"js-jobs-list-comman" +
-"d btn btn-sm btn-default\"\r\n                        data-url=\"");
+WriteLiteral("\"\r\n                            data-loading-text=\"");
+
+
+            
+            #line 50 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                                          Write(Strings.Common_Enqueueing);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\"\r\n                            disabled=\"disabled\">\r\n                        <spa" +
+"n class=\"glyphicon glyphicon-repeat\"></span>\r\n                        ");
+
+
+            
+            #line 53 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                   Write(Strings.Common_RequeueJobs);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                    </button>\r\n");
 
 
             
             #line 55 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                             Write(Url.To("/jobs/enqueued/delete"));
+                }
 
             
             #line default
             #line hidden
-WriteLiteral("\"\r\n                        data-loading-text=\"");
-
 
             
             #line 56 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                                      Write(Strings.Common_Deleting);
+                 if (Permissions.CanDelete)
+                {
 
             
             #line default
             #line hidden
-WriteLiteral("\"\r\n                        data-confirm=\"");
+WriteLiteral("                    <button class=\"js-jobs-list-command btn btn-sm btn-default\"\r\n" +
+"                            data-url=\"");
 
 
             
-            #line 57 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                                 Write(Strings.Common_DeleteConfirm);
+            #line 59 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                                 Write(Url.To("/jobs/enqueued/delete"));
 
             
             #line default
             #line hidden
-WriteLiteral("\"\r\n                        disabled=\"disabled\">\r\n                    <span class=" +
-"\"glyphicon glyphicon-remove\"></span>\r\n                    ");
+WriteLiteral("\"\r\n                            data-loading-text=\"");
 
 
             
             #line 60 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-               Write(Strings.Common_DeleteSelected);
+                                          Write(Strings.Common_Deleting);
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                </button>\r\n\r\n                ");
+WriteLiteral("\"\r\n                            data-confirm=\"");
 
 
             
-            #line 63 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 61 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                                     Write(Strings.Common_DeleteConfirm);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\"\r\n                            disabled=\"disabled\">\r\n                        <spa" +
+"n class=\"glyphicon glyphicon-remove\"></span>\r\n                        ");
+
+
+            
+            #line 64 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                   Write(Strings.Common_DeleteSelected);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                    </button>\r\n");
+
+
+            
+            #line 66 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                ");
+
+
+            
+            #line 67 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
            Write(Html.PerPageSelector(pager));
 
             
             #line default
             #line hidden
-WriteLiteral(@"
-            </div>
-
-            <div class=""table-responsive"">
-                <table class=""table"">
-                    <thead>
-                        <tr>
-                            <th class=""min-width"">
-                                <input type=""checkbox"" class=""js-jobs-list-select-all"" />
-                            </th>
-                            <th class=""min-width"">");
+WriteLiteral("\r\n            </div>\r\n\r\n            <div class=\"table-responsive\">\r\n             " +
+"   <table class=\"table\">\r\n                    <thead>\r\n                        <" +
+"tr>\r\n");
 
 
             
-            #line 73 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 74 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                             if (!Permissions.IsReadOnly)
+                            {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                <th class=\"min-width\">\r\n                         " +
+"           <input type=\"checkbox\" class=\"js-jobs-list-select-all\"/>\r\n           " +
+"                     </th>\r\n");
+
+
+            
+            #line 79 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                            }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                            <th class=\"min-width\">");
+
+
+            
+            #line 80 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                              Write(Strings.Common_Id);
 
             
@@ -267,7 +322,7 @@ WriteLiteral("</th>\r\n                            <th class=\"min-width\">");
 
 
             
-            #line 74 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 81 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                              Write(Strings.Common_State);
 
             
@@ -277,7 +332,7 @@ WriteLiteral("</th>\r\n                            <th>");
 
 
             
-            #line 75 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 82 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                            Write(Strings.Common_Job);
 
             
@@ -287,7 +342,7 @@ WriteLiteral("</th>\r\n                            <th class=\"align-right\">");
 
 
             
-            #line 76 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 83 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                                Write(Strings.Common_Fetched);
 
             
@@ -298,7 +353,7 @@ WriteLiteral("</th>\r\n                        </tr>\r\n                    </th
 
 
             
-            #line 80 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 87 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                          foreach (var job in fetchedJobs)
                         {
 
@@ -309,50 +364,71 @@ WriteLiteral("                            <tr class=\"js-jobs-list-row hover ");
 
 
             
-            #line 82 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 89 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                                           Write(job.Value == null ? "obsolete-data" : null);
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                                <td>\r\n");
-
-
-            
-            #line 84 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                                     if (job.Value != null)
-                                    {
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                                        <input type=\"checkbox\" class=\"js-jobs-lis" +
-"t-checkbox\" name=\"jobs[]\" value=\"");
-
-
-            
-            #line 86 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                                                                                                             Write(job.Key);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\" />\r\n");
-
-
-            
-            #line 87 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                                    }
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                                </td>\r\n                                <td class=" +
-"\"min-width\">\r\n                                    ");
+WriteLiteral("\">\r\n");
 
 
             
             #line 90 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                                 if (!Permissions.IsReadOnly)
+                                {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                    <td>\r\n");
+
+
+            
+            #line 93 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                                         if (job.Value != null)
+                                        {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                            <input type=\"checkbox\" class=\"js-jobs" +
+"-list-checkbox\" name=\"jobs[]\" value=\"");
+
+
+            
+            #line 95 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                                                                                                                 Write(job.Key);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\"/>\r\n");
+
+
+            
+            #line 96 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                                        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                    </td>\r\n");
+
+
+            
+            #line 98 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                                }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                <td class=\"min-width\">\r\n                         " +
+"           ");
+
+
+            
+            #line 100 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                Write(Html.JobIdLink(job.Key));
 
             
@@ -362,7 +438,7 @@ WriteLiteral("\r\n                                </td>\r\n");
 
 
             
-            #line 92 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 102 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                  if (job.Value == null)
                                 {
 
@@ -373,7 +449,7 @@ WriteLiteral("                                    <td colspan=\"3\"><em>");
 
 
             
-            #line 94 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 104 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                                    Write(Strings.Common_JobExpired);
 
             
@@ -383,7 +459,7 @@ WriteLiteral("</em></td>\r\n");
 
 
             
-            #line 95 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 105 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                 }
                                 else
                                 {
@@ -396,7 +472,7 @@ WriteLiteral("                                    <td class=\"min-width\">\r\n  
 
 
             
-            #line 99 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 109 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                    Write(Html.StateLabel(job.Value.State));
 
             
@@ -411,7 +487,7 @@ WriteLiteral("                                    <td class=\"word-break\">\r\n 
 
 
             
-            #line 102 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 112 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                    Write(Html.JobNameLink(job.Key, job.Value.Job));
 
             
@@ -425,7 +501,7 @@ WriteLiteral("                                    <td class=\"align-right\">\r\n
 
 
             
-            #line 105 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 115 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                          if (job.Value.FetchedAt.HasValue)
                                         {
                                             
@@ -433,14 +509,14 @@ WriteLiteral("                                    <td class=\"align-right\">\r\n
             #line default
             #line hidden
             
-            #line 107 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 117 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                        Write(Html.RelativeTime(job.Value.FetchedAt.Value));
 
             
             #line default
             #line hidden
             
-            #line 107 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 117 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                                                                          
                                         }
 
@@ -451,7 +527,7 @@ WriteLiteral("                                    </td>\r\n");
 
 
             
-            #line 110 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 120 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                 }
 
             
@@ -461,7 +537,7 @@ WriteLiteral("                            </tr>\r\n");
 
 
             
-            #line 112 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 122 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                         }
 
             
@@ -472,7 +548,7 @@ WriteLiteral("                    </tbody>\r\n                </table>\r\n      
 
 
             
-            #line 117 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 127 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
        Write(Html.Paginator(pager));
 
             
@@ -482,7 +558,7 @@ WriteLiteral("\r\n        </div>\r\n");
 
 
             
-            #line 119 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 129 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
         }
 
             

@@ -14,29 +14,18 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using Hangfire.Annotations;
-
 namespace Hangfire.Dashboard
 {
-    public sealed class OwinDashboardContext : DashboardContext
+    public class DashboardPermissions
     {
-        public OwinDashboardContext(
-            [NotNull] JobStorage storage,
-            [NotNull] DashboardOptions options,
-            [NotNull] IDictionary<string, object> environment) 
-            : base(storage, options)
+        public DashboardPermissions()
         {
-            if (environment == null) throw new ArgumentNullException(nameof(environment));
-
-            Environment = environment;
-            Request = new OwinDashboardRequest(environment);
-            Response = new OwinDashboardResponse(environment);
-            // todo:
-            Permissions = new DashboardPermissions();
+            CanDelete = true;
+            CanTrigger = true;
         }
 
-        public IDictionary<string, object> Environment { get; }
+        public bool CanTrigger { get; set; }
+        public bool CanDelete { get; set; }
+        public bool IsReadOnly => !CanTrigger && !CanDelete;
     }
 }

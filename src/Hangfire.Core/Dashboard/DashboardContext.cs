@@ -38,5 +38,6 @@ namespace Hangfire.Dashboard
         
         public DashboardRequest Request { get; protected set; }
         public DashboardResponse Response { get; protected set; }
+        public DashboardPermissions Permissions { get; protected set; }
     }
 }

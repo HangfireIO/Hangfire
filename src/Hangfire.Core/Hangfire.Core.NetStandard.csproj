@@ -122,6 +122,7 @@
     <Compile Include="Dashboard\DashboardContext.cs" />
     <Compile Include="Dashboard\DashboardMetric.cs" />
     <Compile Include="Dashboard\DashboardMetrics.cs" />
+    <Compile Include="Dashboard\DashboardPermissions.cs" />
     <Compile Include="Dashboard\DashboardRequest.cs" />
     <Compile Include="Dashboard\DashboardResponse.cs" />
     <Compile Include="Dashboard\DashboardRoutes.cs" />

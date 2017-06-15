@@ -33,6 +33,8 @@ namespace Hangfire.Dashboard
             HttpContext = httpContext;
             Request = new AspNetCoreDashboardRequest(httpContext);
             Response = new AspNetCoreDashboardResponse(httpContext);
+            // todo:
+            Permissions = new DashboardPermissions();
         }
 
         public HttpContext HttpContext { get; }

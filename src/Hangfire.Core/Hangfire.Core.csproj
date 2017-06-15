@@ -84,6 +84,7 @@
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
     <Compile Include="Dashboard\DashboardContext.cs" />
+    <Compile Include="Dashboard\DashboardPermissions.cs" />
     <Compile Include="Dashboard\DashboardRequest.cs" />
     <Compile Include="Dashboard\DashboardResponse.cs" />
     <Compile Include="Dashboard\IDashboardAuthorizationFilter.cs" />
