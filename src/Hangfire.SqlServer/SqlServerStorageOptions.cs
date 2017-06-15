@@ -32,9 +32,8 @@ namespace Hangfire.SqlServer
         {
             TransactionIsolationLevel = null;
             QueuePollInterval = TimeSpan.FromSeconds(15);
-#pragma warning disable 618
+            UseInvisibilityTimeout = false;
             InvisibilityTimeout = TimeSpan.FromMinutes(30);
-#pragma warning restore 618
             JobExpirationCheckInterval = TimeSpan.FromMinutes(30);
             CountersAggregateInterval = TimeSpan.FromMinutes(5);
             PrepareSchemaIfNecessary = true;
@@ -65,8 +64,8 @@ namespace Hangfire.SqlServer
             }
         }
 
-        [Obsolete("Does not make sense anymore. Background jobs re-queued instantly even after ungraceful shutdown now. Will be removed in 2.0.0.")]
         public TimeSpan InvisibilityTimeout { get; set; }
+        public bool UseInvisibilityTimeout { get; set; }
 
         public bool PrepareSchemaIfNecessary { get; set; }
 
