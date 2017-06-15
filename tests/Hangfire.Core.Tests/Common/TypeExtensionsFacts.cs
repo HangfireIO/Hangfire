@@ -271,16 +271,6 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void GetNonOpenMatchingMethod_HandlesMethodHasSomeParametersWhoseTypesContainsTheSameGenericParameter()
-        {
-            var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "GenericMethod",
-                new[] { typeof(int), typeof(double) });
-
-            Assert.Equal(null, method);
-        }
-
-
-        [Fact]
         public void GetNonOpenMatchingMethod_ReturnsCorrectMethod_WhenParameterTypeIsGenericArray()
         {
             var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "GenericMethod",
