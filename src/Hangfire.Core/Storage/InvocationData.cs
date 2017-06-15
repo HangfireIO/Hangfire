@@ -30,6 +30,7 @@ namespace Hangfire.Storage
 {
     public class InvocationData
     {
+        private const string EmptyArray = "[]";
         private static readonly string[] SystemAssemblyNames = { "mscorlib", "System.Private.CoreLib" };
 
         public InvocationData(
@@ -91,16 +92,23 @@ namespace Hangfire.Storage
 
             var invocationDataValues = JobHelper.FromJson<string[]>(serializedInvocationData);
 
-            return new InvocationData(
-                invocationDataValues[0],
-                invocationDataValues[1],
-                invocationDataValues[2],
-                invocationDataValues[3]);
+            var valuesCount = invocationDataValues.Length;
+            
+            var type = invocationDataValues[0];
+            var method = invocationDataValues[1];
+            var parameterTypes = valuesCount > 2 ? invocationDataValues[2] : EmptyArray;
+            var arguments = valuesCount > 2 ? invocationDataValues[3] : EmptyArray;
+
+            return new InvocationData(type, method, parameterTypes, arguments);
         }
 
         public string Serialize()
         {
-            return JobHelper.ToJson(new[] { Type, Method, ParameterTypes, Arguments});
+            var values = ParameterTypes == EmptyArray
+                ? new[] { Type, Method }
+                : new[] { Type, Method, ParameterTypes, Arguments };
+            
+            return JobHelper.ToJson(values);
         }
 
         internal static string[] SerializeArguments(IReadOnlyCollection<object> arguments)

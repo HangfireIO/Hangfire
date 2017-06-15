@@ -67,20 +67,22 @@ namespace Hangfire.Core.Tests.Storage
                 () => serializedData.Deserialize());
         }
 
-        [Fact]
-        public void Serialize_CorrectlySerializesInvocationDataToString()
+        [Theory]
+        [InlineData("Method", "[]", "[]", null, null)]
+        [InlineData("Sample", "[\"System.String\"]", "[\"\\\"Hello\\\"\"]", "[\\\"System.String\\\"]", "[\\\"\\\\\\\"Hello\\\\\\\"\\\"]")]
+        public void Serialize_CorrectlySerializesInvocationDataToString(string method, string parameterTypes,
+            string args, string expectedParameterTypes, string expectedArgs)
         {
             var type = $"{NamespaceName}.InvocationDataFacts, {AssemblyName}";
-            var method = "Sample";
-            var parameterTypes = "[\"System.String\"]";
-            var args = "[\"\\\"Hello\\\"\"]";
-
-            var expectedParameterTypes = "[\\\"System.String\\\"]";
-            var expectedArgs = "[\\\"\\\\\\\"Hello\\\\\\\"\\\"]";
 
             var invocationData = new InvocationData(type, method, parameterTypes, args);
 
-            Assert.Equal($"[\"{type}\",\"{method}\",\"{expectedParameterTypes}\",\"{expectedArgs}\"]", invocationData.Serialize());
+            var expectedString = $"[\"{type}\",\"{method}\"";
+            if (expectedParameterTypes != null) expectedString += $",\"{expectedParameterTypes}\"";
+            if (expectedArgs != null) expectedString += $",\"{expectedArgs}\"";
+            expectedString += "]";
+
+            Assert.Equal(expectedString, invocationData.Serialize());
         }
 
         [Theory]
@@ -104,6 +106,21 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(typeof(string), job.Method.GetParameters()[0].ParameterType);
             Assert.Equal(1, job.Args.Count);
             Assert.Equal("Hello", job.Args[0]);
+        }
+
+        [Fact]
+        public void Deserialize_DeserializesCorrectlyShortFormatStringToInvocationData()
+        {
+            var invocationData = "[\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"Method\"]";
+
+            var serializedData = InvocationData.Deserialize(invocationData);
+
+            var job = serializedData.Deserialize();
+
+            Assert.False(job.Type.GetTypeInfo().ContainsGenericParameters);
+            Assert.Equal("Method", job.Method.Name);
+            Assert.Equal(0, job.Method.GetParameters().Length);
+            Assert.Equal(0, job.Args.Count);
         }
 
         [Fact]
@@ -219,6 +236,10 @@ namespace Hangfire.Core.Tests.Storage
                     new object[] { Job.FromExpression<GlobalGenericType<long>.NestedGenericType<int>>(x => x.Method(1, 1)), "GlobalGenericType`1+NestedGenericType`1[[System.Int64],[System.Int32]]", "[\"System.Int64\",\"System.Int32\"]", "[\"1\",\"1\"]", true},
                 };
             }
+        }
+
+        public static void Method()
+        {
         }
 
         public static void Sample(string arg)
