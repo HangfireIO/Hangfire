@@ -83,7 +83,7 @@ namespace Hangfire.Server
             // LogProvider.GetLogger does not throw any exception, that is why we are not
             // using the `try` statement here. It does not return `null` value as well.
             var logger = LogProvider.GetLogger(process.GetProcessType());
-            logger.Debug($"Background process '{process}' started.");
+            logger.Debug("Background process '{process}' started.", process);
 
             try
             {
@@ -94,17 +94,18 @@ namespace Hangfire.Server
                 if (ex is OperationCanceledException && context.IsShutdownRequested)
                 {
                     // Graceful shutdown
-                    logger.Trace($"Background process '{process}' was stopped due to a shutdown request.");
+                    logger.Trace("Background process '{process}' was stopped due to a shutdown request.", process);
                 }
                 else
                 {
                     logger.FatalException(
-                        $"Fatal error occurred during execution of '{process}' process. It will be stopped. See the exception for details.",
-                        ex);
+                        "Fatal error occurred during execution of '{process}' process. It will be stopped. See the exception for details.",
+                        ex,
+                        process);
                 }
             }
 
-            logger.Debug($"Background process '{process}' stopped.");
+            logger.Debug("Background process '{process}' stopped.", process);
         }
 
         private static void TrySetThreadName(string name)

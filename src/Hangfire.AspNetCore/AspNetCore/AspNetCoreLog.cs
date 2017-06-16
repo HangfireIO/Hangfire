@@ -20,6 +20,7 @@ using Hangfire.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Internal;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
+using Hangfire.Logging.LogProviders;
 
 namespace Hangfire.AspNetCore
 {
@@ -36,7 +37,7 @@ namespace Hangfire.AspNetCore
             _targetLogger = targetLogger;
         }
 
-        public bool Log(Logging.LogLevel logLevel, Func<string> messageFunc, Exception exception = null)
+        public bool Log(Logging.LogLevel logLevel, Func<string> messageFunc, Exception exception = null, params object[] formatParameters)
         {
             var targetLogLevel = ToTargetLogLevel(logLevel);
 
@@ -46,7 +47,7 @@ namespace Hangfire.AspNetCore
             {
                 return _targetLogger.IsEnabled(targetLogLevel);
             }
-
+            messageFunc = LogMessageFormatter.SimulateStructuredLogging(messageFunc, formatParameters);
             _targetLogger.Log(targetLogLevel, 0, CreateStateObject(messageFunc()), exception, MessageFormatterFunc);
             return true;
         }

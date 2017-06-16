@@ -63,7 +63,7 @@ namespace Hangfire.SqlServer
         {
             foreach (var table in ProcessedTables)
             {
-                Logger.Debug($"Removing outdated records from the '{table}' table...");
+                Logger.Debug("Removing outdated records from the '{table}' table...", table);
 
                 _storage.UseConnection(connection =>
                 {
@@ -90,7 +90,7 @@ namespace Hangfire.SqlServer
                     }
                 });
 
-                Logger.Trace($"Outdated records removed from the '{table}' table.");
+                Logger.Trace("Outdated records removed from the '{table}' table.", table);
             }
 
             cancellationToken.WaitHandle.WaitOne(_checkInterval);

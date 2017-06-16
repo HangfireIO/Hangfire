@@ -18,10 +18,11 @@ using System;
 using Hangfire.Annotations;
 using Hangfire.Logging;
 using Microsoft.Extensions.Logging;
+using Hangfire.Logging.LogProviders;
 
 namespace Hangfire.AspNetCore
 {
-    public class AspNetCoreLogProvider : ILogProvider
+    public class AspNetCoreLogProvider : LogProviderBase
     {
         private readonly ILoggerFactory _loggerFactory;
 
@@ -31,9 +32,9 @@ namespace Hangfire.AspNetCore
             _loggerFactory = loggerFactory;
         }
 
-        public ILog GetLogger(string name)
+        public override Logger GetLogger(string name)
         {
-            return new AspNetCoreLog(_loggerFactory.CreateLogger(name));
+            return new AspNetCoreLog(_loggerFactory.CreateLogger(name)).Log;
         }
     }
 }

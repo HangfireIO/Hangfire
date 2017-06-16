@@ -214,8 +214,9 @@ namespace Hangfire
                 var continuationData = context.Connection.GetJobData(continuationJobId);
                 if (continuationData == null)
                 {
-                    Logger.Warn(
-                        $"Can not start continuation '{continuationJobId}' for background job '{context.BackgroundJob.Id}': continuation does not exist.");
+                    Logger.Warn("Can not start continuation '{continuationJobId}' for background job '{backgroundJobId}': continuation does not exist.",
+                        continuationJobId, 
+                        context.BackgroundJob.Id);
 
                     break;
                 }
