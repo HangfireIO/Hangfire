@@ -21,6 +21,6 @@ namespace Hangfire.Dashboard
 {
     public interface IDashboardDispatcher
     {
-        Task Dispatch([NotNull] DashboardContext context);
+        Task Dispatch([NotNull] IDashboardContext context);
     }
 }

@@ -17,18 +17,24 @@ namespace Hangfire.Dashboard.Pages
     using System.Text;
     
     #line 2 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
-    using Hangfire.Dashboard;
+    using Hangfire;
     
     #line default
     #line hidden
     
     #line 3 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
-    using Hangfire.Dashboard.Pages;
+    using Hangfire.Dashboard;
     
     #line default
     #line hidden
     
     #line 4 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+    using Hangfire.Dashboard.Pages;
+    
+    #line default
+    #line hidden
+    
+    #line 5 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
     using Hangfire.Dashboard.Resources;
     
     #line default
@@ -50,8 +56,9 @@ WriteLiteral("\r\n");
 
 
 
+
             
-            #line 6 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 7 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
   
     Layout = new LayoutPage(Strings.DeletedJobsPage_Title);
 
@@ -72,7 +79,7 @@ WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-3\">\r\n       
 
 
             
-            #line 21 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 22 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
    Write(Html.JobsSidebar());
 
             
@@ -82,7 +89,7 @@ WriteLiteral("\r\n    </div>\r\n    <div class=\"col-md-9\">\r\n        <h1 clas
 
 
             
-            #line 24 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 25 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                            Write(Strings.DeletedJobsPage_Title);
 
             
@@ -92,7 +99,7 @@ WriteLiteral("</h1>\r\n\r\n");
 
 
             
-            #line 26 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 27 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
          if (pager.TotalPageCount == 0)
         {
 
@@ -103,7 +110,7 @@ WriteLiteral("            <div class=\"alert alert-info\">\r\n                ")
 
 
             
-            #line 29 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 30 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
            Write(Strings.DeletedJobsPage_NoJobs);
 
             
@@ -113,7 +120,7 @@ WriteLiteral("\r\n            </div>\r\n");
 
 
             
-            #line 31 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 32 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
         }
         else
         {
@@ -126,8 +133,8 @@ WriteLiteral("            <div class=\"js-jobs-list\">\r\n                <div c
 
 
             
-            #line 36 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
-                     if (Permissions.CanTrigger)
+            #line 37 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+                     if (HasPermission(DashboardPermission.EnqueueJob))
                     {
 
             
@@ -138,7 +145,7 @@ WriteLiteral("                        <button class=\"js-jobs-list-command btn b
 
 
             
-            #line 39 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 40 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                      Write(Url.To("/jobs/deleted/requeue"));
 
             
@@ -148,7 +155,7 @@ WriteLiteral("\"\r\n                                data-loading-text=\"");
 
 
             
-            #line 40 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 41 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                               Write(Strings.Common_Enqueueing);
 
             
@@ -160,7 +167,7 @@ WriteLiteral("\"\r\n                                disabled=\"disabled\">\r\n  
 
 
             
-            #line 43 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 44 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                        Write(Strings.Common_RequeueJobs);
 
             
@@ -170,7 +177,7 @@ WriteLiteral("\r\n                        </button>\r\n");
 
 
             
-            #line 45 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 46 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                     }
 
             
@@ -180,7 +187,7 @@ WriteLiteral("                    ");
 
 
             
-            #line 46 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 47 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                Write(Html.PerPageSelector(pager));
 
             
@@ -192,8 +199,8 @@ WriteLiteral("\r\n                </div>\r\n                <div class=\"table-r
 
 
             
-            #line 52 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
-                                 if (Permissions.CanTrigger)
+            #line 53 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+                                 if (HasPermission(DashboardPermission.EnqueueJob))
                                 {
 
             
@@ -205,7 +212,7 @@ WriteLiteral("                                    <th class=\"min-width\">\r\n  
 
 
             
-            #line 57 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 58 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                 }
 
             
@@ -215,7 +222,7 @@ WriteLiteral("                                <th class=\"min-width\">");
 
 
             
-            #line 58 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 59 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                                  Write(Strings.Common_Id);
 
             
@@ -225,7 +232,7 @@ WriteLiteral("</th>\r\n                                <th>");
 
 
             
-            #line 59 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 60 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                Write(Strings.Common_Job);
 
             
@@ -235,7 +242,7 @@ WriteLiteral("</th>\r\n                                <th class=\"align-right\"
 
 
             
-            #line 60 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 61 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                                    Write(Strings.DeletedJobsPage_Table_Deleted);
 
             
@@ -246,7 +253,7 @@ WriteLiteral("</th>\r\n                            </tr>\r\n                    
 
 
             
-            #line 64 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 65 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                              foreach (var job in jobs)
                             {
 
@@ -257,7 +264,7 @@ WriteLiteral("                                <tr class=\"js-jobs-list-row ");
 
 
             
-            #line 66 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 67 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                                         Write(job.Value == null || !job.Value.InDeletedState ? "obsolete-data" : null);
 
             
@@ -267,7 +274,7 @@ WriteLiteral(" ");
 
 
             
-            #line 66 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 67 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                                                                                                                    Write(job.Value != null && job.Value.InDeletedState && job.Value != null ? "hover" : null);
 
             
@@ -277,8 +284,8 @@ WriteLiteral("\">\r\n");
 
 
             
-            #line 67 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
-                                     if (Permissions.CanTrigger)
+            #line 68 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+                                     if (HasPermission(DashboardPermission.EnqueueJob))
                                     {
 
             
@@ -288,7 +295,7 @@ WriteLiteral("                                        <td>\r\n");
 
 
             
-            #line 70 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 71 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                              if (job.Value == null || job.Value.InDeletedState)
                                             {
 
@@ -300,7 +307,7 @@ WriteLiteral("                                                <input type=\"chec
 
 
             
-            #line 72 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 73 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                                                                                                      Write(job.Key);
 
             
@@ -310,7 +317,7 @@ WriteLiteral("\"/>\r\n");
 
 
             
-            #line 73 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 74 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                             }
 
             
@@ -320,7 +327,7 @@ WriteLiteral("                                        </td>\r\n");
 
 
             
-            #line 75 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 76 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                     }
 
             
@@ -331,7 +338,7 @@ WriteLiteral("                                    <td class=\"min-width\">\r\n  
 
 
             
-            #line 77 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 78 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                    Write(Html.JobIdLink(job.Key));
 
             
@@ -341,7 +348,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 78 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 79 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                          if (job.Value != null && !job.Value.InDeletedState)
                                         {
 
@@ -352,7 +359,7 @@ WriteLiteral("                                            <span title=\"");
 
 
             
-            #line 80 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 81 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                                     Write(Strings.Common_JobStateChanged_Text);
 
             
@@ -362,7 +369,7 @@ WriteLiteral("\" class=\"glyphicon glyphicon-question-sign\"></span>\r\n");
 
 
             
-            #line 81 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 82 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                         }
 
             
@@ -372,7 +379,7 @@ WriteLiteral("                                    </td>\r\n\r\n");
 
 
             
-            #line 84 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 85 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                      if (job.Value == null)
                                     {
 
@@ -383,7 +390,7 @@ WriteLiteral("                                        <td colspan=\"2\"><em>");
 
 
             
-            #line 86 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 87 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                                        Write(Strings.Common_JobExpired);
 
             
@@ -393,7 +400,7 @@ WriteLiteral("</em></td>\r\n");
 
 
             
-            #line 87 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 88 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                     }
                                     else
                                     {
@@ -406,7 +413,7 @@ WriteLiteral("                                        <td class=\"word-break\">\
 
 
             
-            #line 91 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 92 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                        Write(Html.JobNameLink(job.Key, job.Value.Job));
 
             
@@ -420,7 +427,7 @@ WriteLiteral("                                        <td class=\"align-right\">
 
 
             
-            #line 94 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 95 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                              if (job.Value.DeletedAt.HasValue)
                                             {
                                                 
@@ -428,14 +435,14 @@ WriteLiteral("                                        <td class=\"align-right\">
             #line default
             #line hidden
             
-            #line 96 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 97 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                            Write(Html.RelativeTime(job.Value.DeletedAt.Value));
 
             
             #line default
             #line hidden
             
-            #line 96 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 97 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                                                                              
                                             }
 
@@ -446,7 +453,7 @@ WriteLiteral("                                        </td>\r\n");
 
 
             
-            #line 99 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 100 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                                     }
 
             
@@ -456,7 +463,7 @@ WriteLiteral("                                </tr>\r\n");
 
 
             
-            #line 101 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 102 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
                             }
 
             
@@ -467,7 +474,7 @@ WriteLiteral("                        </tbody>\r\n                    </table>\r
 
 
             
-            #line 106 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 107 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
            Write(Html.Paginator(pager));
 
             
@@ -477,7 +484,7 @@ WriteLiteral("\r\n            </div>\r\n");
 
 
             
-            #line 108 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
+            #line 109 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
         }
 
             

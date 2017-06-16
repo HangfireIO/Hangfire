@@ -33,8 +33,6 @@ namespace Hangfire.Dashboard
             Environment = environment;
             Request = new OwinDashboardRequest(environment);
             Response = new OwinDashboardResponse(environment);
-            // todo:
-            Permissions = new DashboardPermissions();
         }
 
         public IDictionary<string, object> Environment { get; }

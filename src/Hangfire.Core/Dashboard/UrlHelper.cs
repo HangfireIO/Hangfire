@@ -33,9 +33,9 @@ namespace Hangfire.Dashboard
         }
 #endif
 
-        private readonly DashboardContext _context;
+        private readonly IDashboardContext _context;
 
-        public UrlHelper([NotNull] DashboardContext context)
+        public UrlHelper([NotNull] IDashboardContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
             _context = context;

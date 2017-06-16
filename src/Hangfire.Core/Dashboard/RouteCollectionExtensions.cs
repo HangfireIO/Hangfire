@@ -52,13 +52,14 @@ namespace Hangfire.Dashboard
         public static void AddCommand(
             [NotNull] this RouteCollection routes,
             [NotNull] string pathTemplate,
-            [NotNull] Func<DashboardContext, bool> command)
+            [NotNull] Func<IDashboardContext, bool> command,
+            DashboardPermission requiredPermission)
         {
             if (routes == null) throw new ArgumentNullException(nameof(routes));
             if (pathTemplate == null) throw new ArgumentNullException(nameof(pathTemplate));
             if (command == null) throw new ArgumentNullException(nameof(command));
 
-            routes.Add(pathTemplate, new CommandDispatcher(command));
+            routes.Add(pathTemplate, new CommandDispatcher(command, requiredPermission));
         }
 
 #if NETFULL
@@ -79,41 +80,48 @@ namespace Hangfire.Dashboard
         public static void AddBatchCommand(
             [NotNull] this RouteCollection routes,
             [NotNull] string pathTemplate,
-            [NotNull] Action<DashboardContext, string> command)
+            [NotNull] Action<IDashboardContext, string> command,
+            DashboardPermission requiredPermission)
         {
             if (routes == null) throw new ArgumentNullException(nameof(routes));
             if (pathTemplate == null) throw new ArgumentNullException(nameof(pathTemplate));
             if (command == null) throw new ArgumentNullException(nameof(command));
 
-            routes.Add(pathTemplate, new BatchCommandDispatcher(command));
+            routes.Add(pathTemplate, new BatchCommandDispatcher(command, requiredPermission));
         }
 
         public static void AddClientBatchCommand(
             this RouteCollection routes,
             string pathTemplate, 
-            [NotNull] Action<IBackgroundJobClient, string> command)
+            [NotNull] Action<IBackgroundJobClient, string> command,
+            DashboardPermission requiredPermission)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
 
-            routes.AddBatchCommand(pathTemplate, (context, jobId) =>
-            {
-                var client = new BackgroundJobClient(context.Storage);
-                command(client, jobId);
-            });
+            routes.AddBatchCommand(pathTemplate, 
+                (context, jobId) =>
+                {
+                    var client = new BackgroundJobClient(context.Storage);
+                    command(client, jobId);
+                },
+                requiredPermission);
         }
 
         public static void AddRecurringBatchCommand(
             this RouteCollection routes,
             string pathTemplate,
-            [NotNull] Action<RecurringJobManager, string> command)
+            [NotNull] Action<RecurringJobManager, string> command,
+            DashboardPermission requiredPermission)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
 
-            routes.AddBatchCommand(pathTemplate, (context, jobId) =>
-            {
-                var manager = new RecurringJobManager(context.Storage);
-                command(manager, jobId);
-            });
+            routes.AddBatchCommand(pathTemplate, 
+                (context, jobId) =>
+                {
+                    var manager = new RecurringJobManager(context.Storage);
+                    command(manager, jobId);
+                },
+                requiredPermission);
         }
     }
 }

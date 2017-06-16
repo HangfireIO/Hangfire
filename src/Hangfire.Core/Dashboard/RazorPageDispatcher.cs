@@ -29,7 +29,7 @@ namespace Hangfire.Dashboard
             _pageFunc = pageFunc;
         }
 
-        public Task Dispatch(DashboardContext context)
+        public Task Dispatch(IDashboardContext context)
         {
             context.Response.ContentType = "text/html";
 

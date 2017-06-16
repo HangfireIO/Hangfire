@@ -20,6 +20,6 @@ namespace Hangfire.Dashboard
 {
     public interface IDashboardAuthorizationFilter
     {
-        bool Authorize([NotNull] DashboardContext context);
+        bool Authorize([NotNull] IDashboardContext context);
     }
 }

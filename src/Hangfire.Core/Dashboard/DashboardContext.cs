@@ -20,7 +20,7 @@ using Hangfire.Annotations;
 
 namespace Hangfire.Dashboard
 {
-    public abstract class DashboardContext
+    public abstract class DashboardContext : IDashboardContext
     {
         protected DashboardContext([NotNull] JobStorage storage, [NotNull] DashboardOptions options)
         {
@@ -29,15 +29,16 @@ namespace Hangfire.Dashboard
 
             Storage = storage;
             Options = options;
+            Permissions = new DashboardPermissionsContext(this);
         }
 
         public JobStorage Storage { get; }
         public DashboardOptions Options { get; }
+        public DashboardPermissionsContext Permissions { get; }
 
         public Match UriMatch { get; set; }
         
         public DashboardRequest Request { get; protected set; }
         public DashboardResponse Response { get; protected set; }
-        public DashboardPermissions Permissions { get; protected set; }
     }
 }

@@ -26,7 +26,7 @@ namespace Hangfire.Dashboard
 #pragma warning restore 618
 #endif
     {
-        public bool Authorize(DashboardContext context)
+        public bool Authorize(IDashboardContext context)
         {
             // if unknown, assume not local
             if (String.IsNullOrEmpty(context.Request.RemoteIpAddress))

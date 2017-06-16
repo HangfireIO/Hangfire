@@ -16,19 +16,19 @@
 
 using System;
 using System.Collections.Generic;
-using FiltersDictionary = System.Collections.Generic.IDictionary<Hangfire.Dashboard.DashboardPermission, System.Collections.Generic.IEnumerable<Hangfire.Dashboard.IDashboardAuthorizationFilter>>;
 
 namespace Hangfire.Dashboard
 {
     public class DashboardOptions
     {
-        IDictionary<DashboardPermission, IEnumerable<IDashboardAuthorizationFilter>> _authorizations;
+        IDictionary<DashboardPermission, IEnumerable<IDashboardAuthorizationFilter>> _permissions;
 
         public DashboardOptions()
         {
             AppPath = "/";
-            Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
             StatsPollingInterval = 2000;
+            Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
+            Permissions = new Dictionary<DashboardPermission, IEnumerable<IDashboardAuthorizationFilter>>();
         }
 
         /// <summary>
@@ -37,28 +37,19 @@ namespace Hangfire.Dashboard
         public string AppPath { get; set; }
 
 #if NETFULL
-        [Obsolete("Please use `Authorizations` property instead. Will be removed in 2.0.0.")]
+        [Obsolete("Please use `Authorization` property instead. Will be removed in 2.0.0.")]
         public IEnumerable<IAuthorizationFilter> AuthorizationFilters { get; set; }
 #endif
 
-        [Obsolete("Please use `Authorizations` property instead.")]
-        public IEnumerable<IDashboardAuthorizationFilter> Authorization
+        public IEnumerable<IDashboardAuthorizationFilter> Authorization { get; set; }
+        
+        public IDictionary<DashboardPermission, IEnumerable<IDashboardAuthorizationFilter>> Permissions
         {
-            get { return Authorizations[DashboardPermission.ViewDashboard]; }
-            set { Authorizations[DashboardPermission.ViewDashboard] = value; }
-        }
-
-        public IDictionary<DashboardPermission, IEnumerable<IDashboardAuthorizationFilter>> Authorizations
-        {
-            get { return _authorizations; }
+            get { return _permissions; }
             set
             {
                 if (value == null) throw new ArgumentNullException(nameof(value));
-                _authorizations = value;
-                if (!_authorizations.ContainsKey(DashboardPermission.ViewDashboard))
-                {
-                    _authorizations[DashboardPermission.ViewDashboard] = new[] { new LocalRequestsOnlyAuthorizationFilter() };
-                }
+                _permissions = value;
             }
         }
 

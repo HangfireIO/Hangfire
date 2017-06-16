@@ -28,18 +28,24 @@ namespace Hangfire.Dashboard.Pages
     using System.Text;
     
     #line 4 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-    using Hangfire.Dashboard;
+    using Hangfire;
     
     #line default
     #line hidden
     
     #line 5 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-    using Hangfire.Dashboard.Pages;
+    using Hangfire.Dashboard;
     
     #line default
     #line hidden
     
     #line 6 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+    using Hangfire.Dashboard.Pages;
+    
+    #line default
+    #line hidden
+    
+    #line 7 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
     using Hangfire.Dashboard.Resources;
     
     #line default
@@ -63,8 +69,9 @@ WriteLiteral("\r\n");
 
 
 
+
             
-            #line 8 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 9 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
   
     Layout = new LayoutPage(Queue.ToUpperInvariant());
 
@@ -85,7 +92,7 @@ WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-3\">\r\n       
 
 
             
-            #line 23 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 24 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
    Write(Html.JobsSidebar());
 
             
@@ -95,7 +102,7 @@ WriteLiteral("\r\n    </div>\r\n    <div class=\"col-md-9\">\r\n        ");
 
 
             
-            #line 26 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 27 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
    Write(Html.Breadcrumbs(Strings.FetchedJobsPage_Title, new Dictionary<string, string>
         {
             { "Queues", Url.LinkToQueues() },
@@ -109,7 +116,7 @@ WriteLiteral("\r\n\r\n        <h1 class=\"page-header\">\r\n            ");
 
 
             
-            #line 33 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 34 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
        Write(Queue.ToUpperInvariant());
 
             
@@ -119,7 +126,7 @@ WriteLiteral(" <small>");
 
 
             
-            #line 33 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 34 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                         Write(Strings.FetchedJobsPage_Title);
 
             
@@ -129,7 +136,7 @@ WriteLiteral("</small>\r\n        </h1>\r\n\r\n");
 
 
             
-            #line 36 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 37 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
          if (pager.TotalPageCount == 0)
         {
 
@@ -140,7 +147,7 @@ WriteLiteral("        <div class=\"alert alert-info\">\r\n            ");
 
 
             
-            #line 39 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 40 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
        Write(Strings.FetchedJobsPage_NoJobs);
 
             
@@ -150,7 +157,7 @@ WriteLiteral("\r\n        </div>\r\n");
 
 
             
-            #line 41 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 42 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
         }
         else
         {
@@ -163,8 +170,8 @@ WriteLiteral("        <div class=\"js-jobs-list\">\r\n            <div class=\"b
 
 
             
-            #line 46 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                 if (Permissions.CanTrigger)
+            #line 47 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                 if (HasPermission(DashboardPermission.EnqueueJob))
                 {
 
             
@@ -175,7 +182,7 @@ WriteLiteral("                    <button class=\"js-jobs-list-command btn btn-s
 
 
             
-            #line 49 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 50 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                  Write(Url.To("/jobs/enqueued/requeue"));
 
             
@@ -185,7 +192,7 @@ WriteLiteral("\"\r\n                            data-loading-text=\"");
 
 
             
-            #line 50 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 51 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                           Write(Strings.Common_Enqueueing);
 
             
@@ -196,7 +203,7 @@ WriteLiteral("\"\r\n                            disabled=\"disabled\">\r\n      
 
 
             
-            #line 53 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 54 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                    Write(Strings.Common_RequeueJobs);
 
             
@@ -206,7 +213,7 @@ WriteLiteral("\r\n                    </button>\r\n");
 
 
             
-            #line 55 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 56 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                 }
 
             
@@ -214,8 +221,8 @@ WriteLiteral("\r\n                    </button>\r\n");
             #line hidden
 
             
-            #line 56 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                 if (Permissions.CanDelete)
+            #line 57 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                 if (HasPermission(DashboardPermission.DeleteJob))
                 {
 
             
@@ -226,7 +233,7 @@ WriteLiteral("                    <button class=\"js-jobs-list-command btn btn-s
 
 
             
-            #line 59 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 60 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                  Write(Url.To("/jobs/enqueued/delete"));
 
             
@@ -236,7 +243,7 @@ WriteLiteral("\"\r\n                            data-loading-text=\"");
 
 
             
-            #line 60 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 61 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                           Write(Strings.Common_Deleting);
 
             
@@ -246,7 +253,7 @@ WriteLiteral("\"\r\n                            data-confirm=\"");
 
 
             
-            #line 61 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 62 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                      Write(Strings.Common_DeleteConfirm);
 
             
@@ -257,7 +264,7 @@ WriteLiteral("\"\r\n                            disabled=\"disabled\">\r\n      
 
 
             
-            #line 64 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 65 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                    Write(Strings.Common_DeleteSelected);
 
             
@@ -267,7 +274,7 @@ WriteLiteral("\r\n                    </button>\r\n");
 
 
             
-            #line 66 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 67 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                 }
 
             
@@ -277,7 +284,7 @@ WriteLiteral("                ");
 
 
             
-            #line 67 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 68 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
            Write(Html.PerPageSelector(pager));
 
             
@@ -289,8 +296,8 @@ WriteLiteral("\r\n            </div>\r\n\r\n            <div class=\"table-respo
 
 
             
-            #line 74 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                             if (!Permissions.IsReadOnly)
+            #line 75 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                             if (!IsReadOnly)
                             {
 
             
@@ -302,7 +309,7 @@ WriteLiteral("                                <th class=\"min-width\">\r\n      
 
 
             
-            #line 79 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 80 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                             }
 
             
@@ -312,7 +319,7 @@ WriteLiteral("                            <th class=\"min-width\">");
 
 
             
-            #line 80 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 81 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                              Write(Strings.Common_Id);
 
             
@@ -322,7 +329,7 @@ WriteLiteral("</th>\r\n                            <th class=\"min-width\">");
 
 
             
-            #line 81 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 82 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                              Write(Strings.Common_State);
 
             
@@ -332,7 +339,7 @@ WriteLiteral("</th>\r\n                            <th>");
 
 
             
-            #line 82 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 83 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                            Write(Strings.Common_Job);
 
             
@@ -342,7 +349,7 @@ WriteLiteral("</th>\r\n                            <th class=\"align-right\">");
 
 
             
-            #line 83 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 84 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                                Write(Strings.Common_Fetched);
 
             
@@ -353,7 +360,7 @@ WriteLiteral("</th>\r\n                        </tr>\r\n                    </th
 
 
             
-            #line 87 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 88 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                          foreach (var job in fetchedJobs)
                         {
 
@@ -364,7 +371,7 @@ WriteLiteral("                            <tr class=\"js-jobs-list-row hover ");
 
 
             
-            #line 89 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 90 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                                           Write(job.Value == null ? "obsolete-data" : null);
 
             
@@ -374,8 +381,8 @@ WriteLiteral("\">\r\n");
 
 
             
-            #line 90 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                                 if (!Permissions.IsReadOnly)
+            #line 91 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                                 if (!IsReadOnly)
                                 {
 
             
@@ -385,7 +392,7 @@ WriteLiteral("                                    <td>\r\n");
 
 
             
-            #line 93 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 94 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                          if (job.Value != null)
                                         {
 
@@ -397,7 +404,7 @@ WriteLiteral("                                            <input type=\"checkbox
 
 
             
-            #line 95 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 96 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                                                                                                  Write(job.Key);
 
             
@@ -407,7 +414,7 @@ WriteLiteral("\"/>\r\n");
 
 
             
-            #line 96 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 97 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                         }
 
             
@@ -417,7 +424,7 @@ WriteLiteral("                                    </td>\r\n");
 
 
             
-            #line 98 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 99 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                 }
 
             
@@ -428,7 +435,7 @@ WriteLiteral("                                <td class=\"min-width\">\r\n      
 
 
             
-            #line 100 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 101 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                Write(Html.JobIdLink(job.Key));
 
             
@@ -438,7 +445,7 @@ WriteLiteral("\r\n                                </td>\r\n");
 
 
             
-            #line 102 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 103 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                  if (job.Value == null)
                                 {
 
@@ -449,7 +456,7 @@ WriteLiteral("                                    <td colspan=\"3\"><em>");
 
 
             
-            #line 104 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 105 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                                    Write(Strings.Common_JobExpired);
 
             
@@ -459,7 +466,7 @@ WriteLiteral("</em></td>\r\n");
 
 
             
-            #line 105 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 106 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                 }
                                 else
                                 {
@@ -472,7 +479,7 @@ WriteLiteral("                                    <td class=\"min-width\">\r\n  
 
 
             
-            #line 109 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 110 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                    Write(Html.StateLabel(job.Value.State));
 
             
@@ -487,7 +494,7 @@ WriteLiteral("                                    <td class=\"word-break\">\r\n 
 
 
             
-            #line 112 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 113 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                    Write(Html.JobNameLink(job.Key, job.Value.Job));
 
             
@@ -501,7 +508,7 @@ WriteLiteral("                                    <td class=\"align-right\">\r\n
 
 
             
-            #line 115 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 116 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                          if (job.Value.FetchedAt.HasValue)
                                         {
                                             
@@ -509,14 +516,14 @@ WriteLiteral("                                    <td class=\"align-right\">\r\n
             #line default
             #line hidden
             
-            #line 117 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 118 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                        Write(Html.RelativeTime(job.Value.FetchedAt.Value));
 
             
             #line default
             #line hidden
             
-            #line 117 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 118 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                                                                          
                                         }
 
@@ -527,7 +534,7 @@ WriteLiteral("                                    </td>\r\n");
 
 
             
-            #line 120 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 121 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                                 }
 
             
@@ -537,7 +544,7 @@ WriteLiteral("                            </tr>\r\n");
 
 
             
-            #line 122 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 123 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                         }
 
             
@@ -548,7 +555,7 @@ WriteLiteral("                    </tbody>\r\n                </table>\r\n      
 
 
             
-            #line 127 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 128 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
        Write(Html.Paginator(pager));
 
             
@@ -558,7 +565,7 @@ WriteLiteral("\r\n        </div>\r\n");
 
 
             
-            #line 129 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 130 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
         }
 
             

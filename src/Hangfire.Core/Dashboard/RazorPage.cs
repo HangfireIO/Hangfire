@@ -55,10 +55,13 @@ namespace Hangfire.Dashboard
 
         internal DashboardRequest Request { private get; set; }
         internal DashboardResponse Response { private get; set; }
-        public DashboardPermissions Permissions { get; private set; }
 
         public string RequestPath => Request.Path;
 
+        internal DashboardPermissionsContext Permission { private set; get; }
+        public Func<DashboardPermission, bool> HasPermission => Permission.IsAuthorized;
+        public bool IsReadOnly => Permission.IsReadOnly;
+        
         /// <exclude />
         public abstract void Execute();
 
@@ -77,7 +80,7 @@ namespace Hangfire.Dashboard
         {
             Request = parentPage.Request;
             Response = parentPage.Response;
-            Permissions = parentPage.Permissions;
+            Permission = parentPage.Permission;
             Storage = parentPage.Storage;
             AppPath = parentPage.AppPath;
             StatsPollingInterval = parentPage.StatsPollingInterval;
@@ -87,11 +90,11 @@ namespace Hangfire.Dashboard
             _statisticsLazy = parentPage._statisticsLazy;
         }
 
-        internal void Assign(DashboardContext context)
+        internal void Assign(IDashboardContext context)
         {
             Request = context.Request;
             Response = context.Response;
-            Permissions = context.Permissions;
+            Permission = context.Permissions;
             Storage = context.Storage;
             AppPath = context.Options.AppPath;
             StatsPollingInterval = context.Options.StatsPollingInterval;

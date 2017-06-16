@@ -94,6 +94,10 @@
     <Compile Include="Common\JobLoadExceptionFacts.cs" />
     <Compile Include="Common\TypeExtensionsFacts.cs" />
     <Compile Include="CronFacts.cs" />
+    <Compile Include="Dashboard\UnauthorizedDashboardFilter.cs" />
+    <Compile Include="Dashboard\AuthorizedDashboardFilter.cs" />
+    <Compile Include="Dashboard\CommandDispatcherFacts.cs" />
+    <Compile Include="Dashboard\BatchCommandDispatcherFacts.cs" />
     <Compile Include="Dashboard\DashboardPermissionsFacts.cs" />
     <Compile Include="Dashboard\HtmlHelperFacts.cs" />
     <Compile Include="LatencyTimeoutAttributeFacts.cs" />

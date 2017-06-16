@@ -1,6 +1,7 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
 @using System.Collections
 @using System.Collections.Generic
+@using Hangfire
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @using Hangfire.Dashboard.Resources
@@ -43,7 +44,7 @@
         {
         <div class="js-jobs-list">
             <div class="btn-toolbar btn-toolbar-top">
-                @if (Permissions.CanTrigger)
+                @if (HasPermission(DashboardPermission.EnqueueJob))
                 {
                     <button class="js-jobs-list-command btn btn-sm btn-primary"
                             data-url="@Url.To("/jobs/enqueued/requeue")"
@@ -53,7 +54,7 @@
                         @Strings.Common_RequeueJobs
                     </button>
                 }
-                @if (Permissions.CanDelete)
+                @if (HasPermission(DashboardPermission.DeleteJob))
                 {
                     <button class="js-jobs-list-command btn btn-sm btn-default"
                             data-url="@Url.To("/jobs/enqueued/delete")"
@@ -71,7 +72,7 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            @if (!Permissions.IsReadOnly)
+                            @if (!IsReadOnly)
                             {
                                 <th class="min-width">
                                     <input type="checkbox" class="js-jobs-list-select-all"/>
@@ -87,7 +88,7 @@
                         @foreach (var job in fetchedJobs)
                         {
                             <tr class="js-jobs-list-row hover @(job.Value == null ? "obsolete-data" : null)">
-                                @if (!Permissions.IsReadOnly)
+                                @if (!IsReadOnly)
                                 {
                                     <td>
                                         @if (job.Value != null)
