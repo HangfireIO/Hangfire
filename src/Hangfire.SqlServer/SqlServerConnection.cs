@@ -24,6 +24,7 @@ using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.SqlServer.Entities;
 using Hangfire.Storage;
+using System.ComponentModel;
 
 // ReSharper disable RedundantAnonymousTypePropertyName
 
@@ -235,6 +236,34 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
 
                 return new HashSet<string>(result);
             });
+        }
+
+        public override HashSet<string> GetAllItemsFromSet(string key, SearchCriteria criteria)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+            if (criteria == null) throw new ArgumentNullException("criteria");
+
+            string valuePattern = null;
+            switch (criteria.SearchMode)
+            {
+                case SearchMode.Contains:
+                    valuePattern = string.Format("%{0}%", criteria.Text);
+                    break;
+                case SearchMode.StartsWith:
+                    valuePattern = string.Format("{0}%", criteria.Text);
+                    break;
+                case SearchMode.EndsWith:
+                    valuePattern = string.Format("%{0}", criteria.Text);
+                    break;
+                default:
+                    throw new InvalidEnumArgumentException(string.Format("Unsupported search mode: {0}.", criteria.SearchMode));
+            }
+
+            var result = _connection.Query<string>(
+                @"select Value from HangFire.[Set] where [Key] = @key and Value like @valuePattern",
+                new { key, valuePattern });
+
+            return new HashSet<string>(result);
         }
 
         public override string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
