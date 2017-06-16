@@ -12,6 +12,7 @@ namespace Hangfire.SqlServer.Tests
 {
     public class SqlServerJobQueueFacts
     {
+        private static readonly TimeSpan DefaultTimeout = TimeSpan.FromMinutes(5);
         private static readonly string[] DefaultQueues = { "default" };
 
         [Fact]
@@ -37,7 +38,7 @@ namespace Hangfire.SqlServer.Tests
         {
             UseConnection(connection =>
             {
-                var queue = CreateJobQueue(connection, invisibilityTimeout: false);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
 
                 var exception = Assert.Throws<ArgumentNullException>(
                     () => queue.Dequeue(null, CreateTimingOutCancellationToken()));
@@ -51,7 +52,7 @@ namespace Hangfire.SqlServer.Tests
         {
             UseConnection(connection =>
             {
-                var queue = CreateJobQueue(connection, invisibilityTimeout: false);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
 
                 var exception = Assert.Throws<ArgumentException>(
                     () => queue.Dequeue(new string[0], CreateTimingOutCancellationToken()));
@@ -67,7 +68,7 @@ namespace Hangfire.SqlServer.Tests
             {
                 var cts = new CancellationTokenSource();
                 cts.Cancel();
-                var queue = CreateJobQueue(connection, invisibilityTimeout: false);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
 
                 Assert.Throws<OperationCanceledException>(
                     () => queue.Dequeue(DefaultQueues, cts.Token));
@@ -80,7 +81,7 @@ namespace Hangfire.SqlServer.Tests
             UseConnection(connection =>
             {
                 var cts = new CancellationTokenSource(200);
-                var queue = CreateJobQueue(connection, invisibilityTimeout: false);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
 
                 Assert.Throws<OperationCanceledException>(
                     () => queue.Dequeue(DefaultQueues, cts.Token));
@@ -102,7 +103,7 @@ select scope_identity() as Id;";
                 var id = (int)connection.Query(
                     arrangeSql,
                     new { jobId = 1, queue = "default" }).Single().Id;
-                var queue = CreateJobQueue(connection, invisibilityTimeout: false);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
 
                 // Act
                 var payload = (SqlServerTransactionJob)queue.Dequeue(
@@ -130,7 +131,7 @@ values (scope_identity(), @queue)";
                 connection.Execute(
                     arrangeSql,
                     new { invocationData = "", arguments = "", queue = "default" });
-                var queue = CreateJobQueue(connection, invisibilityTimeout: false);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
 
                 // Act
                 var payload = queue.Dequeue(
@@ -166,7 +167,7 @@ values (scope_identity(), @queue, @fetchedAt)";
                         invocationData = "",
                         arguments = ""
                     });
-                var queue = CreateJobQueue(connection, invisibilityTimeout: false);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
 
                 // Act
                 var payload = queue.Dequeue(
@@ -197,7 +198,7 @@ values (scope_identity(), @queue)";
                         new { queue = "default", invocationData = "", arguments = "" },
                         new { queue = "default", invocationData = "", arguments = "" }
                     });
-                var queue = CreateJobQueue(connection, invisibilityTimeout: false);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
 
                 // Act
                 var payload = queue.Dequeue(
@@ -224,7 +225,7 @@ values (scope_identity(), @queue)";
 
             UseConnection(connection =>
             {
-                var queue = CreateJobQueue(connection, invisibilityTimeout: false);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
 
                 connection.Execute(
                     arrangeSql,
@@ -256,7 +257,7 @@ values (scope_identity(), @queue)";
                         new { queue = "critical", invocationData = "", arguments = "" }
                     });
 
-                var queue = CreateJobQueue(connection, invisibilityTimeout: false);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
 
                 var critical = (SqlServerTransactionJob)queue.Dequeue(
                     new[] { "critical", "default" },
@@ -280,7 +281,7 @@ values (scope_identity(), @queue)";
         {
             UseConnection(connection =>
             {
-                var queue = CreateJobQueue(connection, invisibilityTimeout: true);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: DefaultTimeout);
 
                 var exception = Assert.Throws<ArgumentNullException>(
                     () => queue.Dequeue(null, CreateTimingOutCancellationToken()));
@@ -294,7 +295,7 @@ values (scope_identity(), @queue)";
         {
             UseConnection(connection =>
             {
-                var queue = CreateJobQueue(connection, invisibilityTimeout: true);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: DefaultTimeout);
 
                 var exception = Assert.Throws<ArgumentException>(
                     () => queue.Dequeue(new string[0], CreateTimingOutCancellationToken()));
@@ -310,7 +311,7 @@ values (scope_identity(), @queue)";
             {
                 var cts = new CancellationTokenSource();
                 cts.Cancel();
-                var queue = CreateJobQueue(connection, invisibilityTimeout: true);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: DefaultTimeout);
 
                 Assert.Throws<OperationCanceledException>(
                     () => queue.Dequeue(DefaultQueues, cts.Token));
@@ -323,7 +324,7 @@ values (scope_identity(), @queue)";
             UseConnection(connection =>
             {
                 var cts = new CancellationTokenSource(200);
-                var queue = CreateJobQueue(connection, invisibilityTimeout: true);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: DefaultTimeout);
 
                 Assert.Throws<OperationCanceledException>(
                     () => queue.Dequeue(DefaultQueues, cts.Token));
@@ -344,7 +345,7 @@ select scope_identity() as Id;";
                 var id = (int)connection.Query(
                     arrangeSql,
                     new { jobId = 1, queue = "default" }).Single().Id;
-                var queue = CreateJobQueue(connection, invisibilityTimeout: true);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: DefaultTimeout);
 
                 // Act
                 var payload = (SqlServerTimeoutJob)queue.Dequeue(
@@ -373,7 +374,7 @@ values (scope_identity(), @queue)";
                 connection.Execute(
                     arrangeSql,
                     new { invocationData = "", arguments = "", queue = "default" });
-                var queue = CreateJobQueue(connection, invisibilityTimeout: true);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: DefaultTimeout);
 
                 // Act
                 var payload = queue.Dequeue(
@@ -413,7 +414,7 @@ values (scope_identity(), @queue, @fetchedAt)";
                         invocationData = "",
                         arguments = ""
                     });
-                var queue = CreateJobQueue(connection, invisibilityTimeout: true);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: DefaultTimeout);
 
                 // Act
                 var payload = queue.Dequeue(
@@ -444,7 +445,7 @@ values (scope_identity(), @queue)";
                         new { queue = "default", invocationData = "", arguments = "" },
                         new { queue = "default", invocationData = "", arguments = "" }
                     });
-                var queue = CreateJobQueue(connection, invisibilityTimeout: true);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: DefaultTimeout);
 
                 // Act
                 var payload = queue.Dequeue(
@@ -471,7 +472,7 @@ values (scope_identity(), @queue)";
 
             UseConnection(connection =>
             {
-                var queue = CreateJobQueue(connection, invisibilityTimeout: true);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: DefaultTimeout);
 
                 connection.Execute(
                     arrangeSql,
@@ -503,7 +504,7 @@ values (scope_identity(), @queue)";
                         new { queue = "critical", invocationData = "", arguments = "" }
                     });
 
-                var queue = CreateJobQueue(connection, invisibilityTimeout: true);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: DefaultTimeout);
 
                 var critical = (SqlServerTimeoutJob)queue.Dequeue(
                     new[] { "critical", "default" },
@@ -526,7 +527,7 @@ values (scope_identity(), @queue)";
         {
             UseConnection(connection =>
             {
-                var queue = CreateJobQueue(connection, invisibilityTimeout: false);
+                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
 
                 queue.Enqueue(connection, "default", "1");
 
@@ -545,10 +546,10 @@ values (scope_identity(), @queue)";
 
         public static void Sample(string arg1, string arg2) { }
 
-        private static SqlServerJobQueue CreateJobQueue(SqlConnection connection, bool invisibilityTimeout)
+        private static SqlServerJobQueue CreateJobQueue(SqlConnection connection, TimeSpan? invisibilityTimeout)
         {
             var storage = new SqlServerStorage(connection);
-            return new SqlServerJobQueue(storage, new SqlServerStorageOptions { UseInvisibilityTimeout = invisibilityTimeout });
+            return new SqlServerJobQueue(storage, new SqlServerStorageOptions { SlidingInvisibilityTimeout = TimeSpan.FromMinutes(1) });
         }
 
         private static void UseConnection(Action<SqlConnection> action)

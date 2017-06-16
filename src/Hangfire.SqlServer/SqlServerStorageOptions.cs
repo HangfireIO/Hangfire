@@ -27,13 +27,16 @@ namespace Hangfire.SqlServer
     {
         private TimeSpan _queuePollInterval;
         private string _schemaName;
+        private TimeSpan? _slidingInvisibilityTimeout;
 
         public SqlServerStorageOptions()
         {
             TransactionIsolationLevel = null;
             QueuePollInterval = TimeSpan.FromSeconds(15);
-            UseInvisibilityTimeout = false;
+            SlidingInvisibilityTimeout = null;
+#pragma warning disable 618
             InvisibilityTimeout = TimeSpan.FromMinutes(30);
+#pragma warning restore 618
             JobExpirationCheckInterval = TimeSpan.FromMinutes(30);
             CountersAggregateInterval = TimeSpan.FromMinutes(5);
             PrepareSchemaIfNecessary = true;
@@ -64,8 +67,22 @@ namespace Hangfire.SqlServer
             }
         }
 
+        [Obsolete("Does not make sense anymore. Background jobs re-queued instantly even after ungraceful shutdown now. Will be removed in 2.0.0.")]
         public TimeSpan InvisibilityTimeout { get; set; }
-        public bool UseInvisibilityTimeout { get; set; }
+
+        public TimeSpan? SlidingInvisibilityTimeout
+        {
+            get { return _slidingInvisibilityTimeout; }
+            set
+            {
+                if (value <= TimeSpan.Zero)
+                {
+                    throw new ArgumentOutOfRangeException("Sliding timeout should be greater than zero");
+                }
+
+                _slidingInvisibilityTimeout = value;
+            }
+        }
 
         public bool PrepareSchemaIfNecessary { get; set; }
 

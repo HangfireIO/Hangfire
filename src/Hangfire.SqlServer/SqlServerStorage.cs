@@ -99,7 +99,7 @@ namespace Hangfire.SqlServer
 
         internal string SchemaName => _options.SchemaName;
         internal int? CommandTimeout => _options.CommandTimeout.HasValue ? (int)_options.CommandTimeout.Value.TotalSeconds : (int?)null;
-        internal TimeSpan InvisibilityTimeout => _options.InvisibilityTimeout;
+        internal TimeSpan? SlidingInvisibilityTimeout => _options.SlidingInvisibilityTimeout;
 
         public override IMonitoringApi GetMonitoringApi()
         {

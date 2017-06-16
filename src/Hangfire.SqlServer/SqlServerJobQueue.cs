@@ -53,9 +53,9 @@ namespace Hangfire.SqlServer
             if (queues == null) throw new ArgumentNullException(nameof(queues));
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", nameof(queues));
 
-            if (_options.UseInvisibilityTimeout && _options.InvisibilityTimeout > TimeSpan.Zero)
+            if (_options.SlidingInvisibilityTimeout.HasValue)
             {
-                return DequeueUsingInvisibilityTimeout(queues, cancellationToken);
+                return DequeueUsingSlidingInvisibilityTimeout(queues, cancellationToken);
             }
 
             return DequeueUsingTransaction(queues, cancellationToken);
@@ -79,7 +79,7 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                 , commandTimeout: _storage.CommandTimeout);
         }
 
-        private SqlServerTimeoutJob DequeueUsingInvisibilityTimeout(string[] queues, CancellationToken cancellationToken)
+        private SqlServerTimeoutJob DequeueUsingSlidingInvisibilityTimeout(string[] queues, CancellationToken cancellationToken)
         {
             if (queues == null) throw new ArgumentNullException(nameof(queues));
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", nameof(queues));
@@ -104,7 +104,7 @@ where Queue in @queues and
                     fetchedJob = connection
                         .Query<FetchedJob>(
                             fetchJobSqlTemplate,
-                            new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds })
+                            new { queues = queues, timeout = _options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds })
                         .SingleOrDefault();
                 });
 
@@ -117,7 +117,7 @@ where Queue in @queues and
                         fetchedJob.Queue);
                 }
 
-                cancellationToken.WaitHandle.WaitOne(_options.QueuePollInterval);
+                WaitHandle.WaitAny(new[] { cancellationToken.WaitHandle, NewItemInQueueEvent }, _options.QueuePollInterval);
                 cancellationToken.ThrowIfCancellationRequested();
             } while (true);
         }
@@ -131,7 +131,7 @@ where Queue in @queues and
                 $@"delete top (1) JQ
 output DELETED.Id, DELETED.JobId, DELETED.Queue
 from [{_storage.SchemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
-where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))";
+where Queue in @queues and FetchedAt is null";
 
             do
             {
@@ -144,7 +144,7 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
 
                     fetchedJob = connection.Query<FetchedJob>(
                         fetchJobSqlTemplate,
-                        new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds },
+                        new { queues = queues },
                         transaction,
                         commandTimeout: _storage.CommandTimeout).SingleOrDefault();
 

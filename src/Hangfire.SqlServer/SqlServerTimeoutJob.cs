@@ -1,13 +1,19 @@
 using System;
+using System.Threading;
 using Dapper;
 using Hangfire.Annotations;
+using Hangfire.Logging;
 using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
 {
     internal class SqlServerTimeoutJob : IFetchedJob
     {
+        private static readonly ILog Logger = LogProvider.GetLogger(typeof(SqlServerTimeoutJob));
+
+        private readonly object _syncRoot = new object();
         private readonly SqlServerStorage _storage;
+        private readonly Timer _timer;
         private bool _disposed;
         private bool _removedFromQueue;
         private bool _requeued;
@@ -26,6 +32,13 @@ namespace Hangfire.SqlServer
             Id = id;
             JobId = jobId;
             Queue = queue;
+
+            if (storage.SlidingInvisibilityTimeout.HasValue)
+            {
+                var keepAliveInterval =
+                    TimeSpan.FromSeconds(storage.SlidingInvisibilityTimeout.Value.TotalSeconds / 5);
+                _timer = new Timer(ExecuteKeepAliveQuery, null, keepAliveInterval, keepAliveInterval);
+            }
         }
 
         public long Id { get; }
@@ -34,38 +47,75 @@ namespace Hangfire.SqlServer
 
         public void RemoveFromQueue()
         {
-            _storage.UseConnection(connection =>
+            lock (_syncRoot)
             {
-                connection.Execute(
-                    $"delete from {_storage.SchemaName}.JobQueue where Id = @id",
-                    new { id = Id });
-            });
+                _storage.UseConnection(connection =>
+                {
+                    connection.Execute(
+                        $"delete from {_storage.SchemaName}.JobQueue where Id = @id",
+                        new { id = Id },
+                        commandTimeout: _storage.CommandTimeout);
+                });
 
-            _removedFromQueue = true;
+                _removedFromQueue = true;
+            }
         }
 
         public void Requeue()
         {
-            _storage.UseConnection(connection =>
+            lock (_syncRoot)
             {
-                connection.Execute(
-                    $"update {_storage.SchemaName}.JobQueue set FetchedAt = null where Id = @id",
-                    new { id = Id });
-            });
+                _storage.UseConnection(connection =>
+                {
+                    connection.Execute(
+                        $"update {_storage.SchemaName}.JobQueue set FetchedAt = null where Id = @id",
+                        new { id = Id },
+                        commandTimeout: _storage.CommandTimeout);
+                });
 
-            _requeued = true;
+                _requeued = true;
+            }
         }
 
         public void Dispose()
         {
             if (_disposed) return;
-
-            if (!_removedFromQueue && !_requeued)
-            {
-                Requeue();
-            }
-
             _disposed = true;
+
+            _timer?.Dispose();
+
+            lock (_syncRoot)
+            {
+                if (!_removedFromQueue && !_requeued)
+                {
+                    Requeue();
+                }
+            }
+        }
+
+        private void ExecuteKeepAliveQuery(object obj)
+        {
+            lock (_syncRoot)
+            {
+                if (_requeued || _removedFromQueue) return;
+
+                try
+                {
+                    _storage.UseConnection(connection =>
+                    {
+                        connection.Execute(
+                            $"update {_storage.SchemaName}.JobQueue set FetchedAt = getutcdate() where Id = @id",
+                            new { id = Id },
+                            commandTimeout: _storage.CommandTimeout);
+                    });
+
+                    Logger.Trace($"Keep-alive query for message {Id} sent");
+                }
+                catch (Exception ex)
+                {
+                    Logger.DebugException($"Unable to execute keep-alive query for message {Id}", ex);
+                }
+            }
         }
     }
 }
