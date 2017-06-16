@@ -131,7 +131,7 @@ where Queue in @queues and
                 $@"delete top (1) JQ
 output DELETED.Id, DELETED.JobId, DELETED.Queue
 from [{_storage.SchemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
-where Queue in @queues and FetchedAt is null";
+where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))";
 
             do
             {
@@ -144,7 +144,9 @@ where Queue in @queues and FetchedAt is null";
 
                     fetchedJob = connection.Query<FetchedJob>(
                         fetchJobSqlTemplate,
-                        new { queues = queues },
+#pragma warning disable 618
+                        new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds },
+#pragma warning restore 618
                         transaction,
                         commandTimeout: _storage.CommandTimeout).SingleOrDefault();
 

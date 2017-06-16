@@ -174,7 +174,7 @@ select scope_identity() as Id";
             {
                 var storage = new SqlServerStorage(
                     connection,
-                    new SqlServerStorageOptions { InvisibilityTimeout = TimeSpan.FromSeconds(10) });
+                    new SqlServerStorageOptions { SlidingInvisibilityTimeout = TimeSpan.FromSeconds(10) });
 
                 action(connection, storage);
             }

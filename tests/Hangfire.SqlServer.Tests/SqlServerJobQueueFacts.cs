@@ -549,7 +549,7 @@ values (scope_identity(), @queue)";
         private static SqlServerJobQueue CreateJobQueue(SqlConnection connection, TimeSpan? invisibilityTimeout)
         {
             var storage = new SqlServerStorage(connection);
-            return new SqlServerJobQueue(storage, new SqlServerStorageOptions { SlidingInvisibilityTimeout = TimeSpan.FromMinutes(1) });
+            return new SqlServerJobQueue(storage, new SqlServerStorageOptions { SlidingInvisibilityTimeout = invisibilityTimeout });
         }
 
         private static void UseConnection(Action<SqlConnection> action)
