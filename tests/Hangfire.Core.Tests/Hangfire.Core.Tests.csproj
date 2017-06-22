@@ -94,11 +94,11 @@
     <Compile Include="Common\JobLoadExceptionFacts.cs" />
     <Compile Include="Common\TypeExtensionsFacts.cs" />
     <Compile Include="CronFacts.cs" />
-    <Compile Include="Dashboard\TestDashboardContext.cs" />
-    <Compile Include="Dashboard\TestJobStorage.cs" />
-    <Compile Include="Dashboard\TestResponse.cs" />
-    <Compile Include="Dashboard\UnauthorizedDashboardFilter.cs" />
-    <Compile Include="Dashboard\AuthorizedDashboardFilter.cs" />
+    <Compile Include="Stubs\DashboardContextStub.cs" />
+    <Compile Include="Stubs\JobStorageStub.cs" />
+    <Compile Include="Stubs\DashboardResponseStub.cs" />
+    <Compile Include="Stubs\UnauthorizedDashboardFilterStub.cs" />
+    <Compile Include="Stubs\AuthorizedDashboardFilterStub.cs" />
     <Compile Include="Dashboard\CommandDispatcherFacts.cs" />
     <Compile Include="Dashboard\BatchCommandDispatcherFacts.cs" />
     <Compile Include="Dashboard\DashboardAuthorizationContextFacts.cs" />
@@ -175,10 +175,6 @@
     <ProjectReference Include="..\..\src\Hangfire.Core\Hangfire.Core.csproj">
       <Project>{C995EA9E-56EE-4951-8260-D94260A7F4C2}</Project>
       <Name>Hangfire.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Hangfire.SqlServer\Hangfire.SqlServer.csproj">
-      <Project>{A523C0E3-097D-4869-977F-15A717EA3E83}</Project>
-      <Name>Hangfire.SqlServer</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

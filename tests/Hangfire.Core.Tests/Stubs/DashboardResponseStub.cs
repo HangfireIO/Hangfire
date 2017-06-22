@@ -3,9 +3,9 @@ using System.IO;
 using System.Threading.Tasks;
 using Hangfire.Dashboard;
 
-namespace Hangfire.Core.Tests.Dashboard
+namespace Hangfire.Core.Tests.Stubs
 {
-    class TestResponse : DashboardResponse
+    class DashboardResponseStub : DashboardResponse
     {
         public override string ContentType { get; set; }
         public override int StatusCode { get; set; }

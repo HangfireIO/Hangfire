@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Hangfire.Core.Tests.Stubs;
 using Hangfire.Dashboard;
-using Moq;
 using Xunit;
-using Hangfire;
 
 namespace Hangfire.Core.Tests.Dashboard
 {
@@ -11,7 +9,7 @@ namespace Hangfire.Core.Tests.Dashboard
         [Fact]
         public void IsAuthorized_True_ByDefault()
         {
-            var context = new TestDashboardContext(new DashboardOptions());
+            var context = new DashboardContextStub(new DashboardOptions());
             var permissions = new DashboardAuthorizationContext(context);
             Assert.Equal(true, permissions.IsAuthorized(DashboardPermission.DeleteJob));
         }
@@ -21,9 +19,9 @@ namespace Hangfire.Core.Tests.Dashboard
         {
             var options = new DashboardOptions
             {
-                DeleteJobAuthorization = new[] { new AuthorizedDashboardFilter() }
+                DeleteJobAuthorization = new[] { new TestAuthorizedDashboardFilter() }
             };
-            var context = new TestDashboardContext(options);
+            var context = new DashboardContextStub(options);
             var permissions = new DashboardAuthorizationContext(context);
             Assert.Equal(true, permissions.IsAuthorized(DashboardPermission.DeleteJob));
         }
@@ -33,9 +31,9 @@ namespace Hangfire.Core.Tests.Dashboard
         {
             var options = new DashboardOptions
             {
-                DeleteJobAuthorization = new[] { new UnauthorizedDashboardFilter() }
+                DeleteJobAuthorization = new[] { new UnauthorizedDashboardFilterStub() }
             };
-            var context = new TestDashboardContext(options);
+            var context = new DashboardContextStub(options);
             var permissions = new DashboardAuthorizationContext(context);
             Assert.Equal(false, permissions.IsAuthorized(DashboardPermission.DeleteJob));
         }
@@ -47,11 +45,11 @@ namespace Hangfire.Core.Tests.Dashboard
             {
                 DeleteJobAuthorization = new IDashboardAuthorizationFilter[]
                 {
-                    new UnauthorizedDashboardFilter(),
-                    new AuthorizedDashboardFilter()
+                    new UnauthorizedDashboardFilterStub(),
+                    new TestAuthorizedDashboardFilter()
                 }
             };
-            var context = new TestDashboardContext(options);
+            var context = new DashboardContextStub(options);
             var permissions = new DashboardAuthorizationContext(context);
             Assert.Equal(false, permissions.IsAuthorized(DashboardPermission.DeleteJob));
         }
@@ -59,7 +57,7 @@ namespace Hangfire.Core.Tests.Dashboard
         [Fact]
         public void IsReadOnly_False_ByDefault()
         {
-            var context = new TestDashboardContext(new DashboardOptions());
+            var context = new DashboardContextStub(new DashboardOptions());
             var permissions = new DashboardAuthorizationContext(context);
             Assert.Equal(false, permissions.IsReadOnly);
         }
@@ -69,10 +67,10 @@ namespace Hangfire.Core.Tests.Dashboard
         {
             var options = new DashboardOptions
             {
-                DeleteJobAuthorization = new[] { new AuthorizedDashboardFilter() },
-                EnqueueJobAuthorization = new[] { new UnauthorizedDashboardFilter() }
+                DeleteJobAuthorization = new[] { new TestAuthorizedDashboardFilter() },
+                EnqueueJobAuthorization = new[] { new UnauthorizedDashboardFilterStub() }
             };
-            var context = new TestDashboardContext(options);
+            var context = new DashboardContextStub(options);
             var permissions = new DashboardAuthorizationContext(context);
             Assert.Equal(false, permissions.IsReadOnly);
         }
@@ -82,10 +80,10 @@ namespace Hangfire.Core.Tests.Dashboard
         {
             var options = new DashboardOptions
             {
-                DeleteJobAuthorization = new[] { new UnauthorizedDashboardFilter() },
-                EnqueueJobAuthorization = new[] { new UnauthorizedDashboardFilter() }
+                DeleteJobAuthorization = new[] { new UnauthorizedDashboardFilterStub() },
+                EnqueueJobAuthorization = new[] { new UnauthorizedDashboardFilterStub() }
             };
-            var context = new TestDashboardContext(options);
+            var context = new DashboardContextStub(options);
             var permissions = new DashboardAuthorizationContext(context);
             Assert.Equal(true, permissions.IsReadOnly);
         }

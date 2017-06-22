@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Hangfire.Core.Tests.Stubs;
 using Hangfire.Dashboard;
-using Moq;
 using Xunit;
-using Hangfire;
 
 namespace Hangfire.Core.Tests.Dashboard
 {
@@ -13,9 +11,9 @@ namespace Hangfire.Core.Tests.Dashboard
         {
             var options = new DashboardOptions
             {
-                DeleteJobAuthorization = new[] { new UnauthorizedDashboardFilter() }
+                DeleteJobAuthorization = new[] { new UnauthorizedDashboardFilterStub() }
             };
-            var context = new TestDashboardContext(options);
+            var context = new DashboardContextStub(options);
             var dispatcher = new CommandDispatcher(_ => false, DashboardPermission.DeleteJob);
             dispatcher.Dispatch(context);
             Assert.Equal(422, context.Response.StatusCode);

@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Hangfire.Storage;
 
-namespace Hangfire.Core.Tests.Dashboard
+namespace Hangfire.Core.Tests.Stubs
 {
-    class TestJobStorage : JobStorage
+    class JobStorageStub : JobStorage
     {
         public override IMonitoringApi GetMonitoringApi()
         {
