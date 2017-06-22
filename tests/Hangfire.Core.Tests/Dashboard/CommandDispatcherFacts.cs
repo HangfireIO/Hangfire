@@ -13,24 +13,12 @@ namespace Hangfire.Core.Tests.Dashboard
         {
             var options = new DashboardOptions
             {
-                Permissions = new Dictionary<DashboardPermission, IEnumerable<IDashboardAuthorizationFilter>>
-                {
-                    [DashboardPermission.DeleteJob] = new[] { new UnauthorizedDashboardFilter() }
-                }
+                DeleteJobAuthorization = new[] { new UnauthorizedDashboardFilter() }
             };
-            var contextMock = new Mock<IDashboardContext>();
-            contextMock.SetupAllProperties();
-            contextMock.Setup(c => c.Options).Returns(options);
-            contextMock.Setup(c => c.Permissions).Returns(new DashboardPermissionsContext(contextMock.Object));
-            var responseMock = new Mock<DashboardResponse>();
-            responseMock.SetupAllProperties();
-            contextMock.Setup(c => c.Response).Returns(responseMock.Object);
-
+            var context = new TestDashboardContext(options);
             var dispatcher = new CommandDispatcher(_ => false, DashboardPermission.DeleteJob);
-            dispatcher.Dispatch(contextMock.Object);
-            Assert.Equal(422, contextMock.Object.Response.StatusCode);
+            dispatcher.Dispatch(context);
+            Assert.Equal(422, context.Response.StatusCode);
         }
-
-      
     }
 }

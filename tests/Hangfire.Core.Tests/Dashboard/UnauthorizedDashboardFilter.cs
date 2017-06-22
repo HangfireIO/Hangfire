@@ -9,7 +9,7 @@ namespace Hangfire.Core.Tests.Dashboard
 {
     internal class UnauthorizedDashboardFilter : IDashboardAuthorizationFilter
     {
-        public bool Authorize(IDashboardContext context)
+        public bool Authorize(DashboardContext context)
         {
             return false;
         }

@@ -147,7 +147,7 @@ WriteLiteral("            <div class=\"js-jobs-list\">\r\n                <div c
 
             
             #line 40 "..\..\Dashboard\Pages\ProcessingJobsPage.cshtml"
-                     if (HasPermission(DashboardPermission.EnqueueJob))
+                     if (IsAuthorized(DashboardPermission.EnqueueJob))
                     {
 
             
@@ -199,7 +199,7 @@ WriteLiteral("\r\n                        </button>\r\n");
 
             
             #line 50 "..\..\Dashboard\Pages\ProcessingJobsPage.cshtml"
-                     if (HasPermission(DashboardPermission.DeleteJob))
+                     if (IsAuthorized(DashboardPermission.DeleteJob))
                     {
 
             

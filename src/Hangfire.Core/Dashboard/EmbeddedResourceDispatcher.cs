@@ -40,7 +40,7 @@ namespace Hangfire.Dashboard
             _contentType = contentType;
         }
 
-        public Task Dispatch(IDashboardContext context)
+        public Task Dispatch(DashboardContext context)
         {
             context.Response.ContentType = _contentType;
             context.Response.SetExpire(DateTimeOffset.Now.AddYears(1));

@@ -140,7 +140,7 @@ WriteLiteral("            <div class=\"js-jobs-list\">\r\n                <div c
 
             
             #line 38 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
-                     if (HasPermission(DashboardPermission.EnqueueJob))
+                     if (IsAuthorized(DashboardPermission.EnqueueJob))
                     {
 
             

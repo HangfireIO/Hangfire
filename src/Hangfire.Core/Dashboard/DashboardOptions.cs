@@ -21,14 +21,16 @@ namespace Hangfire.Dashboard
 {
     public class DashboardOptions
     {
-        IDictionary<DashboardPermission, IEnumerable<IDashboardAuthorizationFilter>> _permissions;
-
         public DashboardOptions()
         {
             AppPath = "/";
             StatsPollingInterval = 2000;
-            Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
-            Permissions = new Dictionary<DashboardPermission, IEnumerable<IDashboardAuthorizationFilter>>();
+            Authorizations = new Dictionary<DashboardPermission, IEnumerable<IDashboardAuthorizationFilter>>
+            {
+                [DashboardPermission.ViewDashboard] = new[] { new LocalRequestsOnlyAuthorizationFilter() },
+                [DashboardPermission.EnqueueJob] = new IDashboardAuthorizationFilter[0],
+                [DashboardPermission.DeleteJob] = new IDashboardAuthorizationFilter[0]
+            };
         }
 
         /// <summary>
@@ -37,21 +39,48 @@ namespace Hangfire.Dashboard
         public string AppPath { get; set; }
 
 #if NETFULL
-        [Obsolete("Please use `Authorization` property instead. Will be removed in 2.0.0.")]
+        [Obsolete("Please use `ViewDashboardAuthorization` property instead. Will be removed in 2.0.0.")]
         public IEnumerable<IAuthorizationFilter> AuthorizationFilters { get; set; }
 #endif
 
-        public IEnumerable<IDashboardAuthorizationFilter> Authorization { get; set; }
-        
-        public IDictionary<DashboardPermission, IEnumerable<IDashboardAuthorizationFilter>> Permissions
+        [Obsolete("Please use `ViewDashboardAuthorization` property instead.")]
+        public IEnumerable<IDashboardAuthorizationFilter> Authorization
         {
-            get { return _permissions; }
+            get { return ViewDashboardAuthorization; }
+            set { ViewDashboardAuthorization = value; }
+        }
+
+        public IEnumerable<IDashboardAuthorizationFilter> ViewDashboardAuthorization
+        {
+            get { return Authorizations[DashboardPermission.ViewDashboard]; }
             set
             {
                 if (value == null) throw new ArgumentNullException(nameof(value));
-                _permissions = value;
+                Authorizations[DashboardPermission.ViewDashboard] = value;
             }
         }
+
+        public IEnumerable<IDashboardAuthorizationFilter> EnqueueJobAuthorization
+        {
+            get { return Authorizations[DashboardPermission.EnqueueJob]; }
+            set
+            {
+                if (value == null) throw new ArgumentNullException(nameof(value));
+                Authorizations[DashboardPermission.EnqueueJob] = value;
+            }
+        }
+
+        public IEnumerable<IDashboardAuthorizationFilter> DeleteJobAuthorization
+        { 
+            get { return Authorizations[DashboardPermission.DeleteJob]; }
+            set
+            {
+                if (value == null) throw new ArgumentNullException(nameof(value));
+                Authorizations[DashboardPermission.DeleteJob] = value;
+            }
+        }
+
+        internal IDictionary<DashboardPermission, IEnumerable<IDashboardAuthorizationFilter>> Authorizations { get; }
 
         /// <summary>
         /// The interval the /stats endpoint should be polled with.

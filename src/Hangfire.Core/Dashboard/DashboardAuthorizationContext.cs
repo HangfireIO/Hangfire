@@ -23,13 +23,13 @@ namespace Hangfire.Dashboard
     /// <summary>
     /// Describes the permissions granted for the current context.
     /// </summary>
-    public class DashboardPermissionsContext
+    public class DashboardAuthorizationContext
     {
         // In case determining authorization is expensive (eg. through a DB call), ensure we
         // calculated it on demand, and once only.
         private readonly IDictionary<DashboardPermission, Lazy<bool>> _permissions;
 
-        public DashboardPermissionsContext(IDashboardContext context)
+        public DashboardAuthorizationContext(DashboardContext context)
         {
             _permissions = new Dictionary<DashboardPermission, Lazy<bool>>();
 
@@ -38,7 +38,7 @@ namespace Hangfire.Dashboard
             foreach (DashboardPermission permission in Enum.GetValues(typeof(DashboardPermission)))
             {
                 IEnumerable<IDashboardAuthorizationFilter> filters;
-                var authorized = context.Options.Permissions.TryGetValue(permission, out filters)
+                var authorized = context.Options.Authorizations.TryGetValue(permission, out filters)
                     ? new Lazy<bool>(() => filters.All(f => f.Authorize(context))) 
                     : new Lazy<bool>(() => true);
                 _permissions.Add(permission, authorized);
@@ -48,7 +48,10 @@ namespace Hangfire.Dashboard
         /// <summary>
         /// Determines if the user has read only access to the dashboard.
         /// </summary>
-        public bool IsReadOnly => _permissions.Values.All(permission => !permission.Value);
+        public bool IsReadOnly => _permissions
+            .Where(kvp => kvp.Key != DashboardPermission.ViewDashboard)
+            .Select(kvp => kvp.Value)
+            .All(lazyPermission => !lazyPermission.Value);
 
         /// <summary>
         /// Determines if the user is authorized for a specific DashboardPermission.

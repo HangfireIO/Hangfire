@@ -25,7 +25,7 @@ namespace Hangfire.Dashboard
 {
     internal class JsonStats : IDashboardDispatcher
     {
-        public async Task Dispatch(IDashboardContext context)
+        public async Task Dispatch(DashboardContext context)
         {
             var requestedMetrics = await context.Request.GetFormValuesAsync("metrics[]");
             var page = new StubPage();

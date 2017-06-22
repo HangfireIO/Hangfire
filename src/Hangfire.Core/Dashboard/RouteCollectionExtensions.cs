@@ -52,7 +52,7 @@ namespace Hangfire.Dashboard
         public static void AddCommand(
             [NotNull] this RouteCollection routes,
             [NotNull] string pathTemplate,
-            [NotNull] Func<IDashboardContext, bool> command,
+            [NotNull] Func<DashboardContext, bool> command,
             DashboardPermission requiredPermission)
         {
             if (routes == null) throw new ArgumentNullException(nameof(routes));
@@ -80,7 +80,7 @@ namespace Hangfire.Dashboard
         public static void AddBatchCommand(
             [NotNull] this RouteCollection routes,
             [NotNull] string pathTemplate,
-            [NotNull] Action<IDashboardContext, string> command,
+            [NotNull] Action<DashboardContext, string> command,
             DashboardPermission requiredPermission)
         {
             if (routes == null) throw new ArgumentNullException(nameof(routes));

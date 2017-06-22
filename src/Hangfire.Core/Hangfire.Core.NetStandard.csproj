@@ -110,6 +110,7 @@
     <Compile Include="Common\TypeExtensions.cs" />
     <Compile Include="ContinuationsSupportAttribute.cs" />
     <Compile Include="Cron.cs" />
+    <Compile Include="Dashboard\DashboardAuthorizationContext.cs" />
     <Compile Include="Dashboard\DashboardPermission.cs" />
     <Compile Include="Dashboard\DashboardOptions.cs" />
     <Compile Include="Dashboard\BatchCommandDispatcher.cs" />
@@ -123,14 +124,12 @@
     <Compile Include="Dashboard\DashboardContext.cs" />
     <Compile Include="Dashboard\DashboardMetric.cs" />
     <Compile Include="Dashboard\DashboardMetrics.cs" />
-    <Compile Include="Dashboard\DashboardPermissionsContext.cs" />
     <Compile Include="Dashboard\DashboardRequest.cs" />
     <Compile Include="Dashboard\DashboardResponse.cs" />
     <Compile Include="Dashboard\DashboardRoutes.cs" />
     <Compile Include="Dashboard\EmbeddedResourceDispatcher.cs" />
     <Compile Include="Dashboard\HtmlHelper.cs" />
     <Compile Include="Dashboard\IDashboardAuthorizationFilter.cs" />
-    <Compile Include="Dashboard\IDashboardContext.cs" />
     <Compile Include="Dashboard\IDashboardDispatcher.cs" />
     <Compile Include="Dashboard\JobHistoryRenderer.cs" />
     <Compile Include="Dashboard\JobMethodCallRenderer.cs" />

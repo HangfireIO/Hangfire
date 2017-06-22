@@ -147,7 +147,7 @@
                 @if (job.History.Count > 1)
                 {
                     <span class="job-snippet-buttons pull-right">
-                        @if (HasPermission(DashboardPermission.EnqueueJob))
+                        @if (IsAuthorized(DashboardPermission.EnqueueJob))
                         {
                             <button class="btn btn-sm btn-default"
                                     data-ajax="@Url.To("/jobs/actions/requeue/" + JobId)"
@@ -155,7 +155,7 @@
                                 @Strings.JobDetailsPage_Requeue
                             </button>
                         }
-                        @if (HasPermission(DashboardPermission.DeleteJob))
+                        @if (IsAuthorized(DashboardPermission.DeleteJob))
                         {
                             <button class="btn btn-sm btn-death"
                                     data-ajax="@Url.To("/jobs/actions/delete/" + JobId)"

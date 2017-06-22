@@ -32,7 +32,7 @@ namespace Hangfire.Dashboard
             _dispatcher = dispatcher;
         }
 
-        public Task Dispatch(IDashboardContext context)
+        public Task Dispatch(DashboardContext context)
         {
             return _dispatcher.Dispatch(RequestDispatcherContext.FromDashboardContext(context));
         }

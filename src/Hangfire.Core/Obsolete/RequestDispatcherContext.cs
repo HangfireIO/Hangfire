@@ -49,7 +49,7 @@ namespace Hangfire.Dashboard
         public IDictionary<string, object> OwinEnvironment { get; } 
         public Match UriMatch { get; }
 
-        public static RequestDispatcherContext FromDashboardContext([NotNull] IDashboardContext context)
+        public static RequestDispatcherContext FromDashboardContext([NotNull] DashboardContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
 

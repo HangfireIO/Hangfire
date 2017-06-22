@@ -134,7 +134,7 @@ WriteLiteral("            <div class=\"js-jobs-list\">\r\n                <div c
 
             
             #line 37 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
-                     if (HasPermission(DashboardPermission.EnqueueJob))
+                     if (IsAuthorized(DashboardPermission.EnqueueJob))
                     {
 
             
@@ -200,7 +200,7 @@ WriteLiteral("\r\n                </div>\r\n                <div class=\"table-r
 
             
             #line 53 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
-                                 if (HasPermission(DashboardPermission.EnqueueJob))
+                                 if (IsAuthorized(DashboardPermission.EnqueueJob))
                                 {
 
             
@@ -285,7 +285,7 @@ WriteLiteral("\">\r\n");
 
             
             #line 68 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
-                                     if (HasPermission(DashboardPermission.EnqueueJob))
+                                     if (IsAuthorized(DashboardPermission.EnqueueJob))
                                     {
 
             
