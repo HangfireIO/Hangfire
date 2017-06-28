@@ -35,7 +35,7 @@ namespace Hangfire.Dashboard
         }
 
 #if NETFULL
-        [Obsolete("Use the AddCommand(RouteCollection, string, Func<DashboardContext, bool>) overload instead. Will be removed in 2.0.0.")]
+        [Obsolete("Use the AddCommand(RouteCollection, string, Func<DashboardContext, bool>, DashboardPermission) overload instead. Will be removed in 2.0.0.")]
         public static void AddCommand(
             [NotNull] this RouteCollection routes, 
             [NotNull] string pathTemplate, 
@@ -48,6 +48,15 @@ namespace Hangfire.Dashboard
             routes.Add(pathTemplate, new CommandDispatcher(command));
         }
 #endif
+
+        [Obsolete("Use the AddCommand(RouteCollection, string, Func<DashboardContext, bool>, DashboardPermission) overload instead.")]
+        public static void AddCommand(
+            [NotNull] this RouteCollection routes,
+            [NotNull] string pathTemplate,
+            [NotNull] Func<DashboardContext, bool> command)
+        {
+            AddCommand(routes, pathTemplate, command, DashboardPermission.ViewDashboard);
+        }
 
         public static void AddCommand(
             [NotNull] this RouteCollection routes,
@@ -63,7 +72,7 @@ namespace Hangfire.Dashboard
         }
 
 #if NETFULL
-        [Obsolete("Use the AddBatchCommand(RouteCollection, string, Func<DashboardContext, bool>) overload instead. Will be removed in 2.0.0.")]
+        [Obsolete("Use the AddBatchCommand(RouteCollection, string, Func<DashboardContext, bool>, DashboardPermission) overload instead. Will be removed in 2.0.0.")]
         public static void AddBatchCommand(
             [NotNull] this RouteCollection routes, 
             [NotNull] string pathTemplate, 
@@ -77,6 +86,15 @@ namespace Hangfire.Dashboard
         }
 #endif
 
+        [Obsolete("Use the AddBatchCommand(RouteCollection, string, Func<DashboardContext, bool>, DashboardPermission) overload instead.")]
+        public static void AddBatchCommand(
+            [NotNull] this RouteCollection routes,
+            [NotNull] string pathTemplate,
+            [NotNull] Action<DashboardContext, string> command)
+        {
+            AddBatchCommand(routes, pathTemplate, command, DashboardPermission.ViewDashboard);
+        }
+
         public static void AddBatchCommand(
             [NotNull] this RouteCollection routes,
             [NotNull] string pathTemplate,
@@ -88,6 +106,15 @@ namespace Hangfire.Dashboard
             if (command == null) throw new ArgumentNullException(nameof(command));
 
             routes.Add(pathTemplate, new BatchCommandDispatcher(command, requiredPermission));
+        }
+
+        [Obsolete("Use the AddClientBatchCommand(RouteCollection, string, Func<DashboardContext, bool>, DashboardPermission) overload instead.")]
+        public static void AddClientBatchCommand(
+            this RouteCollection routes,
+            string pathTemplate,
+            [NotNull] Action<IBackgroundJobClient, string> command)
+        {
+            AddClientBatchCommand(routes, pathTemplate, command, DashboardPermission.ViewDashboard);
         }
 
         public static void AddClientBatchCommand(
@@ -105,6 +132,15 @@ namespace Hangfire.Dashboard
                     command(client, jobId);
                 },
                 requiredPermission);
+        }
+
+        [Obsolete("Use the AddRecurringBatchCommand(RouteCollection, string, Func<DashboardContext, bool>, DashboardPermission) overload instead.")]
+        public static void AddRecurringBatchCommand(
+            this RouteCollection routes,
+            string pathTemplate,
+            [NotNull] Action<RecurringJobManager, string> command)
+        {
+            AddRecurringBatchCommand(routes, pathTemplate, command, DashboardPermission.ViewDashboard);
         }
 
         public static void AddRecurringBatchCommand(
