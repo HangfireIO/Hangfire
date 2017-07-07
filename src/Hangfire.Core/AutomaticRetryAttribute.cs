@@ -94,7 +94,7 @@ namespace Hangfire
         
         private readonly object _lockObject = new object();
         private int _attempts;
-        private string _delayInSeconds;
+        private int[]  _delaysInSeconds;
         private Func<long, int> _delayInSecondsByAttemptFunc;
         private AttemptsExceededAction _onAttemptsExceeded;
         private bool _logEvents;
@@ -140,32 +140,16 @@ namespace Hangfire
         /// <value>A string containing non-negative numbers separated by a comma.</value>
         /// <exception cref="ArgumentNullException">The value in a set operation is null.</exception>
         /// <exception cref="ArgumentException">The value in a set operation can't be parsed as a list of numbers.</exception>
-        public string DelaysInSeconds
+        public int[] DelaysInSeconds
         {
-            get { lock (_lockObject) { return _delayInSeconds; } }
+            get { lock (_lockObject) { return _delaysInSeconds; } }
             set
             {
-                if (string.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(value));
+                if (value == null || value.Length == 0) throw new ArgumentNullException(nameof(value));
                 
-                lock (_lockObject)
-                {
-                    _delayInSeconds = value;
+                if (value.Any(delay => delay < 0)) throw new ArgumentException(@"DelaysInSeconds value must be a string containing non-negative numbers separated by a comma.", nameof(value));
 
-                    try
-                    {
-                        var delays = SplitToIntArray(_delayInSeconds);
-                        
-                        if (delays.Any(delay => delay < 0)) ThrowDelaysInSecondsArgumentException(nameof(value));
-
-                        DelayInSecondsByAttemptFunc = attempt => attempt <= delays.Length
-                            ? delays[attempt - 1]
-                            : delays.Last();
-                    }
-                    catch (Exception e)
-                    {
-                        ThrowDelaysInSecondsArgumentException(nameof(value), e);
-                    }
-                }
+                lock (_lockObject) { _delaysInSeconds = value; }
             }
         }
 
@@ -263,7 +247,32 @@ namespace Hangfire
         {
             context.SetJobParameter("RetryCount", retryAttempt);
 
-            var delay = TimeSpan.FromSeconds(_delayInSecondsByAttemptFunc(retryAttempt));
+            int delayInSeconds;
+            
+            if (_delaysInSeconds != null)
+            {
+                delayInSeconds = retryAttempt <= _delaysInSeconds.Length
+                    ? _delaysInSeconds[retryAttempt - 1]
+                    : _delaysInSeconds.Last();
+            }
+            else
+            {
+                try
+                {
+                    delayInSeconds = _delayInSecondsByAttemptFunc(retryAttempt);
+                }
+                catch (Exception e)
+                {
+                    Logger.WarnException(
+                        $"DelayInSecondsByAttemptFunc function threw exception during retrying job '{context.BackgroundJob.Id}'. The delay was defined by the default function.",
+                        e);
+                    
+                    delayInSeconds = DefaultDelayInSecondsByAttemptFunc(retryAttempt);
+                }
+                
+            }
+
+            var delay = TimeSpan.FromSeconds(delayInSeconds);          
 
             const int maxMessageLength = 50;
             var exceptionMessage = failedState.Exception.Message.Length > maxMessageLength
@@ -305,16 +314,6 @@ namespace Hangfire
                     $"Failed to process the job '{context.BackgroundJob.Id}': an exception occured. Job was automatically deleted because the retry attempt count exceeded {Attempts}.",
                     failedState.Exception);
             }
-        }
-
-        private static int[] SplitToIntArray(string value)
-        {
-            return value.Split(new[] { ';', ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(Int32.Parse).ToArray();
-        }
-
-        private void ThrowDelaysInSecondsArgumentException(string paramName, Exception innerException = null)
-        {
-            throw new ArgumentException(@"DelaysInSeconds value must be a string containing non-negative numbers separated by a comma.", paramName, innerException);
         }
     }
 }

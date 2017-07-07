@@ -50,21 +50,14 @@ namespace Hangfire.Core.Tests
         public void Ctor_ThrowsAnException_WhenDelaysInSecondsIsEmpty()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new AutomaticRetryAttribute { DelaysInSeconds = string.Empty });
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenDelaysInSecondsIsInvalid()
-        {
-            Assert.Throws<ArgumentException>(
-                () => new AutomaticRetryAttribute { DelaysInSeconds = "1,A" });
+                () => new AutomaticRetryAttribute { DelaysInSeconds = new int[0] });
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenDelaysInSecondsContainsNegativeNumbers()
         {
             Assert.Throws<ArgumentException>(
-                () => new AutomaticRetryAttribute { DelaysInSeconds = "1,-5" });
+                () => new AutomaticRetryAttribute { DelaysInSeconds = new [] { 1, -5 } });
         }
 
         [Fact]
@@ -91,29 +84,25 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void DelaysInSeconds_ParsesOneValueCorrectly()
         {
-            var filter = new AutomaticRetryAttribute { DelaysInSeconds = "5" };
+            var filter = new AutomaticRetryAttribute { DelaysInSeconds = new[] { 5 } };
 
-            Assert.Equal("5", filter.DelaysInSeconds);
-            Assert.Equal(5, filter.DelayInSecondsByAttemptFunc(1));
-            Assert.Equal(5, filter.DelayInSecondsByAttemptFunc(2));
+            Assert.Equal(1, filter.DelaysInSeconds.Length);
+            Assert.Equal(5, filter.DelaysInSeconds[0]);
         }
 
         [Fact]
         public void DelaysInSeconds_ParsesListOfValuesCorrectly()
         {
-            var filter = new AutomaticRetryAttribute { DelaysInSeconds = " 1,2 3,  5;   8" };
+            var filter = new AutomaticRetryAttribute { DelaysInSeconds = new[] { 1, 3, 8 } };
 
-            Assert.Equal(" 1,2 3,  5;   8", filter.DelaysInSeconds);
-            Assert.Equal(1, filter.DelayInSecondsByAttemptFunc(1));
-            Assert.Equal(2, filter.DelayInSecondsByAttemptFunc(2));
-            Assert.Equal(3, filter.DelayInSecondsByAttemptFunc(3));
-            Assert.Equal(5, filter.DelayInSecondsByAttemptFunc(4));
-            Assert.Equal(8, filter.DelayInSecondsByAttemptFunc(5));
-            Assert.Equal(8, filter.DelayInSecondsByAttemptFunc(100));
+            Assert.Equal(3, filter.DelaysInSeconds.Length);
+            Assert.Equal(1, filter.DelaysInSeconds[0]);
+            Assert.Equal(3, filter.DelaysInSeconds[1]);
+            Assert.Equal(8, filter.DelaysInSeconds[2]);
         }
 
         [Fact]
-        public void DelayByAttempt_ReturnCorrectValue_WhenCustomFunctionIsSet()
+        public void DelayInSecondsByAttemptFunc_ReturnCorrectValue_WhenCustomFunctionIsSet()
         {
             var filter = new AutomaticRetryAttribute { DelayInSecondsByAttemptFunc = attempt => (int)attempt % 3 };
 
@@ -123,6 +112,22 @@ namespace Hangfire.Core.Tests
             Assert.Equal(1, filter.DelayInSecondsByAttemptFunc(4));
             Assert.Equal(2, filter.DelayInSecondsByAttemptFunc(5));
             Assert.Equal(1, filter.DelayInSecondsByAttemptFunc(100));
+        }
+
+        [Fact]
+        public void OnStateElection_UsesDefaultFunc_WhenDelayInSecondsByAttemptFuncThrowsException()
+        {
+            var filter = new AutomaticRetryAttribute
+            {
+                DelayInSecondsByAttemptFunc = attempt =>
+                {
+                    throw new Exception();
+                }
+            };
+            
+            filter.OnStateElection(_context.Object);
+
+            Assert.IsType<ScheduledState>(_context.Object.CandidateState);
         }
 
         [Fact]
