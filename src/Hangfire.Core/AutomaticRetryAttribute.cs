@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
@@ -82,10 +83,19 @@ namespace Hangfire
         /// </remarks>
         public static readonly int DefaultRetryAttempts = 10;
 
+        private static readonly Func<long, int> DefaultDelayInSecondsByAttemptFunc = attempt =>
+        {
+            var random = new Random();
+            return (int)Math.Round(
+                Math.Pow(attempt - 1, 4) + 15 + random.Next(30) * attempt);
+        };
+        
         private static readonly ILog Logger = LogProvider.For<AutomaticRetryAttribute>();
         
         private readonly object _lockObject = new object();
         private int _attempts;
+        private string _delayInSeconds;
+        private Func<long, int> _delayInSecondsByAttemptFunc;
         private AttemptsExceededAction _onAttemptsExceeded;
         private bool _logEvents;
 
@@ -96,6 +106,7 @@ namespace Hangfire
         public AutomaticRetryAttribute()
         {
             Attempts = DefaultRetryAttempts;
+            DelayInSecondsByAttemptFunc = DefaultDelayInSecondsByAttemptFunc;
             LogEvents = true;
             OnAttemptsExceeded = AttemptsExceededAction.Fail;
             Order = 20;
@@ -120,6 +131,55 @@ namespace Hangfire
                 {
                     _attempts = value;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the delays between attempts.
+        /// </summary>
+        /// <value>A string containing non-negative numbers separated by a comma.</value>
+        /// <exception cref="ArgumentNullException">The value in a set operation is null.</exception>
+        /// <exception cref="ArgumentException">The value in a set operation can't be parsed as a list of numbers.</exception>
+        public string DelaysInSeconds
+        {
+            get { lock (_lockObject) { return _delayInSeconds; } }
+            set
+            {
+                if (string.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(value));
+                
+                lock (_lockObject)
+                {
+                    _delayInSeconds = value;
+
+                    try
+                    {
+                        var delays = SplitToIntArray(_delayInSeconds);
+                        
+                        if (delays.Any(delay => delay < 0)) ThrowDelaysInSecondsArgumentException(nameof(value));
+
+                        DelayInSecondsByAttemptFunc = attempt => attempt <= delays.Length
+                            ? delays[attempt - 1]
+                            : delays.Last();
+                    }
+                    catch (Exception e)
+                    {
+                        ThrowDelaysInSecondsArgumentException(nameof(value), e);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a function using to get a delay by an attempt number.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">The value in a set operation is null.</exception>
+        public Func<long, int> DelayInSecondsByAttemptFunc
+        {
+            get { lock (_lockObject) { return _delayInSecondsByAttemptFunc;} }
+            set
+            {
+                if (value == null) throw new ArgumentNullException(nameof(value));
+                lock (_lockObject) { _delayInSecondsByAttemptFunc = value; }
             }
         }
 
@@ -194,7 +254,7 @@ namespace Hangfire
         }
 
         /// <summary>
-        /// Schedules the job to run again later. See <see cref="SecondsToDelay"/>.
+        /// Schedules the job to run again later. See <see cref="DelayInSecondsByAttemptFunc"/>.
         /// </summary>
         /// <param name="context">The state context.</param>
         /// <param name="retryAttempt">The count of retry attempts made so far.</param>
@@ -203,7 +263,7 @@ namespace Hangfire
         {
             context.SetJobParameter("RetryCount", retryAttempt);
 
-            var delay = TimeSpan.FromSeconds(SecondsToDelay(retryAttempt));
+            var delay = TimeSpan.FromSeconds(_delayInSecondsByAttemptFunc(retryAttempt));
 
             const int maxMessageLength = 50;
             var exceptionMessage = failedState.Exception.Message.Length > maxMessageLength
@@ -247,12 +307,14 @@ namespace Hangfire
             }
         }
 
-        // delayed_job uses the same basic formula
-        private static int SecondsToDelay(long retryCount)
+        private static int[] SplitToIntArray(string value)
         {
-            var random = new Random();
-            return (int)Math.Round(
-                Math.Pow(retryCount - 1, 4) + 15 + random.Next(30) * retryCount);
+            return value.Split(new[] { ';', ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(Int32.Parse).ToArray();
+        }
+
+        private void ThrowDelaysInSecondsArgumentException(string paramName, Exception innerException = null)
+        {
+            throw new ArgumentException(@"DelaysInSeconds value must be a string containing non-negative numbers separated by a comma.", paramName, innerException);
         }
     }
 }

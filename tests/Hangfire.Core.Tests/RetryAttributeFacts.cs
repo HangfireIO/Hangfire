@@ -40,10 +40,89 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void Ctor_ThrowsAnException_WhenDelaysInSecondsIsNull()
+        {
+            Assert.Throws<ArgumentNullException>(
+                () => new AutomaticRetryAttribute { DelaysInSeconds = null });
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenDelaysInSecondsIsEmpty()
+        {
+            Assert.Throws<ArgumentNullException>(
+                () => new AutomaticRetryAttribute { DelaysInSeconds = string.Empty });
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenDelaysInSecondsIsInvalid()
+        {
+            Assert.Throws<ArgumentException>(
+                () => new AutomaticRetryAttribute { DelaysInSeconds = "1,A" });
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenDelaysInSecondsContainsNegativeNumbers()
+        {
+            Assert.Throws<ArgumentException>(
+                () => new AutomaticRetryAttribute { DelaysInSeconds = "1,-5" });
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenDelayByAttemptIsNull()
+        {
+            Assert.Throws<ArgumentNullException>(
+                () => new AutomaticRetryAttribute { DelayInSecondsByAttemptFunc = null });
+        }
+
+        [Fact]
         public void Ctor_SetsOnAttemptsExceededAction_ByDefault()
         {
             var filter = new AutomaticRetryAttribute();
             Assert.Equal(AttemptsExceededAction.Fail, filter.OnAttemptsExceeded);
+        }
+
+        [Fact]
+        public void Ctor_DelayByAttemptIsNotNull_ByDefault()
+        {
+            var filter = new AutomaticRetryAttribute();
+            Assert.NotNull(filter.DelayInSecondsByAttemptFunc);
+        }
+
+        [Fact]
+        public void DelaysInSeconds_ParsesOneValueCorrectly()
+        {
+            var filter = new AutomaticRetryAttribute { DelaysInSeconds = "5" };
+
+            Assert.Equal("5", filter.DelaysInSeconds);
+            Assert.Equal(5, filter.DelayInSecondsByAttemptFunc(1));
+            Assert.Equal(5, filter.DelayInSecondsByAttemptFunc(2));
+        }
+
+        [Fact]
+        public void DelaysInSeconds_ParsesListOfValuesCorrectly()
+        {
+            var filter = new AutomaticRetryAttribute { DelaysInSeconds = " 1,2 3,  5;   8" };
+
+            Assert.Equal(" 1,2 3,  5;   8", filter.DelaysInSeconds);
+            Assert.Equal(1, filter.DelayInSecondsByAttemptFunc(1));
+            Assert.Equal(2, filter.DelayInSecondsByAttemptFunc(2));
+            Assert.Equal(3, filter.DelayInSecondsByAttemptFunc(3));
+            Assert.Equal(5, filter.DelayInSecondsByAttemptFunc(4));
+            Assert.Equal(8, filter.DelayInSecondsByAttemptFunc(5));
+            Assert.Equal(8, filter.DelayInSecondsByAttemptFunc(100));
+        }
+
+        [Fact]
+        public void DelayByAttempt_ReturnCorrectValue_WhenCustomFunctionIsSet()
+        {
+            var filter = new AutomaticRetryAttribute { DelayInSecondsByAttemptFunc = attempt => (int)attempt % 3 };
+
+            Assert.Equal(1, filter.DelayInSecondsByAttemptFunc(1));
+            Assert.Equal(2, filter.DelayInSecondsByAttemptFunc(2));
+            Assert.Equal(0, filter.DelayInSecondsByAttemptFunc(3));
+            Assert.Equal(1, filter.DelayInSecondsByAttemptFunc(4));
+            Assert.Equal(2, filter.DelayInSecondsByAttemptFunc(5));
+            Assert.Equal(1, filter.DelayInSecondsByAttemptFunc(100));
         }
 
         [Fact]
