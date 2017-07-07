@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
 
@@ -23,12 +24,21 @@ namespace Hangfire
     public class DisableConcurrentExecutionAttribute : JobFilterAttribute, IServerFilter
     {
         private readonly int _timeoutInSeconds;
+        private readonly string _customLockResource;
 
         public DisableConcurrentExecutionAttribute(int timeoutInSeconds)
         {
             if (timeoutInSeconds < 0) throw new ArgumentException("Timeout argument value should be greater that zero.");
 
             _timeoutInSeconds = timeoutInSeconds;
+        }
+
+        public DisableConcurrentExecutionAttribute(int timeoutInSeconds, [NotNull] string customLockResource) 
+            : this(timeoutInSeconds)
+        {
+            if (string.IsNullOrWhiteSpace(customLockResource)) throw new ArgumentException("Custom lock resource must be specified");
+
+            _customLockResource = customLockResource;
         }
 
         public void OnPerforming(PerformingContext filterContext)
@@ -52,9 +62,9 @@ namespace Hangfire
             distributedLock.Dispose();
         }
 
-        private static string GetResource(Job job)
+        private string GetResource(Job job)
         {
-            return $"{job.Type.ToGenericTypeString()}.{job.Method.Name}";
+            return _customLockResource ?? $"{job.Type.ToGenericTypeString()}.{job.Method.Name}";
         }
     }
 }
