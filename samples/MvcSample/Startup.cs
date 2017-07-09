@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Hangfire;
+﻿using Hangfire;
 using Hangfire.Dashboard;
 using Hangfire.SqlServer;
 using Microsoft.Owin;

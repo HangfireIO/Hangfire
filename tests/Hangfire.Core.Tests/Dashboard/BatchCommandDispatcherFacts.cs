@@ -7,7 +7,7 @@ namespace Hangfire.Core.Tests.Dashboard
     public class BatchCommandDispatcherFacts
     {
         [Fact]
-        public void Dispatch_Sets422StatusCode_WhenNotPermitted()
+        public void Dispatch_Sets401StatusCode_WhenNotPermitted()
         {
             var options = new DashboardOptions
             {
@@ -16,7 +16,7 @@ namespace Hangfire.Core.Tests.Dashboard
             var context = new DashboardContextStub(options);
             var dispatcher = new BatchCommandDispatcher((DashboardContext ctx, string str) => { });
             dispatcher.Dispatch(context);
-            Assert.Equal(422, context.Response.StatusCode);
+            Assert.Equal(401, context.Response.StatusCode);
         }
     }
 }

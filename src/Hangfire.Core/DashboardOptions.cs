@@ -16,8 +16,9 @@
 
 using System;
 using System.Collections.Generic;
+using Hangfire.Dashboard;
 
-namespace Hangfire.Dashboard
+namespace Hangfire
 {
     public class DashboardOptions
     {
@@ -37,7 +38,7 @@ namespace Hangfire.Dashboard
 #if NETFULL
         [Obsolete("Please use `Authorization` property instead. Will be removed in 2.0.0.")]
         public IEnumerable<IAuthorizationFilter> AuthorizationFilters { get; set; }
-#endif  
+#endif
 
         public IEnumerable<IDashboardAuthorizationFilter> Authorization { get; set; }
 

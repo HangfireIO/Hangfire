@@ -41,7 +41,7 @@ namespace Hangfire.Dashboard
         {
             if (context.IsReadOnly)
             {
-                context.Response.StatusCode = 422;
+                context.Response.StatusCode = 401;
                 return Task.FromResult(false);
             }
 
