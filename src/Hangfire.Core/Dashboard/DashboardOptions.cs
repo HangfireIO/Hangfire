@@ -24,9 +24,9 @@ namespace Hangfire.Dashboard
         public DashboardOptions()
         {
             AppPath = "/";
-            StatsPollingInterval = 2000;
             Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
             IsReadOnlyFunc = _ => false;
+            StatsPollingInterval = 2000;
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace Hangfire.Dashboard
         public string AppPath { get; set; }
 
 #if NETFULL
-        [Obsolete("Please use `ViewDashboardAuthorization` property instead. Will be removed in 2.0.0.")]
+        [Obsolete("Please use `Authorization` property instead. Will be removed in 2.0.0.")]
         public IEnumerable<IAuthorizationFilter> AuthorizationFilters { get; set; }
 #endif  
 

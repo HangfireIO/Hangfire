@@ -97,8 +97,6 @@
     <Compile Include="Stubs\DashboardContextStub.cs" />
     <Compile Include="Stubs\JobStorageStub.cs" />
     <Compile Include="Stubs\DashboardResponseStub.cs" />
-    <Compile Include="Stubs\UnauthorizedDashboardFilterStub.cs" />
-    <Compile Include="Stubs\AuthorizedDashboardFilterStub.cs" />
     <Compile Include="Dashboard\CommandDispatcherFacts.cs" />
     <Compile Include="Dashboard\BatchCommandDispatcherFacts.cs" />
     <Compile Include="Dashboard\HtmlHelperFacts.cs" />
