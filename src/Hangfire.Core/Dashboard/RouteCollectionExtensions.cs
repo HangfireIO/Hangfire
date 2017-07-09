@@ -35,7 +35,7 @@ namespace Hangfire.Dashboard
         }
 
 #if NETFULL
-        [Obsolete("Use the AddCommand(RouteCollection, string, Func<DashboardContext, bool>) overload instead. Will be removed in 2.0.0.")]
+        [Obsolete("Use the AddCommand(RouteCollection, string, Func<DashboardContext, bool>, DashboardPermission) overload instead. Will be removed in 2.0.0.")]
         public static void AddCommand(
             [NotNull] this RouteCollection routes, 
             [NotNull] string pathTemplate, 
@@ -62,7 +62,7 @@ namespace Hangfire.Dashboard
         }
 
 #if NETFULL
-        [Obsolete("Use the AddBatchCommand(RouteCollection, string, Func<DashboardContext, bool>) overload instead. Will be removed in 2.0.0.")]
+        [Obsolete("Use the AddBatchCommand(RouteCollection, string, Func<DashboardContext, bool>, DashboardPermission) overload instead. Will be removed in 2.0.0.")]
         public static void AddBatchCommand(
             [NotNull] this RouteCollection routes, 
             [NotNull] string pathTemplate, 
@@ -95,11 +95,12 @@ namespace Hangfire.Dashboard
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
 
-            routes.AddBatchCommand(pathTemplate, (context, jobId) =>
-            {
-                var client = new BackgroundJobClient(context.Storage);
-                command(client, jobId);
-            });
+            routes.AddBatchCommand(pathTemplate, 
+                (context, jobId) =>
+                {
+                    var client = new BackgroundJobClient(context.Storage);
+                    command(client, jobId);
+                });
         }
 
         public static void AddRecurringBatchCommand(
@@ -109,11 +110,12 @@ namespace Hangfire.Dashboard
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
 
-            routes.AddBatchCommand(pathTemplate, (context, jobId) =>
-            {
-                var manager = new RecurringJobManager(context.Storage);
-                command(manager, jobId);
-            });
+            routes.AddBatchCommand(pathTemplate, 
+                (context, jobId) =>
+                {
+                    var manager = new RecurringJobManager(context.Storage);
+                    command(manager, jobId);
+                });
         }
     }
 }

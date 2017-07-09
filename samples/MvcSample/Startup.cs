@@ -1,4 +1,5 @@
-﻿using Hangfire;
+﻿using System.Collections.Generic;
+using Hangfire;
 using Hangfire.Dashboard;
 using Hangfire.SqlServer;
 using Microsoft.Owin;
@@ -19,7 +20,7 @@ namespace MvcSample
                 .UseDashboardMetric(SqlServerStorage.ActiveConnections)
                 .UseDashboardMetric(SqlServerStorage.TotalConnections)
                 .UseDashboardMetric(DashboardMetrics.FailedCount);
-            
+
             app.UseHangfireDashboard();
         }
     }

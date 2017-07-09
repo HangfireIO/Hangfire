@@ -84,6 +84,7 @@
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
     <Compile Include="Dashboard\DashboardContext.cs" />
+    <Compile Include="Dashboard\DashboardOptions.cs" />
     <Compile Include="Dashboard\DashboardRequest.cs" />
     <Compile Include="Dashboard\DashboardResponse.cs" />
     <Compile Include="Dashboard\IDashboardAuthorizationFilter.cs" />
@@ -126,7 +127,6 @@
     <Compile Include="Dashboard\CommandDispatcher.cs" />
     <Compile Include="Dashboard\DashboardMetric.cs" />
     <Compile Include="Dashboard\DashboardMetrics.cs" />
-    <Compile Include="DashboardOptions.cs" />
     <Compile Include="Obsolete\DashboardMiddleware.cs" />
     <Compile Include="Dashboard\JobsSidebarMenu.cs" />
     <Compile Include="Dashboard\MenuItem.cs" />

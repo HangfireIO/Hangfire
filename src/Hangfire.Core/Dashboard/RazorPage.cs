@@ -22,7 +22,7 @@ using Hangfire.Storage.Monitoring;
 
 namespace Hangfire.Dashboard
 {
-    public abstract class RazorPage 
+    public abstract class RazorPage
     {
         private Lazy<StatisticsDto> _statisticsLazy;
 
@@ -58,6 +58,8 @@ namespace Hangfire.Dashboard
 
         public string RequestPath => Request.Path;
 
+        public bool IsReadOnly { get; private set; }
+        
         /// <exclude />
         public abstract void Execute();
 
@@ -76,6 +78,7 @@ namespace Hangfire.Dashboard
         {
             Request = parentPage.Request;
             Response = parentPage.Response;
+            IsReadOnly = parentPage.IsReadOnly;
             Storage = parentPage.Storage;
             AppPath = parentPage.AppPath;
             StatsPollingInterval = parentPage.StatsPollingInterval;
@@ -89,7 +92,7 @@ namespace Hangfire.Dashboard
         {
             Request = context.Request;
             Response = context.Response;
-
+            IsReadOnly = context.IsReadOnly;
             Storage = context.Storage;
             AppPath = context.Options.AppPath;
             StatsPollingInterval = context.Options.StatsPollingInterval;

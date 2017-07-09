@@ -110,7 +110,7 @@
     <Compile Include="Common\TypeExtensions.cs" />
     <Compile Include="ContinuationsSupportAttribute.cs" />
     <Compile Include="Cron.cs" />
-    <Compile Include="DashboardOptions.cs" />
+    <Compile Include="Dashboard\DashboardOptions.cs" />
     <Compile Include="Dashboard\BatchCommandDispatcher.cs" />
     <Compile Include="Dashboard\CombinedResourceDispatcher.cs" />
     <Compile Include="Dashboard\CommandDispatcher.cs" />
