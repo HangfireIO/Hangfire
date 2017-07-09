@@ -26,6 +26,7 @@ namespace Hangfire.Dashboard
             AppPath = "/";
             StatsPollingInterval = 2000;
             Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
+            IsReadOnlyFunc = _ => false;
         }
 
         /// <summary>
