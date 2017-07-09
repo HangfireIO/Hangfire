@@ -34,7 +34,7 @@
         {
             <div class="js-jobs-list">
                 <div class="btn-toolbar btn-toolbar-top">
-                    @if (IsAuthorized(DashboardPermission.EnqueueJob))
+                    @if (!IsReadOnly)
                     {
                         <button class="js-jobs-list-command btn btn-sm btn-primary"
                                 data-url="@Url.To("/jobs/scheduled/enqueue")"
@@ -44,7 +44,7 @@
                             @Strings.ScheduledJobsPage_EnqueueNow
                         </button>
                     }
-                    @if (IsAuthorized(DashboardPermission.DeleteJob))
+                    @if (!IsReadOnly)
                     {
                         <button class="js-jobs-list-command btn btn-sm btn-default"
                                 data-url="@Url.To("/jobs/scheduled/delete")"

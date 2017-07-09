@@ -49,26 +49,16 @@ namespace Hangfire.Dashboard
         }
 #endif
 
-        [Obsolete("Use the AddCommand(RouteCollection, string, Func<DashboardContext, bool>, DashboardPermission) overload instead.")]
         public static void AddCommand(
             [NotNull] this RouteCollection routes,
             [NotNull] string pathTemplate,
             [NotNull] Func<DashboardContext, bool> command)
         {
-            AddCommand(routes, pathTemplate, command, DashboardPermission.ViewDashboard);
-        }
-
-        public static void AddCommand(
-            [NotNull] this RouteCollection routes,
-            [NotNull] string pathTemplate,
-            [NotNull] Func<DashboardContext, bool> command,
-            DashboardPermission requiredPermission)
-        {
             if (routes == null) throw new ArgumentNullException(nameof(routes));
             if (pathTemplate == null) throw new ArgumentNullException(nameof(pathTemplate));
             if (command == null) throw new ArgumentNullException(nameof(command));
 
-            routes.Add(pathTemplate, new CommandDispatcher(command, requiredPermission));
+            routes.Add(pathTemplate, new CommandDispatcher(command));
         }
 
 #if NETFULL
@@ -86,42 +76,22 @@ namespace Hangfire.Dashboard
         }
 #endif
 
-        [Obsolete("Use the AddBatchCommand(RouteCollection, string, Func<DashboardContext, bool>, DashboardPermission) overload instead.")]
         public static void AddBatchCommand(
             [NotNull] this RouteCollection routes,
             [NotNull] string pathTemplate,
             [NotNull] Action<DashboardContext, string> command)
         {
-            AddBatchCommand(routes, pathTemplate, command, DashboardPermission.ViewDashboard);
-        }
-
-        public static void AddBatchCommand(
-            [NotNull] this RouteCollection routes,
-            [NotNull] string pathTemplate,
-            [NotNull] Action<DashboardContext, string> command,
-            DashboardPermission requiredPermission)
-        {
             if (routes == null) throw new ArgumentNullException(nameof(routes));
             if (pathTemplate == null) throw new ArgumentNullException(nameof(pathTemplate));
             if (command == null) throw new ArgumentNullException(nameof(command));
 
-            routes.Add(pathTemplate, new BatchCommandDispatcher(command, requiredPermission));
-        }
-
-        [Obsolete("Use the AddClientBatchCommand(RouteCollection, string, Func<DashboardContext, bool>, DashboardPermission) overload instead.")]
-        public static void AddClientBatchCommand(
-            this RouteCollection routes,
-            string pathTemplate,
-            [NotNull] Action<IBackgroundJobClient, string> command)
-        {
-            AddClientBatchCommand(routes, pathTemplate, command, DashboardPermission.ViewDashboard);
+            routes.Add(pathTemplate, new BatchCommandDispatcher(command));
         }
 
         public static void AddClientBatchCommand(
             this RouteCollection routes,
             string pathTemplate, 
-            [NotNull] Action<IBackgroundJobClient, string> command,
-            DashboardPermission requiredPermission)
+            [NotNull] Action<IBackgroundJobClient, string> command)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
 
@@ -130,24 +100,13 @@ namespace Hangfire.Dashboard
                 {
                     var client = new BackgroundJobClient(context.Storage);
                     command(client, jobId);
-                },
-                requiredPermission);
+                });
         }
 
-        [Obsolete("Use the AddRecurringBatchCommand(RouteCollection, string, Func<DashboardContext, bool>, DashboardPermission) overload instead.")]
         public static void AddRecurringBatchCommand(
             this RouteCollection routes,
             string pathTemplate,
             [NotNull] Action<RecurringJobManager, string> command)
-        {
-            AddRecurringBatchCommand(routes, pathTemplate, command, DashboardPermission.ViewDashboard);
-        }
-
-        public static void AddRecurringBatchCommand(
-            this RouteCollection routes,
-            string pathTemplate,
-            [NotNull] Action<RecurringJobManager, string> command,
-            DashboardPermission requiredPermission)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
 
@@ -156,8 +115,7 @@ namespace Hangfire.Dashboard
                 {
                     var manager = new RecurringJobManager(context.Storage);
                     command(manager, jobId);
-                },
-                requiredPermission);
+                });
         }
     }
 }

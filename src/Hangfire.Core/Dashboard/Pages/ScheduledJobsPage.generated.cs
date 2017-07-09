@@ -134,7 +134,7 @@ WriteLiteral("            <div class=\"js-jobs-list\">\r\n                <div c
 
             
             #line 37 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                     if (IsAuthorized(DashboardPermission.EnqueueJob))
+                     if (!IsReadOnly)
                     {
 
             
@@ -186,7 +186,7 @@ WriteLiteral("\r\n                        </button>\r\n");
 
             
             #line 47 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                     if (IsAuthorized(DashboardPermission.DeleteJob))
+                     if (!IsReadOnly)
                     {
 
             

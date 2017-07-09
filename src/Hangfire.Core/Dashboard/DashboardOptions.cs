@@ -25,12 +25,7 @@ namespace Hangfire.Dashboard
         {
             AppPath = "/";
             StatsPollingInterval = 2000;
-            Authorizations = new Dictionary<DashboardPermission, IEnumerable<IDashboardAuthorizationFilter>>
-            {
-                [DashboardPermission.ViewDashboard] = new[] { new LocalRequestsOnlyAuthorizationFilter() },
-                [DashboardPermission.EnqueueJob] = new IDashboardAuthorizationFilter[0],
-                [DashboardPermission.DeleteJob] = new IDashboardAuthorizationFilter[0]
-            };
+            Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
         }
 
         /// <summary>
@@ -41,47 +36,12 @@ namespace Hangfire.Dashboard
 #if NETFULL
         [Obsolete("Please use `ViewDashboardAuthorization` property instead. Will be removed in 2.0.0.")]
         public IEnumerable<IAuthorizationFilter> AuthorizationFilters { get; set; }
-#endif
+#endif  
 
-        [Obsolete("Please use `ViewDashboardAuthorization` property instead.")]
-        public IEnumerable<IDashboardAuthorizationFilter> Authorization
-        {
-            get { return ViewDashboardAuthorization; }
-            set { ViewDashboardAuthorization = value; }
-        }
+        public IEnumerable<IDashboardAuthorizationFilter> Authorization { get; set; }
 
-        public IEnumerable<IDashboardAuthorizationFilter> ViewDashboardAuthorization
-        {
-            get { return Authorizations[DashboardPermission.ViewDashboard]; }
-            set
-            {
-                if (value == null) throw new ArgumentNullException(nameof(value));
-                Authorizations[DashboardPermission.ViewDashboard] = value;
-            }
-        }
-
-        public IEnumerable<IDashboardAuthorizationFilter> EnqueueJobAuthorization
-        {
-            get { return Authorizations[DashboardPermission.EnqueueJob]; }
-            set
-            {
-                if (value == null) throw new ArgumentNullException(nameof(value));
-                Authorizations[DashboardPermission.EnqueueJob] = value;
-            }
-        }
-
-        public IEnumerable<IDashboardAuthorizationFilter> DeleteJobAuthorization
-        { 
-            get { return Authorizations[DashboardPermission.DeleteJob]; }
-            set
-            {
-                if (value == null) throw new ArgumentNullException(nameof(value));
-                Authorizations[DashboardPermission.DeleteJob] = value;
-            }
-        }
-
-        internal IDictionary<DashboardPermission, IEnumerable<IDashboardAuthorizationFilter>> Authorizations { get; }
-
+        public Func<DashboardContext, bool> IsReadOnlyFunc { get; set; }
+        
         /// <summary>
         /// The interval the /stats endpoint should be polled with.
         /// </summary>

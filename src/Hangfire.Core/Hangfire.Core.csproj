@@ -85,8 +85,6 @@
     </Compile>
     <Compile Include="Dashboard\DashboardContext.cs" />
     <Compile Include="Dashboard\DashboardOptions.cs" />
-    <Compile Include="Dashboard\DashboardPermission.cs" />
-    <Compile Include="Dashboard\DashboardAuthorizationContext.cs" />
     <Compile Include="Dashboard\DashboardRequest.cs" />
     <Compile Include="Dashboard\DashboardResponse.cs" />
     <Compile Include="Dashboard\IDashboardAuthorizationFilter.cs" />

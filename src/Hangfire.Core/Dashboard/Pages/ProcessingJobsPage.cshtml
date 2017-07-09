@@ -37,7 +37,7 @@
         {
             <div class="js-jobs-list">
                 <div class="btn-toolbar btn-toolbar-top">
-                    @if (IsAuthorized(DashboardPermission.EnqueueJob))
+                    @if (!IsReadOnly)
                     {
                         <button class="js-jobs-list-command btn btn-sm btn-primary"
                                 data-url="@Url.To("/jobs/processing/requeue")"
@@ -47,7 +47,7 @@
                             @Strings.Common_RequeueJobs
                         </button>
                     }
-                    @if (IsAuthorized(DashboardPermission.DeleteJob))
+                    @if (!IsReadOnly)
                     {
                         <button class="js-jobs-list-command btn btn-sm btn-default"
                                 data-url="@Url.To("/jobs/processing/delete")"

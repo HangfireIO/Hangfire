@@ -11,10 +11,10 @@ namespace Hangfire.Core.Tests.Dashboard
         {
             var options = new DashboardOptions
             {
-                DeleteJobAuthorization = new[] { new UnauthorizedDashboardFilterStub() }
+                IsReadOnlyFunc = _ => true
             };
             var context = new DashboardContextStub(options);
-            var dispatcher = new CommandDispatcher(_ => false, DashboardPermission.DeleteJob);
+            var dispatcher = new CommandDispatcher((DashboardContext _) => false);
             dispatcher.Dispatch(context);
             Assert.Equal(422, context.Response.StatusCode);
         }

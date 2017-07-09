@@ -58,9 +58,7 @@ namespace Hangfire.Dashboard
 
         public string RequestPath => Request.Path;
 
-        internal DashboardAuthorizationContext Authorization { private set; get; }
-        public Func<DashboardPermission, bool> IsAuthorized => Authorization.IsAuthorized;
-        public bool IsReadOnly => Authorization.IsReadOnly;
+        public bool IsReadOnly { get; private set; }
         
         /// <exclude />
         public abstract void Execute();
@@ -80,7 +78,7 @@ namespace Hangfire.Dashboard
         {
             Request = parentPage.Request;
             Response = parentPage.Response;
-            Authorization = parentPage.Authorization;
+            IsReadOnly = parentPage.IsReadOnly;
             Storage = parentPage.Storage;
             AppPath = parentPage.AppPath;
             StatsPollingInterval = parentPage.StatsPollingInterval;
@@ -94,7 +92,7 @@ namespace Hangfire.Dashboard
         {
             Request = context.Request;
             Response = context.Response;
-            Authorization = context.Authorization;
+            IsReadOnly = context.IsReadOnly;
             Storage = context.Storage;
             AppPath = context.Options.AppPath;
             StatsPollingInterval = context.Options.StatsPollingInterval;

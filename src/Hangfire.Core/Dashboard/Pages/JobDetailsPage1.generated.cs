@@ -603,7 +603,7 @@ WriteLiteral("                    <span class=\"job-snippet-buttons pull-right\"
 
             
             #line 150 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                         if (IsAuthorized(DashboardPermission.EnqueueJob))
+                         if (!IsReadOnly)
                         {
 
             
@@ -653,7 +653,7 @@ WriteLiteral("\r\n                            </button>\r\n");
 
             
             #line 158 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                         if (IsAuthorized(DashboardPermission.DeleteJob))
+                         if (!IsReadOnly)
                         {
 
             

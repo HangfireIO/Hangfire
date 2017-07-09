@@ -83,7 +83,7 @@ namespace Hangfire.Dashboard
                     }
                     else
                     {
-                        if (options.ViewDashboardAuthorization.Any(filter => !filter.Authorize(context)))
+                        if (options.Authorization.Any(filter => !filter.Authorize(context)))
                         {
                             return Unauthorized(owinContext);
                         }

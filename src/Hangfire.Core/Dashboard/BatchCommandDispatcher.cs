@@ -23,12 +23,10 @@ namespace Hangfire.Dashboard
     internal class BatchCommandDispatcher : IDashboardDispatcher
     {
         private readonly Action<DashboardContext, string> _command;
-        private readonly DashboardPermission _requiredPermission;
 
-        public BatchCommandDispatcher(Action<DashboardContext, string> command, DashboardPermission requiredPermission)
+        public BatchCommandDispatcher(Action<DashboardContext, string> command)
         {
             _command = command;
-            _requiredPermission = requiredPermission;
         }
 
 #if NETFULL
@@ -41,7 +39,7 @@ namespace Hangfire.Dashboard
 
         public async Task Dispatch(DashboardContext context)
         {
-            if (!context.Authorization.IsAuthorized(_requiredPermission))
+            if (context.IsReadOnly)
             {
                 context.Response.StatusCode = 422;
                 return;

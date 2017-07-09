@@ -34,7 +34,7 @@
         {
             <div class="js-jobs-list">
                 <div class="btn-toolbar btn-toolbar-top">
-                    @if (IsAuthorized(DashboardPermission.EnqueueJob))
+                    @if (!IsReadOnly)
                     {
                         <button class="js-jobs-list-command btn btn-sm btn-primary"
                                 data-url="@Url.To("/jobs/deleted/requeue")"
@@ -50,7 +50,7 @@
                     <table class="table">
                         <thead>
                             <tr>
-                                @if (IsAuthorized(DashboardPermission.EnqueueJob))
+                                @if (!IsReadOnly)
                                 {
                                     <th class="min-width">
                                         <input type="checkbox" class="js-jobs-list-select-all"/>
@@ -65,7 +65,7 @@
                             @foreach (var job in jobs)
                             {
                                 <tr class="js-jobs-list-row @(job.Value == null || !job.Value.InDeletedState ? "obsolete-data" : null) @(job.Value != null && job.Value.InDeletedState && job.Value != null ? "hover" : null)">
-                                    @if (IsAuthorized(DashboardPermission.EnqueueJob))
+                                    @if (!IsReadOnly)
                                     {
                                         <td>
                                             @if (job.Value == null || job.Value.InDeletedState)
