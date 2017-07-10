@@ -146,7 +146,6 @@ namespace Hangfire
             set
             {
                 if (value == null || value.Length == 0) throw new ArgumentNullException(nameof(value));
-                
                 if (value.Any(delay => delay < 0)) throw new ArgumentException($@"{nameof(DelaysInSeconds)} value must be an array of non-negative numbers.", nameof(value));
 
                 lock (_lockObject) { _delaysInSeconds = value; }
