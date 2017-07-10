@@ -147,7 +147,7 @@ namespace Hangfire
             {
                 if (value == null || value.Length == 0) throw new ArgumentNullException(nameof(value));
                 
-                if (value.Any(delay => delay < 0)) throw new ArgumentException(@"DelaysInSeconds value must be a string containing non-negative numbers separated by a comma.", nameof(value));
+                if (value.Any(delay => delay < 0)) throw new ArgumentException($@"{nameof(DelaysInSeconds)} value must be an array of non-negative numbers.", nameof(value));
 
                 lock (_lockObject) { _delaysInSeconds = value; }
             }
@@ -257,19 +257,7 @@ namespace Hangfire
             }
             else
             {
-                try
-                {
-                    delayInSeconds = _delayInSecondsByAttemptFunc(retryAttempt);
-                }
-                catch (Exception e)
-                {
-                    Logger.WarnException(
-                        $"DelayInSecondsByAttemptFunc function threw exception during retrying job '{context.BackgroundJob.Id}'. The delay was defined by the default function.",
-                        e);
-                    
-                    delayInSeconds = DefaultDelayInSecondsByAttemptFunc(retryAttempt);
-                }
-                
+                delayInSeconds = _delayInSecondsByAttemptFunc(retryAttempt);                
             }
 
             var delay = TimeSpan.FromSeconds(delayInSeconds);          

@@ -115,19 +115,21 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void OnStateElection_UsesDefaultFunc_WhenDelayInSecondsByAttemptFuncThrowsException()
+        public void OnStateElection_ThrowsAnException_WhenDelayInSecondsByAttemptFuncThrowsAnException()
         {
+            var exception = new Exception();
+            
             var filter = new AutomaticRetryAttribute
             {
                 DelayInSecondsByAttemptFunc = attempt =>
                 {
-                    throw new Exception();
+                    throw exception;
                 }
             };
             
-            filter.OnStateElection(_context.Object);
+            var thrownExcetption = Assert.Throws<Exception>(() => filter.OnStateElection(_context.Object));
 
-            Assert.IsType<ScheduledState>(_context.Object.CandidateState);
+            Assert.Equal(exception, thrownExcetption);
         }
 
         [Fact]
