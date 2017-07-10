@@ -19,7 +19,7 @@ namespace MvcSample
                 .UseDashboardMetric(SqlServerStorage.ActiveConnections)
                 .UseDashboardMetric(SqlServerStorage.TotalConnections)
                 .UseDashboardMetric(DashboardMetrics.FailedCount);
-
+            
             app.UseHangfireDashboard();
         }
     }
