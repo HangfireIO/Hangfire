@@ -39,6 +39,12 @@ namespace Hangfire.Dashboard
 
         public async Task Dispatch(DashboardContext context)
         {
+            if (context.IsReadOnly)
+            {
+                context.Response.StatusCode = 401;
+                return;
+            }
+
             var jobIds = await context.Request.GetFormValuesAsync("jobs[]");
             if (jobIds.Count == 0)
             {
