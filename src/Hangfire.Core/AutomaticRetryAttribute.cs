@@ -137,9 +137,9 @@ namespace Hangfire
         /// <summary>
         /// Gets or sets the delays between attempts.
         /// </summary>
-        /// <value>A string containing non-negative numbers separated by a comma.</value>
+        /// <value>An array of non-negative numbers.</value>
         /// <exception cref="ArgumentNullException">The value in a set operation is null.</exception>
-        /// <exception cref="ArgumentException">The value in a set operation can't be parsed as a list of numbers.</exception>
+        /// <exception cref="ArgumentException">The value contain one or more negative numbers.</exception>
         public int[] DelaysInSeconds
         {
             get { lock (_lockObject) { return _delaysInSeconds; } }
