@@ -13,11 +13,13 @@ namespace Hangfire.Core.Tests
         private readonly FailedState _failedState;
         private readonly Mock<IStorageConnection> _connection;
         private readonly ElectStateContextMock _context;
+        private readonly Mock<IWriteOnlyTransaction> _transaction;
 
         public RetryAttributeFacts()
         {
             _failedState = new FailedState(new InvalidOperationException());
             _connection = new Mock<IStorageConnection>();
+            _transaction = new Mock<IWriteOnlyTransaction>();
 
             _context = new ElectStateContextMock();
             _context.ApplyContext.BackgroundJob.Id = JobId;
@@ -149,6 +151,26 @@ namespace Hangfire.Core.Tests
 
             Assert.IsType<ScheduledState>(_context.Object.CandidateState);
             Assert.True(((ScheduledState)_context.Object.CandidateState).EnqueueAt > DateTime.UtcNow);
+
+            Assert.NotNull(_context.Object.CandidateState.Reason);
+            Assert.Contains("1 of 1", _context.Object.CandidateState.Reason);
+
+            _connection.Verify(x => x.SetJobParameter(JobId, "RetryCount", "1"));
+        }
+
+        [Fact]
+        public void OnStateElection_ChangeStateToEnqueued_IfDelayIsZero()
+        {
+            var filter = new AutomaticRetryAttribute
+            {
+                Attempts = 1,
+                DelaysInSeconds = new[] { 0 }
+            };
+            
+            filter.OnStateElection(_context.Object);
+
+            Assert.IsType<EnqueuedState>(_context.Object.CandidateState);
+            Assert.NotNull(_context.Object.CandidateState.Reason);
             Assert.Contains("1 of 1", _context.Object.CandidateState.Reason);
 
             _connection.Verify(x => x.SetJobParameter(JobId, "RetryCount", "1"));
@@ -211,9 +233,82 @@ namespace Hangfire.Core.Tests
             Assert.IsType<DeletedState>(_context.Object.CandidateState);
         }
 
+        [Fact]
+        public void OnStateApplied_AddsJobToRetriesSet_IfNewStateIsScheduled()
+        {
+            // Arrange
+            var filter = CreateFilter();
+
+            var newState = new ScheduledState(DateTime.UtcNow) { Reason = "Retry attempt ..." };
+            var applyStateContext = CreatApplyStateContext(newState);
+
+            // Act
+            filter.OnStateApplied(applyStateContext, _transaction.Object);
+
+            // Assert
+            _transaction.Verify(t => t.AddToSet("retries", JobId));
+        }
+
+        [Fact]
+        public void OnStateApplied_DoesNotAddJobToRetriesSet_IfNewStateIsScheduledAndReasonIsNull()
+        {
+            // Arrange
+            var filter = CreateFilter();
+
+            var newState = new ScheduledState(DateTime.UtcNow) { Reason = null };
+            var applyStateContext = CreatApplyStateContext(newState);
+
+            // Act
+            filter.OnStateApplied(applyStateContext, _transaction.Object);
+
+            // Assert
+            _transaction.Verify(t => t.AddToSet(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public void OnStateApplied_DoesNotAddJobToRetriesSet_IfNewStateIsScheduledAndReasonDoesNotMatch()
+        {
+            // Arrange
+            var filter = CreateFilter();
+
+            var newState = new ScheduledState(DateTime.UtcNow) { Reason = "Some reason." };
+            var applyStateContext = CreatApplyStateContext(newState);
+
+            // Act
+            filter.OnStateApplied(applyStateContext, _transaction.Object);
+
+            // Assert
+            _transaction.Verify(t => t.AddToSet(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public void OnStateApplied_DoesNotAddJobToRetriesSet_IfNewStateIsEnqueued()
+        {
+            // Arrange
+            var filter = CreateFilter();
+
+            var newState = new EnqueuedState { Reason = "Retry attempt ..." };
+            var applyStateContext = CreatApplyStateContext(newState);
+            
+            // Act
+            filter.OnStateApplied(applyStateContext, _transaction.Object);
+
+            // Assert
+            _transaction.Verify(t => t.AddToSet(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
         private static AutomaticRetryAttribute CreateFilter()
         {
             return new AutomaticRetryAttribute { Attempts = 1 };
+        }
+
+        private ApplyStateContext CreatApplyStateContext(IState newState)
+        {
+            var context = new ApplyStateContextMock();
+            context.BackgroundJob.Id = JobId;
+            context.Transaction = _transaction;
+            context.NewStateObject = newState;
+            return context.Object;
         }
     }
 }
