@@ -9,13 +9,14 @@
     Layout = new LayoutPage(Queue.ToUpperInvariant());
 
     int from, perPage;
+    var filter = Query("filter");
 
     int.TryParse(Query("from"), out from);
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    var pager = new Pager(from, perPage, monitor.FetchedCount(Queue));
-    var fetchedJobs = monitor.FetchedJobs(Queue, pager.FromRecord, pager.RecordsPerPage);
+    var pager = new Pager(from, perPage, monitor.FetchedCount(Queue, filter), filter, DefaultRecordsPerPage);
+    var fetchedJobs = monitor.FetchedJobs(Queue, pager.FromRecord, pager.RecordsPerPage, filter);
 }
 
 <div class="row">
@@ -59,8 +60,11 @@
                     <span class="glyphicon glyphicon-remove"></span>
                     @Strings.Common_DeleteSelected
                 </button>
-
-                @Html.PerPageSelector(pager)
+                
+                @if (EnableJobFilters)
+                {
+                    @Html.Filter(pager)
+                }
             </div>
 
             <div class="table-responsive">
@@ -73,6 +77,10 @@
                             <th class="min-width">@Strings.Common_Id</th>
                             <th class="min-width">@Strings.Common_State</th>
                             <th>@Strings.Common_Job</th>
+                            @if (DisplayArgumentsInLists)
+                            {
+                                <th class="min-width">@Strings.Common_Arguments</th>
+                            }
                             <th class="align-right">@Strings.Common_Fetched</th>
                         </tr>
                     </thead>
@@ -91,7 +99,7 @@
                                 </td>
                                 @if (job.Value == null)
                                 {
-                                    <td colspan="3"><em>@Strings.Common_JobExpired</em></td>
+                                    <td colspan="@(DisplayArgumentsInLists ? 4 : 3)"><em>@Strings.Common_JobExpired</em></td>
                                 }
                                 else
                                 {
@@ -101,6 +109,12 @@
                                     <td class="word-break">
                                         @Html.JobNameLink(job.Key, job.Value.Job)
                                     </td>
+                                    @if (DisplayArgumentsInLists)
+                                     {
+                                         <td class="ellipsis ellipsis-wrap">
+                                             @Html.JobArguments(job.Value.Job)
+                                         </td>
+                                     }
                                     <td class="align-right">
                                         @if (job.Value.FetchedAt.HasValue)
                                         {
@@ -114,7 +128,11 @@
                 </table>
             </div>
 
-            @Html.Paginator(pager)
+            <div class="btn-toolbar">
+                @Html.Paginator(pager)
+                
+                @Html.PerPageSelector(pager)
+            </div>
         </div>
         }
     </div>

@@ -8,8 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System.Reflection;
-
 namespace Hangfire.Dashboard.Resources {
     using System;
     
@@ -41,7 +39,7 @@ namespace Hangfire.Dashboard.Resources {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Hangfire.Dashboard.Content.resx.Strings", typeof(Strings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Hangfire.Dashboard.Content.resx.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -113,6 +111,15 @@ namespace Hangfire.Dashboard.Resources {
         public static string AwaitingJobsPage_Title {
             get {
                 return ResourceManager.GetString("AwaitingJobsPage_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Arguments.
+        /// </summary>
+        public static string Common_Arguments {
+            get {
+                return ResourceManager.GetString("Common_Arguments", resourceCulture);
             }
         }
         
@@ -883,6 +890,15 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All.
+        /// </summary>
+        public static string PerPageSelector_All {
+            get {
+                return ResourceManager.GetString("PerPageSelector_All", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Items per page.
         /// </summary>
         public static string PerPageSelector_ItemsPerPage {
@@ -955,7 +971,7 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Nexts jobs.
+        ///   Looks up a localized string similar to Next jobs.
         /// </summary>
         public static string QueuesPage_Table_NextsJobs {
             get {

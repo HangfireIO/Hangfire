@@ -7,13 +7,14 @@
     Layout = new LayoutPage(Strings.ScheduledJobsPage_Title);
 
     int from, perPage;
+    var filter = Query("filter");
 
     int.TryParse(Query("from"), out from);
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    var pager = new Pager(from, perPage, monitor.ScheduledCount());
-    var scheduledJobs = monitor.ScheduledJobs(pager.FromRecord, pager.RecordsPerPage);
+    var pager = new Pager(from, perPage, monitor.ScheduledCount(filter), filter, DefaultRecordsPerPage);
+    var scheduledJobs = monitor.ScheduledJobs(pager.FromRecord, pager.RecordsPerPage, filter);
 }
 
 <div class="row">
@@ -50,7 +51,10 @@
                         @Strings.Common_DeleteSelected
                     </button>
 
-                    @Html.PerPageSelector(pager)
+                    @if (EnableJobFilters)
+                    {
+                        @Html.Filter(pager)
+                    }
                 </div>
 
                 <div class="table-responsive">
@@ -63,6 +67,10 @@
                                 <th class="min-width">@Strings.Common_Id</th>
                                 <th>@Strings.ScheduledJobsPage_Table_Enqueue</th>
                                 <th>@Strings.Common_Job</th>
+                                @if (DisplayArgumentsInLists)
+                                {
+                                    <th class="min-width">@Strings.Common_Arguments</th>
+                                }
                                 <th class="align-right">@Strings.ScheduledJobsPage_Table_Scheduled</th>
                             </tr>
                         </thead>
@@ -88,6 +96,12 @@
                                 <td class="word-break">
                                     @Html.JobNameLink(job.Key, job.Value.Job)
                                 </td>
+                                @if (DisplayArgumentsInLists)
+                                {
+                                    <td class="ellipsis ellipsis-wrap">
+                                        @Html.JobArguments(job.Value.Job)
+                                    </td>
+                                }
                                 <td class="align-right">
                                     @if (job.Value.ScheduledAt.HasValue)
                                     {
@@ -99,7 +113,11 @@
                     </table>
                 </div>
 
-                @Html.Paginator(pager)
+                <div class="btn-toolbar">
+                    @Html.Paginator(pager)
+
+                    @Html.PerPageSelector(pager)
+                </div>
             </div>
         }
     </div>

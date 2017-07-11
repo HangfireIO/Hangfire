@@ -23,7 +23,7 @@
 
         if (storageConnection != null)
         {
-            pager = new Pager(@from, perPage, storageConnection.GetSetCount("retries"));
+            pager = new Pager(@from, perPage, storageConnection.GetSetCount("retries"), null, DefaultRecordsPerPage);
             jobIds = storageConnection.GetRangeFromSet("retries", pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
         }
     }
@@ -32,7 +32,7 @@
 @if (pager == null)
 {
     <div class="alert alert-warning">
-        @Html.Raw(String.Format(Strings.RetriesPage_Warning_Html, Url.To("/jobs/scheduled")))
+        @Html.Raw(string.Format(Strings.RetriesPage_Warning_Html, Url.To("/jobs/scheduled")))
     </div>
 }
 else
@@ -66,8 +66,6 @@ else
                             <span class="glyphicon glyphicon-remove"></span>
                             @Strings.Common_DeleteSelected
                         </button>
-
-                        @Html.PerPageSelector(pager)
                     </div>
 
                     <div class="table-responsive">
@@ -80,6 +78,10 @@ else
                                     <th class="min-width">@Strings.Common_Id</th>
                                     <th class="min-width">@Strings.Common_State</th>
                                     <th>@Strings.Common_Job</th>
+                                    @if (DisplayArgumentsInLists)
+                                    {
+                                        <th class="min-width">@Strings.Common_Arguments</th>
+                                    }
                                     <th>@Strings.Common_Reason</th>
                                     <th class="align-right">@Strings.Common_Retry</th>
                                     <th class="align-right">@Strings.Common_Created</th>
@@ -106,7 +108,7 @@ else
                                         </td>
                                         @if (jobData == null)
                                         {
-                                            <td colspan="5"><em>Job expired.</em></td>
+                                            <td colspan="@(DisplayArgumentsInLists ? 6 : 5)"><em>Job expired.</em></td>
                                         }
                                         else
                                         {
@@ -116,6 +118,12 @@ else
                                             <td class="word-break">
                                                 @Html.JobNameLink(jobId, jobData.Job)
                                             </td>
+                                            @if (DisplayArgumentsInLists)
+                                             {
+                                                 <td class="ellipsis ellipsis-wrap">
+                                                     @Html.JobArguments(jobData.Job)
+                                                 </td>
+                                             }
                                             <td>
                                                 @(stateData?.Reason)
                                             </td>
@@ -135,7 +143,11 @@ else
                         </table>
                     </div>
 
-                    @Html.Paginator(pager)
+                    <div class="btn-toolbar">
+                        @Html.Paginator(pager)
+                
+                        @Html.PerPageSelector(pager)
+                    </div>
                 </div>
             }
         </div>

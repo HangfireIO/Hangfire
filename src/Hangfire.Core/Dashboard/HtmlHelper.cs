@@ -26,6 +26,7 @@ using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 using Hangfire.Dashboard.Pages;
 using Hangfire.Dashboard.Resources;
+using Newtonsoft.Json;
 
 namespace Hangfire.Dashboard
 {
@@ -78,6 +79,12 @@ namespace Hangfire.Dashboard
         {
             if (pager == null) throw new ArgumentNullException(nameof(pager));
             return RenderPartial(new PerPageSelector(pager));
+        }
+
+        public NonEscapedString Filter([NotNull] Pager pager)
+        {
+            if (pager == null) throw new ArgumentNullException(nameof(pager));
+            return RenderPartial(new Filter(pager));
         }
 
         public NonEscapedString RenderPartial(RazorPage partialPage)
@@ -144,6 +151,11 @@ namespace Hangfire.Dashboard
             return Raw($"<a class=\"job-method\" href=\"{_page.Url.JobDetails(jobId)}\">{HtmlEncode(JobName(job))}</a>");
         }
 
+        public NonEscapedString JobArguments(Job job)
+        {
+            var serialized = JsonConvert.SerializeObject(job?.Args, Formatting.Indented);
+            return Raw($"<a class=\"job-method toggle-ellipsis\">{HtmlEncode(serialized)}</a>");
+        }
         public NonEscapedString RelativeTime(DateTime value)
         {
             return Raw($"<span data-moment=\"{JobHelper.ToTimestamp(value)}\">{value}</span>");

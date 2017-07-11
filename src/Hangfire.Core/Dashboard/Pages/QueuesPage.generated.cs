@@ -326,12 +326,43 @@ WriteLiteral("</th>\r\n                                                    <th>"
             
             #line default
             #line hidden
-WriteLiteral("</th>\r\n                                                    <th class=\"align-right" +
-" min-width\">");
+WriteLiteral("</th>\r\n");
 
 
             
             #line 72 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+                                                     if (DisplayArgumentsInLists)
+                                                    {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                                        <th class=\"min-width\">");
+
+
+            
+            #line 74 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+                                                                         Write(Strings.Common_Arguments);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</th>\r\n");
+
+
+            
+            #line 75 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+                                                    }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                                    <th class=\"align-right min-wi" +
+"dth\">");
+
+
+            
+            #line 76 "..\..\Dashboard\Pages\QueuesPage.cshtml"
                                                                                  Write(Strings.Common_Enqueued);
 
             
@@ -343,7 +374,7 @@ WriteLiteral("</th>\r\n                                                </tr>\r\n
 
 
             
-            #line 76 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+            #line 80 "..\..\Dashboard\Pages\QueuesPage.cshtml"
                                                  foreach (var job in queue.FirstJobs)
                                                 {
 
@@ -354,7 +385,7 @@ WriteLiteral("                                                    <tr class=\"")
 
 
             
-            #line 78 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+            #line 82 "..\..\Dashboard\Pages\QueuesPage.cshtml"
                                                            Write(job.Value == null || !job.Value.InEnqueuedState ? "obsolete-data" : null);
 
             
@@ -365,7 +396,7 @@ WriteLiteral("\">\r\n                                                        <td
 
 
             
-            #line 80 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+            #line 84 "..\..\Dashboard\Pages\QueuesPage.cshtml"
                                                        Write(Html.JobIdLink(job.Key));
 
             
@@ -375,7 +406,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 81 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+            #line 85 "..\..\Dashboard\Pages\QueuesPage.cshtml"
                                                              if (job.Value != null && !job.Value.InEnqueuedState)
                                                             {
 
@@ -386,7 +417,7 @@ WriteLiteral("                                                                <s
 
 
             
-            #line 83 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+            #line 87 "..\..\Dashboard\Pages\QueuesPage.cshtml"
                                                                         Write(Strings.Common_JobStateChanged_Text);
 
             
@@ -396,7 +427,7 @@ WriteLiteral("\" class=\"glyphicon glyphicon-question-sign\"></span>\r\n");
 
 
             
-            #line 84 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+            #line 88 "..\..\Dashboard\Pages\QueuesPage.cshtml"
                                                             }
 
             
@@ -406,19 +437,29 @@ WriteLiteral("                                                        </td>\r\n"
 
 
             
-            #line 86 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+            #line 90 "..\..\Dashboard\Pages\QueuesPage.cshtml"
                                                          if (job.Value == null)
                                                         {
 
             
             #line default
             #line hidden
-WriteLiteral("                                                            <td colspan=\"3\"><em>");
+WriteLiteral("                                                            <td colspan=\"");
 
 
             
-            #line 88 "..\..\Dashboard\Pages\QueuesPage.cshtml"
-                                                                           Write(Strings.Common_JobExpired);
+            #line 92 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+                                                                     Write(DisplayArgumentsInLists ? 4 : 3);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\"><em>");
+
+
+            
+            #line 92 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+                                                                                                            Write(Strings.Common_JobExpired);
 
             
             #line default
@@ -427,7 +468,7 @@ WriteLiteral("</em></td>\r\n");
 
 
             
-            #line 89 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+            #line 93 "..\..\Dashboard\Pages\QueuesPage.cshtml"
                                                         }
                                                         else
                                                         {
@@ -440,7 +481,7 @@ WriteLiteral("                                                            <td cl
 
 
             
-            #line 93 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+            #line 97 "..\..\Dashboard\Pages\QueuesPage.cshtml"
                                                            Write(Html.StateLabel(job.Value.State));
 
             
@@ -455,7 +496,7 @@ WriteLiteral("                                                            <td cl
 
 
             
-            #line 96 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+            #line 100 "..\..\Dashboard\Pages\QueuesPage.cshtml"
                                                            Write(Html.JobNameLink(job.Key, job.Value.Job));
 
             
@@ -464,13 +505,54 @@ WriteLiteral("                                                            <td cl
 WriteLiteral("\r\n                                                            </td>\r\n");
 
 
+            
+            #line 102 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+                                                            
+            
+            #line default
+            #line hidden
+            
+            #line 102 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+                                                             if (DisplayArgumentsInLists)
+                                                             {
 
+            
+            #line default
+            #line hidden
+WriteLiteral("                                                                 <td class=\"ellip" +
+"sis ellipsis-wrap\">\r\n                                                           " +
+"          ");
+
+
+            
+            #line 105 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+                                                                Write(Html.JobArguments(job.Value.Job));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                                                                 </td>\r\n");
+
+
+            
+            #line 107 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+                                                             }
+            
+            #line default
+            #line hidden
+            
+            #line 107 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+                                                              
+
+            
+            #line default
+            #line hidden
 WriteLiteral("                                                            <td class=\"align-righ" +
 "t min-width\">\r\n");
 
 
             
-            #line 99 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+            #line 109 "..\..\Dashboard\Pages\QueuesPage.cshtml"
                                                                  if (job.Value.EnqueuedAt.HasValue)
                                                                 {
                                                                     
@@ -478,14 +560,14 @@ WriteLiteral("                                                            <td cl
             #line default
             #line hidden
             
-            #line 101 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+            #line 111 "..\..\Dashboard\Pages\QueuesPage.cshtml"
                                                                Write(Html.RelativeTime(job.Value.EnqueuedAt.Value));
 
             
             #line default
             #line hidden
             
-            #line 101 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+            #line 111 "..\..\Dashboard\Pages\QueuesPage.cshtml"
                                                                                                                   
                                                                 }
                                                                 else
@@ -498,7 +580,7 @@ WriteLiteral("                                                                  
 
 
             
-            #line 105 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+            #line 115 "..\..\Dashboard\Pages\QueuesPage.cshtml"
                                                                    Write(Strings.Common_NotAvailable);
 
             
@@ -508,7 +590,7 @@ WriteLiteral("</em>\r\n");
 
 
             
-            #line 106 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+            #line 116 "..\..\Dashboard\Pages\QueuesPage.cshtml"
                                                                 }
 
             
@@ -518,7 +600,7 @@ WriteLiteral("                                                            </td>\
 
 
             
-            #line 108 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+            #line 118 "..\..\Dashboard\Pages\QueuesPage.cshtml"
                                                         }
 
             
@@ -528,7 +610,7 @@ WriteLiteral("                                                    </tr>\r\n");
 
 
             
-            #line 110 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+            #line 120 "..\..\Dashboard\Pages\QueuesPage.cshtml"
                                                 }
 
             
@@ -539,7 +621,7 @@ WriteLiteral("                                            </tbody>\r\n          
 
 
             
-            #line 113 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+            #line 123 "..\..\Dashboard\Pages\QueuesPage.cshtml"
                                     }
 
             
@@ -549,7 +631,7 @@ WriteLiteral("                                </td>\r\n                         
 
 
             
-            #line 116 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+            #line 126 "..\..\Dashboard\Pages\QueuesPage.cshtml"
                         }
 
             
@@ -559,7 +641,7 @@ WriteLiteral("                    </tbody>\r\n                </table>\r\n      
 
 
             
-            #line 120 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+            #line 130 "..\..\Dashboard\Pages\QueuesPage.cshtml"
         }
 
             

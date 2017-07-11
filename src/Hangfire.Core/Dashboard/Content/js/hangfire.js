@@ -361,6 +361,18 @@
                 e.preventDefault();
             });
 
+            $(document).on('change', '#paginator-filter', function(e) {
+                var filter = $("#paginator-filter").val();
+                var url = $(this).data('href') + filter;
+                window.location = url;
+                e.preventDefault();
+            });
+
+            $(document).on('click', '.toggle-ellipsis', function (e) {
+                $(this).closest('td').first().toggleClass('ellipsis-wrap');
+            });
+
+
             $(document).on('click', '.expander', function (e) {
                 var $expander = $(this),
                     $expandable = $expander.closest('tr').next().find('.expandable');

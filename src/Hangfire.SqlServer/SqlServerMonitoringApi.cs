@@ -43,13 +43,13 @@ namespace Hangfire.SqlServer
             _jobListLimit = jobListLimit;
         }
 
-        public long ScheduledCount()
+        public long ScheduledCount(string filter)
         {
             return UseConnection(connection => 
-                GetNumberOfJobsByStateName(connection, ScheduledState.StateName));
+                GetNumberOfJobsByStateName(connection, ScheduledState.StateName, filter));
         }
 
-        public long EnqueuedCount(string queue)
+        public long EnqueuedCount(string queue, string filter)
         {
             var queueApi = GetQueueApi(queue);
             var counters = queueApi.GetEnqueuedAndFetchedCount(queue);
@@ -57,7 +57,7 @@ namespace Hangfire.SqlServer
             return counters.EnqueuedCount ?? 0;
         }
 
-        public long FetchedCount(string queue)
+        public long FetchedCount(string queue, string filter)
         {
             var queueApi = GetQueueApi(queue);
             var counters = queueApi.GetEnqueuedAndFetchedCount(queue);
@@ -65,24 +65,25 @@ namespace Hangfire.SqlServer
             return counters.FetchedCount ?? 0;
         }
 
-        public long FailedCount()
+        public long FailedCount(string filter)
         {
             return UseConnection(connection => 
-                GetNumberOfJobsByStateName(connection, FailedState.StateName));
+                GetNumberOfJobsByStateName(connection, FailedState.StateName, filter));
         }
 
-        public long ProcessingCount()
+        public long ProcessingCount(string filter)
         {
             return UseConnection(connection => 
-                GetNumberOfJobsByStateName(connection, ProcessingState.StateName));
+                GetNumberOfJobsByStateName(connection, ProcessingState.StateName, filter));
         }
 
-        public JobList<ProcessingJobDto> ProcessingJobs(int @from, int count)
+        public JobList<ProcessingJobDto> ProcessingJobs(int @from, int count, string filter)
         {
             return UseConnection(connection => GetJobs(
                 connection,
                 from, count,
                 ProcessingState.StateName,
+                filter,
                 (sqlJob, job, stateData) => new ProcessingJobDto
                 {
                     Job = job,
@@ -91,12 +92,13 @@ namespace Hangfire.SqlServer
                 }));
         }
 
-        public JobList<ScheduledJobDto> ScheduledJobs(int @from, int count)
+        public JobList<ScheduledJobDto> ScheduledJobs(int @from, int count, string filter)
         {
             return UseConnection(connection => GetJobs(
                 connection,
                 from, count,
                 ScheduledState.StateName,
+                filter,
                 (sqlJob, job, stateData) => new ScheduledJobDto
                 {
                     Job = job,
@@ -145,13 +147,14 @@ namespace Hangfire.SqlServer
             });
         }
 
-        public JobList<FailedJobDto> FailedJobs(int @from, int count)
+        public JobList<FailedJobDto> FailedJobs(int @from, int count, string filter)
         {
             return UseConnection(connection => GetJobs(
                 connection,
                 from,
                 count,
                 FailedState.StateName,
+                filter,
                 (sqlJob, job, stateData) => new FailedJobDto
                 {
                     Job = job,
@@ -163,13 +166,14 @@ namespace Hangfire.SqlServer
                 }));
         }
 
-        public JobList<SucceededJobDto> SucceededJobs(int @from, int count)
+        public JobList<SucceededJobDto> SucceededJobs(int @from, int count, string filter)
         {
             return UseConnection(connection => GetJobs(
                 connection,
                 from,
                 count,
                 SucceededState.StateName,
+                filter,
                 (sqlJob, job, stateData) => new SucceededJobDto
                 {
                     Job = job,
@@ -181,13 +185,14 @@ namespace Hangfire.SqlServer
                 }));
         }
 
-        public JobList<DeletedJobDto> DeletedJobs(int @from, int count)
+        public JobList<DeletedJobDto> DeletedJobs(int @from, int count, string filter)
         {
             return UseConnection(connection => GetJobs(
                 connection,
                 from,
                 count,
                 DeletedState.StateName,
+                filter,
                 (sqlJob, job, stateData) => new DeletedJobDto
                 {
                     Job = job,
@@ -227,7 +232,7 @@ namespace Hangfire.SqlServer
             return result;
         }
 
-        public JobList<EnqueuedJobDto> EnqueuedJobs(string queue, int @from, int perPage)
+        public JobList<EnqueuedJobDto> EnqueuedJobs(string queue, int @from, int perPage, string filter)
         {
             var queueApi = GetQueueApi(queue);
             var enqueuedJobIds = queueApi.GetEnqueuedJobIds(queue, from, perPage);
@@ -236,7 +241,7 @@ namespace Hangfire.SqlServer
             return UseConnection(connection => EnqueuedJobs(connection, enqueuedJobIds.Select(x => (long)x).ToArray()));
         }
 
-        public JobList<FetchedJobDto> FetchedJobs(string queue, int @from, int perPage)
+        public JobList<FetchedJobDto> FetchedJobs(string queue, int @from, int perPage, string filter)
         {
             var queueApi = GetQueueApi(queue);
             var fetchedJobIds = queueApi.GetFetchedJobIds(queue, from, perPage);
@@ -298,16 +303,16 @@ select * from [{_storage.SchemaName}].State with (nolock) where JobId = @id orde
             });
         }
 
-        public long SucceededListCount()
+        public long SucceededListCount(string filter)
         {
             return UseConnection(connection => 
-                GetNumberOfJobsByStateName(connection, SucceededState.StateName));
+                GetNumberOfJobsByStateName(connection, SucceededState.StateName, filter));
         }
 
-        public long DeletedListCount()
+        public long DeletedListCount(string filter)
         {
             return UseConnection(connection => 
-                GetNumberOfJobsByStateName(connection, DeletedState.StateName));
+                GetNumberOfJobsByStateName(connection, DeletedState.StateName, filter));
         }
 
         public StatisticsDto GetStatistics()
@@ -462,15 +467,19 @@ where j.Id in @jobIds";
                 });
         }
 
-        private long GetNumberOfJobsByStateName(DbConnection connection, string stateName)
+        private long GetNumberOfJobsByStateName(DbConnection connection, string stateName, string filter)
         {
+            var filterSql = !string.IsNullOrEmpty(filter) && filter.Length > 2
+                ? "and InvocationData like @contains"
+                : "";
+
             var sqlQuery = _jobListLimit.HasValue
-                ? $@"select count(j.Id) from (select top (@limit) Id from [{_storage.SchemaName}].Job with (nolock) where StateName = @state) as j"
-                : $@"select count(Id) from [{_storage.SchemaName}].Job with (nolock) where StateName = @state";
+                ? $@"select count(j.Id) from (select top (@limit) Id from [{_storage.SchemaName}].Job with (nolock) where StateName = @state {filterSql}) as j"
+                : $@"select count(Id) from [{_storage.SchemaName}].Job with (nolock) where StateName = @state {filterSql}";
 
             var count = connection.ExecuteScalar<int>(
                  sqlQuery,
-                 new { state = stateName, limit = _jobListLimit },
+                 new { state = stateName, limit = _jobListLimit, @contains = $"%{filter}%" },
                  commandTimeout: _storage.CommandTimeout);
 
             return count;
@@ -496,25 +505,32 @@ where j.Id in @jobIds";
             int from,
             int count,
             string stateName,
+            string filter,
             Func<SqlJob, Job, Dictionary<string, string>, TDto> selector)
         {
+            var filterSql = !string.IsNullOrEmpty(filter) && filter.Length > 2
+                ? "and j.InvocationData like @contains"
+                : "";
+
             string jobsSql = 
 $@";with cte as 
 (
   select j.Id, row_number() over (order by j.Id desc) as row_num
   from [{_storage.SchemaName}].Job j with (nolock, forceseek)
   where j.StateName = @stateName
+  {filterSql}
 )
 select j.Id, j.InvocationData, j.Arguments, s.Reason as StateReason, s.Data as StateData
 from [{_storage.SchemaName}].Job j with (nolock)
 inner join cte on cte.Id = j.Id 
 left join [{_storage.SchemaName}].State s with (nolock) on j.StateId = s.Id
 where cte.row_num between @start and @end
+{filterSql}
 order by j.Id desc";
 
             var jobs = connection.Query<SqlJob>(
                         jobsSql,
-                        new { stateName = stateName, start = @from + 1, end = @from + count },
+                        new { stateName = stateName, start = @from + 1, end = @from + count, @contains = $"%{filter}%" },
                         commandTimeout: _storage.CommandTimeout)
                         .ToList();
 

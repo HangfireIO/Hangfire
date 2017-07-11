@@ -2,14 +2,16 @@
 @using Hangfire.Dashboard.Resources;
 @inherits Hangfire.Dashboard.RazorPage
 
+<div class="pull-right">
     <div class="btn-group pull-right paginator">
-        @foreach (var count in new[] { 10, 20, 50, 100, 500 })
+        @foreach (var count in new[] { 10, 20, 50, 100, 500, int.MaxValue })
         {
-            <a class="btn btn-sm btn-default @(count == _pager.RecordsPerPage ? "active" : null)" 
-                   href="@_pager.RecordsPerPageUrl(count)">@count</a>    
+            <a class="btn btn-sm btn-default @(count == _pager.RecordsPerPage ? "active" : null)"
+               href="@_pager.RecordsPerPageUrl(count)">@(count == int.MaxValue ? Strings.PerPageSelector_All : count.ToString())</a>
         }
     </div>
     <div class="btn-toolbar-spacer pull-right"></div>
     <div class="btn-toolbar-label btn-toolbar-label-sm pull-right">
         @Strings.PerPageSelector_ItemsPerPage:
     </div>
+</div>

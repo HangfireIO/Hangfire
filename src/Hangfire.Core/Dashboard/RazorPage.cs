@@ -42,6 +42,12 @@ namespace Hangfire.Dashboard
         public JobStorage Storage { get; internal set; }
         public string AppPath { get; internal set; }
         public int StatsPollingInterval { get; internal set; }
+        public bool DisplayArgumentsInLists { get; internal set; }
+
+        public bool EnableJobFilters { get; internal set; }
+        public bool UseFullWidth { get; internal set; }
+        public int DefaultRecordsPerPage { get; internal set; }
+
         public Stopwatch GenerationTime { get; private set; }
 
         public StatisticsDto Statistics
@@ -79,6 +85,10 @@ namespace Hangfire.Dashboard
             Storage = parentPage.Storage;
             AppPath = parentPage.AppPath;
             StatsPollingInterval = parentPage.StatsPollingInterval;
+            DisplayArgumentsInLists = parentPage.DisplayArgumentsInLists;
+            EnableJobFilters = parentPage.EnableJobFilters;
+            UseFullWidth = parentPage.UseFullWidth;
+            DefaultRecordsPerPage = parentPage.DefaultRecordsPerPage;
             Url = parentPage.Url;
 
             GenerationTime = parentPage.GenerationTime;
@@ -93,6 +103,11 @@ namespace Hangfire.Dashboard
             Storage = context.Storage;
             AppPath = context.Options.AppPath;
             StatsPollingInterval = context.Options.StatsPollingInterval;
+            DisplayArgumentsInLists = context.Options.DisplayArgumentsInLists;
+            EnableJobFilters = context.Options.EnableJobFilters;
+            UseFullWidth = context.Options.UseFullWidth;
+            DefaultRecordsPerPage = context.Options.DefaultRecordsPerPage;
+
             Url = new UrlHelper(context);
 
             _statisticsLazy = new Lazy<StatisticsDto>(() =>
