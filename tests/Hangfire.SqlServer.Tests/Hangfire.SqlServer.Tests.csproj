@@ -76,6 +76,7 @@
     <Compile Include="SqlServerConnectionFacts.cs" />
     <Compile Include="ExpirationManagerFacts.cs" />
     <Compile Include="SqlServerJobQueueFacts.cs" />
+    <Compile Include="SqlServerMonitoringApiFacts.cs" />
     <Compile Include="SqlServerTimeoutJobFacts.cs" />
     <Compile Include="SqlServerTransactionJobFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
