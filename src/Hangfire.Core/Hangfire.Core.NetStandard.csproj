@@ -176,6 +176,9 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="Dashboard\Pages\Filter.cs">
+      <DependentUpon>_Filter.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="Dashboard\Pages\HomePage.cs">
       <DependentUpon>HomePage.cshtml</DependentUpon>
     </Compile>
@@ -248,6 +251,11 @@
     </Compile>
     <Compile Include="Dashboard\Pages\_Breadcrumbs.generated.cs">
       <DependentUpon>_Breadcrumbs.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\_Filter.generated.cs">
+      <DependentUpon>_Filter.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
@@ -477,6 +485,10 @@
     <None Include="Dashboard\Pages\_BlockMetric.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_BlockMetric.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\_Filter.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_Filter.generated.cs</LastGenOutput>
     </None>
     <None Include="Dashboard\Pages\_InlineMetric.cshtml">
       <Generator>RazorGenerator</Generator>
