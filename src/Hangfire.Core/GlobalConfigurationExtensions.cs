@@ -38,6 +38,17 @@ namespace Hangfire
             return configuration.Use(storage, x => JobStorage.Current = x);
         }
 
+        public static IGlobalConfiguration<JobStorage> UseJobExpirationTimeout(
+            [NotNull] this IGlobalConfiguration<JobStorage> configuration,
+            [NotNull] TimeSpan timeout)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            JobStorage.Current.JobExpirationTimeout = timeout;
+
+            return configuration;
+        }
+
         public static IGlobalConfiguration<TActivator> UseActivator<TActivator>(
             [NotNull] this IGlobalConfiguration configuration,
             [NotNull] TActivator activator)
