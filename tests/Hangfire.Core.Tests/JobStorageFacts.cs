@@ -66,7 +66,7 @@ namespace Hangfire.Core.Tests
 
             GlobalConfiguration.Configuration
                 .UseStorage(_storage.Object)
-                .UseJobExpirationTimeout(TimeSpan.FromDays(3));
+                .WithJobExpirationTimeout(TimeSpan.FromDays(3));
 
             Assert.Equal(TimeSpan.FromDays(3), _storage.Object.JobExpirationTimeout);
         }
