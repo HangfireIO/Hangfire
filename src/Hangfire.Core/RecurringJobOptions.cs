@@ -53,5 +53,9 @@ namespace Hangfire
                 _queueName = value;
             }
         }
+
+        public DateTime? StartDate { get; set; }
+
+        public DateTime? EndDate { get; set; }
     }
 }

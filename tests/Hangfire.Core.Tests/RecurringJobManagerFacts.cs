@@ -179,6 +179,25 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void AddOrUpdate_SetsTheRecurringJobEntry_IncludingOptionalDateRange()
+        {
+            var startDate = DateTime.UtcNow.AddSeconds(-1);
+            var endDate = DateTime.UtcNow.AddSeconds(1);
+            var manager = CreateManager();
+
+            manager.AddOrUpdate(_id, _job, _cronExpression, startDate, endDate);
+
+            _transaction.Verify(x => x.SetRangeInHash(
+                $"recurring-job:{_id}",
+                It.Is<Dictionary<string, string>>(rj =>
+                    rj["Cron"] == "* * * * *"
+                    && !String.IsNullOrEmpty(rj["Job"])
+                    && JobHelper.DeserializeDateTime(rj["CreatedAt"]) > DateTime.UtcNow.AddMinutes(-1)
+                    && JobHelper.DeserializeNullableDateTime(rj["StartDate"]) == startDate
+                    && JobHelper.DeserializeNullableDateTime(rj["EndDate"]) == endDate)));
+        }
+
+        [Fact]
         public void AddOrUpdate_CommitsTransaction()
         {
             var manager = CreateManager();
