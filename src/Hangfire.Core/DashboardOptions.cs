@@ -27,9 +27,9 @@ namespace Hangfire
             AppPath = "/";
             Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
             StatsPollingInterval = 2000;
-            DisplayArgumentsInLists = true;
-            EnableJobFilters = true;
-            UseFullWidth = true;
+            DisplayArgumentsInLists = false;
+            EnableJobFilters = false;
+            UseFullWidth = false;
             DefaultRecordsPerPage = 10;
         }
 
