@@ -65,6 +65,11 @@ namespace Hangfire
             }
             set
             {
+                if (value < TimeSpan.FromHours(1))
+                {
+                    throw new ArgumentException("JobStorage.JobExpirationTimeout value should be equal or greater than 1 hour.");
+                }
+
                 lock (LockObject)
                 {
                     _jobExpirationTimeout = value;
@@ -73,7 +78,7 @@ namespace Hangfire
         }
 
         public abstract IMonitoringApi GetMonitoringApi();
-        
+
         public abstract IStorageConnection GetConnection();
 
 #pragma warning disable 618
