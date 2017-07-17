@@ -17,6 +17,9 @@ namespace Hangfire.SqlServer.Tests
 {
     public class SqlServerConnectionFacts
     {
+        private const string StringLongerThan40Characters = "Too long name containing more than 40 characters.";
+        private const string StringLongerThan100Characters = @"The string is too long. It contains more than 40 characters. Moreover it contains more than 100 characters.";
+        
         private readonly Mock<IPersistentJobQueue> _queue;
         private readonly PersistentJobQueueProviderCollection _providers;
 
@@ -113,6 +116,22 @@ namespace Hangfire.SqlServer.Tests
                     () => connection.CreateExpiredJob(
                         Job.FromExpression(() => SampleMethod("hello")),
                         null,
+                        DateTime.UtcNow,
+                        TimeSpan.Zero));
+
+                Assert.Equal("parameters", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void CreateExpiredJob_ThrowsAnException_WhenParameterNameIsTooLong()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentException>(
+                    () => connection.CreateExpiredJob(
+                        Job.FromExpression(() => SampleMethod("hello")),
+                        new Dictionary<string, string> { { StringLongerThan40Characters , "some value"}} ,
                         DateTime.UtcNow,
                         TimeSpan.Zero));
 
@@ -352,6 +371,18 @@ select scope_identity() as Id";
         }
 
         [Fact, CleanDatabase]
+        public void SetParameter_ThrowsAnException_WhenNameIsTooLong()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentException>(
+                    () => connection.SetJobParameter("1", StringLongerThan40Characters, "value"));
+
+                Assert.Equal("name", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
         public void SetParameters_CreatesNewParameter_WhenParameterWithTheGivenNameDoesNotExists()
         {
             const string arrangeSql = @"
@@ -556,6 +587,18 @@ values
         }
 
         [Fact, CleanDatabase]
+        public void AnnounceServer_ThrowsAnException_WhenServerIdIsTooLong()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentException>(
+                    () => connection.AnnounceServer(StringLongerThan100Characters, new ServerContext()));
+
+                Assert.Equal("serverId", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
         public void AnnounceServer_CreatesOrUpdatesARecord()
         {
             UseConnections((sql, connection) =>
@@ -733,12 +776,38 @@ values (@key, 0.0, @value)";
         }
 
         [Fact, CleanDatabase]
+        public void SetRangeInHash_ThrowsAnException_WhenKeyIsTooLong()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentException>(
+                    () => connection.SetRangeInHash(StringLongerThan100Characters, new Dictionary<string, string>()));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
         public void SetRangeInHash_ThrowsAnException_WhenKeyValuePairsArgumentIsNull()
         {
             UseConnection(connection =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
                     () => connection.SetRangeInHash("some-hash", null));
+
+                Assert.Equal("keyValuePairs", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void SetRangeInHash_ThrowsAnException_WhenKeyValuePairsContainsTooLongField()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentException>(
+                    () => connection.SetRangeInHash(
+                        "some-hash",
+                        new Dictionary<string, string> { { StringLongerThan100Characters, "value" } }));
 
                 Assert.Equal("keyValuePairs", exception.ParamName);
             });

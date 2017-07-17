@@ -14,6 +14,12 @@ namespace Hangfire.SqlServer.Tests
 {
     public class SqlServerWriteOnlyTransactionFacts
     {
+        private const string StringLongerThan20Characters = "More than 20 characters.";
+        private const string StringLongerThan40Characters = "Too long string containing more than 40 characters.";
+        private const string StringLongerThan100Characters = @"The string is too long. It contains more than 40 characters. Moreover it contains more than 100 characters.";
+        private const string StringLongerThan256Characters = StringLongerThan100Characters + StringLongerThan100Characters + StringLongerThan40Characters + StringLongerThan20Characters;
+
+
         private readonly PersistentJobQueueProviderCollection _queueProviders;
 
         public SqlServerWriteOnlyTransactionFacts()
@@ -119,6 +125,19 @@ select scope_identity() as Id";
         }
 
         [Fact, CleanDatabase]
+        public void SetJobState_ThrowsAnException_WhenStateNameIsTooLong()
+        {
+            var stateWithLongName = new Mock<IState>();
+            stateWithLongName.Setup(s => s.Name).Returns(StringLongerThan20Characters);
+            
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentException>(() => Commit(sql, transaction => transaction.SetJobState("id", stateWithLongName.Object)));
+                Assert.Equal("state", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
         public void AddJobState_JustAddsANewRecordInATable()
         {
             const string arrangeSql = @"
@@ -152,6 +171,21 @@ select scope_identity() as Id";
         }
 
         [Fact, CleanDatabase]
+        public void AddJobState_ThrowsAnException_WhenStateNameIsTooLong()
+        {
+            var stateWithLongName = new Mock<IState>();
+            stateWithLongName.Setup(s => s.Name).Returns(StringLongerThan20Characters);
+
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentException>(
+                    () => Commit(sql, transaction => transaction.AddJobState("id", stateWithLongName.Object))
+                );
+                Assert.Equal("state", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
         public void AddToQueue_CallsEnqueue_OnTargetPersistentQueue()
         {
             var correctJobQueue = new Mock<IPersistentJobQueue>();
@@ -174,6 +208,16 @@ select scope_identity() as Id";
             return connection
                 .Query("select * from HangFire.Job where Id = @id", new { id = jobId })
                 .Single();
+        }
+
+        [Fact, CleanDatabase]
+        public void IncrementCounter_ThrowsAnException_WhenKeyIsTooLong()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentException>(() => Commit(sql, x => x.IncrementCounter(StringLongerThan100Characters)));
+                Assert.Equal("key", exception.ParamName);
+            });
         }
 
         [Fact, CleanDatabase]
@@ -229,6 +273,16 @@ select scope_identity() as Id";
         }
 
         [Fact, CleanDatabase]
+        public void DecrementCounter_ThrowsAndException_WhenKeyIsTooLong()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentException>(() => Commit(sql, x => x.DecrementCounter(StringLongerThan100Characters)));
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
         public void DecrementCounter_AddsRecordToCounterTable_WithNegativeValue()
         {
             UseConnection(sql =>
@@ -277,6 +331,26 @@ select scope_identity() as Id";
                 var recordCount = sql.Query<int>("select count(*) from HangFire.Counter").Single();
 
                 Assert.Equal(2, recordCount);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AddToSet_ThrowsAnException_WhenKeyIsTooLong()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentException>(() => Commit(sql, x => x.AddToSet(StringLongerThan100Characters, "value")));
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AddToSet_ThrowsAnException_WhenValueIsTooLong()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentException>(() => Commit(sql, x => x.AddToSet("key", StringLongerThan256Characters)));
+                Assert.Equal("value", exception.ParamName);
             });
         }
 
@@ -409,6 +483,16 @@ select scope_identity() as Id";
                 var recordCount = sql.Query<int>("select count(*) from HangFire.[Set]").Single();
 
                 Assert.Equal(1, recordCount);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void InsertToList_ThrowsAnException_WhenKeyIsTooLong()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentException>(() => Commit(sql, x => x.InsertToList(StringLongerThan100Characters, "value")));
+                Assert.Equal("key", exception.ParamName);
             });
         }
 
@@ -600,12 +684,41 @@ select scope_identity() as Id";
         }
 
         [Fact, CleanDatabase]
+        public void SetRangeInHash_ThrowsAnException_WhenKeyIsTooLong()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentException>(
+                    () => Commit(sql, x => x.SetRangeInHash(StringLongerThan100Characters, new Dictionary<string, string>())));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
         public void SetRangeInHash_ThrowsAnException_WhenKeyValuePairsArgumentIsNull()
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
                     () => Commit(sql, x => x.SetRangeInHash("some-hash", null)));
+
+                Assert.Equal("keyValuePairs", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void SetRangeInHash_ThrowsAnException_WhenKeyValuePairsContainTooLongKey()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentException>(() =>
+                {
+                    Commit(sql, x =>
+                        x.SetRangeInHash(
+                            "key",
+                            new Dictionary<string, string> { { StringLongerThan100Characters, "value" } }));
+                });
 
                 Assert.Equal("keyValuePairs", exception.ParamName);
             });
@@ -676,6 +789,19 @@ select scope_identity() as Id";
         }
 
         [Fact, CleanDatabase]
+        public void AddRangeToSet_ThrowsAnException_WhenKeyIsTooLong()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentException>(() =>
+                {
+                    Commit(sql, x => x.AddRangeToSet(StringLongerThan100Characters, new List<string>()));
+                });
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
         public void AddRangeToSet_ThrowsAnException_WhenItemsValueIsNull()
         {
             UseConnection(sql =>
@@ -683,6 +809,19 @@ select scope_identity() as Id";
                 var exception = Assert.Throws<ArgumentNullException>(
                     () => Commit(sql, x => x.AddRangeToSet("my-set", null)));
 
+                Assert.Equal("items", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AddRangeToSet_ThrowsAnException_WhenItemsContainTooLongString()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentException>(() =>
+                {
+                    Commit(sql, x => x.AddRangeToSet("key", new List<string> {StringLongerThan256Characters}));
+                });
                 Assert.Equal("items", exception.ParamName);
             });
         }

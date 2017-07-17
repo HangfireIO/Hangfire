@@ -93,10 +93,16 @@ namespace Hangfire.SqlServer
 
         public override void SetJobState(string jobId, IState state)
         {
+            if (state.Name.Length > Constants.StateNameMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(state), state.Name, Constants.StateNameMaxLength);
+
             string addAndSetStateSql = 
 $@"insert into [{_storage.SchemaName}].State (JobId, Name, Reason, CreatedAt, Data)
 values (@jobId, @name, @reason, @createdAt, @data);
 update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @name where Id = @id;";
+
+            var reason = state.Reason?.Length > Constants.StateReasonMaxLength 
+                ? TrancateReason(state.Reason) 
+                : state.Reason;
 
             QueueCommand((connection, transaction) => connection.Execute(
                 addAndSetStateSql,
@@ -104,7 +110,7 @@ update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @
                 {
                     jobId = long.Parse(jobId),
                     name = state.Name,
-                    reason = state.Reason,
+                    reason = reason,
                     createdAt = DateTime.UtcNow,
                     data = JobHelper.ToJson(state.SerializeData()),
                     id = long.Parse(jobId)
@@ -115,9 +121,15 @@ update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @
 
         public override void AddJobState(string jobId, IState state)
         {
+            if (state.Name.Length > Constants.StateNameMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(state), state.Name, Constants.StateNameMaxLength);
+
             string addStateSql =
 $@"insert into [{_storage.SchemaName}].State (JobId, Name, Reason, CreatedAt, Data)
 values (@jobId, @name, @reason, @createdAt, @data)";
+
+            var reason = state.Reason?.Length > Constants.StateReasonMaxLength
+                ? TrancateReason(state.Reason)
+                : state.Reason;
 
             QueueCommand((connection, transaction) => connection.Execute(
                 addStateSql,
@@ -125,7 +137,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
                 {
                     jobId = long.Parse(jobId), 
                     name = state.Name,
-                    reason = state.Reason,
+                    reason = reason,
                     createdAt = DateTime.UtcNow, 
                     data = JobHelper.ToJson(state.SerializeData())
                 },
@@ -154,6 +166,8 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void IncrementCounter(string key)
         {
+            if (key.Length > Constants.CounterKeyMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(key), key, Constants.CounterKeyMaxLength);
+
             QueueCommand((connection, transaction) => connection.Execute(
                 $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value]) values (@key, @value)",
                 new { key, value = +1 },
@@ -163,6 +177,8 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void IncrementCounter(string key, TimeSpan expireIn)
         {
+            if (key.Length > Constants.CounterKeyMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(key), key, Constants.CounterKeyMaxLength);
+            
             QueueCommand((connection, transaction) => connection.Execute(
                 $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
                 new { key, value = +1, expireAt = DateTime.UtcNow.Add(expireIn) },
@@ -172,6 +188,8 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void DecrementCounter(string key)
         {
+            if (key.Length > Constants.CounterKeyMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(key), key, Constants.CounterKeyMaxLength);
+            
             QueueCommand((connection, transaction) => connection.Execute(
                 $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value]) values (@key, @value)",
                 new { key, value = -1 },
@@ -181,6 +199,8 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void DecrementCounter(string key, TimeSpan expireIn)
         {
+            if (key.Length > Constants.CounterKeyMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(key), key, Constants.CounterKeyMaxLength);
+            
             QueueCommand((connection, transaction) => connection.Execute(
                 $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
                 new { key, value = -1, expireAt = DateTime.UtcNow.Add(expireIn) },
@@ -195,6 +215,9 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void AddToSet(string key, string value, double score)
         {
+            if (key.Length > Constants.SetKeyMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(key), key, Constants.SetKeyMaxLength);
+            if (value.Length > Constants.SetValueMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(value), value, Constants.SetValueMaxLength);
+            
             string addSql =
 $@";merge [{_storage.SchemaName}].[Set] with (holdlock) as Target
 using (VALUES (@key, @value, @score)) as Source ([Key], Value, Score)
@@ -224,6 +247,8 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
 
         public override void InsertToList(string key, string value)
         {
+            if (key.Length > Constants.ListKeyMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(key), key, Constants.ListKeyMaxLength);
+            
             AcquireListLock();
             QueueCommand((connection, transaction) => connection.Execute(
                 $@"insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
@@ -263,7 +288,16 @@ delete from cte where row_num not between @start and @end";
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
+            if (key.Length > Constants.HashKeyMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(key), key, Constants.HashKeyMaxLength);
 
+            var valuePairs = keyValuePairs as KeyValuePair<string, string>[] ?? keyValuePairs.ToArray();
+
+            foreach (var keyValue in valuePairs)
+            {
+                if (keyValue.Key.Length <= Constants.HashFieldMaxLength) continue;
+                ThrowArgumentExceedsMaxLengthException(nameof(keyValuePairs), keyValue.Key, Constants.HashFieldMaxLength);
+            }
+            
             string sql =
 $@";merge [{_storage.SchemaName}].Hash with (holdlock) as Target
 using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
@@ -274,7 +308,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             AcquireHashLock();
             QueueCommand((connection, transaction) => connection.Execute(
                 sql,
-                keyValuePairs.Select(y => new { key = key, field = y.Key, value = y.Value }),
+                valuePairs.Select(y => new { key = key, field = y.Key, value = y.Value }),
                 transaction,
                 _storage.CommandTimeout));
         }
@@ -297,7 +331,14 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (items == null) throw new ArgumentNullException(nameof(items));
+            if (key.Length > Constants.SetKeyMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(key), key, Constants.SetKeyMaxLength);
 
+            foreach (var value in items)
+            {
+                if (value.Length <= Constants.SetValueMaxLength) continue;
+                ThrowArgumentExceedsMaxLengthException(nameof(items), value, Constants.SetValueMaxLength);
+            }
+            
             // TODO: Rewrite using the `MERGE` statement.
             string query =
 $@"insert into [{_storage.SchemaName}].[Set] ([Key], Value, Score)
@@ -438,6 +479,15 @@ update [{_storage.SchemaName}].[List] set ExpireAt = null where [Key] = @key";
         private void AcquireLock(string resource)
         {
             _lockedResources.Add($"{_storage.SchemaName}:{resource}:Lock");
+        }
+
+        private string TrancateReason(string reason)
+        {
+            return reason.Substring(0, Constants.StateReasonMaxLength - 3) + "...";
+        }
+        private void ThrowArgumentExceedsMaxLengthException(string argumentName, string value, int maxLength)
+        {
+            throw new ArgumentException($@"""{value}"" : the string length can't exceed {maxLength}.", argumentName);
         }
     }
 }
