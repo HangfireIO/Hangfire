@@ -101,7 +101,7 @@ values (@jobId, @name, @reason, @createdAt, @data);
 update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @name where Id = @id;";
 
             var reason = state.Reason?.Length > Constants.StateReasonMaxLength 
-                ? TrancateReason(state.Reason) 
+                ? TruncateReason(state.Reason) 
                 : state.Reason;
 
             QueueCommand((connection, transaction) => connection.Execute(
@@ -128,7 +128,7 @@ $@"insert into [{_storage.SchemaName}].State (JobId, Name, Reason, CreatedAt, Da
 values (@jobId, @name, @reason, @createdAt, @data)";
 
             var reason = state.Reason?.Length > Constants.StateReasonMaxLength
-                ? TrancateReason(state.Reason)
+                ? TruncateReason(state.Reason)
                 : state.Reason;
 
             QueueCommand((connection, transaction) => connection.Execute(
@@ -481,7 +481,7 @@ update [{_storage.SchemaName}].[List] set ExpireAt = null where [Key] = @key";
             _lockedResources.Add($"{_storage.SchemaName}:{resource}:Lock");
         }
 
-        private string TrancateReason(string reason)
+        private string TruncateReason(string reason)
         {
             return reason.Substring(0, Constants.StateReasonMaxLength - 3) + "...";
         }
