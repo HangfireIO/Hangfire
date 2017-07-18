@@ -14,11 +14,9 @@ namespace Hangfire.SqlServer.Tests
 {
     public class SqlServerWriteOnlyTransactionFacts
     {
-        private const string StringLongerThan20Characters = "More than 20 characters.";
-        private const string StringLongerThan40Characters = "Too long string containing more than 40 characters.";
-        private const string StringLongerThan100Characters = @"The string is too long. It contains more than 40 characters. Moreover it contains more than 100 characters.";
-        private const string StringLongerThan256Characters = StringLongerThan100Characters + StringLongerThan100Characters + StringLongerThan40Characters + StringLongerThan20Characters;
-
+        private static readonly string StringLongerThan20Characters = new string('*', 21);
+        private static readonly string StringLongerThan100Characters = new string('*', 101);
+        private static readonly string StringLongerThan256Characters = new string('*', 257);
 
         private readonly PersistentJobQueueProviderCollection _queueProviders;
 

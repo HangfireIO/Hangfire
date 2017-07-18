@@ -17,8 +17,8 @@ namespace Hangfire.SqlServer.Tests
 {
     public class SqlServerConnectionFacts
     {
-        private const string StringLongerThan40Characters = "Too long name containing more than 40 characters.";
-        private const string StringLongerThan100Characters = @"The string is too long. It contains more than 40 characters. Moreover it contains more than 100 characters.";
+        private static readonly string StringLongerThan40Characters = new string('*', 41);
+        private static readonly string StringLongerThan100Characters = new string('*', 101);
         
         private readonly Mock<IPersistentJobQueue> _queue;
         private readonly PersistentJobQueueProviderCollection _providers;

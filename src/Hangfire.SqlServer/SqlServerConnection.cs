@@ -111,8 +111,7 @@ values (@invocationData, @arguments, @createdAt, @expireAt)";
                         };
 
                         if (parameter.Key.Length <= Constants.JobParameterNameMaxLength) continue;
-                        
-                        ThrowArgumentExceedsMaxLengthException(nameof(parameters), parameter.Key, Constants.JobParameterNameMaxLength);
+                        throw new ArgumentException($@"""{parameter.Key}"" : the job parameter name length can't exceed {Constants.JobParameterNameMaxLength} characters.", nameof(parameters));
                     }
 
                     string insertParameterSql =
@@ -201,7 +200,7 @@ where j.Id = @jobId";
         {
             if (id == null) throw new ArgumentNullException(nameof(id));
             if (name == null) throw new ArgumentNullException(nameof(name));
-            if (name.Length > Constants.JobParameterNameMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(name), name, Constants.JobParameterNameMaxLength);
+            if (name.Length > Constants.JobParameterNameMaxLength) throw new ArgumentException($@"""{name}"" : the job parameter name length can't exceed {Constants.JobParameterNameMaxLength} characters.", nameof(name));
 
             _storage.UseConnection(connection =>
             {
@@ -257,7 +256,7 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
-            if (key.Length > Constants.HashKeyMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(key), key, Constants.HashKeyMaxLength);
+            if (key.Length > Constants.HashKeyMaxLength) throw new ArgumentException($@"""{key}"" : the hash key length can't exceed {Constants.HashKeyMaxLength} characters.", nameof(key));
 
             string sql =
 $@";merge [{_storage.SchemaName}].Hash with (holdlock) as Target
@@ -270,13 +269,11 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             {
                 foreach (var keyValuePair in keyValuePairs)
                 {
-                    var field = keyValuePair.Key;
-                    
-                    if (field.Length > Constants.HashFieldMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(keyValuePairs), field, Constants.HashFieldMaxLength);
+                    if (keyValuePair.Key.Length > Constants.HashFieldMaxLength) throw new ArgumentException($@"""{keyValuePair.Key}"" : the hash field length can't exceed {Constants.HashFieldMaxLength} characters.", nameof(keyValuePairs));
                     
                     connection.Execute(
                         sql, 
-                        new { key = key, field = field, value = keyValuePair.Value }, 
+                        new { key = key, field = keyValuePair.Key, value = keyValuePair.Value }, 
                         transaction,
                         commandTimeout: _storage.CommandTimeout);
                 }
@@ -303,7 +300,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
         {
             if (serverId == null) throw new ArgumentNullException(nameof(serverId));
             if (context == null) throw new ArgumentNullException(nameof(context));
-            if (serverId.Length > Constants.ServerIdMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(serverId), serverId, Constants.ServerIdMaxLength);
+            if (serverId.Length > Constants.ServerIdMaxLength) throw new ArgumentException($@"""{serverId}"" : the server id length can't exceed {Constants.ServerIdMaxLength} characters.", nameof(serverId));
 
             var data = new ServerData
             {
@@ -511,11 +508,6 @@ where [Key] = @key
 order by [Id] desc";
 
             return _storage.UseConnection(connection => connection.Query<string>(query, new { key = key }, commandTimeout: _storage.CommandTimeout).ToList());
-        }
-
-        private void ThrowArgumentExceedsMaxLengthException(string argumentName, string value, int maxLength)
-        {
-            throw new ArgumentException($@"""{value}"" : the string length can't exceed {maxLength}.", argumentName);
         }
     }
 }

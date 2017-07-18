@@ -93,7 +93,7 @@ namespace Hangfire.SqlServer
 
         public override void SetJobState(string jobId, IState state)
         {
-            if (state.Name.Length > Constants.StateNameMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(state), state.Name, Constants.StateNameMaxLength);
+            if (state.Name.Length > Constants.StateNameMaxLength) throw new ArgumentException($@"""{state.Name}"" : the state name length can't exceed {Constants.StateNameMaxLength} characters.", nameof(state));
 
             string addAndSetStateSql = 
 $@"insert into [{_storage.SchemaName}].State (JobId, Name, Reason, CreatedAt, Data)
@@ -121,7 +121,7 @@ update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @
 
         public override void AddJobState(string jobId, IState state)
         {
-            if (state.Name.Length > Constants.StateNameMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(state), state.Name, Constants.StateNameMaxLength);
+            if (state.Name.Length > Constants.StateNameMaxLength) throw new ArgumentException($@"""{state.Name}"" : the state name length can't exceed {Constants.StateNameMaxLength} characters.", nameof(state));
 
             string addStateSql =
 $@"insert into [{_storage.SchemaName}].State (JobId, Name, Reason, CreatedAt, Data)
@@ -166,7 +166,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void IncrementCounter(string key)
         {
-            if (key.Length > Constants.CounterKeyMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(key), key, Constants.CounterKeyMaxLength);
+            if (key.Length > Constants.CounterKeyMaxLength) throw new ArgumentException($@"""{key}"" : the counter key length can't exceed {Constants.CounterKeyMaxLength} characters.", nameof(key));
 
             QueueCommand((connection, transaction) => connection.Execute(
                 $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value]) values (@key, @value)",
@@ -177,7 +177,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void IncrementCounter(string key, TimeSpan expireIn)
         {
-            if (key.Length > Constants.CounterKeyMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(key), key, Constants.CounterKeyMaxLength);
+            if (key.Length > Constants.CounterKeyMaxLength) throw new ArgumentException($@"""{key}"" : the counter key length can't exceed {Constants.CounterKeyMaxLength} characters.", nameof(key));
             
             QueueCommand((connection, transaction) => connection.Execute(
                 $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
@@ -188,7 +188,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void DecrementCounter(string key)
         {
-            if (key.Length > Constants.CounterKeyMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(key), key, Constants.CounterKeyMaxLength);
+            if (key.Length > Constants.CounterKeyMaxLength) throw new ArgumentException($@"""{key}"" : the counter key length can't exceed {Constants.CounterKeyMaxLength} characters.", nameof(key));
             
             QueueCommand((connection, transaction) => connection.Execute(
                 $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value]) values (@key, @value)",
@@ -199,7 +199,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void DecrementCounter(string key, TimeSpan expireIn)
         {
-            if (key.Length > Constants.CounterKeyMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(key), key, Constants.CounterKeyMaxLength);
+            if (key.Length > Constants.CounterKeyMaxLength) throw new ArgumentException($@"""{key}"" : the counter key length can't exceed {Constants.CounterKeyMaxLength} characters.", nameof(key));
             
             QueueCommand((connection, transaction) => connection.Execute(
                 $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
@@ -215,8 +215,8 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void AddToSet(string key, string value, double score)
         {
-            if (key.Length > Constants.SetKeyMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(key), key, Constants.SetKeyMaxLength);
-            if (value.Length > Constants.SetValueMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(value), value, Constants.SetValueMaxLength);
+            if (key.Length > Constants.SetKeyMaxLength) throw new ArgumentException($@"""{key}"" : the set key length can't exceed {Constants.SetKeyMaxLength} characters.", nameof(key));
+            if (value.Length > Constants.SetValueMaxLength) throw new ArgumentException($@"""{value}"" : the set value length can't exceed {Constants.SetValueMaxLength} characters.", nameof(value));
             
             string addSql =
 $@";merge [{_storage.SchemaName}].[Set] with (holdlock) as Target
@@ -247,7 +247,7 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
 
         public override void InsertToList(string key, string value)
         {
-            if (key.Length > Constants.ListKeyMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(key), key, Constants.ListKeyMaxLength);
+            if (key.Length > Constants.ListKeyMaxLength) throw new ArgumentException($@"""{key}"" : the list key length can't exceed {Constants.ListKeyMaxLength} characters.", nameof(key));
             
             AcquireListLock();
             QueueCommand((connection, transaction) => connection.Execute(
@@ -288,14 +288,14 @@ delete from cte where row_num not between @start and @end";
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
-            if (key.Length > Constants.HashKeyMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(key), key, Constants.HashKeyMaxLength);
+            if (key.Length > Constants.HashKeyMaxLength) throw new ArgumentException($@"""{key}"" : the hash key length can't exceed {Constants.HashKeyMaxLength} characters.", nameof(key));
 
             var valuePairs = keyValuePairs as KeyValuePair<string, string>[] ?? keyValuePairs.ToArray();
 
             foreach (var keyValue in valuePairs)
             {
                 if (keyValue.Key.Length <= Constants.HashFieldMaxLength) continue;
-                ThrowArgumentExceedsMaxLengthException(nameof(keyValuePairs), keyValue.Key, Constants.HashFieldMaxLength);
+                throw new ArgumentException($@"""{keyValue.Key}"" : the hash field length can't exceed {Constants.HashFieldMaxLength} characters.", nameof(keyValuePairs));
             }
             
             string sql =
@@ -331,12 +331,12 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (items == null) throw new ArgumentNullException(nameof(items));
-            if (key.Length > Constants.SetKeyMaxLength) ThrowArgumentExceedsMaxLengthException(nameof(key), key, Constants.SetKeyMaxLength);
+            if (key.Length > Constants.SetKeyMaxLength) throw new ArgumentException($@"""{key}"" : the set key length can't exceed { Constants.SetKeyMaxLength } characters.", nameof(key));
 
             foreach (var value in items)
             {
                 if (value.Length <= Constants.SetValueMaxLength) continue;
-                ThrowArgumentExceedsMaxLengthException(nameof(items), value, Constants.SetValueMaxLength);
+                throw new ArgumentException($@"""{value}"" : the set value can't exceed { Constants.SetValueMaxLength } characters.", nameof(items));
             }
             
             // TODO: Rewrite using the `MERGE` statement.
@@ -484,10 +484,6 @@ update [{_storage.SchemaName}].[List] set ExpireAt = null where [Key] = @key";
         private string TrancateReason(string reason)
         {
             return reason.Substring(0, Constants.StateReasonMaxLength - 3) + "...";
-        }
-        private void ThrowArgumentExceedsMaxLengthException(string argumentName, string value, int maxLength)
-        {
-            throw new ArgumentException($@"""{value}"" : the string length can't exceed {maxLength}.", argumentName);
         }
     }
 }
