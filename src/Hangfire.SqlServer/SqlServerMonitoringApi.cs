@@ -173,7 +173,7 @@ namespace Hangfire.SqlServer
                 (sqlJob, job, stateData) => new SucceededJobDto
                 {
                     Job = job,
-                    Result = stateData.ContainsKey("Result") ? stateData["Result"] : null,
+                    Result = stateData["Result"],
                     TotalDuration = stateData.ContainsKey("PerformanceDuration") && stateData.ContainsKey("Latency")
                         ? (long?)long.Parse(stateData["PerformanceDuration"]) + (long?)long.Parse(stateData["Latency"])
                         : null,
@@ -191,7 +191,7 @@ namespace Hangfire.SqlServer
                 (sqlJob, job, stateData) => new DeletedJobDto
                 {
                     Job = job,
-                    DeletedAt = JobHelper.DeserializeNullableDateTime(stateData.ContainsKey("DeletedAt") ? stateData["DeletedAt"] : null)
+                    DeletedAt = JobHelper.DeserializeNullableDateTime(stateData["DeletedAt"])
                 }));
         }
 
@@ -280,8 +280,8 @@ select * from [{_storage.SchemaName}].State with (nolock) where JobId = @id orde
                                 StateName = x.Name,
                                 CreatedAt = x.CreatedAt,
                                 Reason = x.Reason,
-                                Data = new Dictionary<string, string>(
-                                    JobHelper.FromJson<Dictionary<string, string>>(x.Data),
+                                Data = new SafeDictionary<string, string>(
+                                    JobHelper.FromJson<SafeDictionary<string, string>>(x.Data),
                                     StringComparer.OrdinalIgnoreCase),
                             })
                             .ToList();
@@ -496,7 +496,7 @@ where j.Id in @jobIds";
             int from,
             int count,
             string stateName,
-            Func<SqlJob, Job, Dictionary<string, string>, TDto> selector)
+            Func<SqlJob, Job, SafeDictionary<string, string>, TDto> selector)
         {
             string jobsSql = 
 $@";with cte as 
@@ -523,7 +523,7 @@ order by j.Id desc";
 
         private static JobList<TDto> DeserializeJobs<TDto>(
             ICollection<SqlJob> jobs,
-            Func<SqlJob, Job, Dictionary<string, string>, TDto> selector)
+            Func<SqlJob, Job, SafeDictionary<string, string>, TDto> selector)
         {
             var result = new List<KeyValuePair<string, TDto>>(jobs.Count);
             
@@ -534,9 +534,9 @@ order by j.Id desc";
                 
                 if (job.InvocationData != null)
                 {
-                    var deserializedData = JobHelper.FromJson<Dictionary<string, string>>(job.StateData);
+                    var deserializedData = JobHelper.FromJson<SafeDictionary<string, string>>(job.StateData);
                     var stateData = deserializedData != null
-                        ? new Dictionary<string, string>(deserializedData, StringComparer.OrdinalIgnoreCase)
+                        ? new SafeDictionary<string, string>(deserializedData, StringComparer.OrdinalIgnoreCase)
                         : null;
 
                     dto = selector(job, DeserializeJob(job.InvocationData, job.Arguments), stateData);
@@ -578,6 +578,39 @@ where j.Id in @jobIds";
             }
 
             return new JobList<FetchedJobDto>(result);
+        }
+    }
+
+    /// <summary>
+    /// Overloaded dictionary that doesn't throw if given an invalid key
+    /// Fixes issues such as https://github.com/HangfireIO/Hangfire/issues/871
+    /// </summary>
+    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
+    internal class SafeDictionary<TKey,TValue> : Dictionary<TKey, TValue>
+    {
+        public SafeDictionary() : base()
+        { }
+
+        public SafeDictionary(IDictionary<TKey, TValue> dictionary, IEqualityComparer<TKey> comparer) : base(dictionary, comparer)
+        {}
+
+
+
+        new public TValue this[TKey i]
+        {
+            get
+            {
+                if (ContainsKey(i))
+                {
+                    return base[i];
+                }
+                return default(TValue);
+            }
+            set
+            {
+                base[i] = value;
+            }
         }
     }
 }
