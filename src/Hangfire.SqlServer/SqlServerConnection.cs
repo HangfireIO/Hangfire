@@ -90,7 +90,7 @@ values (@invocationData, @arguments, @createdAt, @expireAt)";
                     createJobSql,
                     new
                     {
-                        invocationData = JobHelper.ToJson(invocationData),
+                        invocationData = invocationData.Serialize(),
                         arguments = invocationData.Arguments,
                         createdAt = createdAt,
                         expireAt = createdAt.Add(expireIn)
@@ -137,7 +137,7 @@ $@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.Schema
                 if (jobData == null) return null;
 
                 // TODO: conversion exception could be thrown.
-                var invocationData = JobHelper.FromJson<InvocationData>(jobData.InvocationData);
+                var invocationData = InvocationData.Deserialize(jobData.InvocationData);
                 invocationData.Arguments = jobData.Arguments;
 
                 Job job = null;

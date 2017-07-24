@@ -164,7 +164,7 @@ namespace Hangfire.Server
             string recurringJobId, 
             IReadOnlyDictionary<string, string> recurringJob)
         {
-            var serializedJob = JobHelper.FromJson<InvocationData>(recurringJob["Job"]);
+            var serializedJob = InvocationData.Deserialize(recurringJob["Job"]);
             var job = serializedJob.Deserialize();
             var cron = recurringJob["Cron"];
             var cronExpression = CronExpression.Parse(cron);
