@@ -631,6 +631,19 @@ BEGIN
 		ON DELETE CASCADE;
 	PRINT 'Re-created constraint [FK_HangFire_JobParameter_Job]';
 
+	CREATE TABLE [$(HangFireSchema)].[Schedule] (
+		[Queue] NVARCHAR(50) NOT NULL,
+		[At] DATETIME2(7) NOT NULL,
+		[JobId] BIGINT NOT NULL
+	);
+	PRINT 'Created table [$(HangFireSchema)].[Schedule]';
+
+	CREATE CLUSTERED INDEX [CX_HangFire_Schedule] ON [$(HangFireSchema)].[Schedule] (
+		[Queue] ASC,
+		[At] ASC
+	);
+	PRINT 'Created index [CX_HangFire_Schedule]';
+
 	SET @CURRENT_SCHEMA_VERSION = 6;
 END	
 
