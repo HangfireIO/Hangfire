@@ -72,6 +72,18 @@ namespace Hangfire
                 recurringJob["TimeZoneId"] = options.TimeZone.Id;
                 recurringJob["Queue"] = options.QueueName;
 
+                if (options.StartDate.HasValue)
+                {
+                    var utcStartDate = TimeZoneInfo.ConvertTime(options.StartDate.Value, options.TimeZone, TimeZoneInfo.Utc);
+                    recurringJob["StartDate"] = JobHelper.SerializeDateTime(utcStartDate);
+                }
+                
+                if (options.EndDate.HasValue)
+                {
+                    var utcEndDate = TimeZoneInfo.ConvertTime(options.EndDate.Value, options.TimeZone, TimeZoneInfo.Utc);
+                    recurringJob["EndDate"] = JobHelper.SerializeDateTime(utcEndDate);
+                }
+
                 var existingJob = connection.GetAllEntriesFromHash($"recurring-job:{recurringJobId}");
                 if (existingJob == null)
                 {

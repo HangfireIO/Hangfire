@@ -174,6 +174,69 @@ namespace Hangfire.Core.Tests.Server
                         == JobHelper.SerializeDateTime(_nextInstant))));
         }
 
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(0)] // Should be inclusive
+        public void Execute_EnqueuesAJob_WhenInBoundsOfStartDate(int nowOffsetSeconds)
+        {
+            var startDate = _nowInstant.AddSeconds(nowOffsetSeconds);
+            _recurringJob["StartDate"] = JobHelper.SerializeDateTime(startDate);
+            var scheduler = CreateScheduler();
+
+            scheduler.Execute(_context.Object);
+
+            _factory.Verify(x => x.Create(It.IsNotNull<CreateContext>()));
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(0)] // Should be inclusive
+        public void Execute_EnqueuesAJob_WhenInBoundsOfEndDate(int nowOffsetSeconds)
+        {
+            var endDate = _nowInstant.AddSeconds(nowOffsetSeconds);
+            _recurringJob["EndDate"] = JobHelper.SerializeDateTime(endDate);
+            var scheduler = CreateScheduler();
+
+            scheduler.Execute(_context.Object);
+
+            _factory.Verify(x => x.Create(It.IsNotNull<CreateContext>()));
+        }
+
+        [Fact]
+        public void Execute_DoesNotEnqueueRecurringJob_AndDoesNotUpdateIt_ButNextExecution_When_ItIsBeforeScheduledStartTime()
+        {
+            var startDate = _nowInstant.AddSeconds(1);
+            _recurringJob["StartDate"] = JobHelper.SerializeDateTime(startDate);
+            var scheduler = CreateScheduler();
+
+            scheduler.Execute(_context.Object);
+
+            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
+
+            _connection.Verify(x => x.SetRangeInHash(
+                $"recurring-job:{RecurringJobId}",
+                It.Is<Dictionary<string, string>>(rj =>
+                    rj.ContainsKey("NextExecution") && rj["NextExecution"]
+                        == JobHelper.SerializeDateTime(_nextInstant))));
+        }
+
+        [Fact]
+        public void Execute_DoesNotEnqueueRecurringJob_AndDoesNotUpdateIt_ButNextExecution_When_ItIsAfterScheduledEndTime()
+        {
+            var endDate = _nowInstant.AddSeconds(-1);
+            _recurringJob["EndDate"] = JobHelper.SerializeDateTime(endDate);
+            var scheduler = CreateScheduler();
+
+            scheduler.Execute(_context.Object);
+
+            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
+
+            _connection.Verify(x => x.SetRangeInHash(
+                $"recurring-job:{RecurringJobId}",
+                It.Is<Dictionary<string, string>>(rj =>
+                    rj.ContainsKey("NextExecution") && rj["NextExecution"] == null)));
+        }
+
         [Fact]
         public void Execute_TakesIntoConsideration_LastExecutionTime_ConvertedToLocalTimezone()
         {
