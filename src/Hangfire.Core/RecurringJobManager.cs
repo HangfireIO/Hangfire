@@ -75,14 +75,12 @@ namespace Hangfire
 
                 if (options.StartDate.HasValue)
                 {
-                    var utcStartDate = TimeZoneInfo.ConvertTime(options.StartDate.Value, options.TimeZone, TimeZoneInfo.Utc);
-                    recurringJob["StartDate"] = JobHelper.SerializeDateTime(utcStartDate);
+                    recurringJob["StartDate"] = JobHelper.SerializeDateTime(options.StartDate.Value);
                 }
                 
                 if (options.EndDate.HasValue)
                 {
-                    var utcEndDate = TimeZoneInfo.ConvertTime(options.EndDate.Value, options.TimeZone, TimeZoneInfo.Utc);
-                    recurringJob["EndDate"] = JobHelper.SerializeDateTime(utcEndDate);
+                    recurringJob["EndDate"] = JobHelper.SerializeDateTime(options.EndDate.Value);
                 }
 
                 var existingJob = connection.GetAllEntriesFromHash($"recurring-job:{recurringJobId}");
