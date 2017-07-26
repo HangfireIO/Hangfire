@@ -195,6 +195,43 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void AddOrUpdate_RequiresStartDate_ToBeUtc()
+        {
+            var startDate = DateTime.Now;
+            var manager = CreateManager();
+
+            var exception = Record.Exception(() => manager.AddOrUpdate(_id, _job, _cronExpression, startDate, null));
+
+            Assert.IsType<ArgumentException>(exception);
+            Assert.True(((ArgumentException)exception).ParamName == nameof(RecurringJobOptions.StartDate));
+        }
+
+        [Fact]
+        public void AddOrUpdate_RequiresEndDate_ToBeUtc()
+        {
+            var endDate = DateTime.Now;
+            var manager = CreateManager();
+
+            var exception = Record.Exception(() => manager.AddOrUpdate(_id, _job, _cronExpression, null, endDate));
+
+            Assert.IsType<ArgumentException>(exception);
+            Assert.True(((ArgumentException)exception).ParamName == nameof(RecurringJobOptions.EndDate));
+        }
+
+        [Fact]
+        public void AddOrUpdate_RequiresEndDate_ToBeAfterStartDate()
+        {
+            var startDate = DateTime.UtcNow;
+            var endDate = startDate.AddSeconds(-1);
+            var manager = CreateManager();
+
+            var exception = Record.Exception(() => manager.AddOrUpdate(_id, _job, _cronExpression, startDate, endDate));
+
+            Assert.IsType<ArgumentException>(exception);
+            Assert.True(((ArgumentException)exception).ParamName == "options");
+        }
+
+        [Fact]
         public void AddOrUpdate_CommitsTransaction()
         {
             var manager = CreateManager();
