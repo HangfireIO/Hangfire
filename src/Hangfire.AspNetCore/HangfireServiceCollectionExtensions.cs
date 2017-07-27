@@ -37,8 +37,64 @@ namespace Hangfire
             [NotNull] this IServiceCollection services,
             [NotNull] Action<IGlobalConfiguration> configuration)
         {
-            if (services == null) throw new ArgumentNullException(nameof(services));
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            AddServices(services);
+
+            services.TryAddSingleton<Action<IGlobalConfiguration>>(serviceProvider =>
+            {
+                return config =>
+                {
+                    AddDefaultGlobalConfiguration(serviceProvider, config);
+
+                    configuration(config);
+                };
+            });
+
+            return services;
+        }
+
+        public static IServiceCollection AddHangfire(
+            [NotNull] this IServiceCollection services,
+            [NotNull] Action<IGlobalConfiguration, IServiceProvider> configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            AddServices(services);
+
+            services.TryAddSingleton<Action<IGlobalConfiguration>>(serviceProvider =>
+            {
+                return config =>
+                {
+                    AddDefaultGlobalConfiguration(serviceProvider, config);
+
+                    configuration(config, serviceProvider);
+                };
+            });
+
+            return services;
+        }
+
+        private static void AddDefaultGlobalConfiguration(IServiceProvider serviceProvider, IGlobalConfiguration config)
+        {
+            if (Interlocked.CompareExchange(ref _initialized, 1, 0) != 0) return;
+
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+            if (loggerFactory != null)
+            {
+                config.UseLogProvider(new AspNetCoreLogProvider(loggerFactory));
+            }
+
+            var scopeFactory = serviceProvider.GetService<IServiceScopeFactory>();
+            if (scopeFactory != null)
+            {
+                config.UseActivator(new AspNetCoreJobActivator(scopeFactory));
+            }
+        }
+
+        private static void AddServices(IServiceCollection services)
+        {
+            if (services == null) throw new ArgumentNullException(nameof(services));
 
             services.TryAddSingleton(GetInitializedJobStorage);
 
@@ -66,30 +122,6 @@ namespace Hangfire
             services.TryAddSingleton<IRecurringJobManager>(x => new RecurringJobManager(
                 x.GetRequiredService<JobStorage>(),
                 x.GetRequiredService<IBackgroundJobFactory>()));
-
-            services.TryAddSingleton<Action<IGlobalConfiguration>>(serviceProvider =>
-            {
-                return config =>
-                {
-                    if (Interlocked.CompareExchange(ref _initialized, 1, 0) != 0) return;
-
-                    var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-                    if (loggerFactory != null)
-                    {
-                        config.UseLogProvider(new AspNetCoreLogProvider(loggerFactory));
-                    }
-
-                    var scopeFactory = serviceProvider.GetService<IServiceScopeFactory>();
-                    if (scopeFactory != null)
-                    {
-                        config.UseActivator(new AspNetCoreJobActivator(scopeFactory));
-                    }
-
-                    configuration(config);
-                };
-            });
-
-            return services;
         }
 
         private static JobStorage GetInitializedJobStorage(IServiceProvider serviceProvider)
