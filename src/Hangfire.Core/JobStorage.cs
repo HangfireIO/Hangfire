@@ -58,10 +58,7 @@ namespace Hangfire
         {
             get
             {
-                lock (LockObject)
-                {
-                    return _jobExpirationTimeout;
-                }
+                return _jobExpirationTimeout;
             }
             set
             {
@@ -70,10 +67,7 @@ namespace Hangfire
                     throw new ArgumentException("JobStorage.JobExpirationTimeout value should be equal or greater than 1 hour.");
                 }
 
-                lock (LockObject)
-                {
-                    _jobExpirationTimeout = value;
-                }
+                _jobExpirationTimeout = value;
             }
         }
 
