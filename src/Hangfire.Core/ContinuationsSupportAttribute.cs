@@ -30,6 +30,7 @@ namespace Hangfire
     {
         private static readonly TimeSpan AddJobLockTimeout = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan ContinuationStateFetchTimeout = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan ContinuationInvalidTimeout = TimeSpan.FromMinutes(15);
 
         private static readonly ILog Logger = LogProvider.For<ContinuationsSupportAttribute>();
 
@@ -223,6 +224,14 @@ namespace Hangfire
                 currentState = context.Connection.GetStateData(continuationJobId);
                 if (currentState != null)
                 {
+                    break;
+                }
+
+                if (DateTime.UtcNow - continuationData.CreatedAt > ContinuationInvalidTimeout)
+                {
+                    Logger.Warn(
+                        $"Continuation '{continuationJobId}' has been ignored: it was deemed to be aborted, because its state is still non-initialized.");
+
                     break;
                 }
 
