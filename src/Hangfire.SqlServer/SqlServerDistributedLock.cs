@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Threading;
 using Dapper;
 using Hangfire.Annotations;
@@ -26,6 +27,8 @@ namespace Hangfire.SqlServer
 {
     public class SqlServerDistributedLock : IDisposable
     {
+        private static readonly TimeSpan MaxAttemptDelay = TimeSpan.FromSeconds(5);
+
         private const string LockMode = "Exclusive";
         private const string LockOwner = "Session";
         private const int CommandTimeoutAdditionSeconds = 1;
@@ -150,35 +153,43 @@ namespace Hangfire.SqlServer
 
         internal static void Acquire(IDbConnection connection, string resource, TimeSpan timeout)
         {
-            var parameters = new DynamicParameters();
-            parameters.Add("@Resource", resource);
-            parameters.Add("@DbPrincipal", "public");
-            parameters.Add("@LockMode", LockMode);
-            parameters.Add("@LockOwner", LockOwner);
-            parameters.Add("@LockTimeout", (int)timeout.TotalMilliseconds);
-            parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
+            var started = Stopwatch.StartNew();
+            var attempt = 1;
 
-            // Ensuring the timeout for the command is longer than the timeout specified for the stored procedure.
-            var commandTimeout = (int)(timeout.TotalSeconds + CommandTimeoutAdditionSeconds);
-
-            connection.Execute(
-                @"sp_getapplock",
-                parameters,
-                commandTimeout: commandTimeout,
-                commandType: CommandType.StoredProcedure);
-
-            var lockResult = parameters.Get<int>("@Result");
-
-            if (lockResult < 0)
+            while (started.Elapsed < timeout)
             {
-                if (lockResult == -1)
+                var parameters = new DynamicParameters();
+                parameters.Add("@Resource", resource);
+                parameters.Add("@DbPrincipal", "public");
+                parameters.Add("@LockMode", LockMode);
+                parameters.Add("@LockOwner", LockOwner);
+                parameters.Add("@LockTimeout", 0);
+                parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
+
+                connection.Execute(
+                    @"sp_getapplock",
+                    parameters,
+                    commandTimeout: (int)timeout.TotalSeconds,
+                    commandType: CommandType.StoredProcedure);
+
+                var lockResult = parameters.Get<int>("@Result");
+
+                if (lockResult >= 0)
                 {
-                    throw new DistributedLockTimeoutException(resource);
+                    // The lock has been successfully obtained on the specified resource.
+                    return;
                 }
 
-                throw new SqlServerDistributedLockException(
-                    $"Could not place a lock on the resource '{resource}': {(LockErrorMessages.ContainsKey(lockResult) ? LockErrorMessages[lockResult] : $"Server returned the '{lockResult}' error.")}.");
+                if (lockResult == -999 /* Indicates a parameter validation or other call error. */)
+                {
+                    throw new SqlServerDistributedLockException(
+                        $"Could not place a lock on the resource '{resource}': {(LockErrorMessages.ContainsKey(lockResult) ? LockErrorMessages[lockResult] : $"Server returned the '{lockResult}' error.")}.");
+                }
+
+                Thread.Sleep(ExponentialBackoff(attempt++));
             }
+
+            throw new DistributedLockTimeoutException(resource);
         }
 
         internal static void Release(IDbConnection connection, string resource)
@@ -200,6 +211,14 @@ namespace Hangfire.SqlServer
                 throw new SqlServerDistributedLockException(
                     $"Could not release a lock on the resource '{resource}': Server returned the '{releaseResult}' error.");
             }
+        }
+
+        private static TimeSpan ExponentialBackoff(int attemptNumber)
+        {
+            var rand = new Random(Guid.NewGuid().GetHashCode());
+            var nextTry = rand.Next(
+                (int)Math.Pow(attemptNumber, 2), (int)Math.Pow(attemptNumber + 1, 2) + 1);
+            return TimeSpan.FromMilliseconds(Math.Min(nextTry, MaxAttemptDelay.TotalMilliseconds));
         }
     }
 }
