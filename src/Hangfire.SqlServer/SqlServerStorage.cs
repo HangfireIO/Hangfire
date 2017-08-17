@@ -232,13 +232,12 @@ namespace Hangfire.SqlServer
 
         internal DbConnection CreateAndOpenConnection()
         {
-            if (_existingConnection != null)
-            {
-                return _existingConnection;
-            }
+            var connection = _existingConnection ?? new SqlConnection(_connectionString);
 
-            var connection = new SqlConnection(_connectionString);
-            connection.Open();
+            if (connection.State == ConnectionState.Closed)
+            {
+                connection.Open();
+            }
 
             return connection;
         }
