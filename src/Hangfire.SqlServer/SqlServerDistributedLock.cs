@@ -27,7 +27,7 @@ namespace Hangfire.SqlServer
 {
     public class SqlServerDistributedLock : IDisposable
     {
-        private static readonly TimeSpan MaxAttemptDelay = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(5);
 
         private const string LockMode = "Exclusive";
         private const string LockOwner = "Session";
@@ -171,8 +171,16 @@ namespace Hangfire.SqlServer
             }
 
             var started = Stopwatch.StartNew();
-            var attempt = 1;
 
+            // We can't pass our timeout directly to the sp_getapplock stored procedure, because
+            // high values, such as minute or more, may cause SQL Server's thread pool starvation,
+            // when the number of connections that try to acquire a lock is more than the number of 
+            // available threads in SQL Server. In this case a deadlock will occur, when SQL Server 
+            // tries to schedule some more work for a connection that acquired a lock, but all the 
+            // available threads in a pool waiting for that lock to be released.
+            //
+            // So we are trying to acquire a lock multiple times instead, with timeout that's equal
+            // to seconds, not minutes.
             while (started.Elapsed < timeout)
             {
                 var parameters = new DynamicParameters();
@@ -180,13 +188,13 @@ namespace Hangfire.SqlServer
                 parameters.Add("@DbPrincipal", "public");
                 parameters.Add("@LockMode", LockMode);
                 parameters.Add("@LockOwner", LockOwner);
-                parameters.Add("@LockTimeout", 0);
+                parameters.Add("@LockTimeout", LockTimeout.TotalMilliseconds);
                 parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
 
                 connection.Execute(
                     @"sp_getapplock",
                     parameters,
-                    commandTimeout: (int)timeout.TotalSeconds,
+                    commandTimeout: (int)LockTimeout.TotalSeconds + 1,
                     commandType: CommandType.StoredProcedure);
 
                 var lockResult = parameters.Get<int>("@Result");
@@ -202,8 +210,6 @@ namespace Hangfire.SqlServer
                     throw new SqlServerDistributedLockException(
                         $"Could not place a lock on the resource '{resource}': {(LockErrorMessages.ContainsKey(lockResult) ? LockErrorMessages[lockResult] : $"Server returned the '{lockResult}' error.")}.");
                 }
-
-                Thread.Sleep(ExponentialBackoff(attempt++));
             }
 
             throw new DistributedLockTimeoutException(resource);
@@ -228,14 +234,6 @@ namespace Hangfire.SqlServer
                 throw new SqlServerDistributedLockException(
                     $"Could not release a lock on the resource '{resource}': Server returned the '{releaseResult}' error.");
             }
-        }
-
-        private static TimeSpan ExponentialBackoff(int attemptNumber)
-        {
-            var rand = new Random(Guid.NewGuid().GetHashCode());
-            var nextTry = rand.Next(
-                (int)Math.Pow(attemptNumber, 2), (int)Math.Pow(attemptNumber + 1, 2) + 1);
-            return TimeSpan.FromMilliseconds(Math.Min(nextTry, MaxAttemptDelay.TotalMilliseconds));
         }
     }
 }
