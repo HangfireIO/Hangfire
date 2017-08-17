@@ -209,7 +209,7 @@ namespace Hangfire.Storage
         internal static bool ParseDateTimeArgument(string argument, out DateTime value)
         {
             DateTime dateTime;
-            var result = DateTime.TryParse(argument, out dateTime);
+            var result = DateTime.TryParse(argument, null, DateTimeStyles.RoundtripKind, out dateTime);
 
             if (!result)
             {
