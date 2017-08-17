@@ -52,6 +52,14 @@ namespace Hangfire.Core.Tests
             string actual = Cron.Daily(5, 5);
             Assert.Equal(expected, actual);
         }
+        
+        [Fact]
+        public void Daily_WithTimeSpan_ReturnsFormattedStringWithHourAndMinute()
+        {
+            string expected = "5 5 * * *";
+            string actual = Cron.Daily(TimeSpan.Parse("05:05:00"));
+            Assert.Equal(expected, actual);
+        }
 
         [Fact]
         public void Weekly_WithoutDayHourMinute_ReturnsFormattedStringWithDefaults()

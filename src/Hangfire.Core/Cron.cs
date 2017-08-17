@@ -78,6 +78,16 @@ namespace Hangfire
         }
 
         /// <summary>
+        /// Returns cron expression that fires every day at the specified timespan in UTC.
+        /// </summary>
+        /// <param name="timeSpan">Time span on which to the schedule will be activated (hh:mm:ss).</param>
+        /// <returns></returns>
+        public static string Daily(TimeSpan timeSpan)
+        {
+            return Daily(timeSpan.Hours, timeSpan.Minutes);
+        }
+        
+        /// <summary>
         /// Returns cron expression that fires every week at Monday, 00:00 UTC.
         /// </summary>
         public static string Weekly()
