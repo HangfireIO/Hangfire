@@ -183,7 +183,7 @@ namespace Hangfire.SqlServer
             // to seconds, not minutes.
             var lockTimeout = (long) Math.Min(LockTimeout.TotalMilliseconds, timeout.TotalMilliseconds);
 
-            while (started.Elapsed < timeout)
+            do
             {
                 var parameters = new DynamicParameters();
                 parameters.Add("@Resource", resource);
@@ -196,7 +196,7 @@ namespace Hangfire.SqlServer
                 connection.Execute(
                     @"sp_getapplock",
                     parameters,
-                    commandTimeout: (int)(lockTimeout / 1000) + 5,
+                    commandTimeout: (int) (lockTimeout / 1000) + 5,
                     commandType: CommandType.StoredProcedure);
 
                 var lockResult = parameters.Get<int>("@Result");
@@ -212,7 +212,7 @@ namespace Hangfire.SqlServer
                     throw new SqlServerDistributedLockException(
                         $"Could not place a lock on the resource '{resource}': {(LockErrorMessages.ContainsKey(lockResult) ? LockErrorMessages[lockResult] : $"Server returned the '{lockResult}' error.")}.");
                 }
-            }
+            } while (started.Elapsed < timeout);
 
             throw new DistributedLockTimeoutException(resource);
         }
