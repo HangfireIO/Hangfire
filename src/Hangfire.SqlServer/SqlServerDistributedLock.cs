@@ -181,6 +181,8 @@ namespace Hangfire.SqlServer
             //
             // So we are trying to acquire a lock multiple times instead, with timeout that's equal
             // to seconds, not minutes.
+            var lockTimeout = (long) Math.Min(LockTimeout.TotalMilliseconds, timeout.TotalMilliseconds);
+
             while (started.Elapsed < timeout)
             {
                 var parameters = new DynamicParameters();
@@ -188,13 +190,13 @@ namespace Hangfire.SqlServer
                 parameters.Add("@DbPrincipal", "public");
                 parameters.Add("@LockMode", LockMode);
                 parameters.Add("@LockOwner", LockOwner);
-                parameters.Add("@LockTimeout", LockTimeout.TotalMilliseconds);
+                parameters.Add("@LockTimeout", lockTimeout);
                 parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
 
                 connection.Execute(
                     @"sp_getapplock",
                     parameters,
-                    commandTimeout: (int)LockTimeout.TotalSeconds + 1,
+                    commandTimeout: (int)(lockTimeout / 1000) + 5,
                     commandType: CommandType.StoredProcedure);
 
                 var lockResult = parameters.Get<int>("@Result");
