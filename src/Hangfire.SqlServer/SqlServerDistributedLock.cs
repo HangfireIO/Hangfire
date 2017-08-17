@@ -121,7 +121,14 @@ namespace Hangfire.SqlServer
 
                     _timer?.Dispose();
 
-                    Release(_connection, _resource);
+                    if (_connection.State == ConnectionState.Open)
+                    {
+                        // Session-scoped application locks are held only when connection
+                        // is open. When connection is closed or broken, for example, when
+                        // there was an error, application lock is already released by SQL
+                        // Server itself, and we shouldn't do anything.
+                        Release(_connection, _resource);
+                    }
                 }
                 finally
                 {
