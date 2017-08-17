@@ -31,7 +31,6 @@ namespace Hangfire.SqlServer
 
         private const string LockMode = "Exclusive";
         private const string LockOwner = "Session";
-        private const int CommandTimeoutAdditionSeconds = 1;
 
         // Connections to SQL Azure Database that are idle for 30 minutes 
         // or longer will be terminated. And since we are using separate
@@ -63,11 +62,7 @@ namespace Hangfire.SqlServer
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (String.IsNullOrEmpty(resource)) throw new ArgumentNullException(nameof(resource));
-            if (timeout.TotalSeconds + CommandTimeoutAdditionSeconds > Int32.MaxValue) throw new ArgumentException(
-                $"The timeout specified is too large. Please supply a timeout equal to or less than {Int32.MaxValue - CommandTimeoutAdditionSeconds} seconds", nameof(timeout));
-            if (timeout.TotalMilliseconds > Int32.MaxValue) throw new ArgumentException(
-                $"The timeout specified is too large. Please supply a timeout equal to or less than {(int)TimeSpan.FromMilliseconds(Int32.MaxValue).TotalSeconds} seconds", nameof(timeout));
-                
+
             _storage = storage;
             _resource = resource;
 
