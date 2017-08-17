@@ -153,6 +153,16 @@ namespace Hangfire.SqlServer
 
         internal static void Acquire(IDbConnection connection, string resource, TimeSpan timeout)
         {
+            if (connection.State != ConnectionState.Open)
+            {
+                // When we are passing a closed connection to Dapper's Execute method,
+                // it kindly opens it for us, but after command execution, it will be closed
+                // automatically, and our just-acquired application lock will immediately
+                // be released. This is not behavior we want to achieve, so let's throw an
+                // exception instead.
+                throw new InvalidOperationException("Connection must be open before acquiring a distributed lock.");
+            }
+
             var started = Stopwatch.StartNew();
             var attempt = 1;
 
