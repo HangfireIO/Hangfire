@@ -158,8 +158,24 @@ namespace Hangfire.Core.Tests.Storage
         }
 
         [Fact]
+        public void Deserialize_CorrectlyDeserializes_UnknownDateTimeArguments_ConvertedToRoundtripFormat()
+        {
+            var value = new DateTime(2017, 1, 1, 1, 1, 1, 1, DateTimeKind.Unspecified);
+            var serializedData = new InvocationData(
+                typeof(InvocationDataFacts).AssemblyQualifiedName,
+                nameof(DateTimeMethod),
+                JobHelper.ToJson(new[] { typeof(DateTime) }),
+                JobHelper.ToJson(new[] { value.ToString("o", CultureInfo.InvariantCulture) }));
+
+            var job = serializedData.Deserialize();
+
+            Assert.Equal(value, (DateTime)job.Args[0]);
+        }
+
+        [Fact]
         public void Deserialize_CorrectlyDeserializes_UtcDateTimeArguments_ConvertedToRoundtripFormat()
         {
+            
             var value = DateTime.UtcNow;
             var serializedData = new InvocationData(
                 typeof(InvocationDataFacts).AssemblyQualifiedName,
@@ -176,6 +192,28 @@ namespace Hangfire.Core.Tests.Storage
         public void Deserialize_CorrectlyDeserializes_LocalDateTimeArguments_ConvertedToOldFormat_WithLoweredPrecision()
         {
             var value = DateTime.Now;
+            var serializedData = new InvocationData(
+                typeof(InvocationDataFacts).AssemblyQualifiedName,
+                nameof(DateTimeMethod),
+                JobHelper.ToJson(new[] { typeof(DateTime) }),
+                JobHelper.ToJson(new[] { value.ToString("MM/dd/yyyy HH:mm:ss.ffff", CultureInfo.InvariantCulture) }));
+
+            var job = serializedData.Deserialize();
+
+            var actualValue = (DateTime)job.Args[0];
+
+            Assert.Equal(value.Year, actualValue.Year);
+            Assert.Equal(value.Month, actualValue.Month);
+            Assert.Equal(value.Day, actualValue.Day);
+            Assert.Equal(value.Hour, actualValue.Hour);
+            Assert.Equal(value.Minute, actualValue.Minute);
+            Assert.Equal(value.Second, actualValue.Second);
+        }
+
+        [Fact]
+        public void Deserialize_CorrectlyDeserializes_UnknownDateTimeArguments_ConvertedToOldFormat_WithLoweredPrecision()
+        {
+            var value = new DateTime(2017, 1, 1, 1, 1, 1, 1, DateTimeKind.Unspecified);
             var serializedData = new InvocationData(
                 typeof(InvocationDataFacts).AssemblyQualifiedName,
                 nameof(DateTimeMethod),
