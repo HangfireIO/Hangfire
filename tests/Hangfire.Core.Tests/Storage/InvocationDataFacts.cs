@@ -255,6 +255,64 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(value.Second, actualValue.Second);
         }
 
+        [Fact]
+        public void Deserialize_CorrectlyDeserializes_NullableUtcDateTimeArguments()
+        {
+            DateTime? value = DateTime.UtcNow;
+            var serializedData = new InvocationData(
+                typeof(InvocationDataFacts).AssemblyQualifiedName,
+                nameof(NullableDateTimeMethod),
+                JobHelper.ToJson(new[] { typeof(DateTime?) }),
+                JobHelper.ToJson(new[] { value.Value.ToString("o", CultureInfo.InvariantCulture) }));
+
+            var job = serializedData.Deserialize();
+
+            Assert.Equal(value, job.Args[0]);
+        }
+
+        [Fact]
+        public void Deserialize_CorrectlySeserializes_NullableUtcDateTimeArguments_With_Null()
+        {
+            DateTime? value = null;
+
+            var serializedData = InvocationData.Serialize(Job.FromExpression(() => NullableDateTimeMethod(value)));
+
+            var job = serializedData.Deserialize();
+
+            Assert.Equal(value, job.Args[0]);
+        }
+
+        [Fact]
+        public void Deserialize_CorrectlyDeserializes_NullableLocalDateTimeArguments()
+        {
+            DateTime? value = DateTime.Now;
+            var serializedData = new InvocationData(
+                typeof(InvocationDataFacts).AssemblyQualifiedName,
+                nameof(NullableDateTimeMethod),
+                JobHelper.ToJson(new[] { typeof(DateTime?) }),
+                JobHelper.ToJson(new[] { value.Value.ToString("o", CultureInfo.InvariantCulture) }));
+
+            var job = serializedData.Deserialize();
+
+            Assert.Equal(value, job.Args[0]);
+        }
+
+        [Fact]
+        public void Deserialize_CorrectlyDeserializes_NullableDateTimeArguments_With_Null_Value()
+        {
+            DateTime? value = null;
+            var result = value is DateTime;
+            var serializedData = new InvocationData(
+                typeof(InvocationDataFacts).AssemblyQualifiedName,
+                nameof(NullableDateTimeMethod),
+                JobHelper.ToJson(new[] { typeof(DateTime?) }),
+                JobHelper.ToJson(new[] { value }));
+
+            var job = serializedData.Deserialize();
+
+            Assert.Equal(value, job.Args[0]);
+        }
+
         public static void Sample(string arg)
         {
         }
@@ -264,6 +322,10 @@ namespace Hangfire.Core.Tests.Storage
         }
 
         public static void DateTimeMethod(DateTime arg)
+        {
+        }
+
+        public static void NullableDateTimeMethod(DateTime? arg)
         {
         }
 
