@@ -754,6 +754,13 @@ namespace Hangfire.Core.Tests.Common
 
                 return FunctionReturningValue();
             }
+
+            public async ValueTask<string> FunctionReturningValueTaskResultingInString()
+            {
+                await Task.Yield();
+
+                return FunctionReturningValue();
+            }
         }
 
         public class DerivedInstance : Instance

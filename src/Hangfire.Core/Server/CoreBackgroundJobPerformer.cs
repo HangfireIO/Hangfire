@@ -21,6 +21,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
+using System.Runtime.CompilerServices;
 
 namespace Hangfire.Server
 {
@@ -99,6 +100,8 @@ namespace Hangfire.Server
                 exception);
         }
 
+        private static readonly Type[] EmptyTypes = new Type[0];
+
         private static object InvokeMethod(PerformContext context, object instance, object[] arguments)
         {
             try
@@ -106,21 +109,20 @@ namespace Hangfire.Server
                 var methodInfo = context.BackgroundJob.Job.Method;
                 var result = methodInfo.Invoke(instance, arguments);
 
-                var task = result as Task;
-
-                if (task != null)
+                if (result != null)
                 {
-                    task.Wait();
-
-                    if (methodInfo.ReturnType.GetTypeInfo().IsGenericType)
+                    var getAwaiterMethod = methodInfo.ReturnType.GetRuntimeMethod("GetAwaiter", EmptyTypes);
+                    if (getAwaiterMethod != null)
                     {
-                        var resultProperty = methodInfo.ReturnType.GetRuntimeProperty("Result");
-
-                        result = resultProperty.GetValue(task);
-                    }
-                    else
-                    {
-                        result = null;
+                        var awaiter = getAwaiterMethod.Invoke(result, null);
+                        if (awaiter is INotifyCompletion)
+                        {
+                            var getResultMethod = awaiter.GetType().GetRuntimeMethod("GetResult", EmptyTypes);
+                            if (getResultMethod != null)
+                            {
+                                result = getResultMethod.Invoke(awaiter, null);
+                            }
+                        }
                     }
                 }
 

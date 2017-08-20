@@ -376,6 +376,19 @@ namespace Hangfire.Core.Tests.Server
         }
 #pragma warning restore 4014
 
+#pragma warning disable 4014
+        [Fact]
+        public void Run_ReturnsTaskResult_WhenCallingFunctionReturningValueTask()
+        {
+            _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningValueTaskResultingInString());
+            var performer = CreatePerformer();
+
+            var result = performer.Perform(_context.Object);
+
+            Assert.Equal("Return value", result);
+        }
+#pragma warning restore 4014
+
         public void InstanceMethod()
         {
             _methodInvoked = true;
