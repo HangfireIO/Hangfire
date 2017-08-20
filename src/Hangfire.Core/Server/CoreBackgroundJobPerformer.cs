@@ -109,7 +109,7 @@ namespace Hangfire.Server
                 var methodInfo = context.BackgroundJob.Job.Method;
                 var result = methodInfo.Invoke(instance, arguments);
 
-                if (result != null)
+                if (result != null && !methodInfo.ReturnType.GetTypeInfo().IsPrimitive)
                 {
                     var getAwaiterMethod = methodInfo.ReturnType.GetRuntimeMethod("GetAwaiter", EmptyTypes);
                     if (getAwaiterMethod != null)
