@@ -26,12 +26,14 @@ namespace Hangfire.Server
             HeartbeatInterval = ServerHeartbeat.DefaultHeartbeatInterval;
             ServerCheckInterval = ServerWatchdog.DefaultCheckInterval;
             ServerTimeout = ServerWatchdog.DefaultServerTimeout;
+            CancellationCheckInterval = ServerJobCancellationWatcher.DefaultCheckInterval;
         }
 
         public TimeSpan ShutdownTimeout { get; set; }
         public TimeSpan HeartbeatInterval { get; set; }
         public TimeSpan ServerCheckInterval { get; set; }
         public TimeSpan ServerTimeout { get; set; }
+        public TimeSpan CancellationCheckInterval { get; set; }
         public string ServerName { get; set; }
     }
 }

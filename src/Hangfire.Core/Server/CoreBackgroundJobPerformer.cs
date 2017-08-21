@@ -30,7 +30,7 @@ namespace Hangfire.Server
             = new Dictionary<Type, Func<PerformContext, object>>
             {
                 { typeof (IJobCancellationToken), x => x.CancellationToken },
-                { typeof (CancellationToken), x => x.CancellationToken.ShutdownToken },
+                { typeof (CancellationToken), x => x.CancellationToken.CancellationToken },
                 { typeof (PerformContext), x => x }
             };
 
@@ -72,7 +72,7 @@ namespace Hangfire.Server
             }
         }
 
-        internal static void HandleJobPerformanceException(Exception exception, CancellationToken shutdownToken)
+        internal static void HandleJobPerformanceException(Exception exception, IJobCancellationToken cancellationToken)
         {
             if (exception is JobAbortedException)
             {
@@ -81,8 +81,8 @@ namespace Hangfire.Server
                 // should NOT be re-queued.
                 ExceptionDispatchInfo.Capture(exception).Throw();
             }
-
-            if (exception is OperationCanceledException && shutdownToken.IsCancellationRequested)
+            
+            if (exception is OperationCanceledException && cancellationToken.ShutdownToken.IsCancellationRequested)
             {
                 // OperationCanceledException exceptions are treated differently from
                 // others, when ShutdownToken's cancellation was requested, to notify
@@ -90,6 +90,13 @@ namespace Hangfire.Server
                 // and a job identifier should BE re-queued.
                 ExceptionDispatchInfo.Capture(exception).Throw();
                 throw exception;
+            }
+
+            if (exception is OperationCanceledException && cancellationToken.IsAborted())
+            {
+                // OperationCanceledException exception is thrown because 
+                // ServerJobCancellationWatcher has detected the job was aborted.
+                throw new JobAbortedException();
             }
 
             // Other exceptions are wrapped with JobPerformanceException to preserve a
@@ -128,17 +135,17 @@ namespace Hangfire.Server
             }
             catch (ArgumentException ex)
             {
-                HandleJobPerformanceException(ex, context.CancellationToken.ShutdownToken);
+                HandleJobPerformanceException(ex, context.CancellationToken);
                 throw;
             }
             catch (AggregateException ex)
             {
-                HandleJobPerformanceException(ex.InnerException, context.CancellationToken.ShutdownToken);
+                HandleJobPerformanceException(ex.InnerException, context.CancellationToken);
                 throw;
             }
             catch (TargetInvocationException ex)
             {
-                HandleJobPerformanceException(ex.InnerException, context.CancellationToken.ShutdownToken);
+                HandleJobPerformanceException(ex.InnerException, context.CancellationToken);
                 throw;
             }
         }

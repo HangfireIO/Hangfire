@@ -167,6 +167,7 @@ namespace Hangfire.Server
         {
             yield return new ServerHeartbeat(_options.HeartbeatInterval);
             yield return new ServerWatchdog(_options.ServerCheckInterval, _options.ServerTimeout);
+            yield return new ServerJobCancellationWatcher(_options.CancellationCheckInterval);
         }
 
         private string GetGloballyUniqueServerId()

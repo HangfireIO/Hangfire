@@ -143,7 +143,88 @@ namespace Hangfire.Core.Tests.Server
                 () => token.ThrowIfCancellationRequested());
         }
 
-        private IJobCancellationToken CreateToken()
+        [Fact]
+        public void CancellationToken_IsInitializedAsNotCancelled_IfNotAborted()
+        {
+            var token = CreateToken();
+            
+            Assert.False(token.CancellationToken.IsCancellationRequested);
+        }
+
+        [Fact]
+        public void CancellationToken_IsInitializedAsCancelled_IfAborted()
+        {
+            var token = CreateToken();
+
+            token.Abort();
+
+            Assert.True(token.CancellationToken.IsCancellationRequested);
+        }
+
+        [Fact]
+        public void CheckAllCancellationTokens_DoesNotAbortCancellationToken_IfNothingChanged()
+        {
+            var token = CreateToken();
+
+            ServerJobCancellationToken.CheckAllCancellationTokens(_connection.Object);
+            
+            Assert.False(token.IsAborted);
+            token.CancellationToken.ThrowIfCancellationRequested(); // does not throw
+        }
+
+        [Fact]
+        public void CheckAllCancellationTokens_AbortsCancellationToken_IfStateDataDoesNotExist()
+        {
+            _connection.Setup(x => x.GetStateData(It.IsAny<string>())).Returns((StateData)null);
+            var token = CreateToken();
+
+            ServerJobCancellationToken.CheckAllCancellationTokens(_connection.Object);
+
+            Assert.Throws<OperationCanceledException>(
+                () => token.CancellationToken.ThrowIfCancellationRequested());
+            Assert.True(token.IsAborted);
+        }
+        
+        [Fact]
+        public void CheckAllCancellationTokens_AbortsCancellationToken_IfJobIsNotInProcessingState()
+        {
+            _stateData.Name = "NotProcessing";
+            var token = CreateToken();
+
+            ServerJobCancellationToken.CheckAllCancellationTokens(_connection.Object);
+
+            Assert.Throws<OperationCanceledException>(
+                () => token.CancellationToken.ThrowIfCancellationRequested());
+            Assert.True(token.IsAborted);
+        }
+        
+        [Fact]
+        public void CheckAllCancellationTokens_AbortsCancellationToken_IfServerIdWasChanged()
+        {
+            _stateData.Data["ServerId"] = "another-server";
+            var token = CreateToken();
+
+            ServerJobCancellationToken.CheckAllCancellationTokens(_connection.Object);
+
+            Assert.Throws<OperationCanceledException>(
+                () => token.CancellationToken.ThrowIfCancellationRequested());
+            Assert.True(token.IsAborted);
+        }
+
+        [Fact]
+        public void CheckAllCancellationTokens_AbortsCancellationToken_IfWorkerIdWasChanged()
+        {
+            _stateData.Data["WorkerId"] = "999";
+            var token = CreateToken();
+
+            ServerJobCancellationToken.CheckAllCancellationTokens(_connection.Object);
+
+            Assert.Throws<OperationCanceledException>(
+                () => token.CancellationToken.ThrowIfCancellationRequested());
+            Assert.True(token.IsAborted);
+        }
+
+        private ServerJobCancellationToken CreateToken()
         {
             return new ServerJobCancellationToken(_connection.Object, JobId, ServerId, WorkerId, _cts.Token);
         }

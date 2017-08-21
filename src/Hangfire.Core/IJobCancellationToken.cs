@@ -22,6 +22,8 @@ namespace Hangfire
     {
         CancellationToken ShutdownToken { get; }
 
+        CancellationToken CancellationToken { get; }
+
         void ThrowIfCancellationRequested();
     }
 }

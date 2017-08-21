@@ -51,7 +51,7 @@ namespace Hangfire.Common
                 }
 
                 var deserializedArguments = DeserializeArguments(cancellationToken);
-                result = InvokeMethod(instance, deserializedArguments, cancellationToken.ShutdownToken);
+                result = InvokeMethod(instance, deserializedArguments, cancellationToken);
             }
             finally
             {
@@ -152,7 +152,7 @@ namespace Hangfire.Common
         }
 
         [Obsolete("Will be removed in 2.0.0")]
-        private object InvokeMethod(object instance, object[] deserializedArguments, CancellationToken shutdownToken)
+        private object InvokeMethod(object instance, object[] deserializedArguments, IJobCancellationToken cancellationToken)
         {
             try
             {
@@ -160,7 +160,7 @@ namespace Hangfire.Common
             }
             catch (TargetInvocationException ex)
             {
-                CoreBackgroundJobPerformer.HandleJobPerformanceException(ex.InnerException, shutdownToken);
+                CoreBackgroundJobPerformer.HandleJobPerformanceException(ex.InnerException, cancellationToken);
                 throw;
             }
         }

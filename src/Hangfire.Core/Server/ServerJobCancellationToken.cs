@@ -19,16 +19,56 @@ using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.States;
 using Hangfire.Storage;
+using System.Collections.Concurrent;
+using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
-    internal class ServerJobCancellationToken : IJobCancellationToken
+    internal class ServerJobCancellationToken : IJobCancellationToken, IDisposable
     {
+        private static readonly ConcurrentDictionary<Guid, WeakReference<ServerJobCancellationToken>> WatchedTokens
+            = new ConcurrentDictionary<Guid, WeakReference<ServerJobCancellationToken>>();
+        
+        private static readonly ILog Logger = LogProvider.For<ServerJobCancellationToken>();
+
+        private class CancellationTokenHolder : IDisposable
+        {
+            private readonly CancellationTokenSource _abortedTokenSource;
+            private readonly CancellationTokenSource _linkedTokenSource;
+
+            public CancellationTokenHolder(bool aborted, CancellationToken shutdownToken)
+            {
+                _abortedTokenSource = new CancellationTokenSource();
+                if (aborted)
+                    _abortedTokenSource.Cancel();
+
+                _linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownToken, _abortedTokenSource.Token);
+            }
+            
+            public CancellationToken CancellationToken => _linkedTokenSource.Token;
+
+            public bool IsAborted => _abortedTokenSource.IsCancellationRequested;
+            
+            public void Abort()
+            {
+                _abortedTokenSource.Cancel();
+            }
+
+            public void Dispose()
+            {
+                _linkedTokenSource.Dispose();
+                _abortedTokenSource.Dispose();
+            }
+        }
+        
         private readonly string _jobId;
         private readonly string _serverId;
         private readonly string _workerId;
         private readonly IStorageConnection _connection;
         private readonly CancellationToken _shutdownToken;
+        private readonly Guid _uniqueId;
+        private readonly Lazy<CancellationTokenHolder> _cancellationTokenHolder;
+        private volatile bool _isAborted;
 
         public ServerJobCancellationToken(
             [NotNull] IStorageConnection connection,
@@ -47,23 +87,83 @@ namespace Hangfire.Server
             _workerId = workerId;
             _connection = connection;
             _shutdownToken = shutdownToken;
+
+            _uniqueId = Guid.NewGuid();
+
+            _cancellationTokenHolder = new Lazy<CancellationTokenHolder>(
+                () => new CancellationTokenHolder(_isAborted, _shutdownToken),
+                LazyThreadSafetyMode.ExecutionAndPublication);
+
+            _isAborted = false;
+            WatchedTokens.TryAdd(_uniqueId, new WeakReference<ServerJobCancellationToken>(this));
+        }
+
+        ~ServerJobCancellationToken()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            StopAbortChecks();
+
+            if (disposing && _cancellationTokenHolder.IsValueCreated)
+            {
+                _cancellationTokenHolder.Value.Dispose();
+            }
         }
 
         public CancellationToken ShutdownToken => _shutdownToken;
+
+        public CancellationToken CancellationToken => _cancellationTokenHolder.Value.CancellationToken;
+
+        public bool IsAborted => _cancellationTokenHolder.IsValueCreated ? _cancellationTokenHolder.Value.IsAborted : _isAborted;
+
+        private void StopAbortChecks()
+        {
+            WeakReference<ServerJobCancellationToken> _;
+            WatchedTokens.TryRemove(_uniqueId, out _);
+        }
+
+        internal void Abort()
+        {
+            _isAborted = true;
+            
+            if (_cancellationTokenHolder.IsValueCreated)
+            {
+                _cancellationTokenHolder.Value.Abort();
+            }
+
+            // remove aborted token from WatchedTokens collection
+            // to prevent further checks, since it is already aborted
+            StopAbortChecks();
+        }
 
         public void ThrowIfCancellationRequested()
         {
             _shutdownToken.ThrowIfCancellationRequested();
 
-            if (IsJobAborted())
+            if (IsAborted)
             {
+                throw new JobAbortedException();
+            }
+            
+            if (IsJobAborted(_connection))
+            {
+                Abort();
                 throw new JobAbortedException();
             }
         }
 
-        private bool IsJobAborted()
+        private bool IsJobAborted(IStorageConnection connection)
         {
-            var state = _connection.GetStateData(_jobId);
+            var state = connection.GetStateData(_jobId);
 
             if (state == null)
             {
@@ -97,5 +197,19 @@ namespace Hangfire.Server
 
             return false;
         }
+
+        public static void CheckAllCancellationTokens(IStorageConnection connection)
+        {
+            foreach (var tokenRef in WatchedTokens.Values)
+            {
+                ServerJobCancellationToken token;
+                if (tokenRef.TryGetTarget(out token) && token.IsJobAborted(connection))
+                {
+                    Logger.Debug($"Job {token._jobId} will be aborted");
+                    token.Abort();
+                }
+            }
+        }
+
     }
 }

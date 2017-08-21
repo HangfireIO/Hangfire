@@ -300,6 +300,7 @@
     <Compile Include="JobActivatorContext.cs" />
     <Compile Include="JobActivatorScope.cs" />
     <Compile Include="JobCancellationToken.cs" />
+    <Compile Include="JobCancellationTokenExtensions.cs" />
     <Compile Include="JobContinuationOptions.cs" />
     <Compile Include="JobStorage.cs" />
     <Compile Include="LatencyTimeoutAttribute.cs" />
@@ -345,6 +346,7 @@
     <Compile Include="Server\ServerExceptionContext.cs" />
     <Compile Include="Server\ServerHeartbeat.cs" />
     <Compile Include="Server\ServerJobCancellationToken.cs" />
+    <Compile Include="Server\ServerJobCancellationWatcher.cs" />
     <Compile Include="Server\ServerProcessExtensions.cs" />
     <Compile Include="Server\ServerWatchdog.cs" />
     <Compile Include="Server\Worker.cs" />
