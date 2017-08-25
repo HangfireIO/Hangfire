@@ -105,6 +105,7 @@
     </Compile>
     <Compile Include="JobActivatorScope.cs" />
     <Compile Include="Properties\NamespaceDoc.cs" />
+    <Compile Include="BoundedRecurringJob.cs" />
     <Compile Include="RecurringJobManagerExtensions.cs" />
     <Compile Include="RecurringJobOptions.cs" />
     <Compile Include="Server\BackgroundProcessContext.cs" />

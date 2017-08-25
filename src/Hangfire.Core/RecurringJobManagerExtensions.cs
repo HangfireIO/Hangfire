@@ -61,7 +61,7 @@ namespace Hangfire
                 new RecurringJobOptions { QueueName = queue, TimeZone = timeZone });
         }
 
-        public static void AddOrUpdate(
+        public static void AddOrUpdateBounded(
              [NotNull] this IRecurringJobManager manager,
              [NotNull] string recurringJobId,
              [NotNull] Job job,
@@ -69,10 +69,10 @@ namespace Hangfire
              DateTime? startDate,
              DateTime? endDate)
         {
-            AddOrUpdate(manager, recurringJobId, job, cronExpression, TimeZoneInfo.Utc, startDate, endDate);
+            AddOrUpdateBounded(manager, recurringJobId, job, cronExpression, TimeZoneInfo.Utc, startDate, endDate);
         }
 
-        public static void AddOrUpdate(
+        public static void AddOrUpdateBounded(
             [NotNull] this IRecurringJobManager manager,
             [NotNull] string recurringJobId,
             [NotNull] Job job,
@@ -81,10 +81,10 @@ namespace Hangfire
             DateTime? startDate,
             DateTime? endDate)
         {
-            AddOrUpdate(manager, recurringJobId, job, cronExpression, timeZone, EnqueuedState.DefaultQueue, startDate, endDate);
+            AddOrUpdateBounded(manager, recurringJobId, job, cronExpression, timeZone, EnqueuedState.DefaultQueue, startDate, endDate);
         }
 
-        public static void AddOrUpdate(
+        public static void AddOrUpdateBounded(
             [NotNull] this IRecurringJobManager manager,
             [NotNull] string recurringJobId,
             [NotNull] Job job,
