@@ -15,9 +15,25 @@
       Backed by Redis, SQL Server, SQL Azure or MSMQ. This is a .NET alternative to Sidekiq, Resque and Celery.
       http://hangfire.io/
     </description>
-    <copyright>Copyright © 2013-2016 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013-2017 Sergey Odinokov</copyright>
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
+    
+1.6.15
+
+Hangfire.SqlServer
+
+• Fixed – Timeout exceptions that's caused by SQL Server's thread pool starvation, caused by sp_getapplock.
+• Fixed – Antecedent background job is constantly failing, when its continuation hasn't been fully created.
+    
+1.6.14
+
+Hangfire.SqlServer
+
+• Added – `SqlServerStorageOptions.SlidingInvisibilityTimeout` to fetch jobs without using transaction.
+• Fixed – Transaction log is full due to 'ACTIVE_TRANSACTION' by enabling to use new non-transactional fetch.
+• Fixed – `SqlServerJobQueueMonitoringApi` can't cause READ UNCOMMITTED isolation level to leak on SQL Server 2012 or earlier. 
+• Fixed – Add missing `SqlServerStorage(DbConnection, SqlServerStorageOptions)` constructor.
     
 1.6.13
 

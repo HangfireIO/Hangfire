@@ -10,9 +10,19 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>SQL Server 2008+ (including Express), SQL Server LocalDB and SQL Azure storage support for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2013-2016 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013-2017 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>http://hangfire.io/blog/
+    
+1.6.15
+• Fixed – Timeout exceptions that's caused by SQL Server's thread pool starvation, caused by sp_getapplock.
+• Fixed – Antecedent background job is constantly failing, when its continuation hasn't been fully created.
+    
+1.6.14
+• Added – `SqlServerStorageOptions.SlidingInvisibilityTimeout` to fetch jobs without using transaction.
+• Fixed – Transaction log is full due to 'ACTIVE_TRANSACTION' by enabling to use new non-transactional fetch.
+• Fixed – `SqlServerJobQueueMonitoringApi` can't cause READ UNCOMMITTED isolation level to leak on SQL Server 2012 or earlier. 
+• Fixed – Add missing `SqlServerStorage(DbConnection, SqlServerStorageOptions)` constructor.
     
 1.6.13
 • Fixed – Don't hide errors occurred while running SQL migrations.

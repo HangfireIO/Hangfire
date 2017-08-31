@@ -66,15 +66,7 @@ namespace Hangfire.SqlServer
             _connectionString = GetConnectionString(nameOrConnectionString);
             _options = options;
 
-            if (options.PrepareSchemaIfNecessary)
-            {
-                using (var connection = CreateAndOpenConnection())
-                {
-                    SqlServerObjectsInstaller.Install(connection, options.SchemaName);
-                }
-            }
-
-            InitializeQueueProviders();
+            Initialize();
         }
 
         /// <summary>
@@ -82,21 +74,32 @@ namespace Hangfire.SqlServer
         /// explicit instance of the <see cref="DbConnection"/> class that will be used
         /// to query the data.
         /// </summary>
-        /// <param name="existingConnection">Existing connection</param>
         public SqlServerStorage([NotNull] DbConnection existingConnection)
+            : this(existingConnection, new SqlServerStorageOptions())
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SqlServerStorage"/> class with
+        /// explicit instance of the <see cref="DbConnection"/> class that will be used
+        /// to query the data, with the given options.
+        /// </summary>
+        public SqlServerStorage([NotNull] DbConnection existingConnection, [NotNull] SqlServerStorageOptions options)
         {
             if (existingConnection == null) throw new ArgumentNullException(nameof(existingConnection));
+            if (options == null) throw new ArgumentNullException(nameof(options));
 
             _existingConnection = existingConnection;
-            _options = new SqlServerStorageOptions();
+            _options = options;
 
-            InitializeQueueProviders();
+            Initialize();
         }
 
         public virtual PersistentJobQueueProviderCollection QueueProviders { get; private set; }
 
         internal string SchemaName => _options.SchemaName;
         internal int? CommandTimeout => _options.CommandTimeout.HasValue ? (int)_options.CommandTimeout.Value.TotalSeconds : (int?)null;
+        internal TimeSpan? SlidingInvisibilityTimeout => _options.SlidingInvisibilityTimeout;
 
         public override IMonitoringApi GetMonitoringApi()
         {
@@ -229,20 +232,17 @@ namespace Hangfire.SqlServer
 
         internal DbConnection CreateAndOpenConnection()
         {
-            SqlConnection connection = null;
-
-            if (_existingConnection != null)
-            {
-                return _existingConnection;
-            }
-
             using (_options.ImpersonationFunc?.Invoke())
             {
-                connection = new SqlConnection(_connectionString);
-                connection.Open();
-            }
+                var connection = _existingConnection ?? new SqlConnection(_connectionString);
 
-            return connection;
+                if (connection.State == ConnectionState.Closed)
+                {
+                    connection.Open();
+                }
+
+                return connection;
+            }
         }
 
         internal bool IsExistingConnection(IDbConnection connection)
@@ -256,6 +256,19 @@ namespace Hangfire.SqlServer
             {
                 connection.Dispose();
             }
+        }
+
+        private void Initialize()
+        {
+            if (_options.PrepareSchemaIfNecessary)
+            {
+                UseConnection(connection =>
+                {
+                    SqlServerObjectsInstaller.Install(connection, _options.SchemaName);
+                });
+            }
+
+            InitializeQueueProviders();
         }
 
         private void InitializeQueueProviders()

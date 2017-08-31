@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Hangfire.SqlServer.Tests
 {
-    public class SqlServerFetchedJobFacts
+    public class SqlServerTransactionJobFacts
     {
         private const string JobId = "id";
         private const string Queue = "queue";
@@ -16,7 +16,7 @@ namespace Hangfire.SqlServer.Tests
         private readonly Mock<IDbTransaction> _transaction;
         private readonly Mock<SqlServerStorage> _storage;
 
-        public SqlServerFetchedJobFacts()
+        public SqlServerTransactionJobFacts()
         {
             _connection = new Mock<IDbConnection>();
             _transaction = new Mock<IDbTransaction>();
@@ -27,7 +27,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerFetchedJob(null, _connection.Object, _transaction.Object, JobId, Queue));
+                () => new SqlServerTransactionJob(null, _connection.Object, _transaction.Object, JobId, Queue));
 
             Assert.Equal("storage", exception.ParamName);
         }
@@ -36,7 +36,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerFetchedJob(_storage.Object, null, _transaction.Object, JobId, Queue));
+                () => new SqlServerTransactionJob(_storage.Object, null, _transaction.Object, JobId, Queue));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -45,7 +45,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenTransactionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerFetchedJob(_storage.Object, _connection.Object, null, JobId, Queue));
+                () => new SqlServerTransactionJob(_storage.Object, _connection.Object, null, JobId, Queue));
 
             Assert.Equal("transaction", exception.ParamName);
         }
@@ -54,7 +54,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenJobIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerFetchedJob(_storage.Object, _connection.Object, _transaction.Object, null, Queue));
+                () => new SqlServerTransactionJob(_storage.Object, _connection.Object, _transaction.Object, null, Queue));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -63,7 +63,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenQueueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerFetchedJob(_storage.Object, _connection.Object, _transaction.Object, JobId, null));
+                () => new SqlServerTransactionJob(_storage.Object, _connection.Object, _transaction.Object, JobId, null));
 
             Assert.Equal("queue", exception.ParamName);
         }
@@ -71,7 +71,7 @@ namespace Hangfire.SqlServer.Tests
         [Fact]
         public void Ctor_CorrectlySets_AllInstanceProperties()
         {
-            var fetchedJob = new SqlServerFetchedJob(_storage.Object, _connection.Object, _transaction.Object, JobId, Queue);
+            var fetchedJob = new SqlServerTransactionJob(_storage.Object, _connection.Object, _transaction.Object, JobId, Queue);
 
             Assert.Equal(JobId, fetchedJob.JobId);
             Assert.Equal(Queue, fetchedJob.Queue);
@@ -116,9 +116,9 @@ namespace Hangfire.SqlServer.Tests
             _connection.Verify(x => x.Dispose());
         }
 
-        private SqlServerFetchedJob CreateFetchedJob(string jobId, string queue)
+        private SqlServerTransactionJob CreateFetchedJob(string jobId, string queue)
         {
-            return new SqlServerFetchedJob(_storage.Object, _connection.Object, _transaction.Object, jobId, queue);
+            return new SqlServerTransactionJob(_storage.Object, _connection.Object, _transaction.Object, jobId, queue);
         }
     }
 }
