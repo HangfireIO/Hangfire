@@ -1575,6 +1575,7 @@ namespace Hangfire.Logging.LogProviders
                 error.Message = message;
                 error.Type = logLevel.ToString();
                 error.Time = DateTime.Now;
+                error.ApplicationName = "Hangfire";
 
                 try
                 {
