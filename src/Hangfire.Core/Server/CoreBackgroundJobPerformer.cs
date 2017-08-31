@@ -111,11 +111,16 @@ namespace Hangfire.Server
 
                 if (result != null && !methodInfo.ReturnType.GetTypeInfo().IsPrimitive)
                 {
+                    // Starting with C# 7, async methods can return any type that has an accessible GetAwaiter method. 
+                    // The object returned by the GetAwaiter method must implement the ICriticalNotifyCompletion interface.
+                    // Ref: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/async-return-types
+
                     var getAwaiterMethod = methodInfo.ReturnType.GetRuntimeMethod("GetAwaiter", EmptyTypes);
-                    if (getAwaiterMethod != null)
+                    if (getAwaiterMethod != null && !getAwaiterMethod.IsStatic && getAwaiterMethod.IsPublic && 
+                        typeof(ICriticalNotifyCompletion).GetTypeInfo().IsAssignableFrom(getAwaiterMethod.ReturnType.GetTypeInfo()))
                     {
                         var awaiter = getAwaiterMethod.Invoke(result, null);
-                        if (awaiter is INotifyCompletion)
+                        if (awaiter != null)
                         {
                             var getResultMethod = awaiter.GetType().GetRuntimeMethod("GetResult", EmptyTypes);
                             if (getResultMethod != null)
