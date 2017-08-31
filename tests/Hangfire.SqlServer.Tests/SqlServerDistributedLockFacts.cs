@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -165,6 +164,45 @@ namespace Hangfire.SqlServer.Tests
                 Assert.NotNull(field.GetValue(outer));
                 Assert.Null(field.GetValue(inner));
             }
+        }
+
+        [Fact, CleanDatabase(IsolationLevel.Unspecified)]
+        public void HandlesClosingConnectionReleasesExclusiveApplicationLock()
+        {
+            UseConnection(sql =>
+            {
+                var storage = CreateStorage(sql);
+
+                using (new SqlServerDistributedLock(storage, "hello", _timeout))
+                {
+                    sql.Close();
+                    var lockMode = sql.Query<string>(
+                            "select applock_mode('public', 'hello', 'session')").Single();
+
+                    Assert.Equal("NoLock", lockMode);
+                }
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void Release_WorksCorrectly_WhenConnecitonWasClosed()
+        {
+            UseConnection(sql =>
+            {
+                var storage = CreateStorage(sql);
+
+                using(new SqlServerDistributedLock(storage, "hello", _timeout))
+                {
+                    sql.Close();
+
+                    SqlServerDistributedLock.Release(sql, "hello");
+
+                    var lockMode = sql.Query<string>(
+                           "select applock_mode('public', 'hello', 'session')").Single();
+
+                    Assert.Equal("NoLock", lockMode);
+                }
+            });
         }
 
         private static SqlServerStorage CreateStorage(DbConnection connection)

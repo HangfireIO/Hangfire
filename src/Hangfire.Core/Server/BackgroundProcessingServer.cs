@@ -54,6 +54,8 @@ namespace Hangfire.Server
         private readonly BackgroundProcessingServerOptions _options;
         private readonly Task _bootstrapTask;
 
+        private bool _disposed;
+
         public BackgroundProcessingServer([NotNull] IEnumerable<IBackgroundProcess> processes)
             : this(JobStorage.Current, processes)
         {
@@ -117,19 +119,43 @@ namespace Hangfire.Server
 
         public void SendStop()
         {
-            _cts.Cancel();
+            if (_disposed) throw new ObjectDisposedException(GetType().FullName);
+
+            try
+            {
+                _cts.Cancel(throwOnFirstException: false);
+            }
+            catch (AggregateException ex)
+            {
+                Logger.WarnException(@"Exception has been thrown during a server shutdown. It can be caused by user code registered using the ServerShutdown cancellation token. Try to modify code in order to not to throw any exceptions.", ex);
+            }
         }
 
         public void Dispose()
         {
+            if (_disposed) return;
+
             SendStop();
 
             // TODO: Dispose _cts
 
-            if (!_bootstrapTask.Wait(_options.ShutdownTimeout))
+            // Check ShutdownTimeout value. If it can cause an exception use default value.
+            var shutdownTimeout = _options.ShutdownTimeout;
+
+            if ((shutdownTimeout < TimeSpan.Zero && shutdownTimeout != Timeout.InfiniteTimeSpan) ||
+                shutdownTimeout.TotalMilliseconds > Int32.MaxValue)
+            {
+                Logger.Warn($@"ShutdownTimeout equals {_options.ShutdownTimeout.Milliseconds} milliseconds and it's incorrect. This value must be either equal to or less than {Int32.MaxValue} milliseconds and non-negative or infinite. Will be used default value: {DefaultShutdownTimeout} milliseconds.");
+
+                shutdownTimeout = DefaultShutdownTimeout;
+            }
+
+            if (!_bootstrapTask.Wait(shutdownTimeout))
             {
                 Logger.Warn("Processing server takes too long to shutdown. Performing ungraceful shutdown.");
             }
+
+            _disposed = true;
         }
 
         public override string ToString()
@@ -156,9 +182,16 @@ namespace Hangfire.Server
             }
             finally
             {
-                using (var connection = context.Storage.GetConnection())
+                try
                 {
-                    connection.RemoveServer(context.ServerId);
+                    using (var connection = context.Storage.GetConnection())
+                    {
+                        connection.RemoveServer(context.ServerId);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.WarnException($@"Couldn't remove server {context.ServerId}. The server can be displayed on 'Server' page of Dashboard for a while but it won't perform any jobs and won't affect other servers.", ex);
                 }
             }
         }

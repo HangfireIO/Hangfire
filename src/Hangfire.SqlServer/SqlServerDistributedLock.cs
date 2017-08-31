@@ -17,9 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Threading;
 using Dapper;
 using Hangfire.Annotations;
+using Hangfire.Logging;
 using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
@@ -29,6 +31,8 @@ namespace Hangfire.SqlServer
         private const string LockMode = "Exclusive";
         private const string LockOwner = "Session";
         private const int CommandTimeoutAdditionSeconds = 1;
+
+        private static readonly ILog Logger = LogProvider.For<SqlServerDistributedLock>();
 
         // Connections to SQL Azure Database that are idle for 30 minutes 
         // or longer will be terminated. And since we are using separate
@@ -54,7 +58,7 @@ namespace Hangfire.SqlServer
         private readonly Timer _timer;
         private readonly object _lockObject = new object();
 
-        private bool _completed;
+        private bool _disposed;
 
         public SqlServerDistributedLock([NotNull] SqlServerStorage storage, [NotNull] string resource, TimeSpan timeout)
         {
@@ -97,9 +101,9 @@ namespace Hangfire.SqlServer
 
         public void Dispose()
         {
-            if (_completed) return;
+            if (_disposed) return;
 
-            _completed = true;
+            _disposed = true;
 
             if (!AcquiredLocks.Value.ContainsKey(_resource)) return;
 
@@ -183,22 +187,38 @@ namespace Hangfire.SqlServer
 
         internal static void Release(IDbConnection connection, string resource)
         {
+            var couldNotReleaseLockMessageTemplate = $@"Could not release a lock on the resource '{resource}'. {0}If this problem happens often please contact the Hangfire developers.";
+
+            // Connection was broken. This means that distributed lock
+            // was released, and we can't guarantee the safety property
+            // for the code that is wrapped with this block.
+            if (connection.State == ConnectionState.Closed)
+            {
+                Logger.Warn(string.Format(couldNotReleaseLockMessageTemplate, "Connection was closed and the lock is not currently held. "));
+            }
+
             var parameters = new DynamicParameters();
             parameters.Add("@Resource", resource);
             parameters.Add("@LockOwner", LockOwner);
             parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
 
-            connection.Execute(
+            try
+            {
+                connection.Execute(
                 @"sp_releaseapplock",
                 parameters,
                 commandType: CommandType.StoredProcedure);
+            }
+            catch (SqlException ex)
+            {
+                Logger.WarnException(string.Format(couldNotReleaseLockMessageTemplate, string.Empty), ex);
+            }
 
             var releaseResult = parameters.Get<int>("@Result");
 
             if (releaseResult < 0)
             {
-                throw new SqlServerDistributedLockException(
-                    $"Could not release a lock on the resource '{resource}': Server returned the '{releaseResult}' error.");
+                Logger.Warn(string.Format(couldNotReleaseLockMessageTemplate, $"Server returned the '{releaseResult}' error. "));
             }
         }
     }
