@@ -18,7 +18,7 @@
 • Fixed – Lower the number of requests, when trying to acquire a distributed lock.
 • Fixed – Problems with continuations and batch continuations, when using existing `SqlConnection` instance.
 • Fixed – Distributed locks were silently released, when passing explicit closed connection to a storage.
-• Fixed – `KeyNotFoundException` errors on various dashboard pages don't appear anymore.
+• Fixed – `KeyNotFoundException` errors on various dashboard pages don't appear anymore (by @benjymous).
 • Fixed – "Cannot release the application lock because it is not currently held" exceptions, when connection was closed.
 • Fixed – Allow to use zero timeout for SQL Server-based distributed locks.
     

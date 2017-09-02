@@ -15,9 +15,9 @@
     <releaseNotes>http://hangfire.io/blog/
     
 1.6.16
-• Fixed – Unexpected `DateTime` and `DateTime?` serialization issues in background job arguments.
+• Fixed – Unexpected `DateTime` and `DateTime?` serialization issues in background job arguments (by @plaisted).
 • Fixed – `DistributedLockTimeoutException` in some background processes now logged with "DEBUG" level instead of "ERROR".
-• Fixed – `ElmahLogProvider` to show errors when using SQL log.
+• Fixed – `ElmahLogProvider` to show errors when using SQL log (by @francnuec).
 • Fixed – Last execution field isn't shown on recurring jobs page, when background job has already expired.
 • Fixed – `Hangfire.SqlServer` assembly doesn't include version in the `netstandard` target.
     
