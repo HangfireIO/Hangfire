@@ -579,37 +579,22 @@ where j.Id in @jobIds";
 
             return new JobList<FetchedJobDto>(result);
         }
-    }
 
-    /// <summary>
-    /// Overloaded dictionary that doesn't throw if given an invalid key
-    /// Fixes issues such as https://github.com/HangfireIO/Hangfire/issues/871
-    /// </summary>
-    /// <typeparam name="TKey"></typeparam>
-    /// <typeparam name="TValue"></typeparam>
-    internal class SafeDictionary<TKey,TValue> : Dictionary<TKey, TValue>
-    {
-        public SafeDictionary() : base()
-        { }
-
-        public SafeDictionary(IDictionary<TKey, TValue> dictionary, IEqualityComparer<TKey> comparer) : base(dictionary, comparer)
-        {}
-
-
-
-        new public TValue this[TKey i]
+        /// <summary>
+        /// Overloaded dictionary that doesn't throw if given an invalid key
+        /// Fixes issues such as https://github.com/HangfireIO/Hangfire/issues/871
+        /// </summary>
+        private class SafeDictionary<TKey, TValue> : Dictionary<TKey, TValue>
         {
-            get
+            public SafeDictionary(IDictionary<TKey, TValue> dictionary, IEqualityComparer<TKey> comparer) 
+                : base(dictionary, comparer)
             {
-                if (ContainsKey(i))
-                {
-                    return base[i];
-                }
-                return default(TValue);
             }
-            set
+
+            public new TValue this[TKey i]
             {
-                base[i] = value;
+                get { return ContainsKey(i) ? base[i] : default(TValue); }
+                set { base[i] = value; }
             }
         }
     }
