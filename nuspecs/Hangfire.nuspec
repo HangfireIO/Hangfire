@@ -19,6 +19,25 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.16
+
+Hangfire.Core
+
+• Fixed – Unexpected `DateTime` and `DateTime?` serialization issues in background job arguments.
+• Fixed – `DistributedLockTimeoutException` in some background processes now logged with "DEBUG" level instead of "ERROR".
+• Fixed – `ElmahLogProvider` to show errors when using SQL log.
+• Fixed – Last execution field isn't shown on recurring jobs page, when background job has already expired.
+• Fixed – `Hangfire.SqlServer` assembly doesn't include version in the `netstandard` target.
+
+Hangfire.SqlServer
+
+• Fixed – Lower the number of requests, when trying to acquire a distributed lock.
+• Fixed – Problems with continuations and batch continuations, when using existing `SqlConnection` instance.
+• Fixed – Distributed locks were silently released, when passing explicit closed connection to a storage.
+• Fixed – `KeyNotFoundException` errors on various dashboard pages don't appear anymore.
+• Fixed – "Cannot release the application lock because it is not currently held" exceptions, when connection was closed.
+• Fixed – Allow to use zero timeout for SQL Server-based distributed locks.
+    
 1.6.15
 
 Hangfire.SqlServer
