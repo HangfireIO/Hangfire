@@ -102,32 +102,52 @@ namespace Hangfire.Server
 
         private static readonly Type[] EmptyTypes = new Type[0];
 
+        private static bool CheckAwaitable(Type type, out MethodInfo getAwaiter, out MethodInfo getResult)
+        {
+            // Starting with C# 7, async methods can return any type that has an accessible GetAwaiter method. 
+            // The object returned by the GetAwaiter method must implement the ICriticalNotifyCompletion interface.
+            // Ref: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/async-return-types
+            
+            getAwaiter = null;
+            getResult = null;
+
+            // primitive types can't be awaitable
+            if (type.GetTypeInfo().IsPrimitive) return false;
+            
+            // awaitable type must have a parameterless GetAwaiter method ...
+            getAwaiter = type.GetRuntimeMethod("GetAwaiter", EmptyTypes);
+            if (getAwaiter == null) return false;
+
+            // ... which should be a public instance method at that, ...
+            if (getAwaiter.IsStatic || !getAwaiter.IsPublic) return false;
+
+            var awaiterType = getAwaiter.ReturnType;
+            
+            // ... its return type must implement ICriticalNotifyCompletion ...
+            if (!typeof(ICriticalNotifyCompletion).GetTypeInfo().IsAssignableFrom(awaiterType.GetTypeInfo())) return false;
+
+            // ... and have a parameterless GetResult method ...
+            getResult = awaiterType.GetRuntimeMethod("GetResult", EmptyTypes);
+            if (getResult == null) return false;
+
+            // ... which should be a public instance method too
+            return !getResult.IsStatic && getResult.IsPublic;
+        }
+
         private static object InvokeMethod(PerformContext context, object instance, object[] arguments)
         {
             try
             {
                 var methodInfo = context.BackgroundJob.Job.Method;
                 var result = methodInfo.Invoke(instance, arguments);
-
-                if (result != null && !methodInfo.ReturnType.GetTypeInfo().IsPrimitive)
+                
+                MethodInfo getAwaiter, getResult;
+                if (result != null && CheckAwaitable(methodInfo.ReturnType, out getAwaiter, out getResult))
                 {
-                    // Starting with C# 7, async methods can return any type that has an accessible GetAwaiter method. 
-                    // The object returned by the GetAwaiter method must implement the ICriticalNotifyCompletion interface.
-                    // Ref: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/async-return-types
-
-                    var getAwaiterMethod = methodInfo.ReturnType.GetRuntimeMethod("GetAwaiter", EmptyTypes);
-                    if (getAwaiterMethod != null && !getAwaiterMethod.IsStatic && getAwaiterMethod.IsPublic && 
-                        typeof(ICriticalNotifyCompletion).GetTypeInfo().IsAssignableFrom(getAwaiterMethod.ReturnType.GetTypeInfo()))
+                    var awaiter = getAwaiter.Invoke(result, null);
+                    if (awaiter != null)
                     {
-                        var awaiter = getAwaiterMethod.Invoke(result, null);
-                        if (awaiter != null)
-                        {
-                            var getResultMethod = awaiter.GetType().GetRuntimeMethod("GetResult", EmptyTypes);
-                            if (getResultMethod != null)
-                            {
-                                result = getResultMethod.Invoke(awaiter, null);
-                            }
-                        }
+                        result = getResult.Invoke(awaiter, null);
                     }
                 }
 
