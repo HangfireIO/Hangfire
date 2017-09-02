@@ -86,8 +86,9 @@ namespace Hangfire.SqlServer
                 (sqlJob, job, stateData) => new ProcessingJobDto
                 {
                     Job = job,
+                    InProcessingState = ProcessingState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
                     ServerId = stateData.ContainsKey("ServerId") ? stateData["ServerId"] : stateData["ServerName"],
-                    StartedAt = JobHelper.DeserializeDateTime(stateData["StartedAt"]),
+                    StartedAt = JobHelper.DeserializeNullableDateTime(stateData["StartedAt"]),
                 }));
         }
 
@@ -100,8 +101,9 @@ namespace Hangfire.SqlServer
                 (sqlJob, job, stateData) => new ScheduledJobDto
                 {
                     Job = job,
-                    EnqueueAt = JobHelper.DeserializeDateTime(stateData["EnqueueAt"]),
-                    ScheduledAt = JobHelper.DeserializeDateTime(stateData["ScheduledAt"])
+                    InScheduledState = ScheduledState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
+                    EnqueueAt = JobHelper.DeserializeNullableDateTime(stateData["EnqueueAt"]) ?? DateTime.MinValue,
+                    ScheduledAt = JobHelper.DeserializeNullableDateTime(stateData["ScheduledAt"])
                 }));
         }
 
@@ -155,6 +157,7 @@ namespace Hangfire.SqlServer
                 (sqlJob, job, stateData) => new FailedJobDto
                 {
                     Job = job,
+                    InFailedState = FailedState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
                     Reason = sqlJob.StateReason,
                     ExceptionDetails = stateData["ExceptionDetails"],
                     ExceptionMessage = stateData["ExceptionMessage"],
@@ -173,6 +176,7 @@ namespace Hangfire.SqlServer
                 (sqlJob, job, stateData) => new SucceededJobDto
                 {
                     Job = job,
+                    InSucceededState = SucceededState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
                     Result = stateData["Result"],
                     TotalDuration = stateData.ContainsKey("PerformanceDuration") && stateData.ContainsKey("Latency")
                         ? (long?)long.Parse(stateData["PerformanceDuration"]) + (long?)long.Parse(stateData["Latency"])
@@ -191,6 +195,7 @@ namespace Hangfire.SqlServer
                 (sqlJob, job, stateData) => new DeletedJobDto
                 {
                     Job = job,
+                    InDeletedState = DeletedState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
                     DeletedAt = JobHelper.DeserializeNullableDateTime(stateData["DeletedAt"])
                 }));
         }
@@ -281,7 +286,7 @@ select * from [{_storage.SchemaName}].State with (nolock) where JobId = @id orde
                                 CreatedAt = x.CreatedAt,
                                 Reason = x.Reason,
                                 Data = new SafeDictionary<string, string>(
-                                    JobHelper.FromJson<SafeDictionary<string, string>>(x.Data),
+                                    JobHelper.FromJson<Dictionary<string, string>>(x.Data),
                                     StringComparer.OrdinalIgnoreCase),
                             })
                             .ToList();
@@ -456,7 +461,8 @@ where j.Id in @jobIds";
                 {
                     Job = job,
                     State = sqlJob.StateName,
-                    EnqueuedAt = sqlJob.StateName == EnqueuedState.StateName
+                    InEnqueuedState = EnqueuedState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
+                    EnqueuedAt = EnqueuedState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase)
                         ? JobHelper.DeserializeNullableDateTime(stateData["EnqueuedAt"])
                         : null
                 });
@@ -505,7 +511,7 @@ $@";with cte as
   from [{_storage.SchemaName}].Job j with (nolock, forceseek)
   where j.StateName = @stateName
 )
-select j.Id, j.InvocationData, j.Arguments, s.Reason as StateReason, s.Data as StateData
+select j.*, s.Reason as StateReason, s.Data as StateData
 from [{_storage.SchemaName}].Job j with (nolock)
 inner join cte on cte.Id = j.Id 
 left join [{_storage.SchemaName}].State s with (nolock) on j.StateId = s.Id
@@ -534,7 +540,7 @@ order by j.Id desc";
                 
                 if (job.InvocationData != null)
                 {
-                    var deserializedData = JobHelper.FromJson<SafeDictionary<string, string>>(job.StateData);
+                    var deserializedData = JobHelper.FromJson<Dictionary<string, string>>(job.StateData);
                     var stateData = deserializedData != null
                         ? new SafeDictionary<string, string>(deserializedData, StringComparer.OrdinalIgnoreCase)
                         : null;
