@@ -210,16 +210,17 @@ namespace Hangfire.Storage
         internal static bool ParseDateTimeArgument(string argument, out DateTime value)
         {
             DateTime dateTime;
-            var result = DateTime.TryParse(argument, null, DateTimeStyles.RoundtripKind, out dateTime);
+
+            var result = DateTime.TryParseExact(
+                argument,
+                "MM/dd/yyyy HH:mm:ss.ffff",
+                CultureInfo.CurrentCulture,
+                DateTimeStyles.None,
+                out dateTime);
 
             if (!result)
             {
-                result = DateTime.TryParseExact(
-                    argument, 
-                    "MM/dd/yyyy HH:mm:ss.ffff", 
-                    CultureInfo.CurrentCulture,
-                    DateTimeStyles.None, 
-                    out dateTime);
+                result = DateTime.TryParse(argument, null, DateTimeStyles.RoundtripKind, out dateTime);
             }
 
             value = dateTime;
