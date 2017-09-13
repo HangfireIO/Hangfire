@@ -106,8 +106,21 @@ namespace Hangfire.Dashboard
                 return Strings.Common_CannotFindTargetMethod;
             }
 
+            var jobDisplayNameAttribute = job.Method.GetCustomAttribute<JobDisplayNameAttribute>();
+            if (jobDisplayNameAttribute != null)
+            {
+                try
+                {
+                    return jobDisplayNameAttribute.Format(job.Args);
+                }
+                catch (Exception)
+                {
+                    return jobDisplayNameAttribute.DisplayName;
+                }
+            }
+
 #if NETFULL
-            var displayNameAttribute = job.Method.GetCustomAttribute(typeof(DisplayNameAttribute)) as DisplayNameAttribute;
+            var displayNameAttribute = job.Method.GetCustomAttribute<DisplayNameAttribute>();
             if (displayNameAttribute != null && displayNameAttribute.DisplayName != null)
             {
                 try
