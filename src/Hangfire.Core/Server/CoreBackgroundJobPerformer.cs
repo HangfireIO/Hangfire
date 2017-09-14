@@ -44,8 +44,7 @@ namespace Hangfire.Server
 
         public object Perform(PerformContext context)
         {
-            using (var scope = _activator.BeginScope(
-                new JobActivatorContext(context.Connection, context.BackgroundJob, context.CancellationToken)))
+            using (var scope = _activator.BeginScope(context))
             {
                 object instance = null;
 
