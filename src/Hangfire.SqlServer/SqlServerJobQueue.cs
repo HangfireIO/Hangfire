@@ -99,7 +99,7 @@ where Queue in @queues and
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                _storage.UseConnection(connection =>
+                _storage.UseConnection(null, connection =>
                 {
                     fetchedJob = connection
                         .Query<FetchedJob>(

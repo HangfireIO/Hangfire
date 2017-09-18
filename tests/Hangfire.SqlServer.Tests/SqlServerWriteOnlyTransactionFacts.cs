@@ -29,7 +29,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_IfStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerWriteOnlyTransaction(null));
+                () => new SqlServerWriteOnlyTransaction(null, () => null));
 
             Assert.Equal("storage", exception.ParamName);
         }
@@ -977,7 +977,7 @@ values (@key, @expireAt)";
             var storage = new Mock<SqlServerStorage>(connection);
             storage.Setup(x => x.QueueProviders).Returns(_queueProviders);
 
-            using (var transaction = new SqlServerWriteOnlyTransaction(storage.Object))
+            using (var transaction = new SqlServerWriteOnlyTransaction(storage.Object, () => null))
             {
                 action(transaction);
                 transaction.Commit();

@@ -54,7 +54,7 @@ namespace Hangfire.SqlServer
             {
                 if (_queuesCache.Count == 0 || _cacheUpdated.Add(QueuesCacheTimeout) < DateTime.UtcNow)
                 {
-                    var result = _storage.UseConnection(connection =>
+                    var result = _storage.UseConnection(null, connection =>
                     {
                         return connection.Query(sqlQuery, commandTimeout: _storage.CommandTimeout).Select(x => (string) x.Queue).ToList();
                     });
@@ -77,7 +77,7 @@ $@"select r.JobId from (
 ) as r
 where r.row_num between @start and @end";
 
-            return _storage.UseConnection(connection =>
+            return _storage.UseConnection(null, connection =>
             {
                 // TODO: Remove cast to `int` to support `bigint`.
                 return connection.Query<JobIdDto>(
@@ -100,7 +100,7 @@ select r.JobId from (
 ) as r
 where r.row_num between @start and @end";
 
-            return _storage.UseConnection(connection =>
+            return _storage.UseConnection(null, connection =>
             {
                 // TODO: Remove cast to `int` to support `bigint`.
                 return connection.Query<JobIdDto>(
@@ -124,7 +124,7 @@ from (
     where Queue = @queue
 ) q";
 
-            return _storage.UseConnection(connection =>
+            return _storage.UseConnection(null, connection =>
             {
                 var result = connection.Query(sqlQuery, new { queue = queue }).Single();
 

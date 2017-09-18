@@ -39,17 +39,19 @@ namespace Hangfire.SqlServer
 
         private readonly SortedSet<string> _lockedResources = new SortedSet<string>();
         private readonly SqlServerStorage _storage;
+        private readonly Func<DbConnection> _dedicatedConnectionFunc;
 
-        public SqlServerWriteOnlyTransaction([NotNull] SqlServerStorage storage)
+        public SqlServerWriteOnlyTransaction([NotNull] SqlServerStorage storage, Func<DbConnection> dedicatedConnectionFunc)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
 
             _storage = storage;
+            _dedicatedConnectionFunc = dedicatedConnectionFunc;
         }
 
         public override void Commit()
         {
-            _storage.UseTransaction((connection, transaction) =>
+            _storage.UseTransaction(_dedicatedConnectionFunc(), (connection, transaction) =>
             {
                 if (_lockedResources.Count > 0)
                 {
