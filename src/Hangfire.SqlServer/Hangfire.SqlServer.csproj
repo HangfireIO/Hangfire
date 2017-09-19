@@ -69,6 +69,8 @@
     <Compile Include="IPersistentJobQueueMonitoringApi.cs" />
     <Compile Include="IPersistentJobQueueProvider.cs" />
     <Compile Include="PersistentJobQueueProviderCollection.cs" />
+    <Compile Include="SqlCommandBatch.cs" />
+    <Compile Include="SqlCommandSet.cs" />
     <Compile Include="SqlServerTimeoutJob.cs" />
     <Compile Include="SqlServerJobQueue.cs" />
     <Compile Include="SqlServerTransactionJob.cs" />

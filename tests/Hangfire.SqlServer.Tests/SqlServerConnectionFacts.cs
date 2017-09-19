@@ -120,8 +120,10 @@ namespace Hangfire.SqlServer.Tests
             });
         }
 
-        [Fact, CleanDatabase]
-        public void CreateExpiredJob_CreatesAJobInTheStorage_AndSetsItsParameters()
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void CreateExpiredJob_CreatesAJobInTheStorage_AndSetsItsParameters(bool useBatching)
         {
             UseConnections((sql, connection) =>
             {
@@ -159,7 +161,30 @@ namespace Hangfire.SqlServer.Tests
 
                 Assert.Equal("Value1", parameters["Key1"]);
                 Assert.Equal("Value2", parameters["Key2"]);
-            });
+            }, useBatching);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void CreateExpiredJob_CanCreateParametersWithNullValues(bool useBatching)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string> { { "Key1", null } },
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql.Query(
+                        "select * from HangFire.JobParameter where JobId = @id",
+                        new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Equal(null, parameters["Key1"]);
+            }, useBatching);
         }
 
         [Fact, CleanDatabase]
@@ -744,8 +769,10 @@ values (@key, 0.0, @value)";
             });
         }
 
-        [Fact, CleanDatabase]
-        public void SetRangeInHash_MergesAllRecords()
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void SetRangeInHash_MergesAllRecords(bool useBatching)
         {
             UseConnections((sql, connection) =>
             {
@@ -762,7 +789,28 @@ values (@key, 0.0, @value)";
 
                 Assert.Equal("Value1", result["Key1"]);
                 Assert.Equal("Value2", result["Key2"]);
-            });
+            }, useBatching);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void SetRangeInHash_CanCreateFieldsWithNullValues(bool useBatching)
+        {
+            UseConnections((sql, connection) =>
+            {
+                connection.SetRangeInHash("some-hash", new Dictionary<string, string>
+                {
+                    { "Key1", null }
+                });
+
+                var result = sql.Query(
+                        "select * from HangFire.Hash where [Key] = @key",
+                        new { key = "some-hash" })
+                    .ToDictionary(x => (string)x.Field, x => (string)x.Value);
+
+                Assert.Equal(null, result["Key1"]);
+            }, useBatching);
         }
 
         [Fact, CleanDatabase]
@@ -1330,11 +1378,11 @@ values (@key, @value, @expireAt, 0.0)";
             });
         }
 
-        private void UseConnections(Action<SqlConnection, SqlServerConnection> action)
+        private void UseConnections(Action<SqlConnection, SqlServerConnection> action, bool useBatching = false)
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
             {
-                var storage = new SqlServerStorage(sqlConnection);
+                var storage = new SqlServerStorage(sqlConnection, new SqlServerStorageOptions { CommandBatchMaxTimeout = useBatching ? TimeSpan.FromMinutes(1) : (TimeSpan?)null });
                 using (var connection = new SqlServerConnection(storage))
                 {
                     action(sqlConnection, connection);
