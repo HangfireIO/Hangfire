@@ -89,6 +89,95 @@ namespace Hangfire.SqlServer.Tests
         }
 
         [Fact, CleanDatabase]
+        public void AcquireDistributedLock_ThrowsAnException_WhenResourceIsNullOrEmpty()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                () => connection.AcquireDistributedLock("", TimeSpan.FromMinutes(5)));
+
+                Assert.Equal("resource", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AcquireDistributedLock_AcquiresExclusiveApplicationLock_OnSession()
+        {
+            UseConnections((sql, connection) =>
+            {
+                using (connection.AcquireDistributedLock("hello", TimeSpan.FromMinutes(5)))
+                {
+                    var lockMode = sql.Query<string>(
+                        "select applock_mode('public', 'HangFire:hello', 'session')").Single();
+
+                    Assert.Equal("Exclusive", lockMode);
+                }
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AcquireDistributedLock_ThrowsAnException_IfLockCanNotBeGranted()
+        {
+            var releaseLock = new ManualResetEventSlim(false);
+            var lockAcquired = new ManualResetEventSlim(false);
+
+            var thread = new Thread(
+                () => UseConnection(connection1 =>
+                {
+                    using (connection1.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(5)))
+                    {
+                        lockAcquired.Set();
+                        releaseLock.Wait();
+                    }
+                }));
+            thread.Start();
+
+            lockAcquired.Wait();
+
+            UseConnection(connection2 =>
+            {
+                Assert.Throws<DistributedLockTimeoutException>(
+                    () =>
+                    {
+                        using (connection2.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(5)))
+                        {
+                        }
+                    });
+            });
+
+            releaseLock.Set();
+            thread.Join();
+        }
+
+        [Fact, CleanDatabase]
+        public void AcquireDistributedLock_Dispose_ReleasesExclusiveApplicationLock()
+        {
+            UseConnections((sql, connection) =>
+            {
+                var distributedLock = connection.AcquireDistributedLock("hello", TimeSpan.FromMinutes(5));
+                distributedLock.Dispose();
+
+                var lockMode = sql.Query<string>(
+                    "select applock_mode('public', 'hello', 'session')").Single();
+
+                Assert.Equal("NoLock", lockMode);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AcquireDistributedLock_IsReentrant_FromTheSameConnection_OnTheSameResource()
+        {
+            UseConnection(connection =>
+            {
+                using (connection.AcquireDistributedLock("hello", TimeSpan.FromMinutes(5)))
+                using (connection.AcquireDistributedLock("hello", TimeSpan.FromMinutes(5)))
+                {
+                    Assert.True(true);
+                }
+            });
+        }
+
+        [Fact, CleanDatabase]
         public void CreateExpiredJob_ThrowsAnException_WhenJobIsNull()
         {
             UseConnection(connection =>

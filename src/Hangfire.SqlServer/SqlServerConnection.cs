@@ -57,8 +57,9 @@ namespace Hangfire.SqlServer
             return new SqlServerWriteOnlyTransaction(_storage, () => _dedicatedConnection);
         }
 
-        public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)
+        public override IDisposable AcquireDistributedLock([NotNull] string resource, TimeSpan timeout)
         {
+            if (String.IsNullOrWhiteSpace(resource)) throw new ArgumentNullException(nameof(resource));
             return AcquireLock($"{_storage.SchemaName}:{resource}", timeout);
         }
 
@@ -531,14 +532,9 @@ order by [Id] desc";
 
         private IDisposable AcquireLock(string resource, TimeSpan timeout)
         {
-            // 1. If there's at least one lock, establish a dedicated connection.
-            // 2. If lock on a specified resource hasn't already been taken, acquire it to allow it to be reentrant.
-            // 3. If a lock on a specified resource has already been acquired, don't acquire it.
-
             if (_dedicatedConnection == null)
             {
                 _dedicatedConnection = _storage.CreateAndOpenConnection();
-                // TODO: Keep alive query?
             }
 
             var lockId = Guid.NewGuid();
@@ -566,8 +562,6 @@ order by [Id] desc";
         {
             try
             {
-                // 1. When there are no other locks, release the dedicated connection.
-                // 2. Release a database lock only when there are no other pending acquisitions of this lock.
                 if (_lockedResources.ContainsKey(resource))
                 {
                     if (_lockedResources[resource].Contains(lockId))
