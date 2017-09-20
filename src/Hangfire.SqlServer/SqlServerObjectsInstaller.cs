@@ -31,18 +31,18 @@ namespace Hangfire.SqlServer
 
         private static readonly ILog Log = LogProvider.GetLogger(typeof(SqlServerStorage));
 
-        public static void Install(DbConnection connection)
+        public static void Install(DbConnection connection, DbTransaction transaction = null)
         {
-            Install(connection, null);
+            Install(connection, transaction, null);
         }
 
-        public static void Install(DbConnection connection, string schema)
+        public static void Install(DbConnection connection, DbTransaction transaction, string schema)
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
 
             Log.Info("Start installing Hangfire SQL objects...");
 
-            if (!IsSqlEditionSupported(connection))
+            if (!IsSqlEditionSupported(connection, transaction))
             {
                 throw new PlatformNotSupportedException("The SQL Server edition of the target server is unsupported, e.g. SQL Azure.");
             }
@@ -76,15 +76,15 @@ namespace Hangfire.SqlServer
                 }
             }
 #else
-            connection.Execute(script, commandTimeout: 0);
+            connection.Execute(script, commandTimeout: 0, transaction: transaction);
 #endif
 
             Log.Info("Hangfire SQL objects installed.");
         }
 
-        private static bool IsSqlEditionSupported(DbConnection connection)
+        private static bool IsSqlEditionSupported(DbConnection connection, DbTransaction transaction)
         {
-            var edition = connection.Query<int>("SELECT SERVERPROPERTY ( 'EngineEdition' )").Single();
+            var edition = connection.Query<int>("SELECT SERVERPROPERTY ( 'EngineEdition' )", transaction: transaction).Single();
             return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.SqlAzure;
         }
 

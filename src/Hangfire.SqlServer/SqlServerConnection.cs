@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using Dapper;
@@ -57,9 +56,8 @@ namespace Hangfire.SqlServer
             return new SqlServerWriteOnlyTransaction(_storage, () => _dedicatedConnection);
         }
 
-        public override IDisposable AcquireDistributedLock([NotNull] string resource, TimeSpan timeout)
+        public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)
         {
-            if (String.IsNullOrWhiteSpace(resource)) throw new ArgumentNullException(nameof(resource));
             return AcquireLock($"{_storage.SchemaName}:{resource}", timeout);
         }
 
@@ -109,29 +107,28 @@ values (@invocationData, @arguments, @createdAt, @expireAt)";
                         createdAt = createdAt,
                         expireAt = createdAt.Add(expireIn)
                     },
-                    commandTimeout: _storage.CommandTimeout).ToString();
+                    commandTimeout: _storage.CommandTimeout,
+                    transaction: _storage.Transaction).ToString();
 
                 if (parameters.Count > 0)
                 {
+                    var parameterArray = new object[parameters.Count];
+                    int parameterIndex = 0;
+                    foreach (var parameter in parameters)
+                    {
+                        parameterArray[parameterIndex++] = new
+                        {
+                            jobId = long.Parse(jobId),
+                            name = parameter.Key,
+                            value = parameter.Value
+                        };
+                    }
+
                     string insertParameterSql =
 $@"insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value)
 values (@jobId, @name, @value)";
 
-                    var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue);
-
-                    foreach (var parameter in parameters)
-                    {
-                        commandBatch.Append(insertParameterSql,
-                            new SqlParameter("@jobId", long.Parse(jobId)),
-                            new SqlParameter("@name", parameter.Key),
-                            new SqlParameter("@value", (object)parameter.Value ?? DBNull.Value));
-                    }
-
-                    commandBatch.Connection = connection;
-                    commandBatch.CommandTimeout = _storage.CommandTimeout;
-                    commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
-
-                    commandBatch.ExecuteNonQuery();
+                    connection.Execute(insertParameterSql, parameterArray, commandTimeout: _storage.CommandTimeout, transaction: _storage.Transaction);
                 }
 
                 return jobId;
@@ -147,7 +144,7 @@ $@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.Schema
 
             return _storage.UseConnection(_dedicatedConnection, connection =>
             {
-                var jobData = connection.Query<SqlJob>(sql, new { id = long.Parse(id) }, commandTimeout: _storage.CommandTimeout)
+                var jobData = connection.Query<SqlJob>(sql, new { id = long.Parse(id) }, commandTimeout: _storage.CommandTimeout, transaction: _storage.Transaction)
                     .SingleOrDefault();
 
                 if (jobData == null) return null;
@@ -190,7 +187,7 @@ where j.Id = @jobId";
 
             return _storage.UseConnection(_dedicatedConnection, connection =>
             {
-                var sqlState = connection.Query<SqlState>(sql, new { jobId = long.Parse(jobId) }, commandTimeout: _storage.CommandTimeout).SingleOrDefault();
+                var sqlState = connection.Query<SqlState>(sql, new { jobId = long.Parse(jobId) }, commandTimeout: _storage.CommandTimeout, transaction: _storage.Transaction).SingleOrDefault();
                 if (sqlState == null)
                 {
                     return null;
@@ -223,7 +220,8 @@ on Target.JobId = Source.JobId AND Target.Name = Source.Name
 when matched then update set Value = Source.Value
 when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.Name, Source.Value);",
                     new { jobId = long.Parse(id), name, value },
-                    commandTimeout: _storage.CommandTimeout);
+                    commandTimeout: _storage.CommandTimeout,
+                    transaction: _storage.Transaction);
             });
         }
 
@@ -235,7 +233,8 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
             return _storage.UseConnection(_dedicatedConnection, connection => connection.ExecuteScalar<string>(
                 $@"select top (1) Value from [{_storage.SchemaName}].JobParameter with (readcommittedlock) where JobId = @id and Name = @name",
                 new { id = long.Parse(id), name = name },
-                commandTimeout: _storage.CommandTimeout));
+                commandTimeout: _storage.CommandTimeout,
+                transaction: _storage.Transaction));
         }
 
         public override HashSet<string> GetAllItemsFromSet(string key)
@@ -247,7 +246,8 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
                 var result = connection.Query<string>(
                     $@"select Value from [{_storage.SchemaName}].[Set] with (readcommittedlock) where [Key] = @key",
                     new { key },
-                    commandTimeout: _storage.CommandTimeout);
+                    commandTimeout: _storage.CommandTimeout,
+                    transaction: _storage.Transaction);
 
                 return new HashSet<string>(result);
             });
@@ -261,7 +261,8 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
             return _storage.UseConnection(_dedicatedConnection, connection => connection.ExecuteScalar<string>(
                 $@"select top 1 Value from [{_storage.SchemaName}].[Set] with (readcommittedlock) where [Key] = @key and Score between @from and @to order by Score",
                 new { key, from = fromScore, to = toScore },
-                commandTimeout: _storage.CommandTimeout));
+                commandTimeout: _storage.CommandTimeout,
+                transaction: _storage.Transaction));
         }
 
         public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
@@ -278,22 +279,14 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
 
             _storage.UseTransaction(_dedicatedConnection, (connection, transaction) =>
             {
-                var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue);
-
                 foreach (var keyValuePair in keyValuePairs)
                 {
-                    commandBatch.Append(sql,
-                        new SqlParameter("@key", key),
-                        new SqlParameter("@field", keyValuePair.Key),
-                        new SqlParameter("@value", (object)keyValuePair.Value ?? DBNull.Value));
+                    connection.Execute(
+                        sql, 
+                        new { key = key, field = keyValuePair.Key, value = keyValuePair.Value }, 
+                        transaction,
+                        commandTimeout: _storage.CommandTimeout);
                 }
-
-                commandBatch.Connection = connection;
-                commandBatch.Transaction = transaction;
-                commandBatch.CommandTimeout = _storage.CommandTimeout;
-                commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
-
-                commandBatch.ExecuteNonQuery();
             });
         }
 
@@ -306,7 +299,8 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
                 var result = connection.Query<SqlHash>(
                     $"select Field, Value from [{_storage.SchemaName}].Hash with (forceseek, readcommittedlock) where [Key] = @key",
                     new { key },
-                    commandTimeout: _storage.CommandTimeout)
+                    commandTimeout: _storage.CommandTimeout,
+                    transaction: _storage.Transaction)
                     .ToDictionary(x => x.Field, x => x.Value);
 
                 return result.Count != 0 ? result : null;
@@ -334,7 +328,8 @@ on Target.Id = Source.Id
 when matched then update set Data = Source.Data, LastHeartbeat = Source.Heartbeat
 when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat);",
                     new { id = serverId, data = JobHelper.ToJson(data), heartbeat = DateTime.UtcNow },
-                    commandTimeout: _storage.CommandTimeout);
+                    commandTimeout: _storage.CommandTimeout,
+                    transaction: _storage.Transaction);
             });
         }
 
@@ -347,7 +342,8 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
                 connection.Execute(
                     $@"delete from [{_storage.SchemaName}].Server where Id = @id",
                     new { id = serverId },
-                    commandTimeout: _storage.CommandTimeout);
+                    commandTimeout: _storage.CommandTimeout,
+                    transaction: _storage.Transaction);
             });
         }
 
@@ -360,7 +356,8 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
                 connection.Execute(
                     $@"update [{_storage.SchemaName}].Server set LastHeartbeat = @now where Id = @id",
                     new { now = DateTime.UtcNow, id = serverId },
-                    commandTimeout: _storage.CommandTimeout);
+                    commandTimeout: _storage.CommandTimeout,
+                    transaction: _storage.Transaction);
             });
         }
 
@@ -374,7 +371,8 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
             return _storage.UseConnection(_dedicatedConnection, connection => connection.Execute(
                 $@"delete from [{_storage.SchemaName}].Server where LastHeartbeat < @timeOutAt",
                 new { timeOutAt = DateTime.UtcNow.Add(timeOut.Negate()) },
-                commandTimeout: _storage.CommandTimeout));
+                commandTimeout: _storage.CommandTimeout,
+                transaction: _storage.Transaction));
         }
 
         public override long GetSetCount(string key)
@@ -384,7 +382,8 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
             return _storage.UseConnection(_dedicatedConnection, connection => connection.Query<int>(
                 $"select count([Key]) from [{_storage.SchemaName}].[Set] with (readcommittedlock) where [Key] = @key",
                 new { key = key },
-                commandTimeout: _storage.CommandTimeout).First());
+                commandTimeout: _storage.CommandTimeout,
+                transaction: _storage.Transaction).First());
         }
 
         public override List<string> GetRangeFromSet(string key, int startingFrom, int endingAt)
@@ -399,7 +398,7 @@ $@"select [Value] from (
 ) as s where s.row_num between @startingFrom and @endingAt";
 
             return _storage.UseConnection(_dedicatedConnection, connection => connection
-                .Query<string>(query, new { key = key, startingFrom = startingFrom + 1, endingAt = endingAt + 1 }, commandTimeout: _storage.CommandTimeout)
+                .Query<string>(query, new { key = key, startingFrom = startingFrom + 1, endingAt = endingAt + 1 }, commandTimeout: _storage.CommandTimeout, transaction: _storage.Transaction)
                 .ToList());
         }
 
@@ -411,7 +410,7 @@ $@"select [Value] from (
 
             return _storage.UseConnection(_dedicatedConnection, connection =>
             {
-                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: _storage.CommandTimeout);
+                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: _storage.CommandTimeout, transaction: _storage.Transaction);
                 if (!result.HasValue) return TimeSpan.FromSeconds(-1);
 
                 return result.Value - DateTime.UtcNow;
@@ -430,7 +429,7 @@ select [Value] from [{_storage.SchemaName}].AggregatedCounter with (readcommitte
 where [Key] = @key) as s";
 
             return _storage.UseConnection(_dedicatedConnection, connection => 
-                connection.ExecuteScalar<long?>(query, new { key = key }, commandTimeout: _storage.CommandTimeout) ?? 0);
+                connection.ExecuteScalar<long?>(query, new { key = key }, commandTimeout: _storage.CommandTimeout, transaction: _storage.Transaction) ?? 0);
         }
 
         public override long GetHashCount(string key)
@@ -440,7 +439,7 @@ where [Key] = @key) as s";
             string query = $@"select count([Id]) from [{_storage.SchemaName}].Hash with (readcommittedlock) where [Key] = @key";
 
             return _storage.UseConnection(_dedicatedConnection, connection => 
-                connection.ExecuteScalar<long>(query, new { key = key }, commandTimeout: _storage.CommandTimeout));
+                connection.ExecuteScalar<long>(query, new { key = key }, commandTimeout: _storage.CommandTimeout, transaction: _storage.Transaction));
         }
 
         public override TimeSpan GetHashTtl(string key)
@@ -451,7 +450,7 @@ where [Key] = @key) as s";
 
             return _storage.UseConnection(_dedicatedConnection, connection =>
             {
-                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: _storage.CommandTimeout);
+                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: _storage.CommandTimeout, transaction: _storage.Transaction);
                 if (!result.HasValue) return TimeSpan.FromSeconds(-1);
 
                 return result.Value - DateTime.UtcNow;
@@ -468,7 +467,7 @@ $@"select [Value] from [{_storage.SchemaName}].Hash with (readcommittedlock)
 where [Key] = @key and [Field] = @field";
 
             return _storage.UseConnection(_dedicatedConnection, connection => connection
-                .ExecuteScalar<string>(query, new { key = key, field = name }, commandTimeout: _storage.CommandTimeout));
+                .ExecuteScalar<string>(query, new { key = key, field = name }, commandTimeout: _storage.CommandTimeout, transaction: _storage.Transaction));
         }
 
         public override long GetListCount(string key)
@@ -480,7 +479,7 @@ $@"select count([Id]) from [{_storage.SchemaName}].List with (readcommittedlock)
 where [Key] = @key";
 
             return _storage.UseConnection(_dedicatedConnection, connection => 
-                connection.ExecuteScalar<long>(query, new { key = key }, commandTimeout: _storage.CommandTimeout));
+                connection.ExecuteScalar<long>(query, new { key = key }, commandTimeout: _storage.CommandTimeout, transaction: _storage.Transaction));
         }
 
         public override TimeSpan GetListTtl(string key)
@@ -493,7 +492,7 @@ where [Key] = @key";
 
             return _storage.UseConnection(_dedicatedConnection, connection =>
             {
-                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: _storage.CommandTimeout);
+                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: _storage.CommandTimeout, transaction: _storage.Transaction);
                 if (!result.HasValue) return TimeSpan.FromSeconds(-1);
 
                 return result.Value - DateTime.UtcNow;
@@ -512,7 +511,7 @@ $@"select [Value] from (
 ) as s where s.row_num between @startingFrom and @endingAt";
 
             return _storage.UseConnection(_dedicatedConnection, connection => connection
-                .Query<string>(query, new { key = key, startingFrom = startingFrom + 1, endingAt = endingAt + 1 }, commandTimeout: _storage.CommandTimeout)
+                .Query<string>(query, new { key = key, startingFrom = startingFrom + 1, endingAt = endingAt + 1 }, commandTimeout: _storage.CommandTimeout, transaction: _storage.Transaction)
                 .ToList());
         }
 
@@ -525,16 +524,21 @@ $@"select [Value] from [{_storage.SchemaName}].List with (readcommittedlock)
 where [Key] = @key
 order by [Id] desc";
 
-            return _storage.UseConnection(_dedicatedConnection, connection => connection.Query<string>(query, new { key = key }, commandTimeout: _storage.CommandTimeout).ToList());
+            return _storage.UseConnection(_dedicatedConnection, connection => connection.Query<string>(query, new { key = key }, commandTimeout: _storage.CommandTimeout, transaction: _storage.Transaction).ToList());
         }
 
         private DbConnection _dedicatedConnection;
 
         private IDisposable AcquireLock(string resource, TimeSpan timeout)
         {
+            // 1. If there's at least one lock, establish a dedicated connection.
+            // 2. If lock on a specified resource hasn't already been taken, acquire it to allow it to be reentrant.
+            // 3. If a lock on a specified resource has already been acquired, don't acquire it.
+
             if (_dedicatedConnection == null)
             {
                 _dedicatedConnection = _storage.CreateAndOpenConnection();
+                // TODO: Keep alive query?
             }
 
             var lockId = Guid.NewGuid();
@@ -562,6 +566,8 @@ order by [Id] desc";
         {
             try
             {
+                // 1. When there are no other locks, release the dedicated connection.
+                // 2. Release a database lock only when there are no other pending acquisitions of this lock.
                 if (_lockedResources.ContainsKey(resource))
                 {
                     if (_lockedResources[resource].Contains(lockId))
