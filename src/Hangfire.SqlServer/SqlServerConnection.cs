@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using Dapper;
@@ -56,8 +57,9 @@ namespace Hangfire.SqlServer
             return new SqlServerWriteOnlyTransaction(_storage, () => _dedicatedConnection);
         }
 
-        public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)
+        public override IDisposable AcquireDistributedLock([NotNull] string resource, TimeSpan timeout)
         {
+            if (String.IsNullOrWhiteSpace(resource)) throw new ArgumentNullException(nameof(resource));
             return AcquireLock($"{_storage.SchemaName}:{resource}", timeout);
         }
 
@@ -112,23 +114,26 @@ values (@invocationData, @arguments, @createdAt, @expireAt)";
 
                 if (parameters.Count > 0)
                 {
-                    var parameterArray = new object[parameters.Count];
-                    int parameterIndex = 0;
-                    foreach (var parameter in parameters)
-                    {
-                        parameterArray[parameterIndex++] = new
-                        {
-                            jobId = long.Parse(jobId),
-                            name = parameter.Key,
-                            value = parameter.Value
-                        };
-                    }
-
                     string insertParameterSql =
 $@"insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value)
 values (@jobId, @name, @value)";
 
-                    connection.Execute(insertParameterSql, parameterArray, commandTimeout: _storage.CommandTimeout, transaction: _storage.Transaction);
+                    var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue);
+
+                    foreach (var parameter in parameters)
+                    {
+                        commandBatch.Append(insertParameterSql,
+                            new SqlParameter("@jobId", long.Parse(jobId)),
+                            new SqlParameter("@name", parameter.Key),
+                            new SqlParameter("@value", (object)parameter.Value ?? DBNull.Value));
+                    }
+
+                    commandBatch.Connection = connection;
+                    commandBatch.Transaction = _storage.Transaction;
+                    commandBatch.CommandTimeout = _storage.CommandTimeout;
+                    commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
+
+                    commandBatch.ExecuteNonQuery();
                 }
 
                 return jobId;
@@ -279,14 +284,22 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
 
             _storage.UseTransaction(_dedicatedConnection, (connection, transaction) =>
             {
+                var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue);
+
                 foreach (var keyValuePair in keyValuePairs)
                 {
-                    connection.Execute(
-                        sql, 
-                        new { key = key, field = keyValuePair.Key, value = keyValuePair.Value }, 
-                        transaction,
-                        commandTimeout: _storage.CommandTimeout);
+                    commandBatch.Append(sql,
+                        new SqlParameter("@key", key),
+                        new SqlParameter("@field", keyValuePair.Key),
+                        new SqlParameter("@value", (object)keyValuePair.Value ?? DBNull.Value));
                 }
+
+                commandBatch.Connection = connection;
+                commandBatch.Transaction = transaction;
+                commandBatch.CommandTimeout = _storage.CommandTimeout;
+                commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
+
+                commandBatch.ExecuteNonQuery();
             });
         }
 
@@ -531,14 +544,9 @@ order by [Id] desc";
 
         private IDisposable AcquireLock(string resource, TimeSpan timeout)
         {
-            // 1. If there's at least one lock, establish a dedicated connection.
-            // 2. If lock on a specified resource hasn't already been taken, acquire it to allow it to be reentrant.
-            // 3. If a lock on a specified resource has already been acquired, don't acquire it.
-
             if (_dedicatedConnection == null)
             {
                 _dedicatedConnection = _storage.CreateAndOpenConnection();
-                // TODO: Keep alive query?
             }
 
             var lockId = Guid.NewGuid();
@@ -566,8 +574,6 @@ order by [Id] desc";
         {
             try
             {
-                // 1. When there are no other locks, release the dedicated connection.
-                // 2. Release a database lock only when there are no other pending acquisitions of this lock.
                 if (_lockedResources.ContainsKey(resource))
                 {
                     if (_lockedResources[resource].Contains(lockId))
