@@ -218,7 +218,7 @@ namespace Hangfire.SqlServer
             {
                 var result = UseConnection(dedicatedConnection, connection =>
                 {
-                    connection.EnlistTransaction(Transaction.Current);
+                    connection.EnlistTransaction(System.Transactions.Transaction.Current);
                     return func(connection, null);
                 });
 
