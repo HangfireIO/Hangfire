@@ -74,7 +74,17 @@ namespace Hangfire.SqlServer
         /// explicit instance of the <see cref="DbConnection"/> class that will be used
         /// to query the data.
         /// </summary>
-        public SqlServerStorage([NotNull] DbConnection existingConnection, DbTransaction transaction = null)
+        public SqlServerStorage([NotNull] DbConnection existingConnection)
+            : this(existingConnection, new SqlServerStorageOptions(), null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SqlServerStorage"/> class with
+        /// explicit instance of the <see cref="DbConnection"/> class that will be used
+        /// to query the data.
+        /// </summary>
+        public SqlServerStorage([NotNull] DbConnection existingConnection, DbTransaction transaction)
             : this(existingConnection, new SqlServerStorageOptions(), transaction)
         {
         }
@@ -84,7 +94,17 @@ namespace Hangfire.SqlServer
         /// explicit instance of the <see cref="DbConnection"/> class that will be used
         /// to query the data, with the given options.
         /// </summary>
-        public SqlServerStorage([NotNull] DbConnection existingConnection, [NotNull] SqlServerStorageOptions options, DbTransaction transaction = null)
+        public SqlServerStorage([NotNull] DbConnection existingConnection, [NotNull] SqlServerStorageOptions options)
+            : this(existingConnection, options, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SqlServerStorage"/> class with
+        /// explicit instance of the <see cref="DbConnection"/> class that will be used
+        /// to query the data, with the given options.
+        /// </summary>
+        public SqlServerStorage([NotNull] DbConnection existingConnection, [NotNull] SqlServerStorageOptions options, DbTransaction transaction)
         {
             if (existingConnection == null) throw new ArgumentNullException(nameof(existingConnection));
             if (options == null) throw new ArgumentNullException(nameof(options));
