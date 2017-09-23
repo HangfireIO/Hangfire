@@ -95,7 +95,7 @@ WriteLiteral("\r\n");
 	    if (storageConnection != null)
 	    {
 	        pager = new Pager(from, perPage, storageConnection.GetRecurringJobCount());
-	        recurringJobs = storageConnection.GetRecurringJobs(pager.FromRecord, pager.FromRecord + pager.RecordsPerPage);
+	        recurringJobs = storageConnection.GetRecurringJobs(pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
 	    }
 	    else
 	    {
