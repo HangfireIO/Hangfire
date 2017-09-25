@@ -97,7 +97,7 @@ namespace Hangfire.SqlServer
         {
             try
             {
-                storage.UseConnection(connection =>
+                storage.UseConnection(null, connection =>
                 {
                     SqlServerDistributedLock.Acquire(connection, DistributedLockKey, DefaultLockTimeout);
 

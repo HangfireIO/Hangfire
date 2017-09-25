@@ -19,6 +19,16 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.17
+
+Hangfire.SqlServer
+
+• Added – `SqlServerStorageOptions.CommandBatchMaxTimeout` parameter to enable batching in transactions.
+• Fixed – Timeout exceptions when there are a lot of large concurrent transactions by using the new batching method.
+• Fixed – Distributed locks are safe now even in very unreliable networks and after network blips.
+• Performance – Greatly decreased the number of connections required to process background jobs.
+• Performance – Significantly decrease the number of roundtrips required to commit a transaction.
+    
 1.6.16
 
 Hangfire.Core

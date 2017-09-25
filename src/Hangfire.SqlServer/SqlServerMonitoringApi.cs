@@ -434,7 +434,7 @@ where [Key] in @keys";
 
         private T UseConnection<T>(Func<DbConnection, T> action)
         {
-            return _storage.UseConnection(action);
+            return _storage.UseConnection(null, action);
         }
 
         private JobList<EnqueuedJobDto> EnqueuedJobs(DbConnection connection, long[] jobIds)
