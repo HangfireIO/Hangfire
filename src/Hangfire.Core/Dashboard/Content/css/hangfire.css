@@ -33,6 +33,7 @@ body {
 
 .container .credit {
   margin: 20px 0;
+  word-break: break-word;
 }
 
 .page-header {
