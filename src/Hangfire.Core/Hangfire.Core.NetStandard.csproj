@@ -144,6 +144,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AwaitingJobsPage.cshtml</DependentUpon>
     </Compile>
+    <Compile Include="Dashboard\Pages\ManualJobsPage.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ManualJobsPage.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="Dashboard\Pages\BlockMetric.cs">
       <DependentUpon>_BlockMetric.cshtml</DependentUpon>
     </Compile>
@@ -365,6 +370,7 @@
     <Compile Include="States\ProcessingState.cs" />
     <Compile Include="States\ScheduledState.cs" />
     <Compile Include="States\StateChangeContext.cs" />
+    <Compile Include="States\ManualState.cs" />
     <Compile Include="States\StateHandlerCollection.cs" />
     <Compile Include="States\StateMachine.cs" />
     <Compile Include="States\SucceededState.cs" />
@@ -379,6 +385,7 @@
     <Compile Include="Storage\JobStorageConnection.cs" />
     <Compile Include="Storage\JobStorageTransaction.cs" />
     <Compile Include="Storage\Monitoring\DeletedJobDto.cs" />
+    <Compile Include="Storage\Monitoring\ManualJobDto.cs" />
     <Compile Include="Storage\Monitoring\EnqueuedJobDto.cs" />
     <Compile Include="Storage\Monitoring\FailedJobDto.cs" />
     <Compile Include="Storage\Monitoring\FetchedJobDto.cs" />

@@ -24,20 +24,20 @@ namespace Hangfire.Dashboard
     {
         private static readonly string[] Javascripts =
         {
-            "jquery-2.1.4.min.js", 
+            "jquery-2.1.4.min.js",
             "bootstrap.min.js",
             "moment.min.js",
             "moment-with-locales.min.js",
-            "d3.min.js", 
-            "d3.layout.min.js", 
-            "rickshaw.min.js", 
+            "d3.min.js",
+            "d3.layout.min.js",
+            "rickshaw.min.js",
             "hangfire.js"
         };
 
         private static readonly string[] Stylesheets =
         {
-            "bootstrap.min.css", 
-            "rickshaw.min.css", 
+            "bootstrap.min.css",
+            "rickshaw.min.css",
             "hangfire.css"
         };
 
@@ -46,7 +46,7 @@ namespace Hangfire.Dashboard
             Routes = new RouteCollection();
             Routes.AddRazorPage("/", x => new HomePage());
             Routes.Add("/stats", new JsonStats());
-            
+
             #region Embedded static content
 
             Routes.Add("/js[0-9]+", new CombinedResourceDispatcher(
@@ -104,7 +104,7 @@ namespace Hangfire.Dashboard
 
             Routes.AddRazorPage("/jobs/processing", x => new ProcessingJobsPage());
             Routes.AddClientBatchCommand(
-                "/jobs/processing/delete", 
+                "/jobs/processing/delete",
                 (client, jobId) => client.ChangeState(jobId, CreateDeletedState(), ProcessingState.StateName));
 
             Routes.AddClientBatchCommand(
@@ -114,7 +114,7 @@ namespace Hangfire.Dashboard
             Routes.AddRazorPage("/jobs/scheduled", x => new ScheduledJobsPage());
 
             Routes.AddClientBatchCommand(
-                "/jobs/scheduled/enqueue", 
+                "/jobs/scheduled/enqueue",
                 (client, jobId) => client.ChangeState(jobId, CreateEnqueuedState(), ScheduledState.StateName));
 
             Routes.AddClientBatchCommand(
@@ -148,6 +148,12 @@ namespace Hangfire.Dashboard
             Routes.AddClientBatchCommand("/jobs/awaiting/delete", (client, jobId) => client.ChangeState(
                 jobId, CreateDeletedState(), AwaitingState.StateName));
 
+            Routes.AddRazorPage("/jobs/manual", x => new ManualJobsPage());
+            Routes.AddClientBatchCommand("/jobs/manual/enqueue", (client, jobId) => client.ChangeState(
+                jobId, CreateEnqueuedState(), ManualState.StateName));
+            Routes.AddClientBatchCommand("/jobs/manual/delete", (client, jobId) => client.ChangeState(
+                jobId, CreateDeletedState(), ManualState.StateName));
+
             Routes.AddCommand(
                 "/jobs/actions/requeue/(?<JobId>.+)",
                 context =>
@@ -168,11 +174,11 @@ namespace Hangfire.Dashboard
 
             Routes.AddRazorPage("/recurring", x => new RecurringJobsPage());
             Routes.AddRecurringBatchCommand(
-                "/recurring/remove", 
+                "/recurring/remove",
                 (manager, jobId) => manager.RemoveIfExists(jobId));
 
             Routes.AddRecurringBatchCommand(
-                "/recurring/trigger", 
+                "/recurring/trigger",
                 (manager, jobId) => manager.Trigger(jobId));
 
             Routes.AddRazorPage("/servers", x => new ServersPage());
@@ -185,7 +191,7 @@ namespace Hangfire.Dashboard
 
         internal static string GetContentFolderNamespace(string contentFolder)
         {
-            return $"{typeof (DashboardRoutes).Namespace}.Content.{contentFolder}";
+            return $"{typeof(DashboardRoutes).Namespace}.Content.{contentFolder}";
         }
 
         internal static string GetContentResourceName(string contentFolder, string resourceName)
@@ -205,7 +211,7 @@ namespace Hangfire.Dashboard
 
         private static Assembly GetExecutingAssembly()
         {
-            return typeof (DashboardRoutes).GetTypeInfo().Assembly;
+            return typeof(DashboardRoutes).GetTypeInfo().Assembly;
         }
     }
 }

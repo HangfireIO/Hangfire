@@ -1,0 +1,96 @@
+﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
+@using Hangfire.Dashboard
+@using Hangfire.Dashboard.Pages
+@inherits RazorPage
+@{
+    Layout = new LayoutPage("Manual Jobs");
+
+    int from, perPage;
+
+    int.TryParse(Query("from"), out from);
+    int.TryParse(Query("count"), out perPage);
+
+    var monitor = Storage.GetMonitoringApi();
+    var pager = new Pager(from, perPage, monitor.ManualCount());
+    var manualJobs = monitor.ManualJobs(pager.FromRecord, pager.RecordsPerPage);
+}
+
+<div class="row">
+    <div class="col-md-3">
+        @Html.JobsSidebar()
+    </div>
+    <div class="col-md-9">
+        <h1 class="page-header">Manual Jobs</h1>
+
+        @if (pager.TotalPageCount == 0)
+        {
+            <div class="alert alert-info">
+                There are no manual jobs.
+            </div>
+        }
+        else
+        {
+            <div class="js-jobs-list">
+                <div class="btn-toolbar btn-toolbar-top">
+                    <button class="js-jobs-list-command btn btn-sm btn-primary"
+                            data-url="@Url.To("/jobs/manual/trigger")"
+                            data-loading-text="Triggering..."
+                            disabled="disabled">
+                        <span class="glyphicon glyphicon-play"></span>
+                        Trigger now
+                    </button>
+
+                    <button class="js-jobs-list-command btn btn-sm btn-default"
+                            data-url="@Url.To("/jobs/manual/delete")"
+                            data-loading-text="Deleting..."
+                            data-confirm="Do you really want to DELETE ALL selected jobs?"
+                            disabled="disabled">
+                        <span class="glyphicon glyphicon-remove"></span>
+                        Delete selected
+                    </button>
+
+                    @Html.PerPageSelector(pager)
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="min-width">
+                                <input type="checkbox" class="js-jobs-list-select-all" />
+                            </th>
+                            <th class="min-width">Id</th>
+                            <th>Job</th>
+                            <th class="align-right">Scheduled</th>
+                        </tr>
+                    </thead>
+                    @foreach (var job in manualJobs)
+                    {
+                        <tr class="js-jobs-list-row @(!job.Value.IsManualState ? "obsolete-data" : null) @(job.Value.IsManualState? "hover" : null)">
+                            <td>
+                                @if (job.Value.IsManualState)
+                                {
+                                    <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
+                                }
+                            </td>
+                            <td class="min-width">
+                                @Html.JobIdLink(job.Key)
+                                @if (!job.Value.IsManualState)
+                                {
+                                    <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
+                                }
+                            </td>
+                            <td>
+                                @Html.JobNameLink(job.Key, job.Value.Job)
+                            </td>
+                            <td class="align-right">
+                                @Html.RelativeTime(job.Value.CreatedAt)
+                            </td>
+                        </tr>
+                    }
+                </table>
+
+                @Html.Paginator(pager)
+            </div>
+        }
+    </div>
+</div>

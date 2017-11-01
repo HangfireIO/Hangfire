@@ -94,6 +94,42 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void StaticStash_ThrowsAnException_WhenClientIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => BackgroundJobClientExtensions.Stash(
+                    null, () => StaticMethod()));
+
+            Assert.Equal("client", exception.ParamName);
+        }
+
+        [Fact]
+        public void StaticStash_ShouldCreateAJobInTheManualState()
+        {
+            _client.Object.Stash(() => StaticMethod());
+
+            _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<ManualState>()));
+        }
+
+        [Fact]
+        public void InstanceStash_ThrowsAnException_WhenClientIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => BackgroundJobClientExtensions.Stash<BackgroundJobClientExtensionsFacts>(
+                    null, x => x.InstanceMethod()));
+
+            Assert.Equal("client", exception.ParamName);
+        }
+
+        [Fact]
+        public void InstanceStash_ShouldCreateAJobInTheManualState()
+        {
+            _client.Object.Stash<BackgroundJobClientExtensionsFacts>(x => x.InstanceMethod());
+
+            _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<ManualState>()));
+        }
+
+        [Fact]
         public void StaticSchedule_ThrowsAnException_WhenClientIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(

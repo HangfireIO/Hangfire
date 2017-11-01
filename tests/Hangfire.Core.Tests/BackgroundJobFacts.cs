@@ -38,6 +38,26 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
+        public void Stash_CreatesAJobInManualState()
+        {
+            Initialize();
+
+            BackgroundJob.Stash(() => Method());
+
+            _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<ManualState>()));
+        }
+
+        [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
+        public void StashGeneric_CreatesAJobInManualState()
+        {
+            Initialize();
+
+            BackgroundJob.Stash<BackgroundJobFacts>(x => x.Method());
+
+            _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<ManualState>()));
+        }
+
+        [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
         public void Schedule_WithTimeSpan_CreatesAJobInScheduledState()
         {
             Initialize();

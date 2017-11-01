@@ -136,6 +136,9 @@
     <Compile Include="States\EnqueuedStateHandlerFacts.cs" />
     <Compile Include="States\FailedStateFacts.cs" />
     <Compile Include="Client\CoreBackgroundJobFactoryFacts.cs" />
+    <Compile Include="States\ManualStateFacts.cs" />
+    <Compile Include="States\ManualStateHandlerFacts.cs" />
+    <Compile Include="States\ManualStateValidationFacts.cs" />
     <Compile Include="States\ScheduledStateHandlerFacts.cs" />
     <Compile Include="States\ProcessingStateFacts.cs" />
     <Compile Include="States\ScheduledStateFacts.cs" />
