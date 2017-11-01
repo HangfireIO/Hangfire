@@ -13,6 +13,12 @@ namespace Hangfire.Core.Tests.Storage
         }
 
         [Fact]
+        public void ManualJobDto_Ctor_SetsIsManualState()
+        {
+            Assert.True(new ManualJobDto().IsManualState);
+        }
+
+        [Fact]
         public void FailedJobDto_Ctor_SetsInFailedState()
         {
             Assert.True(new FailedJobDto().InFailedState);
