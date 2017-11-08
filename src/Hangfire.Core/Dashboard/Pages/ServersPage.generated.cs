@@ -219,22 +219,12 @@ WriteLiteral("</td>\r\n                                <td>");
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                                <td data-moment=\"");
+WriteLiteral("</td>\r\n                                <td>");
 
 
             
             #line 46 "..\..\Dashboard\Pages\ServersPage.cshtml"
-                                            Write(JobHelper.ToTimestamp(server.StartedAt));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">");
-
-
-            
-            #line 46 "..\..\Dashboard\Pages\ServersPage.cshtml"
-                                                                                      Write(server.StartedAt);
+                               Write(Html.RelativeTime(server.StartedAt));
 
             
             #line default
