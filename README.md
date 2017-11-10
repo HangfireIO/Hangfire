@@ -128,6 +128,13 @@ Please see the [Extensions](http://hangfire.io/extensions.html) page on the offi
 Building the sources
 ---------------------
 
+First, create an environment variable with Variable name `Hangfire_SqlServer_ConnectionStringTemplate` and put your connection string in the Variable value field. Example:
+
+* Variable name: `Hangfire_SqlServer_ConnectionStringTemplate`
+* Variable value: `Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Hangfire;Integrated Security=True;`
+
+Then install MSMQ (Microsoft Message Queue Server), if not already installed.
+
 To build a solution and get assembly files, just run the following command. All build artifacts, including `*.pdb` files, will be placed into the `build` folder. **Before proposing a pull request, please use this command to ensure everything is ok.** Btw, you can execute this command from the Package Manager Console window.
 
 ```
