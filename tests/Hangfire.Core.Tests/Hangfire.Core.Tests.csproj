@@ -92,6 +92,7 @@
     <Compile Include="Common\JobFilterProviderCollectionFacts.cs" />
     <Compile Include="Common\JobHelperFacts.cs" />
     <Compile Include="Common\JobLoadExceptionFacts.cs" />
+    <Compile Include="Common\MethodInfoExtensionsFacts.cs" />
     <Compile Include="Common\TypeExtensionsFacts.cs" />
     <Compile Include="CronFacts.cs" />
     <Compile Include="Dashboard\HtmlHelperFacts.cs" />
