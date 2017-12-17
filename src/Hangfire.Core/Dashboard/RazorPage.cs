@@ -80,6 +80,7 @@ namespace Hangfire.Dashboard
             Storage = parentPage.Storage;
             AppPath = parentPage.AppPath;
             StatsPollingInterval = parentPage.StatsPollingInterval;
+            DisplayStorageConnectionString = parentPage.DisplayStorageConnectionString;
             Url = parentPage.Url;
 
             GenerationTime = parentPage.GenerationTime;
