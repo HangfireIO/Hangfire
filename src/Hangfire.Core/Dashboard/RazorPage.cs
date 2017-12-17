@@ -42,6 +42,7 @@ namespace Hangfire.Dashboard
         public JobStorage Storage { get; internal set; }
         public string AppPath { get; internal set; }
         public int StatsPollingInterval { get; internal set; }
+        public bool DisplayStorageConnectionString { get; private set; }
         public Stopwatch GenerationTime { get; private set; }
 
         public StatisticsDto Statistics
@@ -93,6 +94,7 @@ namespace Hangfire.Dashboard
             Storage = context.Storage;
             AppPath = context.Options.AppPath;
             StatsPollingInterval = context.Options.StatsPollingInterval;
+            DisplayStorageConnectionString = context.Options.DisplayStorageConnectionString;
             Url = new UrlHelper(context);
 
             _statisticsLazy = new Lazy<StatisticsDto>(() =>
