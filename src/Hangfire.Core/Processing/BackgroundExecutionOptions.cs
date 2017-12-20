@@ -69,7 +69,11 @@ namespace Hangfire.Processing
         public Func<int, TimeSpan> RetryDelay
         {
             get => _retryDelay;
-            set => _retryDelay = value ?? throw new ArgumentNullException(nameof(value));
+            set
+            {
+                if (value == null) throw new ArgumentNullException(nameof(value));
+                _retryDelay = value;
+            }
         }
 
         internal static TimeSpan GetBackOffMultiplier(int retryAttemptNumber)

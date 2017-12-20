@@ -40,12 +40,15 @@ namespace Hangfire.Processing
             int maxConcurrency,
             bool ownsScheduler)
         {
+            if (execution == null) throw new ArgumentNullException(nameof(execution));
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            if (taskScheduler == null) throw new ArgumentNullException(nameof(taskScheduler));
             if (maxConcurrency <= 0) throw new ArgumentOutOfRangeException(nameof(maxConcurrency));
 
-            _action = action ?? throw new ArgumentNullException(nameof(action));
+            _action = action;
             _state = state;
-            _execution = execution ?? throw new ArgumentNullException(nameof(execution));
-            _taskScheduler = taskScheduler ?? throw new ArgumentNullException(nameof(taskScheduler));
+            _execution = execution;
+            _taskScheduler = taskScheduler;
             _tasks = new Task[maxConcurrency];
 
 #if NETFULL

@@ -45,9 +45,11 @@ namespace Hangfire.Processing
             [NotNull] Func<ThreadStart, IEnumerable<Thread>> threadFactory)
         {
             if (threadFactory == null) throw new ArgumentNullException(nameof(threadFactory));
+            if (execution == null) throw new ArgumentNullException(nameof(execution));
+            if (action == null) throw new ArgumentNullException(nameof(action));
 
-            _execution = execution ?? throw new ArgumentNullException(nameof(execution));
-            _action = action ?? throw new ArgumentNullException(nameof(action));
+            _execution = execution;
+            _action = action;
             _state = state;
 
 #if NETFULL

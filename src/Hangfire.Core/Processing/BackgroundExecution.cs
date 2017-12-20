@@ -58,7 +58,9 @@ namespace Hangfire.Processing
             CancellationToken abortToken,
             [NotNull] BackgroundExecutionOptions options)
         {
-            _options = options ?? throw new ArgumentNullException(nameof(options));
+            if (options == null) throw new ArgumentNullException(nameof(options));
+
+            _options = options;
             _logger = LogProvider.GetLogger(GetType());
             _createdAt = Stopwatch.StartNew();
 
