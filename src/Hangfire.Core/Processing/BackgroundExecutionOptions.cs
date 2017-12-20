@@ -38,7 +38,7 @@ namespace Hangfire.Processing
 
         public TimeSpan WarningThreshold
         {
-            get => _warningThreshold;
+            get { return _warningThreshold; }
             set
             {
                 if (value < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(value), "Value should be greater than or equal to TimeSpan.Zero");
@@ -48,7 +48,7 @@ namespace Hangfire.Processing
 
         public TimeSpan ErrorThreshold
         {
-            get => _errorThreshold;
+            get { return _errorThreshold; }
             set
             {
                 if (value < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(value), "Value should be greater than or equal to TimeSpan.Zero");
@@ -58,7 +58,7 @@ namespace Hangfire.Processing
 
         public TimeSpan StillErrorThreshold
         {
-            get => _stillErrorThreshold;
+            get { return _stillErrorThreshold; }
             set
             {
                 if (value < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(value), "Value should be greater than or equal to TimeSpan.Zero");
@@ -68,7 +68,7 @@ namespace Hangfire.Processing
 
         public Func<int, TimeSpan> RetryDelay
         {
-            get => _retryDelay;
+            get { return _retryDelay; }
             set
             {
                 if (value == null) throw new ArgumentNullException(nameof(value));

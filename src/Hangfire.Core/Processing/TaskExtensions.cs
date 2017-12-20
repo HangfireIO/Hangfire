@@ -100,8 +100,8 @@ namespace Hangfire.Processing
             [Obsolete("Use the SafeWaitHandle property instead.")]
             public override IntPtr Handle
             {
-                get => InvalidHandle;
-                set => throw new InvalidOperationException();
+                get { return InvalidHandle; }
+                set { throw new InvalidOperationException(); }
             }
         }
 #endif

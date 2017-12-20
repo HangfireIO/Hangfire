@@ -96,7 +96,8 @@ namespace Hangfire.Processing
                 try
 #endif
                 {
-                    HandleStarted(executionId, out var nextDelay);
+                    TimeSpan nextDelay;
+                    HandleStarted(executionId, out nextDelay);
 
                     // There should be no operations between the `while` and `try` blocks to
                     // avoid unintended stopping due to ThreadAbortException between the loop
@@ -178,7 +179,8 @@ namespace Hangfire.Processing
                 try
 #endif
                 {
-                    HandleStarted(executionId, out var nextDelay);
+                    TimeSpan nextDelay;
+                    HandleStarted(executionId, out nextDelay);
 
                     // There should be no operations between the `while` and `try` blocks to
                     // avoid unintended stopping due to ThreadAbortException between the loop
