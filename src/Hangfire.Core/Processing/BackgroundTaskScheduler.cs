@@ -306,12 +306,16 @@ namespace Hangfire.Processing
                 var handler = _exceptionHandler;
                 handler?.Invoke(exception);
             }
+#if NETFULL
             catch (Exception ex)
             {
-#if NETFULL
                 Trace.WriteLine("Unexpected exception caught in exception handler itself." + Environment.NewLine + ex);
-#endif
             }
+#else
+            catch
+            {
+            }
+#endif
         }
 
         private void ThrowIfDisposed()
