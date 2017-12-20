@@ -32,7 +32,7 @@ namespace Hangfire.Processing
     /// consider using the <see cref="TaskScheduler.Default"/> scheduler instead.</summary>
     /// <remarks>
     /// <para>You can use this scheduler to offload background tasks to a separate, dedicated
-    /// pool of threads, instead of executing them in <see cref="ThreadPool"/>'s threads.
+    /// pool of threads, instead of executing them in ThreadPool's threads.
     /// Background work items don't usually affect the request/response logic directly, so we
     /// can afford some additional latency and execute them, when no foreground processing is
     /// held. This is useful, when you want to minimize your response latencies to their minimum,
@@ -44,7 +44,7 @@ namespace Hangfire.Processing
     /// or simply by using ThreadPool.QueueUserWorkItem method. So this is a best-effort attempt.</para>
     /// 
     /// <para>Please note that all unprocessed work items are lost, when the <see cref="Dispose"/>
-    /// method is called or the corresponding <see cref="AppDomain"/> is unloaded (for example,
+    /// method is called or the corresponding AppDomain is unloaded (for example,
     /// due to process shutdown). In order to survive the process restarts, use different solutions
     /// with persistence, like <see href="https://www.hangfire.io">Hangfire</see>.</para>
     /// </remarks>
