@@ -104,6 +104,15 @@
       <DependentUpon>AwaitingJobsPage.cshtml</DependentUpon>
     </Compile>
     <Compile Include="JobActivatorScope.cs" />
+    <Compile Include="Processing\AppDomainUnloadMonitor.cs" />
+    <Compile Include="Processing\BackgroundDispatcher.cs" />
+    <Compile Include="Processing\BackgroundDispatcherAsync.cs" />
+    <Compile Include="Processing\BackgroundExecution.cs" />
+    <Compile Include="Processing\BackgroundExecutionOptions.cs" />
+    <Compile Include="Processing\BackgroundTaskScheduler.cs" />
+    <Compile Include="Processing\IBackgroundDispatcher.cs" />
+    <Compile Include="Processing\IBackgroundExecution.cs" />
+    <Compile Include="Processing\TaskExtensions.cs" />
     <Compile Include="Properties\NamespaceDoc.cs" />
     <Compile Include="RecurringJobManagerExtensions.cs" />
     <Compile Include="RecurringJobOptions.cs" />
