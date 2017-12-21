@@ -1,5 +1,5 @@
 ﻿// This file is part of Hangfire.
-// Copyright © 2015 Sergey Odinokov.
+// Copyright © 2017 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -14,34 +14,13 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using Hangfire.Annotations;
-
-#pragma warning disable 618
+using Hangfire.Processing;
 
 namespace Hangfire.Server
 {
-    internal class InfiniteLoopProcess : IBackgroundProcessWrapper
+    public interface IBackgroundProcessDispatcherBuilder
     {
-        public InfiniteLoopProcess([NotNull] IServerProcess innerProcess)
-        {
-            if (innerProcess == null) throw new ArgumentNullException(nameof(innerProcess));
-            InnerProcess = innerProcess;
-        }
-        
-        public IServerProcess InnerProcess { get; }
-
-        public void Execute(BackgroundProcessContext context)
-        {
-            while (!context.IsShutdownRequested)
-            {
-                InnerProcess.Execute(context);
-            }
-        }
-
-        public override string ToString()
-        {
-            return InnerProcess.ToString();
-        }
+        IBackgroundDispatcher Create([NotNull] BackgroundProcessContext context, [NotNull] BackgroundProcessingServerOptions options);
     }
 }

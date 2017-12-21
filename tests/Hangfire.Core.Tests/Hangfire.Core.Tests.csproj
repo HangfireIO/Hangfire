@@ -123,15 +123,11 @@
     <Compile Include="Server\BackgroundProcessContextFacts.cs" />
     <Compile Include="Server\BackgroundProcessingServerFacts.cs" />
     <Compile Include="Server\BackgroundJobPerformerFacts.cs" />
-    <Compile Include="Server\InfiniteLoopComponentFacts.cs" />
     <Compile Include="Server\CoreBackgroundJobPerformerFacts.cs" />
     <Compile Include="Server\RecurringJobSchedulerFacts.cs" />
     <Compile Include="Server\PerformContextFacts.cs" />
     <Compile Include="Server\DelayedJobSchedulerFacts.cs" />
-    <Compile Include="Server\BackgroundProcessExtensionsFacts.cs" />
     <Compile Include="Server\ServerJobCancellationTokenFacts.cs" />
-    <Compile Include="Server\AutomaticRetryProcessFacts.cs" />
-    <Compile Include="Server\ServerHeartbeatFacts.cs" />
     <Compile Include="Server\ServerWatchdogFacts.cs" />
     <Compile Include="Server\WorkerFacts.cs" />
     <Compile Include="States\CoreStateMachineFacts.cs" />

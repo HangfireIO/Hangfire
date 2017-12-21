@@ -1,5 +1,5 @@
 ﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright © 2017 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -14,12 +14,12 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using Hangfire.Processing;
+
 namespace Hangfire.Server
 {
-    internal interface IBackgroundProcessWrapper : IBackgroundProcess
+    public interface IBackgroundProcessingServer : IBackgroundDispatcher
     {
-#pragma warning disable 618
-        IServerProcess InnerProcess { get; }
-#pragma warning restore 618
+        void Stop(bool abort);
     }
 }

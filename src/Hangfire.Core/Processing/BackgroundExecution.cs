@@ -348,6 +348,8 @@ namespace Hangfire.Processing
             }
 #endif
 
+            // todo check for stop request here
+
             if (!exception.Data.Contains("ExecutionId"))
             {
                 exception.Data.Add("ExecutionId", executionId);

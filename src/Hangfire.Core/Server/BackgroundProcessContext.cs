@@ -23,11 +23,22 @@ namespace Hangfire.Server
 {
     public class BackgroundProcessContext
     {
+        [Obsolete()] // todo
+        public BackgroundProcessContext(
+            [NotNull] string serverId,
+            [NotNull] JobStorage storage,
+            [NotNull] IDictionary<string, object> properties,
+            CancellationToken cancellationToken)
+            : this(serverId, storage, properties, cancellationToken, CancellationToken.None)
+        {
+        }
+
         public BackgroundProcessContext(
             [NotNull] string serverId,
             [NotNull] JobStorage storage, 
             [NotNull] IDictionary<string, object> properties, 
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            CancellationToken abortToken)
         {
             if (serverId == null) throw new ArgumentNullException(nameof(serverId));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -37,6 +48,7 @@ namespace Hangfire.Server
             Storage = storage;
             Properties = new Dictionary<string, object>(properties, StringComparer.OrdinalIgnoreCase);
             CancellationToken = cancellationToken;
+            AbortToken = abortToken;
         }
         
         [NotNull]
@@ -49,6 +61,7 @@ namespace Hangfire.Server
         public JobStorage Storage { get; }
 
         public CancellationToken CancellationToken { get; }
+        public CancellationToken AbortToken { get; }
 
         public bool IsShutdownRequested => CancellationToken.IsCancellationRequested;
 
