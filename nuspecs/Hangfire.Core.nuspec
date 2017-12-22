@@ -130,7 +130,7 @@
     <dependencies>
       <group targetFramework="net45">
         <dependency id="Owin" version="1.0" />
-        <dependency id="Newtonsoft.Json" version="5.0.0" />
+        <dependency id="Newtonsoft.Json" version="5.0.1" />
       </group>
       <group targetFramework="netstandard1.3">
         <dependency id="Microsoft.NETCore.Portable.Compatibility" version="1.0.1" />
