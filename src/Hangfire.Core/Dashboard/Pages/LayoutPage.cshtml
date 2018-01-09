@@ -61,7 +61,7 @@
                         <a href="https://www.hangfire.io/" target="_blank" rel="noopener noreferrer">Hangfire @($"{version.Major}.{version.Minor}.{version.Build}")
                         </a>
                     </li>
-                    @if(Options.DisplayStorageConnectionString){
+                    @if(DashboardOptions.DisplayStorageConnectionString){
                     <li>@Storage</li>
                     }
                     <li>@Strings.LayoutPage_Footer_Time @Html.LocalTime(DateTime.UtcNow)</li>
@@ -71,7 +71,7 @@
         </div>
         
         <div id="hangfireConfig"
-             data-pollinterval="@Options.StatsPollingInterval"
+             data-pollinterval="@DashboardOptions.StatsPollingInterval"
              data-pollurl="@(Url.To("/stats"))">
         </div>
 
