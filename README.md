@@ -128,6 +128,9 @@ Please see the [Extensions](http://hangfire.io/extensions.html) page on the offi
 Building the sources
 ---------------------
 
+Prerequesities:
+* [Razor Generator](https://marketplace.visualstudio.com/items?itemName=DavidEbbo.RazorGenerator): Required if you intend to edit the cshtml files.
+
 To build a solution and get assembly files, just run the following command. All build artifacts, including `*.pdb` files, will be placed into the `build` folder. **Before proposing a pull request, please use this command to ensure everything is ok.** Btw, you can execute this command from the Package Manager Console window.
 
 ```
