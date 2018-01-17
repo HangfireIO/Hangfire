@@ -97,6 +97,8 @@ output inserted.Id
 values (@invocationData, @arguments, @createdAt, @expireAt)";
 
             var invocationData = InvocationData.Serialize(job);
+            var arguments = invocationData.Arguments;
+            invocationData.Arguments = null;
 
             return _storage.UseConnection(_dedicatedConnection, connection =>
             {
@@ -105,7 +107,7 @@ values (@invocationData, @arguments, @createdAt, @expireAt)";
                     new
                     {
                         invocationData = JobHelper.ToJson(invocationData),
-                        arguments = invocationData.Arguments,
+                        arguments = arguments,
                         createdAt = createdAt,
                         expireAt = createdAt.Add(expireIn)
                     },
