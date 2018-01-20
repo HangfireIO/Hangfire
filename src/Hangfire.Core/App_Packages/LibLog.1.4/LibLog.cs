@@ -699,7 +699,14 @@ namespace Hangfire.Logging.LogProviders
             Type logManagerType = GetLogManagerType();
             MethodInfo method = logManagerType.GetRuntimeMethod("GetLogger", new[] { typeof(string) });
             ParameterExpression nameParam = Expression.Parameter(typeof(string), "name");
-            MethodCallExpression methodCall = Expression.Call(null, method, new Expression[] { nameParam });
+            MethodCallExpression methodCall;
+            if (method == null)
+            {
+                method = logManagerType.GetRuntimeMethod("GetLogger", new[] { typeof(Assembly), typeof(string) });
+                methodCall = Expression.Call(null, method, new Expression[] { Expression.Constant(Assembly.GetEntryAssembly()), nameParam });
+            } else {
+                methodCall = Expression.Call(null, method, new Expression[] { nameParam });
+            }
             return Expression.Lambda<Func<string, object>>(methodCall, new[] { nameParam }).Compile();
         }
 
