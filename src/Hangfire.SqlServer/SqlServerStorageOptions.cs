@@ -29,7 +29,7 @@ namespace Hangfire.SqlServer
         private TimeSpan _queuePollInterval;
         private string _schemaName;
         private TimeSpan? _slidingInvisibilityTimeout;
-        private readonly IDictionary<string, string> _customTableNames = new Dictionary<string, string>();
+        private SqlServerStorageTableConfiguration _customTableNames;
 
         public SqlServerStorageOptions()
         {
@@ -45,6 +45,7 @@ namespace Hangfire.SqlServer
             DashboardJobListLimit = 10000;
             _schemaName = Constants.DefaultSchema;
             TransactionTimeout = TimeSpan.FromMinutes(1);
+            _customTableNames = new SqlServerStorageTableConfiguration();
         }
 
         public IsolationLevel? TransactionIsolationLevel { get; set; }
@@ -106,6 +107,28 @@ namespace Hangfire.SqlServer
                     throw new ArgumentException(_schemaName, nameof(value));
                 }
                 _schemaName = value;
+            }
+        }
+
+        public SqlServerStorageTableConfiguration CustomTableNames
+        {
+            get { return _customTableNames; }
+            set
+            {
+                if (PrepareSchemaIfNecessary)
+                {
+                    throw new InvalidOperationException("Preparing schema is not possible with custom tables configuration. You need to prepare them yourself.");
+                }
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+                if (!value.IsCompleteConfiguration)
+                {
+                    throw new ArgumentException($"{nameof(CustomTableNames)} configuration must be complete", nameof(value));
+                }
+
+                _customTableNames = value;
             }
         }
     }

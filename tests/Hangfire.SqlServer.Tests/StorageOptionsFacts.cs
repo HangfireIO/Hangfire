@@ -16,6 +16,7 @@ namespace Hangfire.SqlServer.Tests
 #pragma warning restore 618
             Assert.True(options.JobExpirationCheckInterval > TimeSpan.Zero);
             Assert.True(options.PrepareSchemaIfNecessary);
+            Assert.True(options.CustomTableNames.Equals(new SqlServerStorageTableConfiguration()));
         }
 
         [Fact]
@@ -39,6 +40,67 @@ namespace Hangfire.SqlServer.Tests
         {
             var options = new SqlServerStorageOptions { QueuePollInterval = TimeSpan.FromSeconds(1) };
             Assert.Equal(TimeSpan.FromSeconds(1), options.QueuePollInterval);
+        }
+
+        [Fact]
+        public void Set_CustomTableNames_SetsTheValue()
+        {
+            var options = new SqlServerStorageOptions
+            {
+                PrepareSchemaIfNecessary = false
+            };
+            var randomTableName = Guid.NewGuid().ToString();
+            var configuration = new SqlServerStorageTableConfiguration
+            {
+                JobTableName = randomTableName
+            };
+
+            options.CustomTableNames = configuration;
+            Assert.True(configuration.Equals(options.CustomTableNames));
+        }
+
+        [Fact]
+        public void Set_CustomTableNames_ShoudlThrow_WhenSetToNull()
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                new SqlServerStorageOptions
+                {
+                    PrepareSchemaIfNecessary = false,
+                    CustomTableNames = null
+                };
+            });
+        }
+
+        [Fact]
+        public void Set_CustomTableNames_ShoudlThrow_WhenSetIncompleteConfiguration()
+        {
+            Assert.Throws<ArgumentException>(() =>
+            {
+                new SqlServerStorageOptions
+                {
+                    PrepareSchemaIfNecessary = false,
+                    CustomTableNames = new SqlServerStorageTableConfiguration
+                    {
+                        HashTableName = null
+                    }
+                };
+            });
+        }
+
+        [Fact]
+        public void Set_CustomTableNames_ShouldThrow_WhenSetWithPrepareSchemaEnabled()
+        {
+            Assert.Throws<InvalidOperationException>(() =>
+                new SqlServerStorageOptions
+                {
+                    PrepareSchemaIfNecessary = true,
+                    CustomTableNames = new SqlServerStorageTableConfiguration
+                    {
+                        HashTableName = null
+                    }
+                }
+            );
         }
     }
 }

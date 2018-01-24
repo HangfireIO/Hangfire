@@ -1,4 +1,6 @@
-﻿namespace Hangfire.SqlServer
+﻿using System.Collections.Generic;
+
+namespace Hangfire.SqlServer
 {
     public class SqlServerStorageTableConfiguration
     {
@@ -44,5 +46,21 @@
                 !string.IsNullOrWhiteSpace(ValueTableName) &&
                 !string.IsNullOrWhiteSpace(CounterTableName) &&
                 !string.IsNullOrWhiteSpace(AggregatedCounterTableName);
+
+        public bool Equals(SqlServerStorageTableConfiguration otherConfiguration)
+        {
+            return SchemaTableName == SchemaTableName &&
+                JobTableName == JobTableName &&
+                StateTableName == StateTableName &&
+                JobParameterTableName == JobParameterTableName &&
+                JobQueueTableName == JobQueueTableName &&
+                ServerTableName == ServerTableName &&
+                HashTableName == HashTableName &&
+                ListTableName == ListTableName &&
+                SetTableName == SetTableName &&
+                ValueTableName == ValueTableName &&
+                CounterTableName == CounterTableName &&
+                AggregatedCounterTableName == AggregatedCounterTableName;
+        }
     }
 }
