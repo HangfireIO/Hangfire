@@ -78,6 +78,7 @@
     <Compile Include="SqlServerStorage.cs" />
     <Compile Include="SqlServerStorageExtensions.cs" />
     <Compile Include="SqlServerStorageOptions.cs" />
+    <Compile Include="SqlServerStorageTableConfiguration.cs" />
     <Compile Include="SqlServerTimeoutJob.cs" />
     <Compile Include="SqlServerTransactionJob.cs" />
     <Compile Include="SqlServerWriteOnlyTransaction.cs" />

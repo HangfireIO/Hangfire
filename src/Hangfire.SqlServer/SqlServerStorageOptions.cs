@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 #if NETFULL
 using System.Transactions;
 #else
@@ -28,6 +29,7 @@ namespace Hangfire.SqlServer
         private TimeSpan _queuePollInterval;
         private string _schemaName;
         private TimeSpan? _slidingInvisibilityTimeout;
+        private readonly IDictionary<string, string> _customTableNames = new Dictionary<string, string>();
 
         public SqlServerStorageOptions()
         {

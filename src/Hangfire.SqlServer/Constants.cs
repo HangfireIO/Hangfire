@@ -5,17 +5,17 @@
         public static readonly string DefaultSchema = "HangFire";
         
         //Default table names
-        public static readonly string DefaultNameSchemaTable = "Schema";
-        public static readonly string DefaultNameJobTable = "Job";
-        public static readonly string DefaultNameStateTable = "State";
-        public static readonly string DefaultNameJobParameterTable = "JobParameter";
-        public static readonly string DefaultNameJobQueueTable = "JobQueue";
-        public static readonly string DefaultNameServerTable = "Server";
-        public static readonly string DefaultNameHashTable = "Hash";
-        public static readonly string DefaultNameListTable = "List";
-        public static readonly string DefaultNameSetTable = "Set";
-        public static readonly string DefaultNameValueTable = "Value";
-        public static readonly string DefaultNameCounterTable = "Counter";
-        public static readonly string DefaultNameAggregatedCounterTable = "AggregatedCounter";
+        public const string DefaultNameSchemaTable = "Schema";
+        public const string DefaultNameJobTable = "Job";
+        public const string DefaultNameStateTable = "State";
+        public const string DefaultNameJobParameterTable = "JobParameter";
+        public const string DefaultNameJobQueueTable = "JobQueue";
+        public const string DefaultNameServerTable = "Server";
+        public const string DefaultNameHashTable = "Hash";
+        public const string DefaultNameListTable = "List";
+        public const string DefaultNameSetTable = "Set";
+        public const string DefaultNameValueTable = "Value";
+        public const string DefaultNameCounterTable = "Counter";
+        public const string DefaultNameAggregatedCounterTable = "AggregatedCounter";
     }
 }

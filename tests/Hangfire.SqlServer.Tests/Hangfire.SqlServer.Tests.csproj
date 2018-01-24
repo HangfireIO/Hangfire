@@ -82,6 +82,7 @@
     <Compile Include="SqlServerDistributedLockFacts.cs" />
     <Compile Include="SqlServerStorageFacts.cs" />
     <Compile Include="StorageOptionsFacts.cs" />
+    <Compile Include="StorageTableConfigurationFacts.cs" />
     <Compile Include="Utils\ConnectionUtils.cs" />
     <Compile Include="Utils\CleanDatabaseAttribute.cs" />
     <Compile Include="SqlServerWriteOnlyTransactionFacts.cs" />
