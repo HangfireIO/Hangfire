@@ -50,17 +50,15 @@ namespace Hangfire.SqlServer.Tests
                 PrepareSchemaIfNecessary = false
             };
             var randomTableName = Guid.NewGuid().ToString();
-            var configuration = new SqlServerStorageTableConfiguration
-            {
-                JobTableName = randomTableName
-            };
+            var configuration = new SqlServerStorageTableConfiguration();
+            configuration["Job"] = randomTableName;
 
             options.CustomTableNames = configuration;
             Assert.True(configuration.Equals(options.CustomTableNames));
         }
 
         [Fact]
-        public void Set_CustomTableNames_ShoudlThrow_WhenSetToNull()
+        public void Set_CustomTableNames_ShouldThrow_WhenSetToNull()
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
@@ -73,34 +71,17 @@ namespace Hangfire.SqlServer.Tests
         }
 
         [Fact]
-        public void Set_CustomTableNames_ShoudlThrow_WhenSetIncompleteConfiguration()
-        {
-            Assert.Throws<ArgumentException>(() =>
-            {
-                new SqlServerStorageOptions
-                {
-                    PrepareSchemaIfNecessary = false,
-                    CustomTableNames = new SqlServerStorageTableConfiguration
-                    {
-                        HashTableName = null
-                    }
-                };
-            });
-        }
-
-        [Fact]
         public void Set_CustomTableNames_ShouldThrow_WhenSetWithPrepareSchemaEnabled()
         {
             Assert.Throws<InvalidOperationException>(() =>
+            {
+                var customTables = new SqlServerStorageTableConfiguration();
                 new SqlServerStorageOptions
                 {
                     PrepareSchemaIfNecessary = true,
-                    CustomTableNames = new SqlServerStorageTableConfiguration
-                    {
-                        HashTableName = null
-                    }
-                }
-            );
+                    CustomTableNames = customTables
+                };
+            });
         }
     }
 }

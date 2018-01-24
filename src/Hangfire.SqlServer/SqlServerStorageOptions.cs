@@ -123,10 +123,6 @@ namespace Hangfire.SqlServer
                 {
                     throw new ArgumentNullException(nameof(value));
                 }
-                if (!value.IsCompleteConfiguration)
-                {
-                    throw new ArgumentException($"{nameof(CustomTableNames)} configuration must be complete", nameof(value));
-                }
 
                 _customTableNames = value;
             }

@@ -1,66 +1,54 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Hangfire.SqlServer
 {
     public class SqlServerStorageTableConfiguration
     {
+        private readonly IDictionary<string, string> _customTableNames;
+
         public SqlServerStorageTableConfiguration()
         {
-            SchemaTableName = Constants.DefaultNameSchemaTable;
-            JobTableName = Constants.DefaultNameJobTable;
-            StateTableName = Constants.DefaultNameStateTable;
-            JobParameterTableName = Constants.DefaultNameJobParameterTable;
-            JobQueueTableName = Constants.DefaultNameJobQueueTable;
-            ServerTableName = Constants.DefaultNameServerTable;
-            HashTableName = Constants.DefaultNameHashTable;
-            ListTableName = Constants.DefaultNameListTable;
-            SetTableName = Constants.DefaultNameSetTable;
-            ValueTableName = Constants.DefaultNameValueTable;
-            CounterTableName = Constants.DefaultNameCounterTable;
-            AggregatedCounterTableName = Constants.DefaultNameAggregatedCounterTable;
+            _customTableNames = new Dictionary<string, string>();
+
+            _customTableNames["Schema"] = Constants.DefaultNameSchemaTable;
+            _customTableNames["Job"] = Constants.DefaultNameJobTable;
+            _customTableNames["State"] = Constants.DefaultNameStateTable;
+            _customTableNames["JobParameter"] = Constants.DefaultNameJobParameterTable;
+            _customTableNames["JobQueue"] = Constants.DefaultNameJobQueueTable;
+            _customTableNames["Server"] = Constants.DefaultNameServerTable;
+            _customTableNames["Hash"] = Constants.DefaultNameHashTable;
+            _customTableNames["List"] = Constants.DefaultNameListTable;
+            _customTableNames["Set"] = Constants.DefaultNameSetTable;
+            _customTableNames["Value"] = Constants.DefaultNameValueTable;
+            _customTableNames["Counter"] = Constants.DefaultNameCounterTable;
+            _customTableNames["AggregatedCounter"] = Constants.DefaultNameAggregatedCounterTable;
         }
-
-        public string SchemaTableName { get; set; }
-        public string JobTableName { get; set; }
-        public string StateTableName { get; set;}
-        public string JobParameterTableName { get; set; }
-        public string JobQueueTableName { get; set; }
-        public string ServerTableName { get; set; }
-        public string HashTableName { get; set; }
-        public string ListTableName { get; set; }
-        public string SetTableName { get; set; }
-        public string ValueTableName { get; set; }
-        public string CounterTableName { get; set; }
-        public string AggregatedCounterTableName { get; set; }
-
-        public bool IsCompleteConfiguration =>
-                !string.IsNullOrWhiteSpace(SchemaTableName) &&
-                !string.IsNullOrWhiteSpace(JobTableName) &&
-                !string.IsNullOrWhiteSpace(StateTableName) &&
-                !string.IsNullOrWhiteSpace(JobParameterTableName) &&
-                !string.IsNullOrWhiteSpace(JobQueueTableName) &&
-                !string.IsNullOrWhiteSpace(ServerTableName) &&
-                !string.IsNullOrWhiteSpace(HashTableName) &&
-                !string.IsNullOrWhiteSpace(ListTableName) &&
-                !string.IsNullOrWhiteSpace(SetTableName) &&
-                !string.IsNullOrWhiteSpace(ValueTableName) &&
-                !string.IsNullOrWhiteSpace(CounterTableName) &&
-                !string.IsNullOrWhiteSpace(AggregatedCounterTableName);
 
         public bool Equals(SqlServerStorageTableConfiguration otherConfiguration)
         {
-            return SchemaTableName == SchemaTableName &&
-                JobTableName == JobTableName &&
-                StateTableName == StateTableName &&
-                JobParameterTableName == JobParameterTableName &&
-                JobQueueTableName == JobQueueTableName &&
-                ServerTableName == ServerTableName &&
-                HashTableName == HashTableName &&
-                ListTableName == ListTableName &&
-                SetTableName == SetTableName &&
-                ValueTableName == ValueTableName &&
-                CounterTableName == CounterTableName &&
-                AggregatedCounterTableName == AggregatedCounterTableName;
+            if (otherConfiguration == null) return false;
+            return _customTableNames.All(kvp => kvp.Value == otherConfiguration[kvp.Key]);
+        }
+
+        public ICollection<string> AvailableConfigurableTableNames => _customTableNames.Keys.ToList();
+
+        public string this[string tableName]
+        {
+            get
+            {
+                return _customTableNames[tableName];
+            }
+            set
+            {
+                if (value == null || string.IsNullOrWhiteSpace(value))
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _customTableNames[tableName] = value;
+            }
         }
     }
 }

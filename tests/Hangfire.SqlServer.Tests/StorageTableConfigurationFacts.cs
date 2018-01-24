@@ -13,70 +13,61 @@ namespace Hangfire.SqlServer.Tests
         {
             var configuration = new SqlServerStorageTableConfiguration();
 
-            Assert.True(configuration.SchemaTableName == Constants.DefaultNameSchemaTable);
-            Assert.True(configuration.JobTableName == Constants.DefaultNameJobTable);
-            Assert.True(configuration.StateTableName == Constants.DefaultNameStateTable);
-            Assert.True(configuration.JobParameterTableName == Constants.DefaultNameJobParameterTable);
-            Assert.True(configuration.JobQueueTableName == Constants.DefaultNameJobQueueTable);
-            Assert.True(configuration.ServerTableName == Constants.DefaultNameServerTable);
-            Assert.True(configuration.HashTableName == Constants.DefaultNameHashTable);
-            Assert.True(configuration.ListTableName == Constants.DefaultNameListTable);
-            Assert.True(configuration.SetTableName == Constants.DefaultNameSetTable);
-            Assert.True(configuration.ValueTableName == Constants.DefaultNameValueTable);
-            Assert.True(configuration.CounterTableName == Constants.DefaultNameCounterTable);
-            Assert.True(configuration.AggregatedCounterTableName == Constants.DefaultNameAggregatedCounterTable);
-        }
-
-        [Fact]
-        public void Get_IsCompleteConfiguration_ReturnsTrue_ForAllFilled()
-        {
-            var configuration = new SqlServerStorageTableConfiguration();
-
-            Assert.True(configuration.IsCompleteConfiguration);
+            Assert.True(configuration["Schema"] == Constants.DefaultNameSchemaTable);
+            Assert.True(configuration["Job"] == Constants.DefaultNameJobTable);
+            Assert.True(configuration["State"] == Constants.DefaultNameStateTable);
+            Assert.True(configuration["JobParameter"] == Constants.DefaultNameJobParameterTable);
+            Assert.True(configuration["JobQueue"] == Constants.DefaultNameJobQueueTable);
+            Assert.True(configuration["Server"] == Constants.DefaultNameServerTable);
+            Assert.True(configuration["Hash"] == Constants.DefaultNameHashTable);
+            Assert.True(configuration["List"] == Constants.DefaultNameListTable);
+            Assert.True(configuration["Set"] == Constants.DefaultNameSetTable);
+            Assert.True(configuration["Value"] == Constants.DefaultNameValueTable);
+            Assert.True(configuration["Counter"] == Constants.DefaultNameCounterTable);
+            Assert.True(configuration["AggregatedCounter"] == Constants.DefaultNameAggregatedCounterTable);
         }
 
         [Theory]
         [MemberData(nameof(GetAllConfigurableTableNames))]
-        public void Set_EveryConfigurableTable_SetsValue(PropertyInfo configurableTableName)
+        public void Set_EveryConfigurableTable_SetsValue(string configurableTableName)
         {
             var configuration = new SqlServerStorageTableConfiguration();
             var randomTableName = Guid.NewGuid().ToString();
 
-            configurableTableName.SetValue(configuration, randomTableName);
+            configuration[configurableTableName] = randomTableName;
 
-            Assert.True((string)configurableTableName.GetValue(configuration) == randomTableName);
+            Assert.True(configuration[configurableTableName] == randomTableName);
         }
 
         [Theory]
         [MemberData(nameof(GetAllConfigurableTableNames))]
-        public void Set_EveryConfigurableTable_IfSetNull_MakesConfigurationIncomplete
-            (PropertyInfo configurableTableName)
+        public void Set_EveryConfigurableTable_ShouldThrow_IfSetNull
+            (string configurableTableName)
         {
             var configuration = new SqlServerStorageTableConfiguration();
 
-            configurableTableName.SetValue(configuration, null);
-
-            Assert.True(!configuration.IsCompleteConfiguration);
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                configuration[configurableTableName] = null;
+            });
         }
 
         [Theory]
         [MemberData(nameof(GetAllConfigurableTableNames))]
         public void Set_EveryConfigurableTable_IfSetEmptyString_MakesConfigurationIncomplete
-            (PropertyInfo configurableTableName)
+            (string configurableTableName)
         {
             var configuration = new SqlServerStorageTableConfiguration();
 
-            configurableTableName.SetValue(configuration, string.Empty);
-
-            Assert.True(!configuration.IsCompleteConfiguration);
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                configuration[configurableTableName] = string.Empty;
+            });
         }
 
-        private static IEnumerable<object[]> GetAllConfigurableTableNames()
+        public static IEnumerable<object[]> GetAllConfigurableTableNames()
         {
-            return typeof(SqlServerStorageTableConfiguration)
-                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(prop => prop.GetSetMethod() != null)
-                .Select(prop => new[] { prop });
+            return new SqlServerStorageTableConfiguration().AvailableConfigurableTableNames.Select(tableName => new[] { tableName });
         }
     }
 }
