@@ -119,6 +119,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
+    <Compile Include="Dashboard\Content\resx\Strings.zh-TW.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Strings.zh-TW.resx</DependentUpon>
+    </Compile>
     <Compile Include="Dashboard\DashboardContext.cs" />
     <Compile Include="Dashboard\DashboardMetric.cs" />
     <Compile Include="Dashboard\DashboardMetrics.cs" />
@@ -506,6 +511,10 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Dashboard\Content\resx\Strings.es.resx" />
+    <EmbeddedResource Include="Dashboard\Content\resx\Strings.zh-TW.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.zh-TW.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Dashboard\Content\resx\Strings.zh.resx" />
     <EmbeddedResource Include="Dashboard\Content\resx\Strings.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
