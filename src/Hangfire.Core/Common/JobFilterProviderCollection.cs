@@ -24,8 +24,9 @@ namespace Hangfire.Common
     /// <summary>
     /// Represents the collection of filter providers for the application.
     /// </summary>
-    public class JobFilterProviderCollection : Collection<IJobFilterProvider>
+    public class JobFilterProviderCollection : Collection<IJobFilterProvider>, IJobFilterProvider
     {
+        // ReSharper disable once InconsistentNaming
         private static readonly FilterComparer _filterComparer = new FilterComparer();
 
         /// <summary>
@@ -36,7 +37,7 @@ namespace Hangfire.Common
         {
         }
 
-        internal JobFilterProviderCollection(params IJobFilterProvider[] providers)
+        public JobFilterProviderCollection(params IJobFilterProvider[] providers)
             : base(providers)
         {
         }
@@ -48,11 +49,6 @@ namespace Hangfire.Common
         /// <returns>The collection of filter providers.</returns>
         public IEnumerable<JobFilter> GetFilters(Job job)
         {
-            if (job == null)
-            {
-                return Enumerable.Empty<JobFilter>();
-            }
-
             IEnumerable<JobFilter> combinedFilters =
                 Items.SelectMany(fp => fp.GetFilters(job))
                     .OrderBy(filter => filter, _filterComparer);

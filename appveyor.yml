@@ -7,7 +7,9 @@
 #   - Section names should be unique on each level.
 
 # Don't edit manually! Use `build.bat version` command instead!
-version: 1.4.0-build-0{build}
+version: 1.6.17-build-0{build}
+
+os: Visual Studio 2015
 
 #---------------------------------#
 #    environment configuration    #
@@ -17,6 +19,12 @@ version: 1.4.0-build-0{build}
 environment:
   BuildEnvironment: appveyor
   Hangfire_SqlServer_ConnectionStringTemplate: Server=.\SQL2008R2SP2;Database={0};User Id=sa;Password=Password12!
+  COVERALLS_REPO_TOKEN: 
+    secure: oE4uB475V9hPzKmm+ZRP+1BacnMFOE98a/2tVeFieYJi5BbYG6X3VM+p6vKIQZdd
+  COVERITY_TOKEN:
+    secure: r3yBqxgALySnCK9W6uiStqoadsqYtrWQolzxGDVKF74=
+  COVERITY_EMAIL:
+    secure: wf51HXCiUYxuTe+eo3uQOxqyptSLrH4IEqq0958Rmx8=
 
 # enable service required for tests
 services:
@@ -30,12 +38,26 @@ branches:
     - master
     - dev
 
+pull_requests:
+  do_not_increment_build_number: true
+
+shallow_clone: true
+
+cache:
+  - packages
+
 #---------------------------------#
 #       build configuration       #
 #---------------------------------#
 
 # to run your custom scripts instead of automatic MSBuild
-build_script: build.bat pack
+build_script:
+  - build.bat ci
+
+after_build:
+  - "SET PATH=C:\\Python34;C:\\Python34\\Scripts;%PATH%"
+  - pip install codecov
+  - codecov -f coverage.xml
 
 #---------------------------------#
 #       tests configuration       #
@@ -62,12 +84,18 @@ deploy:
     artifact: /.*\.zip/
     draft: true
     on:
-      branch: master
       appveyor_repo_tag: true
 
   - provider: NuGet
     api_key: 
       secure: 8BQmcR1hP9MoxvrmXJKMtlRyX6LI36H9ZTU8fSEetvzMGCl1PUlXKZRUGq+GVMja
     on:
-      branch: master
       appveyor_repo_tag: true
+
+notifications:
+  - provider: Slack
+    incoming_webhook:
+      secure: bqJhjmwwsSMJ/8imZJBOOtwbsNF51p24M8HZlIx1+asIHHUhXWHrP9vkuOPK3OnqNopmloLOOBoaEpYAkClkDuEC61a5Go5NY9KSSB9UMjk=
+    on_build_success: false
+    on_build_failure: true
+    on_build_status_changed: true

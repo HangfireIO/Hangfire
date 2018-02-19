@@ -12,10 +12,13 @@
     <description>RabbitMQ queues support for SQL Server job storage implementation for Hangfire (background job system for ASP.NET applications).</description>
     <copyright>Copyright © 2014 Denny Ferrassoli</copyright>
     <tags>Hangfire SqlServer RabbitMQ</tags>
-    <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
+    <releaseNotes>http://hangfire.io/blog/
     
-1.3.3
-* Fixed – Enqueued job is not being processed with MSMQ or RabbitMQ.  
+1.4.2
+* Fixed – Incompatibility issue with RabbitMQ.Client >= 3.4.0 (by @justmara).
+    
+1.4.0
+* Added – Allow a URI to be used for `RabbitMQConnectionConfiguration` (by @dennyferra).
     </releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="[0.0.0]" />

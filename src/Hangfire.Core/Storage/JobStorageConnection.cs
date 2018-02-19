@@ -61,7 +61,7 @@ namespace Hangfire.Storage
             throw new NotSupportedException();
         }
 
-        public virtual void AddRangeToSet([NotNull] string key, [NotNull] IList<string> items)
+        public virtual TimeSpan GetSetTtl([NotNull] string key)
         {
             throw new NotSupportedException();
         }
@@ -80,6 +80,11 @@ namespace Hangfire.Storage
             throw new NotSupportedException();
         }
 
+        public virtual TimeSpan GetHashTtl([NotNull] string key)
+        {
+            throw new NotSupportedException();
+        }
+
         // Lists
         public virtual long GetListCount([NotNull] string key)
         {
@@ -92,6 +97,17 @@ namespace Hangfire.Storage
         }
 
         public virtual List<string> GetRangeFromList([NotNull] string key, int startingFrom, int endingAt)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual TimeSpan GetListTtl([NotNull] string key)
+        {
+            throw new NotSupportedException();
+        }
+
+        // Counters
+        public virtual long GetCounter([NotNull] string key)
         {
             throw new NotSupportedException();
         }

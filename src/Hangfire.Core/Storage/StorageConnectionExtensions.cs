@@ -28,25 +28,45 @@ namespace Hangfire.Storage
             [NotNull] string jobId, 
             TimeSpan timeout)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
-            if (jobId == null) throw new ArgumentNullException("jobId");
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
 
             return connection.AcquireDistributedLock(
-                String.Format("job:{0}:state-lock", jobId),
+                $"job:{jobId}:state-lock",
                 timeout);
+        }
+
+        public static long GetRecurringJobCount([NotNull] this JobStorageConnection connection)
+        {
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            return connection.GetSetCount("recurring-jobs");
+        }
+
+        public static List<RecurringJobDto> GetRecurringJobs(
+            [NotNull] this JobStorageConnection connection,
+            int startingFrom,
+            int endingAt)
+        {
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+
+            var ids = connection.GetRangeFromSet("recurring-jobs", startingFrom, endingAt);
+            return GetRecurringJobDtos(connection, ids);
         }
 
         public static List<RecurringJobDto> GetRecurringJobs([NotNull] this IStorageConnection connection)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
-
-            var result = new List<RecurringJobDto>();
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
 
             var ids = connection.GetAllItemsFromSet("recurring-jobs");
+            return GetRecurringJobDtos(connection, ids);
+        }
 
+        private static List<RecurringJobDto> GetRecurringJobDtos(IStorageConnection connection, IEnumerable<string> ids)
+        {
+            var result = new List<RecurringJobDto>();
             foreach (var id in ids)
             {
-                var hash = connection.GetAllEntriesFromHash(String.Format("recurring-job:{0}", id));
+                var hash = connection.GetAllEntriesFromHash($"recurring-job:{id}");
 
                 if (hash == null)
                 {
@@ -54,12 +74,15 @@ namespace Hangfire.Storage
                     continue;
                 }
 
-                var dto = new RecurringJobDto { Id = id };
-                dto.Cron = hash["Cron"];
+                var dto = new RecurringJobDto
+                {
+                    Id = id,
+                    Cron = hash["Cron"]
+                };
 
                 try
                 {
-                    var invocationData = JobHelper.FromJson<InvocationData>(hash["Job"]);
+                    var invocationData = InvocationData.Deserialize(hash["Job"]);
                     dto.Job = invocationData.Deserialize();
                 }
                 catch (JobLoadException ex)
@@ -82,10 +105,25 @@ namespace Hangfire.Storage
                         dto.LastJobState = stateData.Name;
                     }
                 }
+                
+                if (hash.ContainsKey("Queue"))
+                {
+                    dto.Queue = hash["Queue"];
+                }
 
                 if (hash.ContainsKey("LastExecution"))
                 {
                     dto.LastExecution = JobHelper.DeserializeDateTime(hash["LastExecution"]);
+                }
+
+                if (hash.ContainsKey("TimeZoneId"))
+                {
+                    dto.TimeZoneId = hash["TimeZoneId"];
+                }
+
+                if (hash.ContainsKey("CreatedAt"))
+                {
+                    dto.CreatedAt = JobHelper.DeserializeDateTime(hash["CreatedAt"]);
                 }
 
                 result.Add(dto);

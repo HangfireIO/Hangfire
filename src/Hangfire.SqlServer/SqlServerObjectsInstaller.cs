@@ -15,8 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Data.SqlClient;
-using System.Diagnostics.CodeAnalysis;
+using System.Data.Common;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -25,16 +24,21 @@ using Hangfire.Logging;
 
 namespace Hangfire.SqlServer
 {
-    [ExcludeFromCodeCoverage]
-    internal static class SqlServerObjectsInstaller
+    public static class SqlServerObjectsInstaller
     {
-        private const int RequiredSchemaVersion = 3;
+        public static readonly int RequiredSchemaVersion = 5;
+        private const int RetryAttempts = 3;
 
         private static readonly ILog Log = LogProvider.GetLogger(typeof(SqlServerStorage));
 
-        public static void Install(SqlConnection connection)
+        public static void Install(DbConnection connection)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
+            Install(connection, null);
+        }
+
+        public static void Install(DbConnection connection, string schema)
+        {
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
 
             Log.Info("Start installing Hangfire SQL objects...");
 
@@ -44,17 +48,41 @@ namespace Hangfire.SqlServer
             }
 
             var script = GetStringResource(
-                typeof(SqlServerObjectsInstaller).Assembly, 
+                typeof(SqlServerObjectsInstaller).GetTypeInfo().Assembly, 
                 "Hangfire.SqlServer.Install.sql");
 
-            script = script.Replace("SET @TARGET_SCHEMA_VERSION = 3;", "SET @TARGET_SCHEMA_VERSION = " + RequiredSchemaVersion + ";");
+            script = script.Replace("SET @TARGET_SCHEMA_VERSION = 5;", "SET @TARGET_SCHEMA_VERSION = " + RequiredSchemaVersion + ";");
 
-            connection.Execute(script);
+            script = script.Replace("$(HangFireSchema)", !string.IsNullOrWhiteSpace(schema) ? schema : Constants.DefaultSchema);
+
+#if NETFULL
+            for (var i = 0; i < RetryAttempts; i++)
+            {
+                try
+                {
+                    connection.Execute(script, commandTimeout: 0);
+                    break;
+                }
+                catch (DbException ex)
+                {
+                    if (ex.ErrorCode == 1205)
+                    {
+                        Log.WarnException("Deadlock occurred during automatic migration execution. Retrying...", ex);
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+#else
+            connection.Execute(script, commandTimeout: 0);
+#endif
 
             Log.Info("Hangfire SQL objects installed.");
         }
 
-        private static bool IsSqlEditionSupported(SqlConnection connection)
+        private static bool IsSqlEditionSupported(DbConnection connection)
         {
             var edition = connection.Query<int>("SELECT SERVERPROPERTY ( 'EngineEdition' )").Single();
             return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.SqlAzure;
@@ -66,10 +94,8 @@ namespace Hangfire.SqlServer
             {
                 if (stream == null) 
                 {
-                    throw new InvalidOperationException(String.Format(
-                        "Requested resource `{0}` was not found in the assembly `{1}`.",
-                        resourceName,
-                        assembly));
+                    throw new InvalidOperationException(
+                        $"Requested resource `{resourceName}` was not found in the assembly `{assembly}`.");
                 }
 
                 using (var reader = new StreamReader(stream))

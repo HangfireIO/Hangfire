@@ -24,7 +24,7 @@ namespace Hangfire.Server
     /// </summary>
     public class ServerExceptionContext : PerformContext
     {
-        internal ServerExceptionContext(
+        public ServerExceptionContext(
             PerformContext context, 
             Exception exception)
             : base(context)
@@ -35,7 +35,7 @@ namespace Hangfire.Server
         /// <summary>
         /// Gets an exception that occurred during the performance of the job.
         /// </summary>
-        public Exception Exception { get; private set; }
+        public Exception Exception { get; }
 
         /// <summary>
         /// Gets or sets a value that indicates that this <see cref="ServerExceptionContext"/>

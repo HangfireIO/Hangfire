@@ -1,25 +1,27 @@
 ﻿@* Generator: Template TypeVisibility: Public GeneratePrettyNames: True *@
 @using System
-@using System.Diagnostics
+@using System.Globalization
+@using System.Reflection
 @using Hangfire.Dashboard
-@using Hangfire.Storage.Monitoring
-@inherits Hangfire.Dashboard.RazorPage
+@using Hangfire.Dashboard.Pages
+@using Hangfire.Dashboard.Resources
+@inherits RazorPage
 <!DOCTYPE html>
-
-<html lang="en">
+<html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
 <head>
     <title>@Title - Hangfire</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta charset="utf-8" />
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="@LinkTo("/css")" />
+    @{ var version = GetType().GetTypeInfo().Assembly.GetName().Version; }
+    <link rel="stylesheet" href="@Url.To($"/css{version.Major}{version.Minor}{version.Build}")">
 </head>
     <body>
         <!-- Wrap all page content here -->
         <div id="wrap">
 
             <!-- Fixed navbar -->
-            <div class="navbar navbar-default navbar-static-top">
+            <div class="navbar navbar-default navbar-fixed-top">
                 <div class="container">
                     <div class="navbar-header">
                         <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -27,54 +29,28 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <a class="navbar-brand" href="@LinkTo("/")">Hangfire Dashboard</a>
+                        <a class="navbar-brand" href="@Url.Home()">Hangfire Dashboard</a>
                     </div>
                     <div class="collapse navbar-collapse">
-                        <ul class="nav navbar-nav navbar-right">
-                            <li>
-                                <a href="@AppPath">
-                                    <span class="glyphicon glyphicon-log-out"></span>
-                                    Back to site
-                                </a>
-                            </li>
-                        </ul>
+                        @Html.RenderPartial(new Navigation())
+                        @if(@AppPath != null) {
+                            <ul class="nav navbar-nav navbar-right">
+                                <li>
+                                    <a href="@AppPath">
+                                        <span class="glyphicon glyphicon-log-out"></span>
+                                        @Strings.LayoutPage_Back
+                                    </a>
+                                </li>
+                            </ul>
+                        }
                     </div>
                     <!--/.nav-collapse -->
                 </div>
             </div>
 
             <!-- Begin page content -->
-
             <div class="container" style="margin-bottom: 20px;">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div id="stats" class="list-group">
-                            @SidebarMenu.Render(this, Storage)
-                        </div>
-                    </div>
-                    <div class="col-md-9">
-                        @if (Breadcrumbs != null)
-                        {
-                            <ol class="breadcrumb">
-                                <li><a href="@LinkTo("/")"><span class="glyphicon glyphicon-home"></span></a></li>
-                                @foreach (var breadcrumb in Breadcrumbs)
-                                {
-                                    <li><a href="@breadcrumb.Value">@breadcrumb.Key</a></li>
-                                }
-                                <li class="active">@(BreadcrumbsTitle ?? Title)</li>
-                            </ol>
-                        }
-
-                        <h1 class="page-header">
-                            @Title
-                            @if (!String.IsNullOrEmpty(Subtitle))
-                            {
-                                <small>@Subtitle</small>
-                            }
-                        </h1>
-                        @RenderBody()
-                    </div>
-                </div>
+                @RenderBody()
             </div>
         </div>
 
@@ -82,28 +58,21 @@
             <div class="container">
                 <ul class="list-inline credit">
                     <li>
-                        <a href="http://hangfire.io/" target="_blank">Hangfire
-                            @{
-                                var version = GetType().Assembly.GetName().Version;
-                            }
-                            @String.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build)
+                        <a href="https://www.hangfire.io/" target="_blank" rel="noopener noreferrer">Hangfire @($"{version.Major}.{version.Minor}.{version.Build}")
                         </a>
                     </li>
                     <li>@Storage</li>
-                    <li>Time: @DateTime.UtcNow GMT
-                    </li>
+                    <li>@Strings.LayoutPage_Footer_Time @Html.LocalTime(DateTime.UtcNow)</li>
+                    <li>@String.Format(Strings.LayoutPage_Footer_Generatedms, GenerationTime.Elapsed.TotalMilliseconds.ToString("N"))</li>
                 </ul>
             </div>
         </div>
         
-        <script>
-            (function (hangFire) {
-                hangFire.config = {
-                    pollInterval: 2000,
-                    pollUrl: '@(LinkTo("/stats"))'
-                };
-            })(window.Hangfire = window.Hangfire || {});
-        </script>
-        <script src="@LinkTo("/js")"></script>
+        <div id="hangfireConfig"
+             data-pollinterval="@StatsPollingInterval"
+             data-pollurl="@(Url.To("/stats"))">
+        </div>
+
+        <script src="@Url.To($"/js{version.Major}{version.Minor}{version.Build}")"></script>
     </body>
 </html>

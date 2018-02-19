@@ -4,6 +4,8 @@ using Hangfire.States;
 using Moq;
 using Xunit;
 
+// ReSharper disable PossibleNullReferenceException
+
 namespace Hangfire.Core.Tests
 {
     public class BackgroundJobFacts

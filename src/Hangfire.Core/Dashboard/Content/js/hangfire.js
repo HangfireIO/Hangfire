@@ -1,106 +1,161 @@
-﻿(function(hangFire) {
-    hangFire.RealtimeGraph = (function() {
-        function RealtimeGraph(element) {
-            this._succeeded = null;
-            this._failed = null;
-            
-            this._graph = new Rickshaw.Graph({
-                element: element,
-                width: $(element).innerWidth(),
-                height: 200,
-                renderer: 'bar',
-                interpolation: 'linear',
-                stroke: true,
+(function (hangfire) {
+    hangfire.config = {
+        pollInterval: $("#hangfireConfig").data("pollinterval"),
+        pollUrl: $("#hangfireConfig").data("pollurl"),
+        locale: document.documentElement.lang
+    };
 
+    hangfire.Metrics = (function() {
+        function Metrics() {
+            this._metrics = {};
+        }
+
+        Metrics.prototype.addElement = function(name, element) {
+            if (!(name in this._metrics)) {
+                this._metrics[name] = [];
+            }
+
+            this._metrics[name].push(element);
+        };
+
+        Metrics.prototype.getElements = function(name) {
+            if (!(name in this._metrics)) {
+                return [];
+            }
+
+            return this._metrics[name];
+        };
+
+        Metrics.prototype.getNames = function() {
+            var result = [];
+            var metrics = this._metrics;
+
+            for (var name in metrics) {
+                if (metrics.hasOwnProperty(name)) {
+                    result.push(name);
+                }
+            }
+
+            return result;
+        };
+
+        return Metrics;
+    })();
+
+    var BaseGraph = function () {
+        this.height = 200;
+    };
+
+    BaseGraph.prototype.update = function () {
+        var graph = this._graph;
+
+        var width = $(graph.element).innerWidth();
+        if (width !== graph.width) {
+            graph.configure({
+                width: width,
+                height: this.height
+            });
+        }
+
+        graph.update();
+    };
+
+    BaseGraph.prototype._initGraph = function (element, settings, xSettings, ySettings) {
+        var graph = this._graph = new Rickshaw.Graph($.extend({
+            element: element,
+            width: $(element).innerWidth(),
+            height: this.height,
+            interpolation: 'linear',
+            stroke: true
+        }, settings));
+
+        this._hoverDetail = new Rickshaw.Graph.HoverDetail({
+            graph: graph,
+            yFormatter: function (y) { return Math.floor(y); },
+            xFormatter: function (x) { return moment(new Date(x * 1000)).format("LLLL"); }
+        });
+
+        if (xSettings) {
+            this._xAxis = new Rickshaw.Graph.Axis.Time($.extend({
+              graph: graph,
+              timeFixture: new Rickshaw.Fixtures.Time.Local()
+            }, xSettings));
+        }
+        
+        if (ySettings) {
+            this._yAxis = new Rickshaw.Graph.Axis.Y($.extend({
+                graph: graph,
+                tickFormat: Rickshaw.Fixtures.Number.formatKMBT
+            }, ySettings));
+        }
+
+        graph.render();
+    }
+
+    hangfire.RealtimeGraph = (function() {
+        function RealtimeGraph(element, succeeded, failed, succeededStr, failedStr) {
+            this._succeeded = succeeded;
+            this._failed = failed;
+
+            this._initGraph(element, {
+                renderer: 'bar',
                 series: new Rickshaw.Series.FixedDuration([
-                        { name: 'failed', color: '#d9534f' },
-                        { name: 'succeeded', color: '#5cb85c' }
+                        { name: failedStr, color: '#d9534f' },
+                        { name: succeededStr, color: '#5cb85c' }
                 ],
                     undefined,
                     { timeInterval: 2000, maxDataPoints: 100 }
                 )
-            });
-
-            var xAxis = new Rickshaw.Graph.Axis.Time({ graph: this._graph });
-            var yAxis = new Rickshaw.Graph.Axis.Y({
-                graph: this._graph,
-                tickFormat: Rickshaw.Fixtures.Number.formatKMBT
-            });
-
-            var hoverDetail = new Rickshaw.Graph.HoverDetail({
-                graph: this._graph,
-                yFormatter: function (y) { return Math.floor(y); }
-            });
-
-            this._graph.render();
+            }, null, {});
         }
 
+        RealtimeGraph.prototype = Object.create(BaseGraph.prototype);
+
         RealtimeGraph.prototype.appendHistory = function (statistics) {
+            var newSucceeded = parseInt(statistics["succeeded:count"].intValue);
+            var newFailed = parseInt(statistics["failed:count"].intValue);
+
             if (this._succeeded !== null && this._failed !== null) {
-                var succeeded = statistics.succeeded - this._succeeded;
-                var failed = statistics.failed - this._failed;
+                var succeeded = newSucceeded - this._succeeded;
+                var failed = newFailed - this._failed;
 
                 this._graph.series.addData({ failed: failed, succeeded: succeeded });
                 this._graph.render();
             }
             
-            this._succeeded = statistics.succeeded;
-            this._failed = statistics.failed;
-        };
-
-        RealtimeGraph.prototype.update = function() {
-            this._graph.update();
+            this._succeeded = newSucceeded;
+            this._failed = newFailed;
         };
 
         return RealtimeGraph;
     })();
 
-    hangFire.HistoryGraph = (function() {
-        function HistoryGraph(element, succeeded, failed) {
-            this._graph = new Rickshaw.Graph({
-                element: element,
-                width: $(element).innerWidth(),
-                height: 200,
+    hangfire.HistoryGraph = (function() {
+        function HistoryGraph(element, succeeded, failed, succeededStr, failedStr) {
+            this._initGraph(element, {
                 renderer: 'area',
-                interpolation: 'linear',
-                stroke: true,
                 series: [
                     {
                         color: '#d9534f',
                         data: failed,
-                        name: 'Failed'
+                        name: failedStr
                     }, {
                         color: '#6ACD65',
                         data: succeeded,
-                        name: 'Succeeded'
+                        name: succeededStr
                     }
                 ]
-            });
-
-            var xAxis = new Rickshaw.Graph.Axis.Time({ graph: this._graph });
-            var yAxis = new Rickshaw.Graph.Axis.Y({
-                graph: this._graph,
-                tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
-                tickTreatment: 'glow'
-            });
-            
-            var hoverDetail = new Rickshaw.Graph.HoverDetail({
-                graph: this._graph,
-                yFormatter: function(y) { return Math.floor(y); }
-            });
-
-            this._graph.render();
+            }, {}, { ticksTreatment: 'glow' });
         }
 
-        HistoryGraph.prototype.update = function() {
-            this._graph.update();
-        };
+        HistoryGraph.prototype = Object.create(BaseGraph.prototype);
 
         return HistoryGraph;
     })();
 
-    hangFire.StatisticsPoller = (function() {
-        function StatisticsPoller(statisticsUrl, pollInterval) {
+    hangfire.StatisticsPoller = (function() {
+        function StatisticsPoller(metricsCallback, statisticsUrl, pollInterval) {
+            this._metricsCallback = metricsCallback;
             this._listeners = [];
             this._statisticsUrl = statisticsUrl;
             this._pollInterval = pollInterval;
@@ -109,17 +164,18 @@
 
         StatisticsPoller.prototype.start = function () {
             var self = this;
-            
-            this._intervalId = setInterval(function () {
+
+            var intervalFunc = function() {
                 try {
-                    $.getJSON(self._statisticsUrl, null, function (data) {
+                    $.post(self._statisticsUrl, { metrics: self._metricsCallback() }, function(data) {
                         self._notifyListeners(data);
                     });
                 } catch (e) {
                     console.log(e);
                 }
+            };
 
-            }, this._pollInterval);
+            this._intervalId = setInterval(intervalFunc, this._pollInterval);
         };
 
         StatisticsPoller.prototype.stop = function() {
@@ -145,49 +201,40 @@
         return StatisticsPoller;
     })();
 
-    hangFire.Page = (function() {
+    hangfire.Page = (function() {
         function Page(config) {
-            this._poller = new Hangfire.StatisticsPoller(
-                config.pollUrl, config.pollInterval);
-
-            this._createGraphs();
-            this._registerStatisticsUpdater();
-
-            this._poller.start();
-
-            this._initialize();
-        }
-
-        Page.prototype._createGraphs = function() {
-            this.realtimeGraph = this._createRealtimeGraph('realtimeGraph');
-            this.historyGraph = this._createHistoryGraph('historyGraph');
-            
-            var debounce = function (fn, timeout) {
-                var timeoutId = -1;
-                return function() {
-                    if (timeoutId > -1) {
-                        window.clearTimeout(timeoutId);
-                    }
-                    timeoutId = window.setTimeout(fn, timeout);
-                };
-            };
+            this._metrics = new Hangfire.Metrics();
 
             var self = this;
-            window.onresize = debounce(function () {
-                $('#realtimeGraph').html('');
-                $('#historyGraph').html('');
+            this._poller = new Hangfire.StatisticsPoller(
+                function () { return self._metrics.getNames(); },
+                config.pollUrl,
+                config.pollInterval);
 
-                self._createGraphs();
-            }, 125);
+            this._initialize(config.locale);
+
+            this.realtimeGraph = this._createRealtimeGraph('realtimeGraph');
+            this.historyGraph = this._createHistoryGraph('historyGraph');
+
+            this._poller.start();
         };
 
         Page.prototype._createRealtimeGraph = function(elementId) {
             var realtimeElement = document.getElementById(elementId);
             if (realtimeElement) {
-                var realtimeGraph = new Hangfire.RealtimeGraph(realtimeElement);
+                var succeeded = parseInt($(realtimeElement).data('succeeded'));
+                var failed = parseInt($(realtimeElement).data('failed'));
+
+                var succeededStr = $(realtimeElement).data('succeeded-string');
+                var failedStr = $(realtimeElement).data('failed-string');
+                var realtimeGraph = new Hangfire.RealtimeGraph(realtimeElement, succeeded, failed, succeededStr, failedStr);
 
                 this._poller.addListener(function (data) {
                     realtimeGraph.appendHistory(data);
+                });
+
+                $(window).resize(function() {
+                    realtimeGraph.update();
                 });
 
                 return realtimeGraph;
@@ -214,23 +261,23 @@
                 var succeeded = createSeries($(historyElement).data("succeeded"));
                 var failed = createSeries($(historyElement).data("failed"));
 
-                return new Hangfire.HistoryGraph(historyElement, succeeded, failed);
+                var succeededStr = $(historyElement).data('succeeded-string');
+                var failedStr = $(historyElement).data('failed-string');
+
+                var historyGraph = new Hangfire.HistoryGraph(historyElement, succeeded, failed, succeededStr, failedStr);
+
+                $(window).resize(function () {
+                    historyGraph.update();
+                });
+
+                return historyGraph;
             }
 
             return null;
         };
 
-        Page.prototype._registerStatisticsUpdater = function() {
-            this._poller.addListener(function (data) {
-                for (var property in data) {
-                    if (data.hasOwnProperty(property)) {
-                        $('#stats-' + property).text(data[property]);
-                    }
-                }
-            });
-        };
-
-        Page.prototype._initialize = function() {
+        Page.prototype._initialize = function (locale) {
+            moment.locale(locale);
             var updateRelativeDates = function () {
                 $('*[data-moment]').each(function () {
                     var $this = $(this);
@@ -254,6 +301,16 @@
                             .attr('data-container', 'body');
                     }
                 });
+
+                $('*[data-moment-local]').each(function () {
+                    var $this = $(this);
+                    var timestamp = $this.data('moment-local');
+
+                    if (timestamp) {
+                        var time = moment(timestamp, 'X');
+                        $this.html(time.format('l LTS'));
+                    }
+                });
             };
 
             updateRelativeDates();
@@ -261,18 +318,42 @@
 
             $('*[title]').tooltip();
 
+            var self = this;
+            $('*[data-metric]').each(function () {
+                var name = $(this).data('metric');
+                self._metrics.addElement(name, this);
+            });
+
+            this._poller.addListener(function (metrics) {
+                for (var name in metrics) {
+                    var elements = self._metrics.getElements(name);
+                    for (var i = 0; i < elements.length; i++) {
+                        var metric = metrics[name];
+                        var metricClass = metric ? "metric-" + metric.style : "metric-null";
+                        var highlighted = metric && metric.highlighted ? "highlighted" : null;
+                        var value = metric ? metric.value : null;
+
+                        $(elements[i])
+                            .text(value)
+                            .closest('.metric')
+                            .removeClass()
+                            .addClass(["metric", metricClass, highlighted].join(' '));
+                    }
+                }
+            });
+
             $(document).on('click', '*[data-ajax]', function (e) {
                 var $this = $(this);
                 var confirmText = $this.data('confirm');
 
                 if (!confirmText || confirm(confirmText)) {
+                    $this.prop('disabled');
                     var loadingDelay = setTimeout(function() {
                         $this.button('loading');
                     }, 100);
 
                     $.post($this.data('ajax'), function() {
                         clearTimeout(loadingDelay);
-                        $this.button('reset');
                         window.location.reload();
                     });
                 }
@@ -281,7 +362,20 @@
             });
 
             $(document).on('click', '.expander', function (e) {
-                $(this).closest('tr').next().find('.expandable').slideToggle(150);
+                var $expander = $(this),
+                    $expandable = $expander.closest('tr').next().find('.expandable');
+
+                if (!$expandable.is(':visible')) {
+                    $expander.text('Less details...');
+                }
+
+				$expandable.slideToggle(
+					150, 
+					function() {
+					    if (!$expandable.is(':visible')) {
+					        $expander.text('More details...');
+					    }
+					});
                 e.preventDefault();
             });
 
@@ -369,13 +463,13 @@
                     }).get();
 
                     if (!confirmText || confirm(confirmText)) {
+                        $this.prop('disabled');
                         var loadingDelay = setTimeout(function () {
                             $this.button('loading');
                         }, 100);
 
                         $.post($this.data('url'), { 'jobs[]': jobs }, function () {
                             clearTimeout(loadingDelay);
-                            $this.button('reset');
                             window.location.reload();
                         });
                     }

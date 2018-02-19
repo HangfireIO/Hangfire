@@ -1,5 +1,5 @@
 root = true
 
-[*.cs]
+[*.cs,*.ps1]
 indent_style = space
 indent_size = 4

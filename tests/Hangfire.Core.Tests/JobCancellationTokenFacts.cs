@@ -17,7 +17,8 @@ namespace Hangfire.Core.Tests
         {
             var token = new JobCancellationToken(false);
 
-            Assert.DoesNotThrow(token.ThrowIfCancellationRequested);
+            // Does not throw
+            token.ThrowIfCancellationRequested();
         }
 
         [Fact]

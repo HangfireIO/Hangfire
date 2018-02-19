@@ -24,29 +24,29 @@ namespace Hangfire.Storage
     public interface IWriteOnlyTransaction : IDisposable
     {
         // Job operations
-        void ExpireJob(string jobId, TimeSpan expireIn);
-        void PersistJob(string jobId);
-        void SetJobState(string jobId, IState state);
-        void AddJobState(string jobId, IState state);
+        void ExpireJob([NotNull] string jobId, TimeSpan expireIn);
+        void PersistJob([NotNull] string jobId);
+        void SetJobState([NotNull] string jobId, [NotNull] IState state);
+        void AddJobState([NotNull] string jobId, [NotNull] IState state);
 
         // Queue operations
-        void AddToQueue(string queue, string jobId);
+        void AddToQueue([NotNull] string queue, [NotNull] string jobId);
 
         // Counter operations
-        void IncrementCounter(string key);
-        void IncrementCounter(string key, TimeSpan expireIn);
-        void DecrementCounter(string key);
-        void DecrementCounter(string key, TimeSpan expireIn);
+        void IncrementCounter([NotNull] string key);
+        void IncrementCounter([NotNull] string key, TimeSpan expireIn);
+        void DecrementCounter([NotNull] string key);
+        void DecrementCounter([NotNull] string key, TimeSpan expireIn);
 
         // Set operations
-        void AddToSet(string key, string value);
-        void AddToSet(string key, string value, double score);
-        void RemoveFromSet(string key, string value);
+        void AddToSet([NotNull] string key, [NotNull] string value);
+        void AddToSet([NotNull] string key, [NotNull] string value, double score);
+        void RemoveFromSet([NotNull] string key, [NotNull] string value);
 
         // List operations
-        void InsertToList(string key, string value);
-        void RemoveFromList(string key, string value);
-        void TrimList(string key, int keepStartingFrom, int keepEndingAt);
+        void InsertToList([NotNull] string key, [NotNull] string value);
+        void RemoveFromList([NotNull] string key, [NotNull] string value);
+        void TrimList([NotNull] string key, int keepStartingFrom, int keepEndingAt);
 
         // Hash operations
         void SetRangeInHash([NotNull] string key, [NotNull] IEnumerable<KeyValuePair<string, string>> keyValuePairs);

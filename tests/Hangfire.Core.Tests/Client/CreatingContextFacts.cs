@@ -40,8 +40,8 @@ namespace Hangfire.Core.Tests.Client
         {
             var context = CreateContext();
 
-            Assert.DoesNotThrow(
-                () => context.SetJobParameter("name", null));
+            // Does noto throw
+            context.SetJobParameter("name", null);
         }
 
         [Fact]
@@ -50,8 +50,8 @@ namespace Hangfire.Core.Tests.Client
             var context = CreateContext();
             context.SetJobParameter("name", null);
 
-            Assert.DoesNotThrow(
-                () => context.SetJobParameter("name", null));
+            // Does not throw
+            context.SetJobParameter("name", null);
         }
 
         [Fact]
@@ -117,11 +117,12 @@ namespace Hangfire.Core.Tests.Client
 
         private CreatingContext CreateContext()
         {
+            var storage = new Mock<JobStorage>();
             var connection = new Mock<IStorageConnection>();
             var job = Job.FromExpression(() => TestMethod());
             var state = new Mock<IState>();
 
-            var createContext = new CreateContext(connection.Object, job, state.Object);
+            var createContext = new CreateContext(storage.Object, connection.Object, job, state.Object);
             return new CreatingContext(createContext);            
         }
     }

@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Hangfire.AspNetCore</id>
+    <version>0.0.0</version>
+    <title>Hangfire ASP.NET Core Support</title>
+    <authors>Sergey Odinokov</authors>
+    <owners>odinserj</owners>
+    <projectUrl>http://hangfire.io/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
+    <description>ASP.NET Core support for Hangfire (background job system for ASP.NET applications).</description>
+    <copyright>Copyright © 2017 Sergey Odinokov</copyright>
+    <tags>hangfire aspnetcore</tags>
+    <releaseNotes>http://hangfire.io/blog/
+    
+1.6.13
+• Fixed – Types are resolved using the `GetServiceOrCreateInstance` method (by @Tsabo).
+    
+1.6.7
+• Fixed – Parameterless AspNetCoreJobActivator.BeginScope method now returns a correct instance (by @pieceofsummer).
+    
+1.6.1
+• Fixed – Add missing `GetHttpContext` extension method for the .NET Core platform.
+    
+1.6.0
+• Added – Deep integration with ASP.NET Core via Hangfire.AspNetCore package.
+    </releaseNotes>
+    <dependencies>
+      <group targetFramework="net451">
+        <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="1.0.0" />
+        <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="1.0.0" />
+        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="1.0.0" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="1.0.0" />
+        <dependency id="Hangfire.Core" version="[0.0.0]" />
+      </group>
+      <group targetFramework="netstandard1.3">
+        <dependency id="Microsoft.NETCore.Portable.Compatibility" version="1.0.1" />
+        <dependency id="NETStandard.Library" version="1.6.0" />
+        <dependency id="System.ComponentModel" version="4.0.1" />
+        <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="1.0.0" />
+        <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="1.0.0" />
+        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="1.0.0" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="1.0.0" />
+        <dependency id="Hangfire.Core" version="[0.0.0]" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="net451\Hangfire.AspNetCore.dll" target="lib\net451" />
+    <file src="net451\Hangfire.AspNetCore.xml" target="lib\net451" />
+    <file src="net451\Hangfire.AspNetCore.pdb" target="lib\net451" />
+
+    <file src="netstandard1.3\Hangfire.AspNetCore.dll" target="lib\netstandard1.3" />
+    <file src="netstandard1.3\Hangfire.AspNetCore.xml" target="lib\netstandard1.3" />
+    <file src="netstandard1.3\Hangfire.AspNetCore.pdb" target="lib\netstandard1.3" />
+    
+    <file src="..\src\Hangfire.AspNetCore\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
+  </files>
+</package>

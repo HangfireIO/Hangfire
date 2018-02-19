@@ -1,22 +1,13 @@
-﻿@* Generator: Template TypeVisibility: Internal *@
-@using System
+﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
 @using System.Collections
 @using System.Collections.Generic
-@using Hangfire.Common
+@using Hangfire
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
-@using Hangfire.Storage.Monitoring
+@using Hangfire.Dashboard.Resources
 @inherits RazorPage
 @{
-    Layout = new LayoutPage
-        {
-            Title = Queue.ToUpperInvariant(),
-            Subtitle = "Enqueued jobs",
-            Breadcrumbs = new Dictionary<string, string>
-                {
-                    { "Queues", LinkTo("/queues") }
-                }
-        };
+    Layout = new LayoutPage(Queue.ToUpperInvariant());
 
     int from, perPage;
 
@@ -24,90 +15,113 @@
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    Pager pager = new Pager(from, perPage, monitor.EnqueuedCount(Queue))
-    {
-        BasePageUrl = LinkTo("/queues/" + Queue)
-    };
-
-    JobList<EnqueuedJobDto> enqueuedJobs = monitor
-        .EnqueuedJobs(Queue, pager.FromRecord, pager.RecordsPerPage);
+    var pager = new Pager(from, perPage, monitor.EnqueuedCount(Queue));
+    var enqueuedJobs = monitor.EnqueuedJobs(Queue, pager.FromRecord, pager.RecordsPerPage);
 }
 
-@if (pager.TotalPageCount == 0)
-{
-    <div class="alert alert-info">
-        The queue is empty.
+<div class="row">
+    <div class="col-md-3">
+        @Html.JobsSidebar()
     </div>
-}
-else
-{
-    <div class="js-jobs-list">
-        <div class="btn-toolbar btn-toolbar-top">
-            <button class="js-jobs-list-command btn btn-sm btn-default"
-                    data-url="@LinkTo("/enqueued/delete")"
-                    data-loading-text="Deleting..."
-                    data-confirm="Do you really want to DELETE ALL selected jobs?">
-                <span class="glyphicon glyphicon-remove"></span>
-                Delete selected
-            </button>
+    <div class="col-md-9">
+        @Html.Breadcrumbs(Queue.ToUpperInvariant(), new Dictionary<string, string>
+        {
+            { "Queues", Url.LinkToQueues() }
+        })
 
-            @RenderPartial(new PerPageSelector(pager))
-        </div>
+        <h1 class="page-header">@Queue.ToUpperInvariant() <small>@Strings.EnqueuedJobsPage_Title</small></h1>
 
-        <table class="table">
-            <thead>
-                <tr>
-                    <th class="min-width">
-                        <input type="checkbox" class="js-jobs-list-select-all" />
-                    </th>
-                    <th class="min-width">Id</th>
-                    <th class="min-width">State</th>
-                    <th>Job</th>
-                    <th class="align-right">Enqueued</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var job in enqueuedJobs)
-                {
-                    <tr class="js-jobs-list-row hover @(!job.Value.InEnqueuedState ? "obsolete-data" : null)">
-                        <td>
-                            <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
-                        </td>
-                        <td class="min-width">
-                            <a href="@LinkTo("/job/" + job.Key)">
-                                @HtmlHelper.JobId(job.Key)
-                            </a>
-                            @if (!job.Value.InEnqueuedState)
+        @if (pager.TotalPageCount == 0)
+        {
+            <div class="alert alert-info">
+                @Strings.EnqueuedJobsPage_NoJobs
+            </div>
+        }
+        else
+        {
+            <div class="js-jobs-list">
+                <div class="btn-toolbar btn-toolbar-top">
+                    @if (!IsReadOnly)
+                    {
+                        <button class="js-jobs-list-command btn btn-sm btn-default"
+                                data-url="@Url.To("/jobs/enqueued/delete")"
+                                data-loading-text="@Strings.Common_Deleting"
+                                data-confirm="@Strings.Common_DeleteConfirm"
+                                disabled="disabled">
+                            <span class="glyphicon glyphicon-remove"></span>
+                            @Strings.Common_DeleteSelected
+                        </button>
+                    }
+                    @Html.PerPageSelector(pager)
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            @if (!IsReadOnly)
                             {
-                                <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
+                                <th class="min-width">
+                                    <input type="checkbox" class="js-jobs-list-select-all"/>
+                                </th>
                             }
-                        </td>
-                        <td class="min-width">
-                            <span class="label label-default" style="@(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.Value.State) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.Value.State]) : null)">
-                                @job.Value.State
-                            </span>
-                        </td>
-                        <td>
-                            <a class="job-method" href="@LinkTo("/job/" + job.Key)">
-                                @HtmlHelper.DisplayJob(job.Value.Job)
-                            </a>
-                        </td>
-                        <td class="align-right">
-                            @if (job.Value.EnqueuedAt.HasValue)
-                            {
-                                <span data-moment="@JobHelper.ToTimestamp(job.Value.EnqueuedAt.Value)">
-                                    @job.Value.EnqueuedAt
-                                </span>
-                            }
-                            else
-                            {
-                                <em>n/a</em>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                            <th class="min-width">@Strings.Common_Id</th>
+                            <th class="min-width">@Strings.Common_State</th>
+                            <th>@Strings.Common_Job</th>
+                            <th class="align-right">@Strings.Common_Enqueued</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var job in enqueuedJobs)
+                        {
+                            <tr class="js-jobs-list-row hover @(job.Value == null || !job.Value.InEnqueuedState ? "obsolete-data" : null)">
+                                @if (!IsReadOnly)
+                                {
+                                    <td>
+                                        @if (job.Value != null)
+                                        {
+                                            <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
+                                        }
+                                    </td>
+                                }
+                                <td class="min-width">
+                                    @Html.JobIdLink(job.Key)
+                                    @if (job.Value != null && !job.Value.InEnqueuedState)
+                                    {
+                                        <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
+                                    }
+                                </td>
+                                @if (job.Value == null)
+                                {
+                                    <td colspan="3"><em>@Strings.Common_JobExpired</em></td>
+                                }
+                                else
+                                {
+                                    <td class="min-width">
+                                        @Html.StateLabel(job.Value.State)
+                                    </td>
+                                    <td class="word-break">
+                                        @Html.JobNameLink(job.Key, job.Value.Job)
+                                    </td>
+                                    <td class="align-right">
+                                        @if (job.Value.EnqueuedAt.HasValue)
+                                        {
+                                            @Html.RelativeTime(job.Value.EnqueuedAt.Value)
+                                        }
+                                        else
+                                        {
+                                            <em>@Strings.Common_NotAvailable</em>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+
+                @Html.Paginator(pager)
+            </div>
+        }
     </div>
-    @RenderPartial(new Paginator(pager))
-}
+</div>

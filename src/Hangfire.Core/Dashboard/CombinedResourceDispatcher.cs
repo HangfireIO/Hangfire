@@ -16,7 +16,6 @@
 
 using System.Reflection;
 using Hangfire.Annotations;
-using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
@@ -37,14 +36,14 @@ namespace Hangfire.Dashboard
             _resourceNames = resourceNames;
         }
 
-        protected override void WriteResponse(IOwinResponse response)
+        protected override void WriteResponse(DashboardResponse response)
         {
             foreach (var resourceName in _resourceNames)
             {
                 WriteResource(
                     response,
                     _assembly,
-                    string.Format("{0}.{1}", _baseNamespace, resourceName));
+                    $"{_baseNamespace}.{resourceName}");
             }
         }
     }

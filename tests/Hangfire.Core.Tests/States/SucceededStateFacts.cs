@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Threading;
 using Hangfire.Common;
 using Hangfire.States;
 using Xunit;
@@ -42,6 +44,19 @@ namespace Hangfire.Core.Tests.States
 
             Assert.False(data.ContainsKey("Result"));
         }
+
+#if NETFULL
+        [Fact]
+        public void SerializeData_CorrectlyHandlesResults_ThatCantBeSerialized()
+        {
+            var process = new Process();
+            var state = new SucceededState(process, 0, 0);
+
+            var data = state.SerializeData();
+
+            Assert.Contains("Can not serialize", data["Result"]);
+        }
+#endif
 
         [Fact]
         public void IsFinal_ReturnsTrue()

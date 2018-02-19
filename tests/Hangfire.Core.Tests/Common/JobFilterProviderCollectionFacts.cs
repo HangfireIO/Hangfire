@@ -31,7 +31,7 @@ namespace Hangfire.Core.Tests.Common
             // Arrange
             var filter = new JobFilter(new Object(), JobFilterScope.Method, null);
             var provider = new Mock<IJobFilterProvider>(MockBehavior.Strict);
-            var collection = new JobFilterProviderCollection(new[] { provider.Object });
+            var collection = new JobFilterProviderCollection(provider.Object);
             provider.Setup(p => p.GetFilters(_job)).Returns(new[] { filter });
 
             // Act
@@ -51,7 +51,7 @@ namespace Hangfire.Core.Tests.Common
             var earlyActionFilter = new JobFilter(new Object(), JobFilterScope.Method, -100);
             var lateGlobalFilter = new JobFilter(new Object(), JobFilterScope.Global, 100);
             var provider = new Mock<IJobFilterProvider>(MockBehavior.Strict);
-            var collection = new JobFilterProviderCollection(new[] { provider.Object });
+            var collection = new JobFilterProviderCollection(provider.Object);
             provider.Setup(p => p.GetFilters(_job))
                 .Returns(new[] { actionFilter, controllerFilter, globalFilter, earlyActionFilter, lateGlobalFilter });
 
@@ -67,7 +67,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Same(lateGlobalFilter, result[4]);
         }
 
-        [AttributeUsage(AttributeTargets.All, AllowMultiple = false)]
+        [AttributeUsage(AttributeTargets.All)]
         private class AllowMultipleFalseAttribute : JobFilterAttribute
         {
         }
@@ -80,7 +80,7 @@ namespace Hangfire.Core.Tests.Common
             var controllerFilter = new JobFilter(new AllowMultipleFalseAttribute(), JobFilterScope.Type, null);
             var actionFilter = new JobFilter(new AllowMultipleFalseAttribute(), JobFilterScope.Method, null);
             var provider = new Mock<IJobFilterProvider>(MockBehavior.Strict);
-            var collection = new JobFilterProviderCollection(new[] { provider.Object });
+            var collection = new JobFilterProviderCollection(provider.Object);
             provider.Setup(p => p.GetFilters(_job))
                 .Returns(new[] { controllerFilter, actionFilter, globalFilter });
 
@@ -104,7 +104,7 @@ namespace Hangfire.Core.Tests.Common
             var controllerFilter = new JobFilter(new AllowMultipleTrueAttribute(), JobFilterScope.Type, null);
             var actionFilter = new JobFilter(new AllowMultipleTrueAttribute(), JobFilterScope.Method, null);
             var provider = new Mock<IJobFilterProvider>(MockBehavior.Strict);
-            var collection = new JobFilterProviderCollection(new[] { provider.Object });
+            var collection = new JobFilterProviderCollection(provider.Object);
             provider.Setup(p => p.GetFilters(_job))
                 .Returns(new[] { controllerFilter, actionFilter, globalFilter });
 
@@ -124,8 +124,8 @@ namespace Hangfire.Core.Tests.Common
                 AllowMultiple = allowMultiple;
             }
 
-            public bool AllowMultiple { get; private set; }
-            public int Order { get { return -1; } }
+            public bool AllowMultiple { get; }
+            public int Order => -1;
         }
 
         [Fact]
@@ -136,7 +136,7 @@ namespace Hangfire.Core.Tests.Common
             var controllerFilter = new JobFilter(new AllowMultipleCustomFilter(false), JobFilterScope.Type, null);
             var actionFilter = new JobFilter(new AllowMultipleCustomFilter(false), JobFilterScope.Method, null);
             var provider = new Mock<IJobFilterProvider>(MockBehavior.Strict);
-            var collection = new JobFilterProviderCollection(new[] { provider.Object });
+            var collection = new JobFilterProviderCollection(provider.Object);
             provider.Setup(p => p.GetFilters(_job))
                 .Returns(new[] { controllerFilter, actionFilter, globalFilter });
 
@@ -155,7 +155,7 @@ namespace Hangfire.Core.Tests.Common
             var controllerFilter = new JobFilter(new AllowMultipleCustomFilter(true), JobFilterScope.Type, null);
             var actionFilter = new JobFilter(new AllowMultipleCustomFilter(true), JobFilterScope.Method, null);
             var provider = new Mock<IJobFilterProvider>(MockBehavior.Strict);
-            var collection = new JobFilterProviderCollection(new[] { provider.Object });
+            var collection = new JobFilterProviderCollection(provider.Object);
             provider.Setup(p => p.GetFilters(_job))
                 .Returns(new[] { controllerFilter, actionFilter, globalFilter });
 

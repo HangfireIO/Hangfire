@@ -14,30 +14,48 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Owin;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 
 namespace Hangfire.Dashboard
 {
-    internal class JsonStats : IRequestDispatcher
+    internal class JsonStats : IDashboardDispatcher
     {
-        public Task Dispatch(RequestDispatcherContext context)
+        public async Task Dispatch(DashboardContext context)
         {
-            var owinContext = new OwinContext(context.OwinEnvironment);
+            var requestedMetrics = await context.Request.GetFormValuesAsync("metrics[]");
+            var page = new StubPage();
+            page.Assign(context);
 
-            var monitoring = context.JobStorage.GetMonitoringApi();
-            var response = monitoring.GetStatistics();
+            var metrics = DashboardMetrics.GetMetrics().Where(x => requestedMetrics.Contains(x.Name));
+            var result = new Dictionary<string, Metric>();
+
+            foreach (var metric in metrics)
+            {
+                var value = metric.Func(page);
+                result.Add(metric.Name, value);
+            }
 
             var settings = new JsonSerializerSettings
             {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                Converters = new JsonConverter[]{ new StringEnumConverter { CamelCaseText = true } }
             };
-            var serialized = JsonConvert.SerializeObject(response, settings);
+            var serialized = JsonConvert.SerializeObject(result, settings);
 
-            owinContext.Response.ContentType = "application/json";
-            return owinContext.Response.WriteAsync(serialized);
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(serialized);
+        }
+
+        private class StubPage : RazorPage
+        {
+            public override void Execute()
+            {
+            }
         }
     }
 }

@@ -1,14 +1,8 @@
-﻿using System;
-using System.Linq;
-using Hangfire.Server;
-using Moq;
-using Xunit;
-
-namespace Hangfire.Core.Tests
+﻿namespace Hangfire.Core.Tests
 {
     public class BackgroundJobServerFacts
     {
-        private readonly Mock<JobStorage> _storage;
+        /*private readonly Mock<JobStorage> _storage;
         private readonly Mock<IServerSupervisor> _supervisor;
         private readonly Mock<BackgroundJobServer> _serverMock;
         private readonly BackgroundJobServerOptions _options;
@@ -23,7 +17,7 @@ namespace Hangfire.Core.Tests
             {
                 CallBase = true
             };
-            _serverMock.Setup(x => x.GetBootstrapSupervisor()).Returns(_supervisor.Object);
+            _serverMock.Setup(x => x.GetBootstrapTask()).Returns(_supervisor.Object);
         }
 
         [Fact]
@@ -68,19 +62,10 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void Start_StartsTheBootstrapSupervisor()
+        public void Ctor_StartsTheBootstrapSupervisor()
         {
-            _serverMock.Object.Start();
-
+            var instance = _serverMock.Object;
             _supervisor.Verify(x => x.Start());
-        }
-
-        [Fact]
-        public void Stop_StopsTheBootstrapSupervisor()
-        {
-            _serverMock.Object.Stop();
-
-            _supervisor.Verify(x => x.Stop());
         }
 
         [Fact]
@@ -98,7 +83,7 @@ namespace Hangfire.Core.Tests
             var server = CreateServer();
 
             // Act
-            var supervisor = server.GetBootstrapSupervisor();
+            var supervisor = server.GetBootstrapTask();
 
             // Assert
             Assert.NotNull(supervisor);
@@ -126,10 +111,10 @@ namespace Hangfire.Core.Tests
                 .Select(x => x.GetType())
                 .ToArray();
 
-            Assert.Contains(typeof(WorkerManager), componentTypes);
+            Assert.Contains(typeof(Worker), componentTypes);
             Assert.Contains(typeof(ServerHeartbeat), componentTypes);
             Assert.Contains(typeof(ServerWatchdog), componentTypes);
-            Assert.Contains(typeof(SchedulePoller), componentTypes);
+            Assert.Contains(typeof(DelayedJobSchedulerFacts), componentTypes);
         }
 
         [Fact]
@@ -161,10 +146,7 @@ namespace Hangfire.Core.Tests
 
         private void StartServer(Func<BackgroundJobServer> createFunc)
         {
-            using (var server = createFunc())
-            {
-                server.Start();
-            }
-        }
+            using (createFunc()) { }
+        }*/
     }
 }

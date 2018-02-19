@@ -1,0 +1,155 @@
+﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
+@using System
+@using System.Collections.Generic
+@using Hangfire
+@using Hangfire.Common
+@using Hangfire.Dashboard
+@using Hangfire.Dashboard.Pages
+@using Hangfire.Dashboard.Resources
+@using Hangfire.Storage
+@inherits RazorPage
+@{
+    Layout = new LayoutPage(Strings.RetriesPage_Title);
+    
+    int from, perPage;
+
+    int.TryParse(Query("from"), out from);
+    int.TryParse(Query("count"), out perPage);
+
+    Pager pager = null;
+    List<string> jobIds = null;
+
+    using (var connection = Storage.GetConnection())
+    {
+        var storageConnection = connection as JobStorageConnection;
+
+        if (storageConnection != null)
+        {
+            pager = new Pager(@from, perPage, storageConnection.GetSetCount("retries"));
+            jobIds = storageConnection.GetRangeFromSet("retries", pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
+        }
+    }
+}
+
+@if (pager == null)
+{
+    <div class="alert alert-warning">
+        @Html.Raw(String.Format(Strings.RetriesPage_Warning_Html, Url.To("/jobs/scheduled")))
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header">@Strings.RetriesPage_Title</h1>
+            @if (jobIds.Count == 0)
+            {
+                <div class="alert alert-success">
+                    @Strings.RetriesPage_NoJobs
+                </div>
+            }
+            else
+            {
+                <div class="js-jobs-list">
+                    <div class="btn-toolbar btn-toolbar-top">
+                        @if (!IsReadOnly)
+                        {
+                            <button class="js-jobs-list-command btn btn-sm btn-primary"
+                                    data-url="@Url.To("/jobs/scheduled/enqueue")"
+                                    data-loading-text="@Strings.Common_Enqueueing"
+                                    disabled="disabled">
+                                <span class="glyphicon glyphicon-repeat"></span>
+                                @Strings.Common_EnqueueButton_Text
+                            </button>
+                        }
+                        @if (!IsReadOnly)
+                        {
+                            <button class="js-jobs-list-command btn btn-sm btn-default"
+                                    data-url="@Url.To("/jobs/scheduled/delete")"
+                                    data-loading-text="@Strings.Common_Deleting"
+                                    data-confirm="@Strings.Common_DeleteConfirm"
+                                    disabled="disabled">
+                                <span class="glyphicon glyphicon-remove"></span>
+                                @Strings.Common_DeleteSelected
+                            </button>
+                        }
+                        @Html.PerPageSelector(pager)
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    @if (!IsReadOnly)
+                                    {
+                                        <th class="min-width">
+                                            <input type="checkbox" class="js-jobs-list-select-all"/>
+                                        </th>
+                                    }
+                                    <th class="min-width">@Strings.Common_Id</th>
+                                    <th class="min-width">@Strings.Common_State</th>
+                                    <th>@Strings.Common_Job</th>
+                                    <th>@Strings.Common_Reason</th>
+                                    <th class="align-right">@Strings.Common_Retry</th>
+                                    <th class="align-right">@Strings.Common_Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var jobId in jobIds)
+                                {
+                                    JobData jobData;
+                                    StateData stateData;
+
+                                    using (var connection = Storage.GetConnection())
+                                    {
+                                        jobData = connection.GetJobData(jobId);
+                                        stateData = connection.GetStateData(jobId);
+                                    }
+
+                                    <tr class="js-jobs-list-row @(jobData != null ? "hover" : null)">
+                                        @if (!IsReadOnly)
+                                        {
+                                            <td>
+                                                <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@jobId"/>
+                                            </td>
+                                        }
+                                        <td class="min-width">
+                                            @Html.JobIdLink(jobId)
+                                        </td>
+                                        @if (jobData == null)
+                                        {
+                                            <td colspan="5"><em>Job expired.</em></td>
+                                        }
+                                        else
+                                        {
+                                            <td class="min-width">
+                                                @Html.StateLabel(jobData.State)
+                                            </td>
+                                            <td class="word-break">
+                                                @Html.JobNameLink(jobId, jobData.Job)
+                                            </td>
+                                            <td>
+                                                @(stateData?.Reason)
+                                            </td>
+                                            <td class="align-right">
+                                                @if (stateData != null && stateData.Data.ContainsKey("EnqueueAt"))
+                                                {
+                                                    @Html.RelativeTime(JobHelper.DeserializeDateTime(stateData.Data["EnqueueAt"]))
+                                                }
+                                            </td>
+                                            <td class="align-right">
+                                                @Html.RelativeTime(jobData.CreatedAt)
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @Html.Paginator(pager)
+                </div>
+            }
+        </div>
+    </div>
+}

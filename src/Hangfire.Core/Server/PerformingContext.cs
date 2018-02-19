@@ -22,8 +22,7 @@ namespace Hangfire.Server
     /// </summary>
     public class PerformingContext : PerformContext
     {
-        internal PerformingContext(
-            PerformContext context)
+        public PerformingContext(PerformContext context)
             : base(context)
         {
         }

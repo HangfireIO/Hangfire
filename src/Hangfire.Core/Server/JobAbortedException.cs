@@ -18,7 +18,6 @@ using System;
 
 namespace Hangfire.Server
 {
-    [Serializable]
     public class JobAbortedException : OperationCanceledException
     {
     }

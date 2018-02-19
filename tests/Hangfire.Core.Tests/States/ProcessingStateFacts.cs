@@ -8,21 +8,21 @@ namespace Hangfire.Core.Tests.States
 {
     public class ProcessingStateFacts
     {
-        private const int WorkerNumber = 1;
+        private const string WorkerId = "1";
         private const string ServerId = "Server1:4231";
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenServerNameIsNull()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new ProcessingState(null, WorkerNumber));
+                () => new ProcessingState(null, WorkerId));
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenServerNameIsEmpty()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new ProcessingState(String.Empty, WorkerNumber));
+                () => new ProcessingState(String.Empty, WorkerId));
         }
 
         [Fact]
@@ -41,7 +41,7 @@ namespace Hangfire.Core.Tests.States
 
             Assert.Equal(JobHelper.SerializeDateTime(state.StartedAt), data["StartedAt"]);
             Assert.Equal(ServerId, data["ServerId"]);
-            Assert.Equal(WorkerNumber.ToString(CultureInfo.InvariantCulture), data["WorkerNumber"]);
+            Assert.Equal(WorkerId.ToString(), data["WorkerId"]);
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace Hangfire.Core.Tests.States
 
         private ProcessingState CreateState()
         {
-            return new ProcessingState(ServerId, WorkerNumber);
+            return new ProcessingState(ServerId, WorkerId);
         }
     }
 }

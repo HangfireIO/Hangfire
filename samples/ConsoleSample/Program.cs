@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
-using Hangfire.Logging;
-using Hangfire.Logging.LogProviders;
-using Hangfire.SqlServer;
-using Hangfire.SqlServer.Msmq;
 
 namespace ConsoleSample
 {
@@ -13,23 +10,24 @@ namespace ConsoleSample
     {
         public static void Main()
         {
-            LogProvider.SetCurrentLogProvider(new ColouredConsoleLogProvider());
-
-            var sqlServerStorage = new SqlServerStorage(
-                @"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;");
-            sqlServerStorage.UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
-
-            JobStorage.Current = sqlServerStorage;
+            GlobalConfiguration.Configuration
+                .UseColouredConsoleLogProvider()
+                .UseSqlServerStorage(@"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;")
+                .UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
 
             RecurringJob.AddOrUpdate(() => Console.WriteLine("Hello, world!"), Cron.Minutely);
             RecurringJob.AddOrUpdate("hourly", () => Console.WriteLine("Hello"), "25 15 * * *");
+
+            RecurringJob.AddOrUpdate("Hawaiian", () => Console.WriteLine("Hawaiian"),  "15 08 * * *", TimeZoneInfo.FindSystemTimeZoneById("Hawaiian Standard Time"));
+            RecurringJob.AddOrUpdate("UTC", () => Console.WriteLine("UTC"), "15 18 * * *");
+            RecurringJob.AddOrUpdate("Russian", () => Console.WriteLine("Russian"), "15 21 * * *", TimeZoneInfo.Local);
 
             var options = new BackgroundJobServerOptions
             {
                 Queues = new[] { "critical", "default" }
             };
-
-            using (var server = new BackgroundJobServer(options))
+            
+            using (new BackgroundJobServer(options))
             {
                 var count = 1;
 
@@ -42,11 +40,6 @@ namespace ConsoleSample
                         break;
                     }
 
-                    if (command.Equals("start", StringComparison.OrdinalIgnoreCase))
-                    {
-                        server.Start();
-                    }
-
                     if (command.StartsWith("add", StringComparison.OrdinalIgnoreCase))
                     {
                         try
@@ -56,6 +49,23 @@ namespace ConsoleSample
                             {
                                 var number = i;
                                 BackgroundJob.Enqueue<Services>(x => x.Random(number));
+                            }
+                            Console.WriteLine("Jobs enqueued.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
+                    }
+
+                    if (command.StartsWith("async", StringComparison.OrdinalIgnoreCase))
+                    {
+                        try
+                        {
+                            var workCount = int.Parse(command.Substring(6));
+                            for (var i = 0; i < workCount; i++)
+                            {
+                                BackgroundJob.Enqueue<Services>(x => x.Async(CancellationToken.None));
                             }
                             Console.WriteLine("Jobs enqueued.");
                         }
@@ -187,11 +197,28 @@ namespace ConsoleSample
                     {
                         BackgroundJob.Enqueue<GenericServices<string>>(x => x.Method("hello", 1));
                     }
+
+                    if (command.StartsWith("continuations", StringComparison.OrdinalIgnoreCase))
+                    {
+                        WriteString("Hello, Hangfire continuations!");
+                    }
                 }
             }
 
             Console.WriteLine("Press Enter to exit...");
             Console.ReadLine();
+        }
+
+        public static void WriteString(string value)
+        {
+            var lastId = BackgroundJob.Enqueue<Services>(x => x.Write(value[0]));
+
+            for (var i = 1; i < value.Length; i++)
+            {
+                lastId = BackgroundJob.ContinueWith<Services>(lastId, x => x.Write(value[i]));
+            }
+
+            BackgroundJob.ContinueWith<Services>(lastId, x => x.WriteBlankLine());
         }
     }
 }

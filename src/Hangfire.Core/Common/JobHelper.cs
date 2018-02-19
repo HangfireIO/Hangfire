@@ -46,7 +46,7 @@ namespace Hangfire.Common
 
         public static object FromJson(string value, [NotNull] Type type)
         {
-            if (type == null) throw new ArgumentNullException("type");
+            if (type == null) throw new ArgumentNullException(nameof(type));
 
             return value != null
                 ? JsonConvert.DeserializeObject(value, type, _serializerSettings)

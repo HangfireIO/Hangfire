@@ -15,67 +15,97 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Text;
-using Microsoft.Owin;
+using Hangfire.Storage.Monitoring;
 
 namespace Hangfire.Dashboard
 {
-    public abstract class RazorPage 
+    public abstract class RazorPage
     {
-        public static Func<Exception, RazorPage> ExceptionHandler;
+        private Lazy<StatisticsDto> _statisticsLazy;
 
         private readonly StringBuilder _content = new StringBuilder();
-        private string _innerContent;
+        private string _body;
 
-        public RazorPage Layout { get; protected set; }
-        public JobStorage Storage { get; internal set; }
-        public string AppPath { get; internal set; }
-
-        internal IOwinRequest Request { private get; set; }
-        internal IOwinResponse Response { private get; set; }
-
-        public string RequestPath
+        protected RazorPage()
         {
-            get { return Request.Path.Value; }
+            GenerationTime = Stopwatch.StartNew();
+            Html = new HtmlHelper(this);
         }
 
+        public RazorPage Layout { get; protected set; }
+        public HtmlHelper Html { get; private set; }
+        public UrlHelper Url { get; private set; }
+
+        public JobStorage Storage { get; internal set; }
+        public string AppPath { get; internal set; }
+        public int StatsPollingInterval { get; internal set; }
+        public Stopwatch GenerationTime { get; private set; }
+
+        public StatisticsDto Statistics
+        {
+            get
+            {
+                if (_statisticsLazy == null) throw new InvalidOperationException("Page is not initialized.");
+                return _statisticsLazy.Value;
+            }
+        }
+
+        internal DashboardRequest Request { private get; set; }
+        internal DashboardResponse Response { private get; set; }
+
+        public string RequestPath => Request.Path;
+
+        public bool IsReadOnly { get; private set; }
+        
+        /// <exclude />
         public abstract void Execute();
 
         public string Query(string key)
         {
-            return Request.Query[key];
+            return Request.GetQuery(key);
         }
 
-        public string LinkTo(string relativeUrl)
-        {
-            return Request.PathBase + relativeUrl;
-        }
-
-        public string TransformText()
+        public override string ToString()
         {
             return TransformText(null);
         }
 
-        public string TransformText(string innerContent)
+        /// <exclude />
+        public void Assign(RazorPage parentPage)
         {
-            _innerContent = innerContent;
+            Request = parentPage.Request;
+            Response = parentPage.Response;
+            IsReadOnly = parentPage.IsReadOnly;
+            Storage = parentPage.Storage;
+            AppPath = parentPage.AppPath;
+            StatsPollingInterval = parentPage.StatsPollingInterval;
+            Url = parentPage.Url;
 
-            Execute();
-
-            if (Layout != null)
-            {
-                Layout.Request = Request;
-                Layout.Response = Response;
-                Layout.Storage = Storage;
-                Layout.AppPath = AppPath;
-
-                return Layout.TransformText(_content.ToString());
-            }
-
-            return _content.ToString();
+            GenerationTime = parentPage.GenerationTime;
+            _statisticsLazy = parentPage._statisticsLazy;
         }
 
+        internal void Assign(DashboardContext context)
+        {
+            Request = context.Request;
+            Response = context.Response;
+            IsReadOnly = context.IsReadOnly;
+            Storage = context.Storage;
+            AppPath = context.Options.AppPath;
+            StatsPollingInterval = context.Options.StatsPollingInterval;
+            Url = new UrlHelper(context);
+
+            _statisticsLazy = new Lazy<StatisticsDto>(() =>
+            {
+                var monitoring = Storage.GetMonitoringApi();
+                return monitoring.GetStatistics();
+            });
+        }
+
+        /// <exclude />
         protected void WriteLiteral(string textToAppend)
         {
             if (string.IsNullOrEmpty(textToAppend))
@@ -83,26 +113,36 @@ namespace Hangfire.Dashboard
             _content.Append(textToAppend);
         }
 
+        /// <exclude />
         protected virtual void Write(object value)
         {
             if (value == null)
                 return;
             var html = value as NonEscapedString;
-            WriteLiteral(html != null ? html.ToString() : Encode(value.ToString()));
+            WriteLiteral(html?.ToString() ?? Encode(value.ToString()));
         }
 
         protected virtual object RenderBody()
         {
-            return new NonEscapedString(_innerContent);
+            return new NonEscapedString(_body);
         }
 
-        protected NonEscapedString RenderPartial(RazorPage page)
+        private string TransformText(string body)
         {
-            page.Execute();
-            return new NonEscapedString(page._content.ToString());
+            _body = body;
+            
+            Execute();
+            
+            if (Layout != null)
+            {
+                Layout.Assign(this);
+                return Layout.TransformText(_content.ToString());
+            }
+            
+            return _content.ToString();
         }
 
-        private string Encode(string text)
+        private static string Encode(string text)
         {
             return string.IsNullOrEmpty(text)
                        ? string.Empty

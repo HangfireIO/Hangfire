@@ -1,4 +1,6 @@
-﻿namespace Hangfire.Dashboard.Pages
+﻿using Hangfire.Annotations;
+
+namespace Hangfire.Dashboard.Pages
 {
     partial class JobDetailsPage
     {
@@ -7,6 +9,7 @@
             JobId = jobId;
         }
 
-        public string JobId { get; private set; }
+        public string JobId { get; }
+
     }
 }

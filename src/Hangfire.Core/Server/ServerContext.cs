@@ -18,6 +18,12 @@ namespace Hangfire.Server
 {
     public class ServerContext
     {
+        public ServerContext()
+        {
+            Queues = new string[0];
+            WorkerCount = -1;
+        }
+
         public int WorkerCount { get; set; }
         public string[] Queues { get; set; }
     }

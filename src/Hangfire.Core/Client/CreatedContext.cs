@@ -15,6 +15,8 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Hangfire.Annotations;
 
 namespace Hangfire.Client
@@ -25,32 +27,38 @@ namespace Hangfire.Client
     /// </summary>
     public class CreatedContext : CreateContext
     {
-        internal CreatedContext(
+        public CreatedContext(
             [NotNull] CreateContext context, 
-            [CanBeNull] string jobId,
+            [CanBeNull] BackgroundJob backgroundJob,
             bool canceled, 
             [CanBeNull] Exception exception)
             : base(context)
         {
-            JobId = jobId;
+            BackgroundJob = backgroundJob;
             Canceled = canceled;
             Exception = exception;
         }
 
         [CanBeNull]
-        public string JobId { get; private set; }
+        [Obsolete("Please use `BackgroundJob` property instead. Will be removed in 2.0.0.")]
+        public string JobId => BackgroundJob?.Id;
+
+        [CanBeNull]
+        public BackgroundJob BackgroundJob { get; }
+        
+        public override IDictionary<string, object> Parameters => new ReadOnlyDictionary<string, object>(base.Parameters);
 
         /// <summary>
         /// Gets an exception that occurred during the creation of the job.
         /// </summary>
         [CanBeNull]
-        public Exception Exception { get; private set; }
+        public Exception Exception { get; }
 
         /// <summary>
         /// Gets a value that indicates that this <see cref="CreatedContext"/>
         /// object was canceled.
         /// </summary>
-        public bool Canceled { get; private set; }
+        public bool Canceled { get; }
 
         /// <summary>
         /// Gets or sets a value that indicates that this <see cref="CreatedContext"/>
@@ -58,9 +66,9 @@ namespace Hangfire.Client
         /// </summary>
         public bool ExceptionHandled { get; set; }
 
-        public void SetJobParameter(string name, object value)
+        public void SetJobParameter([NotNull] string name, object value)
         {
-            if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("name");
+            if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException(nameof(name));
 
             throw new InvalidOperationException("Could not set parameter for a created job.");
         }

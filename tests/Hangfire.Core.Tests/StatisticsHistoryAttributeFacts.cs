@@ -17,14 +17,20 @@ namespace Hangfire.Core.Tests
         {
             _connection = new Mock<IStorageConnection>();
 
-            _context = new ElectStateContextMock();
-            _context.ConnectionValue = _connection;
-            _context.CandidateStateValue = new SucceededState(null, 11, 123);
-            
             _transaction = new Mock<IWriteOnlyTransaction>();
             _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
 
             _filter = new StatisticsHistoryAttribute();
+
+            _context = new ElectStateContextMock
+            {
+                ApplyContext =
+                {
+                    Connection = _connection,
+                    NewStateObject = new SucceededState(null, 11, 123),
+                    Transaction = _transaction
+                }
+            };
         }
 
         [Fact]
@@ -34,16 +40,6 @@ namespace Hangfire.Core.Tests
             var retryFilter = new AutomaticRetryAttribute();
 
             Assert.True(statisticsHistoryFilter.Order > retryFilter.Order);
-        }
-
-        [Fact]
-        public void OnStateElection_IncrementsCounters_WithinTransaction()
-        {
-            _filter.OnStateElection(_context.Object);
-
-            _connection.Verify(x => x.CreateWriteTransaction(), Times.Once);
-            _transaction.Verify(x => x.Dispose(), Times.Once);
-            _transaction.Verify(x => x.Commit());
         }
 
         [Fact]
@@ -57,7 +53,7 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void OnStateElection_IncrementsCounters_ForFailedState()
         {
-            _context.CandidateStateValue = new FailedState(new InvalidOperationException());
+            _context.ApplyContext.NewStateObject = new FailedState(new InvalidOperationException());
 
             _filter.OnStateElection(_context.Object);
 
@@ -67,7 +63,7 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void OnStateElection_DoesNotCreateTransaction_ForUnsuitableState()
         {
-            _context.CandidateStateValue = new ProcessingState("server", 1);
+            _context.ApplyContext.NewStateObject = new ProcessingState("server", "1");
 
             _filter.OnStateElection(_context.Object);
 

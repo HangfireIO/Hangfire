@@ -91,7 +91,7 @@ namespace Hangfire.Common
     /// но c filter scope, равным <see cref="Type"/>.
     /// 
     /// Значения Scope задаются, в основном, в реализациях интерфейса
-    /// <see cref="IJobFilterProvider"/>. Так, класс <see cref="GlobalJobFilterCollection"/>
+    /// <see cref="IJobFilterProvider"/>. Так, класс <see cref="JobFilterCollection"/>
     /// определяет значение Scope как <see cref="JobFilterScope.Global"/>.
     /// 
     /// Порядок выполнения фильтров одинакового типа, с одинаковым значением

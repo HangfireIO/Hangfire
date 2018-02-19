@@ -80,5 +80,10 @@ namespace Hangfire.Storage
         {
             throw new NotSupportedException();
         }
+
+        public virtual void RemoveSet([NotNull] string key)
+        {
+            throw new NotSupportedException();
+        }
     }
 }

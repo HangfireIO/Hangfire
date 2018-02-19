@@ -14,12 +14,13 @@ namespace Hangfire.Core.Tests.Client
 
         public ClientExceptionContextFacts()
         {
+            var storage = new Mock<JobStorage>();
             var connection = new Mock<IStorageConnection>();
             var job = Job.FromExpression(() => TestMethod());
             var state = new Mock<IState>();
 
             _createContext = new CreateContext(
-                connection.Object, job, state.Object);
+                storage.Object, connection.Object, job, state.Object);
         }
 
         [Fact]

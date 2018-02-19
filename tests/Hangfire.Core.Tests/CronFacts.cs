@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Hangfire.Core.Tests
@@ -210,14 +206,6 @@ namespace Hangfire.Core.Tests
             int minute = 45;
             string expected = minute.ToString() + " " + hour.ToString() + " " + day.ToString() + " " + month.ToString() + " *";
             string actual = Cron.Yearly(month, day, hour, minute);
-            Assert.Equal(expected, actual);
-        }
-
-        [Fact]
-        public void GetDescription_ReturnsTheDescription_OfAGivenCron()
-        {
-            string expected = "Every minute";
-            string actual = Cron.GetDescription(Cron.Minutely());
             Assert.Equal(expected, actual);
         }
     }

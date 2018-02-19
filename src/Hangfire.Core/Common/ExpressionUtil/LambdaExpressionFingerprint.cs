@@ -26,7 +26,7 @@ namespace Hangfire.Common.ExpressionUtil
         {
             LambdaExpressionFingerprint other = obj as LambdaExpressionFingerprint;
             return (other != null)
-                   && this.Equals(other);
+                   && Equals(other);
         }
     }
 }

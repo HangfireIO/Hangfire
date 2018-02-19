@@ -15,39 +15,33 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Threading;
 
 namespace Hangfire.Server
 {
-    public class ServerHeartbeat : IServerComponent
+    internal class ServerHeartbeat : IBackgroundProcess
     {
-        private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromSeconds(5);
+        public static readonly TimeSpan DefaultHeartbeatInterval = TimeSpan.FromSeconds(30);
 
-        private readonly JobStorage _storage;
-        private readonly string _serverId;
+        private readonly TimeSpan _heartbeatInterval;
 
-        public ServerHeartbeat(JobStorage storage, string serverId)
+        public ServerHeartbeat(TimeSpan heartbeatInterval)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (serverId == null) throw new ArgumentNullException("serverId");
-
-            _storage = storage;
-            _serverId = serverId;
+            _heartbeatInterval = heartbeatInterval;
         }
 
-        public void Execute(CancellationToken cancellationToken)
+        public void Execute(BackgroundProcessContext context)
         {
-            using (var connection = _storage.GetConnection())
+            using (var connection = context.Storage.GetConnection())
             {
-                connection.Heartbeat(_serverId);
+                connection.Heartbeat(context.ServerId);
             }
 
-            cancellationToken.WaitHandle.WaitOne(HeartbeatInterval);
+            context.Wait(_heartbeatInterval);
         }
 
         public override string ToString()
         {
-            return "Server Heartbeat";
+            return GetType().Name;
         }
     }
 }

@@ -18,11 +18,32 @@ using Hangfire.Storage;
 
 namespace Hangfire.States
 {
+    /// <summary>
+    /// Provides a mechanism for performing custom actions when applying or
+    /// unapplying the state of a background job by <see cref="StateMachine"/>.
+    /// </summary>
     public interface IStateHandler
     {
+        /// <summary>
+        /// Gets the name of a state, for which custom actions will be
+        /// performed.
+        /// </summary>
         string StateName { get; }
 
+        /// <summary>
+        /// Performs additional actions when applying a state whose name is
+        /// equal to the <see cref="StateName"/> property.
+        /// </summary>
+        /// <param name="context">The context of a state applying process.</param>
+        /// <param name="transaction">The current transaction of a state applying process.</param>
         void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction);
+
+        /// <summary>
+        /// Performs additional actions when unapplying a state whose name
+        /// is equal to the <see cref="StateName"/> property.
+        /// </summary>
+        /// <param name="context">The context of a state applying process.</param>
+        /// <param name="transaction">The current transaction of a state applying process.</param>
         void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction);
     }
 }

@@ -17,9 +17,11 @@ namespace Hangfire.Core.Tests.States
 
         public ScheduledStateHandlerFacts()
         {
-            _context = new ApplyStateContextMock();
-            _context.StateContextValue.JobIdValue = JobId;
-            _context.NewStateValue = new ScheduledState(_enqueueAt);
+            _context = new ApplyStateContextMock
+            {
+                BackgroundJob = { Id = JobId },
+                NewStateObject = new ScheduledState(_enqueueAt)
+            };
 
             _transaction = new Mock<IWriteOnlyTransaction>();
         }
@@ -54,7 +56,8 @@ namespace Hangfire.Core.Tests.States
         public void Apply_ThrowsAnException_WhenGivenStateIsNotScheduledState()
         {
             var handler = new ScheduledState.Handler();
-            _context.NewStateValue = new Mock<IState>().Object;
+            _context.NewStateObject = null;
+            _context.NewState = new Mock<IState>();
 
             Assert.Throws<InvalidOperationException>(
                 () => handler.Apply(_context.Object, _transaction.Object));

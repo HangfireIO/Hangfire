@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Threading;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Hangfire.Core.Tests
 {

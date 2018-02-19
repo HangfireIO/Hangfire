@@ -15,22 +15,42 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Hangfire.Annotations;
 using Hangfire.States;
 
 namespace Hangfire.SqlServer.Msmq
 {
     public static class MsmqSqlServerStorageExtensions
     {
-        public static SqlServerStorage UseMsmqQueues(this SqlServerStorage storage, string pathPattern)
+        public static SqlServerStorage UseMsmqQueues(
+            [NotNull] this SqlServerStorage storage,
+            [NotNull] string pathPattern)
         {
-            return UseMsmqQueues(storage, pathPattern, new []{ EnqueuedState.DefaultQueue });
+            return UseMsmqQueues(storage, pathPattern, EnqueuedState.DefaultQueue);
         }
 
-        public static SqlServerStorage UseMsmqQueues(this SqlServerStorage storage, string pathPattern, params string[] queues)
+        public static SqlServerStorage UseMsmqQueues(
+            [NotNull] this SqlServerStorage storage,
+            [NotNull] string pathPattern,
+            params string[] queues)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
+            return UseMsmqQueues(storage, MsmqTransactionType.Internal, pathPattern, queues);
+        }
 
-            var provider = new MsmqJobQueueProvider(pathPattern, queues);
+        public static SqlServerStorage UseMsmqQueues(
+            [NotNull] this SqlServerStorage storage, 
+            MsmqTransactionType transactionType,
+            [NotNull] string pathPattern, 
+            params string[] queues)
+        {
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+
+            if (queues.Length == 0)
+            {
+                queues = new[] { EnqueuedState.DefaultQueue }; 
+            }
+
+            var provider = new MsmqJobQueueProvider(pathPattern, queues, transactionType);
             storage.QueueProviders.Add(provider, queues);
 
             return storage;

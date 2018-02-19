@@ -30,44 +30,25 @@ namespace Hangfire
 
         public void OnStateElection(ElectStateContext context)
         {
-            if (context.CandidateState.Name != SucceededState.StateName
-                && context.CandidateState.Name != FailedState.StateName)
+            if (context.CandidateState.Name == SucceededState.StateName)
             {
-                return;
+                context.Transaction.IncrementCounter(
+                    $"stats:succeeded:{DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}",
+                    DateTime.UtcNow.AddMonths(1) - DateTime.UtcNow);
+
+                context.Transaction.IncrementCounter(
+                    $"stats:succeeded:{DateTime.UtcNow.ToString("yyyy-MM-dd-HH")}",
+                    TimeSpan.FromDays(1));
             }
-
-            using (var transaction = context.Connection.CreateWriteTransaction())
+            else if (context.CandidateState.Name == FailedState.StateName)
             {
-                if (context.CandidateState.Name == SucceededState.StateName)
-                {
-                    transaction.IncrementCounter(
-                        String.Format(
-                            "stats:succeeded:{0}",
-                            DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
-                        DateTime.UtcNow.AddMonths(1) - DateTime.UtcNow);
+                context.Transaction.IncrementCounter(
+                    $"stats:failed:{DateTime.UtcNow.ToString("yyyy-MM-dd")}",
+                    DateTime.UtcNow.AddMonths(1) - DateTime.UtcNow);
 
-                    transaction.IncrementCounter(
-                        String.Format(
-                            "stats:succeeded:{0}",
-                            DateTime.UtcNow.ToString("yyyy-MM-dd-HH")),
-                        TimeSpan.FromDays(1));
-                }
-                else if (context.CandidateState.Name == FailedState.StateName)
-                {
-                    transaction.IncrementCounter(
-                        String.Format(
-                            "stats:failed:{0}", 
-                            DateTime.UtcNow.ToString("yyyy-MM-dd")),
-                        DateTime.UtcNow.AddMonths(1) - DateTime.UtcNow);
-
-                    transaction.IncrementCounter(
-                        String.Format(
-                            "stats:failed:{0}",
-                            DateTime.UtcNow.ToString("yyyy-MM-dd-HH")),
-                        TimeSpan.FromDays(1));
-                }
-
-                transaction.Commit();
+                context.Transaction.IncrementCounter(
+                    $"stats:failed:{DateTime.UtcNow.ToString("yyyy-MM-dd-HH")}",
+                    TimeSpan.FromDays(1));
             }
         }
     }

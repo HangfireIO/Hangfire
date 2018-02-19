@@ -2,13 +2,20 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.Server;
 using Moq;
+using Newtonsoft.Json;
 using Xunit;
+
+// ReSharper disable LocalizableElement
+// ReSharper disable AssignNullToNotNullAttribute
+
+#pragma warning disable 618
 
 namespace Hangfire.Core.Tests.Common
 {
@@ -38,6 +45,7 @@ namespace Hangfire.Core.Tests.Common
         public void Ctor_ThrowsAnException_WhenTheTypeIsNull()
         {
             Assert.Throws<ArgumentNullException>(
+                // ReSharper disable once AssignNullToNotNullAttribute
                 () => new Job(null, _method, _arguments));
         }
 
@@ -45,6 +53,7 @@ namespace Hangfire.Core.Tests.Common
         public void Ctor_ThrowsAnException_WhenTheMethodIsNull()
         {
             Assert.Throws<ArgumentNullException>(
+                // ReSharper disable once AssignNullToNotNullAttribute
                 () => new Job(_type, null, _arguments));
         }
 
@@ -56,24 +65,25 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void Ctor_ShouldThrowAnException_WhenArgumentsArrayIsNull()
+        public void Ctor_ThrowsAnException_WhenArgumentsArrayIsNull()
         {
             Assert.Throws<ArgumentNullException>(
+                // ReSharper disable once AssignNullToNotNullAttribute
                 () => new Job(_type, _method, null));
         }
 
         [Fact]
-        public void Ctor_ShouldInitializeAllProperties()
+        public void Ctor_InitializesAllProperties()
         {
             var job = new Job(_type, _method, _arguments);
 
             Assert.Same(_type, job.Type);
             Assert.Same(_method, job.Method);
-            Assert.Same(_arguments, job.Arguments);
+            Assert.True(_arguments.SequenceEqual(job.Arguments));
         }
 
         [Fact]
-        public void Ctor_ShouldHave_DefaultValueForArguments()
+        public void Ctor_HasDefaultValueForArguments()
         {
             var job = new Job(_type, _method);
 
@@ -81,7 +91,7 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void Ctor_ShouldThrowAnException_WhenArgumentCountIsNotEqualToParameterCount()
+        public void Ctor_ThrowsAnException_WhenArgumentCountIsNotEqualToParameterCount()
         {
             var exception = Assert.Throws<ArgumentException>(
                 () => new Job(_type, _method, new[] { "hello!" }));
@@ -94,39 +104,29 @@ namespace Hangfire.Core.Tests.Common
         {
             var method = _type.GetMethod("GenericMethod");
 
-            var exception = Assert.Throws<ArgumentException>(
-                () => new Job(_type, method, new[] { "hello!" }));
-
-            Assert.Equal("method", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenMethodReturns_Task()
-        {
-            var method = _type.GetMethod("AsyncMethod");
-
             Assert.Throws<NotSupportedException>(
-                () => new Job(_type, method, new string[0]));
+                () => new Job(_type, method, new[] { "hello!" }));
         }
 
         [Fact]
-        public void FromStaticExpression_ShouldThrowException_WhenNullExpressionProvided()
+        public void FromExpression_Action_ThrowsException_WhenNullExpressionProvided()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => Job.FromExpression(null));
+                () => Job.FromExpression((Expression<Action>)null));
 
             Assert.Equal("methodCall", exception.ParamName);
         }
 
         [Fact]
-        public void FromStaticExpression_ThrowsAnException_WhenNewExpressionIsGiven()
+        public void FromExpression_ThrowsAnException_WhenNewExpressionIsGiven()
         {
-            Assert.Throws<NotSupportedException>(
+            Assert.Throws<ArgumentException>(
+                // ReSharper disable once ObjectCreationAsStatement
                 () => Job.FromExpression(() => new JobFacts()));
         }
 
         [Fact]
-        public void FromStaticExpression_ShouldReturnTheJob()
+        public void FromExpression_Action_ReturnsTheJob()
         {
             var job = Job.FromExpression(() => Console.WriteLine());
 
@@ -135,7 +135,25 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void FromStaticExpression_ConvertsDateTimeRepresentation_ToIso8601Format()
+        public void FromExpression_Func_ThrowsException_WhenNullExpressionProvided()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => Job.FromExpression((Expression<Func<Task>>)null));
+
+            Assert.Equal("methodCall", exception.ParamName);
+        }
+
+        [Fact]
+        public void FromExpression_Func_ReturnsTheJob()
+        {
+            var job = Job.FromExpression(() => AsyncMethod());
+
+            Assert.Equal(typeof(JobFacts), job.Type);
+            Assert.Equal("AsyncMethod", job.Method.Name);
+        }
+
+        [Fact]
+        public void FromExpression_ConvertsDateTimeRepresentation_ToIso8601Format()
         {
             var date = new DateTime(2014, 5, 30, 12, 0, 0, 777);
             var expected = date.ToString("o");
@@ -145,7 +163,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(expected, job.Arguments[0]);
         }
 
-	    [Fact]
+        [Fact]
 	    public void FromExpression_ConvertsArgumentsToJson()
 	    {
 		    var job = Job.FromExpression(() => MethodWithArguments("123", 1));
@@ -159,20 +177,38 @@ namespace Hangfire.Core.Tests.Common
         {
             var date = DateTime.UtcNow;
 
-            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+            CultureHelper.SetCurrentCulture("en-US");
             var enJob = Job.FromExpression(() => MethodWithDateTimeArgument(date));
 
-            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("ru-RU");
+            CultureHelper.SetCurrentCulture("ru-RU");
             var ruJob = Job.FromExpression(() => MethodWithDateTimeArgument(date));
 
             Assert.Equal(enJob.Arguments[0], ruJob.Arguments[0]);
         }
 
         [Fact]
-        public void FromInstanceExpression_ShouldThrowException_WhenNullExpressionIsProvided()
+        public void Ctor_ThrowsAnException_WhenMethodIsAsyncVoid()
+        {
+            var method = typeof(JobFacts).GetMethod(nameof(AsyncVoidMethod));
+
+            Assert.Throws<NotSupportedException>(
+                () => new Job(typeof(JobFacts), method, new string[0]));
+        }
+
+        [Fact]
+        public void FromInstanceExpression_Action_ThrowsException_WhenNullExpressionIsProvided()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => Job.FromExpression<JobFacts>(null));
+                () => Job.FromExpression((Expression<Action<JobFacts>>)null));
+
+            Assert.Equal("methodCall", exception.ParamName);
+        }
+
+        [Fact]
+        public void FromInstanceExpression_Func_ThrowsException_WhenNullExpressionIsProvided()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => Job.FromExpression((Expression<Action<JobFacts>>)null));
 
             Assert.Equal("methodCall", exception.ParamName);
         }
@@ -180,17 +216,74 @@ namespace Hangfire.Core.Tests.Common
         [Fact]
         public void FromInstanceExpression_ThrowsAnException_WhenNewExpressionIsGiven()
         {
-            Assert.Throws<NotSupportedException>(
+            Assert.Throws<ArgumentException>(
+                // ReSharper disable once ObjectCreationAsStatement
                 () => Job.FromExpression<JobFacts>(x => new JobFacts()));
         }
 
         [Fact]
-        public void FromInstanceExpression_ShouldReturnCorrectResult()
+        public void FromInstanceExpression_Action_ReturnsCorrectResult()
         {
             var job = Job.FromExpression<Instance>(x => x.Method());
 
             Assert.Equal(typeof(Instance), job.Type);
             Assert.Equal("Method", job.Method.Name);
+        }
+
+        [Fact]
+        public void FromInstanceExpression_Func_ReturnsCorrectResult()
+        {
+            var job = Job.FromExpression<Instance>(x => x.FunctionReturningTask());
+
+            Assert.Equal(typeof(Instance), job.Type);
+            Assert.Equal("FunctionReturningTask", job.Method.Name);
+        }
+
+        [Fact]
+        public void FromNonGenericExpression_InfersType_FromAGivenObject()
+        {
+            IDisposable instance = new Instance();
+            var job = Job.FromExpression(() => instance.Dispose());
+
+            Assert.Equal(typeof(Instance), job.Type);
+        }
+
+        [Fact]
+        public void FromNonGenericExpression_InfersACorrectMethod_FromAGivenObject_WhenInterfaceTreeIsUsed()
+        {
+            IDisposable instance = new Instance();
+            var job = Job.FromExpression(() => instance.Dispose());
+
+            Assert.Equal(typeof(Instance), job.Method.DeclaringType);
+        }
+
+        [Fact]
+        public void FromNonGenericExpression_ThrowsAnException_IfGivenObjectIsNull()
+        {
+            IDisposable instance = null;
+
+            Assert.Throws<InvalidOperationException>(
+                () => Job.FromExpression(() => instance.Dispose()));
+        }
+
+        [Fact]
+        public void FromScopedExpression_HandlesGenericMethods()
+        {
+            CommandDispatcher dispatcher = new CommandDispatcher();
+            var job = Job.FromExpression(() => dispatcher.DispatchTyped(123));
+
+            Assert.Equal(typeof(CommandDispatcher), job.Type);
+            Assert.Equal(typeof(CommandDispatcher), job.Method.DeclaringType);
+        }
+
+        [Fact]
+        public void FromScopedExpression_HandlesMethodsDeclaredInBaseClasse()
+        {
+            DerivedInstance instance = new DerivedInstance();
+            var job = Job.FromExpression(() => instance.Method());
+
+            Assert.Equal(typeof(DerivedInstance), job.Type);
+            Assert.Equal(typeof(Instance), job.Method.DeclaringType);
         }
 
         [Fact]
@@ -214,6 +307,20 @@ namespace Hangfire.Core.Tests.Common
         {
             Assert.Throws<NotSupportedException>(
                 () => Job.FromExpression(() => PrivateMethod()));
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenMethodParametersContainADelegate()
+        {
+            Assert.Throws<NotSupportedException>(
+                () => Job.FromExpression(() => DelegateMethod(() => Console.WriteLine("Hey delegate!"))));
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenMethodParametersContainAnExpression()
+        {
+            Assert.Throws<NotSupportedException>(
+                () => Job.FromExpression(() => ExpressionMethod(() => Console.WriteLine("Hey expression!"))));
         }
 
         [Fact]
@@ -285,6 +392,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.True(_methodInvoked);
         }
 
+#if NETFULL
         [Fact, StaticLock]
         public void Perform_PassesCorrectDateTime_IfItWasSerialized_UsingTypeConverter()
         {
@@ -304,6 +412,7 @@ namespace Hangfire.Core.Tests.Common
             // Assert - see also the `MethodWithDateTimeArgument` method.
             Assert.True(_methodInvoked);
         }
+#endif
 
         [Fact, StaticLock]
         public void Perform_PassesCorrectDateTime_IfItWasSerialized_UsingOldFormat()
@@ -379,16 +488,13 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void Perform_ThrowsPerformanceException_OnArgumentsDeserializationFailure()
+        public void Ctor_ThrowsJsonReaderException_OnArgumentsDeserializationFailure()
         {
 	        var type = typeof (JobFacts);
 	        var method = type.GetMethod("MethodWithDateTimeArgument");
-			var job = new Job(type, method, new []{ "sdfa" });
 
-            var exception = Assert.Throws<JobPerformanceException>(
-                () => job.Perform(_activator.Object, _token.Object));
-
-            Assert.NotNull(exception.InnerException);
+            Assert.Throws<JsonReaderException>(
+                () => new Job(type, method, new []{ JobHelper.ToJson("sdfa") }));
         }
 
         [Fact, StaticLock]
@@ -418,18 +524,65 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void Perform_PassesCancellationToken_IfThereIsIJobCancellationTokenParameter()
+        public void Perform_ThrowsPerformanceException_WhenAMethodThrowsTaskCanceledException()
+        {
+            var job = Job.FromExpression(() => TaskCanceledExceptionMethod());
+
+            var thrownException = Assert.Throws<JobPerformanceException>(
+                () => job.Perform(_activator.Object, _token.Object));
+
+            Assert.IsType<TaskCanceledException>(thrownException.InnerException);
+        }
+
+        [Fact]
+        public void Perform_RethrowsOperationCanceledException_WhenShutdownTokenIsCanceled()
         {
             // Arrange
             var job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _token.Setup(x => x.ShutdownToken).Returns(new CancellationToken(true));
             _token.Setup(x => x.ThrowIfCancellationRequested()).Throws<OperationCanceledException>();
 
             // Act & Assert
-            Assert.Throws<OperationCanceledException>(
-                () => job.Perform(_activator.Object, _token.Object));
+            Assert.Throws<OperationCanceledException>(() => job.Perform(_activator.Object, _token.Object));
         }
 
-	    [Fact]
+        [Fact]
+        public void Run_RethrowsTaskCanceledException_WhenShutdownTokenIsCanceled()
+        {
+            // Arrange
+            var job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _token.Setup(x => x.ShutdownToken).Returns(new CancellationToken(true));
+            _token.Setup(x => x.ThrowIfCancellationRequested()).Throws<TaskCanceledException>();
+
+            // Act & Assert
+            Assert.Throws<TaskCanceledException>(() => job.Perform(_activator.Object, _token.Object));
+        }
+
+        [Fact]
+        public void Run_RethrowsJobAbortedException()
+        {
+            // Arrange
+            var job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _token.Setup(x => x.ShutdownToken).Returns(CancellationToken.None);
+            _token.Setup(x => x.ThrowIfCancellationRequested()).Throws<JobAbortedException>();
+
+            // Act & Assert
+            Assert.Throws<JobAbortedException>(() => job.Perform(_activator.Object, _token.Object));
+        }
+
+        [Fact]
+        public void Run_ThrowsJobPerformanceException_InsteadOfOperationCanceled_WhenShutdownWasNOTInitiated()
+        {
+            // Arrange
+            var job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _token.Setup(x => x.ShutdownToken).Returns(CancellationToken.None);
+            _token.Setup(x => x.ThrowIfCancellationRequested()).Throws<OperationCanceledException>();
+
+            // Act & Assert
+            Assert.Throws<JobPerformanceException>(() => job.Perform(_activator.Object, _token.Object));
+        }
+
+        [Fact]
         public void Perform_ReturnsValue_WhenCallingFunctionReturningValue()
         {
             var job = Job.FromExpression<Instance>(x => x.FunctionReturningValue());
@@ -464,17 +617,6 @@ namespace Hangfire.Core.Tests.Common
 
             Assert.True(nonCachedAttributes[0] is TestMethodAttribute);
             Assert.True(cachedAttributes[0] is TestMethodAttribute);
-        }
-
-        [Fact]
-        public void Jobs_With_Generics_Have_Different_Ids()
-        {
-            var job1 = Job.FromExpression<JobClassWrapper<Instance>>(x => x.Dispose());
-            var job2 = Job.FromExpression<JobClassWrapper<BrokenDispose>>(x => x.Dispose());
-            var id1 = job1.ToString();
-            var id2 = job2.ToString();
-
-            Assert.NotEqual(id1, id2);
         }
 
         private static void PrivateMethod()
@@ -542,6 +684,11 @@ namespace Hangfire.Core.Tests.Common
             throw new InvalidOperationException("exception");
         }
 
+        public static void TaskCanceledExceptionMethod()
+        {
+            throw new TaskCanceledException();
+        }
+
         public void GenericMethod<T>(T arg)
         {
         }
@@ -550,6 +697,31 @@ namespace Hangfire.Core.Tests.Common
         {
             var source = new TaskCompletionSource<bool>();
             return source.Task;
+        }
+
+        public async void AsyncVoidMethod()
+        {
+            await Task.Yield();
+        }
+
+        public void DelegateMethod(Action action)
+        {
+        }
+
+        public void ExpressionMethod(Expression<Action> expression)
+        {
+        }
+
+        public interface ICommandDispatcher
+        {
+            void DispatchTyped<TCommand>(TCommand command);
+        }
+
+        public class CommandDispatcher : ICommandDispatcher
+        {
+            public void DispatchTyped<TCommand>(TCommand command)
+            {
+            }
         }
 
         [TestType]
@@ -570,6 +742,22 @@ namespace Hangfire.Core.Tests.Common
             {
                 return "Return value";
             }
+
+            public async Task FunctionReturningTask()
+            {
+                await Task.Yield();
+            }
+
+            public async Task<string> FunctionReturningTaskResultingInString()
+            {
+                await Task.Yield();
+
+                return FunctionReturningValue();
+            }
+        }
+
+        public class DerivedInstance : Instance
+        {
         }
 
         public class BrokenDispose : IDisposable
@@ -585,6 +773,7 @@ namespace Hangfire.Core.Tests.Common
             }
         }
 
+        // ReSharper disable once UnusedTypeParameter
         public class JobClassWrapper<T> : IDisposable where T : IDisposable
         {
             public void Dispose()

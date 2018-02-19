@@ -1,55 +1,60 @@
-﻿@* Generator: Template TypeVisibility: Internal *@
+﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
 @using System
-@using System.Collections.Generic
 @using System.Linq
 @using Hangfire.Common
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
-@using Hangfire.Storage.Monitoring
+@using Hangfire.Dashboard.Resources
 @inherits RazorPage
 @{
-    Layout = new LayoutPage { Title = "Servers" };
+    Layout = new LayoutPage(Strings.ServersPage_Title);
     
     var monitor = Storage.GetMonitoringApi();
-    IList<ServerDto> servers = monitor.Servers();    
+    var servers = monitor.Servers();
 }
 
-@if (servers.Count == 0)
-{
-    <div class="alert alert-warning">
-        There are no active servers. Background tasks will not be processed.
-    </div>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Workers</th>
-                <th>Queues</th>
-                <th>Started</th>
-                <th>Heartbeat</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var server in servers)
-            {
-                <tr>
-                    <td>@server.Name.ToUpperInvariant()</td>
-                    <td>@server.WorkersCount</td>
-                    <td>@HtmlHelper.Raw(String.Join(" ", server.Queues.Select(HtmlHelper.QueueLabel)))</td>
-                    <td data-moment="@JobHelper.ToTimestamp(server.StartedAt)">@server.StartedAt</td>
-                    <td>
-                        @if (server.Heartbeat.HasValue)
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="page-header">@Strings.ServersPage_Title</h1>
+
+        @if (servers.Count == 0)
+        {
+            <div class="alert alert-warning">
+                @Strings.ServersPage_NoServers
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>@Strings.ServersPage_Table_Name</th>
+                            <th>@Strings.ServersPage_Table_Workers</th>
+                            <th>@Strings.ServersPage_Table_Queues</th>
+                            <th>@Strings.ServersPage_Table_Started</th>
+                            <th>@Strings.ServersPage_Table_Heartbeat</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var server in servers)
                         {
-                            <span data-moment="@JobHelper.ToTimestamp(server.Heartbeat.Value)">
-                                @server.Heartbeat
-                            </span>
+                            <tr>
+                                <td>@Html.ServerId(server.Name)</td>
+                                <td>@server.WorkersCount</td>
+                                <td>@Html.Raw(String.Join(", ", server.Queues.Select(Html.QueueLabel)))</td>
+                                <td>@Html.RelativeTime(server.StartedAt)</td>
+                                <td>
+                                    @if (server.Heartbeat.HasValue)
+                                    {
+                                        @Html.RelativeTime(server.Heartbeat.Value)
+                                    }
+                                </td>
+                            </tr>
                         }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

@@ -16,58 +16,150 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Text.RegularExpressions;
 using Hangfire.Common;
 using System.ComponentModel;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using Hangfire.Annotations;
+using Hangfire.Dashboard.Pages;
+using Hangfire.Dashboard.Resources;
 
 namespace Hangfire.Dashboard
 {
-    public static class HtmlHelper
+    public class HtmlHelper
     {
-        public static string DisplayJob(Job job)
+        private readonly RazorPage _page;
+
+        public HtmlHelper([NotNull] RazorPage page)
         {
-            if (job == null)
-            {
-                return "Can not find the target method.";
-            }
-
-            var displayNameAttribute = Attribute.GetCustomAttribute(job.Method, typeof(DisplayNameAttribute), true) as DisplayNameAttribute;
-
-            if (displayNameAttribute == null || displayNameAttribute.DisplayName == null)
-            {
-                return job.ToString();
-            }
-
-            try
-            {
-                var arguments = job.Arguments.Cast<object>().ToArray();
-                return String.Format(displayNameAttribute.DisplayName, arguments);
-            }
-            catch (FormatException)
-            {
-                return displayNameAttribute.DisplayName;
-            }
+            if (page == null) throw new ArgumentNullException(nameof(page));
+            _page = page;
         }
 
-        public static NonEscapedString Raw(string value)
+        public NonEscapedString Breadcrumbs(string title, [NotNull] IDictionary<string, string> items)
+        {
+            if (items == null) throw new ArgumentNullException(nameof(items));
+            return RenderPartial(new Breadcrumbs(title, items));
+        }
+
+        public NonEscapedString JobsSidebar()
+        {
+            return RenderPartial(new SidebarMenu(JobsSidebarMenu.Items));
+        }
+
+        public NonEscapedString SidebarMenu([NotNull] IEnumerable<Func<RazorPage, MenuItem>> items)
+        {
+            if (items == null) throw new ArgumentNullException(nameof(items));
+            return RenderPartial(new SidebarMenu(items));
+        }
+
+        public NonEscapedString BlockMetric([NotNull] DashboardMetric metric)
+        {
+            if (metric == null) throw new ArgumentNullException(nameof(metric));
+            return RenderPartial(new BlockMetric(metric));
+        }
+
+        public NonEscapedString InlineMetric([NotNull] DashboardMetric metric)
+        {
+            if (metric == null) throw new ArgumentNullException(nameof(metric));
+            return RenderPartial(new InlineMetric(metric));
+        }
+
+        public NonEscapedString Paginator([NotNull] Pager pager)
+        {
+            if (pager == null) throw new ArgumentNullException(nameof(pager));
+            return RenderPartial(new Paginator(pager));
+        }
+
+        public NonEscapedString PerPageSelector([NotNull] Pager pager)
+        {
+            if (pager == null) throw new ArgumentNullException(nameof(pager));
+            return RenderPartial(new PerPageSelector(pager));
+        }
+
+        public NonEscapedString RenderPartial(RazorPage partialPage)
+        {
+            partialPage.Assign(_page);
+            return new NonEscapedString(partialPage.ToString());
+        }
+
+        public NonEscapedString Raw(string value)
         {
             return new NonEscapedString(value);
         }
 
-        public static NonEscapedString JobId(string jobId, bool shorten = true)
+        public NonEscapedString JobId(string jobId, bool shorten = true)
         {
             Guid guid;
             return new NonEscapedString(Guid.TryParse(jobId, out guid)
-                ? (shorten ? jobId.Substring(0, 8) : jobId)
-                : "#" + jobId);
+                ? (shorten ? jobId.Substring(0, 8) + "…" : jobId)
+                : $"#{jobId}");
         }
 
-        public static string ToHumanDuration(TimeSpan? duration, bool displaySign = true)
+        public string JobName(Job job)
+        {
+            if (job == null)
+            {
+                return Strings.Common_CannotFindTargetMethod;
+            }
+
+#if NETFULL
+            var displayNameAttribute = job.Method.GetCustomAttribute(typeof(DisplayNameAttribute)) as DisplayNameAttribute;
+            if (displayNameAttribute != null && displayNameAttribute.DisplayName != null)
+            {
+                try
+                {
+                    return String.Format(displayNameAttribute.DisplayName, job.Args.ToArray());
+                }
+                catch (FormatException)
+                {
+                    return displayNameAttribute.DisplayName;
+                }
+            }
+#endif
+
+            return job.ToString();
+        }
+
+        public NonEscapedString StateLabel(string stateName)
+        {
+            if (String.IsNullOrWhiteSpace(stateName))
+            {
+                return Raw($"<em>{Strings.Common_NoState}</em>");
+            }
+
+            return Raw($"<span class=\"label label-default\" style=\"background-color: {JobHistoryRenderer.GetForegroundStateColor(stateName)};\">{stateName}</span>");
+        }
+
+        public NonEscapedString JobIdLink(string jobId)
+        {
+            return Raw($"<a href=\"{_page.Url.JobDetails(jobId)}\">{JobId(jobId)}</a>");
+        }
+
+        public NonEscapedString JobNameLink(string jobId, Job job)
+        {
+            return Raw($"<a class=\"job-method\" href=\"{_page.Url.JobDetails(jobId)}\">{HtmlEncode(JobName(job))}</a>");
+        }
+
+        public NonEscapedString RelativeTime(DateTime value)
+        {
+            return Raw($"<span data-moment=\"{JobHelper.ToTimestamp(value)}\">{value}</span>");
+        }
+
+        public NonEscapedString MomentTitle(DateTime time, string value)
+        {
+            return Raw($"<span data-moment-title=\"{JobHelper.ToTimestamp(time)}\">{value}</span>");
+        }
+
+        public NonEscapedString LocalTime(DateTime value)
+        {
+            return Raw($"<span data-moment-local=\"{JobHelper.ToTimestamp(value)}\">{value}</span>");
+        }
+
+        public string ToHumanDuration(TimeSpan? duration, bool displaySign = true)
         {
             if (duration == null) return null;
 
@@ -81,17 +173,17 @@ namespace Hangfire.Dashboard
 
             if (duration.Value.Days > 0)
             {
-                builder.AppendFormat("{0}d ", duration.Value.Days);
+                builder.Append($"{duration.Value.Days}d ");
             }
 
             if (duration.Value.Hours > 0)
             {
-                builder.AppendFormat("{0}h ", duration.Value.Hours);
+                builder.Append($"{duration.Value.Hours}h ");
             }
 
             if (duration.Value.Minutes > 0)
             {
-                builder.AppendFormat("{0}m ", duration.Value.Minutes);
+                builder.Append($"{duration.Value.Minutes}m ");
             }
 
             if (duration.Value.TotalHours < 1)
@@ -101,7 +193,7 @@ namespace Hangfire.Dashboard
                     builder.Append(duration.Value.Seconds);
                     if (duration.Value.Milliseconds > 0)
                     {
-                        builder.AppendFormat(".{0}", duration.Value.Milliseconds);
+                        builder.Append($".{duration.Value.Milliseconds.ToString().PadLeft(3, '0')}");
                     }
 
                     builder.Append("s ");
@@ -110,7 +202,7 @@ namespace Hangfire.Dashboard
                 {
                     if (duration.Value.Milliseconds > 0)
                     {
-                        builder.AppendFormat("{0}ms ", duration.Value.Milliseconds);
+                        builder.Append($"{duration.Value.Milliseconds}ms ");
                     }
                 }
             }
@@ -125,175 +217,58 @@ namespace Hangfire.Dashboard
             return builder.ToString();
         }
 
-        public static string FormatProperties(IDictionary<string, string> properties)
+        public string FormatProperties(IDictionary<string, string> properties)
         {
-            return @String.Join(", ", properties.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)));
+            return String.Join(", ", properties.Select(x => $"{x.Key}: \"{x.Value}\""));
         }
 
-        public static NonEscapedString QueueLabel(string queue)
+        public NonEscapedString QueueLabel(string queue)
         {
-            string label;
-            if (queue != null)
-            {
-                label = "<span class=\"label label-queue label-primary\">" + queue + "</span>";
-            }
-            else
-            {
-                label = "<span class=\"label label-queue label-danger\"><i>Unknown</i></span>";
-            }
+            var label = queue != null 
+                ? $"<a class=\"text-uppercase\" href=\"{_page.Url.Queue(queue)}\">{queue}</a>" 
+                : $"<span class=\"label label-danger\"><i>{Strings.Common_Unknown}</i></span>";
 
             return new NonEscapedString(label);
         }
 
-        public static NonEscapedString MarkupStackTrace(string stackTrace)
+        public NonEscapedString ServerId(string serverId)
         {
-            using (var writer = new StringWriter())
+            var parts = serverId.Split(':');
+            var shortenedId = parts.Length > 1
+                ? String.Join(":", parts.Take(parts.Length - 1))
+                : serverId;
+
+            return new NonEscapedString(
+                $"<span class=\"labe label-defult text-uppercase\" title=\"{serverId}\">{shortenedId}</span>");
+        }
+
+        private static readonly StackTraceHtmlFragments StackTraceHtmlFragments = new StackTraceHtmlFragments
+        {
+            BeforeFrame         = "<span class='st-frame'>"                            , AfterFrame         = "</span>",
+            BeforeType          = "<span class='st-type'>"                             , AfterType          = "</span>",
+            BeforeMethod        = "<span class='st-method'>"                           , AfterMethod        = "</span>",
+            BeforeParameters    = "<span class='st-params'>"                           , AfterParameters    = "</span>",
+            BeforeParameterType = "<span class='st-param'><span class='st-param-type'>", AfterParameterType = "</span>",
+            BeforeParameterName = "<span class='st-param-name'>"                       , AfterParameterName = "</span></span>",
+            BeforeFile          = "<span class='st-file'>"                             , AfterFile          = "</span>",
+            BeforeLine          = "<span class='st-line'>"                             , AfterLine          = "</span>",
+        };
+
+        public NonEscapedString StackTrace(string stackTrace)
+        {
+            try
             {
-                MarkupStackTrace(stackTrace, writer);
-                return new NonEscapedString(writer.ToString());
+                return new NonEscapedString(StackTraceFormatter.FormatHtml(stackTrace, StackTraceHtmlFragments));
+            }
+            catch (RegexMatchTimeoutException)
+            {
+                return new NonEscapedString(HtmlEncode(stackTrace));
             }
         }
 
-        private static readonly Regex ReStackTrace = new Regex(@"
-                ^
-                \s*
-                \w+ \s+ 
-                (?<type> .+ ) \.
-                (?<method> .+? ) 
-                (?<params> \( (?<params> .*? ) \) )
-                ( \s+ 
-                \w+ \s+ 
-                  (?<file> [a-z] \: .+? ) 
-                  \: \w+ \s+ 
-                  (?<line> [0-9]+ ) \p{P}? )?
-                \s*
-                $",
-            RegexOptions.IgnoreCase
-            | RegexOptions.Multiline
-            | RegexOptions.ExplicitCapture
-            | RegexOptions.CultureInvariant
-            | RegexOptions.IgnorePatternWhitespace
-            | RegexOptions.Compiled);
-
-        private static void MarkupStackTrace(string text, TextWriter writer)
+        public string HtmlEncode(string text)
         {
-            Debug.Assert(text != null);
-            Debug.Assert(writer != null);
-
-            int anchor = 0;
-
-            foreach (Match match in ReStackTrace.Matches(text))
-            {
-                HtmlEncode(text.Substring(anchor, match.Index - anchor), writer);
-                MarkupStackFrame(text, match, writer);
-                anchor = match.Index + match.Length;
-            }
-
-            HtmlEncode(text.Substring(anchor), writer);
-        }
-
-        private static void MarkupStackFrame(string text, Match match, TextWriter writer)
-        {
-            Debug.Assert(text != null);
-            Debug.Assert(match != null);
-            Debug.Assert(writer != null);
-
-            int anchor = match.Index;
-            GroupCollection groups = match.Groups;
-
-            //
-            // Type + Method
-            //
-
-            Group type = groups["type"];
-            HtmlEncode(text.Substring(anchor, type.Index - anchor), writer);
-            anchor = type.Index;
-            writer.Write("<span class='st-frame'>");
-            anchor = StackFrameSpan(text, anchor, "st-type", type, writer);
-            anchor = StackFrameSpan(text, anchor, "st-method", groups["method"], writer);
-
-            //
-            // Parameters
-            //
-
-            Group parameters = groups["params"];
-            HtmlEncode(text.Substring(anchor, parameters.Index - anchor), writer);
-            writer.Write("<span class='st-params'>(");
-            int position = 0;
-            foreach (string parameter in parameters.Captures[0].Value.Split(','))
-            {
-                int spaceIndex = parameter.LastIndexOf(' ');
-                if (spaceIndex <= 0)
-                {
-                    Span(writer, "st-param", parameter.Trim());
-                }
-                else
-                {
-                    if (position++ > 0)
-                        writer.Write(", ");
-                    string argType = parameter.Substring(0, spaceIndex).Trim();
-                    Span(writer, "st-param-type", argType);
-                    writer.Write(' ');
-                    string argName = parameter.Substring(spaceIndex + 1).Trim();
-                    Span(writer, "st-param-name", argName);
-                }
-            }
-            writer.Write(")</span>");
-            anchor = parameters.Index + parameters.Length;
-
-            //
-            // File + Line
-            //
-
-            anchor = StackFrameSpan(text, anchor, "st-file", groups["file"], writer);
-            anchor = StackFrameSpan(text, anchor, "st-line", groups["line"], writer);
-
-            writer.Write("</span>");
-
-            //
-            // Epilogue
-            //
-
-            int end = match.Index + match.Length;
-            HtmlEncode(text.Substring(anchor, end - anchor), writer);
-        }
-
-        private static int StackFrameSpan(string text, int anchor, string klass, Group group, TextWriter writer)
-        {
-            Debug.Assert(text != null);
-            Debug.Assert(group != null);
-            Debug.Assert(writer != null);
-
-            return group.Success
-                 ? StackFrameSpan(text, anchor, klass, group.Value, group.Index, group.Length, writer)
-                 : anchor;
-        }
-
-        private static int StackFrameSpan(string text, int anchor, string klass, string value, int index, int length, TextWriter writer)
-        {
-            Debug.Assert(text != null);
-            Debug.Assert(writer != null);
-
-            HtmlEncode(text.Substring(anchor, index - anchor), writer);
-            Span(writer, klass, value);
-            return index + length;
-        }
-
-        private static void Span(TextWriter writer, string klass, string value)
-        {
-            Debug.Assert(writer != null);
-
-            writer.Write("<span class='");
-            writer.Write(klass);
-            writer.Write("'>");
-            HtmlEncode(value, writer);
-            writer.Write("</span>");
-        }
-
-        private static void HtmlEncode(string text, TextWriter writer)
-        {
-            Debug.Assert(writer != null);
-            WebUtility.HtmlEncode(text, writer);
+            return WebUtility.HtmlEncode(text);
         }
     }
 }

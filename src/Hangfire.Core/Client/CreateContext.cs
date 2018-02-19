@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -23,39 +24,55 @@ using Hangfire.Storage;
 namespace Hangfire.Client
 {
     /// <summary>
-    /// Provides information about the context in which the job
-    /// is being created.
+    /// Provides information about the context in which the job is created.
     /// </summary>
     public class CreateContext
     {
-        internal CreateContext(CreateContext context)
-            : this(context.Connection, context.Job, context.InitialState)
+        public CreateContext([NotNull] CreateContext context)
+            : this(context.Storage, context.Connection, context.Job, context.InitialState)
         {
             Items = context.Items;
+            Parameters = context.Parameters;
         }
 
-        public CreateContext(IStorageConnection connection, Job job, IState initialState)
+        public CreateContext(
+            [NotNull] JobStorage storage, 
+            [NotNull] IStorageConnection connection, 
+            [NotNull] Job job, 
+            [CanBeNull] IState initialState)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
-            if (job == null) throw new ArgumentNullException("job");
-            
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            if (job == null) throw new ArgumentNullException(nameof(job));
+
+            Storage = storage;
             Connection = connection;
             Job = job;
             InitialState = initialState;
 
             Items = new Dictionary<string, object>();
+            Parameters = new Dictionary<string, object>();
         }
 
-        public IStorageConnection Connection { get; private set; }
+        [NotNull]
+        public JobStorage Storage { get; }
+
+        [NotNull]
+        public IStorageConnection Connection { get; }
 
         /// <summary>
         /// Gets an instance of the key-value storage. You can use it
         /// to pass additional information between different client filters
         /// or just between different methods.
         /// </summary>
-        public IDictionary<string, object> Items { get; private set; }
+        [NotNull]
+        public IDictionary<string, object> Items { get; }
 
-        public Job Job { get; private set; }
+        [NotNull]
+        public virtual IDictionary<string, object> Parameters { get; }
+            
+        [NotNull]
+        public Job Job { get; }
 
         /// <summary>
         /// Gets the initial state of the creating job. Note, that
@@ -63,6 +80,7 @@ namespace Hangfire.Client
         /// the registered instances of the <see cref="IElectStateFilter"/>
         /// class are doing their job.
         /// </summary>
-        public IState InitialState { get; private set; }
+        [CanBeNull]
+        public IState InitialState { get; }
     }
 }

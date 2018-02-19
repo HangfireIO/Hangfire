@@ -24,10 +24,10 @@ namespace Hangfire.Client
     /// </summary>
     public class ClientExceptionContext : CreateContext
     {
-        internal ClientExceptionContext(CreateContext createContext, Exception exception)
+        public ClientExceptionContext(CreateContext createContext, Exception exception)
             : base(createContext)
         {
-            if (exception == null) throw new ArgumentNullException("exception");
+            if (exception == null) throw new ArgumentNullException(nameof(exception));
 
             Exception = exception;
         }
@@ -35,7 +35,7 @@ namespace Hangfire.Client
         /// <summary>
         /// Gets an exception that occurred during the creation of the job.
         /// </summary>
-        public Exception Exception { get; private set; }
+        public Exception Exception { get; }
 
         /// <summary>
         /// Gets or sets a value that indicates that this <see cref="ClientExceptionContext"/>

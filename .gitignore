@@ -1,4 +1,10 @@
 #################
+## IDEA Rider
+#################
+.idea
+.idea.*
+
+#################
 ## Eclipse
 #################
 
@@ -52,9 +58,18 @@ x64/
 [Bb]in/
 [Oo]bj/
 
+# Visual Studio 2015 cache/options directory
+.vs/
+
+# dotnet
+*.lock.json
+artifacts/
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
+
+coverage.xml
 
 *_i.c
 *_p.c

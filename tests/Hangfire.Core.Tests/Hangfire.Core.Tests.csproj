@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\xunit.runner.visualstudio.2.2.0-beta2-build1149\build\net20\xunit.runner.visualstudio.props" Condition="Exists('..\..\packages\xunit.runner.visualstudio.2.2.0-beta2-build1149\build\net20\xunit.runner.visualstudio.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -12,13 +13,15 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;NETFULL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -26,42 +29,48 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;NETFULL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Moq">
-      <HintPath>..\..\packages\Moq.4.2.1402.2112\lib\net40\Moq.dll</HintPath>
+    <Reference Include="Castle.Core, Version=0.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Castle.Core.4.0.0-beta001\lib\net45\Castle.Core.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Moq.Sequences">
-      <HintPath>..\..\packages\Moq.Sequences.1.0.1.0\lib\net40\Moq.Sequences.dll</HintPath>
+    <Reference Include="Moq, Version=4.6.36.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Moq.4.6.36-alpha\lib\net45\Moq.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Moq.Sequences, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Moq.Sequences.NoNUnit.1.0.1\lib\Moq.Sequences.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Cronos, Version=0.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Cronos.0.6.0\lib\net45\Cronos.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
       <HintPath>..\..\packages\Newtonsoft.Json.5.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="nunit.framework">
-      <HintPath>..\..\packages\NUnit.2.5.7.10213\lib\nunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="nunit.mocks">
-      <HintPath>..\..\packages\NUnit.2.5.7.10213\lib\nunit.mocks.dll</HintPath>
-    </Reference>
-    <Reference Include="pnunit.framework">
-      <HintPath>..\..\packages\NUnit.2.5.7.10213\lib\pnunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="xunit">
-      <HintPath>..\..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
+    <Reference Include="xunit.abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\xunit.abstractions.2.0.1-rc2\lib\net35\xunit.abstractions.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="NCrontab, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\packages\ncrontab.1.0.0\lib\NCrontab.dll</HintPath>
+    <Reference Include="xunit.assert, Version=2.2.0.3300, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\xunit.assert.2.2.0-beta2-build3300\lib\netstandard1.0\xunit.assert.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="xunit.core, Version=2.2.0.3300, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\xunit.extensibility.core.2.2.0-beta2-build3300\lib\net45\xunit.core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="xunit.execution.desktop, Version=2.2.0.3300, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\xunit.extensibility.execution.2.2.0-beta2-build3300\lib\net45\xunit.execution.desktop.dll</HintPath>
+      <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -73,8 +82,8 @@
     <Compile Include="Client\CreateContextFacts.cs" />
     <Compile Include="Client\CreatedContextFacts.cs" />
     <Compile Include="Client\CreatingContextFacts.cs" />
-    <Compile Include="Client\DefaultJobCreationProcessFacts.cs" />
-    <Compile Include="Common\GlobalJobFilterCollectionFacts.cs" />
+    <Compile Include="Client\BackgroundJobFactoryFacts.cs" />
+    <Compile Include="Common\JobFilterCollectionFacts.cs" />
     <Compile Include="Common\JobArgumentFacts.cs" />
     <Compile Include="Common\JobFacts.cs" />
     <Compile Include="Common\JobFilterAttributeFacts.cs" />
@@ -83,69 +92,82 @@
     <Compile Include="Common\JobFilterProviderCollectionFacts.cs" />
     <Compile Include="Common\JobHelperFacts.cs" />
     <Compile Include="Common\JobLoadExceptionFacts.cs" />
+    <Compile Include="Common\TypeExtensionsFacts.cs" />
     <Compile Include="CronFacts.cs" />
     <Compile Include="CronScheduleFacts.cs" />
+    <Compile Include="Stubs\DashboardContextStub.cs" />
+    <Compile Include="Stubs\JobStorageStub.cs" />
+    <Compile Include="Stubs\DashboardResponseStub.cs" />
+    <Compile Include="Dashboard\CommandDispatcherFacts.cs" />
+    <Compile Include="Dashboard\BatchCommandDispatcherFacts.cs" />
+    <Compile Include="Dashboard\HtmlHelperFacts.cs" />
+    <Compile Include="LatencyTimeoutAttributeFacts.cs" />
     <Compile Include="GlobalStateHandlersFacts.cs" />
     <Compile Include="JobActivatorFacts.cs" />
     <Compile Include="JobCancellationTokenFacts.cs" />
     <Compile Include="JobStorageFacts.cs" />
     <Compile Include="Mocks\ApplyStateContextMock.cs" />
+    <Compile Include="Mocks\BackgroundJobMock.cs" />
+    <Compile Include="Mocks\BackgroundProcessContextMock.cs" />
+    <Compile Include="Mocks\CreateContextMock.cs" />
     <Compile Include="Mocks\ElectStateContextMock.cs" />
-    <Compile Include="Mocks\SharedWorkerContextMock.cs" />
-    <Compile Include="Mocks\StateContextMock.cs" />
-    <Compile Include="Mocks\WorkerContextMock.cs" />
+    <Compile Include="Mocks\PerformContextMock.cs" />
+    <Compile Include="Mocks\StateChangeContextMock.cs" />
+    <Compile Include="Obsolete\ServerWatchdogOptionsFacts.cs" />
     <Compile Include="PreserveCultureAttributeFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueueAttributeFacts.cs" />
     <Compile Include="RecurringJobManagerFacts.cs" />
+    <Compile Include="RecurringJobOptionsFacts.cs" />
     <Compile Include="RetryAttributeFacts.cs" />
     <Compile Include="Server\BackgroundJobServerOptionsFacts.cs" />
-    <Compile Include="Server\DefaultJobPerformanceProcessFacts.cs" />
+    <Compile Include="Server\BackgroundProcessContextFacts.cs" />
+    <Compile Include="Server\BackgroundProcessingServerFacts.cs" />
+    <Compile Include="Server\BackgroundJobPerformerFacts.cs" />
+    <Compile Include="Server\InfiniteLoopComponentFacts.cs" />
+    <Compile Include="Server\CoreBackgroundJobPerformerFacts.cs" />
     <Compile Include="Server\RecurringJobSchedulerFacts.cs" />
-    <Compile Include="Server\ScheduleInstantFactoryFacts.cs" />
-    <Compile Include="Server\ScheduleInstantFacts.cs" />
-    <Compile Include="Server\ServerBootstrapperFacts.cs" />
     <Compile Include="Server\PerformContextFacts.cs" />
-    <Compile Include="Server\SchedulePollerFacts.cs" />
+    <Compile Include="Server\DelayedJobSchedulerFacts.cs" />
+    <Compile Include="Server\BackgroundProcessExtensionsFacts.cs" />
     <Compile Include="Server\ServerJobCancellationTokenFacts.cs" />
-    <Compile Include="Server\ServerSupervisorCollectionFacts.cs" />
-    <Compile Include="Server\ServerSupervisorFacts.cs" />
-    <Compile Include="Server\AutomaticRetryServerComponentWrapperFacts.cs" />
+    <Compile Include="Server\AutomaticRetryProcessFacts.cs" />
     <Compile Include="Server\ServerHeartbeatFacts.cs" />
     <Compile Include="Server\ServerWatchdogFacts.cs" />
-    <Compile Include="Server\SharedWorkerContextFacts.cs" />
-    <Compile Include="Server\WorkerContextFacts.cs" />
     <Compile Include="Server\WorkerFacts.cs" />
-    <Compile Include="Server\WorkerManagerFacts.cs" />
+    <Compile Include="States\CoreStateMachineFacts.cs" />
     <Compile Include="States\DeletedStateFacts.cs" />
     <Compile Include="States\DeletedStateHandlerFacts.cs" />
     <Compile Include="States\EnqueuedStateFacts.cs" />
     <Compile Include="States\EnqueuedStateHandlerFacts.cs" />
     <Compile Include="States\FailedStateFacts.cs" />
+    <Compile Include="Client\CoreBackgroundJobFactoryFacts.cs" />
     <Compile Include="States\ScheduledStateHandlerFacts.cs" />
     <Compile Include="States\ProcessingStateFacts.cs" />
     <Compile Include="States\ScheduledStateFacts.cs" />
     <Compile Include="States\ApplyStateContextFacts.cs" />
     <Compile Include="States\ElectStateContextFacts.cs" />
-    <Compile Include="States\DefaultStateChangeProcessFacts.cs" />
-    <Compile Include="States\StateContextFacts.cs" />
-    <Compile Include="States\StateHandlerCollectionFacts.cs" />
-    <Compile Include="States\StateMachineFactoryFacts.cs" />
     <Compile Include="States\StateMachineFacts.cs" />
+    <Compile Include="States\StateHandlerCollectionFacts.cs" />
+    <Compile Include="States\BackgroundJobStateChangerFacts.cs" />
     <Compile Include="States\SucceededStateFacts.cs" />
     <Compile Include="States\SucceededStateHandlerFacts.cs" />
     <Compile Include="StatisticsHistoryAttributeFacts.cs" />
     <Compile Include="Storage\InvocationDataFacts.cs" />
     <Compile Include="Storage\MonitoringTypeFacts.cs" />
     <Compile Include="Storage\StorageConnectionExtensionsFacts.cs" />
+    <Compile Include="Utils\CultureHelper.cs" />
     <Compile Include="Utils\GlobalLockAttribute.cs" />
-    <Compile Include="Utils\PossibleHangingFactAttribute.cs" />
+    <Compile Include="Utils\PlatformHelper.cs" />
     <Compile Include="Utils\SequenceAttribute.cs" />
     <Compile Include="Utils\StaticLockAttribute.cs" />
+    <Compile Include="States\EnqueuedStateValidationFacts.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Hangfire.Core.Tests.project.json" />
     <None Include="packages.config" />
+    <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Hangfire.Core\Hangfire.Core.csproj">
@@ -157,6 +179,12 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\xunit.runner.visualstudio.2.2.0-beta2-build1149\build\net20\xunit.runner.visualstudio.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\xunit.runner.visualstudio.2.2.0-beta2-build1149\build\net20\xunit.runner.visualstudio.props'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

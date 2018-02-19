@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Threading;
 using System.Transactions;
 using Dapper;
-using Xunit;
+using Xunit.Sdk;
 
 namespace Hangfire.SqlServer.Tests
 {
@@ -12,16 +12,13 @@ namespace Hangfire.SqlServer.Tests
     {
         private static readonly object GlobalLock = new object();
         private static bool _sqlObjectInstalled;
-
+        
         private readonly IsolationLevel _isolationLevel;
+
         private TransactionScope _transaction;
-
-        public CleanDatabaseAttribute()
-            : this(IsolationLevel.Serializable)
-        {
-        }
-
-        public CleanDatabaseAttribute(IsolationLevel isolationLevel)
+        
+        public CleanDatabaseAttribute(
+            IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         {
             _isolationLevel = isolationLevel;
         }
@@ -32,20 +29,23 @@ namespace Hangfire.SqlServer.Tests
 
             if (!_sqlObjectInstalled)
             {
-                RecreateDatabaseAndInstallObjects();
+                CreateAndInitializeDatabaseIfNotExists();
                 _sqlObjectInstalled = true;
             }
 
-            _transaction = new TransactionScope(
-                TransactionScopeOption.RequiresNew,
-                new TransactionOptions { IsolationLevel = _isolationLevel });
+            if (_isolationLevel != IsolationLevel.Unspecified)
+            {
+                _transaction = new TransactionScope(
+                    TransactionScopeOption.RequiresNew,
+                    new TransactionOptions { IsolationLevel = _isolationLevel });
+            }
         }
 
         public override void After(MethodInfo methodUnderTest)
         {
             try
             {
-                _transaction.Dispose();
+                _transaction?.Dispose();
             }
             finally
             {
@@ -54,10 +54,10 @@ namespace Hangfire.SqlServer.Tests
             
         }
 
-        private static void RecreateDatabaseAndInstallObjects()
+        private static void CreateAndInitializeDatabaseIfNotExists()
         {
             var recreateDatabaseSql = String.Format(
-                @"if db_id('{0}') is null create database [{0}]",
+                @"if db_id('{0}') is null create database [{0}] COLLATE SQL_Latin1_General_CP1_CS_AS",
                 ConnectionUtils.GetDatabaseName());
 
             using (var connection = new SqlConnection(

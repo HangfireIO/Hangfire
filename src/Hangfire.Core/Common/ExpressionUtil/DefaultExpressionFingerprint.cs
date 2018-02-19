@@ -26,7 +26,7 @@ namespace Hangfire.Common.ExpressionUtil
         {
             DefaultExpressionFingerprint other = obj as DefaultExpressionFingerprint;
             return (other != null)
-                   && this.Equals(other);
+                   && Equals(other);
         }
     }
 }

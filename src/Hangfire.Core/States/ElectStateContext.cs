@@ -23,35 +23,36 @@ using Hangfire.Storage;
 
 namespace Hangfire.States
 {
+#pragma warning disable 618
     public class ElectStateContext : StateContext
+#pragma warning restore 618
     {
         private readonly IList<IState> _traversedStates = new List<IState>();
         private IState _candidateState;
 
-        public ElectStateContext(
-            [NotNull] StateContext context, 
-            [NotNull] IStorageConnection connection, 
-            [NotNull] IStateMachine stateMachine,
-            [NotNull] IState candidateState, 
-            [CanBeNull] string currentState)
-            : base(context)
+        public ElectStateContext([NotNull] ApplyStateContext applyContext)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
-            if (stateMachine == null) throw new ArgumentNullException("stateMachine");
-            if (candidateState == null) throw new ArgumentNullException("candidateState");
+            if (applyContext == null) throw new ArgumentNullException(nameof(applyContext));
+            
+            BackgroundJob = applyContext.BackgroundJob;
+            _candidateState = applyContext.NewState;
 
-            _candidateState = candidateState;
-
-            Connection = connection;
-            StateMachine = stateMachine;
-            CurrentState = currentState;
+            Storage = applyContext.Storage;
+            Connection = applyContext.Connection;
+            Transaction = applyContext.Transaction;
+            CurrentState = applyContext.OldStateName;
         }
+        
+        public override BackgroundJob BackgroundJob { get; }
 
         [NotNull]
-        public IStorageConnection Connection { get; private set; }
+        public JobStorage Storage { get; }
 
         [NotNull]
-        public IStateMachine StateMachine { get; private set; }
+        public IStorageConnection Connection { get; }
+
+        [NotNull]
+        public IWriteOnlyTransaction Transaction { get; }
 
         [NotNull]
         public IState CandidateState
@@ -61,7 +62,7 @@ namespace Hangfire.States
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value", "The CandidateState property can not be set to null.");
+                    throw new ArgumentNullException(nameof(value), "The CandidateState property can not be set to null.");
                 }
 
                 if (_candidateState != value)
@@ -76,17 +77,17 @@ namespace Hangfire.States
         public string CurrentState { get; private set; }
 
         [NotNull]
-        public IState[] TraversedStates { get { return _traversedStates.ToArray(); } }
+        public IState[] TraversedStates => _traversedStates.ToArray();
 
         public void SetJobParameter<T>(string name, T value)
         {
-            Connection.SetJobParameter(JobId, name, JobHelper.ToJson(value));
+            Connection.SetJobParameter(BackgroundJob.Id, name, JobHelper.ToJson(value));
         }
 
         public T GetJobParameter<T>(string name)
         {
             return JobHelper.FromJson<T>(Connection.GetJobParameter(
-                JobId, name));
+                BackgroundJob.Id, name));
         }
     }
 }

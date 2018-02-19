@@ -1,5 +1,4 @@
 ﻿using System;
-using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
@@ -9,21 +8,19 @@ namespace Hangfire.Core.Tests.States
 {
     public class EnqueuedStateHandlerFacts
     {
-        private const string JobId = "1";
         private const string Queue = "critical";
 
         private readonly ApplyStateContextMock _context;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
-        private readonly Mock<IStorageConnection> _connection;
 
         public EnqueuedStateHandlerFacts()
         {
-            _context = new ApplyStateContextMock();
-            _context.StateContextValue.JobIdValue = JobId;
-            _context.NewStateValue = new EnqueuedState { Queue = Queue };
+            _context = new ApplyStateContextMock
+            {
+                NewStateObject = new EnqueuedState { Queue = Queue }
+            };
 
             _transaction = new Mock<IWriteOnlyTransaction>();
-            _connection = new Mock<IStorageConnection>();
         }
 
         [Fact]
@@ -40,14 +37,15 @@ namespace Hangfire.Core.Tests.States
 
             handler.Apply(_context.Object, _transaction.Object);
 
-            _transaction.Verify(x => x.AddToQueue(Queue, JobId));
+            _transaction.Verify(x => x.AddToQueue(Queue, _context.BackgroundJob.Id));
         }
 
         [Fact]
         public void Apply_ThrowsAnException_WhenOtherThanEnqueuedStateGiven()
         {
             var handler = new EnqueuedState.Handler();
-            _context.NewStateValue = new Mock<IState>().Object;
+            _context.NewStateObject = null;
+            _context.NewState = new Mock<IState>();
 
             Assert.Throws<InvalidOperationException>(
                 () => handler.Apply(_context.Object, _transaction.Object));
@@ -58,7 +56,8 @@ namespace Hangfire.Core.Tests.States
         {
             var handler = new EnqueuedState.Handler();
 
-            Assert.DoesNotThrow(() => handler.Unapply(null, null));
+            // Does not throw
+            handler.Unapply(null, null);
         }
     }
 }

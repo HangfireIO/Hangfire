@@ -18,8 +18,7 @@ using System;
 
 namespace Hangfire.SqlServer
 {
-    [Serializable]
-    internal class SqlServerDistributedLockException : Exception
+    public class SqlServerDistributedLockException : Exception
     {
         public SqlServerDistributedLockException(string message)
             : base(message)
