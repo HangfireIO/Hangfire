@@ -92,6 +92,8 @@
     <Compile Include="Dashboard\Owin\OwinDashboardContextExtensions.cs" />
     <Compile Include="Dashboard\Owin\OwinDashboardRequest.cs" />
     <Compile Include="Dashboard\Owin\OwinDashboardResponse.cs" />
+    <Compile Include="SharedMemory\ISharedMemoryBlock.cs" />
+    <Compile Include="SharedMemory\ISharedMemoryEvent.cs" />
     <Compile Include="Obsolete\RequestDispatcherWrapper.cs" />
     <Compile Include="JobActivatorContext.cs" />
     <Compile Include="IRecurringJobManager.cs" />
@@ -117,6 +119,14 @@
     <Compile Include="Server\ServerProcessExtensions.cs" />
     <Compile Include="Server\BackgroundProcessingServer.cs" />
     <Compile Include="MoreLinq\MoreEnumerable.Pairwise.cs" />
+    <Compile Include="SharedMemory\ISharedMemoryMessage.cs" />
+    <Compile Include="SharedMemory\ISharedMemoryQueue.cs" />
+    <Compile Include="SharedMemory\ISharedMemorySession.cs" />
+    <Compile Include="SharedMemory\ISharedMemoryStream.cs" />
+    <Compile Include="SharedMemory\SharedMemoryConnection.cs" />
+    <Compile Include="SharedMemory\SharedMemoryEngine.cs" />
+    <Compile Include="SharedMemory\SharedMemoryTransaction.cs" />
+    <Compile Include="SharedMemory\SharedMemoryReadOnlyConnection.cs" />
     <Compile Include="States\AwaitingState.cs" />
     <Compile Include="ContinuationsSupportAttribute.cs" />
     <Compile Include="JobContinuationOptions.cs" />
