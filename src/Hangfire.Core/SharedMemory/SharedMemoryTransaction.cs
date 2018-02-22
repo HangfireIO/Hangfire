@@ -24,7 +24,8 @@ namespace Hangfire.SharedMemory
     {
         protected SharedMemoryTransaction(SharedMemoryConnection connection)
         {
-            Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            Connection = connection;
         }
 
         public SharedMemoryConnection Connection { get; }

@@ -24,7 +24,8 @@ namespace Hangfire.SharedMemory
     {
         protected SharedMemoryReadOnlyConnection(SharedMemoryEngine engine)
         {
-            Engine = engine ?? throw new ArgumentNullException(nameof(engine));
+            if (engine == null) throw new ArgumentNullException(nameof(engine));
+            Engine = engine;
         }
 
         public SharedMemoryEngine Engine { get; }
