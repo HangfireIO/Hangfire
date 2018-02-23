@@ -15,6 +15,8 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
+using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
@@ -22,17 +24,25 @@ namespace Hangfire.Server
     {
         public static readonly TimeSpan DefaultHeartbeatInterval = TimeSpan.FromSeconds(30);
 
-        private readonly TimeSpan _heartbeatInterval;
+        private static readonly ILog Logger = LogProvider.For<ServerHeartbeat>();
 
-        public ServerHeartbeat(TimeSpan heartbeatInterval)
+        private readonly TimeSpan _heartbeatInterval;
+        private readonly ServerContext _serverContext;
+
+        public ServerHeartbeat(TimeSpan heartbeatInterval, ServerContext serverContext)
         {
             _heartbeatInterval = heartbeatInterval;
+            _serverContext = serverContext;
         }
 
         public void Execute(BackgroundProcessContext context)
         {
             using (var connection = context.Storage.GetConnection())
             {
+                if (!connection.ServerPresent(context.ServerId))
+                {
+                    connection.AnnounceServer(context.ServerId, _serverContext);
+                }
                 connection.Heartbeat(context.ServerId);
             }
 

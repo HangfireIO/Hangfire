@@ -102,7 +102,7 @@ namespace Hangfire.Server
 
             _options = options;
 
-            _processes.AddRange(GetRequiredProcesses());
+            _processes.AddRange(GetRequiredProcesses(GetServerContext(new Dictionary<string, object>(properties, StringComparer.OrdinalIgnoreCase))));
             _processes.AddRange(storage.GetComponents());
             _processes.AddRange(processes);
 
@@ -163,9 +163,9 @@ namespace Hangfire.Server
             }
         }
 
-        private IEnumerable<IBackgroundProcess> GetRequiredProcesses()
+        private IEnumerable<IBackgroundProcess> GetRequiredProcesses(ServerContext serverContext)
         {
-            yield return new ServerHeartbeat(_options.HeartbeatInterval);
+            yield return new ServerHeartbeat(_options.HeartbeatInterval, serverContext);
             yield return new ServerWatchdog(_options.ServerCheckInterval, _options.ServerTimeout);
         }
 

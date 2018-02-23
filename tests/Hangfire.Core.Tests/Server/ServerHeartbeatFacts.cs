@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Hangfire.Server;
 using Hangfire.Storage;
 using Moq;
@@ -22,11 +23,28 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_UpdateServerHeartbeat()
         {
-            var server = new ServerHeartbeat(TimeSpan.Zero);
+            _connection.Setup(x => x.ServerPresent(_context.ServerId)).Returns(true);
+            var serverContext = new ServerContext() { WorkerCount = 1 };
+            var server = new ServerHeartbeat(TimeSpan.Zero, serverContext);
 
-			server.Execute(_context.Object);
+            server.Execute(_context.Object);
 
             _connection.Verify(x => x.Heartbeat(_context.ServerId));
+            _connection.Verify(x => x.AnnounceServer(_context.ServerId, It.IsAny<ServerContext>()), Times.Never);
+            _connection.Verify(x => x.Dispose(), Times.Once);
+        }
+
+        [Fact]
+        public void Execute_AnnounceServerIfMissing()
+        {
+            _connection.Setup(x => x.ServerPresent(_context.ServerId)).Returns(false);
+            var serverContext = new ServerContext(){WorkerCount = 1};
+            var server = new ServerHeartbeat(TimeSpan.Zero, serverContext);
+
+            server.Execute(_context.Object);
+
+            _connection.Verify(x => x.Heartbeat(_context.ServerId));
+            _connection.Verify(x => x.AnnounceServer(_context.ServerId, It.IsAny<ServerContext>()), Times.Once);
             _connection.Verify(x => x.Dispose(), Times.Once);
         }
     }
