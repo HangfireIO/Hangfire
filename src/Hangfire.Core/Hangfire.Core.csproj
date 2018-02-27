@@ -405,6 +405,7 @@
     <Compile Include="Common\IJobFilter.cs" />
     <Compile Include="Server\IServerFilter.cs" />
     <Compile Include="CaptureCultureAttribute.cs" />
+    <Compile Include="DashboardInfoAttribute.cs" />
     <Compile Include="BackgroundJob.cs" />
     <Compile Include="QueueAttribute.cs" />
     <Compile Include="JobActivator.cs" />

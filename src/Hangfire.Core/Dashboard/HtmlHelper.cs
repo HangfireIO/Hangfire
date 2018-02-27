@@ -26,6 +26,7 @@ using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 using Hangfire.Dashboard.Pages;
 using Hangfire.Dashboard.Resources;
+using Hangfire;
 
 namespace Hangfire.Dashboard
 {
@@ -107,6 +108,8 @@ namespace Hangfire.Dashboard
             }
 
 #if NETFULL
+            // When running .NET Framework, try to get the name from the "DisplayName" attribute
+            // included in the "System.ComponentModel" namespace.
             var displayNameAttribute = job.Method.GetCustomAttribute(typeof(DisplayNameAttribute)) as DisplayNameAttribute;
             if (displayNameAttribute != null && displayNameAttribute.DisplayName != null)
             {
@@ -117,6 +120,37 @@ namespace Hangfire.Dashboard
                 catch (FormatException)
                 {
                     return displayNameAttribute.DisplayName;
+                }
+            }
+
+            // If the "DisplayName" attribute didn't exist, or wasn't populated we will try to get
+            // the name from the custom "DashboardInfo" attribute in the "Hangfire" namespace.
+            var dashboardInfoAttribute = job.Method.GetCustomAttribute(typeof(DashboardInfoAttribute)) as DashboardInfoAttribute;
+            if (dashboardInfoAttribute != null && dashboardInfoAttribute.DisplayName != null)
+            {
+                try
+                {
+                    return String.Format(dashboardInfoAttribute.DisplayName, job.Args.ToArray());
+                }
+                catch (FormatException)
+                {
+                    return dashboardInfoAttribute.DisplayName;
+                }
+            }
+#else
+            // The "DisplayName" attribute does not exist in the "System.ComponentModel" namespace in 
+            // .NET Standard 1.3, so we will only look for the custom "DashboardInfo" attribute in 
+            // the "Hangfire" namespace.
+            var dashboardInfoAttribute = job.Method.GetCustomAttribute(typeof(DashboardInfoAttribute)) as DashboardInfoAttribute;
+            if (dashboardInfoAttribute != null && dashboardInfoAttribute.DisplayName != null)
+            {
+                try
+                {
+                    return String.Format(dashboardInfoAttribute.DisplayName, job.Args.ToArray());
+                }
+                catch (FormatException e)
+                {
+                    return dashboardInfoAttribute.DisplayName;
                 }
             }
 #endif
