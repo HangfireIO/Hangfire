@@ -148,7 +148,7 @@ namespace Hangfire.Dashboard
                 {
                     return String.Format(dashboardInfoAttribute.DisplayName, job.Args.ToArray());
                 }
-                catch (FormatException e)
+                catch (FormatException)
                 {
                     return dashboardInfoAttribute.DisplayName;
                 }
