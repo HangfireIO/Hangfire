@@ -1187,7 +1187,7 @@ values (@jobId, '', '', getutcdate())";
                 Commit(sql, x => x.ExpireJob((int.MaxValue + 1L).ToString(), TimeSpan.FromDays(1)), useBatching);
 
                 var job = GetTestJob(sql, (int.MaxValue + 1L).ToString());
-                Assert.True(DateTime.UtcNow.AddMinutes(-1) < job.ExpireAt && job.ExpireAt <= DateTime.UtcNow.AddDays(1));
+                Assert.True(DateTime.UtcNow.AddMinutes(-1) < job.ExpireAt && job.ExpireAt <= DateTime.UtcNow.AddDays(2));
             });
         }
 
