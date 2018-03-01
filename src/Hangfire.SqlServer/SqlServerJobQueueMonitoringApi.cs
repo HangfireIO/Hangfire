@@ -73,11 +73,7 @@ namespace Hangfire.SqlServer
 $@"select r.JobId from (
   select jq.JobId, row_number() over (order by jq.Id) as row_num 
   from [{_storage.SchemaName}].JobQueue jq with (nolock, forceseek)
-<<<<<<< HEAD
-  where jq.Queue = @queue
-=======
   where jq.Queue = @queue and jq.FetchedAt is null
->>>>>>> refs/remotes/origin/dev
 ) as r
 where r.row_num between @start and @end";
 

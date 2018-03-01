@@ -509,13 +509,8 @@ $@";with cte as
   from [{_storage.SchemaName}].Job j with (nolock, forceseek)
   where j.StateName = @stateName
 )
-<<<<<<< HEAD
-select j.Id, j.InvocationData, j.Arguments, s.Reason as StateReason, s.Data as StateData
-from [{_storage.SchemaName}].Job j with (nolock, forceseek)
-=======
 select j.*, s.Reason as StateReason, s.Data as StateData
-from [{_storage.SchemaName}].Job j with (nolock)
->>>>>>> refs/remotes/origin/dev
+from [{_storage.SchemaName}].Job j with (nolock, forceseek)
 inner join cte on cte.Id = j.Id 
 left join [{_storage.SchemaName}].State s with (nolock, forceseek) on j.StateId = s.Id and j.Id = s.JobId
 where cte.row_num between @start and @end
