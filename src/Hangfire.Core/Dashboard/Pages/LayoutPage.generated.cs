@@ -211,12 +211,12 @@ WriteLiteral(@"
             <div class=""container"">
                 <ul class=""list-inline credit"">
                     <li>
-                        <a href=""http://hangfire.io/"" target=""_blank"">Hangfire ");
+                        <a href=""https://www.hangfire.io/"" target=""_blank"" rel=""noopener noreferrer"">Hangfire ");
 
 
             
             #line 61 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                                                           Write($"{version.Major}.{version.Minor}.{version.Build}");
+                                                                                                          Write($"{version.Major}.{version.Minor}.{version.Build}");
 
             
             #line default

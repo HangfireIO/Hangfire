@@ -26,6 +26,7 @@ namespace Hangfire
         {
             AppPath = "/";
             Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
+            IsReadOnlyFunc = _ => false;
             StatsPollingInterval = 2000;
         }
 
@@ -41,6 +42,8 @@ namespace Hangfire
 
         public IEnumerable<IDashboardAuthorizationFilter> Authorization { get; set; }
 
+        public Func<DashboardContext, bool> IsReadOnlyFunc { get; set; }
+        
         /// <summary>
         /// The interval the /stats endpoint should be polled with.
         /// </summary>

@@ -39,6 +39,12 @@ namespace Hangfire.Dashboard
 
         public Task Dispatch(DashboardContext context)
         {
+            if (context.IsReadOnly)
+            {
+                context.Response.StatusCode = 401;
+                return Task.FromResult(false);
+            }
+
             var request = context.Request;
             var response = context.Response;
 

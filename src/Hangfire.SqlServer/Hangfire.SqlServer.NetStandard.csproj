@@ -47,8 +47,12 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="Constants.cs" />
     <Compile Include="CountersAggregator.cs" />
+    <Compile Include="SqlCommandBatch.cs" />
     <Compile Include="EnqueuedAndFetchedCountDto.cs" />
     <Compile Include="Entities\JobParameter.cs" />
     <Compile Include="Entities\Server.cs" />
@@ -61,10 +65,11 @@
     <Compile Include="IPersistentJobQueueMonitoringApi.cs" />
     <Compile Include="IPersistentJobQueueProvider.cs" />
     <Compile Include="PersistentJobQueueProviderCollection.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SqlCommandSet.cs" />
     <Compile Include="SqlServerConnection.cs" />
     <Compile Include="SqlServerDistributedLock.cs" />
     <Compile Include="SqlServerDistributedLockException.cs" />
-    <Compile Include="SqlServerFetchedJob.cs" />
     <Compile Include="SqlServerJobQueue.cs" />
     <Compile Include="SqlServerJobQueueMonitoringApi.cs" />
     <Compile Include="SqlServerJobQueueProvider.cs" />
@@ -73,6 +78,8 @@
     <Compile Include="SqlServerStorage.cs" />
     <Compile Include="SqlServerStorageExtensions.cs" />
     <Compile Include="SqlServerStorageOptions.cs" />
+    <Compile Include="SqlServerTimeoutJob.cs" />
+    <Compile Include="SqlServerTransactionJob.cs" />
     <Compile Include="SqlServerWriteOnlyTransaction.cs" />
   </ItemGroup>
   <ItemGroup>

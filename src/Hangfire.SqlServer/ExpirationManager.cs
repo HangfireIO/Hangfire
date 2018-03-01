@@ -20,6 +20,7 @@ using System.Data.SqlClient;
 using System.Threading;
 using Hangfire.Logging;
 using Hangfire.Server;
+using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
 {
@@ -65,29 +66,20 @@ namespace Hangfire.SqlServer
             {
                 Logger.Debug($"Removing outdated records from the '{table}' table...");
 
-                _storage.UseConnection(connection =>
+                UseConnectionDistributedLock(_storage, connection =>
                 {
-                    SqlServerDistributedLock.Acquire(connection, DistributedLockKey, DefaultLockTimeout);
+                    int affected;
 
-                    try
+                    do
                     {
-                        int affected;
+                        affected = ExecuteNonQuery(
+                            connection,
+                            GetQuery(_storage.SchemaName, table),
+                            cancellationToken,
+                            new SqlParameter("@count", NumberOfRecordsInSinglePass),
+                            new SqlParameter("@now", DateTime.UtcNow));
 
-                        do
-                        {
-                            affected = ExecuteNonQuery(
-                                connection,
-                                GetQuery(_storage.SchemaName, table),
-                                cancellationToken,
-                                new SqlParameter("@count", NumberOfRecordsInSinglePass),
-                                new SqlParameter("@now", DateTime.UtcNow));
-
-                        } while (affected == NumberOfRecordsInSinglePass);
-                    }
-                    finally
-                    {
-                        SqlServerDistributedLock.Release(connection, DistributedLockKey);
-                    }
+                    } while (affected == NumberOfRecordsInSinglePass);
                 });
 
                 Logger.Trace($"Outdated records removed from the '{table}' table.");
@@ -99,6 +91,36 @@ namespace Hangfire.SqlServer
         public override string ToString()
         {
             return GetType().ToString();
+        }
+
+        private void UseConnectionDistributedLock(SqlServerStorage storage, Action<DbConnection> action)
+        {
+            try
+            {
+                storage.UseConnection(null, connection =>
+                {
+                    SqlServerDistributedLock.Acquire(connection, DistributedLockKey, DefaultLockTimeout);
+
+                    try
+                    {
+                        action(connection);
+                    }
+                    finally
+                    {
+                        SqlServerDistributedLock.Release(connection, DistributedLockKey);
+                    }
+                });
+            }
+            catch (DistributedLockTimeoutException e) when (e.Resource == DistributedLockKey)
+            {
+                // DistributedLockTimeoutException here doesn't mean that outdated records weren't removed.
+                // It just means another Hangfire server did this work.
+                Logger.Log(
+                    LogLevel.Debug,
+                    () => $@"An exception was thrown during acquiring distributed lock on the {DistributedLockKey} resource within {DefaultLockTimeout.TotalSeconds} seconds. Outdated records were not removed.
+It will be retried in {_checkInterval.TotalSeconds} seconds.",
+                    e);
+            }
         }
 
         private static string GetQuery(string schemaName, string table)
@@ -163,3 +185,4 @@ delete from cte with (paglock)";
         }
     }
 }
+

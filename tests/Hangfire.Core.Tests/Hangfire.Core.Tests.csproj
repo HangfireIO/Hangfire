@@ -46,8 +46,8 @@
       <HintPath>..\..\packages\Moq.Sequences.NoNUnit.1.0.1\lib\Moq.Sequences.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NCrontab, Version=3.1.19111.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\ncrontab.3.1.0\lib\net45\NCrontab.dll</HintPath>
+    <Reference Include="Cronos, Version=0.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Cronos.0.6.0\lib\net45\Cronos.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -94,6 +94,11 @@
     <Compile Include="Common\JobLoadExceptionFacts.cs" />
     <Compile Include="Common\TypeExtensionsFacts.cs" />
     <Compile Include="CronFacts.cs" />
+    <Compile Include="Stubs\DashboardContextStub.cs" />
+    <Compile Include="Stubs\JobStorageStub.cs" />
+    <Compile Include="Stubs\DashboardResponseStub.cs" />
+    <Compile Include="Dashboard\CommandDispatcherFacts.cs" />
+    <Compile Include="Dashboard\BatchCommandDispatcherFacts.cs" />
     <Compile Include="Dashboard\HtmlHelperFacts.cs" />
     <Compile Include="LatencyTimeoutAttributeFacts.cs" />
     <Compile Include="GlobalStateHandlersFacts.cs" />
@@ -118,16 +123,11 @@
     <Compile Include="Server\BackgroundProcessContextFacts.cs" />
     <Compile Include="Server\BackgroundProcessingServerFacts.cs" />
     <Compile Include="Server\BackgroundJobPerformerFacts.cs" />
-    <Compile Include="Server\InfiniteLoopComponentFacts.cs" />
     <Compile Include="Server\CoreBackgroundJobPerformerFacts.cs" />
     <Compile Include="Server\RecurringJobSchedulerFacts.cs" />
-    <Compile Include="Server\ScheduleInstantFacts.cs" />
     <Compile Include="Server\PerformContextFacts.cs" />
     <Compile Include="Server\DelayedJobSchedulerFacts.cs" />
-    <Compile Include="Server\BackgroundProcessExtensionsFacts.cs" />
     <Compile Include="Server\ServerJobCancellationTokenFacts.cs" />
-    <Compile Include="Server\AutomaticRetryProcessFacts.cs" />
-    <Compile Include="Server\ServerHeartbeatFacts.cs" />
     <Compile Include="Server\ServerWatchdogFacts.cs" />
     <Compile Include="Server\WorkerFacts.cs" />
     <Compile Include="States\CoreStateMachineFacts.cs" />

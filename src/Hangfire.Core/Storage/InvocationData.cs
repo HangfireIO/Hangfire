@@ -24,11 +24,15 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using Hangfire.Common;
 using Hangfire.Server;
+using System.Text;
 
 namespace Hangfire.Storage
 {
     public class InvocationData
     {
+        private const string EmptyArray = "[]";
+        private static readonly string[] SystemAssemblyNames = { "mscorlib", "System.Private.CoreLib" };
+
         public InvocationData(
             string type, string method, string parameterTypes, string arguments)
         {
@@ -71,10 +75,40 @@ namespace Hangfire.Storage
         public static InvocationData Serialize(Job job)
         {
             return new InvocationData(
-                job.Type.AssemblyQualifiedName,
+                SerializeType(job.Type).ToString(),
                 job.Method.Name,
-                JobHelper.ToJson(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()),
+                SerializeTypes(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()).ToString(),
                 JobHelper.ToJson(SerializeArguments(job.Args)));
+        }
+
+        public static InvocationData Deserialize(string serializedInvocationData)
+        {
+            if (serializedInvocationData.StartsWith("{"))
+            {
+                // It's here for backward compatiblity. In earlier version of Hangfire
+                // InvocationData object was serialized as json object.
+                return JobHelper.FromJson<InvocationData>(serializedInvocationData);
+            }
+
+            var invocationDataValues = JobHelper.FromJson<string[]>(serializedInvocationData);
+
+            var valuesCount = invocationDataValues.Length;
+            
+            var type = invocationDataValues[0];
+            var method = invocationDataValues[1];
+            var parameterTypes = valuesCount > 2 ? invocationDataValues[2] : EmptyArray;
+            var arguments = valuesCount > 2 ? invocationDataValues[3] : EmptyArray;
+
+            return new InvocationData(type, method, parameterTypes, arguments);
+        }
+
+        public string Serialize()
+        {
+            var values = ParameterTypes == EmptyArray
+                ? new[] { Type, Method }
+                : new[] { Type, Method, ParameterTypes, Arguments };
+            
+            return JobHelper.ToJson(values);
         }
 
         internal static string[] SerializeArguments(IReadOnlyCollection<object> arguments)
@@ -167,62 +201,115 @@ namespace Hangfire.Storage
                     // be converted to object type.
                     value = argument;
                 }
-                else
+                else 
                 {
-#if NETFULL
-                    try
-                    {
-                        var converter = TypeDescriptor.GetConverter(type);
-
-                        // ReferenceConverter can't correctly convert the serialized
-                        // data. This may happen when FromJson method threw an exception,
-                        // we should rethrow it instead of trying to deserialize.
-                        if (converter.GetType() == typeof(ReferenceConverter))
-                        {
-                            ExceptionDispatchInfo.Capture(jsonException).Throw();
-                            throw;
-                        }
-
-                        value = converter.ConvertFromInvariantString(argument);
-                    }
-                    catch (Exception)
-                    {
-                        ExceptionDispatchInfo.Capture(jsonException).Throw();
-                        throw;
-                    }
-#else
                     DateTime dateTime;
-                    if (type == typeof(DateTime) && ParseDateTimeArgument(argument, out dateTime))
+                    if (ParseDateTimeArgument(argument, out dateTime))
                     {
                         value = dateTime;
                     }
                     else
                     {
+#if NETFULL
+                        try
+                        {
+                            var converter = TypeDescriptor.GetConverter(type);
+
+                            // ReferenceConverter can't correctly convert the serialized
+                            // data. This may happen when FromJson method threw an exception,
+                            // we should rethrow it instead of trying to deserialize.
+                            if (converter.GetType() == typeof(ReferenceConverter))
+                            {
+                                ExceptionDispatchInfo.Capture(jsonException).Throw();
+                                throw;
+                            }
+
+                            value = converter.ConvertFromInvariantString(argument);
+                        }
+                        catch (Exception)
+                        {
+                            ExceptionDispatchInfo.Capture(jsonException).Throw();
+                            throw;
+                        }
+#else
                         throw;
-                    }
 #endif
+                    }
                 }
             }
             return value;
         }
 
+       
         internal static bool ParseDateTimeArgument(string argument, out DateTime value)
         {
             DateTime dateTime;
-            var result = DateTime.TryParse(argument, out dateTime);
+
+            var result = DateTime.TryParseExact(
+                argument,
+                "MM/dd/yyyy HH:mm:ss.ffff",
+                CultureInfo.CurrentCulture,
+                DateTimeStyles.None,
+                out dateTime);
 
             if (!result)
             {
-                result = DateTime.TryParseExact(
-                    argument, 
-                    "MM/dd/yyyy HH:mm:ss.ffff", 
-                    CultureInfo.CurrentCulture,
-                    DateTimeStyles.None, 
-                    out dateTime);
+                result = DateTime.TryParse(argument, null, DateTimeStyles.RoundtripKind, out dateTime);
             }
 
             value = dateTime;
             return result;
+        }
+
+        private static StringBuilder SerializeTypes(Type[] types, char beginTypeDelimiter = '"', char endTypeDelimiter = '"', StringBuilder typeNamesBuilder = null)
+        {
+            if (types == null) return null;
+            if (typeNamesBuilder == null) typeNamesBuilder = new StringBuilder();
+
+            typeNamesBuilder.Append('[');
+            
+            for (var i = 0; i < types.Length; i++)
+            {
+                typeNamesBuilder.Append(beginTypeDelimiter);
+                SerializeType(types[i], true, typeNamesBuilder);
+                typeNamesBuilder.Append(endTypeDelimiter);
+
+                if (i != types.Length - 1) typeNamesBuilder.Append(',');
+            }
+            
+            return typeNamesBuilder.Append(']');
+        }
+
+        private static StringBuilder SerializeType(Type type, bool withAssemblyName = true, StringBuilder typeNameBuilder = null)
+        {
+            typeNameBuilder = typeNameBuilder ?? new StringBuilder();
+
+            if (type.DeclaringType != null)
+            {
+                SerializeType(type.DeclaringType, false, typeNameBuilder).Append('+');
+            }
+            else if (type.Namespace != null)
+            {
+                typeNameBuilder.Append(type.Namespace).Append('.');
+            }
+
+            typeNameBuilder.Append(type.Name);
+
+            if (type.GenericTypeArguments.Length > 0)
+            {
+                SerializeTypes(type.GenericTypeArguments, '[', ']', typeNameBuilder);
+            }
+
+            if (!withAssemblyName) return typeNameBuilder;
+
+            var assemblyName = type.GetTypeInfo().Assembly.GetName().Name;
+
+            if (!SystemAssemblyNames.Contains(assemblyName))
+            {
+                typeNameBuilder.Append(", ").Append(assemblyName);
+            }
+
+            return typeNameBuilder;
         }
     }
 }

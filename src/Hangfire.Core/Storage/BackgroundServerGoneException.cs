@@ -1,5 +1,5 @@
-// This file is part of Hangfire.
-// Copyright � 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire.
+// Copyright © 2018 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -15,14 +15,13 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 
-namespace Hangfire.Server
+namespace Hangfire.Storage
 {
-    internal interface IScheduleInstant
+#if NETFULL
+    [Serializable]
+#endif
+    public class BackgroundServerGoneException : Exception
     {
-        DateTime NowInstant { get; }
-        DateTime? NextInstant { get; }
-        IEnumerable<DateTime> GetNextInstants(DateTime lastInstant);
     }
 }

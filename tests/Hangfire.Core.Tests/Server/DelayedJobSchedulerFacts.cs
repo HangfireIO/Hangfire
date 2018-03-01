@@ -105,6 +105,18 @@ namespace Hangfire.Core.Tests.Server
             _distributedLock.Verify(x => x.Dispose());
         }
 
+        [Fact]
+        public void Execute_DoesNotThrowDistributedLockTimeoutException()
+        {
+            _connection
+                .Setup(x => x.AcquireDistributedLock("locks:schedulepoller", It.IsAny<TimeSpan>()))
+                .Throws(new DistributedLockTimeoutException("locks:schedulepoller"));
+
+            var scheduler = CreateScheduler();
+
+            scheduler.Execute(_context.Object);
+        }
+
         private DelayedJobScheduler CreateScheduler()
         {
             return new DelayedJobScheduler(Timeout.InfiniteTimeSpan, _stateChanger.Object);

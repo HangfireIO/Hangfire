@@ -10,12 +10,39 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>SQL Server 2008+ (including Express), SQL Server LocalDB and SQL Azure storage support for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2013-2016 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013-2017 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.17
+• Added – `SqlServerStorageOptions.CommandBatchMaxTimeout` parameter to enable batching in transactions.
+• Fixed – Timeout exceptions when there are a lot of large concurrent transactions by using the new batching method.
+• Fixed – Distributed locks are safe now even in very unreliable networks and after network blips.
+• Performance – Greatly decreased the number of connections required to process background jobs.
+• Performance – Significantly decrease the number of roundtrips required to commit a transaction.
+    
+1.6.16
+• Fixed – Lower the number of requests, when trying to acquire a distributed lock.
+• Fixed – Problems with continuations and batch continuations, when using existing `SqlConnection` instance.
+• Fixed – Distributed locks were silently released, when passing explicit closed connection to a storage.
+• Fixed – `KeyNotFoundException` errors on various dashboard pages don't appear anymore (by @benjymous).
+• Fixed – "Cannot release the application lock because it is not currently held" exceptions, when connection was closed.
+• Fixed – Allow to use zero timeout for SQL Server-based distributed locks.
+    
+1.6.15
+• Fixed – Timeout exceptions that's caused by SQL Server's thread pool starvation, caused by sp_getapplock.
+• Fixed – Antecedent background job is constantly failing, when its continuation hasn't been fully created.
+    
+1.6.14
+• Added – `SqlServerStorageOptions.SlidingInvisibilityTimeout` to fetch jobs without using transaction.
+• Fixed – Transaction log is full due to 'ACTIVE_TRANSACTION' by enabling to use new non-transactional fetch.
+• Fixed – `SqlServerJobQueueMonitoringApi` can't cause READ UNCOMMITTED isolation level to leak on SQL Server 2012 or earlier. 
+• Fixed – Add missing `SqlServerStorage(DbConnection, SqlServerStorageOptions)` constructor.
+    
 1.6.13
 • Fixed – Don't hide errors occurred while running SQL migrations.
+• Fixed – `KeyNotFoundException` when accessing Deleted Jobs page in Dashboard.
+• Fixed – `SqlServerDistributedLock` leaks connections, when lock acquisition is failed.
     
 1.6.9
 • Fixed – `TimeoutException` on large arguments or large batches via `SqlServerOptions.CommandTimeout`.

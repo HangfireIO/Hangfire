@@ -48,5 +48,37 @@ namespace Hangfire.Core.Tests
         {
             Assert.Empty(_storage.Object.GetStateHandlers());
         }
+
+        [Fact]
+        public void JobExpirationTimeout_HasDefaultTimeoutFromDays1()
+        {
+            Assert.Equal(TimeSpan.FromDays(1), _storage.Object.JobExpirationTimeout);
+        }
+
+        [Fact]
+        public void JobExpirationTimeout_CantAllowTimeoutLessThanOneHour()
+        {
+            var oneMilisecondLess = TimeSpan.FromHours(1).Subtract(TimeSpan.FromMilliseconds(1));
+            var exception = Assert.Throws<ArgumentException>(() => _storage.Object.JobExpirationTimeout = oneMilisecondLess);
+
+            Assert.Equal("JobStorage.JobExpirationTimeout value should be equal or greater than 1 hour.", exception.Message);
+
+        }
+
+        [Fact]
+        public void JobExpirationTimeout_CanChangeTheTimeout()
+        {
+            Assert.Equal(TimeSpan.FromDays(1), _storage.Object.JobExpirationTimeout);
+
+            _storage.Object.JobExpirationTimeout = TimeSpan.FromHours(1);
+
+            Assert.Equal(TimeSpan.FromHours(1), _storage.Object.JobExpirationTimeout);
+
+            GlobalConfiguration.Configuration
+                .UseStorage(_storage.Object)
+                .WithJobExpirationTimeout(TimeSpan.FromDays(3));
+
+            Assert.Equal(TimeSpan.FromDays(3), _storage.Object.JobExpirationTimeout);
+        }
     }
 }

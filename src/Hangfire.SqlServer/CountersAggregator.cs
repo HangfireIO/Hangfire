@@ -53,7 +53,7 @@ namespace Hangfire.SqlServer
 
             do
             {
-                _storage.UseConnection(connection =>
+                _storage.UseConnection(null, connection =>
                 {
                     removedCount = connection.Execute(
                         GetAggregationQuery(_storage),

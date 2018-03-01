@@ -33,6 +33,7 @@ body {
 
 .container .credit {
   margin: 20px 0;
+  word-break: break-word;
 }
 
 .page-header {
@@ -163,7 +164,8 @@ a:hover .label-hover {
 }
 
 .obsolete-data pre, .obsolete-data .label {
-    background-color: #f5f5f5;
+    background-color: #999;
+    color: #fff;
 }
 
 .obsolete-data .glyphicon-question-sign {

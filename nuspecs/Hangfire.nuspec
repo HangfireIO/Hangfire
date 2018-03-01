@@ -15,17 +15,71 @@
       Backed by Redis, SQL Server, SQL Azure or MSMQ. This is a .NET alternative to Sidekiq, Resque and Celery.
       http://hangfire.io/
     </description>
-    <copyright>Copyright © 2013-2016 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013-2017 Sergey Odinokov</copyright>
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
+    
+1.6.17
+
+Hangfire.SqlServer
+
+• Added – `SqlServerStorageOptions.CommandBatchMaxTimeout` parameter to enable batching in transactions.
+• Fixed – Timeout exceptions when there are a lot of large concurrent transactions by using the new batching method.
+• Fixed – Distributed locks are safe now even in very unreliable networks and after network blips.
+• Performance – Greatly decreased the number of connections required to process background jobs.
+• Performance – Significantly decrease the number of roundtrips required to commit a transaction.
+    
+1.6.16
+
+Hangfire.Core
+
+• Fixed – Unexpected `DateTime` and `DateTime?` serialization issues in background job arguments (by @plaisted).
+• Fixed – `DistributedLockTimeoutException` in some background processes now logged with "DEBUG" level instead of "ERROR".
+• Fixed – `ElmahLogProvider` to show errors when using SQL log (by @francnuec).
+• Fixed – Last execution field isn't shown on recurring jobs page, when background job has already expired.
+• Fixed – `Hangfire.SqlServer` assembly doesn't include version in the `netstandard` target.
+
+Hangfire.SqlServer
+
+• Fixed – Lower the number of requests, when trying to acquire a distributed lock.
+• Fixed – Problems with continuations and batch continuations, when using existing `SqlConnection` instance.
+• Fixed – Distributed locks were silently released, when passing explicit closed connection to a storage.
+• Fixed – `KeyNotFoundException` errors on various dashboard pages don't appear anymore (by @benjymous).
+• Fixed – "Cannot release the application lock because it is not currently held" exceptions, when connection was closed.
+• Fixed – Allow to use zero timeout for SQL Server-based distributed locks.
+    
+1.6.15
+
+Hangfire.SqlServer
+
+• Fixed – Timeout exceptions that's caused by SQL Server's thread pool starvation, caused by sp_getapplock.
+• Fixed – Antecedent background job is constantly failing, when its continuation hasn't been fully created.
+    
+1.6.14
+
+Hangfire.SqlServer
+
+• Added – `SqlServerStorageOptions.SlidingInvisibilityTimeout` to fetch jobs without using transaction.
+• Fixed – Transaction log is full due to 'ACTIVE_TRANSACTION' by enabling to use new non-transactional fetch.
+• Fixed – `SqlServerJobQueueMonitoringApi` can't cause READ UNCOMMITTED isolation level to leak on SQL Server 2012 or earlier. 
+• Fixed – Add missing `SqlServerStorage(DbConnection, SqlServerStorageOptions)` constructor.
     
 1.6.13
 
 Hangfire.Core
-• Fixed – Don't throw NullReferenceException, when state was changed on Processing page.
+• Fixed – Continuation is fired on a wrong queue, when parent job is finished before the creation.
+• Fixed – Impossible to intercept failed state transition before `AutomaticRetryAttribute`.
+• Fixed – Fixed translation in Chinese localization on home page (by @JustinChia).
+• Fixed – Don't throw `NullReferenceException`, when state has changed during query on Processing page.
+• Fixed – `CreateBatchFailedException`, when batch creation takes longer than 1 hour.
+
+Hangfire.AspNetCore
+• Fixed – Types are resolved using the `GetServiceOrCreateInstance` method (by @Tsabo).
 
 Hangfire.SqlServer
 • Fixed – Don't hide errors occurred while running SQL migrations.
+• Fixed – `KeyNotFoundException` when accessing Deleted Jobs page in Dashboard.
+• Fixed – `SqlServerDistributedLock` leaks connections, when lock acquisition is failed.
     
 1.6.12
 

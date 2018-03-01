@@ -40,9 +40,9 @@ namespace Hangfire
         {
             WorkerCount = Math.Min(Environment.ProcessorCount * 5, MaxDefaultWorkerCount);
             Queues = new[] { EnqueuedState.DefaultQueue };
-            ShutdownTimeout = BackgroundProcessingServer.DefaultShutdownTimeout;
+            ShutdownTimeout = BackgroundProcessingServerOptions.DefaultShutdownTimeout;
             SchedulePollingInterval = DelayedJobScheduler.DefaultPollingDelay;
-            HeartbeatInterval = ServerHeartbeat.DefaultHeartbeatInterval;
+            HeartbeatInterval = BackgroundProcessingServerOptions.DefaultHeartbeatInterval;
             ServerTimeout = ServerWatchdog.DefaultServerTimeout;
             ServerCheckInterval = ServerWatchdog.DefaultCheckInterval;
             

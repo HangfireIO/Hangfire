@@ -69,8 +69,11 @@
     <Compile Include="IPersistentJobQueueMonitoringApi.cs" />
     <Compile Include="IPersistentJobQueueProvider.cs" />
     <Compile Include="PersistentJobQueueProviderCollection.cs" />
+    <Compile Include="SqlCommandBatch.cs" />
+    <Compile Include="SqlCommandSet.cs" />
+    <Compile Include="SqlServerTimeoutJob.cs" />
     <Compile Include="SqlServerJobQueue.cs" />
-    <Compile Include="SqlServerFetchedJob.cs" />
+    <Compile Include="SqlServerTransactionJob.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlServerDistributedLock.cs" />
     <Compile Include="SqlServerDistributedLockException.cs" />

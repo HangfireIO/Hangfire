@@ -23,11 +23,23 @@ namespace Hangfire.Server
 {
     public class BackgroundProcessContext
     {
+        [Obsolete("This constructor overload is deprecated and will be removed in 2.0.0.")]
+        public BackgroundProcessContext(
+            [NotNull] string serverId,
+            [NotNull] JobStorage storage,
+            [NotNull] IDictionary<string, object> properties,
+            CancellationToken cancellationToken)
+            : this(serverId, storage, properties, Guid.NewGuid(), cancellationToken, CancellationToken.None)
+        {
+        }
+
         public BackgroundProcessContext(
             [NotNull] string serverId,
             [NotNull] JobStorage storage, 
             [NotNull] IDictionary<string, object> properties, 
-            CancellationToken cancellationToken)
+            Guid executionId,
+            CancellationToken cancellationToken,
+            CancellationToken abortToken)
         {
             if (serverId == null) throw new ArgumentNullException(nameof(serverId));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -35,8 +47,10 @@ namespace Hangfire.Server
 
             ServerId = serverId;
             Storage = storage;
+            ExecutionId = executionId;
             Properties = new Dictionary<string, object>(properties, StringComparer.OrdinalIgnoreCase);
             CancellationToken = cancellationToken;
+            AbortToken = abortToken;
         }
         
         [NotNull]
@@ -48,7 +62,10 @@ namespace Hangfire.Server
         [NotNull]
         public JobStorage Storage { get; }
 
+        public Guid ExecutionId { get; }
+
         public CancellationToken CancellationToken { get; }
+        public CancellationToken AbortToken { get; }
 
         public bool IsShutdownRequested => CancellationToken.IsCancellationRequested;
 

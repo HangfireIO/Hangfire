@@ -19,6 +19,7 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
+using Hangfire.Storage;
 
 namespace Hangfire.Server
 {
@@ -143,8 +144,7 @@ namespace Hangfire.Server
 
         private bool EnqueueNextScheduledJob(BackgroundProcessContext context)
         {
-            using (var connection = context.Storage.GetConnection())
-            using (connection.AcquireDistributedLock("locks:schedulepoller", DefaultLockTimeout))
+            return UseConnectionDistributedLock(context.Storage, connection =>
             {
                 var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
 
@@ -177,6 +177,29 @@ namespace Hangfire.Server
                 }
 
                 return true;
+            });
+        }
+
+        private T UseConnectionDistributedLock<T>(JobStorage storage, Func<IStorageConnection, T> action)
+        {
+            var resource = "locks:schedulepoller";
+            try
+            {
+                using (var connection = storage.GetConnection())
+                using (connection.AcquireDistributedLock(resource, DefaultLockTimeout))
+                {
+                    return action(connection);
+                }
+            }
+            catch (DistributedLockTimeoutException e) when (e.Resource == resource)
+            {
+                // DistributedLockTimeoutException here doesn't mean that delayed jobs weren't enqueued.
+                // It just means another Hangfire server did this work.
+                Logger.DebugException(
+                    $@"An exception was thrown during acquiring distributed lock on the {resource} resource within {DefaultLockTimeout.TotalSeconds} seconds. The scheduled jobs have not been handled this time.
+It will be retried in {_pollingDelay.TotalSeconds} seconds", 
+                    e);
+                return default(T);
             }
         }
     }

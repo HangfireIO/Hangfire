@@ -43,7 +43,7 @@
                                 <td>@Html.ServerId(server.Name)</td>
                                 <td>@server.WorkersCount</td>
                                 <td>@Html.Raw(String.Join(", ", server.Queues.Select(Html.QueueLabel)))</td>
-                                <td data-moment="@JobHelper.ToTimestamp(server.StartedAt)">@server.StartedAt</td>
+                                <td>@Html.RelativeTime(server.StartedAt)</td>
                                 <td>
                                     @if (server.Heartbeat.HasValue)
                                     {

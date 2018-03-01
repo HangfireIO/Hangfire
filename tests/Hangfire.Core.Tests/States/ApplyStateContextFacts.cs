@@ -94,6 +94,7 @@ namespace Hangfire.Core.Tests.States
             Assert.Same(_backgroundJob.Object, context.BackgroundJob);
             Assert.Equal(OldState, context.OldStateName);
             Assert.Same(_newState.Object, context.NewState);
+            Assert.Equal(_storage.Object.JobExpirationTimeout, context.JobExpirationTimeout);
         }
     }
 }
