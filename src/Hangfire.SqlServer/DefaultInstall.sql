@@ -384,14 +384,29 @@ IF @CURRENT_SCHEMA_VERSION = 5
 BEGIN
 	PRINT 'Installing schema version 6';
 
-	-- First of all, we'll remove the unnecessary indexes. They were unnecessary in the previous schema,
+	-- First, we will drop all the secondary indexes on the HangFire.Set table, because we will
+	-- modify that table, and unknown indexes may be added there (see https://github.com/HangfireIO/Hangfire/issues/844).
+	-- So, we'll drop all of them, and then re-create the required index with a well-known name.
+
+	DECLARE @dropIndexSql NVARCHAR(MAX) = N'';
+	SELECT @dropIndexSql += N'DROP INDEX ' + QUOTENAME(SCHEMA_NAME(o.[schema_id])) + '.' + QUOTENAME(o.name) + '.' + QUOTENAME(i.name) + ';'
+	FROM sys.indexes AS i
+	INNER JOIN sys.tables AS o
+	ON i.[object_id] = o.[object_id]
+	WHERE i.is_primary_key = 0
+	AND i.index_id <> 0
+	AND o.is_ms_shipped = 0
+	AND SCHEMA_NAME(o.[schema_id]) = 'HangFire'
+	AND o.name = 'Set';
+
+	EXEC sp_executesql @dropIndexSql;
+	PRINT 'Dropped all secondary indexes on the [Set] table';
+
+	-- Next, we'll remove the unnecessary indexes. They were unnecessary in the previous schema,
 	-- and are unnecessary in the new schema as well. We'll not re-create them.
 
 	DROP INDEX [IX_HangFire_Hash_Key] ON [HangFire].[Hash];
 	PRINT 'Dropped unnecessary index [IX_HangFire_Hash_Key]';
-
-	DROP INDEX [IX_HangFire_Set_Key] ON [HangFire].[Set];
-	PRINT 'Dropped unnecessary index [IX_HangFire_Set_Key]';
 
 	-- Next, all the indexes that cover expiration will be filtered, to include only non-null values. This
 	-- will prevent unnecessary index modifications – we are seeking these indexes only for non-null
@@ -406,9 +421,6 @@ BEGIN
 
 	DROP INDEX [IX_HangFire_List_ExpireAt] ON [HangFire].[List];
 	PRINT 'Dropped index [IX_HangFire_List_ExpireAt]';
-
-	DROP INDEX [IX_HangFire_Set_ExpireAt] ON [HangFire].[Set];
-	PRINT 'Dropped index [IX_HangFire_Set_ExpireAt]';
 
 	-- IX_HangFire_Job_StateName index can also be optimized, since we are querying it only with a
 	-- non-null state name. This will decrease the number of operations, when creating a background job.
@@ -450,8 +462,6 @@ BEGIN
 
 	DROP INDEX [IX_HangFire_State_JobId] ON [HangFire].[State];
 	PRINT 'Dropped index [IX_HangFire_State_JobId]';
-
-	DROP INDEX [UX_HangFire_Set_KeyAndValue] ON [HangFire].[Set];
 
 	-- Then, we need to drop the primary key constraints, to modify id columns to the BIGINT type. Some of them
 	-- will be re-created later in the migration. But some of them would be removed forever, because their
