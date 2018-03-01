@@ -394,7 +394,7 @@ namespace Hangfire.Processing
                 {
                     // Since we are moving from the Failed state, one or more error messages were
                     // logged, and we should notify administrators that operations are restored.
-                    _logger.Info($"{GetExecutionTemplate()} recovered from the Failed state and is in the Running state now");
+                    _logger.Info($"{GetExecutionTemplate()} recovered from the Failed state after {_failedSince?.Elapsed} and is in the Running state now");
                 }
                 else if (_faultedSince != null)
                 {
@@ -404,7 +404,7 @@ namespace Hangfire.Processing
                     // log thousands of messages).
                     _logger.Log(
                         _faultedSince.Elapsed > _options.WarningThreshold ? LogLevel.Info : LogLevel.Debug,
-                        () => $"{GetExecutionTemplate()} recovered from the Faulted state and is in the Running state now");
+                        () => $"{GetExecutionTemplate()} recovered from the Faulted state after {_faultedSince?.Elapsed} and is in the Running state now");
                 }
 
                 _exceptionsCount = 0;
@@ -459,7 +459,7 @@ namespace Hangfire.Processing
                 {
                     // Still in the Failed state, we should log the error message as a reminder,
                     // but shouldn't do this too often, especially for short retry intervals.
-                    _logger.ErrorException($"{GetExecutionTemplate()} is still in the Failed state for {_failedSince.Elapsed} due to an exception, will be retried no more than in {retryDelay}", exception);
+                    _logger.ErrorException($"{GetExecutionTemplate()} is still in the Failed state for {_failedSince?.Elapsed} due to an exception, will be retried no more than in {retryDelay}", exception);
                 }
             }
         }
