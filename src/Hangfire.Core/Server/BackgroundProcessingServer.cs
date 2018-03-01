@@ -201,25 +201,27 @@ namespace Hangfire.Server
 
         private IBackgroundDispatcher CreateDispatcher()
         {
+            var execution = new BackgroundExecution(
+                _stopCts.Token,
+                _abortCts.Token,
+                new BackgroundExecutionOptions
+                {
+                    Name = nameof(BackgroundServerProcess),
+                    ErrorThreshold = TimeSpan.Zero,
+                    StillErrorThreshold = TimeSpan.Zero,
+                    RetryDelay = retry => _options.ServerRetryInterval
+                });
+
             return new BackgroundDispatcher(
-                new BackgroundExecution(
-                    _stopCts.Token,
-                    _abortCts.Token,
-                    new BackgroundExecutionOptions
-                    {
-                        Name = nameof(BackgroundServerProcess),
-                        ErrorThreshold = TimeSpan.Zero,
-                        StillErrorThreshold = TimeSpan.Zero,
-                        RetryDelay = retry => _options.ServerRetryInterval
-                    }),
+                execution,
                 RunServer,
-                null,
+                execution,
                 ThreadFactory);
         }
 
         private void RunServer(Guid executionId, object state)
         {
-            _process.Execute(executionId, _stopCts.Token, _abortCts.Token);
+            _process.Execute(executionId, (BackgroundExecution)state, _stopCts.Token, _abortCts.Token);
         }
 
         private static IEnumerable<Thread> ThreadFactory(ThreadStart threadStart)

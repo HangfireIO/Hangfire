@@ -58,7 +58,7 @@ namespace Hangfire.Server
             _dispatcherBuilders = builders.ToArray();
         }
 
-        public void Execute(Guid executionId, CancellationToken shutdownToken, CancellationToken abortShutdownToken)
+        public void Execute(Guid executionId, BackgroundExecution execution, CancellationToken shutdownToken, CancellationToken abortShutdownToken)
         {
             var serverId = GetServerId();
             Stopwatch stoppedAt = null;
@@ -85,6 +85,8 @@ namespace Hangfire.Server
                     {
                         // todo what if there are no dispatchers?
                         StartDispatchers(context, dispatchers);
+
+                        execution.NotifySucceeded();
                         RunHeartbeatLoop(context);
                     }
                     catch (Exception ex)

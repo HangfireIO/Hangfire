@@ -259,6 +259,19 @@ namespace Hangfire.Processing
             }
         }
 
+        public void NotifySucceeded()
+        {
+            if (StopRequested) return;
+
+            // This is an optimization to avoid lock acquisitions on every
+            // loop iteration. It is possible that value will become null
+            // upon entering the lock, but this race condition is benign.
+            if (Volatile.Read(ref _faultedSince) != null)
+            {
+                ToRunningState();
+            }
+        }
+
         public override string ToString()
         {
             return _options?.Name ?? GetType().Name;
@@ -313,16 +326,7 @@ namespace Hangfire.Processing
         private void HandleSuccess(out TimeSpan nextDelay)
         {
             nextDelay = TimeSpan.Zero;
-
-            if (StopRequested) return;
-
-            // This is an optimization to avoid lock acquisitions on every
-            // loop iteration. It is possible that value will become null
-            // upon entering the lock, but this race condition is benign.
-            if (Volatile.Read(ref _faultedSince) != null)
-            {
-                ToRunningState();
-            }
+            NotifySucceeded();
         }
 
         private void HandleException(Guid executionId, Exception exception, out TimeSpan delay)
@@ -451,7 +455,7 @@ namespace Hangfire.Processing
                     _logger.ErrorException($"{GetExecutionTemplate()} is in the Failed state now due to an exception, execution will be retried no more than in {retryDelay}", exception);
                     _failedSince = Stopwatch.StartNew();
                 }
-                else if (_lastException.Elapsed > _options.ErrorThreshold)
+                else if (_failedSince != null && _lastException.Elapsed >= _options.StillErrorThreshold)
                 {
                     // Still in the Failed state, we should log the error message as a reminder,
                     // but shouldn't do this too often, especially for short retry intervals.

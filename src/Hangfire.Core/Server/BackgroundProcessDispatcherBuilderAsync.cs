@@ -50,14 +50,19 @@ namespace Hangfire.Server
             if (context == null) throw new ArgumentNullException(nameof(context));
             if (options == null) throw new ArgumentNullException(nameof(options));
 
-            return new BackgroundDispatcherAsync(
-                new BackgroundExecution(context.StopToken, context.AbortToken, new BackgroundExecutionOptions
+            var execution = new BackgroundExecution(
+                context.StopToken, 
+                context.AbortToken,
+                new BackgroundExecutionOptions
                 {
                     Name = _process.GetType().Name,
                     RetryDelay = BackgroundExecutionOptions.GetBackOffMultiplier
-                }),
+                });
+
+            return new BackgroundDispatcherAsync(
+                execution,
                 ExecuteProcess,
-                Tuple.Create(_process, context),
+                Tuple.Create(_process, context, execution),
                 _taskScheduler(),
                 _maxConcurrency,
                 _ownsScheduler);
@@ -70,7 +75,7 @@ namespace Hangfire.Server
 
         private static async Task ExecuteProcess(Guid executionId, object state)
         {
-            var tuple = (Tuple<IBackgroundProcessAsync, BackgroundServerContext>)state;
+            var tuple = (Tuple<IBackgroundProcessAsync, BackgroundServerContext, BackgroundExecution>)state;
             var serverContext = tuple.Item2;
 
             var context = new BackgroundProcessContext(
@@ -84,6 +89,7 @@ namespace Hangfire.Server
             while (!context.IsShutdownRequested)
             {
                 await tuple.Item1.ExecuteAsync(context);
+                tuple.Item3.NotifySucceeded();
             }
         }
     }
