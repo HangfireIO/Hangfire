@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Processing;
@@ -44,13 +45,13 @@ namespace Hangfire.Server
             _ownsScheduler = ownsScheduler;
         }
 
-        public IBackgroundDispatcher Create(BackgroundProcessContext context, BackgroundProcessingServerOptions options)
+        public IBackgroundDispatcher Create(BackgroundServerContext context, BackgroundProcessingServerOptions options)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             return new BackgroundDispatcherAsync(
-                new BackgroundExecution(context.CancellationToken, context.AbortToken, new BackgroundExecutionOptions
+                new BackgroundExecution(context.StopToken, context.AbortToken, new BackgroundExecutionOptions
                 {
                     Name = _process.GetType().Name,
                     RetryDelay = BackgroundExecutionOptions.GetBackOffMultiplier
@@ -67,10 +68,23 @@ namespace Hangfire.Server
             return _process.GetType().Name;
         }
 
-        private static Task ExecuteProcess(object state)
+        private static async Task ExecuteProcess(Guid executionId, object state)
         {
-            var context = (Tuple<IBackgroundProcessAsync, BackgroundProcessContext>)state;
-            return context.Item1.ExecuteAsync(context.Item2);
+            var tuple = (Tuple<IBackgroundProcessAsync, BackgroundServerContext>)state;
+            var serverContext = tuple.Item2;
+
+            var context = new BackgroundProcessContext(
+                serverContext.ServerId, 
+                serverContext.Storage,
+                serverContext.Properties.ToDictionary(x => x.Key, x => x.Value), 
+                executionId, 
+                serverContext.StopToken, 
+                serverContext.AbortToken);
+
+            while (!context.IsShutdownRequested)
+            {
+                await tuple.Item1.ExecuteAsync(context);
+            }
         }
     }
 }

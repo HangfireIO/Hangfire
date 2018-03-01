@@ -58,9 +58,9 @@ namespace Hangfire.Server
             _dispatcherBuilders = builders.ToArray();
         }
 
-        public void Execute(CancellationToken shutdownToken, CancellationToken abortShutdownToken)
+        public void Execute(Guid executionId, CancellationToken shutdownToken, CancellationToken abortShutdownToken)
         {
-            var serverId = GetGloballyUniqueServerId();
+            var serverId = GetServerId(executionId);
             Stopwatch stoppedAt = null;
 
             //using (LogProvider.OpenMappedContext("ServerId", serverId.ToString()))
@@ -68,7 +68,7 @@ namespace Hangfire.Server
             using (var forcedRestartCts = CancellationTokenSource.CreateLinkedTokenSource(abortShutdownToken))
             using (restartCts.Token.Register(() => stoppedAt = Stopwatch.StartNew()))
             {
-                var context = new BackgroundProcessContext(
+                var context = new BackgroundServerContext(
                     serverId,
                     _storage,
                     _properties,
@@ -131,13 +131,13 @@ namespace Hangfire.Server
                 threadStart => BackgroundProcessExtensions.DefaultThreadFactory(1, component.GetType().Name, threadStart)));
         }
 
-        private string GetGloballyUniqueServerId()
+        private string GetServerId(Guid executionId)
         {
             var serverName = _options.ServerName
                              ?? Environment.GetEnvironmentVariable("COMPUTERNAME")
                              ?? Environment.GetEnvironmentVariable("HOSTNAME");
 
-            var guid = Guid.NewGuid().ToString();
+            var guid = executionId.ToString();
 
 #if NETFULL
             if (!String.IsNullOrWhiteSpace(serverName))
@@ -151,7 +151,7 @@ namespace Hangfire.Server
                 : guid;
         }
 
-        private void CreateServer(BackgroundProcessContext context)
+        private void CreateServer(BackgroundServerContext context)
         {
             try
             {
@@ -193,7 +193,7 @@ namespace Hangfire.Server
             return serverContext;
         }
 
-        private void ServerDelete(BackgroundProcessContext context, Stopwatch stoppedAt)
+        private void ServerDelete(BackgroundServerContext context, Stopwatch stoppedAt)
         {
             var stopwatch = Stopwatch.StartNew();
             _logger.Trace($"{GetServerTemplate(context.ServerId)} is reporting itself as stopped...");
@@ -235,14 +235,14 @@ namespace Hangfire.Server
             _logger.Info($"{GetServerTemplate(context.ServerId)} all the dispatchers started");
         }
 
-        private void HandleDispatcherException(BackgroundProcessContext context, Exception ex)
+        private void HandleDispatcherException(BackgroundServerContext context, Exception ex)
         {
             _logger.ErrorException($"{GetServerTemplate(context.ServerId)} caught an exception while creating dispatcher, will restart...", ex);
             ExceptionDispatchInfo.Capture(ex).Throw();
         }
 
         private void WaitForDispatchers(
-            BackgroundProcessContext context,
+            BackgroundServerContext context,
             IReadOnlyList<IBackgroundDispatcher> dispatchers)
         {
             if (dispatchers.Count == 0) return;
@@ -288,16 +288,16 @@ namespace Hangfire.Server
             }
         }
 
-        private void RunHeartbeatLoop(BackgroundProcessContext context)
+        private void RunHeartbeatLoop(BackgroundServerContext context)
         {
             var faultedSince = (Stopwatch)null;
 
             // avoid while true todo
-            while (!context.CancellationToken.IsCancellationRequested)
+            while (!context.StopToken.IsCancellationRequested)
             {
                 try
                 {
-                    context.CancellationToken.ThrowIfCancellationRequested();
+                    context.StopToken.ThrowIfCancellationRequested();
 
                     // todo look for stopped dispatchers? Worth, when TaskScheduler or custom dispatchers don't catch threadaborts
                     // todo what if there are no dispatchers?
@@ -305,9 +305,8 @@ namespace Hangfire.Server
                     _logger.Trace(
                         $"{GetServerTemplate(context.ServerId)} waiting for {{{_options.HeartbeatInterval}}} delay before sending a heartbeat");
 
-                    context.Wait(_options.HeartbeatInterval);
-
-                    _logger.Trace($"{GetServerTemplate(context.ServerId)} is about to send a heartbeat...");
+                    context.StopToken.WaitHandle.WaitOne(_options.HeartbeatInterval);
+                    context.StopToken.ThrowIfCancellationRequested();
 
                     // todo use try
                     using (var connection = _storage.GetConnection())
@@ -327,7 +326,7 @@ namespace Hangfire.Server
                         faultedSince = null;
                     }
                 }
-                catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested)
+                catch (OperationCanceledException) when (context.StopToken.IsCancellationRequested)
                 {
                     _logger.Info($"{GetServerTemplate(context.ServerId)} caught the stop signal, stopping the server...");
                     return;

@@ -26,7 +26,7 @@ namespace Hangfire.Processing
     internal sealed class BackgroundDispatcherAsync : IBackgroundDispatcher
     {
         private readonly ILog _logger = LogProvider.GetLogger(typeof(BackgroundDispatcherAsync));
-        private readonly Func<object, Task> _action;
+        private readonly Func<Guid, object, Task> _action;
         private readonly object _state;
         private readonly IBackgroundExecution _execution;
         private readonly TaskScheduler _taskScheduler;
@@ -34,7 +34,7 @@ namespace Hangfire.Processing
 
         public BackgroundDispatcherAsync(
             [NotNull] IBackgroundExecution execution,
-            [NotNull] Func<object, Task> action,
+            [NotNull] Func<Guid, object, Task> action,
             [CanBeNull] object state,
             [NotNull] TaskScheduler taskScheduler,
             int maxConcurrency,

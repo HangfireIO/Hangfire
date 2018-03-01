@@ -122,6 +122,7 @@
     <Compile Include="Server\BackgroundProcessDispatcherBuilderAsync.cs" />
     <Compile Include="Server\BackgroundProcessExtensions.cs" />
     <Compile Include="Server\BackgroundProcessingServerOptions.cs" />
+    <Compile Include="Server\BackgroundServerContext.cs" />
     <Compile Include="Server\BackgroundServerProcess.cs" />
     <Compile Include="Server\CoreBackgroundJobPerformer.cs" />
     <Compile Include="Server\IBackgroundProcess.cs" />

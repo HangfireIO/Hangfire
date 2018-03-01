@@ -33,14 +33,14 @@ namespace Hangfire.Processing
         private readonly TaskCompletionSource<object> _stoppedTcs = new TaskCompletionSource<object>();
 
         private readonly IBackgroundExecution _execution;
-        private readonly Action<object> _action;
+        private readonly Action<Guid, object> _action;
         private readonly object _state;
 
         private int _running;
 
         public BackgroundDispatcher(
             [NotNull] IBackgroundExecution execution,
-            [NotNull] Action<object> action,
+            [NotNull] Action<Guid, object> action,
             [CanBeNull] object state,
             [NotNull] Func<ThreadStart, IEnumerable<Thread>> threadFactory)
         {

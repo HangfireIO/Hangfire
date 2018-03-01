@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Processing;
@@ -38,13 +39,13 @@ namespace Hangfire.Server
             _threadFactory = threadFactory;
         }
 
-        public IBackgroundDispatcher Create(BackgroundProcessContext context, BackgroundProcessingServerOptions options)
+        public IBackgroundDispatcher Create(BackgroundServerContext context, BackgroundProcessingServerOptions options)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             return new BackgroundDispatcher(
-                new BackgroundExecution(context.CancellationToken, context.AbortToken, new BackgroundExecutionOptions
+                new BackgroundExecution(context.StopToken, context.AbortToken, new BackgroundExecutionOptions
                 {
                     Name = _process.GetType().Name,
                     RetryDelay = options.RetryDelay
@@ -59,10 +60,23 @@ namespace Hangfire.Server
             return _process.GetType().Name;
         }
 
-        private static void ExecuteProcess(object state)
+        private static void ExecuteProcess(Guid executionId, object state)
         {
-            var context = (Tuple<IBackgroundProcess, BackgroundProcessContext>)state;
-            context.Item1.Execute(context.Item2);
+            var tuple = (Tuple<IBackgroundProcess, BackgroundServerContext>)state;
+            var serverContext = tuple.Item2;
+
+            var context = new BackgroundProcessContext(
+                serverContext.ServerId,
+                serverContext.Storage,
+                serverContext.Properties.ToDictionary(x => x.Key, x => x.Value),
+                executionId,
+                serverContext.StopToken,
+                serverContext.AbortToken);
+
+            while (!context.IsShutdownRequested)
+            {
+                tuple.Item1.Execute(context);
+            }
         }
     }
 }

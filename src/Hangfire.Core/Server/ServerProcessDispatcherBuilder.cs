@@ -39,13 +39,13 @@ namespace Hangfire.Server
             _threadFactory = threadFactory;
         }
 
-        public IBackgroundDispatcher Create(BackgroundProcessContext context, BackgroundProcessingServerOptions options)
+        public IBackgroundDispatcher Create(BackgroundServerContext context, BackgroundProcessingServerOptions options)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             return new BackgroundDispatcher(
-                new BackgroundExecution(context.CancellationToken, context.AbortToken, new BackgroundExecutionOptions
+                new BackgroundExecution(context.StopToken, context.AbortToken, new BackgroundExecutionOptions
                 {
                     Name = _component.GetType().Name,
                     RetryDelay = options.RetryDelay
@@ -60,10 +60,10 @@ namespace Hangfire.Server
             return _component.GetType().Name;
         }
 
-        private static void ExecuteComponent(object state)
+        private static void ExecuteComponent(Guid executionId, object state)
         {
-            var context = (Tuple<IServerComponent, BackgroundProcessContext>)state;
-            context.Item1.Execute(context.Item2.CancellationToken);
+            var tuple = (Tuple<IServerComponent, BackgroundServerContext>)state;
+            tuple.Item1.Execute(tuple.Item2.StopToken);
         }
     }
 }

@@ -217,9 +217,9 @@ namespace Hangfire.Server
                 ThreadFactory);
         }
 
-        private void RunServer(object state)
+        private void RunServer(Guid executionId, object state)
         {
-            _process.Execute(_stopCts.Token, _abortCts.Token);
+            _process.Execute(executionId, _stopCts.Token, _abortCts.Token);
         }
 
         private static IEnumerable<Thread> ThreadFactory(ThreadStart threadStart)

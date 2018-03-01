@@ -80,7 +80,7 @@ namespace Hangfire.Processing
         public bool StopRequested => _disposed || _stopToken.IsCancellationRequested || AbortRequested;
         public bool AbortRequested => _abortToken.IsCancellationRequested;
 
-        public void Run(Action<object> callback, object state)
+        public void Run(Action<Guid, object> callback, object state)
         {
             if (callback == null) throw new ArgumentNullException(nameof(callback));
 
@@ -123,7 +123,7 @@ namespace Hangfire.Processing
                                 HandleDelay(executionId, nextDelay);
                             }
 
-                            callback(state);
+                            callback(executionId, state);
                             HandleSuccess(out nextDelay);
                         }
 #if NETFULL
@@ -163,7 +163,7 @@ namespace Hangfire.Processing
             }
         }
 
-        public async Task RunAsync(Func<object, Task> callback, object state)
+        public async Task RunAsync(Func<Guid, object, Task> callback, object state)
         {
             if (callback == null) throw new ArgumentNullException(nameof(callback));
 
@@ -206,7 +206,7 @@ namespace Hangfire.Processing
                                 await HandleDelayAsync(executionId, nextDelay).ConfigureAwait(true);
                             }
 
-                            await callback(state).ConfigureAwait(true);
+                            await callback(executionId, state).ConfigureAwait(true);
                             HandleSuccess(out nextDelay);
                         }
 #if NETFULL

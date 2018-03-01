@@ -21,6 +21,6 @@ namespace Hangfire.Server
 {
     public interface IBackgroundProcessDispatcherBuilder
     {
-        IBackgroundDispatcher Create([NotNull] BackgroundProcessContext context, [NotNull] BackgroundProcessingServerOptions options);
+        IBackgroundDispatcher Create([NotNull] BackgroundServerContext context, [NotNull] BackgroundProcessingServerOptions options);
     }
 }

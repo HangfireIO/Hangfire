@@ -22,7 +22,7 @@ namespace Hangfire.Processing
 {
     public interface IBackgroundExecution : IDisposable
     {
-        void Run([NotNull] Action<object> callback, [CanBeNull] object state);
-        Task RunAsync([NotNull] Func<object, Task> callback, [CanBeNull] object state);
+        void Run([NotNull] Action<Guid, object> callback, [CanBeNull] object state);
+        Task RunAsync([NotNull] Func<Guid, object, Task> callback, [CanBeNull] object state);
     }
 }
