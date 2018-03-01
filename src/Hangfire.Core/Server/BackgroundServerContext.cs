@@ -1,5 +1,5 @@
 ﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright © 2018 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -21,24 +21,13 @@ using Hangfire.Annotations;
 
 namespace Hangfire.Server
 {
-    public class BackgroundProcessContext
+    public class BackgroundServerContext
     {
-        [Obsolete("This constructor overload is deprecated and will be removed in 2.0.0.")]
-        public BackgroundProcessContext(
+        public BackgroundServerContext(
             [NotNull] string serverId,
             [NotNull] JobStorage storage,
-            [NotNull] IDictionary<string, object> properties,
-            CancellationToken cancellationToken)
-            : this(serverId, storage, properties, Guid.NewGuid(), cancellationToken, CancellationToken.None)
-        {
-        }
-
-        public BackgroundProcessContext(
-            [NotNull] string serverId,
-            [NotNull] JobStorage storage, 
             [NotNull] IDictionary<string, object> properties, 
-            Guid executionId,
-            CancellationToken cancellationToken,
+            CancellationToken stopToken, 
             CancellationToken abortToken)
         {
             if (serverId == null) throw new ArgumentNullException(nameof(serverId));
@@ -47,31 +36,15 @@ namespace Hangfire.Server
 
             ServerId = serverId;
             Storage = storage;
-            ExecutionId = executionId;
-            Properties = new Dictionary<string, object>(properties, StringComparer.OrdinalIgnoreCase);
-            CancellationToken = cancellationToken;
+            Properties = properties;
+            StopToken = stopToken;
             AbortToken = abortToken;
         }
-        
-        [NotNull]
+
         public string ServerId { get; }
-
-        [NotNull]
-        public IReadOnlyDictionary<string, object> Properties { get; }
-
-        [NotNull]
         public JobStorage Storage { get; }
-
-        public Guid ExecutionId { get; }
-
-        public CancellationToken CancellationToken { get; }
+        public IDictionary<string, object> Properties { get; }
+        public CancellationToken StopToken { get; }
         public CancellationToken AbortToken { get; }
-
-        public bool IsShutdownRequested => CancellationToken.IsCancellationRequested;
-
-        public void Wait(TimeSpan timeout)
-        {
-            CancellationToken.WaitHandle.WaitOne(timeout);
-        }
     }
 }

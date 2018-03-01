@@ -15,22 +15,13 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Threading;
+using Hangfire.Processing;
 
-namespace Hangfire.Storage
+namespace Hangfire.Server
 {
-#if NETFULL
-    [Serializable]
-#endif
-    public class DistributedLockTimeoutException : TimeoutException
+    internal interface IBackgroundServerProcess
     {
-        public DistributedLockTimeoutException(string resource)
-            : base(
-                $"Timeout expired. The timeout elapsed prior to obtaining a distributed lock on the '{resource}' resource."
-                )
-        {
-            Resource = resource;
-        }
-
-        public string Resource { get; }
+        void Execute(Guid executionId, BackgroundExecution execution, CancellationToken stopToken, CancellationToken abortToken);
     }
 }
