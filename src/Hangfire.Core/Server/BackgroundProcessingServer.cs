@@ -54,7 +54,7 @@ namespace Hangfire.Server
         private readonly BackgroundProcessingServerOptions _options;
         private readonly IBackgroundDispatcher _dispatcher;
 
-        private int _disposed;
+        private int _shutdown;
 
         public BackgroundProcessingServer([NotNull] IEnumerable<IBackgroundProcess> processes)
             : this(JobStorage.Current, processes)
@@ -92,12 +92,6 @@ namespace Hangfire.Server
         {
         }
 
-        private static IBackgroundProcessDispatcherBuilder[] GetProcesses([NotNull] IEnumerable<IBackgroundProcess> processes)
-        {
-            if (processes == null) throw new ArgumentNullException(nameof(processes));
-            return processes.Select(x => x.UseBackgroundPool(1)).ToArray();
-        }
-
         public BackgroundProcessingServer(
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcessDispatcherBuilder> dispatcherBuilders,
@@ -124,24 +118,9 @@ namespace Hangfire.Server
             _dispatcher = CreateDispatcher();
 
 #if NETFULL
-            AppDomain.CurrentDomain.DomainUnload += (sender, args) =>
-            {
-                // todo wait while another dispose is taking place?
-                Dispose(true, "Domain unload");
-            };
-            AppDomain.CurrentDomain.ProcessExit += (sender, args) => Dispose(true, "Process exit");
+            AppDomain.CurrentDomain.DomainUnload += OnCurrentDomainUnload;
+            AppDomain.CurrentDomain.ProcessExit += OnCurrentDomainUnload;
 #endif
-        }
-
-        [Obsolete("todo")] // todo
-        public void SendStop()
-        {
-            Stop(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(false, "Dispose is called");
         }
 
         public void Stop(bool abort)
@@ -165,38 +144,51 @@ namespace Hangfire.Server
             return _dispatcher.WaitAsync(cancellationToken);
         }
 
-        private void Dispose(bool forced, string reason)
+        [Obsolete("This method is deprecated, please use the Stop(bool) method instead. Will be removed in 2.0.0.")]
+        public void SendStop()
         {
-            if (Interlocked.Exchange(ref _disposed, 1) == 1)
+            Stop(false);
+        }
+
+        public void Dispose()
+        {
+            Shutdown(_options.ShutdownTimeout);
+
+            _dispatcher.Dispose();
+            _abortCts.Dispose();
+            _stopCts.Dispose();
+        }
+
+        private void OnCurrentDomainUnload(object sender, EventArgs args)
+        {
+            Shutdown(_options.ForcedShutdownTimeout);
+        }
+
+        private void Shutdown(TimeSpan timeout)
+        {
+            if (Interlocked.Exchange(ref _shutdown, 1) == 1)
             {
                 return;
             }
 
             if (!_stopCts.IsCancellationRequested)
             {
-                var timeout = forced ? _options.ForcedStopTimeout : _options.ShutdownTimeout;
-                _logger.Info($"Stopping because: {reason}, forced: {forced}, timeout: {timeout}");
+                _logger.Info($"Shutdown initiated with the {timeout} timeout...");
 
-                // todo after this no new work will be started
                 _stopCts.Cancel();
 
-                // todo uncomment the wait
                 if (!_dispatcher.Wait(timeout))
                 {
-                    _logger.Info("Stop timeout elapsed, aborting");
-                    // todo after this all completion logic will be aborted
-                    _abortCts.Cancel(); // todo for non-unload reasons
-
-                    if (!_dispatcher.Wait(_options.AbortTimeout))
-                    {
-                        _logger.Warn("abort timeout elapsed, we did everything possible");
-                    }
+                    _abortCts.Cancel();
+                    _dispatcher.Wait(_options.AbortTimeout);
                 }
             }
+        }
 
-            _dispatcher.Dispose();
-            _abortCts.Dispose();
-            _stopCts.Dispose();
+        private static IBackgroundProcessDispatcherBuilder[] GetProcesses([NotNull] IEnumerable<IBackgroundProcess> processes)
+        {
+            if (processes == null) throw new ArgumentNullException(nameof(processes));
+            return processes.Select(x => x.UseBackgroundPool(threadCount: 1)).ToArray();
         }
 
         private IBackgroundDispatcher CreateDispatcher()
@@ -209,7 +201,7 @@ namespace Hangfire.Server
                     Name = nameof(BackgroundServerProcess),
                     ErrorThreshold = TimeSpan.Zero,
                     StillErrorThreshold = TimeSpan.Zero,
-                    RetryDelay = retry => _options.ServerRetryInterval
+                    RetryDelay = retry => _options.RestartDelay
                 });
 
             return new BackgroundDispatcher(
@@ -231,14 +223,14 @@ namespace Hangfire.Server
                 IsBackground = true,
                 Name = $"{nameof(BackgroundServerProcess)} #{Interlocked.Increment(ref _lastThreadId)}",
 #if NETFULL
-                Priority = ThreadPriority.AboveNormal // TODO: Set abovenormal priority?
+                Priority = ThreadPriority.AboveNormal
 #endif
             };
         }
 
         private void ThrowIfDisposed()
         {
-            if (Volatile.Read(ref _disposed) == 1)
+            if (Volatile.Read(ref _shutdown) == 1)
             {
                 throw new ObjectDisposedException(GetType().FullName);
             }

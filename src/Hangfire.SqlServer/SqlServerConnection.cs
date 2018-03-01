@@ -357,10 +357,15 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
 
             _storage.UseConnection(_dedicatedConnection, connection =>
             {
-                connection.Execute(
+                var affected = connection.Execute(
                     $@"update [{_storage.SchemaName}].Server set LastHeartbeat = @now where Id = @id",
                     new { now = DateTime.UtcNow, id = serverId },
                     commandTimeout: _storage.CommandTimeout);
+
+                if (affected == 0)
+                {
+                    throw new BackgroundServerGoneException();
+                }
             });
         }
 

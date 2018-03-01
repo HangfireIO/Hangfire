@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Logging;
 using Hangfire.Processing;
+using Hangfire.Storage;
 
 namespace Hangfire.Server
 {
@@ -83,7 +84,6 @@ namespace Hangfire.Server
                 {
                     try
                     {
-                        // todo what if there are no dispatchers?
                         StartDispatchers(context, dispatchers);
 
                         execution.NotifySucceeded();
@@ -91,15 +91,11 @@ namespace Hangfire.Server
                     }
                     catch (Exception ex)
                     {
-                        // todo runheartbeatloop exception?
-                        // todo exception can be caused by RunHeartbeatLoop
                         HandleDispatcherException(context, ex);
                     }
                     finally
                     {
                         restartCts.Cancel();
-
-                        // todo needed for restarts only, to not to hang undefinitely while waiting for dispatchers
                         forcedRestartCts.CancelAfter(_options.RestartTimeout);
                     }
                 }
@@ -108,7 +104,6 @@ namespace Hangfire.Server
                 {
                     WaitForDispatchers(context, dispatchers);
                     ServerDelete(context, stoppedAt);
-                    // todo: set flag with non-graceful shutdown in storage to allow others to process its jobs
                 }
                 catch (Exception ex)
                 {
@@ -155,24 +150,15 @@ namespace Hangfire.Server
 
         private void CreateServer(BackgroundServerContext context)
         {
-            try
-            {
-                var stopwatch = Stopwatch.StartNew();
-                _logger.Trace($"{GetServerTemplate(context.ServerId)} is announcing itself");
+            var stopwatch = Stopwatch.StartNew();
+            _logger.Trace($"{GetServerTemplate(context.ServerId)} is announcing itself");
 
-                using (var connection = _storage.GetConnection())
-                {
-                    connection.AnnounceServer(context.ServerId, GetServerContext(_properties));
-                }
-
-                _logger.Info($"{GetServerTemplate(context.ServerId)} successfully announced in {stopwatch.Elapsed.TotalMilliseconds} ms");
-            }
-            catch (Exception)
+            using (var connection = _storage.GetConnection())
             {
-                // TODO: Change storage exception
-                //throw new StorageException($"{GetServerTemplate(context.ServerId)} was failed to announce itself due to an exception", ex);
-                throw;
+                connection.AnnounceServer(context.ServerId, GetServerContext(_properties));
             }
+
+            _logger.Info($"{GetServerTemplate(context.ServerId)} successfully announced in {stopwatch.Elapsed.TotalMilliseconds} ms");
         }
 
         private static ServerContext GetServerContext(IDictionary<string, object> properties)
@@ -200,22 +186,14 @@ namespace Hangfire.Server
             var stopwatch = Stopwatch.StartNew();
             _logger.Trace($"{GetServerTemplate(context.ServerId)} is reporting itself as stopped...");
 
-            // todo CT.None for last=chance
-            do
+            using (var connection = _storage.GetConnection())
             {
-                using (var connection = _storage.GetConnection())
-                {
-                    // todo check for CT
-                    connection.RemoveServer(context.ServerId);
-                }
+                // todo check for CT
+                connection.RemoveServer(context.ServerId);
+            }
 
-                // todo make reachable
-                _logger.Info(
-                    $"{GetServerTemplate(context.ServerId)} successfully reported itself as stopped in {stopwatch.Elapsed.TotalMilliseconds} ms");
-                _logger.Info(
-                    $"{GetServerTemplate(context.ServerId)} has been stopped in total {stoppedAt?.Elapsed.TotalMilliseconds ?? 0} ms");
-                return;
-            } while (!context.AbortToken.IsCancellationRequested);
+            _logger.Info($"{GetServerTemplate(context.ServerId)} successfully reported itself as stopped in {stopwatch.Elapsed.TotalMilliseconds} ms");
+            _logger.Info($"{GetServerTemplate(context.ServerId)} has been stopped in total {stoppedAt?.Elapsed.TotalMilliseconds ?? 0} ms");
         }
 
         private void StartDispatchers(BackgroundServerContext context, ICollection<IBackgroundDispatcher> dispatchers)
@@ -230,7 +208,6 @@ namespace Hangfire.Server
 
             foreach (var dispatcherBuilder in _dispatcherBuilders)
             {
-                // todo use options
                 dispatchers.Add(dispatcherBuilder.Create(context, _options));
             }
 
@@ -258,7 +235,6 @@ namespace Hangfire.Server
                 waitTasks[i] = dispatchers[i].WaitAsync(context.AbortToken);
             }
 
-            // todo exceptions
             Task.WaitAny(Task.WhenAll(waitTasks), context.AbortToken.AsTask());
 
             var nonStopped = new List<IBackgroundDispatcher>();
@@ -294,39 +270,35 @@ namespace Hangfire.Server
         {
             var faultedSince = (Stopwatch)null;
 
-            // avoid while true todo
             while (!context.StopToken.IsCancellationRequested)
             {
                 try
                 {
                     context.StopToken.ThrowIfCancellationRequested();
 
-                    // todo look for stopped dispatchers? Worth, when TaskScheduler or custom dispatchers don't catch threadaborts
-                    // todo what if there are no dispatchers?
-
-                    _logger.Trace(
-                        $"{GetServerTemplate(context.ServerId)} waiting for {_options.HeartbeatInterval} delay before sending a heartbeat");
+                    _logger.Trace($"{GetServerTemplate(context.ServerId)} waiting for {_options.HeartbeatInterval} delay before sending a heartbeat");
 
                     context.StopToken.WaitHandle.WaitOne(_options.HeartbeatInterval);
                     context.StopToken.ThrowIfCancellationRequested();
 
-                    // todo use try
-                    using (var connection = _storage.GetConnection())
+                    try
                     {
-                        connection.Heartbeat(context.ServerId);
+                        using (var connection = _storage.GetConnection())
+                        {
+                            connection.Heartbeat(context.ServerId);
+                        }
+
+                        _logger.Debug($"{GetServerTemplate(context.ServerId)} heartbeat successfully sent");
                     }
-
-                    _logger.Debug($"{GetServerTemplate(context.ServerId)} heartbeat successfully sent");
-
-                    // todo
-                    /*_logger.Warn(
-                        $"{GetServerTemplate(context.ServerId)} was considered dead by other servers, restarting...");
-                    return;*/
+                    catch (BackgroundServerGoneException)
+                    {
+                        _logger.Warn($"{GetServerTemplate(context.ServerId)} was considered dead by other servers, restarting...");
+                        return;
+                    }
 
                     if (faultedSince != null)
                     {
-                        _logger.Info(
-                            $"{GetServerTemplate(context.ServerId)} is now able to continue sending heartbeats");
+                        _logger.Info($"{GetServerTemplate(context.ServerId)} is now able to continue sending heartbeats");
                         faultedSince = null;
                     }
                 }
@@ -363,6 +335,7 @@ namespace Hangfire.Server
             }
             catch
             {
+                // ignored
             }
 
             return $"Server {name}";

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
+using Hangfire.Logging;
 using Hangfire.Processing;
 
 namespace Hangfire.Server
@@ -72,8 +73,9 @@ namespace Hangfire.Server
                 threadStart => DefaultThreadFactory(threadCount, process.GetType().Name, threadStart),
                 exception =>
                 {
-                    // todo
-                    //BackgroundExecutionBase.LogUnhandledException(true, process.GetType(), exception);
+                    LogProvider.GetLogger(typeof(BackgroundTaskScheduler)).FatalException(
+                        "Unhandled exception occurred in scheduler. Please report it to Hangfire developers",
+                        exception);
                 });
 
             return new BackgroundProcessDispatcherBuilderAsync(process, createScheduler, maxConcurrency, true);
@@ -109,9 +111,6 @@ namespace Hangfire.Server
                 yield return new Thread(threadStart)
                 {
                     IsBackground = true,
-#if NETFULL
-                    Priority = ThreadPriority.BelowNormal, //todo
-#endif
                     Name = $"{threadName} #{i + 1}"
                 };
             }

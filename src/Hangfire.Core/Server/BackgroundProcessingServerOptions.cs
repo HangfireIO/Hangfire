@@ -30,13 +30,13 @@ namespace Hangfire.Server
         {
             HeartbeatInterval = DefaultHeartbeatInterval;
             ServerCheckInterval = ServerWatchdog.DefaultCheckInterval;
-            ServerTimeout = ServerWatchdog.DefaultServerTimeout; // todo watchdog should work only upon successful heartbeat
+            ServerTimeout = ServerWatchdog.DefaultServerTimeout;
             RestartTimeout = TimeSpan.FromSeconds(15);
             RetryDelay = BackgroundExecutionOptions.GetBackOffMultiplier;
             ShutdownTimeout = DefaultShutdownTimeout;
-            ForcedStopTimeout = TimeSpan.FromSeconds(1);
+            ForcedShutdownTimeout = TimeSpan.FromSeconds(1);
             AbortTimeout = TimeSpan.FromMilliseconds(100);
-            ServerRetryInterval = TimeSpan.FromSeconds(15);
+            RestartDelay = TimeSpan.FromSeconds(15);
         }
 
         public TimeSpan HeartbeatInterval { get; set; }
@@ -56,8 +56,8 @@ namespace Hangfire.Server
         }
 
         public TimeSpan ShutdownTimeout { get; set; }
-        public TimeSpan ForcedStopTimeout { get; set; }
+        public TimeSpan ForcedShutdownTimeout { get; set; }
         public TimeSpan AbortTimeout { get; set; }
-        public TimeSpan ServerRetryInterval { get; set; }
+        public TimeSpan RestartDelay { get; set; }
     }
 }

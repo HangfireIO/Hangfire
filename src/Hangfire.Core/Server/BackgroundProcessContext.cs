@@ -23,7 +23,7 @@ namespace Hangfire.Server
 {
     public class BackgroundProcessContext
     {
-        [Obsolete("")]
+        [Obsolete("This constructor overload is deprecated and will be removed in 2.0.0.")]
         public BackgroundProcessContext(
             [NotNull] string serverId,
             [NotNull] JobStorage storage,

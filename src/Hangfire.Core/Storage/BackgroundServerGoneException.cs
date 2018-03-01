@@ -1,5 +1,5 @@
 ﻿// This file is part of Hangfire.
-// Copyright © 2017 Sergey Odinokov.
+// Copyright © 2018 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -21,16 +21,7 @@ namespace Hangfire.Storage
 #if NETFULL
     [Serializable]
 #endif
-    public class DistributedLockTimeoutException : TimeoutException
+    public class BackgroundServerGoneException : Exception
     {
-        public DistributedLockTimeoutException(string resource)
-            : base(
-                $"Timeout expired. The timeout elapsed prior to obtaining a distributed lock on the '{resource}' resource."
-                )
-        {
-            Resource = resource;
-        }
-
-        public string Resource { get; }
     }
 }

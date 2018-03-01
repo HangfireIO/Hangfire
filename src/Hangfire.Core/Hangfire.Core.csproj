@@ -439,6 +439,7 @@
     <Compile Include="Storage\RecurringJobDto.cs" />
     <Compile Include="Storage\StateData.cs" />
     <Compile Include="Storage\StorageConnectionExtensions.cs" />
+    <Compile Include="Storage\BackgroundServerGoneException.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.eot" />

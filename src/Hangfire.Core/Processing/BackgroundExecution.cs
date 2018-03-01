@@ -352,7 +352,11 @@ namespace Hangfire.Processing
             }
 #endif
 
-            // todo check for stop request here
+            if (StopRequested)
+            {
+                delay = FallbackRetryDelay;
+                return;
+            }
 
             if (!exception.Data.Contains("ExecutionId"))
             {
@@ -421,7 +425,7 @@ namespace Hangfire.Processing
         {
             lock (_running)
             {
-                retryDelay = TimeSpan.Zero;
+                retryDelay = FallbackRetryDelay;
 
                 if (_disposed) return;
 

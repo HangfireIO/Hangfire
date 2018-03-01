@@ -372,6 +372,7 @@
     <Compile Include="States\StateMachine.cs" />
     <Compile Include="States\SucceededState.cs" />
     <Compile Include="StatisticsHistoryAttribute.cs" />
+    <Compile Include="Storage\BackgroundServerGoneException.cs" />
     <Compile Include="Storage\DistributedLockTimeoutException.cs" />
     <Compile Include="Storage\IFetchedJob.cs" />
     <Compile Include="Storage\IMonitoringApi.cs" />

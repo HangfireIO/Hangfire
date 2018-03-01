@@ -56,7 +56,7 @@ namespace Hangfire.Server
                 new BackgroundExecutionOptions
                 {
                     Name = _process.GetType().Name,
-                    RetryDelay = BackgroundExecutionOptions.GetBackOffMultiplier
+                    RetryDelay = options.RetryDelay
                 });
 
             return new BackgroundDispatcherAsync(
