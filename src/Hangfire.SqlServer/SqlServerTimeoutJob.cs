@@ -52,8 +52,8 @@ namespace Hangfire.SqlServer
                 _storage.UseConnection(null, connection =>
                 {
                     connection.Execute(
-                        $"delete from {_storage.SchemaName}.JobQueue where Id = @id",
-                        new { id = Id },
+                        $"delete from {_storage.SchemaName}.JobQueue where Queue = @queue and Id = @id",
+                        new { queue = Queue, id = Id },
                         commandTimeout: _storage.CommandTimeout);
                 });
 
