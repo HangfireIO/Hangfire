@@ -60,7 +60,7 @@ namespace Hangfire.Server
 
         public void Execute(Guid executionId, CancellationToken shutdownToken, CancellationToken abortShutdownToken)
         {
-            var serverId = GetServerId(executionId);
+            var serverId = GetServerId();
             Stopwatch stoppedAt = null;
 
             //using (LogProvider.OpenMappedContext("ServerId", serverId.ToString()))
@@ -131,13 +131,13 @@ namespace Hangfire.Server
                 threadStart => BackgroundProcessExtensions.DefaultThreadFactory(1, component.GetType().Name, threadStart)));
         }
 
-        private string GetServerId(Guid executionId)
+        private string GetServerId()
         {
             var serverName = _options.ServerName
                              ?? Environment.GetEnvironmentVariable("COMPUTERNAME")
                              ?? Environment.GetEnvironmentVariable("HOSTNAME");
 
-            var guid = executionId.ToString();
+            var guid = Guid.NewGuid().ToString();
 
 #if NETFULL
             if (!String.IsNullOrWhiteSpace(serverName))
