@@ -266,7 +266,7 @@ namespace Hangfire.Processing
 
         private void HandleStarted(Guid executionId, out TimeSpan initialDelay)
         {
-            _logger.Debug($"{GetExecutionLoopTemplate(executionId)} has started in {{{_createdAt.Elapsed.TotalMilliseconds}}} ms");
+            _logger.Debug($"{GetExecutionLoopTemplate(executionId)} has started in {_createdAt.Elapsed.TotalMilliseconds} ms");
 
             // Looks weird, but several times I was initializing the nextDelay variable
             // inside the execution loop by mistake. This lead to immediate looped invocation
@@ -298,14 +298,14 @@ namespace Hangfire.Processing
 
         private void LogRetry(Guid executionId, TimeSpan delay)
         {
-            _logger.Debug($"{GetExecutionLoopTemplate(executionId)} will be retried in {{{delay}}}...");
+            _logger.Debug($"{GetExecutionLoopTemplate(executionId)} will be retried in {delay}...");
         }
 
         private void NormalizeDelay(ref TimeSpan retryDelay)
         {
             if (retryDelay <= TimeSpan.Zero)
             {
-                _logger.Warn($"{GetExecutionTemplate()} adjusted the retry delay from {{{retryDelay}}} to {{{FallbackRetryDelay}}}");
+                _logger.Warn($"{GetExecutionTemplate()} adjusted the retry delay from {retryDelay} to {FallbackRetryDelay}");
                 retryDelay = FallbackRetryDelay;
             }
         }
@@ -357,7 +357,7 @@ namespace Hangfire.Processing
 
             ToFailedState(exception, out delay);
 
-            _logger.DebugException($"{GetExecutionLoopTemplate(executionId)} caught an exception and will be retried in {{{delay}}}", exception);
+            _logger.DebugException($"{GetExecutionLoopTemplate(executionId)} caught an exception and will be retried in {delay}", exception);
         }
 
         private void HandleStop(Guid executionId)
@@ -369,14 +369,14 @@ namespace Hangfire.Processing
             else
             {
                 var stoppedAt = Volatile.Read(ref _stoppedAt);
-                _logger.Debug($"{GetExecutionLoopTemplate(executionId)} stopped in {{{stoppedAt?.Elapsed.TotalMilliseconds ?? 0}}} ms");
+                _logger.Debug($"{GetExecutionLoopTemplate(executionId)} stopped in {stoppedAt?.Elapsed.TotalMilliseconds ?? 0} ms");
             }
         }
 
         private void HandleAborted(Guid executionId, Exception exception)
         {
             var stoppedAt = Volatile.Read(ref _stoppedAt);
-            _logger.DebugException($"{GetExecutionLoopTemplate(executionId)} was aborted in {{{stoppedAt?.Elapsed.TotalMilliseconds ?? 0}}} ms.",
+            _logger.DebugException($"{GetExecutionLoopTemplate(executionId)} was aborted in {stoppedAt?.Elapsed.TotalMilliseconds ?? 0} ms.",
                 exception);
         }
 
@@ -399,7 +399,7 @@ namespace Hangfire.Processing
                     // administrators about this event, if a configured threshold is reached (to not to
                     // log thousands of messages).
                     _logger.Log(
-                        _faultedSince.Elapsed > _options.WarningThreshold ? LogLevel.Warn : LogLevel.Debug,
+                        _faultedSince.Elapsed > _options.WarningThreshold ? LogLevel.Info : LogLevel.Debug,
                         () => $"{GetExecutionTemplate()} recovered from the Faulted state and is in the Running state now");
                 }
 
@@ -441,33 +441,33 @@ namespace Hangfire.Processing
                     // If threshold is zero, we'll go to the Failed state directly and log error anyway.
                     if (_options.ErrorThreshold > TimeSpan.Zero)
                     {
-                        _logger.DebugException($"{GetExecutionTemplate()} is in the Faulted state now due to an exception, execution will be retried no more than in {{{retryDelay}}}", exception);
+                        _logger.DebugException($"{GetExecutionTemplate()} is in the Faulted state now due to an exception, execution will be retried no more than in {retryDelay}", exception);
                     }
                 }
 
                 if (_failedSince == null && _faultedSince.Elapsed > _options.ErrorThreshold)
                 {
                     // Transition to Failed state, we should log the error message.
-                    _logger.ErrorException($"{GetExecutionTemplate()} is in the Failed state now due to an exception, execution will be retried no more than in {{{retryDelay}}}", exception);
+                    _logger.ErrorException($"{GetExecutionTemplate()} is in the Failed state now due to an exception, execution will be retried no more than in {retryDelay}", exception);
                     _failedSince = Stopwatch.StartNew();
                 }
                 else if (_lastException.Elapsed > _options.ErrorThreshold)
                 {
                     // Still in the Failed state, we should log the error message as a reminder,
                     // but shouldn't do this too often, especially for short retry intervals.
-                    _logger.ErrorException($"{GetExecutionTemplate()} is still in the Failed state for {{{_failedSince.Elapsed}}} due to an exception, will be retried no more than in {{{retryDelay}}}", exception);
+                    _logger.ErrorException($"{GetExecutionTemplate()} is still in the Failed state for {_failedSince.Elapsed} due to an exception, will be retried no more than in {retryDelay}", exception);
                 }
             }
         }
 
         private string GetExecutionLoopTemplate(Guid executionId)
         {
-            return $"Execution loop {{{ToString()}:{executionId.ToString().Substring(0, 8)}}}";
+            return $"Execution loop {ToString()}:{executionId.ToString().Substring(0, 8)}";
         }
 
         private string GetExecutionTemplate()
         {
-            return $"Execution {{{ToString()}}}";
+            return $"Execution {ToString()}";
         }
 
         private void SetStoppedAt()

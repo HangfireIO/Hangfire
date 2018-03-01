@@ -163,7 +163,7 @@ namespace Hangfire.Server
                     connection.AnnounceServer(context.ServerId, GetServerContext(_properties));
                 }
 
-                _logger.Info($"{GetServerTemplate(context.ServerId)} successfully announced in {{{stopwatch.Elapsed.TotalMilliseconds}}} ms");
+                _logger.Info($"{GetServerTemplate(context.ServerId)} successfully announced in {stopwatch.Elapsed.TotalMilliseconds} ms");
             }
             catch (Exception)
             {
@@ -209,14 +209,14 @@ namespace Hangfire.Server
 
                 // todo make reachable
                 _logger.Info(
-                    $"{GetServerTemplate(context.ServerId)} successfully reported itself as stopped in {{{stopwatch.Elapsed.TotalMilliseconds}}} ms");
+                    $"{GetServerTemplate(context.ServerId)} successfully reported itself as stopped in {stopwatch.Elapsed.TotalMilliseconds} ms");
                 _logger.Info(
-                    $"{GetServerTemplate(context.ServerId)} has been stopped in total {{{stoppedAt?.Elapsed.TotalMilliseconds ?? 0}}} ms");
+                    $"{GetServerTemplate(context.ServerId)} has been stopped in total {stoppedAt?.Elapsed.TotalMilliseconds ?? 0} ms");
                 return;
             } while (!context.AbortToken.IsCancellationRequested);
         }
 
-        private void StartDispatchers(BackgroundProcessContext context, ICollection<IBackgroundDispatcher> dispatchers)
+        private void StartDispatchers(BackgroundServerContext context, ICollection<IBackgroundDispatcher> dispatchers)
         {
             if (_dispatcherBuilders.Length == 0)
             {
@@ -224,7 +224,7 @@ namespace Hangfire.Server
                 return;
             }
 
-            _logger.Info($"{GetServerTemplate(context.ServerId)} is starting the registered dispatchers: {String.Join(", ", _dispatcherBuilders.Select(builder => $"{{{builder}}}"))}...");
+            _logger.Info($"{GetServerTemplate(context.ServerId)} is starting the registered dispatchers: {String.Join(", ", _dispatcherBuilders.Select(builder => $"{builder}"))}...");
 
             foreach (var dispatcherBuilder in _dispatcherBuilders)
             {
@@ -271,7 +271,7 @@ namespace Hangfire.Server
 
             if (nonStopped.Count > 0)
             {
-                var nonStoppedNames = nonStopped.Select(dispatcher => $"{{{dispatcher.ToString()}}}").ToArray();
+                var nonStoppedNames = nonStopped.Select(dispatcher => $"{dispatcher.ToString()}").ToArray();
                 _logger.Warn($"{GetServerTemplate(context.ServerId)} stopped non-gracefully due to {String.Join(", ", nonStoppedNames)}. Outstanding work on those dispatchers could be aborted, and there can be delays in background processing. This server instance will be incorrectly shown as active for a while. To avoid non-graceful shutdowns, investigate what prevents from stopping gracefully and add CancellationToken support for those methods.");
             }
             else
@@ -303,7 +303,7 @@ namespace Hangfire.Server
                     // todo what if there are no dispatchers?
 
                     _logger.Trace(
-                        $"{GetServerTemplate(context.ServerId)} waiting for {{{_options.HeartbeatInterval}}} delay before sending a heartbeat");
+                        $"{GetServerTemplate(context.ServerId)} waiting for {_options.HeartbeatInterval} delay before sending a heartbeat");
 
                     context.StopToken.WaitHandle.WaitOne(_options.HeartbeatInterval);
                     context.StopToken.ThrowIfCancellationRequested();
@@ -313,6 +313,8 @@ namespace Hangfire.Server
                     {
                         connection.Heartbeat(context.ServerId);
                     }
+
+                    _logger.Debug($"{GetServerTemplate(context.ServerId)} heartbeat successfully sent");
 
                     // todo
                     /*_logger.Warn(
@@ -347,7 +349,21 @@ namespace Hangfire.Server
 
         private static string GetServerTemplate(string serverId)
         {
-            return $"Server {{{serverId}}}";
+            string name = serverId;
+
+            try
+            {
+                var splitted = serverId.Split(new [] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+                if (splitted.Length == 3 && splitted[2].Length > 8)
+                {
+                    name = $"{splitted[0]}:{splitted[1]}:{splitted[2].Substring(0, 8)}";
+                }
+            }
+            catch
+            {
+            }
+
+            return $"Server {name}";
         }
     }
 }
