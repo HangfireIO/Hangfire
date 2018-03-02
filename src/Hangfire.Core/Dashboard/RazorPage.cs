@@ -41,7 +41,7 @@ namespace Hangfire.Dashboard
 
         public JobStorage Storage { get; internal set; }
         public string AppPath { get; internal set; }
-        public int StatsPollingInterval { get; internal set; }
+        public DashboardOptions DashboardOptions { get; private set; }
         public Stopwatch GenerationTime { get; private set; }
 
         public StatisticsDto Statistics
@@ -81,7 +81,7 @@ namespace Hangfire.Dashboard
             IsReadOnly = parentPage.IsReadOnly;
             Storage = parentPage.Storage;
             AppPath = parentPage.AppPath;
-            StatsPollingInterval = parentPage.StatsPollingInterval;
+            DashboardOptions = parentPage.DashboardOptions;
             Url = parentPage.Url;
 
             GenerationTime = parentPage.GenerationTime;
@@ -95,7 +95,7 @@ namespace Hangfire.Dashboard
             IsReadOnly = context.IsReadOnly;
             Storage = context.Storage;
             AppPath = context.Options.AppPath;
-            StatsPollingInterval = context.Options.StatsPollingInterval;
+            DashboardOptions = context.Options;
             Url = new UrlHelper(context);
 
             _statisticsLazy = new Lazy<StatisticsDto>(() =>
