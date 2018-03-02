@@ -119,6 +119,19 @@ namespace Hangfire.Dashboard
                 }
             }
 
+            var displayNameProvider = _page.DashboardOptions.DisplayNameFunc;
+            if (displayNameProvider != null)
+            {
+                try
+                {
+                    return displayNameProvider(_page.Context, job);
+                }
+                catch
+                {
+                    // Ignoring exceptions
+                }
+            }
+
 #if NETFULL
             var displayNameAttribute = job.Method.GetCustomAttribute<DisplayNameAttribute>();
             if (displayNameAttribute != null && displayNameAttribute.DisplayName != null)

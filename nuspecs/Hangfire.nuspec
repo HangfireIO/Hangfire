@@ -6,256 +6,45 @@
     <title>Hangfire</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
-    <projectUrl>http://hangfire.io/</projectUrl>
+    <projectUrl>https://www.hangfire.io/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <summary>An easy way to perform fire-and-forget, delayed and recurring tasks inside ASP.NET applications. No Windows Service required.</summary>
     <description>
       An easy and reliable way to perform fire-and-forget, delayed and recurring long-running, short-running, CPU or I/O intensive tasks inside ASP.NET application. No Windows Service / Task Scheduler required. Even ASP.NET is not required.
       Backed by Redis, SQL Server, SQL Azure or MSMQ. This is a .NET alternative to Sidekiq, Resque and Celery.
-      http://hangfire.io/
+      https://www.hangfire.io/
     </description>
-    <copyright>Copyright © 2013-2017 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013-2018 Sergey Odinokov</copyright>
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
-    <releaseNotes>http://hangfire.io/blog/
-    
-1.6.16
+    <releaseNotes>https://www.hangfire.io/blog/
+      
+1.7.0-beta1
 
 Hangfire.Core
 
-• Fixed – Unexpected `DateTime` and `DateTime?` serialization issues in background job arguments (by @plaisted).
-• Fixed – `DistributedLockTimeoutException` in some background processes now logged with "DEBUG" level instead of "ERROR".
-• Fixed – `ElmahLogProvider` to show errors when using SQL log (by @francnuec).
-• Fixed – Last execution field isn't shown on recurring jobs page, when background job has already expired.
-• Fixed – `Hangfire.SqlServer` assembly doesn't include version in the `netstandard` target.
+• Added – Support for asynchronous background processes, opens the road toward async storage.
+• Added – Circuit breaker pattern for background processes to reduce the logging pressure.
+• Added – Processing server is now able to detect it was expired, and restart itself with the new id.
+• Added – Ability to use custom delays for automatic retries of a background job.
+• Added – ThreadAbortException and ThreadInterruptedException handling to keep the background process running.
+• Added – Support for complex Cron expressions, including the `L`, `W`, `#` characters.
+• Added – JobActivator.BeginScope method overload with the full PerformContext (by @jeroenvervaeke).
+• Added – Support for read-only view for dashboard (by @mikechamberlain).
+• Added – Storage property to control the job expiration time (by @rsilvanet).
+• Changed – Decrease the size of serialized payloads and remove version information.
+• Fixed – Server disappears from the list, but still performing the background processing.
+• Fixed – Logging is too aggressive on transient errors.
+• Fixed – Confusing Cron scheduling, when both day-of-week and day-of-month fields set.
 
 Hangfire.SqlServer
 
-• Fixed – Lower the number of requests, when trying to acquire a distributed lock.
-• Fixed – Problems with continuations and batch continuations, when using existing `SqlConnection` instance.
-• Fixed – Distributed locks were silently released, when passing explicit closed connection to a storage.
-• Fixed – `KeyNotFoundException` errors on various dashboard pages don't appear anymore (by @benjymous).
-• Fixed – "Cannot release the application lock because it is not currently held" exceptions, when connection was closed.
-• Fixed – Allow to use zero timeout for SQL Server-based distributed locks.
-    
-1.6.15
-
-Hangfire.SqlServer
-
-• Fixed – Timeout exceptions that's caused by SQL Server's thread pool starvation, caused by sp_getapplock.
-• Fixed – Antecedent background job is constantly failing, when its continuation hasn't been fully created.
-    
-1.6.14
-
-Hangfire.SqlServer
-
-• Added – `SqlServerStorageOptions.SlidingInvisibilityTimeout` to fetch jobs without using transaction.
-• Fixed – Transaction log is full due to 'ACTIVE_TRANSACTION' by enabling to use new non-transactional fetch.
-• Fixed – `SqlServerJobQueueMonitoringApi` can't cause READ UNCOMMITTED isolation level to leak on SQL Server 2012 or earlier. 
-• Fixed – Add missing `SqlServerStorage(DbConnection, SqlServerStorageOptions)` constructor.
-    
-1.6.13
-
-Hangfire.Core
-• Fixed – Continuation is fired on a wrong queue, when parent job is finished before the creation.
-• Fixed – Impossible to intercept failed state transition before `AutomaticRetryAttribute`.
-• Fixed – Fixed translation in Chinese localization on home page (by @JustinChia).
-• Fixed – Don't throw `NullReferenceException`, when state has changed during query on Processing page.
-• Fixed – `CreateBatchFailedException`, when batch creation takes longer than 1 hour.
-
-Hangfire.AspNetCore
-• Fixed – Types are resolved using the `GetServiceOrCreateInstance` method (by @Tsabo).
-
-Hangfire.SqlServer
-• Fixed – Don't hide errors occurred while running SQL migrations.
-• Fixed – `KeyNotFoundException` when accessing Deleted Jobs page in Dashboard.
-• Fixed – `SqlServerDistributedLock` leaks connections, when lock acquisition is failed.
-    
-1.6.12
-
-Hangfire.Core
-• Fixed – Buggy state filters may cause background job to be infinitely retried.
-• Fixed – Transient exception during Processing-Succeeded state transition may cause unexpected retry.
-    
-1.6.11
-
-Hangfire.Core
-• Fixed – `NullReferenceException` in dashboard when OWIN's or ASP.NET Core's `User` is `null`.
-• Fixed – Regression related to missing CSS and JS resources in dashboard appeared in 1.6.10.
-    
-1.6.10
-
-Hangfire.Core
-• Fixed – Duplicate job continuations aren't added anymore, when outer transaction has failed.
-• Fixed – Existing duplicate continuations don't lead to `ArgumentException`: the same key already added.
-• Fixed – Replace inline script, because it may violate the Content Security Policy (by @Beczka).
-• Fixed – Don't skip records in RecurringJobsPage (by @reaction1989).
-    
-1.6.9
-
-Hangfire.SqlServer
-• Fixed – `TimeoutException` on large arguments or large batches via `SqlServerOptions.CommandTimeout`.
-
-1.6.8
-
-Hangfire.Core
-• Fixed – `Cron.MonthInterval` now returns correct CRON expression.
-• Fixed – Throw `NotSupportedException` early, when arguments contain delegate or expression.
-• Fixed – Connection and distributed lock kept longer than necessary in `RecurringJobScheduler`.
-• Fixed – Use local date/times everywhere in Dashboard UI.
-• Fixed – Call chart update only when it exists in Dashboard UI to prevent JavaScript errors.
-• Fixed – Scheduled column title is now displaying correctly in Dashboard UI.
-• Fixed – Typo "Nexts jobs" should be "Next jobs" in Dashboard UI (by @danielabbatt).
-
-Hangfire.SqlServer
-• Fixed – Use `long` where possible instead of `int` for background job identifiers, full support will be in 1.7.0.
-    
-1.6.7
-
-Hangfire.Core
-• Fixed – ArgumentException when using complex arguments in generic methods like "IList&lt;T&gt;" (by @aidmsu).
-• Fixed – Generic arrays like "T[]" aren't supported in background job arguments (by @aidmsu).
-• Fixed – Wrong choice of the overload when multiple methods match the given arguments (by @aidmsu).
-• Fixed – Null values for arguments when there are errors during the JSON deserialization.
-• Fixed – Window resize cause errors and uncontrolled growth of event and poll listeners (by @Yarmonov).
-• Fixed – HtmlHelper.ToHumanDuration incorrectly formats fractional seconds (by @pieceofsummer).
-• Fixed – Exception in Dashboard UI when CRON expression is null by an accident (by @aidmsu).
-• Fixed – Error in Dashboard UI when rendering an array that contains a null element (by @djfoz).
-• Fixed – Inconsistent constructors' accessibility for different context classes (by @pieceofsummer).
-• Fixed – Decrease the max default workers count to "20" in tests (by patrykpiotrmarek).
-• Fixed – Inconsistent EOL characters in some files of a project (by @aidmsu).
-• Fixed – Make Queue name accessible from RecurringJobDto (by @swordfish6975).
-
-Hangfire.SqlServer
-• Fixed – Validation added to avoid "An invalid application lock time-out" exceptions (by t0mburton).
-
-Hangfire.AspNetCore
-• Fixed – Parameterless AspNetCoreJobActivator.BeginScope method now returns a correct instance (by @pieceofsummer).
-
-1.6.6
-
-Hangfire.Core
-• Fixed – Hangfire.Core, Hangfire.SqlServer and Hangfire.SqlServer.Msmq marked as CLS-compliant.
-• Fixed – Generic methods cause ArgumentNullException when scoped variable is used in expression.
-
-Hangfire.SqlServer
-• Fixed – SqlServerJobQueue class doesn't use obsolete InvisibilityTimeout parameter anymore.
-    
-1.6.5
-
-Hangfire.Core
-• Added – Chinese language to Dashboard UI (by @andy-zhouyou).
-• Changed – Default upper limit of worker number is 20.
-• Changed – Default value for DashboardJobListLimit is now 10000.
-• Fixed – Deserialization exception in continuations, when TypeNameHandling.All option is used (by @MaksimSimkin).
-• Fixed – I18N is not working, because there are no localized resources in NuGet packages.
-• Fixed – Infinite redirect loops, when authenticated, but not authorized user accesses Dashboard UI.
-• Fixed – "The type ... exists in both..." issue when building Hangfire, related to Newtonsoft.Json.
-• Fixed – Use the given type's method, when scope variable is passed to a job expression.
-• Fixed – Very rare resource leaks detected by Coverity Scan.
-
-Hangfire.SqlServer
-• Fixed – Different timeout issues after making performance optimizations.
-• Fixed – SQL timeouts while getting a connection, when using default settings and >= 8 CPU cores.
-• Fixed – ExpirationManager is bloated by SqlError instances, when there are a lot of messages from server.
-• Fixed – Counters query returned inconsistent results during CountersAggregator executions.
-• Performance – Added missing NOLOCK hint for monitoring queries when using SqlServer-based queues.
-• Performance – ExpirationManager is forced to use index seek operations for cascade deletions.
-• Performance – CountersAggregator now uses clustered index scan to issue less logical reads.
-• Performance – Paging queries in dashboard now use CTEs to utilize less logical reads.
-    
-1.6.4
-
-Hangfire.SqlServer
-• Fixed – `SqlConnection` object leaks when using nested distributed locks (in batches and continuations).
-    
-1.6.3
-
-Hangfire.Core
-• Fixed – Add missing `RecurringJob.AddOrUpdate` method overloads to prevent CS4014 warnings.
-• Fixed – `ToGenericTypeString` method now handles types with no namespace correctly.
-
-Hangfire.SqlServer
-• Fixed – Prevent `ExpirationManager`'s command from timing out, when there are a lot of records.
-• Fixed – `CountersAggregator` issue introduced in 1.6.2, that causes slow record aggregation.
-• Fixed – Add `XLOCK` hint for `CountersAggregator` query to prevent deadlocks on lock escalation.
-
-Hangfire.SqlServer.Msmq
-• Fixed – Prevent MSMQ transactions from timing out after 1 minute of processing.
-    
-1.6.2
-
-Hangfire.Core
-• Changed – Recurring job page displays now raw cron strings, descriptions are in tooltips.
-• Fixed – Return non-highlighted stack trace, when parsing takes too long, instead of throwing an exception.
-• Fixed – Dashboard UI works correctly again, when IE 11 is in the Compatibility Mode.
-• Fixed – Long method names now don't push tables out of the boundaries now.
-
-Hangfire.SqlServer
-• Changed – `JobExpirationCheckInterval` property value now defaults to 30 minutes.
-• Fixed – Excessive blocking when expiring records in `State` and `JobParameters` tables.
-• Fixed – Migration script `Install.sql` was deadlocked by itself, leading to errors on startup.
-
-Hangfire.SqlServer.Msmq
-• Fixed – Public MSMQ queue paths are parsed correctly now, when determining the queue length.
-    
-1.6.1
-
-Hangfire.Core
-• Added – Automatic unit tests execution for .NET Core on Windows, Linux and OS X using AppVeyor and Travis CI.
-• Fixed – `DateTime` deserialization issues on .NET Core platform.
-• Fixed – Fixed UI command behaviour, buttons can only be pressed once per command (by @mahoneyj2).
-• Fixed – `TypeInitializationException` when using Serilog appeared in version 1.6.0.
-• Fixed – Cron format strings for intervals are specified correctly now (by @stevetsang).
-• Fixed – `NullReference` on Job Details page when background job has null value for `IEnumerable` argument.
-• Fixed – Don't skip symbols when publishing NuGet packages.
-• Fixed – Use GUID identifier when can't determine the host name.
-
-Hangfire.AspNetCore
-• Fixed – Add missing `GetHttpContext` extension method for the .NET Core platform.
-    
-1.6.0
-    
-Hangfire.Core
-• Added – .NET Core support for Hangfire.Core and Hangfire.SqlServer packages (`netstandard1.3` target).
-• Added – Ability to create jobs based on async methods, they are awaited by a worker (by @tuespetre).
-• Added – Access to background job context from the `JobActivator.BeginScope` method.
-• Added – Add LatencyTimeoutAttribute To delete jobs if timeout is exceeded (by @Excommunicated).
-• Added – Ability to change statistics polling interval in dashboard (by @tristal).
-• Added – Non-blocking `BackgroundJobServer.SendStop` method, that requests for a shutdown.
-• Added – `BackgroundJobServerOptions.ServerName` option is back.
-• Added – `IDashboardAuthorizationFilter` interface that makes `IAuthorizationFilter` obsolete.
-• Added – Show background job continuations on Job Details page.
-• Added – Multilanguage support in Dashboard via resource files (by @Elph).
-• Added – Spanish localization for the Dashboard UI (by @Elph).
-• Added – Enable backtracking from background job to recurrent job (by @teodimache).
-• Added – Cron expressions for regular intervals for the `Cron` class (by @geirsagberg).
-• Added – `IRecurringJobManager` interface for the `RecurringJobManager` class (by @arnoldasgudas).
-• Added – Abstractions for Dashboard UI to decouple it from OWIN.
-• Changed – Make the realtime/history graph to use localized dates on hover (by @Elph).
-• Changed – Make graph tooltip also localized using data-attributes (by @Elph).
-• Changed – Dashboard metric's title now contains the ResourceKey instead the title (by @Elph).
-• Changed – Job Details page was redesigned to be more clean with less colors.
-• Changed – Update jQuery to 2.1.4 and rickshaw.js to 1.5.1.
-• Changed – Update NCrontab to 3.1.0.
-• Changed – Update CronExpressionDescriptor to 1.17.
-• Fixed – `ToGenericTypeString` method now supports nested classes (by @patrykpiotrmarek).
-• Fixed – Dashboard Errors in Chrome and IE - Cannot read property 'removeChild' of null.
-• Fixed – /hangfire/js outputs (unintended) UTF-8 BOM.
-
-Hangfire.AspNetCore
-• Added – Deep integration with ASP.NET Core via Hangfire.AspNetCore package.
-
-Hangfire.SqlServer
-• Added – .NET Core support for Hangfire.Core and Hangfire.SqlServer packages (`netstandard1.3` target).
-• Added – Zero latency processing when client and server reside in the same process (by @bgurmendi).
-• Changed – `SqlServerStorage` class constructor now takes `DbConnection` instances (by @tystol).
-• Changed – `SqlServerObjectsInstaller` class is public now (by @vbfox).
-• Changed – Update Dapper to 1.50.1 version.
-• Fixed – Drop constraints on Server.Id prior to altering it to avoid conflicts.
-
-Hangfire.SqlServer.Msmq
-• Fixed – Package now depends on the latest Hangfire.SqlServer instead of version 1.2.2.
+• Added – Callback method to allow to open the database with impersonation (by @BjoernHund).
+• Changed – Identity columns either converted to the `bigint` type, or entirely removed.
+• Changed – Clustered indexes were organized according to the access patterns of their tables.
+• Changed – Most of secondary indexes were either removed or made filtered.
+• Fixed – Background processing stops when identity columns exceed the `Int32.MaxValue`.
+• Fixed – Slowdown of scheduled jobs due to the missing index on the [Set] table.
     </releaseNotes>
     <dependencies>
       <group targetFramework="net45">

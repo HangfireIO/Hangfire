@@ -49,11 +49,11 @@ namespace Hangfire.SqlServer
         {
             lock (_syncRoot)
             {
-                _storage.UseConnection(connection =>
+                _storage.UseConnection(null, connection =>
                 {
                     connection.Execute(
-                        $"delete from {_storage.SchemaName}.JobQueue where Id = @id",
-                        new { id = Id },
+                        $"delete JQ from {_storage.SchemaName}.JobQueue JQ with (paglock, xlock) where Queue = @queue and Id = @id",
+                        new { queue = Queue, id = Id },
                         commandTimeout: _storage.CommandTimeout);
                 });
 
@@ -65,7 +65,7 @@ namespace Hangfire.SqlServer
         {
             lock (_syncRoot)
             {
-                _storage.UseConnection(connection =>
+                _storage.UseConnection(null, connection =>
                 {
                     connection.Execute(
                         $"update {_storage.SchemaName}.JobQueue set FetchedAt = null where Id = @id",
@@ -101,7 +101,7 @@ namespace Hangfire.SqlServer
 
                 try
                 {
-                    _storage.UseConnection(connection =>
+                    _storage.UseConnection(null, connection =>
                     {
                         connection.Execute(
                             $"update {_storage.SchemaName}.JobQueue set FetchedAt = getutcdate() where Id = @id",

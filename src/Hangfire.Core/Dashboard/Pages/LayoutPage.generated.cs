@@ -211,32 +211,51 @@ WriteLiteral(@"
             <div class=""container"">
                 <ul class=""list-inline credit"">
                     <li>
-                        <a href=""http://hangfire.io/"" target=""_blank"">Hangfire ");
+                        <a href=""https://www.hangfire.io/"" target=""_blank"" rel=""noopener noreferrer"">Hangfire ");
 
 
             
             #line 61 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                                                           Write($"{version.Major}.{version.Minor}.{version.Build}");
+                                                                                                          Write($"{version.Major}.{version.Minor}.{version.Build}");
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                        </a>\r\n                    </li>\r\n                    <l" +
-"i>");
+WriteLiteral("\r\n                        </a>\r\n                    </li>\r\n");
 
 
             
             #line 64 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                     if(DashboardOptions.DisplayStorageConnectionString){
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                    <li>");
+
+
+            
+            #line 65 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(Storage);
 
             
             #line default
             #line hidden
-WriteLiteral("</li>\r\n                    <li>");
+WriteLiteral("</li>\r\n");
 
 
             
-            #line 65 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 66 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                    }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                    <li>");
+
+
+            
+            #line 67 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(Strings.LayoutPage_Footer_Time);
 
             
@@ -246,7 +265,7 @@ WriteLiteral(" ");
 
 
             
-            #line 65 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 67 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                    Write(Html.LocalTime(DateTime.UtcNow));
 
             
@@ -256,7 +275,7 @@ WriteLiteral("</li>\r\n                    <li>");
 
 
             
-            #line 66 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 68 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(String.Format(Strings.LayoutPage_Footer_Generatedms, GenerationTime.Elapsed.TotalMilliseconds.ToString("N")));
 
             
@@ -267,8 +286,8 @@ WriteLiteral("</li>\r\n                </ul>\r\n            </div>\r\n        </
 
 
             
-            #line 72 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                           Write(StatsPollingInterval);
+            #line 74 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                           Write(DashboardOptions.StatsPollingInterval);
 
             
             #line default
@@ -277,7 +296,7 @@ WriteLiteral("\"\r\n             data-pollurl=\"");
 
 
             
-            #line 73 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 75 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                        Write(Url.To("/stats"));
 
             
@@ -287,7 +306,7 @@ WriteLiteral("\">\r\n        </div>\r\n\r\n        <script src=\"");
 
 
             
-            #line 76 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 78 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                 Write(Url.To($"/js{version.Major}{version.Minor}{version.Build}"));
 
             

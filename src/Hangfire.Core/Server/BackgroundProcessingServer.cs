@@ -24,6 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Logging;
+using Hangfire.Processing;
 
 namespace Hangfire.Server
 {
@@ -41,18 +42,19 @@ namespace Hangfire.Server
     /// Generates unique id.
     /// Properties are still bad.
     /// </remarks>
-    public sealed class BackgroundProcessingServer : IBackgroundProcess, IDisposable
+    public sealed class BackgroundProcessingServer : IBackgroundProcessingServer
     {
-        public static readonly TimeSpan DefaultShutdownTimeout = TimeSpan.FromSeconds(15);
-        private static readonly ILog Logger = LogProvider.For<BackgroundProcessingServer>();
+        private static int _lastThreadId = 0;
 
-        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
-#pragma warning disable 618
-        private readonly List<IServerProcess> _processes = new List<IServerProcess>();
-#pragma warning restore 618
+        private readonly ILog _logger = LogProvider.GetLogger(typeof(BackgroundProcessingServer));
+        private readonly CancellationTokenSource _stopCts = new CancellationTokenSource();
+        private readonly CancellationTokenSource _abortCts = new CancellationTokenSource();
 
+        private readonly IBackgroundServerProcess _process;
         private readonly BackgroundProcessingServerOptions _options;
-        private readonly Task _bootstrapTask;
+        private readonly IBackgroundDispatcher _dispatcher;
+
+        private int _shutdown;
 
         public BackgroundProcessingServer([NotNull] IEnumerable<IBackgroundProcess> processes)
             : this(JobStorage.Current, processes)
@@ -81,139 +83,157 @@ namespace Hangfire.Server
         {
         }
 
+        public BackgroundProcessingServer(
+            [NotNull] JobStorage storage,
+            [NotNull] IEnumerable<IBackgroundProcess> processes,
+            [NotNull] IDictionary<string, object> properties,
+            [NotNull] BackgroundProcessingServerOptions options)
+            : this(storage, GetProcesses(processes), properties, options)
+        {
+        }
+
+        public BackgroundProcessingServer(
+            [NotNull] JobStorage storage,
+            [NotNull] IEnumerable<IBackgroundProcessDispatcherBuilder> dispatcherBuilders,
+            [NotNull] IDictionary<string, object> properties,
+            [NotNull] BackgroundProcessingServerOptions options)
+            : this(new BackgroundServerProcess(storage, dispatcherBuilders, options, properties), options)
+        {
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundProcessingServer"/>
         /// class and immediately starts all the given background processes.
         /// </summary>
-        /// <param name="storage"></param>
-        /// <param name="processes"></param>
-        /// <param name="properties"></param>
-        /// <param name="options"></param>
-        public BackgroundProcessingServer(
-            [NotNull] JobStorage storage, 
-            [NotNull] IEnumerable<IBackgroundProcess> processes,
-            [NotNull] IDictionary<string, object> properties, 
+        internal BackgroundProcessingServer(
+            [NotNull] BackgroundServerProcess process,
             [NotNull] BackgroundProcessingServerOptions options)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
-            if (processes == null) throw new ArgumentNullException(nameof(processes));
-            if (properties == null) throw new ArgumentNullException(nameof(properties));
+            if (process == null) throw new ArgumentNullException(nameof(process));
             if (options == null) throw new ArgumentNullException(nameof(options));
 
+            _process = process;
             _options = options;
 
-            _processes.AddRange(GetRequiredProcesses());
-            _processes.AddRange(storage.GetComponents());
-            _processes.AddRange(processes);
+            _dispatcher = CreateDispatcher();
 
-            var context = new BackgroundProcessContext(
-                GetGloballyUniqueServerId(), 
-                storage,
-                properties,
-                _cts.Token);
-
-            _bootstrapTask = WrapProcess(this).CreateTask(context);
+#if NETFULL
+            AppDomain.CurrentDomain.DomainUnload += OnCurrentDomainUnload;
+            AppDomain.CurrentDomain.ProcessExit += OnCurrentDomainUnload;
+#endif
         }
 
+        public void Stop(bool abort)
+        {
+            _stopCts.Cancel();
+            if (abort)
+            {
+                _abortCts.Cancel();
+            }
+        }
+
+        public bool Wait(TimeSpan timeout)
+        {
+            ThrowIfDisposed();
+            return _dispatcher.Wait(timeout);
+        }
+
+        public Task WaitAsync(CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return _dispatcher.WaitAsync(cancellationToken);
+        }
+
+        [Obsolete("This method is deprecated, please use the Stop(bool) method instead. Will be removed in 2.0.0.")]
         public void SendStop()
         {
-            _cts.Cancel();
+            Stop(false);
         }
 
         public void Dispose()
         {
-            SendStop();
+            Shutdown(_options.ShutdownTimeout);
 
-            // TODO: Dispose _cts
-
-            if (!_bootstrapTask.Wait(_options.ShutdownTimeout))
-            {
-                Logger.Warn("Processing server takes too long to shutdown. Performing ungraceful shutdown.");
-            }
+            _dispatcher.Dispose();
+            _abortCts.Dispose();
+            _stopCts.Dispose();
         }
 
-        public override string ToString()
+        private void OnCurrentDomainUnload(object sender, EventArgs args)
         {
-            return GetType().Name;
+            Shutdown(_options.ForcedShutdownTimeout);
         }
 
-        void IBackgroundProcess.Execute(BackgroundProcessContext context)
+        private void Shutdown(TimeSpan timeout)
         {
-            using (var connection = context.Storage.GetConnection())
+            if (Interlocked.Exchange(ref _shutdown, 1) == 1)
             {
-                var serverContext = GetServerContext(context.Properties);
-                connection.AnnounceServer(context.ServerId, serverContext);
+                return;
             }
 
-            try
+            if (!_stopCts.IsCancellationRequested)
             {
-                var tasks = _processes
-                    .Select(WrapProcess)
-                    .Select(process => process.CreateTask(context))
-                    .ToArray();
+                _logger.Info($"Shutdown initiated with the {timeout} timeout...");
 
-                Task.WaitAll(tasks);
-            }
-            finally
-            {
-                using (var connection = context.Storage.GetConnection())
+                _stopCts.Cancel();
+
+                if (!_dispatcher.Wait(timeout))
                 {
-                    connection.RemoveServer(context.ServerId);
+                    _abortCts.Cancel();
+                    _dispatcher.Wait(_options.AbortTimeout);
                 }
             }
         }
 
-        private IEnumerable<IBackgroundProcess> GetRequiredProcesses()
+        private static IBackgroundProcessDispatcherBuilder[] GetProcesses([NotNull] IEnumerable<IBackgroundProcess> processes)
         {
-            yield return new ServerHeartbeat(_options.HeartbeatInterval);
-            yield return new ServerWatchdog(_options.ServerCheckInterval, _options.ServerTimeout);
+            if (processes == null) throw new ArgumentNullException(nameof(processes));
+            return processes.Select(x => x.UseBackgroundPool(threadCount: 1)).ToArray();
         }
 
-        private string GetGloballyUniqueServerId()
+        private IBackgroundDispatcher CreateDispatcher()
         {
-            var serverName = _options.ServerName
-                ?? Environment.GetEnvironmentVariable("COMPUTERNAME")
-                ?? Environment.GetEnvironmentVariable("HOSTNAME");
+            var execution = new BackgroundExecution(
+                _stopCts.Token,
+                _abortCts.Token,
+                new BackgroundExecutionOptions
+                {
+                    Name = nameof(BackgroundServerProcess),
+                    ErrorThreshold = TimeSpan.Zero,
+                    StillErrorThreshold = TimeSpan.Zero,
+                    RetryDelay = retry => _options.RestartDelay
+                });
 
-            var guid = Guid.NewGuid().ToString();
+            return new BackgroundDispatcher(
+                execution,
+                RunServer,
+                execution,
+                ThreadFactory);
+        }
 
+        private void RunServer(Guid executionId, object state)
+        {
+            _process.Execute(executionId, (BackgroundExecution)state, _stopCts.Token, _abortCts.Token);
+        }
+
+        private static IEnumerable<Thread> ThreadFactory(ThreadStart threadStart)
+        {
+            yield return new Thread(threadStart)
+            {
+                IsBackground = true,
+                Name = $"{nameof(BackgroundServerProcess)} #{Interlocked.Increment(ref _lastThreadId)}",
 #if NETFULL
-            if (!String.IsNullOrWhiteSpace(serverName))
-            {
-                serverName += ":" + Process.GetCurrentProcess().Id;
-            }
+                Priority = ThreadPriority.AboveNormal
 #endif
-
-            return !String.IsNullOrWhiteSpace(serverName)
-                ? $"{serverName.ToLowerInvariant()}:{guid}"
-                : guid;
+            };
         }
 
-#pragma warning disable 618
-        private static IServerProcess WrapProcess(IServerProcess process)
-#pragma warning restore 618
+        private void ThrowIfDisposed()
         {
-            return new InfiniteLoopProcess(new AutomaticRetryProcess(process));
-        }
-
-        private static ServerContext GetServerContext(IReadOnlyDictionary<string, object> properties)
-        {
-            var serverContext = new ServerContext();
-
-            if (properties.ContainsKey("Queues"))
+            if (Volatile.Read(ref _shutdown) == 1)
             {
-                var array = properties["Queues"] as string[];
-                if (array != null)
-                {
-                    serverContext.Queues = array;
-                }
+                throw new ObjectDisposedException(GetType().FullName);
             }
-
-            if (properties.ContainsKey("WorkerCount"))
-            {
-                serverContext.WorkerCount = (int)properties["WorkerCount"];
-            }
-            return serverContext;
         }
     }
 }

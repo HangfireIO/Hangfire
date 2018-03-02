@@ -99,6 +99,7 @@ namespace Hangfire.SqlServer
 
         internal string SchemaName => _options.SchemaName;
         internal int? CommandTimeout => _options.CommandTimeout.HasValue ? (int)_options.CommandTimeout.Value.TotalSeconds : (int?)null;
+        internal int? CommandBatchMaxTimeout => _options.CommandBatchMaxTimeout.HasValue ? (int)_options.CommandBatchMaxTimeout.Value.TotalSeconds : (int?)null;
         internal TimeSpan? SlidingInvisibilityTimeout => _options.SlidingInvisibilityTimeout;
 
         public override IMonitoringApi GetMonitoringApi()
@@ -121,8 +122,7 @@ namespace Hangfire.SqlServer
 
         public override void WriteOptionsToLog(ILog logger)
         {
-            logger.Info("Using the following options for SQL Server job storage:");
-            logger.Info($"    Queue poll interval: {_options.QueuePollInterval}.");
+            logger.Info($"Using the following options for SQL Server job storage: Queue poll interval: {_options.QueuePollInterval}.");
         }
 
         public override string ToString()
@@ -168,45 +168,51 @@ namespace Hangfire.SqlServer
             }
         }
 
-        internal void UseConnection([InstantHandle] Action<DbConnection> action)
+        internal void UseConnection(DbConnection dedicatedConnection, [InstantHandle] Action<DbConnection> action)
         {
-            UseConnection(connection =>
+            UseConnection(dedicatedConnection, connection =>
             {
                 action(connection);
                 return true;
             });
         }
 
-        internal T UseConnection<T>([InstantHandle] Func<DbConnection, T> func)
+        internal T UseConnection<T>(DbConnection dedicatedConnection, [InstantHandle] Func<DbConnection, T> func)
         {
             DbConnection connection = null;
 
             try
             {
-                connection = CreateAndOpenConnection();
+                connection = dedicatedConnection ?? CreateAndOpenConnection();
                 return func(connection);
             }
             finally
             {
-                ReleaseConnection(connection);
+                if (dedicatedConnection == null)
+                {
+                    ReleaseConnection(connection);
+                }
             }
         }
 
-        internal void UseTransaction([InstantHandle] Action<DbConnection, DbTransaction> action)
+        internal void UseTransaction(DbConnection dedicatedConnection, [InstantHandle] Action<DbConnection, DbTransaction> action)
         {
-            UseTransaction((connection, transaction) =>
+            UseTransaction(dedicatedConnection, (connection, transaction) =>
             {
                 action(connection, transaction);
                 return true;
             }, null);
         }
         
-        internal T UseTransaction<T>([InstantHandle] Func<DbConnection, DbTransaction, T> func, IsolationLevel? isolationLevel)
+        internal T UseTransaction<T>(
+            DbConnection dedicatedConnection,
+            [InstantHandle] Func<DbConnection, DbTransaction, T> func, 
+            IsolationLevel? isolationLevel)
         {
 #if NETFULL
             using (var transaction = CreateTransaction(isolationLevel ?? _options.TransactionIsolationLevel))
             {
-                var result = UseConnection(connection =>
+                var result = UseConnection(dedicatedConnection, connection =>
                 {
                     connection.EnlistTransaction(Transaction.Current);
                     return func(connection, null);
@@ -217,7 +223,7 @@ namespace Hangfire.SqlServer
                 return result;
             }
 #else
-            return UseConnection(connection =>
+            return UseConnection(dedicatedConnection, connection =>
             {
                 using (var transaction = connection.BeginTransaction(isolationLevel ?? IsolationLevel.ReadCommitted))
                 {
@@ -232,14 +238,17 @@ namespace Hangfire.SqlServer
 
         internal DbConnection CreateAndOpenConnection()
         {
-            var connection = _existingConnection ?? new SqlConnection(_connectionString);
-
-            if (connection.State == ConnectionState.Closed)
+            using (_options.ImpersonationFunc?.Invoke())
             {
-                connection.Open();
-            }
+                var connection = _existingConnection ?? new SqlConnection(_connectionString);
 
-            return connection;
+                if (connection.State == ConnectionState.Closed)
+                {
+                    connection.Open();
+                }
+
+                return connection;
+            }
         }
 
         internal bool IsExistingConnection(IDbConnection connection)
@@ -259,7 +268,7 @@ namespace Hangfire.SqlServer
         {
             if (_options.PrepareSchemaIfNecessary)
             {
-                UseConnection(connection =>
+                UseConnection(null, connection =>
                 {
                     SqlServerObjectsInstaller.Install(connection, _options.SchemaName);
                 });
@@ -324,7 +333,7 @@ namespace Hangfire.SqlServer
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(connection =>
+                return sqlStorage.UseConnection(null, connection =>
                 {
                     var sqlQuery = @"
 select count(*) from sys.sysprocesses
@@ -346,7 +355,7 @@ where dbid = db_id(@name) and status != 'background' and status != 'sleeping'";
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(connection =>
+                return sqlStorage.UseConnection(null, connection =>
                 {
                     var sqlQuery = @"
 select count(*) from sys.sysprocesses

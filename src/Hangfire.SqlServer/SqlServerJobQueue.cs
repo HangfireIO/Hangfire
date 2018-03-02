@@ -91,7 +91,7 @@ set transaction isolation level read committed
 update top (1) JQ
 set FetchedAt = GETUTCDATE()
 output INSERTED.Id, INSERTED.JobId, INSERTED.Queue
-from [{_storage.SchemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
+from [{_storage.SchemaName}].JobQueue JQ with (readpast, paglock, xlock)
 where Queue in @queues and
 (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))";
 
@@ -99,7 +99,7 @@ where Queue in @queues and
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                _storage.UseConnection(connection =>
+                _storage.UseConnection(null, connection =>
                 {
                     fetchedJob = connection
                         .Query<FetchedJob>(

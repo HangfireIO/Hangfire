@@ -53,6 +53,29 @@ namespace Hangfire.SqlServer.Msmq.Tests
         }
 
         [Fact, CleanMsmqQueue("my-queue")]
+        public void Enqueue_AddsAJob_WhenIdIsLongValue()
+        {
+            // Arrange
+            var queue = CreateQueue(MsmqTransactionType.Internal);
+
+            // Act
+            queue.Enqueue(_connection.Object, "my-queue", (int.MaxValue + 1L).ToString());
+
+            // Assert
+            using (var messageQueue = CleanMsmqQueueAttribute.GetMessageQueue("my-queue"))
+            using (var transaction = new MessageQueueTransaction())
+            {
+                transaction.Begin();
+
+                var message = messageQueue.Receive(TimeSpan.FromSeconds(5), transaction);
+
+                Assert.Equal((int.MaxValue + 1L).ToString(), message.Label);
+
+                transaction.Commit();
+            }
+        }
+
+        [Fact, CleanMsmqQueue("my-queue")]
         public void Dequeue_ReturnsFetchedJob_WithJobId()
         {
             MsmqUtils.EnqueueJobId("my-queue", "job-id");

@@ -92,6 +92,7 @@ namespace Hangfire.SqlServer
         public int? DashboardJobListLimit { get; set; }
         public TimeSpan TransactionTimeout { get; set; }
         public TimeSpan? CommandTimeout { get; set; }
+        public TimeSpan? CommandBatchMaxTimeout { get; set; }
 
         public string SchemaName
         {
@@ -105,5 +106,7 @@ namespace Hangfire.SqlServer
                 _schemaName = value;
             }
         }
+
+        public Func<IDisposable> ImpersonationFunc { get; set; }
     }
 }
