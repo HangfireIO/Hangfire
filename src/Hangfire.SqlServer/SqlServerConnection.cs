@@ -94,7 +94,7 @@ namespace Hangfire.SqlServer
             string createJobSql =
 $@"insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt)
 output inserted.Id
-values (@invocationData, @arguments, @createdAt, @expireAt)";
+values (@invocationData, N'', @createdAt, @expireAt)";
 
             var invocationData = InvocationData.Serialize(job);
 
@@ -105,7 +105,6 @@ values (@invocationData, @arguments, @createdAt, @expireAt)";
                     new
                     {
                         invocationData = invocationData.Serialize(),
-                        arguments = invocationData.Arguments,
                         createdAt = createdAt,
                         expireAt = createdAt.Add(expireIn)
                     },
@@ -156,7 +155,11 @@ $@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.Schema
 
                 // TODO: conversion exception could be thrown.
                 var invocationData = InvocationData.Deserialize(jobData.InvocationData);
-                invocationData.Arguments = jobData.Arguments;
+
+                if (!String.IsNullOrEmpty(jobData.Arguments))
+                {
+                    invocationData.Arguments = jobData.Arguments;
+                }
 
                 Job job = null;
                 JobLoadException loadException = null;
