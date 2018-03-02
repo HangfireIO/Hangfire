@@ -23,6 +23,9 @@
 
 Hangfire.Core
 
+• Added – Entry point for custom job naming strategies available for dashboard (by @pieceofsummer).
+• Added – JobDisplayNameAttribute class for displaying jobs in dashboard, available on .NET Core (by @pieceofsummer).
+• Added – Support async jobs returning ValueTask&lt;T&gt; and other await-compatible types (by @pieceofsummer).
 • Added – Support for asynchronous background processes, opens the road toward async storage.
 • Added – Circuit breaker pattern for background processes to reduce the logging pressure.
 • Added – Processing server is now able to detect it was expired, and restart itself with the new id.
