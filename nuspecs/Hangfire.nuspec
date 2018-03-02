@@ -38,6 +38,7 @@ Hangfire.Core
 • Changed – Decrease the size of serialized payloads and remove version information.
 • Fixed – Server disappears from the list, but still performing the background processing.
 • Fixed – Logging is too aggressive on transient errors.
+• Fixed – Daylight saving time transitions now handled perfectly in recurring jobs thanks to Cronos.
 • Fixed – Confusing Cron scheduling, when both day-of-week and day-of-month fields set.
 
 Hangfire.SqlServer
