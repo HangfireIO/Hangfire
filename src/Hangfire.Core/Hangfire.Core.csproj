@@ -88,7 +88,6 @@
     <Compile Include="Dashboard\DashboardResponse.cs" />
     <Compile Include="Dashboard\IDashboardAuthorizationFilter.cs" />
     <Compile Include="Dashboard\IDashboardDispatcher.cs" />
-    <Compile Include="Dashboard\IDashboardJobNameProvider.cs" />
     <Compile Include="Dashboard\Owin\OwinDashboardContext.cs" />
     <Compile Include="Dashboard\Owin\OwinDashboardContextExtensions.cs" />
     <Compile Include="Dashboard\Owin\OwinDashboardRequest.cs" />

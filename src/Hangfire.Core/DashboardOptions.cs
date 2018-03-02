@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using Hangfire.Common;
 using Hangfire.Dashboard;
 
 namespace Hangfire
@@ -29,7 +30,7 @@ namespace Hangfire
             IsReadOnlyFunc = _ => false;
             StatsPollingInterval = 2000;
             DisplayStorageConnectionString = true;
-            JobNameProvider = null;
+            DisplayNameFunc = null;
         }
 
         /// <summary>
@@ -56,6 +57,6 @@ namespace Hangfire
         /// <summary>
         /// Display name provider for jobs
         /// </summary>
-        public IDashboardJobNameProvider JobNameProvider { get; set; }
+        public Func<DashboardContext, Job, string> DisplayNameFunc { get; set; }
     }
 }
