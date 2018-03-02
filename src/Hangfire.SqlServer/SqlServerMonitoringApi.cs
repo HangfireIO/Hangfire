@@ -483,7 +483,11 @@ where j.Id in @jobIds";
         private static Job DeserializeJob(string invocationData, string arguments)
         {
             var data = InvocationData.Deserialize(invocationData);
-            data.Arguments = arguments;
+
+            if (!String.IsNullOrEmpty(arguments))
+            {
+                data.Arguments = arguments;
+            }
 
             try
             {
