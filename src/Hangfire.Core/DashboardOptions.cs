@@ -29,6 +29,7 @@ namespace Hangfire
             IsReadOnlyFunc = _ => false;
             StatsPollingInterval = 2000;
             DisplayStorageConnectionString = true;
+            JobNameProvider = null;
         }
 
         /// <summary>
@@ -51,5 +52,10 @@ namespace Hangfire
         public int StatsPollingInterval { get; set; }
 
         public bool DisplayStorageConnectionString { get; set; }
+
+        /// <summary>
+        /// Display name provider for jobs
+        /// </summary>
+        public IDashboardJobNameProvider JobNameProvider { get; set; }
     }
 }
