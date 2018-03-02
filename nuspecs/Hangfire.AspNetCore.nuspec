@@ -6,13 +6,13 @@
     <title>Hangfire ASP.NET Core Support</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
-    <projectUrl>http://hangfire.io/</projectUrl>
+    <projectUrl>https://www.hangfire.io/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>ASP.NET Core support for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2017 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2017-2018 Sergey Odinokov</copyright>
     <tags>hangfire aspnetcore</tags>
-    <releaseNotes>http://hangfire.io/blog/
+    <releaseNotes>https://www.hangfire.io/blog/
     
 1.6.13
 • Fixed – Types are resolved using the `GetServiceOrCreateInstance` method (by @Tsabo).
