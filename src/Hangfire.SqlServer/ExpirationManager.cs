@@ -74,7 +74,7 @@ namespace Hangfire.SqlServer
                     {
                         affected = ExecuteNonQuery(
                             connection,
-                            GetQuery(_storage.SchemaName, table),
+                            GetExpireQuery(_storage.SchemaName, table),
                             cancellationToken,
                             new SqlParameter("@count", NumberOfRecordsInSinglePass),
                             new SqlParameter("@now", DateTime.UtcNow));
@@ -123,38 +123,12 @@ It will be retried in {_checkInterval.TotalSeconds} seconds.",
             }
         }
 
-        private static string GetQuery(string schemaName, string table)
-        {
-
-            switch (table)
-            {
-                case "AggregatedCounter":
-                    return GetExpireQuery(schemaName, table, "[Key]");
-                case "Job":
-                    return GetExpireQuery(schemaName, table, "Id");
-                case "List":
-                    return GetExpireQuery(schemaName, table, "[Key]", "Id");
-                case "Set":
-                    return GetExpireQuery(schemaName, table, "[Key]", "Value");
-                case "Hash":
-                    return GetExpireQuery(schemaName, table, "[Key]", "Field");
-            }
-            return null;
-        }
-
-        private static string GetExpireQuery(string schemaName, string table, params string[] keys)
+        private static string GetExpireQuery(string schemaName, string table)
         {
             return $@"
 set transaction isolation level read committed;
-
-;with cte as (select top (@count) {String.Join(", ", keys)} from (
-  select top (@count) {String.Join(", ", keys)}
-  from [{schemaName}].[{table}] with (forceseek)
-  where ExpireAt < @now
-) as q
-order by {String.Join(", ", keys)})
-
-delete from cte with (paglock)";
+delete top (@count) from [{schemaName}].[{table}]
+where ExpireAt < @now";
         }
 
         private static int ExecuteNonQuery(
