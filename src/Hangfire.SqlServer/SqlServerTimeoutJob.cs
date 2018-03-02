@@ -52,7 +52,7 @@ namespace Hangfire.SqlServer
                 _storage.UseConnection(null, connection =>
                 {
                     connection.Execute(
-                        $"delete from {_storage.SchemaName}.JobQueue where Queue = @queue and Id = @id",
+                        $"delete JQ from {_storage.SchemaName}.JobQueue JQ with (paglock, xlock) where Queue = @queue and Id = @id",
                         new { queue = Queue, id = Id },
                         commandTimeout: _storage.CommandTimeout);
                 });
