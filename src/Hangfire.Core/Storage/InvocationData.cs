@@ -25,12 +25,13 @@ using System.Threading;
 using Hangfire.Common;
 using Hangfire.Server;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace Hangfire.Storage
 {
     public class InvocationData
     {
-        private const string EmptyArray = "[]";
+        private static readonly string EmptyArray = "[]";
         private static readonly string[] SystemAssemblyNames = { "mscorlib", "System.Private.CoreLib" };
 
         public InvocationData(
@@ -81,34 +82,34 @@ namespace Hangfire.Storage
                 JobHelper.ToJson(SerializeArguments(job.Args)));
         }
 
-        public static InvocationData Deserialize(string serializedInvocationData)
+        public static InvocationData Deserialize(string serializedData)
         {
-            if (serializedInvocationData.StartsWith("{"))
+            var payload = JobHelper.FromJson<JobPayload>(serializedData);
+
+            if (payload.TypeName != null && payload.MethodName != null)
             {
-                // It's here for backward compatiblity. In earlier version of Hangfire
-                // InvocationData object was serialized as json object.
-                return JobHelper.FromJson<InvocationData>(serializedInvocationData);
+                return new InvocationData(
+                    payload.TypeName,
+                    payload.MethodName,
+                    JobHelper.ToJson(payload.ParameterTypes) ?? EmptyArray,
+                    JobHelper.ToJson(payload.Arguments) ?? EmptyArray);
             }
 
-            var invocationDataValues = JobHelper.FromJson<string[]>(serializedInvocationData);
-
-            var valuesCount = invocationDataValues.Length;
-            
-            var type = invocationDataValues[0];
-            var method = invocationDataValues[1];
-            var parameterTypes = valuesCount > 2 ? invocationDataValues[2] : EmptyArray;
-            var arguments = valuesCount > 2 ? invocationDataValues[3] : EmptyArray;
-
-            return new InvocationData(type, method, parameterTypes, arguments);
+            return JobHelper.FromJson<InvocationData>(serializedData);
         }
 
         public string Serialize()
         {
-            var values = ParameterTypes == EmptyArray
-                ? new[] { Type, Method }
-                : new[] { Type, Method, ParameterTypes, Arguments };
-            
-            return JobHelper.ToJson(values);
+            var parameterTypes = JobHelper.FromJson<string[]>(ParameterTypes);
+            var arguments = JobHelper.FromJson<string[]>(Arguments);
+
+            return JobHelper.ToJson(new JobPayload
+            {
+                TypeName = Type,
+                MethodName = Method,
+                ParameterTypes = parameterTypes != null && parameterTypes.Length > 0 ? parameterTypes : null,
+                Arguments = arguments != null && arguments.Length > 0 ? arguments : null
+            });
         }
 
         internal static string[] SerializeArguments(IReadOnlyCollection<object> arguments)
@@ -310,6 +311,21 @@ namespace Hangfire.Storage
             }
 
             return typeNameBuilder;
+        }
+
+        private class JobPayload
+        {
+            [JsonProperty("t")]
+            public string TypeName { get; set; }
+
+            [JsonProperty("m")]
+            public string MethodName { get; set; }
+
+            [JsonProperty("p", NullValueHandling = NullValueHandling.Ignore)]
+            public string[] ParameterTypes { get; set; }
+
+            [JsonProperty("a", NullValueHandling = NullValueHandling.Ignore)]
+            public string[] Arguments { get; set; }
         }
     }
 }
