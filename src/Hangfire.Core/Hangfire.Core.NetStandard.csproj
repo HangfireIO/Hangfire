@@ -293,6 +293,7 @@
     <Compile Include="JobActivatorScope.cs" />
     <Compile Include="JobCancellationToken.cs" />
     <Compile Include="JobContinuationOptions.cs" />
+    <Compile Include="JobDisplayNameAttribute.cs" />
     <Compile Include="JobStorage.cs" />
     <Compile Include="LatencyTimeoutAttribute.cs" />
     <Compile Include="MoreLinq\MoreEnumerable.Pairwise.cs" />

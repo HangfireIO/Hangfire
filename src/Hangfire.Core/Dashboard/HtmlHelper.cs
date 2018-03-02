@@ -106,6 +106,19 @@ namespace Hangfire.Dashboard
                 return Strings.Common_CannotFindTargetMethod;
             }
 
+            var jobDisplayNameAttribute = job.Method.GetCustomAttribute<JobDisplayNameAttribute>();
+            if (jobDisplayNameAttribute != null)
+            {
+                try
+                {
+                    return jobDisplayNameAttribute.Format(job.Args.ToArray());
+                }
+                catch (Exception)
+                {
+                    return jobDisplayNameAttribute.DisplayName;
+                }
+            }
+
             var displayNameProvider = _page.DashboardOptions.DisplayNameFunc;
             if (displayNameProvider != null)
             {
@@ -120,7 +133,7 @@ namespace Hangfire.Dashboard
             }
 
 #if NETFULL
-            var displayNameAttribute = job.Method.GetCustomAttribute(typeof(DisplayNameAttribute)) as DisplayNameAttribute;
+            var displayNameAttribute = job.Method.GetCustomAttribute<DisplayNameAttribute>();
             if (displayNameAttribute != null && displayNameAttribute.DisplayName != null)
             {
                 try
