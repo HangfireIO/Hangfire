@@ -590,10 +590,6 @@ BEGIN
 
 	-- Creating secondary, nonclustered indexes
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_JobQueue_FetchedAt] ON [HangFire].[JobQueue] ([FetchedAt])
-	WHERE [FetchedAt] IS NOT NULL;
-	PRINT 'Created index [IX_HangFire_JobQueue_FetchedAt]';
-
 	CREATE NONCLUSTERED INDEX [IX_HangFire_Job_StateName] ON [HangFire].[Job] ([StateName])
 	WHERE [StateName] IS NOT NULL;
 	PRINT 'Re-created index [IX_HangFire_Job_StateName]';
@@ -641,19 +637,6 @@ BEGIN
 		ON UPDATE CASCADE
 		ON DELETE CASCADE;
 	PRINT 'Re-created constraint [FK_HangFire_JobParameter_Job]';
-
-	CREATE TABLE [HangFire].[Schedule] (
-		[Queue] NVARCHAR(50) NOT NULL,
-		[At] DATETIME2(7) NOT NULL,
-		[JobId] BIGINT NOT NULL
-	);
-	PRINT 'Created table [HangFire].[Schedule]';
-
-	CREATE CLUSTERED INDEX [CX_HangFire_Schedule] ON [HangFire].[Schedule] (
-		[Queue] ASC,
-		[At] ASC
-	);
-	PRINT 'Created index [CX_HangFire_Schedule]';
 
 	SET @CURRENT_SCHEMA_VERSION = 6;
 END	
