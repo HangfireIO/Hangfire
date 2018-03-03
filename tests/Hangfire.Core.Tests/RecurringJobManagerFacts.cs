@@ -298,11 +298,20 @@ namespace Hangfire.Core.Tests
 
             var manager = CreateManager();
 
-            manager.RemoveIfExists(_id);
+            manager.Remove(_id);
 
             _transaction.Verify(x => x.RemoveFromSet("recurring-jobs", _id));
             _transaction.Verify(x => x.RemoveHash($"recurring-job:{_id}"));
             _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void Remove_ThrowsAnException_WhenIdIsNull()
+        {
+            var manager = CreateManager();
+
+            Assert.Throws<ArgumentNullException>(
+                () => manager.Remove(null));
         }
 
         [Fact]
