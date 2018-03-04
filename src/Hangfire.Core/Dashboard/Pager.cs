@@ -27,12 +27,13 @@ namespace Hangfire.Dashboard
         private int _startPageIndex = 1;
         private int _endPageIndex = 1;
 
-        public Pager(int from, int perPage, long total)
+        public Pager(int from, int perPage, long total, string filter, int defaultRecordsPerPage)
         {
             FromRecord = from >= 0 ? from : 0;
-            RecordsPerPage = perPage > 0 ? perPage : DefaultRecordsPerPage;
+            RecordsPerPage = perPage > 0 ? perPage : (defaultRecordsPerPage > 0 ? defaultRecordsPerPage : DefaultRecordsPerPage);
             TotalRecordCount = total;
             CurrentPage = FromRecord / RecordsPerPage + 1;
+            Filter = filter;
             TotalPageCount = (int)Math.Ceiling((double)TotalRecordCount / RecordsPerPage);
 
             PagerItems = GenerateItems();
@@ -43,6 +44,7 @@ namespace Hangfire.Dashboard
         public int FromRecord { get; }
         public int RecordsPerPage { get; }
         public int CurrentPage { get; }
+        public string Filter { get; }
 
         public int TotalPageCount { get; }
         public long TotalRecordCount { get; }
@@ -53,13 +55,18 @@ namespace Hangfire.Dashboard
         {
             if (page < 1 || page > TotalPageCount) return "#";
 
-            return BasePageUrl + "?from=" + (page - 1) * RecordsPerPage + "&count=" + RecordsPerPage;
+            return BasePageUrl + "?from=" + (page - 1) * RecordsPerPage + "&count=" + RecordsPerPage + "&filter=" + Filter;
         }
 
         public string RecordsPerPageUrl(int perPage)
         {
             if (perPage <= 0) return "#";
-            return BasePageUrl + "?from=0&count=" + perPage;
+            return BasePageUrl + "?from=0&count=" + perPage + "&filter=" + Filter;
+        }
+
+        public string FilterUrl()
+        {
+            return BasePageUrl + "?from=0&count=" + RecordsPerPage + "&filter=";
         }
 
         private ICollection<Item> GenerateItems()

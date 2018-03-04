@@ -8,13 +8,14 @@
     Layout = new LayoutPage(Strings.FailedJobsPage_Title);
 
     int from, perPage;
+    var filter = Query("filter");
 
     int.TryParse(Query("from"), out from);
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    var pager = new Pager(from, perPage, monitor.FailedCount());
-    var failedJobs = monitor.FailedJobs(pager.FromRecord, pager.RecordsPerPage);
+    var pager = new Pager(from, perPage, monitor.FailedCount(filter), filter, DefaultRecordsPerPage);
+    var failedJobs = monitor.FailedJobs(pager.FromRecord, pager.RecordsPerPage, filter);
 }
 
 <div class="row">
@@ -54,7 +55,10 @@
                         @Strings.Common_DeleteSelected
                     </button>
 
-                    @Html.PerPageSelector(pager)
+                    @if (EnableJobFilters)
+                    {
+                        @Html.Filter(pager)
+                    }
                 </div>
 
                 <div class="table-responsive">
@@ -67,6 +71,10 @@
                                 <th class="min-width">@Strings.Common_Id</th>
                                 <th>@Strings.FailedJobsPage_Table_Failed</th>
                                 <th>@Strings.Common_Job</th>
+                                @if (DisplayArgumentsInLists)
+                                {
+                                    <th class="min-width">@Strings.Common_Arguments</th>
+                                }
                             </tr>
                         </thead>
                         <tbody>
@@ -104,11 +112,17 @@
                                             </div>
                                         }
                                     </td>
+                                    @if (DisplayArgumentsInLists)
+                                    {
+                                        <td class="ellipsis ellipsis-wrap">
+                                            @Html.JobArguments(job.Value.Job)
+                                        </td>
+                                    }
                                 </tr>
                                 if (job.Value.InFailedState)
                                 {
                                     <tr>
-                                        <td colspan="2" class="failed-job-details">
+                                        <td colspan="@(DisplayArgumentsInLists ? 4 : 3)" class="failed-job-details">
                                             <div class="expandable" style="@(index++ == 0 ? "display: block;" : null)">
                                                 <h4>@job.Value.ExceptionType</h4>
                                                 <p class="text-muted">
@@ -128,7 +142,11 @@
                     </table>
                 </div>
 
-                @Html.Paginator(pager)
+                <div class="btn-toolbar">
+                    @Html.Paginator(pager)
+
+                    @Html.PerPageSelector(pager)
+                </div>
             </div>
         }
     </div>

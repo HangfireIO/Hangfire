@@ -69,6 +69,10 @@
                                                     <th class="min-width">@Strings.Common_Id</th>
                                                     <th class="min-width">@Strings.Common_State</th>
                                                     <th>@Strings.Common_Job</th>
+                                                    @if (DisplayArgumentsInLists)
+                                                    {
+                                                        <th class="min-width">@Strings.Common_Arguments</th>
+                                                    }
                                                     <th class="align-right min-width">@Strings.Common_Enqueued</th>
                                                 </tr>
                                             </thead>
@@ -85,7 +89,7 @@
                                                         </td>
                                                         @if (job.Value == null)
                                                         {
-                                                            <td colspan="3"><em>@Strings.Common_JobExpired</em></td>
+                                                            <td colspan="@(DisplayArgumentsInLists ? 4 : 3)"><em>@Strings.Common_JobExpired</em></td>
                                                         }
                                                         else
                                                         {
@@ -95,6 +99,12 @@
                                                             <td class="word-break">
                                                                 @Html.JobNameLink(job.Key, job.Value.Job)
                                                             </td>
+                                                            @if (DisplayArgumentsInLists)
+                                                             {
+                                                                 <td class="ellipsis ellipsis-wrap">
+                                                                     @Html.JobArguments(job.Value.Job)
+                                                                 </td>
+                                                             }
                                                             <td class="align-right min-width">
                                                                 @if (job.Value.EnqueuedAt.HasValue)
                                                                 {

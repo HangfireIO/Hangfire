@@ -92,6 +92,14 @@
     <Compile Include="Dashboard\Owin\OwinDashboardContextExtensions.cs" />
     <Compile Include="Dashboard\Owin\OwinDashboardRequest.cs" />
     <Compile Include="Dashboard\Owin\OwinDashboardResponse.cs" />
+    <Compile Include="Dashboard\Pages\Filter.cs">
+      <DependentUpon>_Filter.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard\Pages\_Filter.generated.cs">
+      <DependentUpon>_Filter.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Obsolete\RequestDispatcherWrapper.cs" />
     <Compile Include="JobActivatorContext.cs" />
     <Compile Include="IRecurringJobManager.cs" />
@@ -513,6 +521,10 @@
     <None Include="Dashboard\Pages\_Breadcrumbs.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Breadcrumbs.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\_Filter.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_Filter.generated.cs</LastGenOutput>
     </None>
     <None Include="Dashboard\Pages\_SidebarMenu.cshtml">
       <Generator>RazorGenerator</Generator>

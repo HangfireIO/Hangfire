@@ -3,7 +3,6 @@
 @using Hangfire.Dashboard.Resources;
 
 @inherits RazorPage
-<div class="btn-toolbar">
     @if (_pager.TotalPageCount > 1)
     {
         <div class="btn-group paginator">
@@ -40,4 +39,3 @@
     <div class="btn-toolbar-label">
         @Strings.Paginator_TotalItems: @_pager.TotalRecordCount
     </div>
-</div>

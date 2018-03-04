@@ -523,4 +523,10 @@
   <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
     <value>Succeeded</value>
   </data>
+  <data name="Common_Arguments" xml:space="preserve">
+    <value>Arguments</value>
+  </data>
+  <data name="PerPageSelector_All" xml:space="preserve">
+    <value>All</value>
+  </data>
 </root>

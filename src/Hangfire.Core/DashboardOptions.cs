@@ -27,6 +27,10 @@ namespace Hangfire
             AppPath = "/";
             Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
             StatsPollingInterval = 2000;
+            DisplayArgumentsInLists = false;
+            EnableJobFilters = false;
+            UseFullWidth = false;
+            DefaultRecordsPerPage = 10;
         }
 
         /// <summary>
@@ -45,5 +49,26 @@ namespace Hangfire
         /// The interval the /stats endpoint should be polled with.
         /// </summary>
         public int StatsPollingInterval { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether or not to display arguments in job lists.
+        /// </summary>
+        public bool DisplayArgumentsInLists { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether or not to be able to filter the job lists.
+        /// </summary>
+        public bool EnableJobFilters { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets a value indicating whether or not to use the full screen width.
+        /// </summary>
+        public bool UseFullWidth { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default number of records per page.
+        /// </summary>
+        public int DefaultRecordsPerPage { get; set; }
     }
 }

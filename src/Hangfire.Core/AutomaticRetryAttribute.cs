@@ -98,6 +98,7 @@ namespace Hangfire
             Attempts = DefaultRetryAttempts;
             LogEvents = true;
             OnAttemptsExceeded = AttemptsExceededAction.Fail;
+            Order = 20;
         }
 
         /// <summary>

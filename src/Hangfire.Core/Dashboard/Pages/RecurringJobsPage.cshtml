@@ -22,7 +22,7 @@
 	    var storageConnection = connection as JobStorageConnection;
 	    if (storageConnection != null)
 	    {
-	        pager = new Pager(from, perPage, storageConnection.GetRecurringJobCount());
+	        pager = new Pager(from, perPage, storageConnection.GetRecurringJobCount(), null, DefaultRecordsPerPage);
 	        recurringJobs = storageConnection.GetRecurringJobs(pager.FromRecord, pager.FromRecord + pager.RecordsPerPage);
 	    }
 	    else
@@ -63,10 +63,6 @@
                         @Strings.Common_Delete
                     </button>
 
-                    @if (pager != null)
-                    {
-                        @: @Html.PerPageSelector(pager)
-                    }
                 </div>
 
                 <div class="table-responsive">
@@ -80,6 +76,10 @@
                                 <th class="min-width">@Strings.RecurringJobsPage_Table_Cron</th>
                                 <th class="min-width">@Strings.RecurringJobsPage_Table_TimeZone</th>
                                 <th>@Strings.Common_Job</th>
+                                @if (DisplayArgumentsInLists)
+                                {
+                                    <th class="min-width">@Strings.Common_Arguments</th>
+                                }
                                 <th class="align-right min-width">@Strings.RecurringJobsPage_Table_NextExecution</th>
                                 <th class="align-right min-width">@Strings.RecurringJobsPage_Table_LastExecution</th>
                                 <th class="align-right min-width">@Strings.Common_Created</th>
@@ -137,6 +137,19 @@
                                             <em>@job.LoadException.InnerException.Message</em>
                                         }
                                     </td>
+                                    @if (DisplayArgumentsInLists)
+                                    {
+                                        <td class="ellipsis ellipsis-wrap">
+                                            @if (job.Job != null)
+                                            {
+                                                @: @Html.JobArguments(job.Job)
+                                            }
+                                            else
+                                            {
+                                                <em>@job.LoadException.InnerException.Message</em>
+                                            }
+                                        </td>
+                                    }
                                     <td class="align-right min-width">
                                         @if (job.NextExecution != null)
                                         {
@@ -188,7 +201,11 @@
 
                 @if (pager != null)
                 {
-                    @: @Html.Paginator(pager)
+                    <div class="btn-toolbar">
+                        @Html.Paginator(pager)
+                
+                        @Html.PerPageSelector(pager)
+                    </div>
                 }
             </div>
         }

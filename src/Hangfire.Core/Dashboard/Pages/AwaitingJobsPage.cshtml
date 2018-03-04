@@ -11,6 +11,7 @@
     Layout = new LayoutPage(Strings.AwaitingJobsPage_Title);
 
     int from, perPage;
+    var filter = Query("filter");
 
     int.TryParse(Query("from"), out from);
     int.TryParse(Query("count"), out perPage);
@@ -24,7 +25,7 @@
 
         if (storageConnection != null)
         {
-            pager = new Pager(from, perPage, storageConnection.GetSetCount("awaiting"));
+            pager = new Pager(from, perPage, storageConnection.GetSetCount("awaiting"), null, DefaultRecordsPerPage);
             jobIds = storageConnection.GetRangeFromSet("awaiting", pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
         }
     }
@@ -63,7 +64,6 @@
                         @Strings.Common_DeleteSelected
                     </button>
 
-                    @Html.PerPageSelector(pager)
                 </div>
 
                 <div class="table-responsive">
@@ -75,6 +75,10 @@
                                 </th>
                                 <th class="min-width">@Strings.Common_Id</th>
                                 <th>@Strings.Common_Job</th>
+                                @if (DisplayArgumentsInLists)
+                                {
+                                    <th class="min-width">@Strings.Common_Arguments</th>
+                                }
                                 <th class="min-width">@Strings.AwaitingJobsPage_Table_Options</th>
                                 <th class="min-width">@Strings.AwaitingJobsPage_Table_Parent</th>
                                 <th class="align-right">@Strings.Common_Created</th>
@@ -107,13 +111,19 @@
                                     </td>
                                     @if (jobData == null)
                                     {
-                                        <td colspan="2"><em>@Strings.Common_JobExpired</em></td>
+                                        <td colspan="@(DisplayArgumentsInLists ? 5 : 4)"><em>@Strings.Common_JobExpired</em></td>
                                     }
                                     else
                                     {
                                         <td class="word-break">
                                             @Html.JobNameLink(jobId, jobData.Job)
                                         </td>
+                                        @if (DisplayArgumentsInLists)
+                                        {
+                                            <td class="ellipsis ellipsis-wrap">
+                                                @Html.JobArguments(jobData.Job)
+                                            </td>
+                                        }
                                         <td class="min-width">
                                             @if (stateData != null && stateData.Data.ContainsKey("Options") && !String.IsNullOrWhiteSpace(stateData.Data["Options"]))
                                             {
@@ -147,7 +157,11 @@
                         </tbody>
                     </table>
                 </div>
-                @Html.Paginator(pager)
+                <div class="btn-toolbar">
+                    @Html.Paginator(pager)
+
+                    @Html.PerPageSelector(pager)
+                </div>
             </div>
         }
         else
