@@ -109,6 +109,9 @@ values (@invocationData, @arguments, @createdAt, @expireAt)";
                             name = parameter.Key,
                             value = parameter.Value
                         };
+
+                        if (parameter.Key.Length <= Constants.JobParameterNameMaxLength) continue;
+                        throw new ArgumentException($@"""{parameter.Key}"" : the job parameter name length can't exceed {Constants.JobParameterNameMaxLength} characters.", nameof(parameters));
                     }
 
                     string insertParameterSql =
@@ -197,6 +200,7 @@ where j.Id = @jobId";
         {
             if (id == null) throw new ArgumentNullException(nameof(id));
             if (name == null) throw new ArgumentNullException(nameof(name));
+            if (name.Length > Constants.JobParameterNameMaxLength) throw new ArgumentException($@"""{name}"" : the job parameter name length can't exceed {Constants.JobParameterNameMaxLength} characters.", nameof(name));
 
             _storage.UseConnection(connection =>
             {
@@ -252,6 +256,7 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
+            if (key.Length > Constants.HashKeyMaxLength) throw new ArgumentException($@"""{key}"" : the hash key length can't exceed {Constants.HashKeyMaxLength} characters.", nameof(key));
 
             string sql =
 $@";merge [{_storage.SchemaName}].Hash with (holdlock) as Target
@@ -264,6 +269,8 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             {
                 foreach (var keyValuePair in keyValuePairs)
                 {
+                    if (keyValuePair.Key.Length > Constants.HashFieldMaxLength) throw new ArgumentException($@"""{keyValuePair.Key}"" : the hash field length can't exceed {Constants.HashFieldMaxLength} characters.", nameof(keyValuePairs));
+                    
                     connection.Execute(
                         sql, 
                         new { key = key, field = keyValuePair.Key, value = keyValuePair.Value }, 
@@ -293,6 +300,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
         {
             if (serverId == null) throw new ArgumentNullException(nameof(serverId));
             if (context == null) throw new ArgumentNullException(nameof(context));
+            if (serverId.Length > Constants.ServerIdMaxLength) throw new ArgumentException($@"""{serverId}"" : the server id length can't exceed {Constants.ServerIdMaxLength} characters.", nameof(serverId));
 
             var data = new ServerData
             {

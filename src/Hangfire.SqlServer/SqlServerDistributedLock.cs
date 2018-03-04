@@ -72,7 +72,15 @@ namespace Hangfire.SqlServer
             {
                 _connection = storage.CreateAndOpenConnection();
 
-                Acquire(_connection, _resource, timeout);
+                try
+                {
+                    Acquire(_connection, _resource, timeout);
+                }
+                catch (Exception)
+                {
+                    storage.ReleaseConnection(_connection);
+                    throw;
+                }
 
                 if (!_storage.IsExistingConnection(_connection))
                 {

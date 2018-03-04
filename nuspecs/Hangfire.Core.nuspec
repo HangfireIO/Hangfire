@@ -10,12 +10,16 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>Core components for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2013-2016 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013-2017 Sergey Odinokov</copyright>
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
 1.6.13
-• Fixed – Don't throw NullReferenceException, when state was changed on Processing page.
+• Fixed – Continuation is fired on a wrong queue, when parent job is finished before the creation.
+• Fixed – Impossible to intercept failed state transition before `AutomaticRetryAttribute`.
+• Fixed – Fixed translation in Chinese localization on home page (by @JustinChia).
+• Fixed – Don't throw `NullReferenceException`, when state has changed during query on Processing page.
+• Fixed – `CreateBatchFailedException`, when batch creation takes longer than 1 hour.
     
 1.6.12
 • Fixed – Buggy state filters may cause background job to be infinitely retried.

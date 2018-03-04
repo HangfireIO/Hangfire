@@ -23,7 +23,7 @@ using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlServerFetchedJob : IFetchedJob
+    internal class SqlServerTransactionJob : IFetchedJob
     {
         // Connections to SQL Azure Database that are idle for 30 minutes 
         // or longer will be terminated. And since we are using separate
@@ -38,7 +38,7 @@ namespace Hangfire.SqlServer
         private readonly Timer _timer;
         private readonly object _lockObject = new object();
 
-        public SqlServerFetchedJob(
+        public SqlServerTransactionJob(
             [NotNull] SqlServerStorage storage,
             [NotNull] IDbConnection connection, 
             [NotNull] IDbTransaction transaction, 

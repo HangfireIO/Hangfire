@@ -64,7 +64,6 @@
     <Compile Include="SqlServerConnection.cs" />
     <Compile Include="SqlServerDistributedLock.cs" />
     <Compile Include="SqlServerDistributedLockException.cs" />
-    <Compile Include="SqlServerFetchedJob.cs" />
     <Compile Include="SqlServerJobQueue.cs" />
     <Compile Include="SqlServerJobQueueMonitoringApi.cs" />
     <Compile Include="SqlServerJobQueueProvider.cs" />
@@ -73,6 +72,8 @@
     <Compile Include="SqlServerStorage.cs" />
     <Compile Include="SqlServerStorageExtensions.cs" />
     <Compile Include="SqlServerStorageOptions.cs" />
+    <Compile Include="SqlServerTimeoutJob.cs" />
+    <Compile Include="SqlServerTransactionJob.cs" />
     <Compile Include="SqlServerWriteOnlyTransaction.cs" />
   </ItemGroup>
   <ItemGroup>

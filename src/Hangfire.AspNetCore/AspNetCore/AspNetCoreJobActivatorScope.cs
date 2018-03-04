@@ -32,7 +32,7 @@ namespace Hangfire.AspNetCore
 
         public override object Resolve(Type type)
         {
-            return _serviceScope.ServiceProvider.GetRequiredService(type);
+            return ActivatorUtilities.GetServiceOrCreateInstance(_serviceScope.ServiceProvider, type);
         }
 
         public override void DisposeScope()
