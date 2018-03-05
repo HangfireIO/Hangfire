@@ -131,6 +131,29 @@ namespace Hangfire
             }
         }
 
+        public void Remove(string recurringJobId)
+        {
+            if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
+
+            using (var connection = _storage.GetConnection())
+            {
+                var job = connection.GetAllEntriesFromHash($"recurring-job:{recurringJobId}");
+                if (job == null)
+                {
+                    throw new JobNotFoundException(recurringJobId);
+                }
+
+                using (var transaction = connection.CreateWriteTransaction())
+                {
+
+                    transaction.RemoveHash($"recurring-job:{recurringJobId}");
+                    transaction.RemoveFromSet("recurring-jobs", recurringJobId);
+
+                    transaction.Commit();
+                }
+            }
+        }
+
         private static void ValidateCronExpression(string cronExpression)
         {
             try

@@ -287,6 +287,41 @@ namespace Hangfire.Core.Tests
             _transaction.Verify(x => x.Commit());
         }
 
+        [Fact]
+        public void Remove_RemovesEntriesAndCommitsTheTransaction()
+        {
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}"))
+                .Returns(new Dictionary<string, string>
+                {
+                    { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) }
+                });
+
+            var manager = CreateManager();
+
+            manager.Remove(_id);
+
+            _transaction.Verify(x => x.RemoveFromSet("recurring-jobs", _id));
+            _transaction.Verify(x => x.RemoveHash($"recurring-job:{_id}"));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void Remove_ThrowsAnException_WhenIdIsNull()
+        {
+            var manager = CreateManager();
+
+            Assert.Throws<ArgumentNullException>(
+                () => manager.Remove(null));
+        }
+
+        [Fact]
+        public void Remove_ThrowsAnException_WhenJobNotFound()
+        {
+            var manager = CreateManager();
+
+            Assert.Throws<JobNotFoundException>(() => manager.Remove(_id));
+        }
+
         private RecurringJobManager CreateManager()
         {
             return new RecurringJobManager(_storage.Object, _factory.Object);
