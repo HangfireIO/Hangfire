@@ -122,8 +122,7 @@ namespace Hangfire.SqlServer
 
         public override void WriteOptionsToLog(ILog logger)
         {
-            logger.Info("Using the following options for SQL Server job storage:");
-            logger.Info($"    Queue poll interval: {_options.QueuePollInterval}.");
+            logger.Info($"Using the following options for SQL Server job storage: Queue poll interval: {_options.QueuePollInterval}.");
         }
 
         public override string ToString()

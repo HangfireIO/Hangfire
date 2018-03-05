@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using Hangfire.Common;
 using Hangfire.Dashboard;
 
 namespace Hangfire
@@ -28,6 +29,8 @@ namespace Hangfire
             Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
             IsReadOnlyFunc = _ => false;
             StatsPollingInterval = 2000;
+            DisplayStorageConnectionString = true;
+            DisplayNameFunc = null;
         }
 
         /// <summary>
@@ -48,5 +51,12 @@ namespace Hangfire
         /// The interval the /stats endpoint should be polled with.
         /// </summary>
         public int StatsPollingInterval { get; set; }
+
+        public bool DisplayStorageConnectionString { get; set; }
+
+        /// <summary>
+        /// Display name provider for jobs
+        /// </summary>
+        public Func<DashboardContext, Job, string> DisplayNameFunc { get; set; }
     }
 }

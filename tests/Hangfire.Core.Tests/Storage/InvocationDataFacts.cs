@@ -70,7 +70,7 @@ namespace Hangfire.Core.Tests.Storage
 
         [Theory]
         [InlineData("Method", "[]", "[]", null, null)]
-        [InlineData("Sample", "[\"System.String\"]", "[\"\\\"Hello\\\"\"]", "[\\\"System.String\\\"]", "[\\\"\\\\\\\"Hello\\\\\\\"\\\"]")]
+        [InlineData("Sample", "[\"System.String\"]", "[\"\\\"Hello\\\"\"]", "[\"System.String\"]", "[\"\\\"Hello\\\"\"]")]
         public void Serialize_CorrectlySerializesInvocationDataToString(string method, string parameterTypes,
             string args, string expectedParameterTypes, string expectedArgs)
         {
@@ -78,10 +78,10 @@ namespace Hangfire.Core.Tests.Storage
 
             var invocationData = new InvocationData(type, method, parameterTypes, args);
 
-            var expectedString = $"[\"{type}\",\"{method}\"";
-            if (expectedParameterTypes != null) expectedString += $",\"{expectedParameterTypes}\"";
-            if (expectedArgs != null) expectedString += $",\"{expectedArgs}\"";
-            expectedString += "]";
+            var expectedString = $"{{\"t\":\"{type}\",\"m\":\"{method}\"";
+            if (expectedParameterTypes != null) expectedString += $",\"p\":{expectedParameterTypes}";
+            if (expectedArgs != null) expectedString += $",\"a\":{expectedArgs}";
+            expectedString += "}";
 
             Assert.Equal(expectedString, invocationData.Serialize());
         }
@@ -95,7 +95,7 @@ namespace Hangfire.Core.Tests.Storage
         [InlineData("{\"Type\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\",\"Method\":\"Sample\",\"ParameterTypes\":\"[\\\"System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"Hello\\\\\\\"\\\"]\"}")]
 
         // New serialization format.
-        [InlineData("[\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"Sample\",\"[\\\"System.String\\\"]\",\"[\\\"\\\\\\\"Hello\\\\\\\"\\\"]\"]")]
+        [InlineData("{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"Sample\",\"p\":[\"System.String\"],\"a\":[\"\\\"Hello\\\"\"]}")]
         public void Deserialize_DeserializesCorrectlyStringToInvocationData(string invocationData)
         {
             var serializedData = InvocationData.Deserialize(invocationData);
@@ -112,7 +112,7 @@ namespace Hangfire.Core.Tests.Storage
         [Fact]
         public void Deserialize_DeserializesCorrectlyShortFormatStringToInvocationData()
         {
-            var invocationData = "[\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"Method\"]";
+            var invocationData = "{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"Method\"}";
 
             var serializedData = InvocationData.Deserialize(invocationData);
 

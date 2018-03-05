@@ -43,7 +43,6 @@ namespace Hangfire.Server
         private static readonly TimeSpan JobInitializationWaitTimeout = TimeSpan.FromMinutes(1);
         private static readonly ILog Logger = LogProvider.For<Worker>();
 
-        private readonly string _workerId;
         private readonly string[] _queues;
 
         private readonly IBackgroundJobPerformer _performer;
@@ -70,7 +69,6 @@ namespace Hangfire.Server
             _queues = queues.ToArray();
             _performer = performer;
             _stateChanger = stateChanger;
-            _workerId = Guid.NewGuid().ToString();
         }
 
         /// <inheritdoc />
@@ -90,7 +88,7 @@ namespace Hangfire.Server
                         context.CancellationToken,
                         timeoutCts.Token))
                     {
-                        var processingState = new ProcessingState(context.ServerId, _workerId);
+                        var processingState = new ProcessingState(context.ServerId, context.ExecutionId.ToString());
 
                         var appliedState = _stateChanger.ChangeState(new StateChangeContext(
                             context.Storage,
@@ -175,12 +173,6 @@ namespace Hangfire.Server
             }
         }
 
-        /// <inheritdoc />
-        public override string ToString()
-        {
-            return $"{GetType().Name} #{_workerId.Substring(0, 8)}";
-        }
-
         private IState PerformJob(BackgroundProcessContext context, IStorageConnection connection, string jobId)
         {
             try
@@ -199,7 +191,7 @@ namespace Hangfire.Server
 
                 var backgroundJob = new BackgroundJob(jobId, jobData.Job, jobData.CreatedAt);
 
-                var jobToken = new ServerJobCancellationToken(connection, jobId, context.ServerId, _workerId, context.CancellationToken);
+                var jobToken = new ServerJobCancellationToken(connection, jobId, context.ServerId, context.ExecutionId.ToString(), context.CancellationToken);
                 var performContext = new PerformContext(connection, backgroundJob, jobToken);
 
                 var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;

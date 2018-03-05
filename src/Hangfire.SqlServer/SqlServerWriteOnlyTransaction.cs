@@ -21,7 +21,6 @@ using System.Data.SqlClient;
 #if NETFULL
 using System.Transactions;
 #endif
-using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.States;
@@ -91,7 +90,7 @@ namespace Hangfire.SqlServer
         public override void ExpireJob(string jobId, TimeSpan expireIn)
         {
             QueueCommand(
-                $@"update [{_storage.SchemaName}].Job set ExpireAt = @expireAt where Id = @id",
+                $@"update J set ExpireAt = @expireAt from [{_storage.SchemaName}].Job J with (forceseek) where Id = @id;",
                 new SqlParameter("@expireAt", DateTime.UtcNow.Add(expireIn)),
                 new SqlParameter("@id", long.Parse(jobId)));
         }
@@ -104,7 +103,7 @@ namespace Hangfire.SqlServer
         public override void PersistJob(string jobId)
         {
             QueueCommand(
-                $@"update [{_storage.SchemaName}].Job set ExpireAt = NULL where Id = @id",
+                    $@"update J set ExpireAt = NULL from [{_storage.SchemaName}].Job J with (forceseek) where Id = @id;",
                 new SqlParameter("@id", long.Parse(jobId)));
         }
 

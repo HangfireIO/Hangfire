@@ -1,5 +1,5 @@
 ﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright © 2017 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -13,35 +13,32 @@
 // 
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
-
+#if NETFULL
 using System;
+using System.Threading;
 
-namespace Hangfire.Server
+namespace Hangfire.Processing
 {
-    internal class ServerHeartbeat : IBackgroundProcess
+    internal static class AppDomainUnloadMonitor
     {
-        public static readonly TimeSpan DefaultHeartbeatInterval = TimeSpan.FromSeconds(30);
+        private static int _initialized;
+        private static bool _isUnloading;
 
-        private readonly TimeSpan _heartbeatInterval;
-
-        public ServerHeartbeat(TimeSpan heartbeatInterval)
+        public static void EnsureInitialized()
         {
-            _heartbeatInterval = heartbeatInterval;
-        }
-
-        public void Execute(BackgroundProcessContext context)
-        {
-            using (var connection = context.Storage.GetConnection())
+            if (Interlocked.CompareExchange(ref _initialized, 1, 0) == 0)
             {
-                connection.Heartbeat(context.ServerId);
+                AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
+                AppDomain.CurrentDomain.ProcessExit += OnDomainUnload;
             }
-
-            context.Wait(_heartbeatInterval);
         }
 
-        public override string ToString()
+        public static bool IsUnloading => Volatile.Read(ref _isUnloading);
+
+        private static void OnDomainUnload(object sender, EventArgs args)
         {
-            return GetType().Name;
+            Volatile.Write(ref _isUnloading, true);
         }
     }
 }
+#endif
