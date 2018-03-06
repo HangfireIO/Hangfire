@@ -233,6 +233,10 @@ namespace Hangfire.SqlServer.Tests
                 Assert.Equal(null, (string) sqlJob.StateName);
 
                 var invocationData = JobHelper.FromJson<InvocationData>((string)sqlJob.InvocationData);
+
+                // arguments data should not be duplicated in invocationData column
+                Assert.Null(invocationData.Arguments);
+
                 invocationData.Arguments = sqlJob.Arguments;
 
                 var job = invocationData.Deserialize();
