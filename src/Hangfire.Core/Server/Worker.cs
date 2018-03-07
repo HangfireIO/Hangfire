@@ -48,13 +48,14 @@ namespace Hangfire.Server
 
         private readonly IBackgroundJobPerformer _performer;
         private readonly IBackgroundJobStateChanger _stateChanger;
-        
+        private readonly JobActivator _activator;
+
         public Worker() : this(EnqueuedState.DefaultQueue)
         {
         }
 
         public Worker([NotNull] params string[] queues)
-            : this(queues, new BackgroundJobPerformer(), new BackgroundJobStateChanger())
+            : this(queues, new BackgroundJobPerformer(), new BackgroundJobStateChanger(), JobActivator.Current)
         {
         }
 
@@ -62,14 +63,25 @@ namespace Hangfire.Server
             [NotNull] IEnumerable<string> queues,
             [NotNull] IBackgroundJobPerformer performer, 
             [NotNull] IBackgroundJobStateChanger stateChanger)
+            : this(queues, performer, stateChanger, JobActivator.Current)
+        {
+        }
+
+        public Worker(
+            [NotNull] IEnumerable<string> queues,
+            [NotNull] IBackgroundJobPerformer performer,
+            [NotNull] IBackgroundJobStateChanger stateChanger,
+            [NotNull] JobActivator activator)
         {
             if (queues == null) throw new ArgumentNullException(nameof(queues));
             if (performer == null) throw new ArgumentNullException(nameof(performer));
             if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
-            
+            if (activator == null) throw new ArgumentNullException(nameof(activator));
+
             _queues = queues.ToArray();
             _performer = performer;
             _stateChanger = stateChanger;
+            _activator = activator;
             _workerId = Guid.NewGuid().ToString();
         }
 
@@ -200,15 +212,20 @@ namespace Hangfire.Server
                 var backgroundJob = new BackgroundJob(jobId, jobData.Job, jobData.CreatedAt);
 
                 var jobToken = new ServerJobCancellationToken(connection, jobId, context.ServerId, _workerId, context.CancellationToken);
-                var performContext = new PerformContext(connection, backgroundJob, jobToken);
 
-                var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
-                var duration = Stopwatch.StartNew();
+                using (var scope = _activator.BeginScope(
+                    new JobActivatorContext(connection, backgroundJob, jobToken)))
+                {
+                    var performContext = new PerformContext(connection, backgroundJob, jobToken, scope);
 
-                var result = _performer.Perform(performContext);
-                duration.Stop();
+                    var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
+                    var duration = Stopwatch.StartNew();
 
-                return new SucceededState(result, (long) latency, duration.ElapsedMilliseconds);
+                    var result = _performer.Perform(performContext);
+                    duration.Stop();
+
+                    return new SucceededState(result, (long)latency, duration.ElapsedMilliseconds);
+                }
             }
             catch (JobAbortedException)
             {

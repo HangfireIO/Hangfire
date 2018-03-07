@@ -33,19 +33,12 @@ namespace Hangfire.Server
         }
 
         public BackgroundJobPerformer([NotNull] IJobFilterProvider filterProvider)
-            : this(filterProvider, JobActivator.Current)
-        {
-        }
-
-        public BackgroundJobPerformer(
-            [NotNull] IJobFilterProvider filterProvider,
-            [NotNull] JobActivator activator)
-            : this(filterProvider, new CoreBackgroundJobPerformer(activator))
+            : this(filterProvider, new CoreBackgroundJobPerformer())
         {
         }
 
         internal BackgroundJobPerformer(
-            [NotNull] IJobFilterProvider filterProvider, 
+            [NotNull] IJobFilterProvider filterProvider,
             [NotNull] IBackgroundJobPerformer innerPerformer)
         {
             if (filterProvider == null) throw new ArgumentNullException(nameof(filterProvider));

@@ -131,12 +131,12 @@ namespace Hangfire
             var filterProvider = _options.FilterProvider ?? JobFilterProviders.Providers;
 
             var factory = new BackgroundJobFactory(filterProvider);
-            var performer = new BackgroundJobPerformer(filterProvider, _options.Activator ?? JobActivator.Current);
+            var performer = new BackgroundJobPerformer(filterProvider);
             var stateChanger = new BackgroundJobStateChanger(filterProvider);
             
             for (var i = 0; i < _options.WorkerCount; i++)
             {
-                processes.Add(new Worker(_options.Queues, performer, stateChanger));
+                processes.Add(new Worker(_options.Queues, performer, stateChanger, _options.Activator ?? JobActivator.Current));
             }
             
             processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger));
