@@ -51,7 +51,7 @@ namespace Hangfire
                 }
             }
             
-            return string.Format(CultureInfo.CurrentCulture, format, job.Args.ToString());
+            return string.Format(CultureInfo.CurrentCulture, format, job.Args.ToArray());
         }
 
         private static ResourceManager InitResourceManager(Type type)
