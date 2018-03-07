@@ -527,6 +527,20 @@ order by [Id] desc";
 
             return _storage.UseConnection(_dedicatedConnection, connection => connection.Query<string>(query, new { key = key }, commandTimeout: _storage.CommandTimeout).ToList());
         }
+        public override bool ServerPresent(string serverId)
+        {
+            if (serverId == null) throw new ArgumentNullException(nameof(serverId));
+
+            return _storage.UseConnection(_dedicatedConnection, connection =>
+                connection.Query<bool>(
+                    $@"if exists (select 1 from [{_storage.SchemaName}].Server where Id = @id)
+                        select 1
+                       else 
+                        select 0",
+                    new { id = serverId },
+                    commandTimeout: _storage.CommandTimeout)
+                .First());
+        }
 
         private DbConnection _dedicatedConnection;
 

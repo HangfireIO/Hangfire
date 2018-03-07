@@ -63,5 +63,7 @@ namespace Hangfire.Storage
 
         [CanBeNull]
         Dictionary<string, string> GetAllEntriesFromHash([NotNull] string key);
+
+        bool ServerPresent(string serverId);
     }
 }
