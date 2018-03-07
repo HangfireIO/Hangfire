@@ -51,7 +51,7 @@ namespace Hangfire.Logging
         /// <remarks>
         /// Note to implementers: the message func should not be called if the loglevel is not enabled
         /// so as not to incur performance penalties.
-        /// 
+        ///
         /// To check IsEnabled call Log with only LogLevel and check the return value, no event will be written
         /// </remarks>
         bool Log(LogLevel logLevel, Func<string> messageFunc, Exception exception = null);
@@ -699,7 +699,7 @@ namespace Hangfire.Logging.LogProviders
             Type logManagerType = GetLogManagerType();
             MethodInfo method = logManagerType.GetRuntimeMethod("GetLogger", new[] { typeof(string) });
             ParameterExpression nameParam = Expression.Parameter(typeof(string), "name");
-            MethodCallExpression methodCall = Expression.Call(null, method, new Expression[] { nameParam });
+            MethodCallExpression methodCall = Expression.Call(null, method, new Expression[] { Expression.Constant(Assembly.GetEntryAssembly()), nameParam });
             return Expression.Lambda<Func<string, object>>(methodCall, new[] { nameParam }).Compile();
         }
 
@@ -1030,7 +1030,7 @@ namespace Hangfire.Logging.LogProviders
             ParameterExpression destructureObjectsParam = Expression.Parameter(typeof(bool), "destructureObjects");
             MethodCallExpression methodCall = Expression.Call(null, method, new Expression[]
             {
-                propertyNameParam, 
+                propertyNameParam,
                 valueParam,
                 destructureObjectsParam
             });
@@ -1098,7 +1098,7 @@ namespace Hangfire.Logging.LogProviders
                 MethodInfo writeExceptionMethodInfo = loggerType.GetRuntimeMethod("Write", new[]
                 {
                     logEventTypeType,
-                    typeof(Exception), 
+                    typeof(Exception),
                     typeof(string),
                     typeof(object[])
                 });
@@ -1286,7 +1286,7 @@ namespace Hangfire.Logging.LogProviders
 
             MethodInfo method = logManagerType.GetMethod("Write", new[]
                                                                   {
-                                                                      logMessageSeverityType, typeof(string), typeof(int), typeof(Exception), typeof(bool), 
+                                                                      logMessageSeverityType, typeof(string), typeof(int), typeof(Exception), typeof(bool),
                                                                       logWriteModeType, typeof(string), typeof(string), typeof(string), typeof(string), typeof(object[])
                                                                   });
 
