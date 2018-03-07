@@ -697,7 +697,7 @@ namespace Hangfire.Logging.LogProviders
         private static Func<string, object> GetGetLoggerMethodCall()
         {
             Type logManagerType = GetLogManagerType();
-            MethodInfo method = logManagerType.GetRuntimeMethod("GetLogger", new[] { typeof(string) });
+            MethodInfo method = logManagerType.GetRuntimeMethod("GetLogger", new[] { typeof(Assembly), typeof(string) });
             ParameterExpression nameParam = Expression.Parameter(typeof(string), "name");
             MethodCallExpression methodCall = Expression.Call(null, method, new Expression[] { Expression.Constant(typeof(Log4NetLogProvider).GetTypeInfo().Assembly), nameParam });
             return Expression.Lambda<Func<string, object>>(methodCall, new[] { nameParam }).Compile();
