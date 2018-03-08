@@ -506,10 +506,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Dashboard\Content\resx\Strings.es.resx" />
-    <EmbeddedResource Include="Dashboard\Content\resx\Strings.zh-TW.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Strings.zh-TW.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <EmbeddedResource Include="Dashboard\Content\resx\Strings.zh-TW.resx" />
     <EmbeddedResource Include="Dashboard\Content\resx\Strings.zh.resx" />
     <EmbeddedResource Include="Dashboard\Content\resx\Strings.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
