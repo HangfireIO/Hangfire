@@ -165,6 +165,19 @@ namespace Hangfire.Server
 
             try
             {
+
+                var startDate = JobHelper.DeserializeNullableDateTime(recurringJob.ContainsKey("StartDate") ? recurringJob["StartDate"] : null);
+                if (startDate.HasValue)
+                {
+                    startDate = DateTime.SpecifyKind(startDate.Value, DateTimeKind.Utc);
+                }
+
+                var endDate = JobHelper.DeserializeNullableDateTime(recurringJob.ContainsKey("EndDate") ? recurringJob["EndDate"] : null);
+                if (endDate.HasValue)
+                {
+                    endDate = DateTime.SpecifyKind(endDate.Value, DateTimeKind.Utc);
+                }
+
                 var timeZone = recurringJob.ContainsKey("TimeZoneId")
                     ? TimeZoneInfo.FindSystemTimeZoneById(recurringJob["TimeZoneId"])
                     : TimeZoneInfo.Utc;
@@ -174,7 +187,9 @@ namespace Hangfire.Server
 
                 var lastInstant = GetLastInstant(recurringJob, nowInstant);
                 
-                if (nowInstant.GetNextInstants(lastInstant).Any())
+                if ((startDate == null || startDate <= nowInstant.NowInstant) &&
+                    (endDate == null || endDate >= nowInstant.NowInstant) &&
+                    nowInstant.GetNextInstants(lastInstant).Any())
                 {
                     var state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
                     if (recurringJob.ContainsKey("Queue") && !String.IsNullOrEmpty(recurringJob["Queue"]))
