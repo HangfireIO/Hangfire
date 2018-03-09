@@ -111,7 +111,7 @@ namespace Hangfire.Dashboard
             {
                 try
                 {
-                    return jobDisplayNameAttribute.Format(job);
+                    return jobDisplayNameAttribute.Format(_page.Context, job);
                 }
                 catch (Exception)
                 {

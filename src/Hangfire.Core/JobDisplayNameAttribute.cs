@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Resources;
 using Hangfire.Common;
+using Hangfire.Dashboard;
 
 namespace Hangfire
 {
@@ -35,7 +36,7 @@ namespace Hangfire
         /// </summary>
         public Type ResourceType { get; set; }
 
-        public virtual string Format(Job job)
+        public virtual string Format(DashboardContext context, Job job)
         {
             var format = DisplayName;
 
