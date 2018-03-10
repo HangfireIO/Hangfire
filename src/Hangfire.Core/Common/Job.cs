@@ -375,7 +375,7 @@ namespace Hangfire.Common
         {
             if (!method.IsPublic)
             {
-                throw new NotSupportedException("Only public methods can be invoked in the background.");
+                throw new NotSupportedException("Only public methods can be invoked in the background. Ensure your method has the `public` access modifier, and you aren' using explicit interface implementation.");
             }
 
             if (method.ContainsGenericParameters)
