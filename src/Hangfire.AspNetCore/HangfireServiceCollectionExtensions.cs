@@ -46,7 +46,7 @@ namespace Hangfire
             services.TryAddSingleton(_ => JobActivator.Current);
             services.TryAddSingleton(_ => DashboardRoutes.Routes);
 
-            services.TryAddSingleton<IJobFilterProvider>(_ => GlobalJobFilters.Filters);
+            services.TryAddSingleton<IJobFilterProvider>(x => new AspNetCoreJobFilterProviders(x));
 
             services.TryAddSingleton<IBackgroundJobFactory>(x => new BackgroundJobFactory(
                 x.GetRequiredService<IJobFilterProvider>()));
@@ -84,7 +84,7 @@ namespace Hangfire
                     {
                         config.UseActivator(new AspNetCoreJobActivator(scopeFactory));
                     }
-
+                    
                     configuration(config);
                 };
             });
