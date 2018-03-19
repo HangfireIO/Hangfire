@@ -142,6 +142,11 @@ namespace Hangfire
             set { lock (_lockObject) { _logEvents = value; } }
         }
 
+        /// <summary>
+        /// Gets the name of the queue that the job should be placed into on retry attempts.
+        /// </summary>
+        public string RetryQueueName { get; }
+
         /// <inheritdoc />
         public void OnStateElection(ElectStateContext context)
         {
@@ -212,7 +217,7 @@ namespace Hangfire
 
             // If attempt number is less than max attempts, we should
             // schedule the job to run again later.
-            context.CandidateState = new ScheduledState(delay)
+            context.CandidateState = new ScheduledState(delay, context.BackgroundJob.Job.QueueName)
             {
                 Reason = $"Retry attempt {retryAttempt} of {Attempts}: {exceptionMessage}"
             };

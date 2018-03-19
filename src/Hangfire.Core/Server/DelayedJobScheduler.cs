@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Logging;
@@ -73,6 +74,7 @@ namespace Hangfire.Server
         private static readonly TimeSpan DefaultLockTimeout = TimeSpan.FromMinutes(1);
 
         private readonly IBackgroundJobStateChanger _stateChanger;
+        private readonly string[] _queues;
         private readonly TimeSpan _pollingDelay;
 
         /// <summary>
@@ -104,10 +106,25 @@ namespace Hangfire.Server
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="stateChanger"/> is null.</exception>
         public DelayedJobScheduler(TimeSpan pollingDelay, [NotNull] IBackgroundJobStateChanger stateChanger)
+            : this(pollingDelay, stateChanger, EnqueuedState.DefaultQueue)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DelayedJobScheduler"/>
+        /// class with a specified polling interval and given state changer.
+        /// </summary>
+        /// <param name="pollingDelay">Delay between scheduler runs.</param>
+        /// <param name="stateChanger">State changer to use for background jobs.</param>
+        /// <param name="queues">The queues that the scheduler will create jobs for.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="stateChanger"/> is null.</exception>
+        public DelayedJobScheduler(TimeSpan pollingDelay, [NotNull] IBackgroundJobStateChanger stateChanger, params string[] queues)
         {
             if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
+            if (queues == null) throw new ArgumentNullException(nameof(queues));
 
             _stateChanger = stateChanger;
+            _queues = queues;
             _pollingDelay = pollingDelay;
         }
 
@@ -118,13 +135,28 @@ namespace Hangfire.Server
 
             var jobsEnqueued = 0;
 
-            while (EnqueueNextScheduledJob(context))
+            foreach (var queueName in _queues)
             {
-                jobsEnqueued++;
-
-                if (context.IsShutdownRequested)
+                using (var connection = context.Storage.GetConnection())
+                using (connection.AcquireDistributedLock($"locks:schedulepoller:{ queueName }", DefaultLockTimeout))
                 {
-                    break;
+                    var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
+                    var jobs = connection.GetAllValuesWithScoresFromSetQueueWithinScoreRange("schedule", queueName, 0, timestamp);
+
+                    if (jobs != null)
+                    {
+                        foreach (string jobId in jobs.OrderBy(x => x.Value).Select(x => x.Key))
+                        {
+                            EnqueueNextScheduledJob(jobId, context, connection, queueName);
+
+                            jobsEnqueued++;
+
+                            if (context.IsShutdownRequested)
+                            {
+                                break;
+                            }
+                        }
+                    }
                 }
             }
 

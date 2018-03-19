@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -178,6 +179,73 @@ namespace Hangfire.Common
                 throw new JobPerformanceException(
                     "Job has been performed, but an exception occurred during disposal.",
                     ex);
+            }
+        }
+
+        [Obsolete("Will be removed in 2.0.0")]
+        private static void Validate(
+            Type type,
+            [InvokerParameterName] string typeParameterName,
+            MethodInfo method,
+            // ReSharper disable once UnusedParameter.Local
+            [InvokerParameterName] string methodParameterName,
+            // ReSharper disable once UnusedParameter.Local
+            int argumentCount,
+            [InvokerParameterName] string argumentParameterName)
+        {
+            if (!method.IsPublic)
+            {
+                throw new NotSupportedException("Only public methods can be invoked in the background.");
+            }
+
+            if (method.ContainsGenericParameters)
+            {
+                throw new NotSupportedException("Job method can not contain unassigned generic type parameters.");
+            }
+
+            if (method.DeclaringType == null)
+            {
+                throw new NotSupportedException("Global methods are not supported. Use class methods instead.");
+            }
+
+            if (!method.DeclaringType.GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
+            {
+                throw new ArgumentException(
+                    $"The type `{method.DeclaringType}` must be derived from the `{type}` type.",
+                    typeParameterName);
+            }
+
+            if (method.ReturnType == typeof(void) && method.GetCustomAttribute<AsyncStateMachineAttribute>() != null)
+            {
+                throw new NotSupportedException("Async void methods are not supported. Use async Task instead.");
+            }
+
+            var parameters = method.GetParameters();
+
+            if (parameters.Length != argumentCount)
+            {
+                throw new ArgumentException(
+                    "Argument count must be equal to method parameter count.",
+                    argumentParameterName);
+            }
+
+            foreach (var parameter in parameters)
+            {
+                // There is no guarantee that specified method will be invoked
+                // in the same process. Therefore, output parameters and parameters
+                // passed by reference are not supported.
+
+                if (parameter.IsOut)
+                {
+                    throw new NotSupportedException(
+                        "Output parameters are not supported: there is no guarantee that specified method will be invoked inside the same process.");
+                }
+
+                if (parameter.ParameterType.IsByRef)
+                {
+                    throw new NotSupportedException(
+                        "Parameters, passed by reference, are not supported: there is no guarantee that specified method will be invoked inside the same process.");
+                }
             }
         }
     }

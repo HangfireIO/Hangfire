@@ -28,7 +28,6 @@ namespace Hangfire
         public RecurringJobOptions()
         {
             TimeZone = TimeZoneInfo.Utc;
-            QueueName = EnqueuedState.DefaultQueue;
         }
 
         [NotNull]
@@ -43,6 +42,7 @@ namespace Hangfire
             }
         }
 
+        [Obsolete("This property is obsolete and should be removed in a future release.")]
         [NotNull]
         public string QueueName
         {

@@ -74,7 +74,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BackgroundJobClientExtensionsFacts.cs" />
+    <Compile Include="BackgroundJobClientExtensionsChangeStateFacts.cs" />
+    <Compile Include="BackgroundJobClientExtensionsContinuationFacts.cs" />
+    <Compile Include="BackgroundJobClientExtensionsDeleteFacts.cs" />
+    <Compile Include="BackgroundJobClientExtensionsEnqueueFacts.cs" />
+    <Compile Include="BackgroundJobClientExtensionsCreateFacts.cs" />
+    <Compile Include="BackgroundJobClientExtensionsScheduleFacts.cs" />
     <Compile Include="BackgroundJobClientFacts.cs" />
     <Compile Include="BackgroundJobFacts.cs" />
     <Compile Include="BackgroundJobServerFacts.cs" />
@@ -110,6 +115,7 @@
     <Compile Include="PreserveCultureAttributeFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueueAttributeFacts.cs" />
+    <Compile Include="RecurringJobFacts.cs" />
     <Compile Include="RecurringJobManagerFacts.cs" />
     <Compile Include="RecurringJobOptionsFacts.cs" />
     <Compile Include="RetryAttributeFacts.cs" />

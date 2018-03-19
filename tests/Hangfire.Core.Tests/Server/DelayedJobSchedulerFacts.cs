@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Hangfire.Server;
 using Hangfire.States;
@@ -19,6 +21,8 @@ namespace Hangfire.Core.Tests.Server
         private readonly BackgroundProcessContextMock _context;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
         private readonly Mock<IDisposable> _distributedLock;
+        private readonly string[] _queues;
+        private readonly Dictionary<string, double> _jobSet;
 
         public DelayedJobSchedulerFacts()
         {
@@ -33,12 +37,16 @@ namespace Hangfire.Core.Tests.Server
             _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
 
             _distributedLock = new Mock<IDisposable>();
-            _connection
-                .Setup(x => x.AcquireDistributedLock("locks:schedulepoller", It.IsAny<TimeSpan>()))
-                .Returns(_distributedLock.Object);
 
-            _connection.Setup(x => x.GetFirstByLowestScoreFromSet(
-                "schedule", 0, It.Is<double>(time => time > 0))).Returns(JobId);
+            _jobSet = new Dictionary<string, double>()
+            {
+                { JobId, 1 }
+            };
+
+            _connection.Setup(x => x.GetAllValuesWithScoresFromSetQueueWithinScoreRange(
+                "schedule", "default", 0, It.Is<double>(time => time > 0))).Returns(_jobSet);
+
+            _queues = new[] { EnqueuedState.DefaultQueue };
         }
 
         [Fact]
@@ -51,7 +59,16 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_MovesJobStateToEnqueued()
+        public void Ctor_ThrowsAnException_WhenQueuesIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new DelayedJobScheduler(Timeout.InfiniteTimeSpan, _stateChanger.Object, null));
+
+            Assert.Equal("queues", exception.ParamName);
+        }
+
+        [Fact]
+        public void Execute_MovesJobStateToEnqueued_InDefaultQueue()
         {
             var scheduler = CreateScheduler();
 
@@ -60,16 +77,51 @@ namespace Hangfire.Core.Tests.Server
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.BackgroundJobId == JobId &&
                 ctx.NewState is EnqueuedState &&
+                ((EnqueuedState)ctx.NewState).Queue == EnqueuedState.DefaultQueue &&
                 ctx.ExpectedStates.SequenceEqual(new[] { ScheduledState.StateName }))));
 
             _connection.Verify(x => x.Dispose());
         }
 
         [Fact]
+        public void Execute_MovesJobStateToEnqueued_InCustomQueue()
+        {
+            _connection.Setup(x => x.GetAllValuesWithScoresFromSetQueueWithinScoreRange(
+                "schedule", "custom_queue", 0, It.Is<double>(time => time > 0))).Returns(_jobSet);
+            var scheduler = CreateScheduler("custom_queue");
+
+            scheduler.Execute(_context.Object);
+
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.BackgroundJobId == JobId &&
+                ctx.NewState is EnqueuedState &&
+                ((EnqueuedState)ctx.NewState).Queue == "custom_queue" &&
+                ctx.ExpectedStates.SequenceEqual(new[] { ScheduledState.StateName }))));
+
+            _connection.Verify(x => x.Dispose());
+        }
+
+        [Fact]
+        public void Execute_DoesNotCallStateChanger_ForJobsNotInDesignatedQueues()
+        {
+            _connection.Setup(x => x.GetAllValuesWithScoresFromSetQueueWithinScoreRange(
+                "schedule", "default", 0, It.Is<double>(time => time > 0))).Returns((Dictionary<string, double>) null);
+
+            var scheduler = CreateScheduler();
+
+            scheduler.Execute(_context.Object);
+
+            _stateChanger.Verify(
+                x => x.ChangeState(It.IsAny<StateChangeContext>()),
+                Times.Never);
+        }
+
+        [Fact]
         public void Execute_DoesNotCallStateChanger_IfThereAreNoJobsToEnqueue()
         {
-            _connection.Setup(x => x.GetFirstByLowestScoreFromSet(
-                "schedule", 0, It.Is<double>(time => time > 0))).Returns((string)null);
+            _connection.Setup(x => x.GetAllValuesWithScoresFromSetQueueWithinScoreRange(
+                "schedule", It.IsAny<string>(), 0, It.Is<double>(time => time > 0))).Returns((Dictionary<string, double>)null);
+
             var scheduler = CreateScheduler();
 
 			scheduler.Execute(_context.Object);
@@ -117,9 +169,19 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
         }
 
-        private DelayedJobScheduler CreateScheduler()
+        private DelayedJobScheduler CreateScheduler(params string[] additionalQueues)
         {
-            return new DelayedJobScheduler(Timeout.InfiniteTimeSpan, _stateChanger.Object);
+            var queues = new List<string> { EnqueuedState.DefaultQueue };
+            queues.AddRange(additionalQueues);
+
+            foreach (string queueName in queues)
+            {
+                _connection
+                    .Setup(x => x.AcquireDistributedLock($"locks:schedulepoller:{ queueName }", It.IsAny<TimeSpan>()))
+                    .Returns(_distributedLock.Object);
+            }
+
+            return new DelayedJobScheduler(Timeout.InfiniteTimeSpan, _stateChanger.Object, queues.ToArray());
         }
     }
 }

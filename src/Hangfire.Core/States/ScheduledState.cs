@@ -66,8 +66,9 @@ namespace Hangfire.States
         /// </summary>
         /// <param name="enqueueIn">The time interval after which a job will be
         /// moved to the <see cref="EnqueuedState"/>.</param>
-        public ScheduledState(TimeSpan enqueueIn)
-            : this(DateTime.UtcNow.Add(enqueueIn))
+        /// <param name="queueName">The queue that the job should be scheduled for</param>
+        public ScheduledState(TimeSpan enqueueIn, string queueName)
+            : this(DateTime.UtcNow.Add(enqueueIn), queueName)
         {
         }
 
@@ -78,11 +79,13 @@ namespace Hangfire.States
         /// </summary>
         /// <param name="enqueueAt">The date/time when a job will be moved to the 
         /// <see cref="EnqueuedState"/>.</param>
+        /// <param name="queueName">The queue that the job should be scheduled for</param>
         [JsonConstructor]
-        public ScheduledState(DateTime enqueueAt)
+        public ScheduledState(DateTime enqueueAt, string queueName)
         {
             EnqueueAt = enqueueAt;
             ScheduledAt = DateTime.UtcNow;
+            QueueName = queueName;
         }
 
         /// <summary>
@@ -95,6 +98,11 @@ namespace Hangfire.States
         /// Gets a date/time when the current state instance was created.
         /// </summary>
         public DateTime ScheduledAt { get; }
+
+        /// <summary>
+        /// Gets a the queue that the job will be assigned to.
+        /// </summary>
+        public string QueueName { get; }
 
         /// <inheritdoc />
         /// <remarks>
@@ -171,7 +179,7 @@ namespace Hangfire.States
                 }
 
                 var timestamp = JobHelper.ToTimestamp(scheduledState.EnqueueAt);
-                transaction.AddToSet("schedule", context.BackgroundJob.Id, timestamp);
+                transaction.AddToSetQueue("schedule", context.BackgroundJob.Id, scheduledState.QueueName, timestamp);
             }
 
             public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)

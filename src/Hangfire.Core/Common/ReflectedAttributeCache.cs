@@ -19,6 +19,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 
 namespace Hangfire.Common
@@ -31,6 +32,12 @@ namespace Hangfire.Common
         private static readonly ConcurrentDictionary<MethodInfo, ReadOnlyCollection<JobFilterAttribute>> MethodFilterAttributeCache
             = new ConcurrentDictionary<MethodInfo, ReadOnlyCollection<JobFilterAttribute>>();
 
+        private static readonly ConcurrentDictionary<TypeInfo, QueueAttribute> TypeQueueAttributeCache
+            = new ConcurrentDictionary<TypeInfo, QueueAttribute>();
+
+        private static readonly ConcurrentDictionary<MethodInfo, QueueAttribute> MethodQueueAttributeCache
+            = new ConcurrentDictionary<MethodInfo, QueueAttribute>();
+
         public static ICollection<JobFilterAttribute> GetTypeFilterAttributes(Type type)
         {
             return GetAttributes(TypeFilterAttributeCache, type.GetTypeInfo());
@@ -39,6 +46,16 @@ namespace Hangfire.Common
         public static ICollection<JobFilterAttribute> GetMethodFilterAttributes(MethodInfo methodInfo)
         {
             return GetAttributes(MethodFilterAttributeCache, methodInfo);
+        }
+
+        public static QueueAttribute GetTypeQueueAttribute(Type type)
+        {
+            return GetAttibute(TypeQueueAttributeCache, type.GetTypeInfo());
+        }
+
+        public static QueueAttribute GetMethodQueueAttribute(MethodInfo methodInfo)
+        {
+            return GetAttibute(MethodQueueAttributeCache, methodInfo);
         }
 
         private static ReadOnlyCollection<TAttribute> GetAttributes<TMemberInfo, TAttribute>(
@@ -51,6 +68,18 @@ namespace Hangfire.Common
             Debug.Assert(lookup != null);
 
             return lookup.GetOrAdd(memberInfo, mi => new ReadOnlyCollection<TAttribute>((TAttribute[])memberInfo.GetCustomAttributes(typeof(TAttribute), inherit: true)));
+        }
+
+        private static TAttribute GetAttibute<TMemberInfo, TAttribute>(
+            ConcurrentDictionary<TMemberInfo, TAttribute> lookup,
+            TMemberInfo memberInfo)
+            where TAttribute : Attribute
+            where TMemberInfo : MemberInfo
+        {
+            Debug.Assert(memberInfo != null);
+            Debug.Assert(lookup != null);
+
+            return lookup.GetOrAdd(memberInfo, mi => memberInfo.GetCustomAttributes(typeof(TAttribute), inherit: true).Cast<TAttribute>().SingleOrDefault());
         }
     }
 }

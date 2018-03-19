@@ -6,6 +6,7 @@ using System.Threading;
 using Dapper;
 using Hangfire.Common;
 using Hangfire.Server;
+using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
 using Xunit;
@@ -835,6 +836,72 @@ values (@key, 0.0, @value)";
         }
 
         [Fact, CleanDatabase]
+        public void GetAllItemsFromSetQueue_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+                Assert.Throws<ArgumentNullException>(() => connection.GetAllItemsFromSetQueue(null, "default")));
+        }
+
+        [Fact, CleanDatabase]
+        public void GetAllItemsFromSetQueue_ThrowsAnException_WhenQueueNameIsNull()
+        {
+            UseConnection(connection =>
+                Assert.Throws<ArgumentNullException>(() => connection.GetAllItemsFromSetQueue("some-set", null)));
+        }
+
+        [Fact, CleanDatabase]
+        public void GetAllItemsFromSetQueue_ReturnsEmptyCollection_WhenKeyDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetAllItemsFromSetQueue("some-set", "default");
+
+                Assert.NotNull(result);
+                Assert.Equal(0, result.Count);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetAllItemsFromSetQueue_ReturnsEmptyCollection_WhenQueueDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetAllItemsFromSetQueue("some-set", "default");
+
+                Assert.NotNull(result);
+                Assert.Equal(0, result.Count);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetAllItemsFromSetQueue_ReturnsAllItems()
+        {
+            const string arrangeSql = @"
+insert into HangFire.[Set] ([Key], Score, Value, QueueName)
+values (@key, 0.0, @value, @queueName)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "some-set", value = "1", queueName = "my_queue" },
+                    new { key = "some-set", value = "2", queueName = "my_queue" },
+                    new { key = "another-set", value = "3", queueName = "my_queue" },
+                    new { key = "some-set", value = "4", queueName = "not_my_queue" }
+                });
+
+                // Act
+                var result = connection.GetAllItemsFromSetQueue("some-set", "my_queue");
+
+                // Assert
+                Assert.Equal(2, result.Count);
+                Assert.Contains("1", result);
+                Assert.Contains("2", result);
+            });
+        }
+
+        [Fact, CleanDatabase]
         public void SetRangeInHash_ThrowsAnException_WhenKeyIsNull()
         {
             UseConnection(connection =>
@@ -1464,6 +1531,74 @@ values (@key, @value, @expireAt, 0.0)";
                 // Assert
                 Assert.True(TimeSpan.FromMinutes(59) < result);
                 Assert.True(result < TimeSpan.FromMinutes(61));
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetAllValuesWithScoresFromSetQueueWithinScoreRange_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => connection.GetAllValuesWithScoresFromSetQueueWithinScoreRange(null, EnqueuedState.DefaultQueue, 0, 1));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetAllValuesWithScoresFromSetQueueWithinScoreRange_ThrowsAnException_ToScoreIsLowerThanFromScore()
+        {
+            UseConnection(connection => Assert.Throws<ArgumentException>(
+                () => connection.GetAllValuesWithScoresFromSetQueueWithinScoreRange("key", EnqueuedState.DefaultQueue, 0, -1)));
+        }
+
+        [Fact, CleanDatabase]
+        public void GetAllValuesWithScoresFromSetQueueWithinScoreRange_ThrowsAnException_WhenQueueNameIsNull()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => connection.GetAllValuesWithScoresFromSetQueueWithinScoreRange("key", null, 0, 1));
+
+                Assert.Equal("queueName", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetAllValuesWithScoresFromSetQueueWithinScoreRange_ReturnsNull_WhenTheKeyDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetAllValuesWithScoresFromSetQueueWithinScoreRange(
+                    "key", EnqueuedState.DefaultQueue, 0, 1);
+
+                Assert.Null(result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetAllValuesWithScoresFromSetQueueWithinScoreRange_ReturnsTheValuesWithinTheScoreRange()
+        {
+            const string arrangeSql = @"
+insert into HangFire.[Set] ([Key], Score, Value, QueueName)
+values 
+('key', 1.0, '123', 'custom_queue'),
+('key', 1.0, '000', 'default'),
+('key', -1.0, '456', 'custom_queue'),
+('key', -5.0, '789', 'custom_queue'),
+('another-key', -2.0, '999', 'custom_queue')";
+
+            UseConnections((sql, connection) =>
+            {
+                sql.Execute(arrangeSql);
+
+                var result = connection.GetAllValuesWithScoresFromSetQueueWithinScoreRange("key", "custom_queue", -1.0, 3.0);
+
+                Assert.NotNull(result);
+                Assert.Equal(2, result.Count);
+                Assert.Equal(1.0, result["123"]);
+                Assert.Equal(-1.0, result["456"]);
             });
         }
 

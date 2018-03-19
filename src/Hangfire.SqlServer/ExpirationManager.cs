@@ -15,8 +15,11 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using Hangfire.Logging;
 using Hangfire.Server;
@@ -28,6 +31,26 @@ namespace Hangfire.SqlServer
     internal class ExpirationManager : IServerComponent
 #pragma warning restore 618
     {
+        private sealed class ProcessedTableDependentMapping
+        {
+            public string ParentTableName { get; private set; }
+            public string MappedTableName { get; private set; }
+            public string ParentTableKeyColumnName { get; private set; }
+            public string MappedTableKeyName { get; private set; }
+
+            public ProcessedTableDependentMapping(
+                string parentTableName, 
+                string mappedTableName,
+                string parentTableKeyColumnName, 
+                string mappedTableKeyName)
+            {
+                ParentTableName = parentTableName;
+                MappedTableName = mappedTableName;
+                ParentTableKeyColumnName = parentTableKeyColumnName;
+                MappedTableKeyName = mappedTableKeyName;
+            }
+        }
+
         private static readonly ILog Logger = LogProvider.For<ExpirationManager>();
 
         private const string DistributedLockKey = "locks:expirationmanager";
@@ -47,6 +70,13 @@ namespace Hangfire.SqlServer
             "List",
             "Set",
             "Hash",
+        };
+
+        private static readonly List<ProcessedTableDependentMapping> DependentTables = new List<ProcessedTableDependentMapping>()
+        {
+            new ProcessedTableDependentMapping("Job", "JobParameter", "Id", "JobId"),
+            new ProcessedTableDependentMapping("Job", "State", "Id", "JobId"),
+            new ProcessedTableDependentMapping("Job", "JobQueue", "Id", "JobId")
         };
 
         private readonly SqlServerStorage _storage;
@@ -147,11 +177,54 @@ It will be retried in {_checkInterval.TotalSeconds} seconds.",
             // processing to stop, and to avoid larger batches to rollback
             // in case of connection/process termination.
 
+            var tempTableName = "@recordsToDelete";
+            var dependentTableDeleteStatements = GetDependentTableDeleteStatements(schemaName, tempTableName, table);
+
             return
-$@"set transaction isolation level read committed;
-delete top (@count) from [{schemaName}].[{table}] with (readpast) 
+$@"
+set transaction isolation level read committed;
+
+declare {tempTableName} table ([Id] int) 
+
+insert into {tempTableName}([Id])
+select top (@count) Id from [{schemaName}].[{table}] with (readpast) 
 where ExpireAt < @now
-option (loop join, optimize for (@count = 20000));";
+option (loop join, optimize for (@count = 20000));
+
+{dependentTableDeleteStatements}
+
+delete [{table}] 
+from [{schemaName}].[{table}] with (readpast) 
+inner join {tempTableName} t on [{table}].[Id] = t.[Id]";
+        }
+
+        private static string GetDependentTableDeleteStatements(string schema, string tempTableName, string table)
+        {
+            var deleteStatements = new StringBuilder();
+
+            foreach (var mapping in DependentTables.Where(x => x.ParentTableName == table).ToList())
+            {
+                deleteStatements.AppendLine();
+
+                var dependentTableRecordsToDeleteTableName = $"@{mapping.MappedTableName}RecordsToDelete";
+                deleteStatements.AppendLine($"declare {dependentTableRecordsToDeleteTableName} table ([Id] int)");
+                deleteStatements.AppendLine($"insert into {dependentTableRecordsToDeleteTableName}([Id])");
+                deleteStatements.AppendLine($"select [{mapping.MappedTableName}].Id from [{schema}].[{mapping.MappedTableName}] with (readpast)");
+                deleteStatements.AppendLine($"inner join [{schema}].[{mapping.ParentTableName}] with (readpast)");
+                deleteStatements.AppendLine($"on [{mapping.MappedTableName}].[{mapping.MappedTableKeyName}] = [{mapping.ParentTableName}].[{mapping.ParentTableKeyColumnName}]");
+                deleteStatements.AppendLine($"inner join {tempTableName} t on [{mapping.ParentTableName}].[Id] = t.[Id]");
+
+                deleteStatements.AppendLine();
+                deleteStatements.AppendLine(GetDependentTableDeleteStatements(schema, dependentTableRecordsToDeleteTableName, mapping.MappedTableName));
+                deleteStatements.AppendLine();
+
+                deleteStatements.AppendLine($"delete [{mapping.MappedTableName}]");
+                deleteStatements.AppendLine($"from [{schema}].[{mapping.MappedTableName}] with (readpast)");
+                deleteStatements.AppendLine($"inner join {dependentTableRecordsToDeleteTableName} t");
+                deleteStatements.AppendLine($"on [{mapping.MappedTableName}].[Id] = t.[Id]");
+            }
+
+            return deleteStatements.ToString();
         }
 
         private static int ExecuteNonQuery(
