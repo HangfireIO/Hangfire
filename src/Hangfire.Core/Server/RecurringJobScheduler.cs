@@ -128,29 +128,25 @@ namespace Hangfire.Server
 
             foreach (var queueName in _queues)
             {
-                using (var connection = context.Storage.GetConnection())
-                using (connection.AcquireDistributedLock($"recurring-jobs:lock:{ queueName }", LockTimeout))
-                {
-                    ScheduleJobsForQueue(context, queueName, connection);
-                }
+                ScheduleJobsForQueue(context, queueName);
             }
         }
 
-        private void ScheduleJobsForQueue(BackgroundProcessContext context, string queueName, IStorageConnection connection)
+        private void ScheduleJobsForQueue(BackgroundProcessContext context, string queueName)
         {
-            var recurringJobIds = connection.GetAllItemsFromSetQueue("recurring-jobs", queueName);
             UseConnectionDistributedLock(context.Storage, connection =>
             {
 
-            foreach (var recurringJobId in recurringJobIds)
-            {
-                var recurringJob = connection.GetAllEntriesFromHash(
-                    $"recurring-job:{recurringJobId}");
-
-                if (recurringJob == null)
+                var recurringJobIds = connection.GetAllItemsFromSetQueue("recurring-jobs", queueName);
+                foreach (var recurringJobId in recurringJobIds)
                 {
-                    continue;
-                }
+                    var recurringJob = connection.GetAllEntriesFromHash(
+                        $"recurring-job:{recurringJobId}");
+
+                    if (recurringJob == null)
+                    {
+                        continue;
+                    }
 
                     try
                     {

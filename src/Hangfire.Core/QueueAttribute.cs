@@ -54,7 +54,7 @@ namespace Hangfire
     /// 
     /// ]]></example>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Interface, AllowMultiple = false)]
-    public sealed class QueueAttribute : Attribute
+    public sealed class QueueAttribute : JobFilterAttribute, IElectStateFilter
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="QueueAttribute"/> class
@@ -64,12 +64,21 @@ namespace Hangfire
         public QueueAttribute(string queue)
         {
             Queue = queue;
-            Order = Int32.MaxValue;
+            Order = int.MaxValue;
         }
 
         /// <summary>
         /// Gets the queue name that will be used for jobs.
         /// </summary>
         public string Queue { get; }
+
+        public void OnStateElection(ElectStateContext context)
+        {
+            var enqueuedState = context.CandidateState as EnqueuedState;
+            if (enqueuedState != null)
+            {
+                enqueuedState.Queue = Queue;
+            }
+        }
     }
 }

@@ -135,28 +135,13 @@ namespace Hangfire.Server
 
             var jobsEnqueued = 0;
 
-            foreach (var queueName in _queues)
+            while (EnqueueNextScheduledJob(context))
             {
-                using (var connection = context.Storage.GetConnection())
-                using (connection.AcquireDistributedLock($"locks:schedulepoller:{ queueName }", DefaultLockTimeout))
+                jobsEnqueued++;
+
+                if (context.IsShutdownRequested)
                 {
-                    var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
-                    var jobs = connection.GetAllValuesWithScoresFromSetQueueWithinScoreRange("schedule", queueName, 0, timestamp);
-
-                    if (jobs != null)
-                    {
-                        foreach (string jobId in jobs.OrderBy(x => x.Value).Select(x => x.Key))
-                        {
-                            EnqueueNextScheduledJob(jobId, context, connection, queueName);
-
-                            jobsEnqueued++;
-
-                            if (context.IsShutdownRequested)
-                            {
-                                break;
-                            }
-                        }
-                    }
+                    break;
                 }
             }
 
