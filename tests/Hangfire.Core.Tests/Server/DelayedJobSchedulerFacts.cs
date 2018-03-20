@@ -68,6 +68,21 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void Execute_MovesJobStateToEnqueued()
+        {
+            var scheduler = CreateScheduler();
+
+            scheduler.Execute(_context.Object);
+
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.BackgroundJobId == JobId &&
+                ctx.NewState is EnqueuedState &&
+                ctx.ExpectedStates.SequenceEqual(new[] { ScheduledState.StateName }))));
+
+            _connection.Verify(x => x.Dispose());
+        }
+
+        [Fact]
         public void Execute_MovesJobStateToEnqueued_InDefaultQueue()
         {
             var scheduler = CreateScheduler();

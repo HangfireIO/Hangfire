@@ -135,13 +135,16 @@ namespace Hangfire.Server
 
             var jobsEnqueued = 0;
 
-            while (EnqueueNextScheduledJob(context))
+            foreach (var queueName in _queues)
             {
-                jobsEnqueued++;
-
-                if (context.IsShutdownRequested)
+                while (EnqueueNextScheduledJob(context, queueName))
                 {
-                    break;
+                    jobsEnqueued++;
+
+                    if (context.IsShutdownRequested)
+                    {
+                        break;
+                    }
                 }
             }
 
@@ -159,7 +162,7 @@ namespace Hangfire.Server
             return GetType().Name;
         }
 
-        private bool EnqueueNextScheduledJob(BackgroundProcessContext context)
+        private bool EnqueueNextScheduledJob(BackgroundProcessContext context, string queueName)
         {
             return UseConnectionDistributedLock(context.Storage, connection =>
             {
@@ -178,7 +181,7 @@ namespace Hangfire.Server
                     context.Storage,
                     connection,
                     jobId,
-                    new EnqueuedState { Reason = $"Triggered by {ToString()}" }, 
+                    new EnqueuedState(queueName) { Reason = $"Triggered by {ToString()}" }, 
                     ScheduledState.StateName));
 
                 if (appliedState == null)

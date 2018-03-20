@@ -460,11 +460,13 @@ select scope_identity() as Id";
         }
 
         [Fact, CleanDatabase]
-        public void AddToSetQueue_AddsARecord_IfThereIsNo_SuchKeyAndValue()
+        [InlineData(true)]
+        [InlineData(false)]
+        public void AddToSetQueue_AddsARecord_IfThereIsNo_SuchKeyAndValue(bool useBatching)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x => x.AddToSetQueue("my-key", "my-value", "default"));
+                Commit(sql, x => x.AddToSetQueue("my-key", "my-value", "default"), useBatching);
 
                 var record = sql.Query("select * from HangFire.[Set]").Single();
 
@@ -476,7 +478,9 @@ select scope_identity() as Id";
         }
 
         [Fact, CleanDatabase]
-        public void AddToSetQueue_AddsARecord_WhenKeyIsExists_ButValuesAreDifferent()
+        [InlineData(true)]
+        [InlineData(false)]
+        public void AddToSetQueue_AddsARecord_WhenKeyIsExists_ButValuesAreDifferent(bool useBatching)
         {
             UseConnection(sql =>
             {
@@ -484,7 +488,7 @@ select scope_identity() as Id";
                 {
                     x.AddToSetQueue("my-key", "my-value", "default");
                     x.AddToSetQueue("my-key", "another-value", "default");
-                });
+                }, useBatching);
 
                 var recordCount = sql.Query<int>("select count(*) from HangFire.[Set]").Single();
 
@@ -493,7 +497,9 @@ select scope_identity() as Id";
         }
 
         [Fact, CleanDatabase]
-        public void AddToSetQueue_DoesNotAddARecord_WhenBothKeyAndValueAreExist()
+        [InlineData(true)]
+        [InlineData(false)]
+        public void AddToSetQueue_DoesNotAddARecord_WhenBothKeyAndValueAreExist(bool useBatching)
         {
             UseConnection(sql =>
             {
@@ -501,7 +507,7 @@ select scope_identity() as Id";
                 {
                     x.AddToSetQueue("my-key", "my-value", "default");
                     x.AddToSetQueue("my-key", "my-value", "default");
-                });
+                }, useBatching);
 
                 var recordCount = sql.Query<int>("select count(*) from HangFire.[Set]").Single();
 
@@ -510,11 +516,13 @@ select scope_identity() as Id";
         }
 
         [Fact, CleanDatabase]
-        public void AddToSetQueue_WithScore_AddsARecordWithScore_WhenBothKeyAndValueAreNotExist()
+        [InlineData(true)]
+        [InlineData(false)]
+        public void AddToSetQueue_WithScore_AddsARecordWithScore_WhenBothKeyAndValueAreNotExist(bool useBatching)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x => x.AddToSetQueue("my-key", "my-value", "default", 3.2));
+                Commit(sql, x => x.AddToSetQueue("my-key", "my-value", "default", 3.2), useBatching);
 
                 var record = sql.Query("select * from HangFire.[Set]").Single();
 
@@ -526,7 +534,9 @@ select scope_identity() as Id";
         }
 
         [Fact, CleanDatabase]
-        public void AddToSetQueue_WithScore_UpdatesAScore_WhenBothKeyAndValueAreExist()
+        [InlineData(true)]
+        [InlineData(false)]
+        public void AddToSetQueue_WithScore_UpdatesAScore_WhenBothKeyAndValueAreExist(bool useBatching)
         {
             UseConnection(sql =>
             {
@@ -534,7 +544,7 @@ select scope_identity() as Id";
                 {
                     x.AddToSetQueue("my-key", "my-value", "default");
                     x.AddToSetQueue("my-key", "my-value", "default", 3.2);
-                });
+                }, useBatching);
 
                 var record = sql.Query("select * from HangFire.[Set]").Single();
 
@@ -543,7 +553,9 @@ select scope_identity() as Id";
         }
 
         [Fact, CleanDatabase]
-        public void AddToSetQueue_WithScore_UpdatesAQueue_WhenBothKeyAndValueAreExist()
+        [InlineData(true)]
+        [InlineData(false)]
+        public void AddToSetQueue_WithScore_UpdatesAQueue_WhenBothKeyAndValueAreExist(bool useBatching)
         {
             UseConnection(sql =>
             {
@@ -551,7 +563,7 @@ select scope_identity() as Id";
                 {
                     x.AddToSetQueue("my-key", "my-value", "default");
                     x.AddToSetQueue("my-key", "my-value", "not_default", 3.2);
-                });
+                }, useBatching);
 
                 var record = sql.Query("select * from HangFire.[Set]").Single();
 

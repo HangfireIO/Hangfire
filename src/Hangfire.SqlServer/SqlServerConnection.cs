@@ -258,7 +258,7 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (queueName == null) throw new ArgumentNullException(nameof(queueName));
 
-            return _storage.UseConnection(connection =>
+            return _storage.UseConnection(_dedicatedConnection, connection =>
             {
                 var result = connection.Query<string>(
                     $@"select Value from [{_storage.SchemaName}].[Set] with (readcommittedlock) where [Key] = @key AND QueueName = @queueName",
@@ -639,7 +639,7 @@ order by [Id] desc";
             if (queueName == null) throw new ArgumentNullException(nameof(queueName));
             if (toScore < fromScore) throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.");
             
-            return _storage.UseConnection(connection =>
+            return _storage.UseConnection(_dedicatedConnection, connection =>
             {
                 var result = connection.Query<SqlSet>(
                     $"select Value, Score from [{_storage.SchemaName}].[Set] with (readcommittedlock) where [Key] = @key and QueueName = @queueName and Score between @from and @to",

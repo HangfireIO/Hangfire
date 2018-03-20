@@ -227,10 +227,11 @@ when matched then update set Score = Source.Score, QueueName = Source.QueueName
 when not matched then insert ([Key], Value, Score, QueueName) values (Source.[Key], Source.Value, Source.Score, Source.QueueName);";
 
             AcquireSetLock();
-            QueueCommand((connection, transaction) => connection.Execute(
-                addSql,
-                new { key, value, score, queueName },
-                transaction));
+            QueueCommand(addSql,
+                new SqlParameter("@key", key),
+                new SqlParameter("@value", value),
+                new SqlParameter("@score", score),
+                new SqlParameter("@queueName", queueName));
         }
 
         public override void RemoveFromSet(string key, string value)
