@@ -166,7 +166,7 @@ namespace Hangfire.Dashboard
 
         public static readonly DashboardMetric DeletedCount = new DashboardMetric(
             "deleted:count",
-             "Metrics_DeletedJobs",
+            "Metrics_DeletedJobs",
             page => new Metric(page.Statistics.Deleted));
 
         public static readonly DashboardMetric AwaitingCount = new DashboardMetric(
