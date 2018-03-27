@@ -16,7 +16,7 @@ namespace Hangfire.Core.Tests.Server
     public class DelayedJobSchedulerFacts
     {
         private const string JobId = "id";
-        private readonly Mock<IStorageConnection> _connection;
+        private readonly Mock<IQueueStorageConnection> _connection;
         private readonly Mock<IBackgroundJobStateChanger> _stateChanger;
         private readonly BackgroundProcessContextMock _context;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
@@ -29,7 +29,7 @@ namespace Hangfire.Core.Tests.Server
             _context = new BackgroundProcessContextMock();
             _context.CancellationTokenSource.Cancel();
 
-            _connection = new Mock<IStorageConnection>();
+            _connection = new Mock<IQueueStorageConnection>();
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
 
             _stateChanger = new Mock<IBackgroundJobStateChanger>();

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -12,7 +10,7 @@ namespace Hangfire.Core.Tests.States
     public class ScheduledStateHandlerFacts
     {
         private readonly ApplyStateContextMock _context;
-        private readonly Mock<IWriteOnlyTransaction> _transaction;
+        private readonly Mock<IQueueWriteOnlyTransaction> _transaction;
 
         private const string JobId = "1";
         private readonly DateTime _enqueueAt = DateTime.UtcNow.AddDays(1);
@@ -25,7 +23,7 @@ namespace Hangfire.Core.Tests.States
                 NewStateObject = new ScheduledState(_enqueueAt, "new_queue")
             };
 
-            _transaction = new Mock<IWriteOnlyTransaction>();
+            _transaction = new Mock<IQueueWriteOnlyTransaction>();
         }
 
         [Fact]

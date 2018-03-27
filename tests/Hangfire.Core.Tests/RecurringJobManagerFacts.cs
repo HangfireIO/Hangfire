@@ -18,7 +18,7 @@ namespace Hangfire.Core.Tests
         private readonly Job _job;
         private readonly string _cronExpression;
         private readonly Mock<IStorageConnection> _connection;
-        private readonly Mock<IWriteOnlyTransaction> _transaction;
+        private readonly Mock<IQueueWriteOnlyTransaction> _transaction;
         private readonly Mock<IBackgroundJobFactory> _factory;
 
         public RecurringJobManagerFacts()
@@ -32,7 +32,7 @@ namespace Hangfire.Core.Tests
             _connection = new Mock<IStorageConnection>();
             _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
 
-            _transaction = new Mock<IWriteOnlyTransaction>();
+            _transaction = new Mock<IQueueWriteOnlyTransaction>();
             _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
         }
 

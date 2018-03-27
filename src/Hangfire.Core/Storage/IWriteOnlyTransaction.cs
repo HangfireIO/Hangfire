@@ -41,8 +41,6 @@ namespace Hangfire.Storage
         // Set operations
         void AddToSet([NotNull] string key, [NotNull] string value);
         void AddToSet([NotNull] string key, [NotNull] string value, double score);
-        void AddToSetQueue([NotNull] string key, [NotNull] string value, [NotNull] string queueName);
-        void AddToSetQueue([NotNull] string key, [NotNull] string value, [NotNull] string queueName, double score);
         void RemoveFromSet([NotNull] string key, [NotNull] string value);
 
         // List operations

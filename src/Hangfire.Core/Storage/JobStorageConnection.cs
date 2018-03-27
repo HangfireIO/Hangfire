@@ -23,7 +23,7 @@ using Hangfire.Server;
 
 namespace Hangfire.Storage
 {
-    public abstract class JobStorageConnection : IStorageConnection
+    public abstract class JobStorageConnection : IQueueStorageConnection
     {
         public virtual void Dispose()
         {

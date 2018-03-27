@@ -84,7 +84,15 @@ namespace Hangfire
                         $"recurring-job:{recurringJobId}",
                         recurringJob);
 
-                    transaction.AddToSetQueue("recurring-jobs", recurringJobId, job.QueueName);
+                    var queueTransaction = transaction as IQueueWriteOnlyTransaction;
+                    if (queueTransaction == null)
+                    {
+                        transaction.AddToQueue("recurring-jobs", recurringJobId);
+                    }
+                    else
+                    {
+                        queueTransaction.AddToSetQueue("recurring-jobs", recurringJobId, job.QueueName);
+                    }
 
                     transaction.Commit();
                 }

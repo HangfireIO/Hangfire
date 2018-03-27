@@ -136,8 +136,9 @@ namespace Hangfire.Server
         {
             UseConnectionDistributedLock(context.Storage, connection =>
             {
+                var queueConnection = connection as IQueueStorageConnection;
+                var recurringJobIds = queueConnection == null ? connection.GetAllItemsFromSet("recurring-jobs") : queueConnection.GetAllItemsFromSetQueue("recurring-jobs", queueName);
 
-                var recurringJobIds = connection.GetAllItemsFromSetQueue("recurring-jobs", queueName);
                 foreach (var recurringJobId in recurringJobIds)
                 {
                     var recurringJob = connection.GetAllEntriesFromHash(

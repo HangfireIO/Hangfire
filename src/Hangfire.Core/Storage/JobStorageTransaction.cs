@@ -21,7 +21,7 @@ using Hangfire.States;
 
 namespace Hangfire.Storage
 {
-    public abstract class JobStorageTransaction : IWriteOnlyTransaction
+    public abstract class JobStorageTransaction : IQueueWriteOnlyTransaction
     {
         public virtual void Dispose()
         {
@@ -38,8 +38,6 @@ namespace Hangfire.Storage
         public abstract void DecrementCounter(string key, TimeSpan expireIn);
         public abstract void AddToSet(string key, string value);
         public abstract void AddToSet(string key, string value, double score);
-        public abstract void AddToSetQueue(string key, string value, string queueName);
-        public abstract void AddToSetQueue(string key, string value, string queueName, double score);
 
         public abstract void RemoveFromSet(string key, string value);
         public abstract void InsertToList(string key, string value);
@@ -85,6 +83,16 @@ namespace Hangfire.Storage
         }
 
         public virtual void RemoveSet([NotNull] string key)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual void AddToSetQueue(string key, string value, string queueName)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual void AddToSetQueue(string key, string value, string queueName, double score)
         {
             throw new NotSupportedException();
         }

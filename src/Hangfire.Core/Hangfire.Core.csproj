@@ -383,6 +383,8 @@
     <Compile Include="Storage\InvocationData.cs" />
     <Compile Include="Storage\IMonitoringApi.cs" />
     <Compile Include="Storage\IFetchedJob.cs" />
+    <Compile Include="Storage\IQueueStorageConnection.cs" />
+    <Compile Include="Storage\IQueueWriteOnlyTransaction.cs" />
     <Compile Include="Storage\JobStorageConnection.cs" />
     <Compile Include="Storage\JobStorageTransaction.cs" />
     <Compile Include="Storage\Monitoring\DeletedJobDto.cs" />

@@ -179,7 +179,15 @@ namespace Hangfire.States
                 }
 
                 var timestamp = JobHelper.ToTimestamp(scheduledState.EnqueueAt);
-                transaction.AddToSetQueue("schedule", context.BackgroundJob.Id, scheduledState.QueueName, timestamp);
+                var queueTransaction = transaction as IQueueWriteOnlyTransaction;
+                if (queueTransaction == null)
+                {
+                    transaction.AddToQueue("schedule", context.BackgroundJob.Id);
+                }
+                else
+                {
+                    queueTransaction.AddToSetQueue("schedule", context.BackgroundJob.Id, scheduledState.QueueName, timestamp);
+                }
             }
 
             public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)

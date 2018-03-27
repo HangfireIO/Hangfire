@@ -16,7 +16,7 @@ namespace Hangfire.Core.Tests.Server
     {
         private const string RecurringJobId = "recurring-job-id";
 
-        private readonly Mock<IStorageConnection> _connection;
+        private readonly Mock<IQueueStorageConnection> _connection;
         private readonly Dictionary<string, string> _recurringJob;
         private Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> _instantFactory; 
         private readonly Mock<IThrottler> _throttler;
@@ -50,7 +50,7 @@ namespace Hangfire.Core.Tests.Server
                 { "Queue", EnqueuedState.DefaultQueue }
             };
 
-            _connection = new Mock<IStorageConnection>();
+            _connection = new Mock<IQueueStorageConnection>();
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
 
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{RecurringJobId}"))
@@ -61,7 +61,7 @@ namespace Hangfire.Core.Tests.Server
             _factory = new Mock<IBackgroundJobFactory>();
             _factory.Setup(x => x.Create(It.IsAny<CreateContext>())).Returns(_backgroundJobMock.Object);
 
-            _queues = new string[] { EnqueuedState.DefaultQueue };
+            _queues = new[] { EnqueuedState.DefaultQueue };
         }
 
         [Fact]
