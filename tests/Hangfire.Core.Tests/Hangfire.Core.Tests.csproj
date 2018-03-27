@@ -94,6 +94,8 @@
     <Compile Include="Common\JobLoadExceptionFacts.cs" />
     <Compile Include="Common\TypeExtensionsFacts.cs" />
     <Compile Include="CronFacts.cs" />
+    <Compile Include="States\AwaitingStateFacts.cs" />
+    <Compile Include="States\AwaitingStateHandlerFacts.cs" />
     <Compile Include="Stubs\DashboardContextStub.cs" />
     <Compile Include="Stubs\JobStorageStub.cs" />
     <Compile Include="Stubs\DashboardResponseStub.cs" />
