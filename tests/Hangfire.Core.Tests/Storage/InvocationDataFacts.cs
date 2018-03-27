@@ -95,7 +95,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal("Sample", invocationData.Method);
             Assert.Equal(JobHelper.ToJson(new[] { typeof(string) }), invocationData.ParameterTypes);
             Assert.Equal(JobHelper.ToJson(new[] { "\"Hello\"" }), invocationData.Arguments);
-            Assert.Equal("custom_queue", invocationData.QueueName);
+            Assert.Equal("default", invocationData.QueueName);
         }
 
         [Fact]

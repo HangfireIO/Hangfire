@@ -459,7 +459,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
         public void AddToSetQueue_AddsARecord_IfThereIsNo_SuchKeyAndValue(bool useBatching)
@@ -477,7 +477,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
         public void AddToSetQueue_AddsARecord_WhenKeyIsExists_ButValuesAreDifferent(bool useBatching)
@@ -496,7 +496,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
         public void AddToSetQueue_DoesNotAddARecord_WhenBothKeyAndValueAreExist(bool useBatching)
@@ -515,7 +515,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
         public void AddToSetQueue_WithScore_AddsARecordWithScore_WhenBothKeyAndValueAreNotExist(bool useBatching)
@@ -533,7 +533,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
         public void AddToSetQueue_WithScore_UpdatesAScore_WhenBothKeyAndValueAreExist(bool useBatching)
@@ -552,7 +552,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
         public void AddToSetQueue_WithScore_UpdatesAQueue_WhenBothKeyAndValueAreExist(bool useBatching)

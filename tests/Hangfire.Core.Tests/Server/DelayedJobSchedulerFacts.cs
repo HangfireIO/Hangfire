@@ -70,6 +70,10 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_MovesJobStateToEnqueued()
         {
+            _connection
+                .Setup(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.IsAny<double>()))
+                .Returns(JobId);
+
             var scheduler = CreateScheduler();
 
             scheduler.Execute(_context.Object);
@@ -85,6 +89,10 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_MovesJobStateToEnqueued_InDefaultQueue()
         {
+            _connection
+                .Setup(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.IsAny<double>()))
+                .Returns(JobId);
+
             var scheduler = CreateScheduler();
 
 			scheduler.Execute(_context.Object);
@@ -101,14 +109,16 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_MovesJobStateToEnqueued_InCustomQueue()
         {
-            _connection.Setup(x => x.GetAllValuesWithScoresFromSetQueueWithinScoreRange(
-                "schedule", "custom_queue", 0, It.Is<double>(time => time > 0))).Returns(_jobSet);
+            _connection
+                .Setup(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.IsAny<double>()))
+                .Returns("custom_queue");
+
             var scheduler = CreateScheduler("custom_queue");
 
             scheduler.Execute(_context.Object);
 
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
-                ctx.BackgroundJobId == JobId &&
+                ctx.BackgroundJobId == "custom_queue" &&
                 ctx.NewState is EnqueuedState &&
                 ((EnqueuedState)ctx.NewState).Queue == "custom_queue" &&
                 ctx.ExpectedStates.SequenceEqual(new[] { ScheduledState.StateName }))));
@@ -149,6 +159,10 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_RemovesAJobIdentifierFromTheSet_WhenStateChangeFails()
         {
+            _connection
+                .Setup(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.IsAny<double>()))
+                .Returns(JobId);
+
             _stateChanger
                 .Setup(x => x.ChangeState(It.IsAny<StateChangeContext>()))
                 .Returns<IState>(null);
@@ -162,17 +176,6 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_ActsWithinADistributedLock()
-        {
-            var scheduler = CreateScheduler();
-
-            scheduler.Execute(_context.Object);
-
-            _connection.Verify(x => x.AcquireDistributedLock(It.IsAny<string>(), It.IsAny<TimeSpan>()));
-            _distributedLock.Verify(x => x.Dispose());
-        }
-
-        [Fact]
         public void Execute_DoesNotThrowDistributedLockTimeoutException()
         {
             _connection
@@ -182,6 +185,16 @@ namespace Hangfire.Core.Tests.Server
             var scheduler = CreateScheduler();
 
             scheduler.Execute(_context.Object);
+        }
+
+        [Fact]
+        public void Execute_ActsWithinADistributedLock()
+        {
+            var scheduler = CreateScheduler();
+
+            scheduler.Execute(_context.Object);
+
+            _connection.Verify(x => x.AcquireDistributedLock(It.IsAny<string>(), It.IsAny<TimeSpan>()));
         }
 
         private DelayedJobScheduler CreateScheduler(params string[] additionalQueues)
