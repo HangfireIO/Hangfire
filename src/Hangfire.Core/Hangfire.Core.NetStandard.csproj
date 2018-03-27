@@ -106,6 +106,7 @@
     <Compile Include="Common\JobFilterScope.cs" />
     <Compile Include="Common\JobHelper.cs" />
     <Compile Include="Common\JobLoadException.cs" />
+    <Compile Include="Common\MethodInfoExtensions.cs" />
     <Compile Include="Common\ReflectedAttributeCache.cs" />
     <Compile Include="Common\TypeExtensions.cs" />
     <Compile Include="ContinuationsSupportAttribute.cs" />
@@ -506,6 +507,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Dashboard\Content\resx\Strings.es.resx" />
+    <EmbeddedResource Include="Dashboard\Content\resx\Strings.zh-TW.resx" />
     <EmbeddedResource Include="Dashboard\Content\resx\Strings.zh.resx" />
     <EmbeddedResource Include="Dashboard\Content\resx\Strings.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

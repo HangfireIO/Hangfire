@@ -111,6 +111,6 @@ function Run-OpenCoverXunit2($projectWithOptionalTarget, $coverageFile, $coverag
     $assembly = (Get-TestsOutputDir $project $target) + "\$project.dll"
 	
     Exec {
-        .$opencover -target:"$xunit_path" -targetargs:"`"$assembly`" -noshadow $extra" -filter:"$coverageFilter" -mergeoutput -output:"$coverageFile" -register:user -returntargetcode
+        .$opencover -target:"$xunit_path" -targetargs:"`"`"$assembly`"`" -noshadow $extra" -filter:"$coverageFilter" -mergeoutput -output:"$coverageFile" -register:user -returntargetcode
     }
 }

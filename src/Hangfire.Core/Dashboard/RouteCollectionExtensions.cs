@@ -17,6 +17,7 @@
 using System;
 using System.Text.RegularExpressions;
 using Hangfire.Annotations;
+using System.ComponentModel;
 
 namespace Hangfire.Dashboard
 {
@@ -97,11 +98,27 @@ namespace Hangfire.Dashboard
 
             routes.AddBatchCommand(pathTemplate, (context, jobId) =>
             {
-                var client = new BackgroundJobClient(context.Storage);
+                var client = context.GetBackgroundJobClient();
                 command(client, jobId);
             });
         }
 
+        public static void AddRecurringBatchCommand(
+            this RouteCollection routes,
+            string pathTemplate,
+            [NotNull] Action<IRecurringJobManager, string> command)
+        {
+            if (command == null) throw new ArgumentNullException(nameof(command));
+
+            routes.AddBatchCommand(pathTemplate, (context, jobId) =>
+            {
+                var manager = context.GetRecurringJobManager();
+                command(manager, jobId);
+            });
+        }
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [Obsolete("For binary compatibility only. Use overload with Action<IRecurringJobManager, string> instead.")]
         public static void AddRecurringBatchCommand(
             this RouteCollection routes,
             string pathTemplate,

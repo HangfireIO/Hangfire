@@ -17,6 +17,7 @@
 using System;
 using Hangfire.Annotations;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hangfire.Dashboard
 {
@@ -36,5 +37,15 @@ namespace Hangfire.Dashboard
         }
 
         public HttpContext HttpContext { get; }
+
+        public override IBackgroundJobClient GetBackgroundJobClient()
+        {
+            return HttpContext.RequestServices.GetService<IBackgroundJobClient>() ?? base.GetBackgroundJobClient();
+        }
+
+        public override IRecurringJobManager GetRecurringJobManager()
+        {
+            return HttpContext.RequestServices.GetService<IRecurringJobManager>() ?? base.GetRecurringJobManager();
+        }
     }
 }
