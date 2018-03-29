@@ -59,6 +59,7 @@
     <Compile Include="Entities\ServerData.cs" />
     <Compile Include="Entities\SqlHash.cs" />
     <Compile Include="Entities\SqlJob.cs" />
+    <Compile Include="Entities\SqlSet.cs" />
     <Compile Include="Entities\SqlState.cs" />
     <Compile Include="ExpirationManager.cs" />
     <Compile Include="IPersistentJobQueue.cs" />

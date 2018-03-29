@@ -21,19 +21,21 @@ namespace Hangfire.Core.Tests.Storage
                 type.AssemblyQualifiedName,
                 methodInfo.Name,
                 JobHelper.ToJson(new [] { typeof(string) }),
-                JobHelper.ToJson(new [] { JobHelper.ToJson("Hello") }));
+                JobHelper.ToJson(new [] { JobHelper.ToJson("Hello") }),
+                "custom_queue");
 
             var job = serializedData.Deserialize();
 
             Assert.Equal(type, job.Type);
             Assert.Equal(methodInfo, job.Method);
             Assert.Equal("Hello", job.Args[0]);
+            Assert.Equal("custom_queue", job.QueueName);
         }
 
         [Fact]
         public void Deserialize_WrapsAnException_WithTheJobLoadException()
         {
-            var serializedData = new InvocationData(null, null, null, null);
+            var serializedData = new InvocationData(null, null, null, null, null);
 
             Assert.Throws<JobLoadException>(
                 () => serializedData.Deserialize());
@@ -66,6 +68,23 @@ namespace Hangfire.Core.Tests.Storage
         }
 
         [Fact]
+        public void Deserialize_ThrowsAnException_WhenQueueNameIsNull()
+        {
+            var type = typeof(InvocationDataFacts);
+            var methodInfo = type.GetMethod("Sample");
+
+            var serializedData = new InvocationData(
+                type.AssemblyQualifiedName,
+                methodInfo.Name,
+                JobHelper.ToJson(new[] { typeof(string) }),
+                JobHelper.ToJson(new[] { JobHelper.ToJson("Hello") }),
+                null);
+            
+            Assert.Throws<JobLoadException>(
+                () => serializedData.Deserialize());
+        }
+
+        [Fact]
         public void Serialize_CorrectlySerializesTheData()
         {
             var job = Job.FromExpression(() => Sample("Hello"));
@@ -76,6 +95,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal("Sample", invocationData.Method);
             Assert.Equal(JobHelper.ToJson(new[] { typeof(string) }), invocationData.ParameterTypes);
             Assert.Equal(JobHelper.ToJson(new[] { "\"Hello\"" }), invocationData.Arguments);
+            Assert.Equal("default", invocationData.QueueName);
         }
 
         [Fact]

@@ -212,6 +212,28 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
                 new SqlParameter("@score", score));
         }
 
+        public override void AddToSetQueue(string key, string value, string queueName)
+        {
+            AddToSetQueue(key, value, queueName, 0.0);
+        }
+
+        public override void AddToSetQueue(string key, string value, string queueName, double score)
+        {
+            string addSql =
+$@";merge [{_storage.SchemaName}].[Set] with (holdlock) as Target
+using (VALUES (@key, @value, @score, @queueName)) as Source ([Key], Value, Score, QueueName)
+on Target.[Key] = Source.[Key] and Target.Value = Source.Value
+when matched then update set Score = Source.Score, QueueName = Source.QueueName
+when not matched then insert ([Key], Value, Score, QueueName) values (Source.[Key], Source.Value, Source.Score, Source.QueueName);";
+
+            AcquireSetLock();
+            QueueCommand(addSql,
+                new SqlParameter("@key", key),
+                new SqlParameter("@value", value),
+                new SqlParameter("@score", score),
+                new SqlParameter("@queueName", queueName));
+        }
+
         public override void RemoveFromSet(string key, string value)
         {
             string query = $@"delete from [{_storage.SchemaName}].[Set] where [Key] = @key and Value = @value";

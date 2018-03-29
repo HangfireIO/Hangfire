@@ -10,7 +10,7 @@ namespace Hangfire.Core.Tests.States
     public class ScheduledStateHandlerFacts
     {
         private readonly ApplyStateContextMock _context;
-        private readonly Mock<IWriteOnlyTransaction> _transaction;
+        private readonly Mock<IQueueWriteOnlyTransaction> _transaction;
 
         private const string JobId = "1";
         private readonly DateTime _enqueueAt = DateTime.UtcNow.AddDays(1);
@@ -20,10 +20,10 @@ namespace Hangfire.Core.Tests.States
             _context = new ApplyStateContextMock
             {
                 BackgroundJob = { Id = JobId },
-                NewStateObject = new ScheduledState(_enqueueAt)
+                NewStateObject = new ScheduledState(_enqueueAt, "new_queue")
             };
 
-            _transaction = new Mock<IWriteOnlyTransaction>();
+            _transaction = new Mock<IQueueWriteOnlyTransaction>();
         }
 
         [Fact]
@@ -34,17 +34,17 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
-        public void Apply_ShouldAddTheJob_ToTheScheduleSet_WithTheCorrectScore()
+        public void Apply_ShouldAddTheJob_ToTheScheduleSet_WithTheCorrectScore_AndInTheRightQueue()
         {
             var handler = new ScheduledState.Handler();
             handler.Apply(_context.Object, _transaction.Object);
 
-            _transaction.Verify(x => x.AddToSet(
-                "schedule", JobId, JobHelper.ToTimestamp(_enqueueAt)));
+            _transaction.Verify(x => x.AddToSetQueue(
+                "schedule", JobId, "new_queue", JobHelper.ToTimestamp(_enqueueAt)));
         }
 
         [Fact]
-        public void Unapply_ShouldRemoveTheJob_FromTheScheduledSet()
+        public void Unapply_ShouldRemoveTheJob_FromTheScheduledSetAndHash()
         {
             var handler = new ScheduledState.Handler();
             handler.Unapply(_context.Object, _transaction.Object);

@@ -21,7 +21,9 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Hangfire.Annotations;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Hangfire.States;
 
 namespace Hangfire.Common
 {
@@ -144,16 +146,44 @@ namespace Hangfire.Common
         /// <exception cref="ArgumentException">Parameter/argument count mismatch.</exception>
         /// <exception cref="NotSupportedException"><paramref name="method"/> is not supported.</exception>
         public Job([NotNull] Type type, [NotNull] MethodInfo method, [NotNull] params object[] args)
+            : this(type, method, args, EnqueuedState.DefaultQueue)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Job"/> class with the 
+        /// type, metadata of a method and the given list of arguments.
+        /// </summary>
+        /// 
+        /// <param name="type">Type that contains the given method.</param>
+        /// <param name="method">Method that should be invoked.</param>
+        /// <param name="args">Arguments that should be passed during the method call.</param>
+        /// <param name="queueName">The queue that the job will be placed in.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="type"/> argument is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="method"/> argument is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="args"/> argument is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="queueName"/> argument is null.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="type"/> does not contain the given <paramref name="method"/>.
+        /// </exception>
+        /// <exception cref="ArgumentException">Parameter/argument count mismatch.</exception>
+        /// <exception cref="NotSupportedException"><paramref name="method"/> is not supported.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="queueName"/> does not adhere to requirements.
+        /// </exception>
+        public Job([NotNull] Type type, [NotNull] MethodInfo method, [NotNull] object[] args, [NotNull] string queueName)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
             if (method == null) throw new ArgumentNullException(nameof(method));
             if (args == null) throw new ArgumentNullException(nameof(args));
-            
-            Validate(type, nameof(type), method, nameof(method), args.Length, nameof(args));
+            if (queueName == null) throw new ArgumentNullException(nameof(queueName));
+
+            Validate(type, nameof(type), method, nameof(method), args.Length, nameof(args), queueName, nameof(queueName));
 
             Type = type;
             Method = method;
             Args = args;
+            QueueName = queueName;
         }
 
         /// <summary>
@@ -176,6 +206,12 @@ namespace Hangfire.Common
         /// </summary>
         [NotNull]
         public IReadOnlyList<object> Args { get; }
+
+        /// <summary>
+        /// Gets the name of the queue that the job belongs to.
+        /// </summary>
+        [NotNull]
+        public string QueueName { get; private set; }
         
         public override string ToString()
         {
@@ -194,6 +230,12 @@ namespace Hangfire.Common
             return useCache
                 ? ReflectedAttributeCache.GetMethodFilterAttributes(Method)
                 : GetFilterAttributes(Method);
+        }
+
+        internal void OverrideQueueName(string queueName)
+        {
+            VerifyQueueName(queueName, nameof(queueName));
+            QueueName = queueName;
         }
 
         private static IEnumerable<JobFilterAttribute> GetFilterAttributes(MemberInfo memberInfo)
@@ -330,7 +372,8 @@ namespace Hangfire.Common
             }
 
             var type = explicitType ?? callExpression.Method.DeclaringType;
-            var method = callExpression.Method;
+            var argumentTypes = callExpression.Method.GetParameters().Select(x => x.ParameterType).ToArray();
+            var method = type.GetNonOpenMatchingMethod(callExpression.Method.Name, argumentTypes);
 
             if (explicitType == null && callExpression.Object != null)
             {
@@ -356,11 +399,24 @@ namespace Hangfire.Common
                     callExpression.Method.GetParameters().Select(x => x.ParameterType).ToArray());
             }
 
+            var queueAttribute = ReflectedAttributeCache.GetMethodQueueAttribute(method) ??
+                                 ReflectedAttributeCache.GetTypeQueueAttribute(type);
+
+            if (queueAttribute == null)
+            {
+                return new Job(
+                    // ReSharper disable once AssignNullToNotNullAttribute
+                    type,
+                    method,
+                    GetExpressionValues(callExpression.Arguments));
+            }
+
             return new Job(
                 // ReSharper disable once AssignNullToNotNullAttribute
                 type,
                 method,
-                GetExpressionValues(callExpression.Arguments));
+                GetExpressionValues(callExpression.Arguments),
+                queueAttribute.Queue);
         }
 
         private static void Validate(
@@ -371,7 +427,9 @@ namespace Hangfire.Common
             [InvokerParameterName] string methodParameterName,
             // ReSharper disable once UnusedParameter.Local
             int argumentCount,
-            [InvokerParameterName] string argumentParameterName)
+            [InvokerParameterName] string argumentParameterName,
+            string queueName,
+            [InvokerParameterName] string queueNameParameterName)
         {
             if (!method.IsPublic)
             {
@@ -434,6 +492,18 @@ namespace Hangfire.Common
                     throw new NotSupportedException(
                         "Anonymous functions, delegates and lambda expressions aren't supported in job method parameters: it's very hard to serialize them and all their scope in general.");
                 }
+            }
+
+            VerifyQueueName(queueName, queueNameParameterName);
+        }
+
+        private static void VerifyQueueName(string queueName, [InvokerParameterName] string queueNameParameterName)
+        {
+            if (!Regex.IsMatch(queueName, @"^[a-z0-9_]+$"))
+            {
+                throw new ArgumentException(
+                    $"The queue name must consist of lowercase letters, digits and underscore characters only. Given: '{queueName}'.",
+                    queueNameParameterName);
             }
         }
 

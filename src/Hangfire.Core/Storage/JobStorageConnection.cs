@@ -23,7 +23,7 @@ using Hangfire.Server;
 
 namespace Hangfire.Storage
 {
-    public abstract class JobStorageConnection : IStorageConnection
+    public abstract class JobStorageConnection : IQueueStorageConnection
     {
         public virtual void Dispose()
         {
@@ -49,6 +49,7 @@ namespace Hangfire.Storage
 
         // Sets
         public abstract HashSet<string> GetAllItemsFromSet(string key);
+
         public abstract string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);
 
         public virtual long GetSetCount([NotNull] string key)
@@ -108,6 +109,17 @@ namespace Hangfire.Storage
 
         // Counters
         public virtual long GetCounter([NotNull] string key)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual HashSet<string> GetAllItemsFromSetQueue(string key, string queueName)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual Dictionary<string, double> GetAllValuesWithScoresFromSetQueueWithinScoreRange(string key,
+            string queueName, double fromScore, double toScore)
         {
             throw new NotSupportedException();
         }

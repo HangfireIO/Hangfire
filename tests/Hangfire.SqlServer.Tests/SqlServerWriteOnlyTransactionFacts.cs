@@ -462,6 +462,118 @@ select scope_identity() as Id";
         [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
+        public void AddToSetQueue_AddsARecord_IfThereIsNo_SuchKeyAndValue(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x => x.AddToSetQueue("my-key", "my-value", "default"), useBatching);
+
+                var record = sql.Query("select * from HangFire.[Set]").Single();
+
+                Assert.Equal("my-key", record.Key);
+                Assert.Equal("my-value", record.Value);
+                Assert.Equal(0.0, record.Score, 2);
+                Assert.Equal("default", record.QueueName);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void AddToSetQueue_AddsARecord_WhenKeyIsExists_ButValuesAreDifferent(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.AddToSetQueue("my-key", "my-value", "default");
+                    x.AddToSetQueue("my-key", "another-value", "default");
+                }, useBatching);
+
+                var recordCount = sql.Query<int>("select count(*) from HangFire.[Set]").Single();
+
+                Assert.Equal(2, recordCount);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void AddToSetQueue_DoesNotAddARecord_WhenBothKeyAndValueAreExist(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.AddToSetQueue("my-key", "my-value", "default");
+                    x.AddToSetQueue("my-key", "my-value", "default");
+                }, useBatching);
+
+                var recordCount = sql.Query<int>("select count(*) from HangFire.[Set]").Single();
+
+                Assert.Equal(1, recordCount);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void AddToSetQueue_WithScore_AddsARecordWithScore_WhenBothKeyAndValueAreNotExist(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x => x.AddToSetQueue("my-key", "my-value", "default", 3.2), useBatching);
+
+                var record = sql.Query("select * from HangFire.[Set]").Single();
+
+                Assert.Equal("my-key", record.Key);
+                Assert.Equal("my-value", record.Value);
+                Assert.Equal(3.2, record.Score, 3);
+                Assert.Equal("default", record.QueueName);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void AddToSetQueue_WithScore_UpdatesAScore_WhenBothKeyAndValueAreExist(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.AddToSetQueue("my-key", "my-value", "default");
+                    x.AddToSetQueue("my-key", "my-value", "default", 3.2);
+                }, useBatching);
+
+                var record = sql.Query("select * from HangFire.[Set]").Single();
+
+                Assert.Equal(3.2, record.Score, 3);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void AddToSetQueue_WithScore_UpdatesAQueue_WhenBothKeyAndValueAreExist(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.AddToSetQueue("my-key", "my-value", "default");
+                    x.AddToSetQueue("my-key", "my-value", "not_default", 3.2);
+                }, useBatching);
+
+                var record = sql.Query("select * from HangFire.[Set]").Single();
+
+                Assert.Equal("not_default", record.QueueName);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
         public void RemoveFromSet_RemovesARecord_WithGivenKeyAndValue(bool useBatching)
         {
             UseConnection(sql =>

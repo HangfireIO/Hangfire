@@ -18,7 +18,7 @@ namespace Hangfire.Core.Tests
         private readonly Job _job;
         private readonly string _cronExpression;
         private readonly Mock<IStorageConnection> _connection;
-        private readonly Mock<IWriteOnlyTransaction> _transaction;
+        private readonly Mock<IQueueWriteOnlyTransaction> _transaction;
         private readonly Mock<IBackgroundJobFactory> _factory;
 
         public RecurringJobManagerFacts()
@@ -32,7 +32,7 @@ namespace Hangfire.Core.Tests
             _connection = new Mock<IStorageConnection>();
             _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
 
-            _transaction = new Mock<IWriteOnlyTransaction>();
+            _transaction = new Mock<IQueueWriteOnlyTransaction>();
             _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
         }
 
@@ -74,17 +74,6 @@ namespace Hangfire.Core.Tests
                 () => manager.AddOrUpdate(_id, null, Cron.Daily()));
 
             Assert.Equal("job", exception.ParamName);
-        }
-
-        [Fact]
-        public void AddOrUpdate_ThrowsAnException_WhenQueueNameIsNull()
-        {
-            var manager = CreateManager();
-
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => manager.AddOrUpdate(_id, _job, Cron.Daily(), TimeZoneInfo.Local, null));
-
-            Assert.Equal("queue", exception.ParamName);
         }
         
         [Fact]
@@ -143,24 +132,24 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void AddOrUpdate_ThrowsAnException_WhenQueueIsNull()
-        {
-            var manager = CreateManager();
-
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => manager.AddOrUpdate(_id, _job, _cronExpression, TimeZoneInfo.Utc, null));
-
-            Assert.Equal("queue", exception.ParamName);
-        }
-
-        [Fact]
         public void AddOrUpdate_AddsAJob_ToTheRecurringJobsSet()
         {
             var manager = CreateManager();
 
             manager.AddOrUpdate(_id, _job, _cronExpression);
 
-            _transaction.Verify(x => x.AddToSet("recurring-jobs", _id));
+            _transaction.Verify(x => x.AddToSetQueue("recurring-jobs", _id, _job.QueueName));
+        }
+
+        [Fact]
+        public void AddOrUpdate_AddsAJob_ToTheRecurringJobsSet_InCustomQueue()
+        {
+            var manager = CreateManager();
+
+            manager.AddOrUpdate(_id, _job, _cronExpression, TimeZoneInfo.Utc, "custom_queue");
+
+            Assert.Equal("custom_queue", _job.QueueName);
+            _transaction.Verify(x => x.AddToSetQueue("recurring-jobs", _id, _job.QueueName));
         }
 
         [Fact]

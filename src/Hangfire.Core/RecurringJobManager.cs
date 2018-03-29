@@ -70,7 +70,7 @@ namespace Hangfire
                 recurringJob["Job"] = JobHelper.ToJson(invocationData);
                 recurringJob["Cron"] = cronExpression;
                 recurringJob["TimeZoneId"] = options.TimeZone.Id;
-                recurringJob["Queue"] = options.QueueName;
+                recurringJob["Queue"] = job.QueueName;
 
                 var existingJob = connection.GetAllEntriesFromHash($"recurring-job:{recurringJobId}");
                 if (existingJob == null)
@@ -84,7 +84,15 @@ namespace Hangfire
                         $"recurring-job:{recurringJobId}",
                         recurringJob);
 
-                    transaction.AddToSet("recurring-jobs", recurringJobId);
+                    var queueTransaction = transaction as IQueueWriteOnlyTransaction;
+                    if (queueTransaction == null)
+                    {
+                        transaction.AddToQueue("recurring-jobs", recurringJobId);
+                    }
+                    else
+                    {
+                        queueTransaction.AddToSetQueue("recurring-jobs", recurringJobId, job.QueueName);
+                    }
 
                     transaction.Commit();
                 }

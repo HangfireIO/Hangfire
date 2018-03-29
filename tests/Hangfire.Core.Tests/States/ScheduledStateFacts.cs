@@ -10,7 +10,7 @@ namespace Hangfire.Core.Tests.States
         [Fact]
         public void StateName_IsCorrect()
         {
-            var state = new ScheduledState(DateTime.UtcNow);
+            var state = new ScheduledState(DateTime.UtcNow, EnqueuedState.DefaultQueue);
             Assert.Equal(ScheduledState.StateName, state.Name);
         }
 
@@ -18,22 +18,29 @@ namespace Hangfire.Core.Tests.States
         public void Ctor_SetsTheCorrectData_WhenDateIsPassed()
         {
             var date = new DateTime(2012, 12, 12);
-            var state = new ScheduledState(date);
+            var state = new ScheduledState(date, EnqueuedState.DefaultQueue);
             Assert.Equal(date, state.EnqueueAt);
         }
 
         [Fact]
         public void Ctor_SetsTheCorrectDate_WhenTimeSpanIsPassed()
         {
-            var state = new ScheduledState(TimeSpan.FromDays(1));
+            var state = new ScheduledState(TimeSpan.FromDays(1), EnqueuedState.DefaultQueue);
             Assert.True(DateTime.UtcNow.AddDays(1).AddMinutes(-1) < state.EnqueueAt);
             Assert.True(state.EnqueueAt < DateTime.UtcNow.AddDays(1).AddMinutes(1));
         }
 
         [Fact]
+        public void Ctor_SetsTheCorrectQueue_WhenProvided()
+        {
+            var state = new ScheduledState(TimeSpan.FromDays(1), "queue_name");
+            Assert.True(state.QueueName == "queue_name");
+        }
+
+        [Fact]
         public void SerializeData_ReturnsCorrectData()
         {
-            var state = new ScheduledState(new DateTime(2012, 12, 12));
+            var state = new ScheduledState(new DateTime(2012, 12, 12), EnqueuedState.DefaultQueue);
 
             var data = state.SerializeData();
 
@@ -44,7 +51,7 @@ namespace Hangfire.Core.Tests.States
         [Fact]
         public void IsFinal_ReturnsFalse()
         {
-            var state = new ScheduledState(DateTime.UtcNow);
+            var state = new ScheduledState(DateTime.UtcNow, EnqueuedState.DefaultQueue);
 
             Assert.False(state.IsFinal);
         }
@@ -52,7 +59,7 @@ namespace Hangfire.Core.Tests.States
         [Fact]
         public void IgnoreExceptions_ReturnsFalse()
         {
-            var state = new ScheduledState(DateTime.UtcNow);
+            var state = new ScheduledState(DateTime.UtcNow, EnqueuedState.DefaultQueue);
             Assert.False(state.IgnoreJobLoadException);
         }
     }
