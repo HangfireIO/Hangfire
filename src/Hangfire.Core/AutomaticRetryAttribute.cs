@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
@@ -52,8 +53,9 @@ namespace Hangfire
     /// 
     /// <code lang="cs" source="..\Samples\AutomaticRetry.cs" region="Disable Retries" />
     /// 
-    /// <note>Also, If your job throws an exception of type <see cref="NonRetryableException"/>, 
-    /// then additional retry attempts will be skipped and the job will be failed.</note>
+    /// <h3>Skipping Additional Retries</h3>
+    /// <para>Passing NonRetryable paramter with an array of Non-retryable exception types
+    /// will cause the job to skip any additional retries.</para>
     /// 
     /// <h3>Overriding Defaults</h3>
     /// <para>The following example shows how to override the default number of
@@ -86,11 +88,12 @@ namespace Hangfire
         public static readonly int DefaultRetryAttempts = 10;
 
         private static readonly ILog Logger = LogProvider.For<AutomaticRetryAttribute>();
-        
+
         private readonly object _lockObject = new object();
         private int _attempts;
         private AttemptsExceededAction _onAttemptsExceeded;
         private bool _logEvents;
+        private Type[] _nonRetryableTypes;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AutomaticRetryAttribute"/>
@@ -102,6 +105,26 @@ namespace Hangfire
             LogEvents = true;
             OnAttemptsExceeded = AttemptsExceededAction.Fail;
             Order = 20;
+        }
+
+        /// <summary>
+        /// Gets or sets a list of Non-retryable exception types.
+        /// </summary>
+        /// <value>Any non-negative number.</value>
+        /// <exception cref="ArgumentOutOfRangeException">The value in a set operation is less than zero.</exception>
+
+        public Type[] NonRetryable
+        {
+            get => _nonRetryableTypes;
+            set
+            {
+                if (value != null && value.Any(x => !x.IsAssignableFrom(typeof(Exception))))
+                {
+                    throw new ArgumentException(nameof(value), "Non-Retryable types must all extend from Exception.");
+                }
+
+                _nonRetryableTypes = value;
+            }
         }
 
         /// <summary>
@@ -157,7 +180,8 @@ namespace Hangfire
 
             var retryAttempt = context.GetJobParameter<int>("RetryCount") + 1;
 
-            if (retryAttempt <= Attempts && !(failedState.Exception is NonRetryableException))
+            var skipRetry = NonRetryable != null && NonRetryable.Any(t => failedState.Exception.GetType() == t);
+            if (!skipRetry && retryAttempt <= Attempts)
             {
                 ScheduleAgainLater(context, retryAttempt, failedState);
             }
@@ -210,7 +234,7 @@ namespace Hangfire
 
             const int maxMessageLength = 50;
             var exceptionMessage = failedState.Exception.Message.Length > maxMessageLength
-                ? failedState.Exception.Message.Substring(0, maxMessageLength - 1) + "…" 
+                ? failedState.Exception.Message.Substring(0, maxMessageLength - 1) + "…"
                 : failedState.Exception.Message;
 
             // If attempt number is less than max attempts, we should
