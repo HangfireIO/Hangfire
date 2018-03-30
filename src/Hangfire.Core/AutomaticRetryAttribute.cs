@@ -16,6 +16,7 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
@@ -118,7 +119,7 @@ namespace Hangfire
             get { return _nonRetryableTypes; }
             set
             {
-                if (value != null && value.Any(x => !x.IsAssignableFrom(typeof(Exception))))
+                if (value != null && value.Any(x => !typeof(Exception).GetTypeInfo().IsAssignableFrom(x.GetTypeInfo())))
                 {
                     throw new ArgumentException(nameof(value), "Non-Retryable types must all extend from Exception.");
                 }
