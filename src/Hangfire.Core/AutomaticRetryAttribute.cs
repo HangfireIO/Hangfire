@@ -52,6 +52,9 @@ namespace Hangfire
     /// 
     /// <code lang="cs" source="..\Samples\AutomaticRetry.cs" region="Disable Retries" />
     /// 
+    /// <note>Also, If your job throws an exception of type <see cref="NonRetryableException"/>, 
+    /// then additional retry attempts will be skipped and the job will be failed.</note>
+    /// 
     /// <h3>Overriding Defaults</h3>
     /// <para>The following example shows how to override the default number of
     /// retry attempts for all of the background jobs by modifying the global
@@ -154,7 +157,7 @@ namespace Hangfire
 
             var retryAttempt = context.GetJobParameter<int>("RetryCount") + 1;
 
-            if (retryAttempt <= Attempts)
+            if (retryAttempt <= Attempts && !(failedState.Exception is NonRetryableException))
             {
                 ScheduleAgainLater(context, retryAttempt, failedState);
             }
