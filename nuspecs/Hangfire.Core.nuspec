@@ -13,6 +13,23 @@
     <copyright>Copyright © 2013-2017 Sergey Odinokov</copyright>
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
+      
+1.6.18
+• Added – Add on option to remove the storage connection string from the footer (by @sandorfr).
+• Added – Add Dashboard UI Resource zh-TW (by @crablin).
+• Fixed – OutOfMemoryException in dashboard when arguments are too big.
+• Fixed – DisplayNameAttribute doesn't work when using dashboard in .NET Core.
+• Fixed – Update rickshaw css to match the js version (by @pieceofsummer).
+• Fixed – Bad exception when Job.FromExpression fails to resolve method for explicit interface implementations (by @f00).
+• Fixed – Missing intValue-values in "/stats" endpoint (by @pieceofsummer).
+• Fixed – Logging doesn't work with log4net integration in .NET Core (by @evollu).
+• Fixed – Fix nuspec pointing to version of Newtonsoft.Json that does not exist (by @mvestergaard)
+• Fixed – Server start time has a bad tooltip position (by @pieceofsummer).
+• Fixed – Prevent connection string from blowing mobile page layout (by @pieceofsummer).
+• Fixed – Number of recurring jobs per page is now correct (by @pieceofsummer).
+• Project – Get rid of all the compile-time warnings (by @liakamp).
+• Project – More details for build instructions for the project (by @kristofferjalen).
+• Project – Unable to build project with space in folder path (by @stefanviberg).
     
 1.6.16
 • Fixed – Unexpected `DateTime` and `DateTime?` serialization issues in background job arguments (by @plaisted).

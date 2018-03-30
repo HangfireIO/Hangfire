@@ -13,6 +13,11 @@
     <copyright>Copyright © 2017 Sergey Odinokov</copyright>
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>http://hangfire.io/blog/
+      
+1.6.18
+• Added – More Hangfire-related services are now registered in an IoC container (by @pieceofsummer).
+• Fixed – Queue parameter is ignored in .NET Core when creating a job (by @pieceofsummer).
+• Fixed – Fix issue with configuration block not called on .NET Core (by @pieceofsummer).
     
 1.6.13
 • Fixed – Types are resolved using the `GetServiceOrCreateInstance` method (by @Tsabo).
