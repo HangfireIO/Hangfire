@@ -115,7 +115,7 @@ namespace Hangfire
 
         public Type[] NonRetryable
         {
-            get => _nonRetryableTypes;
+            get { return _nonRetryableTypes; }
             set
             {
                 if (value != null && value.Any(x => !x.IsAssignableFrom(typeof(Exception))))
