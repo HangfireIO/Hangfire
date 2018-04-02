@@ -55,7 +55,7 @@ namespace Hangfire
     /// <code lang="cs" source="..\Samples\AutomaticRetry.cs" region="Disable Retries" />
     /// 
     /// <h3>Skipping Additional Retries</h3>
-    /// <para>Passing NonRetryable paramter with an array of Non-retryable exception types
+    /// <para>Passing NonRetriable paramter with an array of Non-retriable exception types
     /// will cause the job to skip any additional retries.</para>
     /// 
     /// <h3>Overriding Defaults</h3>
@@ -94,7 +94,7 @@ namespace Hangfire
         private int _attempts;
         private AttemptsExceededAction _onAttemptsExceeded;
         private bool _logEvents;
-        private Type[] _nonRetryableTypes;
+        private Type[] _nonRetriableTypes;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AutomaticRetryAttribute"/>
@@ -109,22 +109,22 @@ namespace Hangfire
         }
 
         /// <summary>
-        /// Gets or sets a list of Non-retryable exception types.
+        /// Gets or sets a list of Non-retriable exception types.
         /// </summary>
         /// <value>Any non-negative number.</value>
         /// <exception cref="ArgumentOutOfRangeException">The value in a set operation is less than zero.</exception>
 
-        public Type[] NonRetryable
+        public Type[] NonRetriable
         {
-            get { return _nonRetryableTypes; }
+            get { return _nonRetriableTypes; }
             set
             {
                 if (value != null && value.Any(x => !typeof(Exception).GetTypeInfo().IsAssignableFrom(x.GetTypeInfo())))
                 {
-                    throw new ArgumentException(nameof(value), "Non-Retryable types must all extend from Exception.");
+                    throw new ArgumentException(nameof(value), "Non-Retriable types must all extend from Exception.");
                 }
 
-                _nonRetryableTypes = value;
+                _nonRetriableTypes = value;
             }
         }
 
@@ -181,7 +181,7 @@ namespace Hangfire
 
             var retryAttempt = context.GetJobParameter<int>("RetryCount") + 1;
 
-            var skipRetry = NonRetryable != null && NonRetryable.Any(t => failedState.Exception.GetType() == t);
+            var skipRetry = NonRetriable != null && NonRetriable.Any(t => failedState.Exception.GetType() == t);
             if (!skipRetry && retryAttempt <= Attempts)
             {
                 ScheduleAgainLater(context, retryAttempt, failedState);
