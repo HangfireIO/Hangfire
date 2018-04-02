@@ -111,8 +111,8 @@ namespace Hangfire
         /// <summary>
         /// Gets or sets a list of Non-retriable exception types.
         /// </summary>
-        /// <value>Any non-negative number.</value>
-        /// <exception cref="ArgumentOutOfRangeException">The value in a set operation is less than zero.</exception>
+        /// <value>List of non-retriable exception types.</value>
+        /// <exception cref="ArgumentException">The types were not all exception types.</exception>
 
         public Type[] NonRetriable
         {
