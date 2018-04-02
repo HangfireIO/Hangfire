@@ -20,6 +20,7 @@ using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
+using System.Threading;
 
 namespace Hangfire.Server
 {
@@ -74,6 +75,7 @@ namespace Hangfire.Server
 
         private readonly IBackgroundJobStateChanger _stateChanger;
         private readonly TimeSpan _pollingDelay;
+        private readonly AutoResetEvent _schedulerEvent;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DelayedJobScheduler"/>
@@ -91,7 +93,7 @@ namespace Hangfire.Server
         /// </summary>
         /// <param name="pollingDelay">Delay between scheduler runs.</param>
         public DelayedJobScheduler(TimeSpan pollingDelay)
-            : this(pollingDelay, new BackgroundJobStateChanger())
+            : this(pollingDelay, null, new BackgroundJobStateChanger())
         {
         }
 
@@ -101,14 +103,16 @@ namespace Hangfire.Server
         /// </summary>
         /// <param name="pollingDelay">Delay between scheduler runs.</param>
         /// <param name="stateChanger">State changer to use for background jobs.</param>
+        /// <param name="schedulerEvent">Event to awake scheuler</param>
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="stateChanger"/> is null.</exception>
-        public DelayedJobScheduler(TimeSpan pollingDelay, [NotNull] IBackgroundJobStateChanger stateChanger)
+        public DelayedJobScheduler(TimeSpan pollingDelay, AutoResetEvent schedulerEvent, [NotNull] IBackgroundJobStateChanger stateChanger)
         {
             if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
 
             _stateChanger = stateChanger;
             _pollingDelay = pollingDelay;
+            _schedulerEvent = schedulerEvent;
         }
 
         /// <inheritdoc />
@@ -132,8 +136,10 @@ namespace Hangfire.Server
             {
                 Logger.Info($"{jobsEnqueued} scheduled job(s) enqueued.");
             }
-
-            context.Wait(_pollingDelay);
+            if(_schedulerEvent == null)
+                context.Wait(_pollingDelay);
+            else
+                WaitHandle.WaitAny(new[] { context.CancellationToken.WaitHandle, _schedulerEvent }, _pollingDelay);
         }
 
         /// <inheritdoc />

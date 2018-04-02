@@ -1,5 +1,5 @@
 // This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright ï¿½ 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -19,6 +19,7 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.States;
+using System.Threading;
 
 namespace Hangfire
 {
@@ -74,6 +75,7 @@ namespace Hangfire
         public TimeSpan HeartbeatInterval { get; set; }
         public TimeSpan ServerTimeout { get; set; }
         public TimeSpan ServerCheckInterval { get; set; }
+        public AutoResetEvent SchedulerNotificationEvent;
 
         [Obsolete("Please use `ServerTimeout` or `ServerCheckInterval` options instead. Will be removed in 2.0.0.")]
         public ServerWatchdogOptions ServerWatchdogOptions { get; set; }
