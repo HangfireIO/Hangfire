@@ -270,11 +270,14 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
 
             string sql =
-$@";merge [{_storage.SchemaName}].Hash with (holdlock) as Target
+$@"
+exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive', @LockOwner=N'Session', @LockTimeout=-1;
+;merge [{_storage.SchemaName}].Hash with (holdlock) as Target
 using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
 on Target.[Key] = Source.[Key] and Target.Field = Source.Field
 when matched then update set Value = Source.Value
-when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
+when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);
+exec sp_releaseapplock @Resource=@resource, @LockOwner=N'Session';";
 
             _storage.UseTransaction(_dedicatedConnection, (connection, transaction) =>
             {
@@ -285,7 +288,8 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
                     commandBatch.Append(sql,
                         new SqlParameter("@key", key),
                         new SqlParameter("@field", keyValuePair.Key),
-                        new SqlParameter("@value", (object)keyValuePair.Value ?? DBNull.Value));
+                        new SqlParameter("@value", (object)keyValuePair.Value ?? DBNull.Value),
+                        new SqlParameter("@resource", $"{_storage.SchemaName}:Hash:Lock"));
                 }
 
                 commandBatch.Connection = connection;
