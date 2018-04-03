@@ -13,6 +13,9 @@
     <copyright>Copyright © 2013-2017 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>http://hangfire.io/blog/
+      
+1.6.18
+• Fixed – Rare deadlocks in SQL Server caused by the SetRangeInHash command.
     
 1.6.17
 • Added – `SqlServerStorageOptions.CommandBatchMaxTimeout` parameter to enable batching in transactions.
