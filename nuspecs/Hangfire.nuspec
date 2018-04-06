@@ -18,6 +18,18 @@
     <copyright>Copyright © 2013-2017 Sergey Odinokov</copyright>
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
+      
+1.6.19
+
+Hangfire.Core
+
+• Fixed – NullReferenceException in JobMethodCallRenderer regression appeared in 1.6.18.
+
+Hangfire.SqlServer
+
+• Fixed – "String or binary data would be truncated" exception when state reason is too long.
+• Fixed – Command handling in batch mode now stops after the first error due to "XACT_ABORT ON".
+• Fixed – Make SqlCommandBatch disposable to dispose all the commands.
 
 1.6.18
 
