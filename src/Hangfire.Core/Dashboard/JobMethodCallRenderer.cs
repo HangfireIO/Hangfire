@@ -101,7 +101,7 @@ namespace Hangfire.Dashboard
                     var argument = job.Arguments[i];
 #pragma warning restore 618
 
-                    if (argument.Length > MaxArgumentToRenderSize)
+                    if (argument != null && argument.Length > MaxArgumentToRenderSize)
                     {
                         renderedArguments.Add(Encode("<VALUE IS TOO BIG>"));
                         continue;
