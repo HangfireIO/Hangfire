@@ -90,6 +90,16 @@ namespace Hangfire.Server
                         context.CancellationToken,
                         timeoutCts.Token))
                     {
+                        try
+                        {
+
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            throw;
+                        }
+
                         var processingState = new ProcessingState(context.ServerId, _workerId);
 
                         var appliedState = _stateChanger.ChangeState(new StateChangeContext(

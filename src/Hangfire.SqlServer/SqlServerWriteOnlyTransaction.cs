@@ -118,7 +118,7 @@ update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @
             QueueCommand(addAndSetStateSql,
                 new SqlParameter("@jobId", long.Parse(jobId)),
                 new SqlParameter("@name", state.Name),
-                new SqlParameter("@reason", (object)state.Reason ?? DBNull.Value),
+                new SqlParameter("@reason", (object)state.Reason?.Substring(0, Math.Min(99, state.Reason.Length)) ?? DBNull.Value),
                 new SqlParameter("@createdAt", DateTime.UtcNow),
                 new SqlParameter("@data", (object)JobHelper.ToJson(state.SerializeData()) ?? DBNull.Value),
                 new SqlParameter("@id", long.Parse(jobId)));
@@ -133,7 +133,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
             QueueCommand(addStateSql,
                 new SqlParameter("@jobId", long.Parse(jobId)),
                 new SqlParameter("@name", state.Name),
-                new SqlParameter("@reason", (object)state.Reason ?? DBNull.Value),
+                new SqlParameter("@reason", (object)state.Reason?.Substring(0, Math.Min(99, state.Reason.Length)) ?? DBNull.Value),
                 new SqlParameter("@createdAt", DateTime.UtcNow),
                 new SqlParameter("@data", (object)JobHelper.ToJson(state.SerializeData()) ?? DBNull.Value));
         }
