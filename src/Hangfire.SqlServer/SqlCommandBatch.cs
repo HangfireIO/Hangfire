@@ -21,7 +21,7 @@ using System.Data.SqlClient;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlCommandBatch
+    internal class SqlCommandBatch : IDisposable
     {
         private readonly List<DbCommand> _commandList = new List<DbCommand>();
         private readonly SqlCommandSet _commandSet;
@@ -48,6 +48,16 @@ namespace Hangfire.SqlServer
 
         public int? CommandTimeout { get; set; }
         public int? CommandBatchMaxTimeout { get; set; }
+
+        public void Dispose()
+        {
+            foreach (var command in _commandList)
+            {
+                command.Dispose();
+            }
+
+            _commandSet?.Dispose();
+        }
 
         public void Append(string commandText, params SqlParameter[] parameters)
         {

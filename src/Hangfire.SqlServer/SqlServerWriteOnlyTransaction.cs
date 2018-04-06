@@ -55,32 +55,33 @@ namespace Hangfire.SqlServer
         {
             _storage.UseTransaction(_dedicatedConnectionFunc(), (connection, transaction) =>
             {
-                var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue);
-
-                commandBatch.Append("set xact_abort on;set nocount on;");
-
-                foreach (var lockedResource in _lockedResources)
+                using (var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
                 {
-                    commandBatch.Append(
-                        "exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'",
-                        new SqlParameter("@resource", lockedResource));
-                }
+                    commandBatch.Append("set xact_abort on;set nocount on;");
 
-                foreach (var command in _commandQueue)
-                {
-                    commandBatch.Append(command.Item1, command.Item2);
-                }
+                    foreach (var lockedResource in _lockedResources)
+                    {
+                        commandBatch.Append(
+                            "exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'",
+                            new SqlParameter("@resource", lockedResource));
+                    }
 
-                commandBatch.Connection = connection;
-                commandBatch.Transaction = transaction;
-                commandBatch.CommandTimeout = _storage.CommandTimeout;
-                commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
+                    foreach (var command in _commandQueue)
+                    {
+                        commandBatch.Append(command.Item1, command.Item2);
+                    }
 
-                commandBatch.ExecuteNonQuery();
+                    commandBatch.Connection = connection;
+                    commandBatch.Transaction = transaction;
+                    commandBatch.CommandTimeout = _storage.CommandTimeout;
+                    commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
 
-                foreach (var queueCommand in _queueCommandQueue)
-                {
-                    queueCommand(connection, transaction);
+                    commandBatch.ExecuteNonQuery();
+
+                    foreach (var queueCommand in _queueCommandQueue)
+                    {
+                        queueCommand(connection, transaction);
+                    }
                 }
             });
 
