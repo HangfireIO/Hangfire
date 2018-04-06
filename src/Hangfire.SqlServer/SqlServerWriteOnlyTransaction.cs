@@ -57,10 +57,12 @@ namespace Hangfire.SqlServer
             {
                 var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue);
 
+                commandBatch.Append("set xact_abort on;set nocount on;");
+
                 foreach (var lockedResource in _lockedResources)
                 {
                     commandBatch.Append(
-                        "set nocount on;exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'",
+                        "exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'",
                         new SqlParameter("@resource", lockedResource));
                 }
 
