@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27428.2015
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleSample", "samples\ConsoleSample\ConsoleSample.csproj", "{C02BB718-2AE4-434C-8668-C894FF663FCE}"
 EndProject
@@ -33,6 +33,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspecs", "nuspecs", "{5E68
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{37E2BF00-C473-48A5-B2A7-5A3DE0910FCF}"
 	ProjectSection(SolutionItems) = preProject
+		..\nuget\moq.sequences.nonunit\1.0.1\lib\Moq.Sequences.dll = ..\nuget\moq.sequences.nonunit\1.0.1\lib\Moq.Sequences.dll
 		content\readme.txt = content\readme.txt
 	EndProjectSection
 EndProject
@@ -126,5 +127,8 @@ Global
 		{E13C3543-39A3-475C-BB43-2E311E634843} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
 		{6DFFA275-C483-4501-823A-741AC9EC0846} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
 		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {890C664C-8CC2-46EC-9569-D2FA38D9C7E7}
 	EndGlobalSection
 EndGlobal

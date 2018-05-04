@@ -40,6 +40,9 @@
     <AssemblyOriginatorKeyFile>3partyKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Moq.Sequences">
+      <HintPath>..\..\content\Moq.Sequences.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
