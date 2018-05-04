@@ -34,6 +34,13 @@
     <DocumentationFile>bin\Release\Hangfire.AspNetCore.xml</DocumentationFile>
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
@@ -57,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Hangfire.AspNetCore.project.json" />
+    <None Include="3partyKey.snk" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Hangfire.Core\Hangfire.Core.csproj">

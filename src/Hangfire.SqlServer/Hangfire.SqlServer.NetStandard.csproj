@@ -41,8 +41,15 @@
     <OutputPath>bin\Release\netstandard1.3\</OutputPath>
     <DocumentationFile>bin\Release\netstandard1.3\Hangfire.SqlServer.xml</DocumentationFile>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>3partyKey.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
+    <None Include="3partyKey.snk" />
     <None Include="packages.config" />
     <None Include="project.json" />
   </ItemGroup>

@@ -1,6 +1,6 @@
 ﻿{
   "dependencies": {
-    "Dapper": "1.50.1"
+    "Dapper.StrongName": "1.50.2"
   },
   "runtimes": {
     "win": {}
