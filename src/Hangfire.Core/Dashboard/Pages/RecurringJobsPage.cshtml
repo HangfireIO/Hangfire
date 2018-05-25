@@ -80,6 +80,7 @@
                                 <th class="min-width">@Strings.Common_Id</th>
                                 <th class="min-width">@Strings.RecurringJobsPage_Table_Cron</th>
                                 <th class="min-width">@Strings.RecurringJobsPage_Table_TimeZone</th>
+                                <th class="min-width">@Strings.RecurringJobsPage_Table_Queue</th>
                                 <th>@Strings.Common_Job</th>
                                 <th class="align-right min-width">@Strings.RecurringJobsPage_Table_NextExecution</th>
                                 <th class="align-right min-width">@Strings.RecurringJobsPage_Table_LastExecution</th>
@@ -126,7 +127,10 @@
                                         else
                                         {
                                             @: UTC
-                                    }
+                                        }
+                                    </td>
+                                    <td class="min-width">
+                                        @Html.QueueLabel(@job.Queue)
                                     </td>
                                     <td class="word-break">
                                         @if (job.Job != null)
