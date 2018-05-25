@@ -1,14 +1,20 @@
 License
 ========
 
-Copyright © 2013-2016 Sergey Odinokov.
+Copyright © 2013-2018 Sergey Odinokov.
 
-Hangfire is an Open Source project licensed under the terms of
-the LGPLv3 license.  Please see http://www.gnu.org/licenses/lgpl-3.0.html
-for license text or `COPYING.LESSER` file distributed with the source code.
+Hangfire software is an open-source software that is multi-licensed under the terms of the licenses listed in this file. Recipients may choose the terms under which they are want to use or distribute the software, when all the preconditions of a chosen license are satisfied.
 
-Some subscriptions allow to use Hangfire under the proprietary license,
-allowing private forks and modifications of Hangfire. Please see
-http://hangfire.io/pricing/ for more details. You can find the End
-User License Agreement text in the `EULA` file distributed with the 
-source code.
+LGPL v3 License
+---------------
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+Please see COPYING.LESSER and COPYING files for details.
+
+Commercial License
+------------------
+
+Subject to the purchase of a corresponding subscription (please see https://www.hangfire.io/pricing/), you may distribute Hangfire under the terms of commercial license, that allows you to distribute private forks and modifications. Please see LICENSE_STANDARD and LICENSE_ROYALTYFREE files for details.

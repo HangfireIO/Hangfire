@@ -174,5 +174,12 @@
     <file src="netstandard1.3\**\Hangfire.Core.resources.dll" target="lib\netstandard1.3" />
     
     <file src="..\src\Hangfire.Core\**\*.cs;..\src\Hangfire.Core\**\*.cshtml" target="src" exclude="**\obj*\**\*.cs" />
+
+    <file src="LICENSE" />
+    <file src="NOTICES" />
+    <file src="COPYING" />
+    <file src="COPYING.LESSER" />
+    <file src="LICENSE_STANDARD" />
+    <file src="LICENSE_ROYALTYFREE" />
   </files>
 </package>

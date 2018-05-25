@@ -1,5 +1,5 @@
 Framework 4.5.1
-Include "packages\Hangfire.Build.0.2.5\tools\psake-common.ps1"
+Include "packages\Hangfire.Build.0.2.6\tools\psake-common.ps1"
 
 Properties {
     $solution = "Hangfire.sln"
@@ -43,6 +43,13 @@ Task Collect -Depends Merge -Description "Copy all artifacts to the build folder
 
     Collect-Localizations "Hangfire.Core" "net45"
     Collect-Localizations "Hangfire.Core" "netstandard1.3"
+
+    Collect-File "LICENSE"
+    Collect-File "NOTICES"
+    Collect-File "COPYING.LESSER"
+    Collect-File "COPYING"
+    Collect-File "LICENSE_STANDARD"
+    Collect-File "LICENSE_ROYALTYFREE"
 }
 
 Task Pack -Depends Collect -Description "Create NuGet packages and archive files." {
