@@ -327,7 +327,7 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
-        public void ChangeState_MovesJobToFailedState_AfterSomeRetryAttempts_WhenThereIsAnException()
+        public void ChangeState_RethrowsFilterException_AndDoesNotCommitAnything_WhenNoCancellationToken()
         {
             // Arrange
             _stateMachine
@@ -336,21 +336,37 @@ namespace Hangfire.Core.Tests.States
 
             var stateChanger = CreateStateChanger();
 
-            // Act
-            var result = stateChanger.ChangeState(_context.Object);
+            // Act & Assert
+            Assert.Throws<Exception>(() => stateChanger.ChangeState(_context.Object));
 
-            // Assert
-            Assert.IsType<FailedState>(result);
-
-            _transaction.Verify(x => x.Commit(), Times.Once);
-
-            _stateMachine.Verify(
-                x => x.ApplyState(It.Is<ApplyStateContext>(context => context.NewState == result)), 
-                Times.Once);
+            _transaction.Verify(x => x.Commit(), Times.Never);
 
             _stateMachine.Verify(
                 x => x.ApplyState(It.Is<ApplyStateContext>(context => context.NewState == _state.Object)),
-                Times.AtLeast(2));
+                Times.Once);
+        }
+
+        [Fact]
+        public void ChangeState_SimplyRethrowsAnException_WithoutRetriesAndFailedState()
+        {
+            // Arrange
+            _stateMachine
+                .Setup(x => x.ApplyState(It.Is<ApplyStateContext>(context => context.NewState == _state.Object)))
+                .Throws<Exception>();
+
+            var stateChanger = CreateStateChanger();
+
+            // Act & Assert
+            Assert.Throws<Exception>(() => stateChanger.ChangeState(_context.Object));
+
+            _connection.Verify(x => x.GetJobData(JobId), Times.Once);
+            _connection.Verify(x => x.AcquireDistributedLock($"job:{JobId}:state-lock", It.IsAny<TimeSpan>()), Times.Once);
+
+            _transaction.Verify(x => x.Commit(), Times.Never);
+
+            _stateMachine.Verify(
+                x => x.ApplyState(It.Is<ApplyStateContext>(context => context.NewState == _state.Object)),
+                Times.Once);
         }
 
         private BackgroundJobStateChanger CreateStateChanger()

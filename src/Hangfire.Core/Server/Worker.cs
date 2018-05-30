@@ -41,6 +41,8 @@ namespace Hangfire.Server
     public class Worker : IBackgroundProcess
     {
         private static readonly TimeSpan JobInitializationWaitTimeout = TimeSpan.FromMinutes(1);
+        private static readonly int MaxStateChangeAttempts = 10;
+
         private static readonly ILog Logger = LogProvider.For<Worker>();
 
         private readonly string _workerId;
@@ -90,25 +92,15 @@ namespace Hangfire.Server
                         context.CancellationToken,
                         timeoutCts.Token))
                     {
-                        try
-                        {
-
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine(e);
-                            throw;
-                        }
-
                         var processingState = new ProcessingState(context.ServerId, _workerId);
 
-                        var appliedState = _stateChanger.ChangeState(new StateChangeContext(
-                            context.Storage,
-                            connection,
-                            fetchedJob.JobId,
-                            processingState,
+                        var appliedState = TryChangeState(
+                            context, 
+                            connection, 
+                            fetchedJob, 
+                            processingState, 
                             new[] { EnqueuedState.StateName, ProcessingState.StateName },
-                            linkedCts.Token));
+                            linkedCts.Token);
 
                         // Cancel job processing if the job could not be loaded, was not in the initial state expected
                         // or if a job filter changed the state to something other than processing state
@@ -134,14 +126,7 @@ namespace Hangfire.Server
                     if (state != null)
                     {
                         // Ignore return value, because we should not do anything when current state is not Processing.
-                        _stateChanger.ChangeState(new StateChangeContext(
-                            context.Storage,
-                            connection,
-                            fetchedJob.JobId, 
-                            state, 
-                            ProcessingState.StateName));
-
-                        // TODO: Log error, when applied state is FailedState
+                        TryChangeState(context, connection, fetchedJob, state, new[] { ProcessingState.StateName }, CancellationToken.None);
                     }
 
                     // Checkpoint #4. The job was performed, and it is in the one
@@ -164,13 +149,63 @@ namespace Hangfire.Server
                     }
                     else
                     {
-                        Logger.DebugException("An exception occurred while processing a job. It will be re-queued.", ex);
+                        Logger.ErrorException("An exception occurred while processing a job. It will be re-queued.", ex);
                     }
 
                     Requeue(fetchedJob);
                     throw;
                 }
             }
+        }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"{GetType().Name} #{_workerId.Substring(0, 8)}";
+        }
+
+        private IState TryChangeState(
+            BackgroundProcessContext context, 
+            IStorageConnection connection, 
+            IFetchedJob fetchedJob,
+            IState state,
+            string[] expectedStates,
+            CancellationToken cancellationToken)
+        {
+            Exception exception = null;
+
+            for (var retryAttempt = 0; retryAttempt < MaxStateChangeAttempts; retryAttempt++)
+            {
+                try
+                {
+                    return _stateChanger.ChangeState(new StateChangeContext(
+                        context.Storage,
+                        connection,
+                        fetchedJob.JobId,
+                        state,
+                        expectedStates,
+                        cancellationToken));
+                }
+                catch (Exception ex)
+                {
+                    Logger.DebugException(
+                        String.Format("State change attempt {0} of {1} failed due to an error, see inner exception for details", retryAttempt+1, MaxStateChangeAttempts), 
+                        ex);
+
+                    exception = ex;
+                }
+
+                context.CancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(retryAttempt));
+                context.CancellationToken.ThrowIfCancellationRequested();
+            }
+
+            return _stateChanger.ChangeState(new StateChangeContext(
+                context.Storage,
+                connection,
+                fetchedJob.JobId,
+                new FailedState(exception) { Reason = $"Failed to change state to a '{state.Name}' one due to an exception after {MaxStateChangeAttempts} retry attempts" },
+                expectedStates,
+                cancellationToken));
         }
 
         private static void Requeue(IFetchedJob fetchedJob)
@@ -183,12 +218,6 @@ namespace Hangfire.Server
             {
                 Logger.WarnException($"Failed to immediately re-queue the background job '{fetchedJob.JobId}'. Next invocation may be delayed, if invisibility timeout is used", ex);
             }
-        }
-
-        /// <inheritdoc />
-        public override string ToString()
-        {
-            return $"{GetType().Name} #{_workerId.Substring(0, 8)}";
         }
 
         private IState PerformJob(BackgroundProcessContext context, IStorageConnection connection, string jobId)
