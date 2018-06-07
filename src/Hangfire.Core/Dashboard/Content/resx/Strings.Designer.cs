@@ -1009,6 +1009,15 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Queue.
+        /// </summary>
+        public static string RecurringJobsPage_Table_Queue {
+            get {
+                return ResourceManager.GetString("RecurringJobsPage_Table_Queue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Last execution.
         /// </summary>
         public static string RecurringJobsPage_Table_LastExecution {
