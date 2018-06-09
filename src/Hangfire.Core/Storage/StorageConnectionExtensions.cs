@@ -128,7 +128,6 @@ namespace Hangfire.Storage
 
                 result.Add(dto);
             }
-
             return result;
         }
     }
