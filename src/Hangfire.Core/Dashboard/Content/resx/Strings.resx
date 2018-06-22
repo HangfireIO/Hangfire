@@ -172,7 +172,7 @@
     <value>Job's state has been changed while fetching data.</value>
   </data>
   <data name="Common_LessDetails" xml:space="preserve">
-    <value>Less details...</value>
+    <value>Fewer details...</value>
   </data>
   <data name="Common_MoreDetails" xml:space="preserve">
     <value>More details...</value>
