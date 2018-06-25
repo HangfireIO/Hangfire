@@ -366,7 +366,7 @@
                     $expandable = $expander.closest('tr').next().find('.expandable');
 
                 if (!$expandable.is(':visible')) {
-                    $expander.text('Less details...');
+                    $expander.text('Fewer details...');
                 }
 
 				$expandable.slideToggle(
