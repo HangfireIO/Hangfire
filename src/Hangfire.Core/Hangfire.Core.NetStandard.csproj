@@ -75,6 +75,7 @@
     <Compile Include="Client\IClientExceptionFilter.cs" />
     <Compile Include="Client\IClientFilter.cs" />
     <Compile Include="Common\CachedExpressionCompiler.cs" />
+    <Compile Include="Common\CancellationTokenExtentions.cs" />
     <Compile Include="Common\ExpressionUtil\BinaryExpressionFingerprint.cs" />
     <Compile Include="Common\ExpressionUtil\CachedExpressionCompiler.cs" />
     <Compile Include="Common\ExpressionUtil\ConditionalExpressionFingerprint.cs" />

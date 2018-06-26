@@ -82,6 +82,7 @@
     <Compile Include="Client\CreatedContextFacts.cs" />
     <Compile Include="Client\CreatingContextFacts.cs" />
     <Compile Include="Client\BackgroundJobFactoryFacts.cs" />
+    <Compile Include="Common\CancellationTokenExtentionsFacts.cs" />
     <Compile Include="Common\JobFilterCollectionFacts.cs" />
     <Compile Include="Common\JobArgumentFacts.cs" />
     <Compile Include="Common\JobFacts.cs" />
