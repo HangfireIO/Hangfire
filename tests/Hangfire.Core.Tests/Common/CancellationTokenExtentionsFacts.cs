@@ -27,7 +27,7 @@ namespace Hangfire.Core.Tests.Common
             stopwatch.Stop();
 
             Assert.False(result);
-            Assert.True(stopwatch.Elapsed >= TimeSpan.FromMilliseconds(999), $"Elapsed: {stopwatch.Elapsed}");
+            Assert.True(stopwatch.Elapsed >= TimeSpan.FromMilliseconds(900), $"Elapsed: {stopwatch.Elapsed}");
         }
 
         [Fact]
@@ -39,7 +39,7 @@ namespace Hangfire.Core.Tests.Common
             stopwatch.Stop();
 
             Assert.True(result);
-            Assert.True(stopwatch.Elapsed < TimeSpan.FromMilliseconds(999), $"Elapsed: {stopwatch.Elapsed}");
+            Assert.True(stopwatch.Elapsed < TimeSpan.FromMilliseconds(900), $"Elapsed: {stopwatch.Elapsed}");
         }
     }
 }
