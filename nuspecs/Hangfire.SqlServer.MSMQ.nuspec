@@ -43,7 +43,7 @@
     <file src="net45\Hangfire.SqlServer.Msmq.xml" target="lib\net45" />
     <file src="net45\Hangfire.SqlServer.Msmq.pdb" target="lib\net45" />
     <file src="..\src\Hangfire.SqlServer.Msmq\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
-    <file src="LICENSE" />
+    <file src="LICENSE.md" />
     <file src="NOTICES" />
     <file src="COPYING" />
     <file src="COPYING.LESSER" />

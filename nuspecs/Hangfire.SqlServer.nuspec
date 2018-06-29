@@ -122,7 +122,7 @@
     <file src="Tools\DefaultInstall.sql" target="tools\install.sql" />
     <file src="..\src\Hangfire.SqlServer\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
 
-    <file src="LICENSE" />
+    <file src="LICENSE.md" />
     <file src="NOTICES" />
     <file src="COPYING" />
     <file src="COPYING.LESSER" />

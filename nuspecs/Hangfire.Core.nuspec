@@ -175,7 +175,7 @@
     
     <file src="..\src\Hangfire.Core\**\*.cs;..\src\Hangfire.Core\**\*.cshtml" target="src" exclude="**\obj*\**\*.cs" />
 
-    <file src="LICENSE" />
+    <file src="LICENSE.md" />
     <file src="NOTICES" />
     <file src="COPYING" />
     <file src="COPYING.LESSER" />
