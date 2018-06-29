@@ -44,7 +44,7 @@ Task Collect -Depends Merge -Description "Copy all artifacts to the build folder
     Collect-Localizations "Hangfire.Core" "net45"
     Collect-Localizations "Hangfire.Core" "netstandard1.3"
 
-    Collect-File "LICENSE"
+    Collect-File "LICENSE.md"
     Collect-File "NOTICES"
     Collect-File "COPYING.LESSER"
     Collect-File "COPYING"
