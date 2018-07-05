@@ -17,6 +17,7 @@
 using System;
 using System.Threading;
 using Dapper;
+using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Server;
 
@@ -63,7 +64,7 @@ namespace Hangfire.SqlServer
 
                 if (removedCount >= NumberOfRecordsInSinglePass)
                 {
-                    cancellationToken.WaitHandle.WaitOne(DelayBetweenPasses);
+                    cancellationToken.Wait(DelayBetweenPasses);
                     cancellationToken.ThrowIfCancellationRequested();
                 }
                 // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
@@ -71,7 +72,7 @@ namespace Hangfire.SqlServer
 
             Logger.Trace("Records from the 'Counter' table aggregated.");
 
-            cancellationToken.WaitHandle.WaitOne(_interval);
+            cancellationToken.Wait(_interval);
         }
 
         public override string ToString()

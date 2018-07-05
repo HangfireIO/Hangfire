@@ -18,6 +18,7 @@ using System;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Threading;
+using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.Storage;
@@ -85,7 +86,7 @@ namespace Hangfire.SqlServer
                 Logger.Trace($"Outdated records removed from the '{table}' table.");
             }
 
-            cancellationToken.WaitHandle.WaitOne(_checkInterval);
+            cancellationToken.Wait(_checkInterval);
         }
 
         public override string ToString()

@@ -62,7 +62,7 @@
     
     <file src="..\src\Hangfire.AspNetCore\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
 
-    <file src="LICENSE" />
+    <file src="LICENSE.md" />
     <file src="NOTICES" />
     <file src="COPYING" />
     <file src="COPYING.LESSER" />
