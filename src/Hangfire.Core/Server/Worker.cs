@@ -43,7 +43,7 @@ namespace Hangfire.Server
         private static readonly TimeSpan JobInitializationWaitTimeout = TimeSpan.FromMinutes(1);
         private static readonly int MaxStateChangeAttempts = 10;
 
-        private static readonly ILog Logger = LogProvider.For<Worker>();
+        private readonly ILog _logger = LogProvider.For<Worker>();
 
         private readonly string _workerId;
         private readonly string[] _queues;
@@ -143,13 +143,13 @@ namespace Hangfire.Server
                 {
                     if (context.IsShutdownRequested)
                     {
-                        Logger.Info(String.Format(
+                        _logger.Info(String.Format(
                             "Shutdown request requested while processing background job '{0}'. It will be re-queued.",
                             fetchedJob.JobId));
                     }
                     else
                     {
-                        Logger.ErrorException("An exception occurred while processing a job. It will be re-queued.", ex);
+                        _logger.ErrorException("An exception occurred while processing a job. It will be re-queued.", ex);
                     }
 
                     Requeue(fetchedJob);
@@ -188,7 +188,7 @@ namespace Hangfire.Server
                 }
                 catch (Exception ex)
                 {
-                    Logger.DebugException(
+                    _logger.DebugException(
                         String.Format("State change attempt {0} of {1} failed due to an error, see inner exception for details", retryAttempt+1, MaxStateChangeAttempts), 
                         ex);
 
@@ -216,7 +216,7 @@ namespace Hangfire.Server
             }
             catch (Exception ex)
             {
-                Logger.WarnException($"Failed to immediately re-queue the background job '{fetchedJob.JobId}'. Next invocation may be delayed, if invisibility timeout is used", ex);
+                _logger.WarnException($"Failed to immediately re-queue the background job '{fetchedJob.JobId}'. Next invocation may be delayed, if invisibility timeout is used", ex);
             }
         }
 

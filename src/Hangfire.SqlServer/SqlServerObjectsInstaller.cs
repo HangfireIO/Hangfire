@@ -29,8 +29,6 @@ namespace Hangfire.SqlServer
         public static readonly int RequiredSchemaVersion = 5;
         private const int RetryAttempts = 3;
 
-        private static readonly ILog Log = LogProvider.GetLogger(typeof(SqlServerStorage));
-
         public static void Install(DbConnection connection)
         {
             Install(connection, null);
@@ -40,7 +38,9 @@ namespace Hangfire.SqlServer
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
 
-            Log.Info("Start installing Hangfire SQL objects...");
+            var log = LogProvider.GetLogger(typeof(SqlServerObjectsInstaller));
+
+            log.Info("Start installing Hangfire SQL objects...");
 
             if (!IsSqlEditionSupported(connection))
             {
@@ -67,7 +67,7 @@ namespace Hangfire.SqlServer
                 {
                     if (ex.ErrorCode == 1205)
                     {
-                        Log.WarnException("Deadlock occurred during automatic migration execution. Retrying...", ex);
+                        log.WarnException("Deadlock occurred during automatic migration execution. Retrying...", ex);
                     }
                     else
                     {
@@ -79,7 +79,7 @@ namespace Hangfire.SqlServer
             connection.Execute(script, commandTimeout: 0);
 #endif
 
-            Log.Info("Hangfire SQL objects installed.");
+            log.Info("Hangfire SQL objects installed.");
         }
 
         private static bool IsSqlEditionSupported(DbConnection connection)
