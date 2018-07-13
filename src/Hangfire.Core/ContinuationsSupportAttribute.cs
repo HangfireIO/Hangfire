@@ -149,7 +149,7 @@ namespace Hangfire
             {
                 if (String.IsNullOrWhiteSpace(continuation.JobId)) continue;
 
-                var currentState = GetContinuaionState(context, continuation.JobId, ContinuationStateFetchTimeout);
+                var currentState = GetContinuationState(context, continuation.JobId, ContinuationStateFetchTimeout);
                 if (currentState == null)
                 {
                     continue;
@@ -203,7 +203,7 @@ namespace Hangfire
             }
         }
 
-        private static StateData GetContinuaionState(ElectStateContext context, string continuationJobId, TimeSpan timeout)
+        private StateData GetContinuationState(ElectStateContext context, string continuationJobId, TimeSpan timeout)
         {
             StateData currentState = null;
 
