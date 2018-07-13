@@ -85,7 +85,7 @@ namespace Hangfire.SqlServer
         private static bool IsSqlEditionSupported(DbConnection connection)
         {
             var edition = connection.Query<int>("SELECT SERVERPROPERTY ( 'EngineEdition' )").Single();
-            return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.SqlAzure;
+            return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.SqlManagedInstance;
         }
 
         private static string GetStringResource(Assembly assembly, string resourceName)
@@ -114,6 +114,7 @@ namespace Hangfire.SqlServer
             public const int Enterprise = 3;
             public const int Express = 4;
             public const int SqlAzure = 5;
+            public const int SqlManagedInstance = 8;
 // ReSharper restore UnusedMember.Local
         }
     }
