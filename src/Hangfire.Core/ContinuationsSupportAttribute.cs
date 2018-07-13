@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
@@ -207,7 +208,7 @@ namespace Hangfire
         {
             StateData currentState = null;
 
-            var started = DateTime.UtcNow;
+            var started = Stopwatch.StartNew();
             var firstAttempt = true;
 
             while (true)
@@ -235,7 +236,7 @@ namespace Hangfire
                     break;
                 }
 
-                if (DateTime.UtcNow >= started.Add(timeout))
+                if (started.Elapsed >= timeout)
                 {
                     throw new TimeoutException(
                         $"Can not start continuation '{continuationJobId}' for background job '{context.BackgroundJob.Id}': timeout expired while trying to fetch continuation state.");
