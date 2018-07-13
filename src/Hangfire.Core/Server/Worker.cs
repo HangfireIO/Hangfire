@@ -208,7 +208,7 @@ namespace Hangfire.Server
                 cancellationToken));
         }
 
-        private static void Requeue(IFetchedJob fetchedJob)
+        private void Requeue(IFetchedJob fetchedJob)
         {
             try
             {
