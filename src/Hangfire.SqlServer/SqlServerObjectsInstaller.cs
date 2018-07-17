@@ -93,17 +93,5 @@ namespace Hangfire.SqlServer
                 }
             }
         }
-
-        private static class SqlEngineEdition
-        {
-// ReSharper disable UnusedMember.Local
-            // See article http://technet.microsoft.com/en-us/library/ms174396.aspx for details on EngineEdition
-            public const int Personal = 1;
-            public const int Standard = 2;
-            public const int Enterprise = 3;
-            public const int Express = 4;
-            public const int SqlAzure = 5;
-// ReSharper restore UnusedMember.Local
-        }
     }
 }
