@@ -42,11 +42,6 @@ namespace Hangfire.SqlServer
 
             Log.Info("Start installing Hangfire SQL objects...");
 
-            if (!IsSqlEditionSupported(connection))
-            {
-                throw new PlatformNotSupportedException("The SQL Server edition of the target server is unsupported, e.g. SQL Azure.");
-            }
-
             var script = GetStringResource(
                 typeof(SqlServerObjectsInstaller).GetTypeInfo().Assembly, 
                 "Hangfire.SqlServer.Install.sql");
@@ -82,12 +77,6 @@ namespace Hangfire.SqlServer
             Log.Info("Hangfire SQL objects installed.");
         }
 
-        private static bool IsSqlEditionSupported(DbConnection connection)
-        {
-            var edition = connection.Query<int>("SELECT SERVERPROPERTY ( 'EngineEdition' )").Single();
-            return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.SqlManagedInstance;
-        }
-
         private static string GetStringResource(Assembly assembly, string resourceName)
         {
             using (var stream = assembly.GetManifestResourceStream(resourceName))
@@ -114,7 +103,6 @@ namespace Hangfire.SqlServer
             public const int Enterprise = 3;
             public const int Express = 4;
             public const int SqlAzure = 5;
-            public const int SqlManagedInstance = 8;
 // ReSharper restore UnusedMember.Local
         }
     }
