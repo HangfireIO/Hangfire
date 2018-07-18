@@ -28,6 +28,7 @@ namespace Hangfire
             Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
             StatsPollingInterval = 2000;
             DisplayStorageConnectionString = true;
+            DashboardTitle = "Hangfire Dashboard";
         }
 
         /// <summary>
@@ -47,11 +48,11 @@ namespace Hangfire
         /// </summary>
         public int StatsPollingInterval { get; set; }
 
-        public bool DisplayStorageConnectionString { get; set; }        
-        
+        public bool DisplayStorageConnectionString { get; set; }
+
         /// <summary>
         /// The Title displayed on the dashboard, optionally modify to describe this dashboards purpose.
         /// </summary>
-        public string DashboardTitle { get; set; } = "Hangfire Dashboard";
+        public string DashboardTitle { get; set; }
     }
 }
