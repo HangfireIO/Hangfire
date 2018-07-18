@@ -95,6 +95,7 @@
     <Compile Include="Common\MethodInfoExtensionsFacts.cs" />
     <Compile Include="Common\TypeExtensionsFacts.cs" />
     <Compile Include="CronFacts.cs" />
+    <Compile Include="Dashboard\DashboardOptionsFacts.cs" />
     <Compile Include="Dashboard\HtmlHelperFacts.cs" />
     <Compile Include="LatencyTimeoutAttributeFacts.cs" />
     <Compile Include="GlobalStateHandlersFacts.cs" />
