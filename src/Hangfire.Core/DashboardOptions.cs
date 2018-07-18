@@ -47,6 +47,11 @@ namespace Hangfire
         /// </summary>
         public int StatsPollingInterval { get; set; }
 
-        public bool DisplayStorageConnectionString { get; set; }
+        public bool DisplayStorageConnectionString { get; set; }        
+        
+        /// <summary>
+        /// The Title displayed on the dashboard, optionally modify to describe this dashboards purpose.
+        /// </summary>
+        public string DashboardTitle { get; set; } = "Hangfire Dashboard";
     }
 }
