@@ -66,8 +66,8 @@ namespace Hangfire.Server
     public class RecurringJobScheduler : IBackgroundProcess
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
-        private static readonly ILog Logger = LogProvider.For<RecurringJobScheduler>();
-        
+
+        private readonly ILog _logger = LogProvider.For<RecurringJobScheduler>();
         private readonly IBackgroundJobFactory _factory;
         private readonly Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> _instantFactory;
         private readonly IThrottler _throttler;
@@ -134,7 +134,7 @@ namespace Hangfire.Server
                     }
                     catch (JobLoadException ex)
                     {
-                        Logger.WarnException(
+                        _logger.WarnException(
                             $"Recurring job '{recurringJobId}' can not be scheduled due to job load exception.",
                             ex);
                     }
@@ -190,7 +190,7 @@ namespace Hangfire.Server
 
                     if (String.IsNullOrEmpty(jobId))
                     {
-                        Logger.Debug($"Recurring job '{recurringJobId}' execution at '{nowInstant.NowInstant}' has been canceled.");
+                        _logger.Debug($"Recurring job '{recurringJobId}' execution at '{nowInstant.NowInstant}' has been canceled.");
                     }
 
                     changedFields.Add("LastExecution", JobHelper.SerializeDateTime(nowInstant.NowInstant));
@@ -219,7 +219,7 @@ namespace Hangfire.Server
                 if (!ex.GetType().Name.Equals("TimeZoneNotFoundException")) throw;
 #endif
 
-                Logger.ErrorException(
+                _logger.ErrorException(
                     $"Recurring job '{recurringJobId}' was not triggered: {ex.Message}.",
                     ex);
             }
@@ -241,7 +241,7 @@ namespace Hangfire.Server
             {
                 // DistributedLockTimeoutException here doesn't mean that recurring jobs weren't scheduled.
                 // It just means another Hangfire server did this work.
-                Logger.Log(
+                _logger.Log(
                     LogLevel.Debug,
                     () => $@"An exception was thrown during acquiring distributed lock the {resource} resource within {LockTimeout.TotalSeconds} seconds. The recurring jobs have not been handled this time.",
                     e);

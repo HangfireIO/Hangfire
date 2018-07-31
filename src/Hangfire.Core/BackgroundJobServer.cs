@@ -29,7 +29,7 @@ namespace Hangfire
 {
     public class BackgroundJobServer : IDisposable
     {
-        private static readonly ILog Logger = LogProvider.For<BackgroundJobServer>();
+        private readonly ILog _logger = LogProvider.For<BackgroundJobServer>();
 
         private readonly BackgroundJobServerOptions _options;
         private readonly BackgroundProcessingServer _processingServer;
@@ -114,16 +114,16 @@ namespace Hangfire
                 { "WorkerCount", options.WorkerCount }
             };
 
-            Logger.Info("Starting Hangfire Server");
-            Logger.Info($"Using job storage: '{storage}'");
+            _logger.Info("Starting Hangfire Server");
+            _logger.Info($"Using job storage: '{storage}'");
 
-            storage.WriteOptionsToLog(Logger);
+            storage.WriteOptionsToLog(_logger);
 
-            Logger.Info("Using the following options for Hangfire Server:");
-            Logger.Info($"    Worker count: {options.WorkerCount}");
-            Logger.Info($"    Listening queues: {String.Join(", ", options.Queues.Select(x => "'" + x + "'"))}");
-            Logger.Info($"    Shutdown timeout: {options.ShutdownTimeout}");
-            Logger.Info($"    Schedule polling interval: {options.SchedulePollingInterval}");
+            _logger.Info("Using the following options for Hangfire Server:");
+            _logger.Info($"    Worker count: {options.WorkerCount}");
+            _logger.Info($"    Listening queues: {String.Join(", ", options.Queues.Select(x => "'" + x + "'"))}");
+            _logger.Info($"    Shutdown timeout: {options.ShutdownTimeout}");
+            _logger.Info($"    Schedule polling interval: {options.SchedulePollingInterval}");
             
             _processingServer = new BackgroundProcessingServer(
                 storage, 
@@ -134,14 +134,14 @@ namespace Hangfire
 
         public void SendStop()
         {
-            Logger.Debug("Hangfire Server is stopping...");
+            _logger.Debug("Hangfire Server is stopping...");
             _processingServer.SendStop();
         }
 
         public void Dispose()
         {
             _processingServer.Dispose();
-            Logger.Info("Hangfire Server stopped.");
+            _logger.Info("Hangfire Server stopped.");
         }
 
         private IEnumerable<IBackgroundProcess> GetRequiredProcesses(
