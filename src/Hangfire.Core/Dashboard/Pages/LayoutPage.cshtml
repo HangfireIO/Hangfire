@@ -13,6 +13,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-header" content="@Context.AntiforgeryHeader">
+    <meta name="csrf-token" content="@Context.AntiforgeryToken">
     @{ var version = GetType().GetTypeInfo().Assembly.GetName().Version; }
     <link rel="stylesheet" href="@Url.To($"/css{version.Major}{version.Minor}{version.Build}")">
 </head>

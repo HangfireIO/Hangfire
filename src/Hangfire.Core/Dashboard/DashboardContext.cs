@@ -39,6 +39,9 @@ namespace Hangfire.Dashboard
         public DashboardRequest Request { get; protected set; }
         public DashboardResponse Response { get; protected set; }
 
+        public string AntiforgeryHeader { get; set; }
+        public string AntiforgeryToken { get; set; }
+
         public virtual IBackgroundJobClient GetBackgroundJobClient()
         {
             return new BackgroundJobClient(Storage);

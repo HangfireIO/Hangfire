@@ -35,6 +35,7 @@
       <group targetFramework="net451">
         <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="1.0.0" />
         <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="1.0.0" />
+        <dependency id="Microsoft.AspNetCore.Antiforgery" version="1.0.0" />
         <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="1.0.0" />
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="1.0.0" />
         <dependency id="Hangfire.Core" version="[0.0.0]" />
@@ -45,6 +46,7 @@
         <dependency id="System.ComponentModel" version="4.0.1" />
         <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="1.0.0" />
         <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="1.0.0" />
+        <dependency id="Microsoft.AspNetCore.Antiforgery" version="1.0.0" />
         <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="1.0.0" />
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="1.0.0" />
         <dependency id="Hangfire.Core" version="[0.0.0]" />

@@ -55,6 +55,7 @@ namespace Hangfire.Dashboard
 
         internal DashboardRequest Request { private get; set; }
         internal DashboardResponse Response { private get; set; }
+        internal DashboardContext Context { get; set; }
 
         public string RequestPath => Request.Path;
 
@@ -74,6 +75,7 @@ namespace Hangfire.Dashboard
         /// <exclude />
         public void Assign(RazorPage parentPage)
         {
+            Context = parentPage.Context;
             Request = parentPage.Request;
             Response = parentPage.Response;
             Storage = parentPage.Storage;
@@ -87,6 +89,7 @@ namespace Hangfire.Dashboard
 
         internal void Assign(DashboardContext context)
         {
+            Context = context;
             Request = context.Request;
             Response = context.Response;
 
