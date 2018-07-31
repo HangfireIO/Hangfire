@@ -14,6 +14,9 @@
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>http://hangfire.io/blog/
       
+1.6.20
+• SECURITY – Use ASP.NET Core's built-in antiforgery validation to prevent CSRF attacks.
+      
 1.6.18
 • Added – More Hangfire-related services are now registered in an IoC container (by @pieceofsummer).
 • Fixed – Queue parameter is ignored in .NET Core when creating a job (by @pieceofsummer).

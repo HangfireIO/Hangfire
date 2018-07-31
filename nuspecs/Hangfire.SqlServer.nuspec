@@ -14,6 +14,9 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>http://hangfire.io/blog/
       
+1.6.20
+• Fixed – Remove the synthetic limitation to support Azure SQL Management instance (by @TimSQL).
+      
 1.6.19
 • Fixed – "String or binary data would be truncated" exception when state reason is too long.
 • Fixed – Command handling in batch mode now stops after the first error due to "XACT_ABORT ON".

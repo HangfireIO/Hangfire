@@ -19,6 +19,32 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
       
+1.6.20
+
+Hangfire.Core
+
+• SECURITY – Add "robots" meta tag to ensure browser don't index dashboard pages.
+• SECURITY – Add support for antiforgery validation to prevent CSRF attacks (requires configuration).
+
+• Fixed – Perform state change retries using a fresh connection when job's distributed lock may be abandoned.
+• Fixed – Disallow transitions to the Failed state on retries that bypass all the filters.
+• Fixed – Remove possible rare CPU spikes due to the use of `CancellationToken.WaitHandle`.
+• Fixed – Avoid resolving types and methods for logging in static constructors that may lead to process shutdown.
+• Fixed – Prevent Recurring jobs dashboard from throwing `NullReferenceException` (by @mattkwiecien).
+• Fixed – Replace wall clocks with monotonic ones when calculating local timeouts.
+• Fixed – Change logger initialization to be deterministic and predictable by using instance fields.
+• Fixed – Make `_currentLogProvider` field access to use volatile reads/writes.
+• Fixed – Typo in `NotSupportedException`'s message (by @benrick).
+• Fixed – Typo on the Failed jobs page (by @gareth-evans).
+
+Hangfire.SqlServer
+
+• Fixed – Remove the synthetic limitation to support Azure SQL Management instance (by @TimSQL).
+
+Hangfire.AspNetCore
+
+• SECURITY – Use ASP.NET Core's built-in antiforgery validation to prevent CSRF attacks.
+      
 1.6.19
 
 Hangfire.Core
