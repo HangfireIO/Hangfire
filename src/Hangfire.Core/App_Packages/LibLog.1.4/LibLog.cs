@@ -835,19 +835,13 @@ namespace Hangfire.Logging.LogProviders
         private static bool _providerIsAvailableOverride = true;
         private static readonly Type LogEntryType;
         private static readonly Type LoggerType;
-        private static readonly Action<string, string, TraceEventType> WriteLogEntry;
-        private static Func<string, TraceEventType, bool> ShouldLogEntry;
+        private readonly Action<string, string, TraceEventType> WriteLogEntry;
+        private Func<string, TraceEventType, bool> ShouldLogEntry;
 
         static EntLibLogProvider()
         {
             LogEntryType = Type.GetType(string.Format(TypeTemplate, "LogEntry"));
             LoggerType = Type.GetType(string.Format(TypeTemplate, "Logger"));
-            if (LogEntryType == null || LoggerType == null)
-            {
-                return;
-            }
-            WriteLogEntry = GetWriteLogEntry();
-            ShouldLogEntry = GetShouldLogEntry();
         }
 
         public EntLibLogProvider()
@@ -856,6 +850,9 @@ namespace Hangfire.Logging.LogProviders
             {
                 throw new InvalidOperationException("Microsoft.Practices.EnterpriseLibrary.Logging.Logger not found");
             }
+
+            WriteLogEntry = GetWriteLogEntry();
+            ShouldLogEntry = GetShouldLogEntry();
         }
 
         public static bool ProviderIsAvailableOverride
@@ -990,6 +987,7 @@ namespace Hangfire.Logging.LogProviders
     public class SerilogLogProvider : ILogProvider
     {
         private readonly Func<string, object> _getLoggerByNameDelegate;
+        private readonly SerilogCallbacks _callbacks;
         private static bool _providerIsAvailableOverride = true;
 
         public SerilogLogProvider()
@@ -999,6 +997,7 @@ namespace Hangfire.Logging.LogProviders
                 throw new InvalidOperationException("Serilog.Log not found");
             }
             _getLoggerByNameDelegate = GetForContextMethodCall();
+            _callbacks = new SerilogCallbacks();
         }
 
         public static bool ProviderIsAvailableOverride
@@ -1009,7 +1008,7 @@ namespace Hangfire.Logging.LogProviders
 
         public ILog GetLogger(string name)
         {
-            return new SerilogLogger(_getLoggerByNameDelegate(name));
+            return new SerilogLogger(_callbacks, _getLoggerByNameDelegate(name));
         }
 
         public static bool IsLoggerAvailable()
@@ -1044,20 +1043,19 @@ namespace Hangfire.Logging.LogProviders
             return name => func("Name", name, false);
         }
 
-        internal class SerilogLogger : ILog
+        internal class SerilogCallbacks
         {
-            private readonly object _logger;
-            private static readonly object DebugLevel;
-            private static readonly object ErrorLevel;
-            private static readonly object FatalLevel;
-            private static readonly object InformationLevel;
-            private static readonly object VerboseLevel;
-            private static readonly object WarningLevel;
-            private static readonly Func<object, object, bool> IsEnabled;
-            private static readonly Action<object, object, string> Write;
-            private static readonly Action<object, object, Exception, string> WriteException;
+            public readonly object DebugLevel;
+            public readonly object ErrorLevel;
+            public readonly object FatalLevel;
+            public readonly object InformationLevel;
+            public readonly object VerboseLevel;
+            public readonly object WarningLevel;
+            public readonly Func<object, object, bool> IsEnabled;
+            public readonly Action<object, object, string> Write;
+            public readonly Action<object, object, Exception, string> WriteException;
 
-            static SerilogLogger()
+            public SerilogCallbacks()
             {
                 var logEventTypeType = Type.GetType("Serilog.Events.LogEventLevel, Serilog");
                 DebugLevel = Enum.Parse(logEventTypeType, "Debug");
@@ -1119,9 +1117,16 @@ namespace Hangfire.Logging.LogProviders
                     messageParam,
                 }).Compile();
             }
+        }
 
-            internal SerilogLogger(object logger)
+        internal class SerilogLogger : ILog
+        {
+            private readonly SerilogCallbacks _callbacks;
+            private readonly object _logger;
+
+            internal SerilogLogger(SerilogCallbacks callbacks, object logger)
             {
+                _callbacks = callbacks;
                 _logger = logger;
             }
 
@@ -1129,7 +1134,7 @@ namespace Hangfire.Logging.LogProviders
             {
                 if (messageFunc == null)
                 {
-                    return IsEnabled(_logger, logLevel);
+                    return _callbacks.IsEnabled(_logger, logLevel);
                 }
                 if (exception != null)
                 {
@@ -1139,44 +1144,44 @@ namespace Hangfire.Logging.LogProviders
                 switch (logLevel)
                 {
                     case LogLevel.Debug:
-                        if (IsEnabled(_logger, DebugLevel))
+                        if (_callbacks.IsEnabled(_logger, _callbacks.DebugLevel))
                         {
-                            Write(_logger, DebugLevel, messageFunc());
+                            _callbacks.Write(_logger, _callbacks.DebugLevel, messageFunc());
                             return true;
                         }
                         break;
                     case LogLevel.Info:
-                        if (IsEnabled(_logger, InformationLevel))
+                        if (_callbacks.IsEnabled(_logger, _callbacks.InformationLevel))
                         {
-                            Write(_logger, InformationLevel, messageFunc());
+                            _callbacks.Write(_logger, _callbacks.InformationLevel, messageFunc());
                             return true;
                         }
                         break;
                     case LogLevel.Warn:
-                        if (IsEnabled(_logger, WarningLevel))
+                        if (_callbacks.IsEnabled(_logger, _callbacks.WarningLevel))
                         {
-                            Write(_logger, WarningLevel, messageFunc());
+                            _callbacks.Write(_logger, _callbacks.WarningLevel, messageFunc());
                             return true;
                         }
                         break;
                     case LogLevel.Error:
-                        if (IsEnabled(_logger, ErrorLevel))
+                        if (_callbacks.IsEnabled(_logger, _callbacks.ErrorLevel))
                         {
-                            Write(_logger, ErrorLevel, messageFunc());
+                            _callbacks.Write(_logger, _callbacks.ErrorLevel, messageFunc());
                             return true;
                         }
                         break;
                     case LogLevel.Fatal:
-                        if (IsEnabled(_logger, FatalLevel))
+                        if (_callbacks.IsEnabled(_logger, _callbacks.FatalLevel))
                         {
-                            Write(_logger, FatalLevel, messageFunc());
+                            _callbacks.Write(_logger, _callbacks.FatalLevel, messageFunc());
                             return true;
                         }
                         break;
                     default:
-                        if (IsEnabled(_logger, VerboseLevel))
+                        if (_callbacks.IsEnabled(_logger, _callbacks.VerboseLevel))
                         {
-                            Write(_logger, VerboseLevel, messageFunc());
+                            _callbacks.Write(_logger, _callbacks.VerboseLevel, messageFunc());
                             return true;
                         }
                         break;
@@ -1189,44 +1194,44 @@ namespace Hangfire.Logging.LogProviders
                 switch (logLevel)
                 {
                     case LogLevel.Debug:
-                        if (IsEnabled(_logger, DebugLevel))
+                        if (_callbacks.IsEnabled(_logger, _callbacks.DebugLevel))
                         {
-                            WriteException(_logger, DebugLevel, exception, messageFunc());
+                            _callbacks.WriteException(_logger, _callbacks.DebugLevel, exception, messageFunc());
                             return true;
                         }
                         break;
                     case LogLevel.Info:
-                        if (IsEnabled(_logger, InformationLevel))
+                        if (_callbacks.IsEnabled(_logger, _callbacks.InformationLevel))
                         {
-                            WriteException(_logger, InformationLevel, exception, messageFunc());
+                            _callbacks.WriteException(_logger, _callbacks.InformationLevel, exception, messageFunc());
                             return true;
                         }
                         break;
                     case LogLevel.Warn:
-                        if (IsEnabled(_logger, WarningLevel))
+                        if (_callbacks.IsEnabled(_logger, _callbacks.WarningLevel))
                         {
-                            WriteException(_logger, WarningLevel, exception, messageFunc());
+                            _callbacks.WriteException(_logger, _callbacks.WarningLevel, exception, messageFunc());
                             return true;
                         }
                         break;
                     case LogLevel.Error:
-                        if (IsEnabled(_logger, ErrorLevel))
+                        if (_callbacks.IsEnabled(_logger, _callbacks.ErrorLevel))
                         {
-                            WriteException(_logger, ErrorLevel, exception, messageFunc());
+                            _callbacks.WriteException(_logger, _callbacks.ErrorLevel, exception, messageFunc());
                             return true;
                         }
                         break;
                     case LogLevel.Fatal:
-                        if (IsEnabled(_logger, FatalLevel))
+                        if (_callbacks.IsEnabled(_logger, _callbacks.FatalLevel))
                         {
-                            WriteException(_logger, FatalLevel, exception, messageFunc());
+                            _callbacks.WriteException(_logger, _callbacks.FatalLevel, exception, messageFunc());
                             return true;
                         }
                         break;
                     default:
-                        if (IsEnabled(_logger, VerboseLevel))
+                        if (_callbacks.IsEnabled(_logger, _callbacks.VerboseLevel))
                         {
-                            WriteException(_logger, VerboseLevel, exception, messageFunc());
+                            _callbacks.WriteException(_logger, _callbacks.VerboseLevel, exception, messageFunc());
                             return true;
                         }
                         break;
