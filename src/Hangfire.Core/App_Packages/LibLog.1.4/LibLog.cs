@@ -25,6 +25,7 @@
 //===============================================================================
 
 using System.Reflection;
+using System.Threading;
 using Hangfire.Logging.LogProviders;
 
 // ReSharper disable All
@@ -367,7 +368,7 @@ namespace Hangfire.Logging
         /// <returns>An instance of <see cref="ILog"/></returns>
         public static ILog GetLogger(string name)
         {
-            ILogProvider logProvider = _currentLogProvider ?? ResolveLogProvider();
+            ILogProvider logProvider = Volatile.Read(ref _currentLogProvider) ?? ResolveLogProvider();
             return logProvider == null ? new NoOpLogger() : (ILog)new LoggerExecutionWrapper(logProvider.GetLogger(name));
         }
 
@@ -377,7 +378,7 @@ namespace Hangfire.Logging
         /// <param name="logProvider">The log provider.</param>
         public static void SetCurrentLogProvider(ILogProvider logProvider)
         {
-            _currentLogProvider = logProvider;
+            Volatile.Write(ref _currentLogProvider, logProvider);
         }
 
         internal delegate bool IsLoggerAvailable();
