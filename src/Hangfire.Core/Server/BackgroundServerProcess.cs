@@ -22,6 +22,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
+using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Processing;
 using Hangfire.Storage;
@@ -278,7 +279,7 @@ namespace Hangfire.Server
 
                     _logger.Trace($"{GetServerTemplate(context.ServerId)} waiting for {_options.HeartbeatInterval} delay before sending a heartbeat");
 
-                    context.StopToken.WaitHandle.WaitOne(_options.HeartbeatInterval);
+                    context.StopToken.Wait(_options.HeartbeatInterval);
                     context.StopToken.ThrowIfCancellationRequested();
 
                     try

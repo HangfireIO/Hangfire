@@ -1,10 +1,13 @@
+Royalty-free End-user License Agreement
+=======================================
+
 THIS LICENSE AGREEMENT DESCRIBES YOUR RIGHTS WITH RESPECT TO THE SOFTWARE AND ITS COMPONENTS.
 
 1. OWNERSHIP, LICENSE GRANT
 
 This is a license agreement and not an agreement for sale. We reserve ownership of all intellectual property rights inherent in or relating to the Software, which include, but are not limited to, all copyright, patent rights, all rights in relation to registered and unregistered trademarks (including service marks), confidential information (including trade secrets and know-how) and all rights other than those expressly granted by this License Agreement.
 
-Subject to the payment of the fee required and subject to the terms and conditions of this License Agreement, We grant to You a revocable, non- transferable and non-exclusive license (i) for Designated User(s) (as defined below) within Your organization to install and use the Software on any workstations used exclusively by such Designated User and (ii) for You to install and use the Software in connection with unlimited domains and sub-domains on unlimited servers, solely in connection with distribution of the Software in accordance with sections 3 and 4 below. This license is not sublicensable except as explicitly set forth herein. “Designated User(s)” shall mean Your employee(s) acting within the scope of their employment or Your consultant(s) or contractor(s) acting within the scope of the services they provide for You or on Your behalf for whom You have purchased a license to use the Software.
+Subject to the payment of the fee required and subject to the terms and conditions of this License Agreement, We grant to You a revocable, non- transferable and non-exclusive license (i) for Designated User(s) (as defined below) within Your organization to install and use the Software on any workstations used exclusively by such Designated User and (ii) for You to install and use the Software in connection with unlimited domains and sub-domains on unlimited servers, solely in connection with distribution of the Software in accordance with sections 3 and 4 below. This license is not sublicensable except as explicitly set forth herein. "Designated User(s)" shall mean Your employee(s) acting within the scope of their employment or Your consultant(s) or contractor(s) acting within the scope of the services they provide for You or on Your behalf for whom You have purchased a license to use the Software.
 
 2. PERMITTED USES, SOURCE CODE, MODIFICATIONS
 
@@ -12,9 +15,9 @@ We provide You with source code so that You can create Modifications of the orig
 
 3. DISTRIBUTION
 
-You may distribute the Software in any applications, frameworks, or elements (collectively referred to as an “Application” or “Applications”) that you develop using the Software in accordance with this License Agreement, provided that such distribution does not violate the restrictions set forth in section 4 of this License Agreement. You must not remove, obscure or interfere with any copyright, acknowledgment, attribution, trademark, warning or disclaimer statement affixed to, incorporated in or otherwise applied in connection with the Software.
+You may distribute the Software in any applications, frameworks, or elements (collectively referred to as an "Application" or "Applications") that you develop using the Software in accordance with this License Agreement, provided that such distribution does not violate the restrictions set forth in section 4 of this License Agreement. You must not remove, obscure or interfere with any copyright, acknowledgment, attribution, trademark, warning or disclaimer statement affixed to, incorporated in or otherwise applied in connection with the Software.
 
-You are required to ensure that the Software is not reused by or with any applications other than those with which You distribute it as permitted herein. For example, if You install the Software on a customer’s server, that customer is not permitted to use the Software independently of Your application, and must be informed as such.
+You are required to ensure that the Software is not reused by or with any applications other than those with which You distribute it as permitted herein. For example, if You install the Software on a customer's server, that customer is not permitted to use the Software independently of Your application, and must be informed as such.
 
 You will not owe Us any royalties for Your distribution of the Software in accordance with this License Agreement.
 
@@ -22,13 +25,13 @@ You will not owe Us any royalties for Your distribution of the Software in accor
 
 You may not, without Our prior written consent, redistribute the Software or Modifications other than by including the Software or a portion thereof within Your own product, which must have substantially different functionality than the Software or Modifications and must not allow any third party to use the Software or Modifications, or any portions thereof, for software development or application development purposes. You are explicitly not allowed to redistribute the Software or Modifications as part of any product that can be described as a development toolkit or library, an application builder, a website builder or any product that is intended for use by software, application, or website developers or designers. You may not change or remove the copyright notice from any of the files included in the Software or Modifications.
 
-You may not redistribute the Software as part of a product, "appliance" or "virtual server".  You may not redistribute the Software on any server which is not directly under Your control.
+You may redistribute the Software as part of Your own products.
 
 UNDER NO CIRCUMSTANCES MAY YOU USE THE SOFTWARE FOR A PRODUCT THAT IS INTENDED FOR SOFTWARE OR APPLICATION DEVELOPMENT PURPOSES.
 
 5. TERMINATION
 
-This License Agreement and Your right to use the Software and Modifications will terminate immediately without notice if You fail to comply with the terms and conditions of this License Agreement. Upon termination, You agree to immediately cease using and destroy the Software or Modifications, including all accompanying documents. The provisions of sections 4, 5, 6, 7, 8, 9, 10 and 12 will survive any termination of this License Agreement.
+This License Agreement and Your right to use the Software and Modifications will terminate immediately without notice if You fail to comply with the terms and conditions of this License Agreement. Upon termination, You agree to immediately cease using and destroy the Software or Modifications, including all accompanying documents. The provisions of sections 4, 5, 6, 7, 8, 9, 10 and 11 will survive any termination of this License Agreement.
 
 6. DISCLAIMER OF WARRANTIES
 
@@ -44,7 +47,7 @@ We or a certified auditor acting on Our behalf, may, upon its reasonable request
 
 9. THIRD PARTY SOFTWARE
 
-Examples included in Software may provide links to third party libraries or code (collectively “Third Party Software”) to implement various functions. Third Party Software does not comprise part of the Software. In some cases, access to Third Party Software may be included along with the Software delivery as a convenience for demonstration purposes. Such source code and libraries may be included in the “…/examples” source tree delivered with the Software and do not comprise the Software. Licensee acknowledges (1) that some part of Third Party Software may require additional licensing of copyright and patents from the owners of such, and (2) that distribution of any of the Software referencing or including any portion of a Third Party Software may require appropriate licensing from such third parties.
+The Software may contain third party open source software which requires notices and/or additional terms and conditions. Such required third party software notices and/or additional terms and conditions are located in the NOTICES file accompanying the Software distribution (also available at https://www.hangfire.io/licensing/third-party.html), and are made a part of and incorporated by reference into this Agreement. By accepting this Agreement, you are also accepting the additional terms and conditions, if any, set forth therein.
 
 10. PAYMENT AND TAXES
 
@@ -60,7 +63,7 @@ You agree to be identified as a customer of ours and You agree that We may refer
 
 You may not assign this License Agreement without Our prior written consent, which will not be unreasonably withheld. This License Agreement will inure to the benefit of Our successors and assigns.
 
-You acknowledge that this License Agreement is complete and is the exclusive representation of our agreement. No oral or written information given by Us or on our behalf shall create a warranty or collateral contract, or in any way increase the scope of this License Agreement in any way, and You may not rely on any such oral or written information. No term or condition contained in any purchase order shall apply unless expressly accepted by Us in writing,
+You acknowledge that this License Agreement is complete and is the exclusive representation of our agreement. No oral or written information given by Us or on our behalf shall create a warranty or collateral contract, or in any way increase the scope of this License Agreement in any way, and You may not rely on any such oral or written information. No term or condition contained in any purchase order shall apply unless expressly accepted by Us in writing.
 
 There are no implied licenses or other implied rights granted under this License Agreement, and all rights, save for those expressly granted hereunder, shall remain with Us and our licensors. In addition, no licenses or immunities are granted to the combination of the Software and/or Modifications, as applicable, with any other software or hardware not delivered by Us to You under this License Agreement.
 
@@ -70,4 +73,4 @@ This License Agreement may be modified only by a written instrument signed by an
 
 This License Agreement is governed by the law of the State of Oregon, United States (notwithstanding conflicts of laws provisions), and all parties irrevocably submit to the jurisdiction of the courts of the State of Oregon and further agree to commence any litigation which may arise hereunder in the state or federal courts located in the judicial district of Multnomah County, Oregon, US.
 
-If the Software or any related documentation is licensed to the U.S. government or any agency thereof, it will be deemed to be “commercial computer software” or “commercial computer software documentation,” pursuant to DFAR Section 227.7202 and FAR Section 12.212. Any use of the Software or related documentation by the U.S. government will be governed solely by the terms of this License Agreement.
+If the Software or any related documentation is licensed to the U.S. government or any agency thereof, it will be deemed to be "commercial computer software" or "commercial computer software documentation", pursuant to DFAR Section 227.7202 and FAR Section 12.212. Any use of the Software or related documentation by the U.S. government will be governed solely by the terms of this License Agreement.

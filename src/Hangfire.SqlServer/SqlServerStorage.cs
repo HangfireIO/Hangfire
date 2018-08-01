@@ -343,7 +343,7 @@ where dbid = db_id(@name) and status != 'background' and status != 'sleeping'";
                         .Query<int>(sqlQuery, new { name = connection.Database })
                         .Single();
 
-                    return new Metric(value.ToString("N0"));
+                    return new Metric(value);
                 });
             });
 
@@ -365,7 +365,7 @@ where dbid = db_id(@name) and status != 'background'";
                         .Query<int>(sqlQuery, new { name = connection.Database })
                         .Single();
 
-                    return new Metric(value.ToString("N0"));
+                    return new Metric(value);
                 });
             });
     }

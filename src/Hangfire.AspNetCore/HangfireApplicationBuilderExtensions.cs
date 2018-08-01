@@ -23,6 +23,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Hangfire.Common;
+using Hangfire.Client;
+using Hangfire.States;
 
 namespace Hangfire
 {
@@ -66,8 +69,13 @@ namespace Hangfire
             storage = storage ?? services.GetRequiredService<JobStorage>();
             options = options ?? services.GetService<BackgroundJobServerOptions>() ?? new BackgroundJobServerOptions();
             additionalProcesses = additionalProcesses ?? services.GetServices<IBackgroundProcess>();
-
-            var server = new BackgroundJobServer(options, storage, additionalProcesses);
+            
+            var server = new BackgroundJobServer(options, storage, additionalProcesses, 
+                options.FilterProvider ?? services.GetRequiredService<IJobFilterProvider>(),
+                options.Activator ?? services.GetRequiredService<JobActivator>(),
+                services.GetService<IBackgroundJobFactory>(),
+                services.GetService<IBackgroundJobPerformer>(),
+                services.GetService<IBackgroundJobStateChanger>());
 
             lifetime.ApplicationStopping.Register(() => server.SendStop());
             lifetime.ApplicationStopped.Register(() => server.Dispose());

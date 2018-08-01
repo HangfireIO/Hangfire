@@ -10,9 +10,24 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>SQL Server 2008+ (including Express), SQL Server LocalDB and SQL Azure storage support for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2013-2018 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://www.hangfire.io/blog/
+      
+1.7.0-beta2
+      
+Merged updates from 1.6.18 – 1.6.20:
+      
+    1.6.20
+    • Fixed – Remove the synthetic limitation to support Azure SQL Management instance (by @TimSQL).
+          
+    1.6.19
+    • Fixed – "String or binary data would be truncated" exception when state reason is too long.
+    • Fixed – Command handling in batch mode now stops after the first error due to "XACT_ABORT ON".
+    • Fixed – Make SqlCommandBatch disposable to dispose all the commands.
+          
+    1.6.18
+    • Fixed – Rare deadlocks in SQL Server caused by the SetRangeInHash command.
     
 1.7.0-beta1
 • Added – Callback method to allow to open the database with impersonation (by @BjoernHund).
@@ -48,5 +63,12 @@
     
     <file src="Tools\DefaultInstall.sql" target="tools\install.sql" />
     <file src="..\src\Hangfire.SqlServer\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
+
+    <file src="LICENSE.md" />
+    <file src="NOTICES" />
+    <file src="COPYING" />
+    <file src="COPYING.LESSER" />
+    <file src="LICENSE_STANDARD" />
+    <file src="LICENSE_ROYALTYFREE" />
   </files>
 </package>
