@@ -903,6 +903,21 @@ values (@key, 0.0, @value)";
         }
 
         [Fact, CleanDatabase]
+        public void SetRangeInHash_ReleasesTheAcquiredLock()
+        {
+            UseConnections((sql, connection) =>
+            {
+                connection.SetRangeInHash("some-hash", new Dictionary<string, string>
+                {
+                    { "Key", "Value" }
+                });
+
+                var result = sql.QuerySingle<string>($"select APPLOCK_MODE( 'public' , 'HangFire:Hash:Lock' , 'Session' )");
+                Assert.Equal("NoLock", result);
+            });
+        }
+
+        [Fact, CleanDatabase]
         public void GetAllEntriesFromHash_ThrowsAnException_WhenKeyIsNull()
         {
             UseConnection(connection =>

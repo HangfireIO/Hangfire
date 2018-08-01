@@ -287,6 +287,25 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void FromScopedExpression_ThrowsWhenExplicitInterfaceImplementationIsPassed()
+        {
+            IService service = new ServiceImpl();
+            Assert.Throws<NotSupportedException>(() => Job.FromExpression(() => service.Method()));
+        }
+
+        public interface IService
+        {
+            void Method();
+        }
+
+        public class ServiceImpl : IService
+        {
+            void IService.Method()
+            {
+            }
+        }
+
+        [Fact]
         public void Ctor_ThrowsAnException_WhenMethodContainsReferenceParameter()
         {
             string test = null;

@@ -22,6 +22,7 @@ using System.Linq;
 using System.Threading;
 using Dapper;
 using Hangfire.Annotations;
+using Hangfire.Common;
 using Hangfire.Storage;
 
 // ReSharper disable RedundantAnonymousTypePropertyName
@@ -95,31 +96,34 @@ from [{_storage.SchemaName}].JobQueue JQ with (readpast)
 where Queue in @queues and
 (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))";
 
-            do
+            using (var cancellationEvent = cancellationToken.GetCancellationEvent())
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                _storage.UseConnection(null, connection =>
+                do
                 {
-                    fetchedJob = connection
-                        .Query<FetchedJob>(
-                            fetchJobSqlTemplate,
-                            new { queues = queues, timeout = _options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds })
-                        .SingleOrDefault();
-                });
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                if (fetchedJob != null)
-                {
-                    return new SqlServerTimeoutJob(
-                        _storage,
-                        fetchedJob.Id,
-                        fetchedJob.JobId.ToString(CultureInfo.InvariantCulture),
-                        fetchedJob.Queue);
-                }
+                    _storage.UseConnection(null, connection =>
+                    {
+                        fetchedJob = connection
+                            .Query<FetchedJob>(
+                                fetchJobSqlTemplate,
+                                new { queues = queues, timeout = _options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds })
+                            .SingleOrDefault();
+                    });
 
-                WaitHandle.WaitAny(new[] { cancellationToken.WaitHandle, NewItemInQueueEvent }, _options.QueuePollInterval);
-                cancellationToken.ThrowIfCancellationRequested();
-            } while (true);
+                    if (fetchedJob != null)
+                    {
+                        return new SqlServerTimeoutJob(
+                            _storage,
+                            fetchedJob.Id,
+                            fetchedJob.JobId.ToString(CultureInfo.InvariantCulture),
+                            fetchedJob.Queue);
+                    }
+
+                    WaitHandle.WaitAny(new WaitHandle[] { cancellationEvent.WaitHandle, NewItemInQueueEvent }, _options.QueuePollInterval);
+                    cancellationToken.ThrowIfCancellationRequested();
+                } while (true);
+            }
         }
 
         private SqlServerTransactionJob DequeueUsingTransaction(string[] queues, CancellationToken cancellationToken)
@@ -133,47 +137,50 @@ output DELETED.Id, DELETED.JobId, DELETED.Queue
 from [{_storage.SchemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
 where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))";
 
-            do
+            using (var cancellationEvent = cancellationToken.GetCancellationEvent())
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                var connection = _storage.CreateAndOpenConnection();
-
-                try
+                do
                 {
-                    transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var connection = _storage.CreateAndOpenConnection();
 
-                    fetchedJob = connection.Query<FetchedJob>(
-                        fetchJobSqlTemplate,
+                    try
+                    {
+                        transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+
+                        fetchedJob = connection.Query<FetchedJob>(
+                            fetchJobSqlTemplate,
 #pragma warning disable 618
                         new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds },
 #pragma warning restore 618
                         transaction,
-                        commandTimeout: _storage.CommandTimeout).SingleOrDefault();
+                            commandTimeout: _storage.CommandTimeout).SingleOrDefault();
 
-                    if (fetchedJob != null)
-                    {
-                        return new SqlServerTransactionJob(
-                            _storage,
-                            connection,
-                            transaction,
-                            fetchedJob.JobId.ToString(CultureInfo.InvariantCulture),
-                            fetchedJob.Queue);
+                        if (fetchedJob != null)
+                        {
+                            return new SqlServerTransactionJob(
+                                _storage,
+                                connection,
+                                transaction,
+                                fetchedJob.JobId.ToString(CultureInfo.InvariantCulture),
+                                fetchedJob.Queue);
+                        }
                     }
-                }
-                finally
-                {
-                    if (fetchedJob == null)
+                    finally
                     {
-                        transaction?.Dispose();
-                        transaction = null;
+                        if (fetchedJob == null)
+                        {
+                            transaction?.Dispose();
+                            transaction = null;
 
-                        _storage.ReleaseConnection(connection);
+                            _storage.ReleaseConnection(connection);
+                        }
                     }
-                }
 
-                WaitHandle.WaitAny(new[] { cancellationToken.WaitHandle, NewItemInQueueEvent }, _options.QueuePollInterval);
-                cancellationToken.ThrowIfCancellationRequested();
-            } while (true);
+                    WaitHandle.WaitAny(new WaitHandle[] { cancellationEvent.WaitHandle, NewItemInQueueEvent }, _options.QueuePollInterval);
+                    cancellationToken.ThrowIfCancellationRequested();
+                } while (true);
+            }
         }
 
         [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]

@@ -15,6 +15,7 @@
 -- License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 SET NOCOUNT ON
+SET XACT_ABORT ON
 DECLARE @TARGET_SCHEMA_VERSION INT;
 SET @TARGET_SCHEMA_VERSION = 6;
 

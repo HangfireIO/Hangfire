@@ -342,6 +342,16 @@
                 }
             });
 
+            var csrfHeader = $('meta[name="csrf-header"]').attr('content');
+            var csrfToken = $('meta[name="csrf-token"]').attr('content');
+
+            if (csrfToken && csrfHeader) {
+                var headers = {};
+                headers[csrfHeader] = csrfToken;
+
+                $.ajaxSetup({ headers: headers });
+            }
+
             $(document).on('click', '*[data-ajax]', function (e) {
                 var $this = $(this);
                 var confirmText = $this.data('confirm');
@@ -366,7 +376,7 @@
                     $expandable = $expander.closest('tr').next().find('.expandable');
 
                 if (!$expandable.is(':visible')) {
-                    $expander.text('Less details...');
+                    $expander.text('Fewer details...');
                 }
 
 				$expandable.slideToggle(
