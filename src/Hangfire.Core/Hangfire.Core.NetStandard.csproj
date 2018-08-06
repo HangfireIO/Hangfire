@@ -245,6 +245,11 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="Dashboard\Pages\_ErrorPopup.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>_ErrorPopup.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="Dashboard\Pages\_InlineMetric.generated.cs">
       <DependentUpon>_InlineMetric.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -484,6 +489,10 @@
     <None Include="Dashboard\Pages\_BlockMetric.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_BlockMetric.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\_ErrorPopup.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_ErrorPopup.generated.cs</LastGenOutput>
     </None>
     <None Include="Dashboard\Pages\_InlineMetric.cshtml">
       <Generator>RazorGenerator</Generator>

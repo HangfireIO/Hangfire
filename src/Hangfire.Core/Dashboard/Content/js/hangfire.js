@@ -5,6 +5,24 @@
         locale: document.documentElement.lang
     };
 
+    hangfire.ErrorPopup = (function () {
+        function ErrorPopup(title, message) {
+            this._errorPopup = $('#errorPopup');
+            this._errorPopupTitle = $('#errorPopupTitle');
+            this._errorPopupMessage = $('#errorPopupMessage');
+            this._title = title;
+            this._message = message;
+        }
+
+        ErrorPopup.prototype.show = function() {
+            this._errorPopupTitle.html(this._title);
+            this._errorPopupMessage.html(this._message);
+            this._errorPopup.modal('show');
+        }
+
+        return ErrorPopup;
+    })();
+
     hangfire.Metrics = (function() {
         function Metrics() {
             this._metrics = {};
@@ -159,7 +177,7 @@
             this._listeners = [];
             this._statisticsUrl = statisticsUrl;
             this._pollInterval = pollInterval;
-            this._intervalId = null;
+            this._timeoutId = null;
         }
 
         StatisticsPoller.prototype.start = function () {
@@ -167,21 +185,35 @@
 
             var intervalFunc = function() {
                 try {
-                    $.post(self._statisticsUrl, { metrics: self._metricsCallback() }, function(data) {
-                        self._notifyListeners(data);
-                    });
+                    $.post(self._statisticsUrl, { metrics: self._metricsCallback() })
+                        .done(function(data) {
+                            self._notifyListeners(data);
+                            if (self._timeoutId !== null) {
+                                self._timeoutId = setTimeout(intervalFunc, self._pollInterval);
+                            }
+                        })
+                        .fail(function (xhr) {
+                            var errorPopup = new Hangfire.ErrorPopup(
+                                'Error loading statistics',
+                                '<p>There was an error loading the statistics from the server.<br />'
+                                + 'The server responded with: ' + xhr.status + ' ' + xhr.statusText + '</p>'
+                                + '<p>You can try reloading the page and see if the error persists.</p>');
+
+                            errorPopup.show();
+                            self._timeoutId = null;
+                        });
                 } catch (e) {
                     console.log(e);
                 }
             };
 
-            this._intervalId = setInterval(intervalFunc, this._pollInterval);
+            this._timeoutId = setTimeout(intervalFunc, this._pollInterval);
         };
 
         StatisticsPoller.prototype.stop = function() {
-            if (this._intervalId !== null) {
-                clearInterval(this._intervalId);
-                this._intervalId = null;
+            if (this._timeoutId !== null) {
+                clearTimeout(this._timeoutId);
+                this._timeoutId = null;
             }
         };
 

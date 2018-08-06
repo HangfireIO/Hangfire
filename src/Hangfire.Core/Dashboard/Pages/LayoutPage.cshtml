@@ -22,6 +22,9 @@
     <body>
         <!-- Wrap all page content here -->
         <div id="wrap">
+            
+            <!-- Error popup when polling fails -->
+            @Html.RenderPartial(new ErrorPopup())
 
             <!-- Fixed navbar -->
             <div class="navbar navbar-default navbar-fixed-top">
@@ -37,14 +40,14 @@
                     <div class="collapse navbar-collapse">
                         @Html.RenderPartial(new Navigation())
                         @if(@AppPath != null) {
-                            <ul class="nav navbar-nav navbar-right">
-                                <li>
-                                    <a href="@AppPath">
-                                        <span class="glyphicon glyphicon-log-out"></span>
-                                        @Strings.LayoutPage_Back
-                                    </a>
-                                </li>
-                            </ul>
+                        <ul class="nav navbar-nav navbar-right">
+                            <li>
+                                <a href="@AppPath">
+                                    <span class="glyphicon glyphicon-log-out"></span>
+                                    @Strings.LayoutPage_Back
+                                </a>
+                            </li>
+                        </ul>
                         }
                     </div>
                     <!--/.nav-collapse -->

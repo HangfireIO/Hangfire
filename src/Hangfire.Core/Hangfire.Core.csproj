@@ -95,6 +95,11 @@
     <Compile Include="Dashboard\Owin\OwinDashboardContextExtensions.cs" />
     <Compile Include="Dashboard\Owin\OwinDashboardRequest.cs" />
     <Compile Include="Dashboard\Owin\OwinDashboardResponse.cs" />
+    <Compile Include="Dashboard\Pages\_ErrorPopup.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>_ErrorPopup.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="JobDisplayNameAttribute.cs" />
     <Compile Include="Obsolete\RequestDispatcherWrapper.cs" />
     <Compile Include="JobActivatorContext.cs" />
@@ -547,6 +552,10 @@
     <None Include="Dashboard\Pages\_PerPageSelector.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_PerPageSelector.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\_ErrorPopup.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_ErrorPopup.generated.cs</LastGenOutput>
     </None>
     <None Include="Hangfire.Core.project.json" />
     <None Include="packages.config">
