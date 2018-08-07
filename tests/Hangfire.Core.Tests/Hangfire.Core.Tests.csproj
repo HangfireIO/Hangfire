@@ -150,6 +150,7 @@
     <Compile Include="StatisticsHistoryAttributeFacts.cs" />
     <Compile Include="Storage\InvocationDataFacts.cs" />
     <Compile Include="Storage\MonitoringTypeFacts.cs" />
+    <Compile Include="Storage\StateDataFacts.cs" />
     <Compile Include="Storage\StorageConnectionExtensionsFacts.cs" />
     <Compile Include="Utils\CultureHelper.cs" />
     <Compile Include="Utils\GlobalLockAttribute.cs" />
