@@ -16,6 +16,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.Storage;
@@ -59,6 +61,8 @@ namespace Hangfire.States
         /// </remarks>
         public static readonly string StateName = "Scheduled";
 
+        private string _candidateQueue;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledState"/> class
         /// with the specified <i>time interval</i> after which a job should be moved to
@@ -80,9 +84,27 @@ namespace Hangfire.States
         /// <see cref="EnqueuedState"/>.</param>
         [JsonConstructor]
         public ScheduledState(DateTime enqueueAt)
+            : this(enqueueAt, EnqueuedState.DefaultQueue)
+        {
+        }
+
+        public ScheduledState(DateTime enqueueAt, string candidateQueue)
         {
             EnqueueAt = enqueueAt;
             ScheduledAt = DateTime.UtcNow;
+            CandidateQueue = candidateQueue;
+        }
+        
+        [NotNull]
+        [DefaultValue(EnqueuedState.DefaultQueue)]
+        public string CandidateQueue
+        {
+            get { return _candidateQueue; }
+            set
+            {
+                EnqueuedState.ValidateQueueName(nameof(value), value);
+                _candidateQueue = value;
+            }
         }
 
         /// <summary>

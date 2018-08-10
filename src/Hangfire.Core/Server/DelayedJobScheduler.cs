@@ -161,7 +161,11 @@ namespace Hangfire.Server
                     context.Storage,
                     connection,
                     jobId,
-                    new EnqueuedState { Reason = $"Triggered by {ToString()}" }, 
+                    new EnqueuedState
+                    {
+                        Queue = "", //TODO add Job.CandidateState here 
+                        Reason = $"Triggered by {ToString()}"
+                    }, 
                     ScheduledState.StateName));
 
                 if (appliedState == null)
