@@ -37,6 +37,7 @@ namespace Hangfire.Core.Tests.States
 
             var data = state.SerializeData();
 
+            Assert.Equal("default", data["CandidateQueue"]);
             Assert.Equal(JobHelper.SerializeDateTime(state.EnqueueAt), data["EnqueueAt"]);
             Assert.Equal(JobHelper.SerializeDateTime(state.ScheduledAt), data["ScheduledAt"]);
         }

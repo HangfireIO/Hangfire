@@ -84,15 +84,10 @@ namespace Hangfire.States
         /// <see cref="EnqueuedState"/>.</param>
         [JsonConstructor]
         public ScheduledState(DateTime enqueueAt)
-            : this(enqueueAt, EnqueuedState.DefaultQueue)
         {
-        }
-
-        public ScheduledState(DateTime enqueueAt, string candidateQueue)
-        {
+            CandidateQueue = EnqueuedState.DefaultQueue;
             EnqueueAt = enqueueAt;
             ScheduledAt = DateTime.UtcNow;
-            CandidateQueue = candidateQueue;
         }
         
         [NotNull]
