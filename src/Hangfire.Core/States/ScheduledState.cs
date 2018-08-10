@@ -179,6 +179,7 @@ namespace Hangfire.States
         {
             return new Dictionary<string, string>
             {
+                { "CandidateQueue", CandidateQueue },
                 { "EnqueueAt", JobHelper.SerializeDateTime(EnqueueAt) },
                 { "ScheduledAt", JobHelper.SerializeDateTime(ScheduledAt) }
             };
