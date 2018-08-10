@@ -75,7 +75,9 @@ namespace Hangfire.Core.Tests.Server
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.BackgroundJobId == JobId &&
                 ctx.NewState is EnqueuedState &&
-                ctx.ExpectedStates.SequenceEqual(new[] { ScheduledState.StateName }))));
+                ctx.ExpectedStates.SequenceEqual(new[] { ScheduledState.StateName }) && 
+                (ctx.NewState as EnqueuedState).Queue == "default"))
+            );
 
             _connection.Verify(x => x.Dispose());
         }
