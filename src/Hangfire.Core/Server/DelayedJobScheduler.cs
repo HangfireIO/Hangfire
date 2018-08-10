@@ -156,16 +156,27 @@ namespace Hangfire.Server
                     // No more scheduled jobs pending.
                     return false;
                 }
+
+                var currentState = connection.GetStateData(jobId);
+                var candidateState = new EnqueuedState {  Reason = $"Triggered by {ToString()}" };
+
+                if (currentState?.Name == null || currentState.Name != ScheduledState.StateName)
+                {
+                    return false;
+                }
+                
+                var queue = currentState.Data["CandidateQueue"];
+
+                if (queue != null)
+                {
+                    candidateState.Queue = queue;
+                }
                 
                 var appliedState = _stateChanger.ChangeState(new StateChangeContext(
                     context.Storage,
                     connection,
                     jobId,
-                    new EnqueuedState
-                    {
-                        Queue = "", //TODO add Job.CandidateState here 
-                        Reason = $"Triggered by {ToString()}"
-                    }, 
+                    candidateState,
                     ScheduledState.StateName));
 
                 if (appliedState == null)
