@@ -116,15 +116,17 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
+        /// <param name="queue"></param>
         /// <returns>Unique identifier of the created job.</returns>
         public static string Schedule(
             [NotNull] this IBackgroundJobClient client, 
             [NotNull, InstantHandle] Expression<Action> methodCall, 
-            TimeSpan delay)
+            TimeSpan delay,
+            string queue = EnqueuedState.DefaultQueue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            return client.Create(methodCall, new ScheduledState(delay));
+            return client.Create(methodCall, new ScheduledState(delay) { CandidateQueue = queue });
         }
 
         /// <summary>
@@ -134,15 +136,17 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
+        /// <param name="queue"></param>
         /// <returns>Unique identifier of the created job.</returns>
         public static string Schedule(
             [NotNull] this IBackgroundJobClient client,
             [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
-            TimeSpan delay)
+            TimeSpan delay,
+            string queue = EnqueuedState.DefaultQueue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            return client.Create(methodCall, new ScheduledState(delay));
+            return client.Create(methodCall, new ScheduledState(delay) { CandidateQueue = queue });
         }
 
         /// <summary>
@@ -152,15 +156,17 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">Moment of time at which the job will be enqueued.</param>
+        /// <param name="queue"></param>
         /// <returns>Unique identifier or a created job.</returns>
         public static string Schedule(
             [NotNull] this IBackgroundJobClient client,
             [NotNull, InstantHandle] Expression<Action> methodCall,
-            DateTimeOffset enqueueAt)
+            DateTimeOffset enqueueAt,
+            string queue = EnqueuedState.DefaultQueue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            return client.Create(methodCall, new ScheduledState(enqueueAt.UtcDateTime));
+            return client.Create(methodCall, new ScheduledState(enqueueAt.UtcDateTime) { CandidateQueue = queue });
         }
 
         /// <summary>
@@ -170,15 +176,17 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">Moment of time at which the job will be enqueued.</param>
+        /// <param name="queue"></param>
         /// <returns>Unique identifier or a created job.</returns>
         public static string Schedule(
             [NotNull] this IBackgroundJobClient client,
             [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
-            DateTimeOffset enqueueAt)
+            DateTimeOffset enqueueAt,
+            string queue = EnqueuedState.DefaultQueue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            return client.Create(methodCall, new ScheduledState(enqueueAt.UtcDateTime));
+            return client.Create(methodCall, new ScheduledState(enqueueAt.UtcDateTime) { CandidateQueue = queue });
         }
 
         /// <summary>
@@ -190,15 +198,17 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
+        /// <param name="queue"></param>
         /// <returns>Unique identifier of the created job.</returns>
         public static string Schedule<T>(
             [NotNull] this IBackgroundJobClient client, 
             [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
-            TimeSpan delay)
+            TimeSpan delay,
+            string queue = EnqueuedState.DefaultQueue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            return client.Create(methodCall, new ScheduledState(delay));
+            return client.Create(methodCall, new ScheduledState(delay) { CandidateQueue = queue });
         }
 
         /// <summary>
@@ -210,15 +220,17 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
+        /// <param name="queue"></param>
         /// <returns>Unique identifier of the created job.</returns>
         public static string Schedule<T>(
             [NotNull] this IBackgroundJobClient client,
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
-            TimeSpan delay)
+            TimeSpan delay,
+            string queue = EnqueuedState.DefaultQueue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            return client.Create(methodCall, new ScheduledState(delay));
+            return client.Create(methodCall, new ScheduledState(delay) { CandidateQueue = queue });
         }
 
         /// <summary>
@@ -229,15 +241,17 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">Moment at which the job will be enqueued.</param>
+        /// <param name="queue"></param>
         /// <returns>Unique identifier of a created job.</returns>
         public static string Schedule<T>(
             [NotNull] this IBackgroundJobClient client,
             [NotNull, InstantHandle] Expression<Action<T>> methodCall,
-            DateTimeOffset enqueueAt)
+            DateTimeOffset enqueueAt,
+            string queue = EnqueuedState.DefaultQueue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            return client.Create(methodCall, new ScheduledState(enqueueAt.UtcDateTime));
+            return client.Create(methodCall, new ScheduledState(enqueueAt.UtcDateTime) { CandidateQueue = queue });
         }
 
         /// <summary>
@@ -248,15 +262,17 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">Moment at which the job will be enqueued.</param>
+        /// <param name="queue"></param>
         /// <returns>Unique identifier of a created job.</returns>
         public static string Schedule<T>(
             [NotNull] this IBackgroundJobClient client,
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
-            DateTimeOffset enqueueAt)
+            DateTimeOffset enqueueAt,
+            string queue = EnqueuedState.DefaultQueue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            return client.Create(methodCall, new ScheduledState(enqueueAt.UtcDateTime));
+            return client.Create(methodCall, new ScheduledState(enqueueAt.UtcDateTime) { CandidateQueue = queue });
         }
 
         /// <summary>
