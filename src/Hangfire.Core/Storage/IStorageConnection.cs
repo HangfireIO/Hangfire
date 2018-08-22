@@ -1,5 +1,5 @@
 // This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright ï¿½ 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -56,6 +56,9 @@ namespace Hangfire.Storage
         HashSet<string> GetAllItemsFromSet([NotNull] string key);
 
         string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);
+        
+        [NotNull]
+        HashSet<string> GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore, int max);
 
         // Hash operations
 

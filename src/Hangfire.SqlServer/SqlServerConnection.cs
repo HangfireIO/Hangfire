@@ -270,6 +270,11 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
                 commandTimeout: _storage.CommandTimeout));
         }
 
+        public override HashSet<string> GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore, int max)
+        {
+            return new HashSet<string>();
+        }
+
         public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
