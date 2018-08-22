@@ -261,18 +261,24 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
 
         public override string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
-            if (toScore < fromScore) throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.");
-
-            return _storage.UseConnection(_dedicatedConnection, connection => connection.ExecuteScalar<string>(
-                $@"select top 1 Value from [{_storage.SchemaName}].[Set] with (readcommittedlock, forceseek) where [Key] = @key and Score between @from and @to order by Score",
-                new { key, from = fromScore, to = toScore },
-                commandTimeout: _storage.CommandTimeout));
+            return GetFirstByLowestScoreFromSet(key, fromScore, toScore, 1).FirstOrDefault();
         }
 
         public override HashSet<string> GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore, int max)
         {
-            return new HashSet<string>();
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (max <= 0) throw new ArgumentException("The `max` value must be non-negative, non-zero value");
+            if (toScore < fromScore) throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.");
+
+            return _storage.UseConnection(_dedicatedConnection, connection =>
+            {
+                var result = connection.Query<string>(
+                    $@"select top (@max) Value from [{_storage.SchemaName}].[Set] with (readcommittedlock, forceseek) where [Key] = @key and Score between @from and @to order by Score",
+                    new { max, key, from = fromScore, to = toScore },
+                    commandTimeout: _storage.CommandTimeout);
+
+                return new HashSet<string>(result);
+            });
         }
 
         public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
