@@ -92,7 +92,7 @@ set transaction isolation level read committed
 update top (1) JQ
 set FetchedAt = GETUTCDATE()
 output INSERTED.Id, INSERTED.JobId, INSERTED.Queue
-from [{_storage.SchemaName}].JobQueue JQ with (readpast)
+from [{_storage.SchemaName}].JobQueue JQ with (forceseek, paglock, xlock)
 where Queue in @queues and
 (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))";
 
