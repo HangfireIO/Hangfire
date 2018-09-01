@@ -99,6 +99,7 @@
     <Compile Include="Common\JobFilterScope.cs" />
     <Compile Include="Common\JobHelper.cs" />
     <Compile Include="Common\JobLoadException.cs" />
+    <Compile Include="Common\JsonSerializerSettingsExtensions.cs" />
     <Compile Include="Common\MethodInfoExtensions.cs" />
     <Compile Include="Common\ReflectedAttributeCache.cs" />
     <Compile Include="Common\TypeExtensions.cs" />
