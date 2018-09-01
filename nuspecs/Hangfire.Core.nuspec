@@ -13,45 +13,10 @@
     <copyright>Copyright © 2013-2018 Sergey Odinokov</copyright>
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
+
 1.7.0-beta2
-      
-Merged updates from 1.6.18 – 1.6.20:
-      
-    1.6.20
-
-    • SECURITY – Add "robots" meta tag to ensure browser don't index dashboard pages.
-    • SECURITY – Add support for antiforgery validation to prevent CSRF attacks (requires configuration).
-
-    • Fixed – Perform state change retries using a fresh connection when job's distributed lock may be abandoned.
-    • Fixed – Disallow transitions to the Failed state on retries that bypass all the filters.
-    • Fixed – Remove possible rare CPU spikes due to the use of `CancellationToken.WaitHandle`.
-    • Fixed – Avoid resolving types and methods for logging in static constructors that may lead to process shutdown.
-    • Fixed – Prevent Recurring jobs dashboard from throwing `NullReferenceException` (by @mattkwiecien).
-    • Fixed – Replace wall clocks with monotonic ones when calculating local timeouts.
-    • Fixed – Change logger initialization to be deterministic and predictable by using instance fields.
-    • Fixed – Make `_currentLogProvider` field access to use volatile reads/writes.
-    • Fixed – Typo in `NotSupportedException`'s message (by @benrick).
-    • Fixed – Typo on the Failed jobs page (by @gareth-evans).
-      
-    1.6.19
-    • Fixed – NullReferenceException in JobMethodCallRenderer regression appeared in 1.6.18.
-          
-    1.6.18
-    • Added – Add on option to remove the storage connection string from the footer (by @sandorfr).
-    • Added – Add Dashboard UI Resource zh-TW (by @crablin).
-    • Fixed – OutOfMemoryException in dashboard when arguments are too big.
-    • Fixed – DisplayNameAttribute doesn't work when using dashboard in .NET Core.
-    • Fixed – Update rickshaw css to match the js version (by @pieceofsummer).
-    • Fixed – Bad exception when Job.FromExpression fails to resolve method for explicit interface implementations (by @f00).
-    • Fixed – Missing intValue-values in "/stats" endpoint (by @pieceofsummer).
-    • Fixed – Logging doesn't work with log4net integration in .NET Core (by @evollu).
-    • Fixed – Fix nuspec pointing to version of Newtonsoft.Json that does not exist (by @mvestergaard)
-    • Fixed – Server start time has a bad tooltip position (by @pieceofsummer).
-    • Fixed – Prevent connection string from blowing mobile page layout (by @pieceofsummer).
-    • Fixed – Number of recurring jobs per page is now correct (by @pieceofsummer).
-    • Project – Get rid of all the compile-time warnings (by @liakamp).
-    • Project – More details for build instructions for the project (by @kristofferjalen).
-    • Project – Unable to build project with space in folder path (by @stefanviberg).
+• Fixed – `MissingMethodException` when using Newtonsoft.Json 11 in .NET Core 2.X with continuations (by @pieceofsummer).
+• Ported – Merged updates from versions 1.6.18 – 1.6.20.
     
 1.7.0-beta1
 • Added – Entry point for custom job naming strategies available for dashboard (by @pieceofsummer).

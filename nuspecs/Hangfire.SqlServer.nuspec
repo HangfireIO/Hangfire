@@ -15,19 +15,10 @@
     <releaseNotes>https://www.hangfire.io/blog/
       
 1.7.0-beta2
-      
-Merged updates from 1.6.18 – 1.6.20:
-      
-    1.6.20
-    • Fixed – Remove the synthetic limitation to support Azure SQL Management instance (by @TimSQL).
-          
-    1.6.19
-    • Fixed – "String or binary data would be truncated" exception when state reason is too long.
-    • Fixed – Command handling in batch mode now stops after the first error due to "XACT_ABORT ON".
-    • Fixed – Make SqlCommandBatch disposable to dispose all the commands.
-          
-    1.6.18
-    • Fixed – Rare deadlocks in SQL Server caused by the SetRangeInHash command.
+• Added – Blocking fetch support for sliding expiration-based fetch to avoid excessive polling.
+• Changed – Optimize sliding-expiration-based fetching to use even less CPU time.
+• Changed – Use write reordering and fine-grained locking scheme to improve parallelism.
+• Ported – Merged updates from versions 1.6.18 – 1.6.20.
     
 1.7.0-beta1
 • Added – Callback method to allow to open the database with impersonation (by @BjoernHund).
