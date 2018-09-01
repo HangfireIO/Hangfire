@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
 #if NETFULL
 using System.Transactions;
@@ -38,7 +39,7 @@ namespace Hangfire.SqlServer
         private readonly object _cacheLock = new object();
 
         private List<string> _queuesCache = new List<string>();
-        private DateTime _cacheUpdated;
+        private Stopwatch _cacheUpdated;
 
         public SqlServerJobQueueMonitoringApi([NotNull] SqlServerStorage storage)
         {
@@ -52,7 +53,7 @@ namespace Hangfire.SqlServer
 
             lock (_cacheLock)
             {
-                if (_queuesCache.Count == 0 || _cacheUpdated.Add(QueuesCacheTimeout) < DateTime.UtcNow)
+                if (_queuesCache.Count == 0 || _cacheUpdated.Elapsed > QueuesCacheTimeout)
                 {
                     var result = _storage.UseConnection(null, connection =>
                     {
@@ -60,7 +61,7 @@ namespace Hangfire.SqlServer
                     });
 
                     _queuesCache = result;
-                    _cacheUpdated = DateTime.UtcNow;
+                    _cacheUpdated = Stopwatch.StartNew();
                 }
 
                 return _queuesCache.ToList();

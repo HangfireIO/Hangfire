@@ -29,6 +29,8 @@ namespace Hangfire.Dashboard
 {
     internal static class JobMethodCallRenderer
     {
+        private const int MaxArgumentToRenderSize = 4096;
+
         public static NonEscapedString Render(Job job)
         {
             if (job == null) { return new NonEscapedString("<em>Can not find the target method.</em>"); }
@@ -96,8 +98,15 @@ namespace Hangfire.Dashboard
 #pragma warning disable 618
                 if (i < job.Arguments.Length)
                 {
-                    var argument = job.Arguments[i]; // TODO: check bounds
+                    var argument = job.Arguments[i];
 #pragma warning restore 618
+
+                    if (argument != null && argument.Length > MaxArgumentToRenderSize)
+                    {
+                        renderedArguments.Add(Encode("<VALUE IS TOO BIG>"));
+                        continue;
+                    }
+
                     string renderedArgument;
 
                     var enumerableArgument = GetIEnumerableGenericArgument(parameter.ParameterType);

@@ -59,7 +59,7 @@ namespace Hangfire.Common
 
             foreach (var methodCandidate in methodCandidates)
             {
-                if (!methodCandidate.Name.Equals(name, StringComparison.Ordinal))
+                if (!methodCandidate.GetNormalizedName().Equals(name, StringComparison.Ordinal))
                 {
                     continue;
                 }

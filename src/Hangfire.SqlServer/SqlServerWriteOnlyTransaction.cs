@@ -1,5 +1,5 @@
 // This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright Â© 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -34,13 +34,16 @@ namespace Hangfire.SqlServer
     {
         private readonly Queue<Action<DbConnection, DbTransaction>> _queueCommandQueue
             = new Queue<Action<DbConnection, DbTransaction>>();
-        private readonly Queue<Tuple<string, SqlParameter[]>> _commandQueue
-            = new Queue<Tuple<string, SqlParameter[]>>();
         private readonly Queue<Action> _afterCommitCommandQueue = new Queue<Action>();
 
-        private readonly SortedSet<string> _lockedResources = new SortedSet<string>();
         private readonly SqlServerStorage _storage;
         private readonly Func<DbConnection> _dedicatedConnectionFunc;
+
+        private readonly SortedDictionary<long, List<Tuple<string, SqlParameter[]>>> _jobCommands = new SortedDictionary<long, List<Tuple<string, SqlParameter[]>>>();
+        private readonly SortedDictionary<string, List<Tuple<string, SqlParameter[]>>> _counterCommands = new SortedDictionary<string, List<Tuple<string, SqlParameter[]>>>();
+        private readonly SortedDictionary<string, List<Tuple<string, SqlParameter[]>>> _hashCommands = new SortedDictionary<string, List<Tuple<string, SqlParameter[]>>>();
+        private readonly SortedDictionary<string, List<Tuple<string, SqlParameter[]>>> _listCommands = new SortedDictionary<string, List<Tuple<string, SqlParameter[]>>>();
+        private readonly SortedDictionary<string, List<Tuple<string, SqlParameter[]>>> _setCommands = new SortedDictionary<string, List<Tuple<string, SqlParameter[]>>>();
 
         public SqlServerWriteOnlyTransaction([NotNull] SqlServerStorage storage, Func<DbConnection> dedicatedConnectionFunc)
         {
@@ -54,30 +57,27 @@ namespace Hangfire.SqlServer
         {
             _storage.UseTransaction(_dedicatedConnectionFunc(), (connection, transaction) =>
             {
-                var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue);
-
-                foreach (var lockedResource in _lockedResources)
+                using (var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
                 {
-                    commandBatch.Append(
-                        "set nocount on;exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'",
-                        new SqlParameter("@resource", lockedResource));
-                }
+                    commandBatch.Append("set xact_abort on;set nocount on;");
 
-                foreach (var command in _commandQueue)
-                {
-                    commandBatch.Append(command.Item1, command.Item2);
-                }
+                    AppendBatch(_jobCommands, commandBatch);
+                    AppendBatch(_counterCommands, commandBatch);
+                    AppendBatch(_hashCommands, commandBatch);
+                    AppendBatch(_listCommands, commandBatch);
+                    AppendBatch(_setCommands, commandBatch);
 
-                commandBatch.Connection = connection;
-                commandBatch.Transaction = transaction;
-                commandBatch.CommandTimeout = _storage.CommandTimeout;
-                commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
+                    commandBatch.Connection = connection;
+                    commandBatch.Transaction = transaction;
+                    commandBatch.CommandTimeout = _storage.CommandTimeout;
+                    commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
 
-                commandBatch.ExecuteNonQuery();
+                    commandBatch.ExecuteNonQuery();
 
-                foreach (var queueCommand in _queueCommandQueue)
-                {
-                    queueCommand(connection, transaction);
+                    foreach (var queueCommand in _queueCommandQueue)
+                    {
+                        queueCommand(connection, transaction);
+                    }
                 }
             });
 
@@ -89,21 +89,20 @@ namespace Hangfire.SqlServer
 
         public override void ExpireJob(string jobId, TimeSpan expireIn)
         {
-            QueueCommand(
+            AddCommand(
+                _jobCommands,
+                long.Parse(jobId),
                 $@"update J set ExpireAt = @expireAt from [{_storage.SchemaName}].Job J with (forceseek) where Id = @id;",
                 new SqlParameter("@expireAt", DateTime.UtcNow.Add(expireIn)),
                 new SqlParameter("@id", long.Parse(jobId)));
         }
 
-        private void QueueCommand(string commandText, params SqlParameter[] parameters)
-        {
-            _commandQueue.Enqueue(new Tuple<string, SqlParameter[]>(commandText, parameters));
-        }
-
         public override void PersistJob(string jobId)
         {
-            QueueCommand(
-                    $@"update J set ExpireAt = NULL from [{_storage.SchemaName}].Job J with (forceseek) where Id = @id;",
+            AddCommand(
+                _jobCommands,
+                long.Parse(jobId),
+                $@"update J set ExpireAt = NULL from [{_storage.SchemaName}].Job J with (forceseek) where Id = @id;",
                 new SqlParameter("@id", long.Parse(jobId)));
         }
 
@@ -114,10 +113,13 @@ $@"insert into [{_storage.SchemaName}].State (JobId, Name, Reason, CreatedAt, Da
 values (@jobId, @name, @reason, @createdAt, @data);
 update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @name where Id = @id;";
 
-            QueueCommand(addAndSetStateSql,
+            AddCommand(
+                _jobCommands,
+                long.Parse(jobId),
+                addAndSetStateSql,
                 new SqlParameter("@jobId", long.Parse(jobId)),
                 new SqlParameter("@name", state.Name),
-                new SqlParameter("@reason", (object)state.Reason ?? DBNull.Value),
+                new SqlParameter("@reason", (object)state.Reason?.Substring(0, Math.Min(99, state.Reason.Length)) ?? DBNull.Value),
                 new SqlParameter("@createdAt", DateTime.UtcNow),
                 new SqlParameter("@data", (object)JobHelper.ToJson(state.SerializeData()) ?? DBNull.Value),
                 new SqlParameter("@id", long.Parse(jobId)));
@@ -129,10 +131,13 @@ update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @
 $@"insert into [{_storage.SchemaName}].State (JobId, Name, Reason, CreatedAt, Data)
 values (@jobId, @name, @reason, @createdAt, @data)";
 
-            QueueCommand(addStateSql,
+            AddCommand(
+                _jobCommands,
+                long.Parse(jobId),
+                addStateSql,
                 new SqlParameter("@jobId", long.Parse(jobId)),
                 new SqlParameter("@name", state.Name),
-                new SqlParameter("@reason", (object)state.Reason ?? DBNull.Value),
+                new SqlParameter("@reason", (object)state.Reason?.Substring(0, Math.Min(99, state.Reason.Length)) ?? DBNull.Value),
                 new SqlParameter("@createdAt", DateTime.UtcNow),
                 new SqlParameter("@data", (object)JobHelper.ToJson(state.SerializeData()) ?? DBNull.Value));
         }
@@ -158,7 +163,9 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void IncrementCounter(string key)
         {
-            QueueCommand(
+            AddCommand(
+                _counterCommands,
+                key,
                 $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value]) values (@key, @value)",
                 new SqlParameter("@key", key),
                 new SqlParameter("@value", +1));
@@ -166,7 +173,9 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void IncrementCounter(string key, TimeSpan expireIn)
         {
-            QueueCommand(
+            AddCommand(
+                _counterCommands,
+                key,
                 $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
                 new SqlParameter("@key", key),
                 new SqlParameter("@value", +1),
@@ -175,7 +184,9 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void DecrementCounter(string key)
         {
-            QueueCommand(
+            AddCommand(
+                _counterCommands,
+                key,
                 $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value]) values (@key, @value)",
                 new SqlParameter("@key", key),
                 new SqlParameter("@value", -1));
@@ -183,7 +194,9 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void DecrementCounter(string key, TimeSpan expireIn)
         {
-            QueueCommand(
+            AddCommand(
+                _counterCommands,
+                key,
                 $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
                 new SqlParameter("@key", key),
                 new SqlParameter("@value", -1),
@@ -204,8 +217,10 @@ on Target.[Key] = Source.[Key] and Target.Value = Source.Value
 when matched then update set Score = Source.Score
 when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.Value, Source.Score);";
 
-            AcquireSetLock();
-            QueueCommand(addSql,
+            AddCommand(
+                _setCommands,
+                key,
+                addSql,
                 new SqlParameter("@key", key),
                 new SqlParameter("@value", value),
                 new SqlParameter("@score", score));
@@ -215,25 +230,32 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
         {
             string query = $@"delete from [{_storage.SchemaName}].[Set] where [Key] = @key and Value = @value";
 
-            AcquireSetLock();
-            QueueCommand(query,
+            AddCommand(
+                _setCommands,
+                key,
+                query,
                 new SqlParameter("@key", key),
                 new SqlParameter("@value", value));
         }
 
         public override void InsertToList(string key, string value)
         {
-            AcquireListLock();
-            QueueCommand(
-                $@"insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
+            AddCommand(
+                _listCommands,
+                key,
+                $@"
+select [Key] from [{_storage.SchemaName}].List with (xlock)
+where [Key] = @key;
+insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
                 new SqlParameter("@key", key),
                 new SqlParameter("@value", value));
         }
 
         public override void RemoveFromList(string key, string value)
         {
-            AcquireListLock();
-            QueueCommand(
+            AddCommand(
+                _listCommands,
+                key,
                 $@"delete from [{_storage.SchemaName}].List where [Key] = @key and Value = @value",
                 new SqlParameter("@key", key),
                 new SqlParameter("@value", value));
@@ -244,12 +266,14 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
             string trimSql =
 $@";with cte as (
     select row_number() over (order by Id desc) as row_num
-    from [{_storage.SchemaName}].List
+    from [{_storage.SchemaName}].List with (xlock)
     where [Key] = @key)
 delete from cte where row_num not between @start and @end";
 
-            AcquireListLock();
-            QueueCommand(trimSql,
+            AddCommand(
+                _listCommands,
+                key, 
+                trimSql,
                 new SqlParameter("@key", key),
                 new SqlParameter("@start", keepStartingFrom + 1),
                 new SqlParameter("@end", keepEndingAt + 1));
@@ -267,11 +291,12 @@ on Target.[Key] = Source.[Key] and Target.Field = Source.Field
 when matched then update set Value = Source.Value
 when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
 
-            AcquireHashLock();
-
             foreach (var pair in keyValuePairs)
             {
-                QueueCommand(sql,
+                AddCommand(
+                    _hashCommands,
+                    key,
+                    sql,
                     new SqlParameter("@key", key),
                     new SqlParameter("@field", pair.Key),
                     new SqlParameter("@value", (object)pair.Value ?? DBNull.Value));
@@ -284,8 +309,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
 
             string query = $@"delete from [{_storage.SchemaName}].Hash where [Key] = @key";
 
-            AcquireHashLock();
-            QueueCommand(query, new SqlParameter("@key", key));
+            AddCommand(_hashCommands, key, query, new SqlParameter("@key", key));
         }
 
         public override void AddRangeToSet(string key, IList<string> items)
@@ -298,11 +322,9 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
 $@"insert into [{_storage.SchemaName}].[Set] ([Key], Value, Score)
 values (@key, @value, 0.0)";
 
-            AcquireSetLock();
-
             foreach (var item in items)
             {
-                QueueCommand(query, new SqlParameter("@key", key), new SqlParameter("@value", item));
+                AddCommand(_setCommands, key, query, new SqlParameter("@key", key), new SqlParameter("@value", item));
             }
         }
 
@@ -311,9 +333,7 @@ values (@key, @value, 0.0)";
             if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"delete from [{_storage.SchemaName}].[Set] where [Key] = @key";
-
-            AcquireSetLock();
-            QueueCommand(query, new SqlParameter("@key", key));
+            AddCommand(_setCommands, key, query, new SqlParameter("@key", key));
         }
 
         public override void ExpireHash(string key, TimeSpan expireIn)
@@ -323,8 +343,7 @@ values (@key, @value, 0.0)";
              string query = $@"
 update [{_storage.SchemaName}].[Hash] set ExpireAt = @expireAt where [Key] = @key";
 
-            AcquireHashLock();
-            QueueCommand(query,
+            AddCommand(_hashCommands, key, query,
                 new SqlParameter("@key", key),
                 new SqlParameter("@expireAt", DateTime.UtcNow.Add(expireIn)));
         }
@@ -336,8 +355,7 @@ update [{_storage.SchemaName}].[Hash] set ExpireAt = @expireAt where [Key] = @ke
             string query = $@"
 update [{_storage.SchemaName}].[Set] set ExpireAt = @expireAt where [Key] = @key";
 
-            AcquireSetLock();
-            QueueCommand(query,
+            AddCommand(_setCommands, key, query,
                 new SqlParameter("@key", key),
                 new SqlParameter("@expireAt", DateTime.UtcNow.Add(expireIn)));
         }
@@ -349,8 +367,7 @@ update [{_storage.SchemaName}].[Set] set ExpireAt = @expireAt where [Key] = @key
             string query = $@"
 update [{_storage.SchemaName}].[List] set ExpireAt = @expireAt where [Key] = @key";
 
-            AcquireListLock();
-            QueueCommand(query,
+            AddCommand(_listCommands, key, query,
                 new SqlParameter("@key", key),
                 new SqlParameter("@expireAt", DateTime.UtcNow.Add(expireIn)));
         }
@@ -362,8 +379,7 @@ update [{_storage.SchemaName}].[List] set ExpireAt = @expireAt where [Key] = @ke
             string query = $@"
 update [{_storage.SchemaName}].Hash set ExpireAt = null where [Key] = @key";
 
-            AcquireHashLock();
-            QueueCommand(query, new SqlParameter("@key", key));
+            AddCommand(_hashCommands, key, query, new SqlParameter("@key", key));
         }
 
         public override void PersistSet(string key)
@@ -373,8 +389,7 @@ update [{_storage.SchemaName}].Hash set ExpireAt = null where [Key] = @key";
             string query = $@"
 update [{_storage.SchemaName}].[Set] set ExpireAt = null where [Key] = @key";
 
-            AcquireSetLock();
-            QueueCommand(query, new SqlParameter("@key", key));
+            AddCommand(_setCommands, key, query, new SqlParameter("@key", key));
         }
 
         public override void PersistList(string key)
@@ -384,28 +399,37 @@ update [{_storage.SchemaName}].[Set] set ExpireAt = null where [Key] = @key";
             string query = $@"
 update [{_storage.SchemaName}].[List] set ExpireAt = null where [Key] = @key";
 
-            AcquireListLock();
-            QueueCommand(query, new SqlParameter("@key", key));
+            AddCommand(_listCommands, key, query, new SqlParameter("@key", key));
         }
 
-        private void AcquireListLock()
+        private void AppendBatch<TKey>(
+            SortedDictionary<TKey, List<Tuple<string, SqlParameter[]>>> collection,
+            SqlCommandBatch batch)
         {
-            AcquireLock("List");
+            foreach (var pair in collection)
+            {
+                foreach (var command in pair.Value)
+                {
+                    batch.Append(command.Item1, command.Item2);
+                }
+            }
         }
 
-        private void AcquireSetLock()
+        private void AddCommand<TKey>(
+            SortedDictionary<TKey, List<Tuple<string, SqlParameter[]>>> collection,
+            TKey key, 
+            string commandText, 
+            params SqlParameter[] parameters)
         {
-            AcquireLock("Set");
-        }
+            List<Tuple<string, SqlParameter[]>> commands;
 
-        private void AcquireHashLock()
-        {
-            AcquireLock("Hash");
-        }
+            if (!collection.TryGetValue(key, out commands))
+            {
+                commands = new List<Tuple<string, SqlParameter[]>>();
+                collection.Add(key, commands);
+            }
 
-        private void AcquireLock(string resource)
-        {
-            _lockedResources.Add($"{_storage.SchemaName}:{resource}:Lock");
+            commands.Add(Tuple.Create(commandText, parameters));
         }
     }
 }

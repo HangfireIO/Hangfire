@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
@@ -32,7 +33,7 @@ namespace Hangfire
         private static readonly TimeSpan ContinuationStateFetchTimeout = TimeSpan.FromSeconds(30);
         private static readonly TimeSpan ContinuationInvalidTimeout = TimeSpan.FromMinutes(15);
 
-        private static readonly ILog Logger = LogProvider.For<ContinuationsSupportAttribute>();
+        private readonly ILog _logger = LogProvider.For<ContinuationsSupportAttribute>();
 
         private readonly HashSet<string> _knownFinalStates;
         private readonly IBackgroundJobStateChanger _stateChanger;
@@ -149,7 +150,7 @@ namespace Hangfire
             {
                 if (String.IsNullOrWhiteSpace(continuation.JobId)) continue;
 
-                var currentState = GetContinuaionState(context, continuation.JobId, ContinuationStateFetchTimeout);
+                var currentState = GetContinuationState(context, continuation.JobId, ContinuationStateFetchTimeout);
                 if (currentState == null)
                 {
                     continue;
@@ -203,11 +204,11 @@ namespace Hangfire
             }
         }
 
-        private static StateData GetContinuaionState(ElectStateContext context, string continuationJobId, TimeSpan timeout)
+        private StateData GetContinuationState(ElectStateContext context, string continuationJobId, TimeSpan timeout)
         {
             StateData currentState = null;
 
-            var started = DateTime.UtcNow;
+            var started = Stopwatch.StartNew();
             var firstAttempt = true;
 
             while (true)
@@ -215,7 +216,7 @@ namespace Hangfire
                 var continuationData = context.Connection.GetJobData(continuationJobId);
                 if (continuationData == null)
                 {
-                    Logger.Warn(
+                    _logger.Warn(
                         $"Can not start continuation '{continuationJobId}' for background job '{context.BackgroundJob.Id}': continuation does not exist.");
 
                     break;
@@ -229,13 +230,13 @@ namespace Hangfire
 
                 if (DateTime.UtcNow - continuationData.CreatedAt > ContinuationInvalidTimeout)
                 {
-                    Logger.Warn(
+                    _logger.Warn(
                         $"Continuation '{continuationJobId}' has been ignored: it was deemed to be aborted, because its state is still non-initialized.");
 
                     break;
                 }
 
-                if (DateTime.UtcNow >= started.Add(timeout))
+                if (started.Elapsed >= timeout)
                 {
                     throw new TimeoutException(
                         $"Can not start continuation '{continuationJobId}' for background job '{context.BackgroundJob.Id}': timeout expired while trying to fetch continuation state.");
