@@ -19,6 +19,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
+using Hangfire.Common;
 using Hangfire.Logging;
 using ThreadState = System.Threading.ThreadState;
 
@@ -51,6 +52,9 @@ namespace Hangfire.Processing
         private Stopwatch _stoppedAt;
         private CancellationTokenRegistration _stopRegistration;
         private CancellationTokenRegistration _abortRegistration;
+        private CancellationTokenExtentions.CancellationEvent _stopped;
+        private CancellationTokenExtentions.CancellationEvent _aborted;
+
         private volatile bool _disposed;
 
         public BackgroundExecution(
@@ -70,7 +74,9 @@ namespace Hangfire.Processing
             _stopRegistration = _stopToken.Register(SetStoppedAt);
             _abortRegistration = _abortToken.Register(SetStoppedAt);
 
-            _waitHandles = new[] { _running, _stopToken.WaitHandle, _abortToken.WaitHandle };
+            _stopped = _stopToken.GetCancellationEvent();
+            _aborted = _abortToken.GetCancellationEvent();
+            _waitHandles = new WaitHandle[] { _running, _stopped.WaitHandle, _aborted.WaitHandle };
 
 #if NETFULL
             AppDomainUnloadMonitor.EnsureInitialized();
@@ -256,6 +262,8 @@ namespace Hangfire.Processing
                 _abortRegistration.Dispose();
                 _stopRegistration.Dispose();
                 _running.Dispose();
+                _stopped.Dispose();
+                _aborted.Dispose();
             }
         }
 
