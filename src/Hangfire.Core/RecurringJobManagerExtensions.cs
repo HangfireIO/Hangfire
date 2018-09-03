@@ -60,5 +60,49 @@ namespace Hangfire
                 cronExpression,
                 new RecurringJobOptions { QueueName = queue, TimeZone = timeZone });
         }
+
+        public static void AddOrUpdateBounded(
+             [NotNull] this IRecurringJobManager manager,
+             [NotNull] string recurringJobId,
+             [NotNull] Job job,
+             [NotNull] string cronExpression,
+             DateTime? startDate,
+             DateTime? endDate)
+        {
+            AddOrUpdateBounded(manager, recurringJobId, job, cronExpression, TimeZoneInfo.Utc, startDate, endDate);
+        }
+
+        public static void AddOrUpdateBounded(
+            [NotNull] this IRecurringJobManager manager,
+            [NotNull] string recurringJobId,
+            [NotNull] Job job,
+            [NotNull] string cronExpression,
+            [NotNull] TimeZoneInfo timeZone,
+            DateTime? startDate,
+            DateTime? endDate)
+        {
+            AddOrUpdateBounded(manager, recurringJobId, job, cronExpression, timeZone, EnqueuedState.DefaultQueue, startDate, endDate);
+        }
+
+        public static void AddOrUpdateBounded(
+            [NotNull] this IRecurringJobManager manager,
+            [NotNull] string recurringJobId,
+            [NotNull] Job job,
+            [NotNull] string cronExpression,
+            [NotNull] TimeZoneInfo timeZone,
+            [NotNull] string queue,
+            DateTime? startDate,
+            DateTime? endDate)
+        {
+            if (manager == null) throw new ArgumentNullException(nameof(manager));
+            if (timeZone == null) throw new ArgumentNullException(nameof(timeZone));
+            if (queue == null) throw new ArgumentNullException(nameof(queue));
+
+            manager.AddOrUpdate(
+                recurringJobId,
+                job,
+                cronExpression,
+                new RecurringJobOptions { QueueName = queue, TimeZone = timeZone, StartDate = startDate, EndDate = endDate });
+        }
     }
 }

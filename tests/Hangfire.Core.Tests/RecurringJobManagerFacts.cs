@@ -177,6 +177,59 @@ namespace Hangfire.Core.Tests
                     && !String.IsNullOrEmpty(rj["Job"])
                     && JobHelper.DeserializeDateTime(rj["CreatedAt"]) > DateTime.UtcNow.AddMinutes(-1))));
         }
+        
+        [Fact]
+        public void AddOrUpdateBounded_SetsTheRecurringJobEntry_IncludingOptionalDateRange()
+        {
+            var startDate = DateTime.UtcNow.AddSeconds(-1);
+            var endDate = DateTime.UtcNow.AddSeconds(1);
+            var manager = CreateManager();
+
+            manager.AddOrUpdateBounded(_id, _job, _cronExpression, startDate, endDate);
+
+            _transaction.Verify(x => x.SetRangeInHash(
+                $"recurring-job:{_id}",
+                It.Is<Dictionary<string, string>>(rj =>
+                    JobHelper.DeserializeNullableDateTime(rj["StartDate"]) == startDate
+                    && JobHelper.DeserializeNullableDateTime(rj["EndDate"]) == endDate)));
+        }
+
+        [Fact]
+        public void AddOrUpdateBounded_RequiresStartDate_ToBeUtc()
+        {
+            var startDate = DateTime.Now;
+            var manager = CreateManager();
+
+            var exception = Record.Exception(() => manager.AddOrUpdateBounded(_id, _job, _cronExpression, startDate, null));
+
+            Assert.IsType<ArgumentException>(exception);
+            Assert.True(((ArgumentException)exception).ParamName == nameof(RecurringJobOptions.StartDate));
+        }
+
+        [Fact]
+        public void AddOrUpdateBounded_RequiresEndDate_ToBeUtc()
+        {
+            var endDate = DateTime.Now;
+            var manager = CreateManager();
+
+            var exception = Record.Exception(() => manager.AddOrUpdateBounded(_id, _job, _cronExpression, null, endDate));
+
+            Assert.IsType<ArgumentException>(exception);
+            Assert.True(((ArgumentException)exception).ParamName == nameof(RecurringJobOptions.EndDate));
+        }
+
+        [Fact]
+        public void AddOrUpdateBounded_RequiresEndDate_ToBeAfterStartDate()
+        {
+            var startDate = DateTime.UtcNow;
+            var endDate = startDate.AddSeconds(-1);
+            var manager = CreateManager();
+
+            var exception = Record.Exception(() => manager.AddOrUpdateBounded(_id, _job, _cronExpression, startDate, endDate));
+
+            Assert.IsType<ArgumentException>(exception);
+            Assert.True(((ArgumentException)exception).ParamName == "options");
+        }
 
         [Fact]
         public void AddOrUpdate_CommitsTransaction()

@@ -23,6 +23,7 @@ using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
 using Cronos;
+using System.Linq;
 
 namespace Hangfire.Server
 {
@@ -159,8 +160,8 @@ namespace Hangfire.Server
 
         private void TryScheduleJob(
             JobStorage storage,
-            IStorageConnection connection, 
-            string recurringJobId, 
+            IStorageConnection connection,
+            string recurringJobId,
             IReadOnlyDictionary<string, string> recurringJob)
         {
             var serializedJob = InvocationData.Deserialize(recurringJob["Job"]);
@@ -170,6 +171,19 @@ namespace Hangfire.Server
 
             try
             {
+
+                var startDate = JobHelper.DeserializeNullableDateTime(recurringJob.ContainsKey("StartDate") ? recurringJob["StartDate"] : null);
+                if (startDate.HasValue)
+                {
+                    startDate = DateTime.SpecifyKind(startDate.Value, DateTimeKind.Utc);
+                }
+
+                var endDate = JobHelper.DeserializeNullableDateTime(recurringJob.ContainsKey("EndDate") ? recurringJob["EndDate"] : null);
+                if (endDate.HasValue)
+                {
+                    endDate = DateTime.SpecifyKind(endDate.Value, DateTimeKind.Utc);
+                }
+
                 var timeZone = recurringJob.ContainsKey("TimeZoneId")
                     ? TimeZoneInfo.FindSystemTimeZoneById(recurringJob["TimeZoneId"])
                     : TimeZoneInfo.Utc;
@@ -179,7 +193,32 @@ namespace Hangfire.Server
 
                 var changedFields = new Dictionary<string, string>();
 
-                var nextInstant = cronExpression.GetNextOccurrence(lastInstant, timeZone);
+                var lowerBound = lastInstant;
+                var fromInclusive = false;
+                var toInclusive = false;
+
+                if (startDate.HasValue && lastInstant < startDate)
+                {
+                    lowerBound = startDate.Value;
+                    fromInclusive = true;
+                }
+
+                DateTime? nextInstant;
+
+                if (endDate.HasValue)
+                {
+                    toInclusive = true;
+                    nextInstant = cronExpression.GetOccurrences(lowerBound, endDate.Value, timeZone, fromInclusive, toInclusive).FirstOrDefault();
+
+                    if (nextInstant == default(DateTime))
+                    {
+                        nextInstant = null;
+                    }
+                }
+                else
+                {
+                    nextInstant = cronExpression.GetNextOccurrence(lowerBound, timeZone, fromInclusive);
+                }
 
                 if (nextInstant <= nowInstant)
                 {
@@ -205,13 +244,13 @@ namespace Hangfire.Server
 
                     nextInstant = cronExpression.GetNextOccurrence(nowInstant, timeZone);
                 }
-                
+
                 // Fixing old recurring jobs that doesn't have the CreatedAt field
                 if (!recurringJob.ContainsKey("CreatedAt"))
                 {
                     changedFields.Add("CreatedAt", JobHelper.SerializeDateTime(nowInstant));
                 }
-                    
+
                 changedFields.Add("NextExecution", nextInstant.HasValue ? JobHelper.SerializeDateTime(nextInstant.Value) : null);
 
                 connection.SetRangeInHash(

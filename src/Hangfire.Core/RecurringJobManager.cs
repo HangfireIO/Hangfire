@@ -61,6 +61,7 @@ namespace Hangfire
             if (options == null) throw new ArgumentNullException(nameof(options));
             
             ValidateCronExpression(cronExpression);
+            ValidateDateBounds(options);
 
             using (var connection = _storage.GetConnection())
             {
@@ -71,6 +72,16 @@ namespace Hangfire
                 recurringJob["Cron"] = cronExpression;
                 recurringJob["TimeZoneId"] = options.TimeZone.Id;
                 recurringJob["Queue"] = options.QueueName;
+
+                if (options.StartDate.HasValue)
+                {
+                    recurringJob["StartDate"] = JobHelper.SerializeDateTime(options.StartDate.Value);
+                }
+                
+                if (options.EndDate.HasValue)
+                {
+                    recurringJob["EndDate"] = JobHelper.SerializeDateTime(options.EndDate.Value);
+                }
 
                 var existingJob = connection.GetAllEntriesFromHash($"recurring-job:{recurringJobId}");
                 if (existingJob == null)
@@ -90,7 +101,7 @@ namespace Hangfire
                 }
             }
         }
-
+        
         public void Trigger(string recurringJobId)
         {
             if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
@@ -141,6 +152,24 @@ namespace Hangfire
             catch (Exception ex)
             {
                 throw new ArgumentException("CRON expression is invalid. Please see the inner exception for details.", nameof(cronExpression), ex);
+            }
+        }
+
+        private void ValidateDateBounds(RecurringJobOptions options)
+        {
+            if (options.StartDate.HasValue && options.StartDate.Value.Kind != DateTimeKind.Utc)
+            {
+                throw new ArgumentException("Start date must be in UTC", nameof(RecurringJobOptions.StartDate));
+            }
+
+            if (options.EndDate.HasValue && options.EndDate.Value.Kind != DateTimeKind.Utc)
+            {
+                throw new ArgumentException("End date must be in UTC", nameof(RecurringJobOptions.EndDate));
+            }
+
+            if (options.StartDate.HasValue && options.EndDate.HasValue && options.EndDate.Value < options.StartDate.Value)
+            {
+                throw new ArgumentException("Start date must be before end date", nameof(options));
             }
         }
     }
