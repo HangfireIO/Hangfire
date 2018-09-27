@@ -31,9 +31,10 @@ namespace Hangfire
             Expression<Action> methodCall,
             Func<string> cronExpression,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            string queue = EnqueuedState.DefaultQueue,
+            Type explicitType = null)
         {
-            AddOrUpdate(methodCall, cronExpression(), timeZone, queue);
+            AddOrUpdate(methodCall, cronExpression(), timeZone, queue, explicitType);
         }
 
         public static void AddOrUpdate<T>(
@@ -49,9 +50,10 @@ namespace Hangfire
             Expression<Action> methodCall,
             string cronExpression,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            string queue = EnqueuedState.DefaultQueue,
+            Type explicitType = null)
         {
-            var job = Job.FromExpression(methodCall);
+            var job = Job.FromExpression(methodCall, explicitType);
             var id = GetRecurringJobId(job);
 
             Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
@@ -74,9 +76,10 @@ namespace Hangfire
             Expression<Action> methodCall,
             Func<string> cronExpression,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            string queue = EnqueuedState.DefaultQueue,
+            Type explicitType = null)
         {
-            AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue);
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue, explicitType);
         }
 
         public static void AddOrUpdate<T>(
@@ -94,9 +97,10 @@ namespace Hangfire
             Expression<Action> methodCall,
             string cronExpression,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            string queue = EnqueuedState.DefaultQueue,
+            Type explicitType = null)
         {
-            var job = Job.FromExpression(methodCall);
+            var job = Job.FromExpression(methodCall, explicitType);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
@@ -115,9 +119,10 @@ namespace Hangfire
             Expression<Func<Task>> methodCall,
             Func<string> cronExpression,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            string queue = EnqueuedState.DefaultQueue,
+            Type explicitType = null)
         {
-            AddOrUpdate(methodCall, cronExpression(), timeZone, queue);
+            AddOrUpdate(methodCall, cronExpression(), timeZone, queue, explicitType);
         }
 
         public static void AddOrUpdate<T>(
@@ -133,9 +138,10 @@ namespace Hangfire
             Expression<Func<Task>> methodCall,
             string cronExpression,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            string queue = EnqueuedState.DefaultQueue,
+            Type explicitType = null)
         {
-            var job = Job.FromExpression(methodCall);
+            var job = Job.FromExpression(methodCall, explicitType);
             var id = GetRecurringJobId(job);
 
             Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
@@ -158,9 +164,10 @@ namespace Hangfire
             Expression<Func<Task>> methodCall,
             Func<string> cronExpression,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            string queue = EnqueuedState.DefaultQueue,
+            Type explicitType = null)
         {
-            AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue);
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue, explicitType);
         }
 
         public static void AddOrUpdate<T>(
@@ -178,9 +185,10 @@ namespace Hangfire
             Expression<Func<Task>> methodCall,
             string cronExpression,
             TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            string queue = EnqueuedState.DefaultQueue,
+            Type explicitType = null)
         {
-            var job = Job.FromExpression(methodCall);
+            var job = Job.FromExpression(methodCall, explicitType);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
