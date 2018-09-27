@@ -209,7 +209,7 @@ namespace Hangfire.Common
         /// </summary>
         /// 
         /// <param name="methodCall">Expression tree of a method call.</param>
-        /// 
+        /// <param name="explicitType"><see cref="Type" /> used to invoke <paramref name="methodCall" />.</param>
         /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> is null.</exception>
         /// <exception cref="ArgumentException">
         /// <paramref name="methodCall"/> expression body is not of type 
@@ -231,9 +231,10 @@ namespace Hangfire.Common
         /// <b>only used to obtain the type</b> for a job. It is not
         /// serialized and not passed across the process boundaries.</note>
         /// </remarks>
-        public static Job FromExpression([NotNull, InstantHandle] Expression<Action> methodCall)
+        public static Job FromExpression([NotNull, InstantHandle] Expression<Action> methodCall,
+            [CanBeNull] Type explicitType = null)
         {
-            return FromExpression(methodCall, null);
+            return FromExpression(methodCall, explicitType);
         }
 
         /// <summary>
@@ -242,6 +243,7 @@ namespace Hangfire.Common
         /// </summary>
         /// 
         /// <param name="methodCall">Expression tree of a method call.</param>
+        /// <param name="explicitType"><see cref="Type" /> used to invoke <paramref name="methodCall" />.</param>
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> is null.</exception>
         /// <exception cref="ArgumentException">
@@ -264,9 +266,10 @@ namespace Hangfire.Common
         /// <b>only used to obtain the type</b> for a job. It is not
         /// serialized and not passed across the process boundaries.</note>
         /// </remarks>
-        public static Job FromExpression([NotNull, InstantHandle] Expression<Func<Task>> methodCall)
+        public static Job FromExpression([NotNull, InstantHandle] Expression<Func<Task>> methodCall,
+            [CanBeNull] Type explicitType = null)
         {
-            return FromExpression(methodCall, null);
+            return FromExpression(methodCall, explicitType);
         }
 
         /// <summary>
