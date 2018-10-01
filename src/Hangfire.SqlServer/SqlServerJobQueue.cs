@@ -131,11 +131,28 @@ where Queue in @queues and
             FetchedJob fetchedJob = null;
             DbTransaction transaction = null;
 
+            string queueNames = "";
+            for (int i = 0; i < queues.Length; i++)
+            {
+                var queueName = queues[i];
+
+                if (i > 0)
+                {
+                    queueNames += ", ";
+                }
+
+                queueNames += $"('{queueName}', {i + 1})";
+            }
+
             string fetchJobSqlTemplate =
-                $@"delete top (1) JQ
+$@"delete from [{_storage.SchemaName}].JobQueue
 output DELETED.Id, DELETED.JobId, DELETED.Queue
+where Id in (
+select top (1) Id
 from [{_storage.SchemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
-where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))";
+inner join(values {queueNames}) as q(name, priorityNum) on q.name = JQ.Queue
+where (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))
+order by q.priorityNum)";
 
             using (var cancellationEvent = cancellationToken.GetCancellationEvent())
             {

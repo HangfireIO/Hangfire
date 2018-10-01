@@ -275,6 +275,43 @@ values (scope_identity(), @queue)";
             });
         }
 
+        [Fact, CleanDatabase]
+        public void Dequeue_ShouldFetchJobs_FromMultipleQueues_InPriorityOrder()
+        {
+            const string arrangeSql = @"
+insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
+values (@invocationData, @arguments, getutcdate())
+insert into HangFire.JobQueue (JobId, Queue)
+values (scope_identity(), @queue)";
+
+            UseConnection(connection =>
+            {
+                connection.Execute(
+                    arrangeSql,
+                    new[]
+                    {
+                        new { queue = "default", invocationData = "", arguments = "" },
+                        new { queue = "critical", invocationData = "", arguments = "" }
+                    });
+
+                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
+
+                var @default = (SqlServerTransactionJob)queue.Dequeue(
+                    new[] { "default", "critical" },
+                    CreateTimingOutCancellationToken());
+
+                Assert.NotNull(@default.JobId);
+                Assert.Equal("default", @default.Queue);
+
+                var critical = (SqlServerTransactionJob)queue.Dequeue(
+                    new[] { "default", "critical" },
+                    CreateTimingOutCancellationToken());
+
+                Assert.NotNull(critical.JobId);
+                Assert.Equal("critical", critical.Queue);
+            });
+        }
+
         //---
         [Fact, CleanDatabase]
         public void Dequeue_InvisibilityTimeout_ShouldThrowAnException_WhenQueuesCollectionIsNull()
