@@ -16,6 +16,7 @@
 
 using System;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.States;
@@ -45,6 +46,24 @@ namespace Hangfire
             AddOrUpdate(methodCall, cronExpression(), timeZone, queue);
         }
 
+        /// <summary>Creates or updates a described recurring <see cref="Job" /></summary>
+        /// <param name="methodCall"><see cref="MethodInfo" /> to invoke</param>
+        /// <param name="explicitType"><see cref="Type" /> to instantiate prior to invocation</param>
+        /// <param name="parameters">Parameters to pass into <paramref name="methodCall" /> when invoking it. If no parameters, must be an empty array.</param>
+        /// <param name="cronExpression"><see cref="Func{String}" /> yielding a CRON expression for <see cref="Job" /> execution frequency</param>
+        /// <param name="timeZone"><see cref="TimeZoneInfo" /> describing the target time zone</param>
+        /// <param name="queue">Name of the queue to use for processing the <see cref="Job" /></param>
+        public static void AddOrUpdate(
+            MethodInfo methodCall,
+            Type explicitType,
+            Object[] parameters,
+            Func<string> cronExpression,
+            TimeZoneInfo timeZone = null,
+            string queue = EnqueuedState.DefaultQueue)
+        {
+            AddOrUpdate(methodCall, explicitType, parameters, cronExpression(), timeZone, queue);
+        }
+
         public static void AddOrUpdate(
             Expression<Action> methodCall,
             string cronExpression,
@@ -69,6 +88,27 @@ namespace Hangfire
             Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
+        /// <summary>Creates or updates a described recurring <see cref="Job" /></summary>
+        /// <param name="methodCall"><see cref="MethodInfo" /> to invoke</param>
+        /// <param name="explicitType"><see cref="Type" /> to instantiate prior to invocation</param>
+        /// <param name="parameters">Parameters to pass into <paramref name="methodCall" /> when invoking it. If no parameters, must be an empty array.</param>
+        /// <param name="cronExpression">CRON expression for <see cref="Job" /> execution frequency</param>
+        /// <param name="timeZone"><see cref="TimeZoneInfo" /> describing the target time zone</param>
+        /// <param name="queue">Name of the queue to use for processing the <see cref="Job" /></param>
+        public static void AddOrUpdate(
+            MethodInfo methodCall,
+            Type explicitType,
+            Object[] parameters,
+            string cronExpression,
+            TimeZoneInfo timeZone = null,
+            string queue = EnqueuedState.DefaultQueue)
+        {
+            var job = Job.FromReflection(methodCall, explicitType, parameters);
+            var id = GetRecurringJobId(job);
+
+            Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+        }
+
         public static void AddOrUpdate(
             string recurringJobId,
             Expression<Action> methodCall,
@@ -87,6 +127,26 @@ namespace Hangfire
             string queue = EnqueuedState.DefaultQueue)
         {
             AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue);
+        }
+
+        /// <summary>Creates or updates a described recurring <see cref="Job" /></summary>
+        /// <param name="recurringJobId">Unique ID used to identify the recurring <see cref="Job" /></param>
+        /// <param name="methodCall"><see cref="MethodInfo" /> to invoke</param>
+        /// <param name="explicitType"><see cref="Type" /> to instantiate prior to invocation</param>
+        /// <param name="parameters">Parameters to pass into <paramref name="methodCall" /> when invoking it. If no parameters, must be an empty array.</param>
+        /// <param name="cronExpression"><see cref="Func{String}" /> yielding a CRON expression for <see cref="Job" /> execution frequency</param>
+        /// <param name="timeZone"><see cref="TimeZoneInfo" /> describing the target time zone</param>
+        /// <param name="queue">Name of the queue to use for processing the <see cref="Job" /></param>
+        public static void AddOrUpdate(
+            string recurringJobId,
+            MethodInfo methodCall,
+            Type explicitType,
+            Object[] parameters,
+            Func<string> cronExpression,
+            TimeZoneInfo timeZone = null,
+            string queue = EnqueuedState.DefaultQueue)
+        {
+            AddOrUpdate(recurringJobId, methodCall, explicitType, parameters, cronExpression(), timeZone, queue);
         }
 
         public static void AddOrUpdate(
@@ -108,6 +168,27 @@ namespace Hangfire
             string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+        }
+
+        /// <summary>Creates or updates a described recurring <see cref="Job" /></summary>
+        /// <param name="recurringJobId">Unique ID used to identify the recurring <see cref="Job" /></param>
+        /// <param name="methodCall"><see cref="MethodInfo" /> to invoke</param>
+        /// <param name="explicitType"><see cref="Type" /> to instantiate prior to invocation</param>
+        /// <param name="parameters">Parameters to pass into <paramref name="methodCall" /> when invoking it. If no parameters, must be an empty array.</param>
+        /// <param name="cronExpression">CRON expression for <see cref="Job" /> execution frequency</param>
+        /// <param name="timeZone"><see cref="TimeZoneInfo" /> describing the target time zone</param>
+        /// <param name="queue">Name of the queue to use for processing the <see cref="Job" /></param>
+        public static void AddOrUpdate(
+            string recurringJobId,
+            MethodInfo methodCall,
+            Type explicitType,
+            Object[] parameters,
+            string cronExpression,
+            TimeZoneInfo timeZone = null,
+            string queue = EnqueuedState.DefaultQueue)
+        {
+            var job = Job.FromReflection(methodCall, explicitType, parameters);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
@@ -152,7 +233,7 @@ namespace Hangfire
 
             Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
-        
+
         public static void AddOrUpdate(
             string recurringJobId,
             Expression<Func<Task>> methodCall,
