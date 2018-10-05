@@ -144,15 +144,38 @@ where Queue in @queues and
                 queueNames += $"('{queueName}', {i + 1})";
             }
 
-            string fetchJobSqlTemplate =
-$@"delete from [{_storage.SchemaName}].JobQueue
-output DELETED.Id, DELETED.JobId, DELETED.Queue
-where Id in (
-select top (1) Id
-from [{_storage.SchemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
-inner join(values {queueNames}) as q(name, priorityNum) on q.name = JQ.Queue
-where (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))
-order by q.priorityNum)";
+            string fetchJobSqlTemplate = $@"
+declare @queues table (Name nvarchar(255), PriorityNum int)
+declare @output table (Id int, JobId int, Queue nvarchar(255))
+declare @index int = 1
+declare @queue nvarchar(255)
+ 
+insert into @queues values {queueNames}
+ 
+while (@index <= {queues.Length})
+begin
+  select @queue = Name from @queues where PriorityNum = @index
+
+  delete top (1) JQ
+  output DELETED.Id, DELETED.JobId, DELETED.Queue into @output
+  from [{_storage.SchemaName}].JobQueue JQ with(readpast, updlock, rowlock, forceseek)
+  where Queue = @queue and (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))
+
+  if (@@ROWCOUNT = 0)
+  begin
+    select @index = @index + 1
+  end
+  else
+  begin
+    select * from @output
+    break
+  end
+
+  if (@index > {queues.Length})
+  begin
+    select * from @output
+  end
+end";
 
             using (var cancellationEvent = cancellationToken.GetCancellationEvent())
             {
@@ -168,7 +191,7 @@ order by q.priorityNum)";
                         fetchedJob = connection.Query<FetchedJob>(
                             fetchJobSqlTemplate,
 #pragma warning disable 618
-                        new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds },
+                        new { timeout = _options.InvisibilityTimeout.Negate().TotalSeconds },
 #pragma warning restore 618
                         transaction,
                             commandTimeout: _storage.CommandTimeout).SingleOrDefault();
