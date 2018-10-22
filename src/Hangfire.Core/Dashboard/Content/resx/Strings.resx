@@ -523,4 +523,10 @@
   <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
     <value>Succeeded</value>
   </data>
+  <data name="Common_DeleteAll" xml:space="preserve">
+    <value>Delete all</value>
+  </data>
+  <data name="Common_DeleteAllConfirm" xml:space="preserve">
+    <value>Do you really want to DELETE ALL jobs?</value>
+  </data>
 </root>

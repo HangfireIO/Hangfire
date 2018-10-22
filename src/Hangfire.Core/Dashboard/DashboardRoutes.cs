@@ -46,7 +46,7 @@ namespace Hangfire.Dashboard
             Routes = new RouteCollection();
             Routes.AddRazorPage("/", x => new HomePage());
             Routes.Add("/stats", new JsonStats());
-            
+
             #region Embedded static content
 
             Routes.Add("/js[0-9]+", new CombinedResourceDispatcher(
@@ -104,7 +104,7 @@ namespace Hangfire.Dashboard
 
             Routes.AddRazorPage("/jobs/processing", x => new ProcessingJobsPage());
             Routes.AddClientBatchCommand(
-                "/jobs/processing/delete", 
+                "/jobs/processing/delete",
                 (client, jobId) => client.ChangeState(jobId, CreateDeletedState(), ProcessingState.StateName));
 
             Routes.AddClientBatchCommand(
@@ -114,7 +114,7 @@ namespace Hangfire.Dashboard
             Routes.AddRazorPage("/jobs/scheduled", x => new ScheduledJobsPage());
 
             Routes.AddClientBatchCommand(
-                "/jobs/scheduled/enqueue", 
+                "/jobs/scheduled/enqueue",
                 (client, jobId) => client.ChangeState(jobId, CreateEnqueuedState(), ScheduledState.StateName));
 
             Routes.AddClientBatchCommand(
@@ -134,7 +134,17 @@ namespace Hangfire.Dashboard
 
             Routes.AddClientBatchCommand(
                 "/jobs/failed/delete",
-                (client, jobId) => client.ChangeState(jobId, CreateDeletedState(), FailedState.StateName));
+                (client, jobId) =>
+                {
+                    if (jobId == "all")
+                    {
+                        client.ChangeAllState(FailedState.StateName, CreateDeletedState());
+                    }
+                    else
+                    {
+                        client.ChangeState(jobId, CreateDeletedState(), FailedState.StateName);
+                    }
+                });
 
             Routes.AddRazorPage("/jobs/deleted", x => new DeletedJobsPage());
 

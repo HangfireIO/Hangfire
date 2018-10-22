@@ -379,13 +379,13 @@
                     $expander.text('Fewer details...');
                 }
 
-				$expandable.slideToggle(
-					150, 
-					function() {
-					    if (!$expandable.is(':visible')) {
-					        $expander.text('More details...');
-					    }
-					});
+                $expandable.slideToggle(
+                    150, 
+                    function() {
+                        if (!$expandable.is(':visible')) {
+                            $expander.text('More details...');
+                        }
+                    });
                 e.preventDefault();
             });
 
@@ -479,6 +479,25 @@
                         }, 100);
 
                         $.post($this.data('url'), { 'jobs[]': jobs }, function () {
+                            clearTimeout(loadingDelay);
+                            window.location.reload();
+                        });
+                    }
+
+                    e.preventDefault();
+                });
+
+                $(this).on('click', '.js-jobs-all-command', function (e) {
+                    var $this = $(this);
+                    var confirmText = $this.data('confirm');
+
+                    if (!confirmText || confirm(confirmText)) {
+                        $this.prop('disabled');
+                        var loadingDelay = setTimeout(function () {
+                            $this.button('loading');
+                        }, 100);
+
+                        $.post($this.data('url'), { 'jobs[]': 'all' }, function () {
                             clearTimeout(loadingDelay);
                             window.location.reload();
                         });

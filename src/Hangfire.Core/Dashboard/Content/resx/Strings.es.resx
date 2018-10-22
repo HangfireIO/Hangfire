@@ -517,4 +517,10 @@
   <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
     <value>Completados</value>
   </data>
+  <data name="Common_DeleteAll" xml:space="preserve">
+    <value>Eliminar todos</value>
+  </data>
+  <data name="Common_DeleteAllConfirm" xml:space="preserve">
+    <value>¿De verdad quieres BORRAR TODOS los trabajos?</value>
+  </data>
 </root>
