@@ -35,7 +35,7 @@
             <div class="alert alert-warning">
                 @Html.Raw(Strings.FailedJobsPage_FailedJobsNotExpire_Warning_Html)
             </div>
-            
+
             <div class="js-jobs-list">
                 <div class="btn-toolbar btn-toolbar-top">
                     <button class="js-jobs-list-command btn btn-sm btn-primary"
@@ -52,6 +52,14 @@
                             data-confirm="@Strings.Common_DeleteConfirm">
                         <span class="glyphicon glyphicon-remove"></span>
                         @Strings.Common_DeleteSelected
+                    </button>
+
+                    <button class="js-jobs-all-command btn btn-sm btn-danger"
+                            data-url="@Url.To("/jobs/failed/delete")"
+                            data-loading-text="@Strings.Common_Deleting"
+                            data-confirm="@Strings.Common_DeleteAllConfirm">
+                        <span class="glyphicon glyphicon-remove"></span>
+                        @Strings.Common_DeleteAll
                     </button>
 
                     @Html.PerPageSelector(pager)

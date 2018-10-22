@@ -516,4 +516,7 @@
   <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
     <value>完成</value>
   </data>
+  <data name="Common_DeleteAll" xml:space="preserve">
+    <value>刪除所有</value>
+  </data>
 </root>
