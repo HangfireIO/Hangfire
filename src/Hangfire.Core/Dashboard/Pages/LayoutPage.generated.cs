@@ -96,45 +96,65 @@ WriteLiteral(" - Hangfire</title>\r\n    <meta http-equiv=\"X-UA-Compatible\" co
 
             
             #line 17 "..\..\Dashboard\Pages\LayoutPage.cshtml"
- if (!String.IsNullOrWhiteSpace(Context.AntiforgeryHeader))
-{
+     if (!String.IsNullOrWhiteSpace(Context.AntiforgeryHeader))
+    {
 
             
             #line default
             #line hidden
-WriteLiteral("    <meta name=\"csrf-header\" content=\"");
+WriteLiteral("        ");
+
+WriteLiteral(" <meta name=\"csrf-header\" content=\"");
 
 
             
             #line 19 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                 Write(Context.AntiforgeryHeader);
+                                        Write(Context.AntiforgeryHeader);
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n}\r\n");
+WriteLiteral("\">\r\n");
 
+
+            
+            #line 20 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+    }
+
+            
+            #line default
+            #line hidden
 
             
             #line 21 "..\..\Dashboard\Pages\LayoutPage.cshtml"
- if (!String.IsNullOrWhiteSpace(Context.AntiforgeryToken))
-{
+     if (!String.IsNullOrWhiteSpace(Context.AntiforgeryToken))
+    {
 
             
             #line default
             #line hidden
-WriteLiteral("    <meta name=\"csrf-token\" content=\"");
+WriteLiteral("        ");
+
+WriteLiteral(" <meta name=\"csrf-token\" content=\"");
 
 
             
             #line 23 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                Write(Context.AntiforgeryToken);
+                                       Write(Context.AntiforgeryToken);
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n}\r\n");
+WriteLiteral("\">\r\n");
 
+
+            
+            #line 24 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+    }
+
+            
+            #line default
+            #line hidden
 
             
             #line 25 "..\..\Dashboard\Pages\LayoutPage.cshtml"
@@ -153,11 +173,9 @@ WriteLiteral("    <link rel=\"stylesheet\" href=\"");
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n</head>\r\n");
-
-
-
-WriteLiteral(@"    <body>
+WriteLiteral(@""">
+</head>
+    <body>
         <!-- Wrap all page content here -->
         <div id=""wrap"">
 
@@ -356,20 +374,7 @@ WriteLiteral("\">\r\n        </div>\r\n\r\n        <script src=\"");
             
             #line default
             #line hidden
-WriteLiteral("\"></script>\r\n    </body>\r\n");
-
-
-
-WriteLiteral("</html>\r\n");
-
-
-            
-            #line 90 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-
-            
-            #line default
-            #line hidden
-
+WriteLiteral("\"></script>\r\n    </body>\r\n</html>\r\n");
 
 
         }
