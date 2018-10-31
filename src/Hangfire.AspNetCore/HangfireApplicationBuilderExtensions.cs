@@ -35,7 +35,8 @@ namespace Hangfire
             [NotNull] this IApplicationBuilder app,
             [NotNull] string pathMatch = "/hangfire",
             [CanBeNull] DashboardOptions options = null,
-            [CanBeNull] JobStorage storage = null)
+            [CanBeNull] JobStorage storage = null,
+            bool ignoreAntiforgeryToken = false)
         {
             if (app == null) throw new ArgumentNullException(nameof(app));
             if (pathMatch == null) throw new ArgumentNullException(nameof(pathMatch));

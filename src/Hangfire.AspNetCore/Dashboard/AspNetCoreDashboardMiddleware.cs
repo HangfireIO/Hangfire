@@ -30,12 +30,23 @@ namespace Hangfire.Dashboard
         private readonly JobStorage _storage;
         private readonly DashboardOptions _options;
         private readonly RouteCollection _routes;
+        private readonly bool _ignoreAntiforgeryToken;
 
         public AspNetCoreDashboardMiddleware(
             [NotNull] RequestDelegate next,
             [NotNull] JobStorage storage,
             [NotNull] DashboardOptions options,
             [NotNull] RouteCollection routes)
+        : this(next, storage, options, routes, false)
+        {
+        }
+
+        public AspNetCoreDashboardMiddleware(
+            [NotNull] RequestDelegate next,
+            [NotNull] JobStorage storage,
+            [NotNull] DashboardOptions options,
+            [NotNull] RouteCollection routes,
+            bool ignoreAntiforgeryToken)
         {
             if (next == null) throw new ArgumentNullException(nameof(next));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -46,6 +57,7 @@ namespace Hangfire.Dashboard
             _storage = storage;
             _options = options;
             _routes = routes;
+            _ignoreAntiforgeryToken = ignoreAntiforgeryToken;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -72,7 +84,10 @@ namespace Hangfire.Dashboard
 
                     return;
                 }
+            }
 
+            if (!_ignoreAntiforgeryToken)
+            {
                 var antiforgery = httpContext.RequestServices.GetService<IAntiforgery>();
 
                 if (antiforgery != null)
@@ -82,7 +97,7 @@ namespace Hangfire.Dashboard
                     if (!requestValid)
                     {
                         // Invalid or missing CSRF token
-                        httpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
+                        httpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
                         return;
                     }
                 }
