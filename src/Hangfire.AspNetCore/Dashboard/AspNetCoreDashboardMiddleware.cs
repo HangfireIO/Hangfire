@@ -30,23 +30,12 @@ namespace Hangfire.Dashboard
         private readonly JobStorage _storage;
         private readonly DashboardOptions _options;
         private readonly RouteCollection _routes;
-        private readonly bool _ignoreAntiforgeryToken;
 
         public AspNetCoreDashboardMiddleware(
             [NotNull] RequestDelegate next,
             [NotNull] JobStorage storage,
             [NotNull] DashboardOptions options,
             [NotNull] RouteCollection routes)
-        : this(next, storage, options, routes, false)
-        {
-        }
-
-        public AspNetCoreDashboardMiddleware(
-            [NotNull] RequestDelegate next,
-            [NotNull] JobStorage storage,
-            [NotNull] DashboardOptions options,
-            [NotNull] RouteCollection routes,
-            bool ignoreAntiforgeryToken)
         {
             if (next == null) throw new ArgumentNullException(nameof(next));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -57,7 +46,6 @@ namespace Hangfire.Dashboard
             _storage = storage;
             _options = options;
             _routes = routes;
-            _ignoreAntiforgeryToken = ignoreAntiforgeryToken;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -86,20 +74,17 @@ namespace Hangfire.Dashboard
                 }
             }
 
-            if (!_ignoreAntiforgeryToken)
+            var antiforgery = httpContext.RequestServices.GetService<IAntiforgery>();
+
+            if (antiforgery != null)
             {
-                var antiforgery = httpContext.RequestServices.GetService<IAntiforgery>();
+                var requestValid = await antiforgery.IsRequestValidAsync(httpContext);
 
-                if (antiforgery != null)
+                if (!requestValid)
                 {
-                    var requestValid = await antiforgery.IsRequestValidAsync(httpContext);
-
-                    if (!requestValid)
-                    {
-                        // Invalid or missing CSRF token
-                        httpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
-                        return;
-                    }
+                    // Invalid or missing CSRF token
+                    httpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                    return;
                 }
             }
 
