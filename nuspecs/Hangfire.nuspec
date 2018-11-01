@@ -18,6 +18,18 @@
     <copyright>Copyright © 2013-2018 Sergey Odinokov</copyright>
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
+    
+1.6.21
+
+Hangfire.Core
+• Fixed – High CPU usage and long response time when accessing Failed jobs page with Linux stack traces.
+• Fixed – RecurringJobScheduler may block server shutdown and cause distributed lock to be abandoned.
+
+Hangfire.SqlServer
+• Fixed – Change locking scheme in the `Connection.SetRangeInHash` method to avoid deadlocks.
+
+Hangfire.AspNetCore
+• Fixed – Null-based implementation of the `IAntiforgery` interface doesn't lead to an exception.
       
 1.6.20
 

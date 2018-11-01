@@ -13,6 +13,10 @@
     <copyright>Copyright © 2013-2018 Sergey Odinokov</copyright>
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
+    
+1.6.21
+• Fixed – High CPU usage and long response time when accessing Failed jobs page with Linux stack traces.
+• Fixed – RecurringJobScheduler may block server shutdown and cause distributed lock to be abandoned.
       
 1.6.20
 
