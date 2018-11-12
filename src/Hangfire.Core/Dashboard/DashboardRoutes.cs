@@ -134,17 +134,7 @@ namespace Hangfire.Dashboard
 
             Routes.AddClientBatchCommand(
                 "/jobs/failed/delete",
-                (client, jobId) =>
-                {
-                    if (jobId == "all")
-                    {
-                        client.ChangeAllState(FailedState.StateName, CreateDeletedState());
-                    }
-                    else
-                    {
-                        client.ChangeState(jobId, CreateDeletedState(), FailedState.StateName);
-                    }
-                });
+                (client, jobId) => client.ChangeState(jobId, CreateDeletedState(), FailedState.StateName));
 
             Routes.AddRazorPage("/jobs/deleted", x => new DeletedJobsPage());
 
@@ -172,6 +162,14 @@ namespace Hangfire.Dashboard
                 {
                     var client = context.GetBackgroundJobClient();
                     return client.ChangeState(context.UriMatch.Groups["JobId"].Value, CreateDeletedState());
+                });
+
+            Routes.AddCommand(
+                "/jobs/failed/deleteall",
+                context =>
+                {
+                    var client = context.GetBackgroundJobClient();
+                    return client.ChangeAllState(FailedState.StateName, CreateDeletedState());
                 });
 
             Routes.AddRazorPage("/jobs/details/(?<JobId>.+)", x => new JobDetailsPage(x.Groups["JobId"].Value));

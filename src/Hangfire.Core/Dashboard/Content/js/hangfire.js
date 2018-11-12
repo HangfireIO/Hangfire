@@ -497,7 +497,7 @@
                             $this.button('loading');
                         }, 100);
 
-                        $.post($this.data('url'), { 'jobs[]': 'all' }, function () {
+                        $.post($this.data('url'), function () {
                             clearTimeout(loadingDelay);
                             window.location.reload();
                         });

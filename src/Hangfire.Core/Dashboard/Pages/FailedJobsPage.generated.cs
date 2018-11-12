@@ -228,7 +228,7 @@ WriteLiteral("\r\n                    </button>\r\n\r\n                    <butt
 
             
             #line 58 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                                 Write(Url.To("/jobs/failed/delete"));
+                                 Write(Url.To("/jobs/failed/deleteall"));
 
             
             #line default

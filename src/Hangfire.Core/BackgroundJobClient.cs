@@ -153,7 +153,7 @@ namespace Hangfire
             }
         }
 
-        public void ChangeAllState(string fromState, IState toState)
+        public bool ChangeAllState(string fromState, IState toState)
         {
             if (fromState == null) throw new ArgumentNullException(nameof(fromState));
             if (toState == null) throw new ArgumentNullException(nameof(toState));
@@ -162,11 +162,11 @@ namespace Hangfire
             {
                 var monitor = _storage.GetMonitoringApi();
                 var jobIds = GetJobIds(fromState);
-                if (jobIds == null) return;
+                if (jobIds == null) return false;
 
                 using (var connection = _storage.GetConnection())
                 {
-                    foreach (var jobId in jobIds)
+                    foreach (var jobId in jobIds.ToList())
                     {
                         var appliedState = _stateChanger.ChangeState(new StateChangeContext(
                             _storage,
@@ -178,6 +178,7 @@ namespace Hangfire
                         if (appliedState == null || !appliedState.Name.Equals(toState.Name, StringComparison.OrdinalIgnoreCase))
                             throw new Exception($"Applied state of jobId {jobId} was not the expected state of {toState.Name}");
                     }
+                    return true;
                 }
             }
             catch (Exception ex)

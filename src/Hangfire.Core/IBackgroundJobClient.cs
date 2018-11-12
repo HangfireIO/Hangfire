@@ -104,8 +104,11 @@ namespace Hangfire
         /// <param name="fromState">Current state of the background jobs.</param>
         /// <param name="toState">Expected to-be state of the background jobs.</param>
         /// 
+        /// <returns><see langword="true"/>, if a <b>given</b> state was applied
+        /// successfully otherwise <see langword="false"/>.</returns>
+        /// 
         /// <exception cref="ArgumentNullException"><paramref name="fromState"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="toState"/> is null.</exception>
-        void ChangeAllState(string fromState, IState toState);
+        bool ChangeAllState(string fromState, IState toState);
     }
 }
