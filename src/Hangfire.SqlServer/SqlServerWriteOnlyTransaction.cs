@@ -92,7 +92,7 @@ namespace Hangfire.SqlServer
             AddCommand(
                 _jobCommands,
                 long.Parse(jobId),
-                $@"update J set ExpireAt = @expireAt from [{_storage.SchemaName}].Job J with (forceseek) where Id = @id;",
+                $@"update J set ExpireAt = @expireAt from [{_storage.SchemaName}].{_storage.CustomTableNames["Job"]} J with (forceseek) where Id = @id;",
                 new SqlParameter("@expireAt", DateTime.UtcNow.Add(expireIn)),
                 new SqlParameter("@id", long.Parse(jobId)));
         }
@@ -102,16 +102,16 @@ namespace Hangfire.SqlServer
             AddCommand(
                 _jobCommands,
                 long.Parse(jobId),
-                $@"update J set ExpireAt = NULL from [{_storage.SchemaName}].Job J with (forceseek) where Id = @id;",
+                $@"update J set ExpireAt = NULL from [{_storage.SchemaName}].{_storage.CustomTableNames["Job"]} J with (forceseek) where Id = @id;",
                 new SqlParameter("@id", long.Parse(jobId)));
         }
 
         public override void SetJobState(string jobId, IState state)
         {
             string addAndSetStateSql = 
-$@"insert into [{_storage.SchemaName}].State (JobId, Name, Reason, CreatedAt, Data)
+$@"insert into [{_storage.SchemaName}].{_storage.CustomTableNames["State"]} (JobId, Name, Reason, CreatedAt, Data)
 values (@jobId, @name, @reason, @createdAt, @data);
-update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @name where Id = @id;";
+update [{_storage.SchemaName}].{_storage.CustomTableNames["Job"]} set StateId = SCOPE_IDENTITY(), StateName = @name where Id = @id;";
 
             AddCommand(
                 _jobCommands,
@@ -128,7 +128,7 @@ update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @
         public override void AddJobState(string jobId, IState state)
         {
             string addStateSql =
-$@"insert into [{_storage.SchemaName}].State (JobId, Name, Reason, CreatedAt, Data)
+$@"insert into [{_storage.SchemaName}].{_storage.CustomTableNames["State"]} (JobId, Name, Reason, CreatedAt, Data)
 values (@jobId, @name, @reason, @createdAt, @data)";
 
             AddCommand(
@@ -166,7 +166,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
             AddCommand(
                 _counterCommands,
                 key,
-                $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value]) values (@key, @value)",
+                $@"insert into [{_storage.SchemaName}].{_storage.CustomTableNames["Counter"]} ([Key], [Value]) values (@key, @value)",
                 new SqlParameter("@key", key),
                 new SqlParameter("@value", +1));
         }
@@ -176,7 +176,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
             AddCommand(
                 _counterCommands,
                 key,
-                $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
+                $@"insert into [{_storage.SchemaName}].{_storage.CustomTableNames["Counter"]} ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
                 new SqlParameter("@key", key),
                 new SqlParameter("@value", +1),
                 new SqlParameter("@expireAt", DateTime.UtcNow.Add(expireIn)));
@@ -187,7 +187,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
             AddCommand(
                 _counterCommands,
                 key,
-                $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value]) values (@key, @value)",
+                $@"insert into [{_storage.SchemaName}].{_storage.CustomTableNames["Counter"]} ([Key], [Value]) values (@key, @value)",
                 new SqlParameter("@key", key),
                 new SqlParameter("@value", -1));
         }
@@ -197,7 +197,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
             AddCommand(
                 _counterCommands,
                 key,
-                $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
+                $@"insert into [{_storage.SchemaName}].{_storage.CustomTableNames["Counter"]} ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
                 new SqlParameter("@key", key),
                 new SqlParameter("@value", -1),
                 new SqlParameter("@expireAt", DateTime.UtcNow.Add(expireIn)));
@@ -211,7 +211,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
         public override void AddToSet(string key, string value, double score)
         {
             string addSql =
-$@";merge [{_storage.SchemaName}].[Set] with (holdlock) as Target
+$@";merge [{_storage.SchemaName}].[{_storage.CustomTableNames["Set"]}] with (holdlock) as Target
 using (VALUES (@key, @value, @score)) as Source ([Key], Value, Score)
 on Target.[Key] = Source.[Key] and Target.Value = Source.Value
 when matched then update set Score = Source.Score
@@ -228,7 +228,7 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
 
         public override void RemoveFromSet(string key, string value)
         {
-            string query = $@"delete from [{_storage.SchemaName}].[Set] where [Key] = @key and Value = @value";
+            string query = $@"delete from [{_storage.SchemaName}].[{_storage.CustomTableNames["Set"]}] where [Key] = @key and Value = @value";
 
             AddCommand(
                 _setCommands,
@@ -244,9 +244,9 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
                 _listCommands,
                 key,
                 $@"
-select [Key] from [{_storage.SchemaName}].List with (xlock)
+select [Key] from [{_storage.SchemaName}].{_storage.CustomTableNames["List"]} with (xlock)
 where [Key] = @key;
-insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
+insert into [{_storage.SchemaName}].{_storage.CustomTableNames["List"]} ([Key], Value) values (@key, @value);",
                 new SqlParameter("@key", key),
                 new SqlParameter("@value", value));
         }
@@ -256,7 +256,7 @@ insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
             AddCommand(
                 _listCommands,
                 key,
-                $@"delete from [{_storage.SchemaName}].List where [Key] = @key and Value = @value",
+                $@"delete from [{_storage.SchemaName}].{_storage.CustomTableNames["List"]} where [Key] = @key and Value = @value",
                 new SqlParameter("@key", key),
                 new SqlParameter("@value", value));
         }
@@ -266,7 +266,7 @@ insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
             string trimSql =
 $@";with cte as (
     select row_number() over (order by Id desc) as row_num
-    from [{_storage.SchemaName}].List with (xlock)
+    from [{_storage.SchemaName}].{_storage.CustomTableNames["List"]} with (xlock)
     where [Key] = @key)
 delete from cte where row_num not between @start and @end";
 
@@ -307,7 +307,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = $@"delete from [{_storage.SchemaName}].Hash where [Key] = @key";
+            string query = $@"delete from [{_storage.SchemaName}].{_storage.CustomTableNames["Hash"]} where [Key] = @key";
 
             AddCommand(_hashCommands, key, query, new SqlParameter("@key", key));
         }
@@ -319,7 +319,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
 
             // TODO: Rewrite using the `MERGE` statement.
             string query =
-$@"insert into [{_storage.SchemaName}].[Set] ([Key], Value, Score)
+$@"insert into [{_storage.SchemaName}].[{_storage.CustomTableNames["Set"]}] ([Key], Value, Score)
 values (@key, @value, 0.0)";
 
             foreach (var item in items)
@@ -341,7 +341,7 @@ values (@key, @value, 0.0)";
             if (key == null) throw new ArgumentNullException(nameof(key));
 
              string query = $@"
-update [{_storage.SchemaName}].[Hash] set ExpireAt = @expireAt where [Key] = @key";
+update [{_storage.SchemaName}].[{_storage.CustomTableNames["Hash"]}] set ExpireAt = @expireAt where [Key] = @key";
 
             AddCommand(_hashCommands, key, query,
                 new SqlParameter("@key", key),
@@ -353,7 +353,7 @@ update [{_storage.SchemaName}].[Hash] set ExpireAt = @expireAt where [Key] = @ke
             if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"
-update [{_storage.SchemaName}].[Set] set ExpireAt = @expireAt where [Key] = @key";
+update [{_storage.SchemaName}].[{_storage.CustomTableNames["Set"]}] set ExpireAt = @expireAt where [Key] = @key";
 
             AddCommand(_setCommands, key, query,
                 new SqlParameter("@key", key),
@@ -365,7 +365,7 @@ update [{_storage.SchemaName}].[Set] set ExpireAt = @expireAt where [Key] = @key
             if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"
-update [{_storage.SchemaName}].[List] set ExpireAt = @expireAt where [Key] = @key";
+update [{_storage.SchemaName}].[{_storage.CustomTableNames["List"]}] set ExpireAt = @expireAt where [Key] = @key";
 
             AddCommand(_listCommands, key, query,
                 new SqlParameter("@key", key),
@@ -377,7 +377,7 @@ update [{_storage.SchemaName}].[List] set ExpireAt = @expireAt where [Key] = @ke
             if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"
-update [{_storage.SchemaName}].Hash set ExpireAt = null where [Key] = @key";
+update [{_storage.SchemaName}].{_storage.CustomTableNames["Hash"]} set ExpireAt = null where [Key] = @key";
 
             AddCommand(_hashCommands, key, query, new SqlParameter("@key", key));
         }
@@ -387,7 +387,7 @@ update [{_storage.SchemaName}].Hash set ExpireAt = null where [Key] = @key";
             if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"
-update [{_storage.SchemaName}].[Set] set ExpireAt = null where [Key] = @key";
+update [{_storage.SchemaName}].[{_storage.CustomTableNames["Set"]}] set ExpireAt = null where [Key] = @key";
 
             AddCommand(_setCommands, key, query, new SqlParameter("@key", key));
         }
@@ -397,7 +397,7 @@ update [{_storage.SchemaName}].[Set] set ExpireAt = null where [Key] = @key";
             if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"
-update [{_storage.SchemaName}].[List] set ExpireAt = null where [Key] = @key";
+update [{_storage.SchemaName}].[{_storage.CustomTableNames["List"]}] set ExpireAt = null where [Key] = @key";
 
             AddCommand(_listCommands, key, query, new SqlParameter("@key", key));
         }

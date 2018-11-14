@@ -17,6 +17,7 @@
 using System;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Threading;
 using Hangfire.Common;
 using Hangfire.Logging;
@@ -62,7 +63,7 @@ namespace Hangfire.SqlServer
 
         public void Execute(CancellationToken cancellationToken)
         {
-            foreach (var table in ProcessedTables)
+            foreach (var table in ProcessedTables.Select(t => _storage.CustomTableNames[t]))
             {
                 _logger.Debug($"Removing outdated records from the '{table}' table...");
 

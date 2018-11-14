@@ -69,7 +69,7 @@ namespace Hangfire.SqlServer
 #endif
         {
             string enqueueJobSql =
-$@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)";
+$@"insert into [{_storage.SchemaName}].{_storage.CustomTableNames["JobQueue"]} (JobId, Queue) values (@jobId, @queue)";
 
             connection.Execute(
                 enqueueJobSql, 
@@ -149,7 +149,7 @@ set transaction isolation level read committed;
 update top (1) JQ
 set FetchedAt = GETUTCDATE()
 output INSERTED.Id, INSERTED.JobId, INSERTED.Queue
-from [{_storage.SchemaName}].JobQueue JQ with (readpast, forceseek, paglock, xlock)
+from [{_storage.SchemaName}].{_storage.CustomTableNames["JobQueue"]} JQ with (readpast, forceseek, paglock, xlock)
 where Queue in @queues and
 (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()));";
         }
@@ -176,7 +176,7 @@ BEGIN
         update top (1) JQ
         set FetchedAt = GETUTCDATE()
         output INSERTED.Id, INSERTED.JobId, INSERTED.Queue
-        from [{_storage.SchemaName}].JobQueue JQ with (readpast, forceseek, paglock, xlock)
+        from [{_storage.SchemaName}].{_storage.CustomTableNames["JobQueue"]} JQ with (readpast, forceseek, paglock, xlock)
         where Queue in @queues and
         (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()));
 
@@ -192,7 +192,7 @@ BEGIN
     EXEC sp_releaseapplock @Resource = @lockResource, @LockOwner = 'Session';
 END
 
-SELECT TOP (0) [Id], [JobId], [Queue] FROM [{_storage.SchemaName}].JobQueue;";
+SELECT TOP (0) [Id], [JobId], [Queue] FROM [{_storage.SchemaName}].{_storage.CustomTableNames["JobQueue"]};";
         }
 
 
@@ -204,7 +204,7 @@ SELECT TOP (0) [Id], [JobId], [Queue] FROM [{_storage.SchemaName}].JobQueue;";
             string fetchJobSqlTemplate =
                 $@"delete top (1) JQ
 output DELETED.Id, DELETED.JobId, DELETED.Queue
-from [{_storage.SchemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
+from [{_storage.SchemaName}].{_storage.CustomTableNames["JobQueue"]} JQ with (readpast, updlock, rowlock, forceseek)
 where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))";
 
             using (var cancellationEvent = cancellationToken.GetCancellationEvent())
