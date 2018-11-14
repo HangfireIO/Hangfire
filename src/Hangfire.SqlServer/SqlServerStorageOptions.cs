@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 #if NETFULL
 using System.Transactions;
 #else
@@ -28,6 +29,7 @@ namespace Hangfire.SqlServer
         private TimeSpan _queuePollInterval;
         private string _schemaName;
         private TimeSpan? _slidingInvisibilityTimeout;
+        private SqlServerStorageTableConfiguration _customTableNames;
 
         public SqlServerStorageOptions()
         {
@@ -43,6 +45,7 @@ namespace Hangfire.SqlServer
             DashboardJobListLimit = 10000;
             _schemaName = Constants.DefaultSchema;
             TransactionTimeout = TimeSpan.FromMinutes(1);
+            _customTableNames = new SqlServerStorageTableConfiguration();
         }
 
         public IsolationLevel? TransactionIsolationLevel { get; set; }
@@ -108,5 +111,23 @@ namespace Hangfire.SqlServer
         }
 
         public Func<IDisposable> ImpersonationFunc { get; set; }
+        
+        public SqlServerStorageTableConfiguration CustomTableNames
+        {
+            get { return _customTableNames; }
+            set
+            {
+                if (PrepareSchemaIfNecessary)
+                {
+                    throw new InvalidOperationException("Preparing schema is not possible with custom tables configuration. You need to prepare them yourself.");
+                }
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _customTableNames = value;
+            }
+        }
     }
 }

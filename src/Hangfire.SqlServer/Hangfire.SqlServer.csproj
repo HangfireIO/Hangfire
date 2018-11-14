@@ -71,6 +71,7 @@
     <Compile Include="PersistentJobQueueProviderCollection.cs" />
     <Compile Include="SqlCommandBatch.cs" />
     <Compile Include="SqlCommandSet.cs" />
+    <Compile Include="SqlServerStorageTableConfiguration.cs" />
     <Compile Include="SqlServerTimeoutJob.cs" />
     <Compile Include="SqlServerJobQueue.cs" />
     <Compile Include="SqlServerTransactionJob.cs" />
