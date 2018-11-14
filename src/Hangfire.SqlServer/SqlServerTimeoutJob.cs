@@ -52,7 +52,7 @@ namespace Hangfire.SqlServer
                 _storage.UseConnection(null, connection =>
                 {
                     connection.Execute(
-                        $"delete JQ from {_storage.SchemaName}.JobQueue JQ with (paglock, xlock) where Queue = @queue and Id = @id",
+                        $"delete JQ from {_storage.SchemaName}.{_storage.CustomTableNames["JobQueue"]} JQ with (paglock, xlock) where Queue = @queue and Id = @id",
                         new { queue = Queue, id = Id },
                         commandTimeout: _storage.CommandTimeout);
                 });
@@ -68,7 +68,7 @@ namespace Hangfire.SqlServer
                 _storage.UseConnection(null, connection =>
                 {
                     connection.Execute(
-                        $"update {_storage.SchemaName}.JobQueue set FetchedAt = null where Id = @id",
+                        $"update {_storage.SchemaName}.{_storage.CustomTableNames["JobQueue"]} set FetchedAt = null where Id = @id",
                         new { id = Id },
                         commandTimeout: _storage.CommandTimeout);
                 });
@@ -104,7 +104,7 @@ namespace Hangfire.SqlServer
                     _storage.UseConnection(null, connection =>
                     {
                         connection.Execute(
-                            $"update {_storage.SchemaName}.JobQueue set FetchedAt = getutcdate() where Id = @id",
+                            $"update {_storage.SchemaName}.{_storage.CustomTableNames["JobQueue"]} set FetchedAt = getutcdate() where Id = @id",
                             new { id = Id },
                             commandTimeout: _storage.CommandTimeout);
                     });
