@@ -43,5 +43,18 @@ namespace Hangfire.Dashboard
         public DashboardResponse Response { get; protected set; }
 
         public bool IsReadOnly => _isReadOnlyLazy.Value;
+
+        public string AntiforgeryHeader { get; set; }
+        public string AntiforgeryToken { get; set; }
+
+        public virtual IBackgroundJobClient GetBackgroundJobClient()
+        {
+            return new BackgroundJobClient(Storage);
+        }
+
+        public virtual IRecurringJobManager GetRecurringJobManager()
+        {
+            return new RecurringJobManager(Storage);
+        }
     }
 }

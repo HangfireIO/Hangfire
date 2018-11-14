@@ -152,7 +152,7 @@ namespace Hangfire.Dashboard
                 "/jobs/actions/requeue/(?<JobId>.+)",
                 context =>
                 {
-                    var client = new BackgroundJobClient(context.Storage);
+                    var client = context.GetBackgroundJobClient();
                     return client.ChangeState(context.UriMatch.Groups["JobId"].Value, CreateEnqueuedState());
                 });
 
@@ -160,7 +160,7 @@ namespace Hangfire.Dashboard
                 "/jobs/actions/delete/(?<JobId>.+)",
                 context =>
                 {
-                    var client = new BackgroundJobClient(context.Storage);
+                    var client = context.GetBackgroundJobClient();
                     return client.ChangeState(context.UriMatch.Groups["JobId"].Value, CreateDeletedState());
                 });
 
