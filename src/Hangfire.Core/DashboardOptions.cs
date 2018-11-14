@@ -28,6 +28,7 @@ namespace Hangfire
             Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
             StatsPollingInterval = 2000;
             DisplayStorageConnectionString = true;
+            MaxArgumentToRenderSize = 4096;
         }
 
         /// <summary>
@@ -48,5 +49,7 @@ namespace Hangfire
         public int StatsPollingInterval { get; set; }
 
         public bool DisplayStorageConnectionString { get; set; }
+
+        public int? MaxArgumentToRenderSize { get; set; }
     }
 }
