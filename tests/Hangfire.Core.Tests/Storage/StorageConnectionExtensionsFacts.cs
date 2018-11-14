@@ -44,5 +44,26 @@ namespace Hangfire.Core.Tests.Storage
                 "job:some-id:state-lock",
                 timeout));
         }
-    }
+
+	    [Fact]
+	    public void GetRecurringJobsWithNullDateTimeHashValues() 
+		{
+			_connection.Setup(o => o.GetAllItemsFromSet(It.IsAny<string>())).Returns(new HashSet<string> { "1" });
+		    _connection.Setup(o => o.GetAllEntriesFromHash("recurring-job:1")).Returns(new Dictionary<string, string>
+		    {
+			    { "Cron", "A"},
+			    { "Job", @"{""Type"":""ConsoleApplication1.CommandHandler, ConsoleApplication1"",""Method"":""Handle"",""ParameterTypes"":""[\""string\""]"",""Arguments"":""[\""Text\""]""}"},
+				{ "NextExecution", null },
+			    { "LastExecution", null },
+			    { "CreatedAt", null }
+		    }).Verifiable();
+
+			var result = _connection.Object.GetRecurringJobs();
+			Assert.Null(result[0].LastExecution);
+			Assert.Null(result[0].NextExecution);
+			Assert.Null(result[0].CreatedAt);
+			_connection.VerifyAll();
+		}
+
+	}
 }

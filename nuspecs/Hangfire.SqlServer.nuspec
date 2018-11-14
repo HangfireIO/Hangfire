@@ -6,86 +6,27 @@
     <title>Hangfire SQL Server Storage</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
-    <projectUrl>http://hangfire.io/</projectUrl>
+    <projectUrl>https://www.hangfire.io/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>SQL Server 2008+ (including Express), SQL Server LocalDB and SQL Azure storage support for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2013-2017 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
-    <releaseNotes>http://hangfire.io/blog/
+    <releaseNotes>https://www.hangfire.io/blog/
+      
+1.7.0-beta2
+• Added – Blocking fetch support for sliding expiration-based fetch to avoid excessive polling.
+• Changed – Optimize sliding-expiration-based fetching to use even less CPU time.
+• Changed – Use write reordering and fine-grained locking scheme to improve parallelism.
+• Ported – Merged updates from versions 1.6.18 – 1.6.20.
     
-1.6.17
-• Added – `SqlServerStorageOptions.CommandBatchMaxTimeout` parameter to enable batching in transactions.
-• Fixed – Timeout exceptions when there are a lot of large concurrent transactions by using the new batching method.
-• Fixed – Distributed locks are safe now even in very unreliable networks and after network blips.
-• Performance – Greatly decreased the number of connections required to process background jobs.
-• Performance – Significantly decrease the number of roundtrips required to commit a transaction.
-    
-1.6.16
-• Fixed – Lower the number of requests, when trying to acquire a distributed lock.
-• Fixed – Problems with continuations and batch continuations, when using existing `SqlConnection` instance.
-• Fixed – Distributed locks were silently released, when passing explicit closed connection to a storage.
-• Fixed – `KeyNotFoundException` errors on various dashboard pages don't appear anymore (by @benjymous).
-• Fixed – "Cannot release the application lock because it is not currently held" exceptions, when connection was closed.
-• Fixed – Allow to use zero timeout for SQL Server-based distributed locks.
-    
-1.6.15
-• Fixed – Timeout exceptions that's caused by SQL Server's thread pool starvation, caused by sp_getapplock.
-• Fixed – Antecedent background job is constantly failing, when its continuation hasn't been fully created.
-    
-1.6.14
-• Added – `SqlServerStorageOptions.SlidingInvisibilityTimeout` to fetch jobs without using transaction.
-• Fixed – Transaction log is full due to 'ACTIVE_TRANSACTION' by enabling to use new non-transactional fetch.
-• Fixed – `SqlServerJobQueueMonitoringApi` can't cause READ UNCOMMITTED isolation level to leak on SQL Server 2012 or earlier. 
-• Fixed – Add missing `SqlServerStorage(DbConnection, SqlServerStorageOptions)` constructor.
-    
-1.6.13
-• Fixed – Don't hide errors occurred while running SQL migrations.
-• Fixed – `KeyNotFoundException` when accessing Deleted Jobs page in Dashboard.
-• Fixed – `SqlServerDistributedLock` leaks connections, when lock acquisition is failed.
-    
-1.6.9
-• Fixed – `TimeoutException` on large arguments or large batches via `SqlServerOptions.CommandTimeout`.
-
-1.6.8
-• Fixed – Use `long` where possible instead of `int` for background job identifiers, full support will be in 1.7.0.
-    
-1.6.7
-• Fixed – Validation added to avoid "An invalid application lock time-out" exceptions (by t0mburton).
-    
-1.6.6
-• Fixed – SqlServerJobQueue class doesn't use obsolete InvisibilityTimeout parameter anymore.
-    
-1.6.5
-• Fixed – Different timeout issues after making performance optimizations.
-• Fixed – SQL timeouts while getting a connection, when using default settings and >= 8 CPU cores.
-• Fixed – ExpirationManager is bloated by SqlError instances, when there are a lot of messages from server.
-• Fixed – Counters query returned inconsistent results during CountersAggregator executions.
-• Performance – Added missing NOLOCK hint for monitoring queries when using SqlServer-based queues.
-• Performance – ExpirationManager is forced to use index seek operations for cascade deletions.
-• Performance – CountersAggregator now uses clustered index scan to issue less logical reads.
-• Performance – Paging queries in dashboard now use CTEs to utilize less logical reads.
-    
-1.6.4
-• Fixed – `SqlConnection` object leaks when using nested distributed locks (in batches and continuations).
-
-1.6.3
-• Fixed – Prevent `ExpirationManager`'s command from timing out, when there are a lot of records.
-• Fixed – `CountersAggregator` issue introduced in 1.6.2, that causes slow record aggregation.
-• Fixed – Add `XLOCK` hint for `CountersAggregator` query to prevent deadlocks on lock escalation.
-    
-1.6.2
-• Changed – `JobExpirationCheckInterval` property value now defaults to 30 minutes.
-• Fixed – Excessive blocking when expiring records in `State` and `JobParameters` tables.
-• Fixed – Migration script `Install.sql` was deadlocked by itself, leading to errors on startup.
-
-1.6.0
-• Added – .NET Core support for Hangfire.Core and Hangfire.SqlServer packages (`netstandard1.3` target).
-• Added – Zero latency processing when client and server reside in the same process (by @bgurmendi).
-• Changed – `SqlServerStorage` class constructor now takes `DbConnection` instances (by @tystol).
-• Changed – `SqlServerObjectsInstaller` class is public now (by @vbfox).
-• Changed – Update Dapper to 1.50.1 version.
-• Fixed – Drop constraints on Server.Id prior to altering it to avoid conflicts.
+1.7.0-beta1
+• Added – Callback method to allow to open the database with impersonation (by @BjoernHund).
+• Changed – Identity columns either converted to the `bigint` type, or entirely removed.
+• Changed – Clustered indexes were organized according to the access patterns of their tables.
+• Changed – Most of secondary indexes were either removed or made filtered.
+• Fixed – Background processing stops when identity columns exceed the `Int32.MaxValue`.
+• Fixed – Slowdown of scheduled jobs due to the missing index on the [Set] table.
     </releaseNotes>
     <dependencies>
       <group targetFramework="net45">
@@ -113,5 +54,12 @@
     
     <file src="Tools\DefaultInstall.sql" target="tools\install.sql" />
     <file src="..\src\Hangfire.SqlServer\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
+
+    <file src="LICENSE.md" />
+    <file src="NOTICES" />
+    <file src="COPYING" />
+    <file src="COPYING.LESSER" />
+    <file src="LICENSE_STANDARD" />
+    <file src="LICENSE_ROYALTYFREE" />
   </files>
 </package>

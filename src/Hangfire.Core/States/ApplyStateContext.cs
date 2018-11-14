@@ -52,7 +52,7 @@ namespace Hangfire.States
             Transaction = transaction;
             OldStateName = oldStateName;
             NewState = newState;
-            JobExpirationTimeout = TimeSpan.FromDays(1);
+            JobExpirationTimeout = storage.JobExpirationTimeout;
         }
 
         [NotNull]

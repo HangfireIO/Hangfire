@@ -24,11 +24,16 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using Hangfire.Common;
 using Hangfire.Server;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace Hangfire.Storage
 {
     public class InvocationData
     {
+        private static readonly string EmptyArray = "[]";
+        private static readonly string[] SystemAssemblyNames = { "mscorlib", "System.Private.CoreLib" };
+
         public InvocationData(
             string type, string method, string parameterTypes, string arguments)
         {
@@ -71,10 +76,40 @@ namespace Hangfire.Storage
         public static InvocationData Serialize(Job job)
         {
             return new InvocationData(
-                job.Type.AssemblyQualifiedName,
+                SerializeType(job.Type).ToString(),
                 job.Method.Name,
-                JobHelper.ToJson(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()),
+                SerializeTypes(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()).ToString(),
                 JobHelper.ToJson(SerializeArguments(job.Args)));
+        }
+
+        public static InvocationData Deserialize(string serializedData)
+        {
+            var payload = JobHelper.FromJson<JobPayload>(serializedData);
+
+            if (payload.TypeName != null && payload.MethodName != null)
+            {
+                return new InvocationData(
+                    payload.TypeName,
+                    payload.MethodName,
+                    JobHelper.ToJson(payload.ParameterTypes) ?? EmptyArray,
+                    JobHelper.ToJson(payload.Arguments) ?? EmptyArray);
+            }
+
+            return JobHelper.FromJson<InvocationData>(serializedData);
+        }
+
+        public string Serialize()
+        {
+            var parameterTypes = JobHelper.FromJson<string[]>(ParameterTypes);
+            var arguments = JobHelper.FromJson<string[]>(Arguments);
+
+            return JobHelper.ToJson(new JobPayload
+            {
+                TypeName = Type,
+                MethodName = Method,
+                ParameterTypes = parameterTypes != null && parameterTypes.Length > 0 ? parameterTypes : null,
+                Arguments = arguments != null && arguments.Length > 0 ? arguments : null
+            });
         }
 
         internal static string[] SerializeArguments(IReadOnlyCollection<object> arguments)
@@ -225,6 +260,72 @@ namespace Hangfire.Storage
 
             value = dateTime;
             return result;
+        }
+
+        private static StringBuilder SerializeTypes(Type[] types, char beginTypeDelimiter = '"', char endTypeDelimiter = '"', StringBuilder typeNamesBuilder = null)
+        {
+            if (types == null) return null;
+            if (typeNamesBuilder == null) typeNamesBuilder = new StringBuilder();
+
+            typeNamesBuilder.Append('[');
+            
+            for (var i = 0; i < types.Length; i++)
+            {
+                typeNamesBuilder.Append(beginTypeDelimiter);
+                SerializeType(types[i], true, typeNamesBuilder);
+                typeNamesBuilder.Append(endTypeDelimiter);
+
+                if (i != types.Length - 1) typeNamesBuilder.Append(',');
+            }
+            
+            return typeNamesBuilder.Append(']');
+        }
+
+        private static StringBuilder SerializeType(Type type, bool withAssemblyName = true, StringBuilder typeNameBuilder = null)
+        {
+            typeNameBuilder = typeNameBuilder ?? new StringBuilder();
+
+            if (type.DeclaringType != null)
+            {
+                SerializeType(type.DeclaringType, false, typeNameBuilder).Append('+');
+            }
+            else if (type.Namespace != null)
+            {
+                typeNameBuilder.Append(type.Namespace).Append('.');
+            }
+
+            typeNameBuilder.Append(type.Name);
+
+            if (type.GenericTypeArguments.Length > 0)
+            {
+                SerializeTypes(type.GenericTypeArguments, '[', ']', typeNameBuilder);
+            }
+
+            if (!withAssemblyName) return typeNameBuilder;
+
+            var assemblyName = type.GetTypeInfo().Assembly.GetName().Name;
+
+            if (!SystemAssemblyNames.Contains(assemblyName))
+            {
+                typeNameBuilder.Append(", ").Append(assemblyName);
+            }
+
+            return typeNameBuilder;
+        }
+
+        private class JobPayload
+        {
+            [JsonProperty("t")]
+            public string TypeName { get; set; }
+
+            [JsonProperty("m")]
+            public string MethodName { get; set; }
+
+            [JsonProperty("p", NullValueHandling = NullValueHandling.Ignore)]
+            public string[] ParameterTypes { get; set; }
+
+            [JsonProperty("a", NullValueHandling = NullValueHandling.Ignore)]
+            public string[] Arguments { get; set; }
         }
     }
 }

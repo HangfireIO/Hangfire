@@ -42,7 +42,7 @@
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CronExpressionDescriptor, Version=1.21.0, Culture=neutral, PublicKeyToken=a2ab0e0f73f9b037, processorArchitecture=MSIL">
+    <Reference Include="CronExpressionDescriptor, Version=1.21.0.0, Culture=neutral, PublicKeyToken=a2ab0e0f73f9b037">
       <HintPath>..\..\packages\CronExpressionDescriptor.1.21.0\lib\net45\CronExpressionDescriptor.dll</HintPath>
       <Private>True</Private>
     </Reference>
@@ -51,8 +51,8 @@
       <HintPath>..\..\packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NCrontab, Version=3.1.19111.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\ncrontab.3.1.0\lib\net45\NCrontab.dll</HintPath>
+    <Reference Include="Cronos, Version=0.6.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Cronos.0.6.3\lib\net45\Cronos.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -78,6 +78,9 @@
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="BackgroundJobServerOptions.cs" />
     <Compile Include="Client\CoreBackgroundJobFactory.cs" />
+    <Compile Include="Common\JsonSerializerSettingsExtensions.cs" />
+    <Compile Include="Common\CancellationTokenExtentions.cs" />
+    <Compile Include="Common\MethodInfoExtensions.cs" />
     <Compile Include="Dashboard\Content\resx\Strings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -88,10 +91,12 @@
     <Compile Include="Dashboard\DashboardResponse.cs" />
     <Compile Include="Dashboard\IDashboardAuthorizationFilter.cs" />
     <Compile Include="Dashboard\IDashboardDispatcher.cs" />
+    <Compile Include="Dashboard\Owin\IOwinDashboardAntiforgery.cs" />
     <Compile Include="Dashboard\Owin\OwinDashboardContext.cs" />
     <Compile Include="Dashboard\Owin\OwinDashboardContextExtensions.cs" />
     <Compile Include="Dashboard\Owin\OwinDashboardRequest.cs" />
     <Compile Include="Dashboard\Owin\OwinDashboardResponse.cs" />
+    <Compile Include="JobDisplayNameAttribute.cs" />
     <Compile Include="Obsolete\RequestDispatcherWrapper.cs" />
     <Compile Include="JobActivatorContext.cs" />
     <Compile Include="IRecurringJobManager.cs" />
@@ -104,19 +109,35 @@
       <DependentUpon>AwaitingJobsPage.cshtml</DependentUpon>
     </Compile>
     <Compile Include="JobActivatorScope.cs" />
+    <Compile Include="Processing\AppDomainUnloadMonitor.cs" />
+    <Compile Include="Processing\BackgroundDispatcher.cs" />
+    <Compile Include="Processing\BackgroundDispatcherAsync.cs" />
+    <Compile Include="Processing\BackgroundExecution.cs" />
+    <Compile Include="Processing\BackgroundExecutionOptions.cs" />
+    <Compile Include="Processing\BackgroundTaskScheduler.cs" />
+    <Compile Include="Processing\IBackgroundDispatcher.cs" />
+    <Compile Include="Processing\IBackgroundExecution.cs" />
+    <Compile Include="Processing\TaskExtensions.cs" />
     <Compile Include="Properties\NamespaceDoc.cs" />
     <Compile Include="RecurringJobManagerExtensions.cs" />
     <Compile Include="RecurringJobOptions.cs" />
     <Compile Include="Server\BackgroundProcessContext.cs" />
     <Compile Include="Obsolete\IServerProcess.cs" />
+    <Compile Include="Server\BackgroundProcessDispatcherBuilder.cs" />
+    <Compile Include="Server\BackgroundProcessDispatcherBuilderAsync.cs" />
+    <Compile Include="Server\BackgroundProcessExtensions.cs" />
     <Compile Include="Server\BackgroundProcessingServerOptions.cs" />
+    <Compile Include="Server\BackgroundServerContext.cs" />
+    <Compile Include="Server\BackgroundServerProcess.cs" />
     <Compile Include="Server\CoreBackgroundJobPerformer.cs" />
     <Compile Include="Server\IBackgroundProcess.cs" />
-    <Compile Include="Server\IBackgroundProcessWrapper.cs" />
-    <Compile Include="Server\InfiniteLoopProcess.cs" />
-    <Compile Include="Server\ServerProcessExtensions.cs" />
     <Compile Include="Server\BackgroundProcessingServer.cs" />
     <Compile Include="MoreLinq\MoreEnumerable.Pairwise.cs" />
+    <Compile Include="Server\IBackgroundProcessAsync.cs" />
+    <Compile Include="Server\IBackgroundProcessDispatcherBuilder.cs" />
+    <Compile Include="Server\IBackgroundProcessingServer.cs" />
+    <Compile Include="Server\IBackgroundServerProcess.cs" />
+    <Compile Include="Server\ServerProcessDispatcherBuilder.cs" />
     <Compile Include="States\AwaitingState.cs" />
     <Compile Include="ContinuationsSupportAttribute.cs" />
     <Compile Include="JobContinuationOptions.cs" />
@@ -298,9 +319,7 @@
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RecurringJob.cs" />
     <Compile Include="RecurringJobManager.cs" />
-    <Compile Include="Server\AutomaticRetryProcess.cs" />
     <Compile Include="Server\EveryMinuteThrottler.cs" />
-    <Compile Include="Server\IScheduleInstant.cs" />
     <Compile Include="Server\IThrottler.cs" />
     <Compile Include="Server\JobAbortedException.cs" />
     <Compile Include="JobCancellationToken.cs" />
@@ -343,7 +362,6 @@
     <Compile Include="Client\IClientExceptionFilter.cs" />
     <Compile Include="Common\IJobFilterProvider.cs" />
     <Compile Include="Server\RecurringJobScheduler.cs" />
-    <Compile Include="Server\ScheduleInstant.cs" />
     <Compile Include="Server\ServerJobCancellationToken.cs" />
     <Compile Include="Obsolete\ServerOwinExtensions.cs" />
     <Compile Include="Obsolete\StartupConfiguration.cs" />
@@ -375,7 +393,6 @@
     <Compile Include="States\IApplyStateFilter.cs" />
     <Compile Include="GlobalStateHandlers.cs" />
     <Compile Include="Server\ServerContext.cs" />
-    <Compile Include="Server\ServerHeartbeat.cs" />
     <Compile Include="Server\Worker.cs" />
     <Compile Include="States\IBackgroundJobStateChanger.cs" />
     <Compile Include="Storage\DistributedLockTimeoutException.cs" />
@@ -427,6 +444,7 @@
     <Compile Include="Storage\RecurringJobDto.cs" />
     <Compile Include="Storage\StateData.cs" />
     <Compile Include="Storage\StorageConnectionExtensions.cs" />
+    <Compile Include="Storage\BackgroundServerGoneException.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.eot" />
@@ -434,6 +452,7 @@
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.woff" />
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.woff2" />
     <Compile Include="BackgroundJob.Instance.cs" />
+    <EmbeddedResource Include="Dashboard\Content\resx\Strings.zh-TW.resx" />
     <EmbeddedResource Include="Dashboard\Content\resx\Strings.zh.resx" />
     <EmbeddedResource Include="Dashboard\Content\resx\Strings.es.resx" />
     <EmbeddedResource Include="Dashboard\Content\resx\Strings.resx">

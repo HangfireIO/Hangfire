@@ -21,7 +21,7 @@ using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
-using NCrontab;
+using Cronos;
 
 namespace Hangfire
 {
@@ -67,7 +67,7 @@ namespace Hangfire
                 var recurringJob = new Dictionary<string, string>();
                 var invocationData = InvocationData.Serialize(job);
 
-                recurringJob["Job"] = JobHelper.ToJson(invocationData);
+                recurringJob["Job"] = invocationData.Serialize();
                 recurringJob["Cron"] = cronExpression;
                 recurringJob["TimeZoneId"] = options.TimeZone.Id;
                 recurringJob["Queue"] = options.QueueName;
@@ -103,7 +103,7 @@ namespace Hangfire
                     return;
                 }
                 
-                var job = JobHelper.FromJson<InvocationData>(hash["Job"]).Deserialize();
+                var job = InvocationData.Deserialize(hash["Job"]).Deserialize();
                 var state = new EnqueuedState { Reason = "Triggered using recurring job manager" };
 
                 if (hash.ContainsKey("Queue"))
@@ -135,8 +135,8 @@ namespace Hangfire
         {
             try
             {
-                var schedule = CrontabSchedule.Parse(cronExpression);
-                schedule.GetNextOccurrence(DateTime.UtcNow);
+                var expression = CronExpression.Parse(cronExpression);
+                expression.GetNextOccurrence(DateTime.UtcNow);
             }
             catch (Exception ex)
             {

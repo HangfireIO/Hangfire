@@ -122,8 +122,7 @@ namespace Hangfire.SqlServer
 
         public override void WriteOptionsToLog(ILog logger)
         {
-            logger.Info("Using the following options for SQL Server job storage:");
-            logger.Info($"    Queue poll interval: {_options.QueuePollInterval}.");
+            logger.Info($"Using the following options for SQL Server job storage: Queue poll interval: {_options.QueuePollInterval}.");
         }
 
         public override string ToString()
@@ -239,14 +238,17 @@ namespace Hangfire.SqlServer
 
         internal DbConnection CreateAndOpenConnection()
         {
-            var connection = _existingConnection ?? new SqlConnection(_connectionString);
-
-            if (connection.State == ConnectionState.Closed)
+            using (_options.ImpersonationFunc?.Invoke())
             {
-                connection.Open();
-            }
+                var connection = _existingConnection ?? new SqlConnection(_connectionString);
 
-            return connection;
+                if (connection.State == ConnectionState.Closed)
+                {
+                    connection.Open();
+                }
+
+                return connection;
+            }
         }
 
         internal bool IsExistingConnection(IDbConnection connection)
@@ -341,7 +343,7 @@ where dbid = db_id(@name) and status != 'background' and status != 'sleeping'";
                         .Query<int>(sqlQuery, new { name = connection.Database })
                         .Single();
 
-                    return new Metric(value.ToString("N0"));
+                    return new Metric(value);
                 });
             });
 
@@ -363,7 +365,7 @@ where dbid = db_id(@name) and status != 'background'";
                         .Query<int>(sqlQuery, new { name = connection.Database })
                         .Single();
 
-                    return new Metric(value.ToString("N0"));
+                    return new Metric(value);
                 });
             });
     }

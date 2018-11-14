@@ -1,5 +1,5 @@
 Framework 4.5.1
-Include "packages\Hangfire.Build.0.2.5\tools\psake-common.ps1"
+Include "packages\Hangfire.Build.0.2.6\tools\psake-common.ps1"
 
 Properties {
     $solution = "Hangfire.sln"
@@ -24,7 +24,7 @@ Task Merge -Depends Test -Description "Run ILMerge /internalize to merge assembl
     # Remove `*.pdb` file to be able to prepare NuGet symbol packages.
 	Remove-File ((Get-SrcOutputDir "Hangfire.SqlServer") + "\Dapper.pdb")
     
-    Merge-Assembly "Hangfire.Core" @("NCrontab", "CronExpressionDescriptor", "Microsoft.Owin")
+    Merge-Assembly "Hangfire.Core" @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
     Merge-Assembly "Hangfire.SqlServer" @("Dapper")
 }
 
@@ -43,6 +43,13 @@ Task Collect -Depends Merge -Description "Copy all artifacts to the build folder
 
     Collect-Localizations "Hangfire.Core" "net45"
     Collect-Localizations "Hangfire.Core" "netstandard1.3"
+
+    Collect-File "LICENSE.md"
+    Collect-File "NOTICES"
+    Collect-File "COPYING.LESSER"
+    Collect-File "COPYING"
+    Collect-File "LICENSE_STANDARD"
+    Collect-File "LICENSE_ROYALTYFREE"
 }
 
 Task Pack -Depends Collect -Description "Create NuGet packages and archive files." {
@@ -111,6 +118,6 @@ function Run-OpenCoverXunit2($projectWithOptionalTarget, $coverageFile, $coverag
     $assembly = (Get-TestsOutputDir $project $target) + "\$project.dll"
 	
     Exec {
-        .$opencover -target:"$xunit_path" -targetargs:"`"$assembly`" -noshadow $extra" -filter:"$coverageFilter" -mergeoutput -output:"$coverageFile" -register:user -returntargetcode
+        .$opencover -target:"$xunit_path" -targetargs:"`"`"$assembly`"`" -noshadow $extra" -filter:"$coverageFilter" -mergeoutput -output:"$coverageFile" -register:user -returntargetcode
     }
 }

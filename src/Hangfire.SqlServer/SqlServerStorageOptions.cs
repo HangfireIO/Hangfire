@@ -110,6 +110,8 @@ namespace Hangfire.SqlServer
             }
         }
 
+        public Func<IDisposable> ImpersonationFunc { get; set; }
+        
         public SqlServerStorageTableConfiguration CustomTableNames
         {
             get { return _customTableNames; }
