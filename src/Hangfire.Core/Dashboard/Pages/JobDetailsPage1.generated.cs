@@ -276,7 +276,7 @@ WriteLiteral("</span>\r\n");
 
             
             #line 73 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-Write(JobMethodCallRenderer.Render(job.Job));
+Write(JobMethodCallRenderer.Render(job.Job, DashboardOptions.MaxArgumentToRenderSize));
 
             
             #line default
