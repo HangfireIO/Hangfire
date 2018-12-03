@@ -31,7 +31,7 @@ script:
         chmod +x .nuget/NuGet.exe;
         travis_retry nuget install .nuget/packages.config -OutputDirectory packages;
         travis_retry nuget restore Hangfire.sln;
-        xbuild /p:Configuration=Release Hangfire.sln;
+        msbuild /p:Configuration=Release Hangfire.sln;
         mono ./packages/xunit.runner.console.2.2.0/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/net45/Hangfire.Core.Tests.dll;
     else
         dotnet test -c Release -f netcoreapp1.0 tests/Hangfire.Core.Tests;
