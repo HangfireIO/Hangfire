@@ -125,6 +125,11 @@ namespace Hangfire.Server
 
                 foreach (var recurringJobId in recurringJobIds)
                 {
+                    if (context.IsShutdownRequested)
+                    {
+                        return;
+                    }
+
                     var recurringJob = connection.GetAllEntriesFromHash(
                         $"recurring-job:{recurringJobId}");
 

@@ -89,27 +89,27 @@ WriteLiteral("\">\r\n<head>\r\n    <title>");
             
             #line default
             #line hidden
-WriteLiteral(@" - Hangfire</title>
-    <meta http-equiv=""X-UA-Compatible"" content=""IE=edge"">
-    <meta charset=""utf-8"">
-    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-    <meta name=""robots"" content=""none"">
-    <meta name=""csrf-header"" content=""");
+WriteLiteral(" - Hangfire</title>\r\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\r\n " +
+"   <meta charset=\"utf-8\">\r\n    <meta name=\"viewport\" content=\"width=device-width" +
+", initial-scale=1.0\">\r\n    <meta name=\"robots\" content=\"none\">\r\n");
 
 
             
             #line 17 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                 Write(Context.AntiforgeryHeader);
+     if (!String.IsNullOrWhiteSpace(Context.AntiforgeryHeader))
+    {
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n    <meta name=\"csrf-token\" content=\"");
+WriteLiteral("        ");
+
+WriteLiteral(" <meta name=\"csrf-header\" content=\"");
 
 
             
-            #line 18 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                Write(Context.AntiforgeryToken);
+            #line 19 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                                        Write(Context.AntiforgeryHeader);
 
             
             #line default
@@ -118,7 +118,46 @@ WriteLiteral("\">\r\n");
 
 
             
-            #line 19 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 20 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+    }
+
+            
+            #line default
+            #line hidden
+
+            
+            #line 21 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+     if (!String.IsNullOrWhiteSpace(Context.AntiforgeryToken))
+    {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("        ");
+
+WriteLiteral(" <meta name=\"csrf-token\" content=\"");
+
+
+            
+            #line 23 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                                       Write(Context.AntiforgeryToken);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n");
+
+
+            
+            #line 24 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+    }
+
+            
+            #line default
+            #line hidden
+
+            
+            #line 25 "..\..\Dashboard\Pages\LayoutPage.cshtml"
        var version = GetType().GetTypeInfo().Assembly.GetName().Version; 
 
             
@@ -128,7 +167,7 @@ WriteLiteral("    <link rel=\"stylesheet\" href=\"");
 
 
             
-            #line 20 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 26 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                             Write(Url.To($"/css{version.Major}{version.Minor}{version.Build}"));
 
             
@@ -153,7 +192,7 @@ WriteLiteral(@""">
 
 
             
-            #line 35 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 41 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                  Write(Url.Home());
 
             
@@ -164,7 +203,7 @@ WriteLiteral("\">Hangfire Dashboard</a>\r\n                    </div>\r\n       
 
 
             
-            #line 38 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 44 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(Html.RenderPartial(new Navigation()));
 
             
@@ -174,7 +213,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 39 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 45 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                          if(@AppPath != null) {
 
             
@@ -185,7 +224,7 @@ WriteLiteral("                            <ul class=\"nav navbar-nav navbar-righ
 
 
             
-            #line 42 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 48 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                         Write(AppPath);
 
             
@@ -196,7 +235,7 @@ WriteLiteral("\">\r\n                                        <span class=\"glyph
 
 
             
-            #line 44 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 50 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                    Write(Strings.LayoutPage_Back);
 
             
@@ -207,7 +246,7 @@ WriteLiteral("\r\n                                    </a>\r\n                  
 
 
             
-            #line 48 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 54 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                         }
 
             
@@ -220,7 +259,7 @@ WriteLiteral("                    </div>\r\n                    <!--/.nav-collap
 
 
             
-            #line 56 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 62 "..\..\Dashboard\Pages\LayoutPage.cshtml"
            Write(RenderBody());
 
             
@@ -238,7 +277,7 @@ WriteLiteral(@"
 
 
             
-            #line 64 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 70 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                                                                           Write($"{version.Major}.{version.Minor}.{version.Build}");
 
             
@@ -248,7 +287,7 @@ WriteLiteral("\r\n                        </a>\r\n                    </li>\r\n"
 
 
             
-            #line 67 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 73 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                      if(DashboardOptions.DisplayStorageConnectionString){
 
             
@@ -258,7 +297,7 @@ WriteLiteral("                    <li>");
 
 
             
-            #line 68 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 74 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(Storage);
 
             
@@ -268,7 +307,7 @@ WriteLiteral("</li>\r\n");
 
 
             
-            #line 69 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 75 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                     }
 
             
@@ -278,7 +317,7 @@ WriteLiteral("                    <li>");
 
 
             
-            #line 70 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 76 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(Strings.LayoutPage_Footer_Time);
 
             
@@ -288,7 +327,7 @@ WriteLiteral(" ");
 
 
             
-            #line 70 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 76 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                    Write(Html.LocalTime(DateTime.UtcNow));
 
             
@@ -298,7 +337,7 @@ WriteLiteral("</li>\r\n                    <li>");
 
 
             
-            #line 71 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 77 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(String.Format(Strings.LayoutPage_Footer_Generatedms, GenerationTime.Elapsed.TotalMilliseconds.ToString("N")));
 
             
@@ -309,7 +348,7 @@ WriteLiteral("</li>\r\n                </ul>\r\n            </div>\r\n        </
 
 
             
-            #line 77 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 83 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                            Write(DashboardOptions.StatsPollingInterval);
 
             
@@ -319,7 +358,7 @@ WriteLiteral("\"\r\n             data-pollurl=\"");
 
 
             
-            #line 78 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 84 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                        Write(Url.To("/stats"));
 
             
@@ -329,7 +368,7 @@ WriteLiteral("\">\r\n        </div>\r\n\r\n        <script src=\"");
 
 
             
-            #line 81 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 87 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                 Write(Url.To($"/js{version.Major}{version.Minor}{version.Build}"));
 
             

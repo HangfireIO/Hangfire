@@ -275,29 +275,34 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
 
-            string sql =
-$@"
-exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive', @LockOwner=N'Session', @LockTimeout=-1;
-;merge [{_storage.SchemaName}].Hash with (holdlock, forceseek) as Target
+            var sql =
+$@";merge [{_storage.SchemaName}].Hash with (holdlock, forceseek) as Target
 using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
 on Target.[Key] = Source.[Key] and Target.Field = Source.Field
 when matched then update set Value = Source.Value
-when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);
-exec sp_releaseapplock @Resource=@resource, @LockOwner=N'Session';";
+when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
+
+            var lockResourceKey = $"{_storage.SchemaName}:Hash:Lock";
 
             _storage.UseTransaction(_dedicatedConnection, (connection, transaction) =>
             {
                 using (var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
                 {
+                    commandBatch.Append(
+                        "SET XACT_ABORT ON;exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive', @LockOwner=N'Transaction', @LockTimeout=-1;",
+                        new SqlParameter("@resource", lockResourceKey));
 
                     foreach (var keyValuePair in keyValuePairs)
                     {
                         commandBatch.Append(sql,
                             new SqlParameter("@key", key),
                             new SqlParameter("@field", keyValuePair.Key),
-                            new SqlParameter("@value", (object) keyValuePair.Value ?? DBNull.Value),
-                            new SqlParameter("@resource", $"{_storage.SchemaName}:Hash:Lock"));
+                            new SqlParameter("@value", (object) keyValuePair.Value ?? DBNull.Value));
                     }
+
+                    commandBatch.Append(
+                        "exec sp_releaseapplock @Resource=@resource, @LockOwner=N'Transaction';",
+                        new SqlParameter("@resource", lockResourceKey));
 
                     commandBatch.Connection = connection;
                     commandBatch.Transaction = transaction;

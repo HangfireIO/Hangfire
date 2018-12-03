@@ -13,6 +13,9 @@
     <copyright>Copyright © 2013 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://www.hangfire.io/blog/
+    
+1.6.21
+• Fixed – Change locking scheme in the `Connection.SetRangeInHash` method to avoid deadlocks.
       
 1.7.0-beta2
 • Added – Blocking fetch support for sliding expiration-based fetch to avoid excessive polling.

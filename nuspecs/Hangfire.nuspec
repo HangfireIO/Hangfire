@@ -18,6 +18,16 @@
     <copyright>Copyright © 2013-2018 Sergey Odinokov</copyright>
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
+    
+1.7.0-beta3
+
+Hangfire.Core
+
+• Ported – Merged updates from version 1.6.21.
+
+Hangfire.SqlServer
+
+• Ported – Merged updates from version 1.6.21.
       
 1.7.0-beta2
 

@@ -72,19 +72,19 @@ namespace Hangfire.Dashboard
 
                     return;
                 }
+            }
 
-                var antiforgery = httpContext.RequestServices.GetService<IAntiforgery>();
+            var antiforgery = httpContext.RequestServices.GetService<IAntiforgery>();
 
-                if (antiforgery != null)
+            if (antiforgery != null)
+            {
+                var requestValid = await antiforgery.IsRequestValidAsync(httpContext);
+
+                if (!requestValid)
                 {
-                    var requestValid = await antiforgery.IsRequestValidAsync(httpContext);
-
-                    if (!requestValid)
-                    {
-                        // Invalid or missing CSRF token
-                        httpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
-                        return;
-                    }
+                    // Invalid or missing CSRF token
+                    httpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                    return;
                 }
             }
 
