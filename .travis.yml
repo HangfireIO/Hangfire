@@ -33,7 +33,6 @@ script:
         msbuild /p:Configuration=Release /verbosity:minimal Hangfire.sln;
         mono ./packages/xunit.runner.console.2.2.0/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/net452/Hangfire.Core.Tests.dll;
     else
-        # We need to restore packages explicitly for .NET Core 1.X before building
         travis_retry dotnet restore --disable-parallel;
         dotnet test -c Release -f netcoreapp1.0 tests/Hangfire.Core.Tests/Hangfire.Core.Tests.csproj;
     fi
