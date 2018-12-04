@@ -7,10 +7,10 @@ dist: trusty
 
 matrix:
   include:
-    - dotnet: 2.1.4
+    - dotnet: 1.1.10
       mono: none
       os: linux
-    - dotnet: 2.1.4
+    - dotnet: 1.1.10
       mono: none
       os: osx
     - mono: latest
@@ -27,12 +27,11 @@ branches:
 # Run the build script
 script:
   - if hash mono 2>/dev/null; 
-    then 
-        chmod +x .nuget/NuGet.exe;
+    then
         travis_retry nuget install .nuget/packages.config -OutputDirectory packages;
         travis_retry nuget restore Hangfire.sln;
-        msbuild /p:Configuration=Release Hangfire.sln;
-        mono ./packages/xunit.runner.console.2.2.0/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/net45/Hangfire.Core.Tests.dll;
+        msbuild /p:Configuration=Release /verbosity:minimal Hangfire.sln;
+        mono ./packages/xunit.runner.console.2.2.0/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/net452/Hangfire.Core.Tests.dll;
     else
         dotnet test -c Release -f netcoreapp1.0 tests/Hangfire.Core.Tests;
     fi
