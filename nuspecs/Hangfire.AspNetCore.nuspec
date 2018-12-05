@@ -37,7 +37,6 @@ Merged updates from 1.6.18 – 1.6.20:
         <dependency id="Hangfire.Core" version="[0.0.0]" />
       </group>
       <group targetFramework="netstandard1.3">
-        <dependency id="Microsoft.NETCore.Portable.Compatibility" version="1.0.1" />
         <dependency id="NETStandard.Library" version="1.6.0" />
         <dependency id="System.ComponentModel" version="4.0.1" />
         <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="1.0.0" />
