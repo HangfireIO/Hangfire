@@ -50,7 +50,7 @@ namespace Hangfire.SqlServer
 
             script = script.Replace("$(HangFireSchema)", !string.IsNullOrWhiteSpace(schema) ? schema : Constants.DefaultSchema);
 
-#if NETFULL
+#if !NETSTANDARD1_3
             for (var i = 0; i < RetryAttempts; i++)
             {
                 try

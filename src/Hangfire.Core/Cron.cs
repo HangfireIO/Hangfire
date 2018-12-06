@@ -254,7 +254,7 @@ namespace Hangfire
             return $"0 0 1 */{interval} *";
         }
 
-#if NETFULL
+#if FEATURE_CRONDESCRIPTOR
         /// <summary>
         /// Converts a Cron expression string into a description.
         /// </summary>

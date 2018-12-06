@@ -1,5 +1,5 @@
 // This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright Â© 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -62,7 +62,7 @@ namespace Hangfire.SqlServer
             return DequeueUsingTransaction(queues, cancellationToken);
         }
 
-#if NETFULL
+#if FEATURE_TRANSACTIONSCOPE
         public void Enqueue(IDbConnection connection, string queue, string jobId)
 #else
         public void Enqueue(DbConnection connection, DbTransaction transaction, string queue, string jobId)
@@ -74,7 +74,7 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
             connection.Execute(
                 enqueueJobSql, 
                 new { jobId = long.Parse(jobId), queue = queue }
-#if !NETFULL
+#if !FEATURE_TRANSACTIONSCOPE
                 , transaction
 #endif
                 , commandTimeout: _storage.CommandTimeout);

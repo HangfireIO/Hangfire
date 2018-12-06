@@ -29,7 +29,7 @@ namespace Hangfire.Dashboard
             _command = command;
         }
 
-#if NETFULL
+#if FEATURE_OWIN
         [Obsolete("Use the `CommandDispatcher(Func<DashboardContext, bool>)` ctor instead. Will be removed in 2.0.0.")]
         public CommandDispatcher(Func<RequestDispatcherContext, bool> command)
         {

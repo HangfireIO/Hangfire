@@ -1,5 +1,5 @@
 // This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright Â© 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -21,8 +21,10 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
-#if NETFULL
+#if FEATURE_CONFIGURATIONMANAGER
 using System.Configuration;
+#endif
+#if FEATURE_TRANSACTIONSCOPE
 using System.Transactions;
 using IsolationLevel = System.Transactions.IsolationLevel;
 #endif
@@ -209,7 +211,7 @@ namespace Hangfire.SqlServer
             [InstantHandle] Func<DbConnection, DbTransaction, T> func, 
             IsolationLevel? isolationLevel)
         {
-#if NETFULL
+#if FEATURE_TRANSACTIONSCOPE
             using (var transaction = CreateTransaction(isolationLevel ?? _options.TransactionIsolationLevel))
             {
                 var result = UseConnection(dedicatedConnection, connection =>
@@ -285,7 +287,7 @@ namespace Hangfire.SqlServer
 
         private string GetConnectionString(string nameOrConnectionString)
         {
-#if NETFULL
+#if FEATURE_CONFIGURATIONMANAGER
             if (IsConnectionString(nameOrConnectionString))
             {
                 return nameOrConnectionString;
@@ -303,7 +305,7 @@ namespace Hangfire.SqlServer
 #endif
         }
 
-#if NETFULL
+#if FEATURE_CONFIGURATIONMANAGER
         private bool IsConnectionString(string nameOrConnectionString)
         {
             return nameOrConnectionString.Contains(";");
@@ -315,7 +317,9 @@ namespace Hangfire.SqlServer
 
             return connectionStringSetting != null;
         }
+#endif
 
+#if FEATURE_TRANSACTIONSCOPE
         private TransactionScope CreateTransaction(IsolationLevel? isolationLevel)
         {
             return isolationLevel != null

@@ -9,7 +9,7 @@
   
   <PropertyGroup Condition="'$(TargetFramework)'=='net45'">
     <DebugType>full</DebugType>
-    <DefineConstants>$(DefineConstants);NETFULL</DefineConstants>
+    <DefineConstants>$(DefineConstants);FEATURE_CRONDESCRIPTOR;FEATURE_OWIN;</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>

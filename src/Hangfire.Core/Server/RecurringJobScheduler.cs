@@ -223,7 +223,7 @@ namespace Hangfire.Server
                     $"recurring-job:{recurringJobId}",
                     changedFields);
             }
-#if NETFULL
+#if !NETSTANDARD1_3
             catch (TimeZoneNotFoundException ex)
             {
 #else

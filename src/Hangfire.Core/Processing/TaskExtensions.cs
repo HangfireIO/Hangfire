@@ -23,7 +23,7 @@ namespace Hangfire.Processing
 {
     internal static class TaskExtensions
     {
-#if NETFULL
+#if !NETSTANDARD1_3
         internal static readonly WaitHandle InvalidWaitHandleInstance = new InvalidWaitHandle();
 
         public static Task<bool> AsTask([NotNull] this WaitHandle waitHandle, CancellationToken token)
@@ -67,7 +67,7 @@ namespace Hangfire.Processing
             await tcs.Task.ConfigureAwait(false);
         }
 
-#if NETFULL
+#if !NETSTANDARD1_3
         private static void CallBack(object state, bool timedOut)
         {
             // We do call the Unregister method to prevent race condition between
@@ -94,7 +94,7 @@ namespace Hangfire.Processing
             ctx.Item1.TrySetCanceled(/*ctx.Item2*/);
         }
 
-#if NETFULL
+#if !NETSTANDARD1_3
         private sealed class InvalidWaitHandle : WaitHandle
         {
             [Obsolete("Use the SafeWaitHandle property instead.")]

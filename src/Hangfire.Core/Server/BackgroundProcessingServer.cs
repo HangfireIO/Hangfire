@@ -16,7 +16,7 @@
 
 using System;
 using System.Collections.Generic;
-#if NETFULL
+#if !NETSTANDARD1_3
 using System.Diagnostics;
 #endif
 using System.Linq;
@@ -117,7 +117,7 @@ namespace Hangfire.Server
 
             _dispatcher = CreateDispatcher();
 
-#if NETFULL
+#if !NETSTANDARD1_3
             AppDomain.CurrentDomain.DomainUnload += OnCurrentDomainUnload;
             AppDomain.CurrentDomain.ProcessExit += OnCurrentDomainUnload;
 #endif
@@ -222,7 +222,7 @@ namespace Hangfire.Server
             {
                 IsBackground = true,
                 Name = $"{nameof(BackgroundServerProcess)} #{Interlocked.Increment(ref _lastThreadId)}",
-#if NETFULL
+#if !NETSTANDARD1_3
                 Priority = ThreadPriority.AboveNormal
 #endif
             };

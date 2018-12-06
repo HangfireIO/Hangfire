@@ -1,6 +1,6 @@
 ﻿using System;
 
-#if !NETFULL
+#if NETCOREAPP1_0
 using System.Runtime.InteropServices;
 #endif
 
@@ -10,7 +10,7 @@ namespace Hangfire.Core.Tests
     {
         public static bool IsRunningOnWindows()
         {
-#if NETFULL
+#if !NETCOREAPP1_0
             return Environment.OSVersion.Platform == PlatformID.Win32NT;
 #else
             return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);

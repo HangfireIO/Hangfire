@@ -116,7 +116,7 @@ namespace Hangfire.Core.Tests.Common
 			CreateAndPerform(Int64Value);
 		}
 
-#if NETFULL
+#if !NETCOREAPP1_0
         private const UInt64 UInt64Value = UInt64.MaxValue;
 		public void Method(UInt64 value) { Assert.Equal(UInt64Value, value); }
 
@@ -185,7 +185,7 @@ namespace Hangfire.Core.Tests.Common
 			}
 		}
 
-#if NETFULL
+#if !NETCOREAPP1_0
         private static readonly CultureInfo CultureInfoValue = new CultureInfo("ru-RU");
 		public void Method(CultureInfo value) { Assert.Equal(CultureInfoValue, value); }
 
@@ -308,7 +308,7 @@ namespace Hangfire.Core.Tests.Common
 
 			var serializationMethods = new List<Tuple<string, Func<string>>>();
 
-#if NETFULL
+#if !NETCOREAPP1_0
             if (!checkJsonOnly)
 			{
 				var converter = TypeDescriptor.GetConverter(typeof(T));

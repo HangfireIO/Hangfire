@@ -137,7 +137,7 @@ namespace Hangfire.Server
 
             var guid = Guid.NewGuid().ToString();
 
-#if NETFULL
+#if !NETSTANDARD1_3
             if (!String.IsNullOrWhiteSpace(serverName))
             {
                 serverName += ":" + Process.GetCurrentProcess().Id;

@@ -38,7 +38,7 @@ namespace Hangfire
         /// </summary>
         public string AppPath { get; set; }
 
-#if NETFULL
+#if FEATURE_OWIN
         [Obsolete("Please use `Authorization` property instead. Will be removed in 2.0.0.")]
         public IEnumerable<IAuthorizationFilter> AuthorizationFilters { get; set; }
 #endif

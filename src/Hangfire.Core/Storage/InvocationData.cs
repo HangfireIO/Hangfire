@@ -191,7 +191,7 @@ namespace Hangfire.Storage
                     : null;
             }
             catch (Exception
-#if NETFULL || NETSTANDARD2_0
+#if !NETSTANDARD1_3
             jsonException
 #endif
             )
@@ -211,7 +211,7 @@ namespace Hangfire.Storage
                     }
                     else
                     {
-#if NETFULL || NETSTANDARD2_0
+#if !NETSTANDARD1_3
                         try
                         {
                             var converter = TypeDescriptor.GetConverter(type);

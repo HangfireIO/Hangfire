@@ -18,7 +18,7 @@ using System;
 
 namespace Hangfire.Storage
 {
-#if NETFULL
+#if !NETSTANDARD1_3
     [Serializable]
 #endif
     public class BackgroundServerGoneException : Exception
