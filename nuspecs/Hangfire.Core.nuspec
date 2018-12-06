@@ -53,11 +53,11 @@
         <dependency id="NETStandard.Library" version="1.6.0" />
         <dependency id="System.Threading.Thread" version="4.0.0" />
         <dependency id="Newtonsoft.Json" version="9.0.1" />
-        <dependency id="Cronos" version="0.6.3" />
+        <dependency id="Cronos" version="0.7.0" />
       </group>
       <group targetFramework="netstandard2.0">
         <dependency id="Newtonsoft.Json" version="11.0.1" />
-        <dependency id="Cronos" version="0.6.3" />
+        <dependency id="Cronos" version="0.7.0" />
       </group>
     </dependencies>
   </metadata>
