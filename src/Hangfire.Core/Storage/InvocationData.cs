@@ -31,6 +31,11 @@ namespace Hangfire.Storage
 {
     public class InvocationData
     {
+        private static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
+        {
+            TypeNameHandling = TypeNameHandling.None
+        };
+        
         private static readonly string EmptyArray = "[]";
         private static readonly string[] SystemAssemblyNames = { "mscorlib", "System.Private.CoreLib" };
 
@@ -53,7 +58,7 @@ namespace Hangfire.Storage
             try
             {
                 var type = System.Type.GetType(Type, throwOnError: true, ignoreCase: true);
-                var parameterTypes = JobHelper.FromJson<Type[]>(ParameterTypes);
+                var parameterTypes = JsonConvert.DeserializeObject<Type[]>(ParameterTypes, SerializerSettings);
                 var method = type.GetNonOpenMatchingMethod(Method, parameterTypes);
                 
                 if (method == null)
@@ -84,14 +89,14 @@ namespace Hangfire.Storage
 
         public static InvocationData Deserialize(string serializedData)
         {
-            var payload = JobHelper.FromJson<JobPayload>(serializedData);
+            var payload = JsonConvert.DeserializeObject<JobPayload>(serializedData, SerializerSettings);
 
             if (payload.TypeName != null && payload.MethodName != null)
             {
                 return new InvocationData(
                     payload.TypeName,
                     payload.MethodName,
-                    JobHelper.ToJson(payload.ParameterTypes) ?? EmptyArray,
+                    payload.ParameterTypes?.Length > 0 ? JsonConvert.SerializeObject(payload.ParameterTypes, SerializerSettings) : EmptyArray,
                     JobHelper.ToJson(payload.Arguments) ?? EmptyArray);
             }
 
@@ -100,16 +105,16 @@ namespace Hangfire.Storage
 
         public string Serialize()
         {
-            var parameterTypes = JobHelper.FromJson<string[]>(ParameterTypes);
+            var parameterTypes = JsonConvert.DeserializeObject<string[]>(ParameterTypes, SerializerSettings);
             var arguments = JobHelper.FromJson<string[]>(Arguments);
 
-            return JobHelper.ToJson(new JobPayload
+            return JsonConvert.SerializeObject(new JobPayload
             {
                 TypeName = Type,
                 MethodName = Method,
                 ParameterTypes = parameterTypes != null && parameterTypes.Length > 0 ? parameterTypes : null,
                 Arguments = arguments != null && arguments.Length > 0 ? arguments : null
-            });
+            }, SerializerSettings);
         }
 
         internal static string[] SerializeArguments(IReadOnlyCollection<object> arguments)
