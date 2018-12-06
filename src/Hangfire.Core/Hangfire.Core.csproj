@@ -31,9 +31,14 @@
     <PackageReference Include="Microsoft.Owin" Version="3.0.1" />
   </ItemGroup>
   
-  <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3' or '$(TargetFramework)'=='netstandard2.0'">
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
     <PackageReference Include="System.Threading.Thread" Version="4.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+    <PackageReference Include="Microsoft.CSharp" Version="4.4.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3' or '$(TargetFramework)'=='netstandard2.0'">
