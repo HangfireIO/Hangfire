@@ -36,11 +36,16 @@ Task Collect -Depends Merge -Description "Copy all artifacts to the build folder
     Collect-Assembly "Hangfire.SqlServer" "netstandard1.3"
     Collect-Assembly "Hangfire.AspNetCore" "netstandard1.3"
     
+    Collect-Assembly "Hangfire.Core" "netstandard2.0"
+    Collect-Assembly "Hangfire.SqlServer" "netstandard2.0"
+    Collect-Assembly "Hangfire.AspNetCore" "netstandard2.0"
+    
     Collect-Content "content\readme.txt"
     Collect-Tool "src\Hangfire.SqlServer\DefaultInstall.sql"
 
     Collect-Localizations "Hangfire.Core" "net45"
     Collect-Localizations "Hangfire.Core" "netstandard1.3"
+    Collect-Localizations "Hangfire.Core" "netstandard2.0"
 
     Collect-File "LICENSE.md"
     Collect-File "NOTICES"

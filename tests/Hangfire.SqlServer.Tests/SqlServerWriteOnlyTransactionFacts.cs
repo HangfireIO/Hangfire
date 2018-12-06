@@ -241,7 +241,15 @@ select scope_identity() as Id";
             {
                 Commit(sql, x => x.AddToQueue("default", "1"), useBatching);
 
-                correctJobQueue.Verify(x => x.Enqueue(It.IsNotNull<IDbConnection>(), "default", "1"));
+                correctJobQueue.Verify(x => x.Enqueue(
+#if NETCOREAPP
+                    It.IsNotNull<System.Data.Common.DbConnection>(),
+                    It.IsNotNull<System.Data.Common.DbTransaction>(),
+#else
+                    It.IsNotNull<IDbConnection>(),
+#endif
+                    "default", 
+                    "1"));
             });
         }
 

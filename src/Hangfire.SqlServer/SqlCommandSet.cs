@@ -37,6 +37,7 @@ namespace Hangfire.SqlServer
 
         static SqlCommandSet()
         {
+#if NETFULL
             try
             {
                 var typeAssembly = typeof(SqlCommand).GetTypeInfo().Assembly;
@@ -64,6 +65,9 @@ namespace Hangfire.SqlServer
             {
                 IsAvailable = false;
             }
+#else
+            IsAvailable = false;
+#endif
         }
 
         public SqlCommandSet()

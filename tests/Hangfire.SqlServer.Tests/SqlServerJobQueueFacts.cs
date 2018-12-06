@@ -556,7 +556,15 @@ values (scope_identity(), @queue)";
             {
                 var queue = CreateJobQueue(connection, invisibilityTimeout: null);
 
+#if NETCOREAPP
+                using (var transaction = connection.BeginTransaction())
+                {
+                    queue.Enqueue(connection, transaction, "default", "1");
+                    transaction.Commit();
+                }
+#else
                 queue.Enqueue(connection, "default", "1");
+#endif
 
                 var record = connection.Query("select * from HangFire.JobQueue").Single();
                 Assert.Equal("1", record.JobId.ToString());
@@ -572,7 +580,15 @@ values (scope_identity(), @queue)";
             {
                 var queue = CreateJobQueue(connection, invisibilityTimeout: null);
                 
+#if NETCOREAPP
+                using (var transaction = connection.BeginTransaction())
+                {
+                    queue.Enqueue(connection, transaction, "default", (int.MaxValue + 1L).ToString());
+                    transaction.Commit();
+                }
+#else
                 queue.Enqueue(connection, "default", (int.MaxValue + 1L).ToString());
+#endif
 
                 var record = connection.Query("select * from HangFire.JobQueue").Single();
                 Assert.Equal((int.MaxValue + 1L).ToString(), record.JobId.ToString());

@@ -85,6 +85,11 @@ Hangfire.SqlServer
         <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
         <dependency id="Hangfire.AspNetCore" version="[0.0.0]" />
       </group>
+      <group targetFramework="netstandard2.0">
+        <dependency id="Hangfire.Core" version="[0.0.0]" />
+        <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
+        <dependency id="Hangfire.AspNetCore" version="[0.0.0]" />
+      </group>
     </dependencies>
   </metadata>
   <files>

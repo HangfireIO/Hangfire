@@ -51,6 +51,10 @@
         <dependency id="Newtonsoft.Json" version="9.0.1" />
         <dependency id="Cronos" version="0.6.3" />
       </group>
+      <group targetFramework="netstandard2.0">
+        <dependency id="Newtonsoft.Json" version="11.0.1" />
+        <dependency id="Cronos" version="0.6.3" />
+      </group>
     </dependencies>
   </metadata>
   <files>
@@ -65,6 +69,12 @@
     <file src="netstandard1.3\Hangfire.Core.pdb" target="lib\netstandard1.3" />
 
     <file src="netstandard1.3\**\Hangfire.Core.resources.dll" target="lib\netstandard1.3" />
+
+    <file src="netstandard2.0\Hangfire.Core.dll" target="lib\netstandard2.0" />
+    <file src="netstandard2.0\Hangfire.Core.xml" target="lib\netstandard2.0" />
+    <file src="netstandard2.0\Hangfire.Core.pdb" target="lib\netstandard2.0" />
+
+    <file src="netstandard2.0\**\Hangfire.Core.resources.dll" target="lib\netstandard2.0" />
     
     <file src="..\src\Hangfire.Core\**\*.cs;..\src\Hangfire.Core\**\*.cshtml" target="src" exclude="**\obj*\**\*.cs" />
 
