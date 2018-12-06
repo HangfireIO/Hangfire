@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net45;netstandard1.3;netstandard2.0;</TargetFrameworks>
+    <TargetFrameworks>net45;net46;netstandard1.3;netstandard2.0;</TargetFrameworks>
     <DebugType>portable</DebugType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>1701;1702;1705;3001;3002;3009;1591</NoWarn>
   </PropertyGroup>
   
-  <PropertyGroup Condition="'$(TargetFramework)'=='net45'">
+  <PropertyGroup Condition="'$(TargetFramework)'=='net45' or '$(TargetFramework)'=='net46'">
     <DebugType>full</DebugType>
     <DefineConstants>$(DefineConstants);FEATURE_CRONDESCRIPTOR;FEATURE_OWIN;</DefineConstants>
   </PropertyGroup>
@@ -24,7 +24,7 @@
     <PackageReference Include="StackTraceParser.Source" Version="1.3.0" />
   </ItemGroup>
   
-  <ItemGroup Condition="'$(TargetFramework)'=='net45'">
+  <ItemGroup Condition="'$(TargetFramework)'=='net45' or '$(TargetFramework)'=='net46'">
     <PackageReference Include="Owin" Version="1.0" />
     <PackageReference Include="CronExpressionDescriptor" Version="1.21.0" />
     <PackageReference Include="Newtonsoft.Json" Version="5.0.1" />

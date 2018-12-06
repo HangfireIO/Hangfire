@@ -23,6 +23,8 @@ Task Merge -Depends Test -Description "Run ILMerge /internalize to merge assembl
     Remove-File ((Get-SrcOutputDir "Hangfire.SqlServer") + "\Dapper.pdb")
     
     Merge-Assembly @("Hangfire.Core", "net45") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
+    Merge-Assembly @("Hangfire.Core", "net46") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
+    
     Merge-Assembly @("Hangfire.SqlServer", "net45") @("Dapper")
 }
 
@@ -31,6 +33,8 @@ Task Collect -Depends Merge -Description "Copy all artifacts to the build folder
     Collect-Assembly "Hangfire.SqlServer" "net45"
     Collect-Assembly "Hangfire.SqlServer.Msmq" "net45"
     Collect-Assembly "Hangfire.AspNetCore" "net451"
+
+    Collect-Assembly "Hangfire.Core" "net46"
 
     Collect-Assembly "Hangfire.Core" "netstandard1.3"
     Collect-Assembly "Hangfire.SqlServer" "netstandard1.3"
@@ -44,6 +48,7 @@ Task Collect -Depends Merge -Description "Copy all artifacts to the build folder
     Collect-Tool "src\Hangfire.SqlServer\DefaultInstall.sql"
 
     Collect-Localizations "Hangfire.Core" "net45"
+    Collect-Localizations "Hangfire.Core" "net46"
     Collect-Localizations "Hangfire.Core" "netstandard1.3"
     Collect-Localizations "Hangfire.Core" "netstandard2.0"
 

@@ -38,7 +38,7 @@ namespace Hangfire.Processing
 
             token.ThrowIfCancellationRequested();
 
-            var tcs = new TaskCompletionSource<bool>(/*TaskCreationOptions.RunContinuationsAsynchronously*/);
+            var tcs = CreateCompletionSource<bool>();
             var registration = ThreadPool.RegisterWaitForSingleObject(waitHandle, CallBack, tcs, timeout, executeOnlyOnce: true);
 
             if (token.CanBeCanceled)
@@ -54,7 +54,7 @@ namespace Hangfire.Processing
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var tcs = new TaskCompletionSource<object>(/*TaskCreationOptions.RunContinuationsAsynchronously*/);
+            var tcs = CreateCompletionSource<object>();
 
             if (cancellationToken.CanBeCanceled)
             {
@@ -84,14 +84,32 @@ namespace Hangfire.Processing
             var ctx = (Tuple<RegisteredWaitHandle, TaskCompletionSource<bool>, CancellationToken>)state;
 
             ctx.Item1.Unregister(InvalidWaitHandleInstance);
-            ctx.Item2.TrySetCanceled(/*ctx.Item3*/);
+            TrySetCanceled(ctx.Item2, ctx.Item3);
         }
 #endif
 
         private static void Action(object state)
         {
             var ctx = (Tuple<TaskCompletionSource<object>, CancellationToken>)state;
-            ctx.Item1.TrySetCanceled(/*ctx.Item2*/);
+            TrySetCanceled(ctx.Item1, ctx.Item2);
+        }
+        
+        private static TaskCompletionSource<T> CreateCompletionSource<T>()
+        {
+            return new TaskCompletionSource<T>(
+#if NET46
+                TaskCreationOptions.RunContinuationsAsynchronously
+#endif
+            );
+        }
+
+        private static void TrySetCanceled<T>(TaskCompletionSource<T> source, CancellationToken token)
+        {
+            source.TrySetCanceled(
+#if NET46
+                token
+#endif
+                );
         }
 
 #if !NETSTANDARD1_3

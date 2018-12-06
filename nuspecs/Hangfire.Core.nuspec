@@ -45,6 +45,10 @@
         <dependency id="Owin" version="1.0" />
         <dependency id="Newtonsoft.Json" version="5.0.1" />
       </group>
+      <group targetFramework="net46">
+        <dependency id="Owin" version="1.0" />
+        <dependency id="Newtonsoft.Json" version="5.0.1" />
+      </group>
       <group targetFramework="netstandard1.3">
         <dependency id="NETStandard.Library" version="1.6.0" />
         <dependency id="System.Threading.Thread" version="4.0.0" />
@@ -63,6 +67,12 @@
     <file src="net45\Hangfire.Core.pdb" target="lib\net45" />
 
     <file src="net45\**\Hangfire.Core.resources.dll" target="lib\net45" />
+
+    <file src="net46\Hangfire.Core.dll" target="lib\net46" />
+    <file src="net46\Hangfire.Core.xml" target="lib\net46" />
+    <file src="net46\Hangfire.Core.pdb" target="lib\net46" />
+
+    <file src="net46\**\Hangfire.Core.resources.dll" target="lib\net46" />
     
     <file src="netstandard1.3\Hangfire.Core.dll" target="lib\netstandard1.3" />
     <file src="netstandard1.3\Hangfire.Core.xml" target="lib\netstandard1.3" />
