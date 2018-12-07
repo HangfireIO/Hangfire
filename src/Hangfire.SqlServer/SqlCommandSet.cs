@@ -37,7 +37,7 @@ namespace Hangfire.SqlServer
 
         static SqlCommandSet()
         {
-#if NETFULL
+#if FEATURE_COMMANDSET
             try
             {
                 var typeAssembly = typeof(SqlCommand).GetTypeInfo().Assembly;
