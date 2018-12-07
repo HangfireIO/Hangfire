@@ -225,6 +225,28 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void GetNonOpenMatchingMethod_HandlesMethodHasNonGenericParameters()
+        {
+            var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "GenericMethod",
+                new[] { typeof(int), typeof(double) },
+                new[] { typeof(NonGenericClass.NestedNonGenericClass) });
+            Assert.Equal("GenericMethod", method.Name);
+            Assert.Equal(2, method.GetParameters().Length);
+            Assert.Equal(typeof(int), method.GetParameters()[0].ParameterType);
+            Assert.Equal(typeof(double), method.GetParameters()[1].ParameterType);
+        }
+
+        [Fact]
+        public void GetNonOpenMatchingMethod_HandlesMethodHasNoParameters()
+        {
+            var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "GenericMethod",
+                new Type[0], 
+                new[] { typeof(NonGenericClass.NestedNonGenericClass) });
+            Assert.Equal("GenericMethod", method.Name);
+            Assert.Equal(0, method.GetParameters().Length);
+        }
+
+        [Fact]
         public void GetNonOpenMatchingMethod_HandlesMethodHasGenericAndNonGenericParameters()
         {
             var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "GenericMethod",
@@ -246,24 +268,6 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal("GenericMethod", method.Name);
             Assert.Equal(1, method.GetParameters().Length);
             Assert.Equal(typeof(Tuple<double,List<int>>), method.GetParameters()[0].ParameterType);
-        }
-
-        [Fact]
-        public void GetNonOpenMatchingMethod_HandlesMethodHasSomeParametersWhoseTypesContainsTheSameGenericParameter()
-        {
-            var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "GenericMethod",
-                new[] { typeof(int), typeof(double) });
-
-            Assert.Equal(null, method);
-        }
-
-        [Fact]
-        public void GetNonOpenMatchingMethod_ReturnsNull_WhenParameterTypeIsMatchedByGenericTypeAndNotMatchedByGenericArguments()
-        {
-            var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "OtherGenericMethod",
-                new[] { typeof(List<int>)});
-
-            Assert.Equal(null, method);
         }
 
         [Fact]
@@ -341,6 +345,8 @@ namespace Hangfire.Core.Tests.Common
         public void GenericMethod<T>(T arg0, T arg1) { }
 
         public void GenericMethod<T>(int arg0, T arg1, double arg2) { }
+
+        public void GenericMethod<T>(int arg0, double arg1) { }
 
         public void GenericMethod<T>(Tuple<T, List<int>> arg) { }
 

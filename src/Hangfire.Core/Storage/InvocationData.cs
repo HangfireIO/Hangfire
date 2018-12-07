@@ -30,17 +30,19 @@ namespace Hangfire.Storage
     public class InvocationData
     {
         public InvocationData(
-            string type, string method, string parameterTypes, string arguments)
+            string type, string method, string parameterTypes, string arguments, string genericTypes = null)
         {
             Type = type;
             Method = method;
             ParameterTypes = parameterTypes;
             Arguments = arguments;
+            GenericTypes = genericTypes;
         }
 
         public string Type { get; }
         public string Method { get; }
         public string ParameterTypes { get; }
+        public string GenericTypes { get; }
         public string Arguments { get; set; }
 
         public Job Deserialize()
@@ -49,7 +51,8 @@ namespace Hangfire.Storage
             {
                 var type = System.Type.GetType(Type, throwOnError: true, ignoreCase: true);
                 var parameterTypes = JobHelper.FromJson<Type[]>(ParameterTypes);
-                var method = type.GetNonOpenMatchingMethod(Method, parameterTypes);
+                var genericTypes = JobHelper.FromJson<Type[]>(GenericTypes);
+                var method = type.GetNonOpenMatchingMethod(Method, parameterTypes, genericTypes);
                 
                 if (method == null)
                 {
@@ -74,7 +77,8 @@ namespace Hangfire.Storage
                 job.Type.AssemblyQualifiedName,
                 job.Method.Name,
                 JobHelper.ToJson(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()),
-                JobHelper.ToJson(SerializeArguments(job.Args)));
+                JobHelper.ToJson(SerializeArguments(job.Args)),
+                JobHelper.ToJson(job.Method.GetGenericArguments()));
         }
 
         internal static string[] SerializeArguments(IReadOnlyCollection<object> arguments)
