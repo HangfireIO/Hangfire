@@ -1,9 +1,11 @@
-﻿using System;
+﻿extern alias ReferencedDapper;
+
+using System;
 using System.Data.SqlClient;
 using System.Reflection;
 using System.Threading;
 using System.Transactions;
-using Dapper;
+using ReferencedDapper::Dapper;
 using Xunit.Sdk;
 
 namespace Hangfire.SqlServer.Tests

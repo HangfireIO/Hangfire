@@ -1,6 +1,8 @@
-﻿using System;
+﻿extern alias ReferencedCronos;
+
+using System;
 using System.Collections.Generic;
-using Cronos;
+using ReferencedCronos::Cronos;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Server;

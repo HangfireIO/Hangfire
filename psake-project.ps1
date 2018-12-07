@@ -4,40 +4,38 @@ Include "packages\Hangfire.Build.0.2.6\tools\psake-common.ps1"
 Task Default -Depends Collect
 Task CI -Depends Pack
 
-Task RestoreCore -Depends Restore, Clean {
-    Exec { dotnet restore }
-}
-
-Task CompileCore -Depends RestoreCore {
+Task Build -Depends Clean -Description "Restore all the packages and build the whole solution." {
     Exec { dotnet build -c Release }
 }
 
-Task Test -Depends CompileCore -Description "Run unit and integration tests." {
-    Exec { dotnet test -c Release "tests\Hangfire.Core.Tests\Hangfire.Core.Tests.csproj" }
-    Exec { dotnet test -c Release "tests\Hangfire.SqlServer.Tests\Hangfire.SqlServer.Tests.csproj" }
-    Exec { dotnet test -c Release "tests\Hangfire.SqlServer.Msmq.Tests\Hangfire.SqlServer.Msmq.Tests.csproj" }
-}
-
-Task Merge -Depends Test -Description "Run ILRepack /internalize to merge assemblies." {
+Task Merge -Depends Build -Description "Run ILRepack /internalize to merge required assemblies." {
     Repack-Assembly @("Hangfire.Core", "net45") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
+    Repack-Assembly @("Hangfire.Core", "net46") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
     Repack-Assembly @("Hangfire.SqlServer", "net45") @("Dapper")
     
-    Repack-Assembly @("Hangfire.Core", "net46") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
-
+    # Referenced packages aren't copied to the output folder in .NET Core <= 2.X. To make ILRepack run,
+    # we need to copy them using the `dotnet publish` command prior to merging them. In .NET Core 3.0
+    # everything should be working without this extra step.
     Publish-Assembly "Hangfire.Core" "netstandard1.3"
-    Publish-Assembly "Hangfire.SqlServer" "netstandard1.3"
-    
-    Repack-Assembly @("Hangfire.Core", "netstandard1.3") @("Cronos")
-    Repack-Assembly @("Hangfire.SqlServer", "netstandard1.3") @("Dapper")
-
     Publish-Assembly "Hangfire.Core" "netstandard2.0"
+    Publish-Assembly "Hangfire.SqlServer" "netstandard1.3"
     Publish-Assembly "Hangfire.SqlServer" "netstandard2.0"
     
+    Repack-Assembly @("Hangfire.Core", "netstandard1.3") @("Cronos")
     Repack-Assembly @("Hangfire.Core", "netstandard2.0") @("Cronos")
+    Repack-Assembly @("Hangfire.SqlServer", "netstandard1.3") @("Dapper")
     Repack-Assembly @("Hangfire.SqlServer", "netstandard2.0") @("Dapper")
 }
 
-Task Collect -Depends Merge -Description "Copy all artifacts to the build folder." {
+Task Test -Depends Merge -Description "Run unit and integration tests against merged assemblies." {
+    # Dependencies shouldn't be re-built, because we need to run tests against merged assemblies to test
+    # the same assemblies that are distributed to users. Since the `dotnet test` command doesn't support
+    # the `--no-dependencies` command directly, we need to re-build tests themselves first.
+    Exec { ls "tests\**\*.csproj" | % { dotnet build -c Release --no-dependencies $_.FullName } }
+    Exec { ls "tests\**\*.csproj" | % { dotnet test -c Release --no-build $_.FullName } }
+}
+
+Task Collect -Depends Test -Description "Copy all artifacts to the build folder." {
     Collect-Assembly "Hangfire.Core" "net45"
     Collect-Assembly "Hangfire.SqlServer" "net45"
     Collect-Assembly "Hangfire.SqlServer.Msmq" "net45"
