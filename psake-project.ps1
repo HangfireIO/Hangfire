@@ -12,20 +12,29 @@ Task CompileCore -Depends RestoreCore {
     Exec { dotnet build -c Release }
 }
 
-Task Test -Depends CompileCore -Description "Run unit and integration tests under OpenCover." {
+Task Test -Depends CompileCore -Description "Run unit and integration tests." {
     Exec { dotnet test -c Release "tests\Hangfire.Core.Tests\Hangfire.Core.Tests.csproj" }
     Exec { dotnet test -c Release "tests\Hangfire.SqlServer.Tests\Hangfire.SqlServer.Tests.csproj" }
     Exec { dotnet test -c Release "tests\Hangfire.SqlServer.Msmq.Tests\Hangfire.SqlServer.Msmq.Tests.csproj" }
 }
 
-Task Merge -Depends Test -Description "Run ILMerge /internalize to merge assemblies." {
-    # Remove `*.pdb` file to be able to prepare NuGet symbol packages.
-    Remove-File ((Get-SrcOutputDir "Hangfire.SqlServer") + "\Dapper.pdb")
+Task Merge -Depends Test -Description "Run ILRepack /internalize to merge assemblies." {
+    Repack-Assembly @("Hangfire.Core", "net45") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
+    Repack-Assembly @("Hangfire.SqlServer", "net45") @("Dapper")
     
-    Merge-Assembly @("Hangfire.Core", "net45") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
-    Merge-Assembly @("Hangfire.Core", "net46") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
+    Repack-Assembly @("Hangfire.Core", "net46") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
+
+    Publish-Assembly "Hangfire.Core" "netstandard1.3"
+    Publish-Assembly "Hangfire.SqlServer" "netstandard1.3"
     
-    Merge-Assembly @("Hangfire.SqlServer", "net45") @("Dapper")
+    Repack-Assembly @("Hangfire.Core", "netstandard1.3") @("Cronos")
+    Repack-Assembly @("Hangfire.SqlServer", "netstandard1.3") @("Dapper")
+
+    Publish-Assembly "Hangfire.Core" "netstandard2.0"
+    Publish-Assembly "Hangfire.SqlServer" "netstandard2.0"
+    
+    Repack-Assembly @("Hangfire.Core", "netstandard2.0") @("Cronos")
+    Repack-Assembly @("Hangfire.SqlServer", "netstandard2.0") @("Dapper")
 }
 
 Task Collect -Depends Merge -Description "Copy all artifacts to the build folder." {
@@ -90,4 +99,54 @@ function Collect-Localizations($project, $target) {
             Copy-Files $source $destination
         }
     }
+}
+
+function Publish-Assembly($project, $target) {
+    $output = Get-SrcOutputDir $project $target
+    Write-Host "Publishing '$project'/$target to '$output'..." -ForegroundColor "Green"
+    Exec { dotnet publish --no-build -c Release -o $output -f $target "$base_dir\src\$project" }
+    Remove-Item "$output\System.*"
+}
+
+function Repack-Assembly($projectWithOptionalTarget, $internalizeAssemblies, $target) {
+    $project = $projectWithOptionalTarget
+    $target = $null
+
+    $base_dir = resolve-path .
+    $ilrepack = "$base_dir\packages\ilrepack.*\tools\ilrepack.exe"
+
+    if ($projectWithOptionalTarget -Is [System.Array]) {
+        $project = $projectWithOptionalTarget[0]
+        $target = $projectWithOptionalTarget[1]
+    }
+
+    Write-Host "Merging '$project'/$target with $internalizeAssemblies..." -ForegroundColor "Green"
+
+    $internalizePaths = @()
+
+    $projectOutput = Get-SrcOutputDir $project $target
+
+    foreach ($assembly in $internalizeAssemblies) {
+        $internalizePaths += "$assembly.dll"
+    }
+
+    $primaryAssemblyPath = "$project.dll"
+    $temp_dir = "$base_dir\temp"
+
+    Create-Directory $temp_dir
+
+    Push-Location
+    Set-Location -Path $projectOutput
+
+    Exec { .$ilrepack `
+        /out:"$temp_dir\$project.dll" `
+        /target:library `
+        /internalize `
+        $primaryAssemblyPath `
+        $internalizePaths `
+    }
+
+    Pop-Location
+
+    Move-Files "$temp_dir\$project.*" $projectOutput
 }
