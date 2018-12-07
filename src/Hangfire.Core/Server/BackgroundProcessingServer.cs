@@ -171,17 +171,20 @@ namespace Hangfire.Server
                 return;
             }
 
+            var stopTimeout = TimeSpan.Zero;
+
             if (!_stopCts.IsCancellationRequested)
             {
                 _logger.Info($"Shutdown initiated with the {timeout} timeout...");
-
                 _stopCts.Cancel();
+                
+                stopTimeout = timeout;
+            }
 
-                if (!_dispatcher.Wait(timeout))
-                {
-                    _abortCts.Cancel();
-                    _dispatcher.Wait(_options.AbortTimeout);
-                }
+            if (!_dispatcher.Wait(stopTimeout))
+            {
+                _abortCts.Cancel();
+                _dispatcher.Wait(_options.AbortTimeout);
             }
         }
 

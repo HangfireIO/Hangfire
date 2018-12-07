@@ -77,7 +77,7 @@ namespace Hangfire
                 services.GetService<IBackgroundJobPerformer>(),
                 services.GetService<IBackgroundJobStateChanger>());
 
-            lifetime.ApplicationStopping.Register(() => server.SendStop());
+            lifetime.ApplicationStopping.Register(() => server.Stop(false));
             lifetime.ApplicationStopped.Register(() => server.Dispose());
 
             return app;
