@@ -5,6 +5,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>1701;1702;1705;3001;3002;3009;1591</NoWarn>
+    <RootNamespace>Hangfire</RootNamespace>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(TargetFramework)'=='net45' or '$(TargetFramework)'=='net46'">
