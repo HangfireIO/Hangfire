@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net452</TargetFrameworks>
+    <NoWarn>0618</NoWarn>
   </PropertyGroup>
   
   <ItemGroup>
