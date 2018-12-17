@@ -224,8 +224,13 @@ namespace Hangfire.Server
                 {
                     changedFields.Add("CreatedAt", JobHelper.SerializeDateTime(nowInstant));
                 }
-                    
-                changedFields.Add("NextExecution", nextInstant.HasValue ? JobHelper.SerializeDateTime(nextInstant.Value) : null);
+                
+                var nextExecution = nextInstant.HasValue ? JobHelper.SerializeDateTime(nextInstant.Value) : null;
+
+                if (!recurringJob.ContainsKey("NextExecution") || recurringJob["NextExecution"] != nextExecution)
+                {
+                    changedFields.Add("NextExecution", nextExecution);
+                }
 
                 if (backgroundJob != null || changedFields.Count != 0)
                 {

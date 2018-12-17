@@ -352,6 +352,23 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
         }
 
+        [Fact]
+        public void Execute_DoesNotUpdateRecurringJob_WhenItIsCorrectAndItWasNotTriggered()
+        {
+            // Arrange
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddMinutes(1));
+            _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant);
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant);
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+            
+            // Assert
+            _transaction.Verify(x => x.Commit(), Times.Never);
+        }
+
         private RecurringJobScheduler CreateScheduler(DateTime? lastExecution = null)
         {
             var scheduler = new RecurringJobScheduler(
