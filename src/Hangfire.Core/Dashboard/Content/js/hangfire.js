@@ -112,7 +112,6 @@
                         yAxes: [{ ticks: { maxTicksLimit: 6 }, stacked: true }]
                     },
                     elements: { point: { radius: 0 } },
-                    plugins: { streaming: false },
                     legend: { display: false },
                     tooltips: { mode: 'index', intersect: false }
                 }
