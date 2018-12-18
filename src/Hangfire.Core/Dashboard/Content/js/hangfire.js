@@ -42,77 +42,38 @@
         return Metrics;
     })();
 
-    var BaseGraph = function () {};
-
-    BaseGraph.prototype._initGraph = function (element, type, data, options) {
-        this._chart = new Chart(element, {
-            type: type,
-            data: data,
-            options: options
-        });
-    };
-
     hangfire.RealtimeGraph = (function() {
         function RealtimeGraph(element, succeeded, failed, succeededStr, failedStr, pollInterval) {
             this._succeeded = succeeded;
             this._failed = failed;
-
-            this._initGraph(element, "line", {
-                datasets: [
-                    {
-                        label: succeededStr,
-                        borderColor: '#62B35F',
-                        backgroundColor: '#6FCD6D'
+            
+            this._chart = new Chart(element, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        { label: succeededStr, borderColor: '#62B35F', backgroundColor: '#6FCD6D' },
+                        { label: failedStr, borderColor: '#BB4847', backgroundColor: '#D55251' }
+                    ]
+                },
+                options: {
+                    scales: {
+                        xAxes: [{
+                            type: 'realtime',
+                            realtime: { duration: 60 * 1000, delay: pollInterval },
+                            time: { unit: 'second', tooltipFormat: 'll HH:mm:ss' }
+                        }],
+                        yAxes: [{ ticks: { min: 0, suggestedMax: 500, maxTicksLimit: 6 } }]
                     },
-                    {
-                        label: failedStr,
-                        borderColor: '#BB4847',
-                        backgroundColor: '#D55251'
-                    }
-                ]
-            }, {
-                scales: {
-                    xAxes: [{
-                        type: 'realtime',
-                        realtime: {
-                            duration: 60 * 1000,
-                            delay: pollInterval,
-                            pause: false,
-                            ttl: undefined
-                        },
-                        time: {
-                            unit: 'second',
-                            tooltipFormat: 'll HH:mm:ss',
-                        },
-                        distribution: 'series'
-                    }],
-                    yAxes: [{
-                        ticks: {
-                            min: 0,
-                            suggestedMax: 500,
-                            maxTicksLimit: 6
-                        }                        
-                    }]
-                },
-                elements: {
-                    line: {
-                        tension: 0
-                    },
-                    point: {
-                        radius: 0
-                    }
-                },
-                legend: {
-                    display: false
-                },
-                tooltips: {
-                    mode: 'index',
-                    intersect: false
+                    elements: { line: { tension: 0 }, point: { radius: 0 } },
+                    plugins: { streaming: { frameRate: 15 } },
+                    animation: { duration: 0 },
+                    hover: { animationDuration: 0 },
+                    responsiveAnimationDuration: 0,
+                    legend: { display: false },
+                    tooltips: { mode: 'index', intersect: false }
                 }
             });
         }
-
-        RealtimeGraph.prototype = Object.create(BaseGraph.prototype);
 
         RealtimeGraph.prototype.appendHistory = function (statistics) {
             var newSucceeded = parseInt(statistics["succeeded:count"].intValue);
@@ -122,17 +83,10 @@
                 var succeeded = newSucceeded - this._succeeded;
                 var failed = newFailed - this._failed;
 
-                this._chart.data.datasets[0].data.push({
-                    x: new Date(),
-                    y: succeeded
-                });
+                this._chart.data.datasets[0].data.push({ x: new Date(), y: succeeded });
+                this._chart.data.datasets[1].data.push({ x: new Date(), y: failed });
                 
-                this._chart.data.datasets[1].data.push({
-                    x: new Date(),
-                    y: failed
-                });                
-                
-                this._chart.update({ preservation: true });
+                this._chart.update();
             }
             
             this._succeeded = newSucceeded;
@@ -144,66 +98,26 @@
 
     hangfire.HistoryGraph = (function() {
         function HistoryGraph(element, succeeded, failed, succeededStr, failedStr) {
-
-            function transparentize(color, opacity) {
-                var alpha = opacity === undefined ? 0.5 : 1 - opacity;
-                return Color(color).alpha(alpha).rgbString();
-            }
-            
-            this._initGraph(element, "line", {
-                datasets: [
-                    {
-                        label: succeededStr,
-                        borderColor: '#62B35F',
-                        backgroundColor: '#6FCD6D',
-                        borderWidth: 3,
-                        data: succeeded
+            this._chart = new Chart(element, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        { label: succeededStr, borderColor: '#62B35F', backgroundColor: '#6FCD6D', data: succeeded },
+                        { label: failedStr, borderColor: '#BB4847', backgroundColor: '#D55251', data: failed }
+                    ]
+                },
+                options: {
+                    scales: {
+                        xAxes: [{ type: 'time', time: { unit: 'hour', tooltipFormat: 'll HH:mm' } }],
+                        yAxes: [{ ticks: { maxTicksLimit: 6 } }]
                     },
-                    {
-                        label: failedStr,
-                        borderColor: '#BB4847',
-                        backgroundColor: '#D55251',
-                        borderWidth: 3,
-                        data: failed
-                    }                    
-                ]
-            }, {
-                scales: {
-                    xAxes: [{
-                        type: 'time',
-                        time: {
-                            unit: 'hour',
-                            tooltipFormat: 'll HH:mm',
-                            parser: function (value) {
-                                return new moment(value, 'X');
-                            }
-                        }
-                    }],
-                    yAxes: [{
-                        ticks: {
-                            maxTicksLimit: 6
-                        }
-                    }]
-                },
-                elements: {
-                    point: {
-                        radius: 0
-                    }
-                },
-                plugins: {
-                    streaming: false
-                },
-                legend: {
-                    display: false
-                },
-                tooltips: {
-                    mode: 'index',
-                    intersect: false
+                    elements: { point: { radius: 0 } },
+                    plugins: { streaming: false },
+                    legend: { display: false },
+                    tooltips: { mode: 'index', intersect: false }
                 }
             });
         }
-
-        HistoryGraph.prototype = Object.create(BaseGraph.prototype);
 
         return HistoryGraph;
     })();
@@ -302,7 +216,7 @@
                     for (var date in obj) {
                         if (obj.hasOwnProperty(date)) {
                             var value = obj[date];
-                            var point = { x: Date.parse(date) / 1000, y: value };
+                            var point = { x: Date.parse(date), y: value };
                             series.unshift(point);
                         }
                     }
@@ -315,9 +229,7 @@
                 var succeededStr = $(historyElement).data('succeeded-string');
                 var failedStr = $(historyElement).data('failed-string');
 
-                var historyGraph = new Hangfire.HistoryGraph(historyElement, succeeded, failed, succeededStr, failedStr);
-
-                return historyGraph;
+                return new Hangfire.HistoryGraph(historyElement, succeeded, failed, succeededStr, failedStr);
             }
 
             return null;
