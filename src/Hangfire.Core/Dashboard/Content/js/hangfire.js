@@ -62,7 +62,7 @@
                             realtime: { duration: 60 * 1000, delay: pollInterval },
                             time: { unit: 'second', tooltipFormat: 'll HH:mm:ss' }
                         }],
-                        yAxes: [{ ticks: { min: 0, suggestedMax: 500, maxTicksLimit: 6 } }]
+                        yAxes: [{ ticks: { min: 0, suggestedMax: 500, maxTicksLimit: 6 }, stacked: true }]
                     },
                     elements: { line: { tension: 0 }, point: { radius: 0 } },
                     plugins: { streaming: { frameRate: 15 } },
@@ -109,7 +109,7 @@
                 options: {
                     scales: {
                         xAxes: [{ type: 'time', time: { unit: 'hour', tooltipFormat: 'll HH:mm' } }],
-                        yAxes: [{ ticks: { maxTicksLimit: 6 } }]
+                        yAxes: [{ ticks: { maxTicksLimit: 6 }, stacked: true }]
                     },
                     elements: { point: { radius: 0 } },
                     plugins: { streaming: false },
