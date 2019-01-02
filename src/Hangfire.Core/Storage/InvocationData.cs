@@ -48,7 +48,7 @@ namespace Hangfire.Storage
         {
             get
             {
-                return Environment.GetEnvironmentVariable("Hangfire:StrictAssemblyQualifiedName", EnvironmentVariableTarget.User) == "true";
+                return Environment.GetEnvironmentVariable("Hangfire:StrictAssemblyQualifiedName") == "true";
             }
         }
 
