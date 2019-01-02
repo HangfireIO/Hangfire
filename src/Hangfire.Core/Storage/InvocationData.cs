@@ -32,10 +32,24 @@ namespace Hangfire.Storage
         public InvocationData(
             string type, string method, string parameterTypes, string arguments)
         {
-            Type = type;
+            string qualifiedName = type;
+            if (!StrictAssemblyQualifiedName)
+            {
+                qualifiedName = type.Split(new string[] { ", Version=" }, StringSplitOptions.RemoveEmptyEntries)[0];
+            }
+
+            Type = qualifiedName;
             Method = method;
             ParameterTypes = parameterTypes;
             Arguments = arguments;
+        }
+
+        public static bool StrictAssemblyQualifiedName
+        {
+            get
+            {
+                return Environment.GetEnvironmentVariable("Hangfire:StrictAssemblyQualifiedName", EnvironmentVariableTarget.User) == "true";
+            }
         }
 
         public string Type { get; }
