@@ -57,12 +57,11 @@ namespace Hangfire.SqlServer.Tests
         {
             var mockConnectionFactory = new Mock<Func<DbConnection>>();
             var expectedConnection = ConnectionUtils.CreateConnection();
-            mockConnectionFactory.Setup(x => x.Invoke()).Returns(expectedConnection);
-            mockConnectionFactory.Verify();
-
+            mockConnectionFactory.Setup(x => x()).Returns(expectedConnection);
             var storage = new SqlServerStorage(mockConnectionFactory.Object);
             var actualConnection = storage.CreateAndOpenConnection();
 
+            mockConnectionFactory.Verify(x => x(), Times.Once());
             Assert.Equal(actualConnection, expectedConnection);
         }
 
