@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.Common;
 using System.Linq;
 using System.Transactions;
 using Xunit;
@@ -37,6 +38,15 @@ namespace Hangfire.SqlServer.Tests
         {
             var connection = ConnectionUtils.CreateConnection();
             var storage = new SqlServerStorage(connection);
+
+            Assert.NotNull(storage);
+        }
+
+        [Fact, CleanDatabase]
+        public void Ctor_CanCreateSqlServerStorage_WithConnectionFactory()
+        {
+            Func<DbConnection> connectionFactory = ConnectionUtils.CreateConnection;
+            var storage = new SqlServerStorage(connectionFactory);
 
             Assert.NotNull(storage);
         }
