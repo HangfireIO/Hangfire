@@ -65,6 +65,7 @@ namespace Hangfire.SqlServer
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             _connectionString = GetConnectionString(nameOrConnectionString);
+            _connectionFactory = () => new SqlConnection(_connectionString);
             _options = options;
 
             Initialize();
@@ -267,8 +268,7 @@ namespace Hangfire.SqlServer
         internal DbConnection CreateAndOpenConnection()
         {
             var connection = _existingConnection
-                ?? _connectionFactory?.Invoke()
-                ?? new SqlConnection(_connectionString);
+                ?? _connectionFactory();
 
             if (connection.State == ConnectionState.Closed)
             {

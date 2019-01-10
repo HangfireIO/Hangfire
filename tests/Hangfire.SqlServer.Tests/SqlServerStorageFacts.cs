@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Moq;
+using System;
 using System.Data.Common;
 using System.Linq;
 using System.Transactions;
@@ -49,6 +50,20 @@ namespace Hangfire.SqlServer.Tests
             var storage = new SqlServerStorage(connectionFactory);
 
             Assert.NotNull(storage);
+        }
+
+        [Fact]
+        public void CreateAndOpenConnection_UsesConnectionFactory()
+        {
+            var mockConnectionFactory = new Mock<Func<DbConnection>>();
+            var expectedConnection = ConnectionUtils.CreateConnection();
+            mockConnectionFactory.Setup(x => x.Invoke()).Returns(expectedConnection);
+            mockConnectionFactory.Verify();
+
+            var storage = new SqlServerStorage(mockConnectionFactory.Object);
+            var actualConnection = storage.CreateAndOpenConnection();
+
+            Assert.Equal(actualConnection, expectedConnection);
         }
 
         [Fact, CleanDatabase(isolationLevel: IsolationLevel.ReadUncommitted)]
