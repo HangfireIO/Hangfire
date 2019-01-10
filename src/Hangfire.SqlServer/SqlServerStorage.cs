@@ -267,7 +267,7 @@ namespace Hangfire.SqlServer
         internal DbConnection CreateAndOpenConnection()
         {
             var connection = _existingConnection
-                ?? _connectionFactory()
+                ?? _connectionFactory?.Invoke()
                 ?? new SqlConnection(_connectionString);
 
             if (connection.State == ConnectionState.Closed)
