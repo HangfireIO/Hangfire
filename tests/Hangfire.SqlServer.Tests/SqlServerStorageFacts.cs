@@ -52,7 +52,7 @@ namespace Hangfire.SqlServer.Tests
             Assert.NotNull(storage);
         }
 
-        [Fact]
+        [Fact, CleanDatabase]
         public void CreateAndOpenConnection_UsesConnectionFactory()
         {
             var mockConnectionFactory = new Mock<Func<DbConnection>>();
