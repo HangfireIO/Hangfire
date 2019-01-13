@@ -42,13 +42,25 @@ namespace Hangfire.SqlServer.Tests
             Assert.NotNull(storage);
         }
 
-        [Fact, CleanDatabase]
-        public void Ctor_CanCreateSqlServerStorage_WithConnectionFactory()
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenConnectionfactoryIsNull()
+        {
+            Func<DbConnection> connectionFactory = null;
+
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SqlServerStorage(connectionFactory));
+
+            Assert.Equal("connectionFactory", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenOptionsValueIsNull_WithConnectionFactory()
         {
             Func<DbConnection> connectionFactory = ConnectionUtils.CreateConnection;
-            var storage = new SqlServerStorage(connectionFactory);
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SqlServerStorage(connectionFactory, null));
 
-            Assert.NotNull(storage);
+            Assert.Equal("options", exception.ParamName);
         }
 
         [Fact, CleanDatabase(isolationLevel: IsolationLevel.ReadUncommitted)]
