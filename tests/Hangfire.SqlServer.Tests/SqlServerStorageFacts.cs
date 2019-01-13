@@ -74,7 +74,7 @@ namespace Hangfire.SqlServer.Tests
             var storage = new SqlServerStorage(mockConnectionFactory.Object);
             var actualConnection = storage.CreateAndOpenConnection();
 
-            mockConnectionFactory.Verify(x => x(), Times.Once());
+            mockConnectionFactory.Verify(x => x(), Times.AtLeastOnce());
         }
 
         [Fact, CleanDatabase(isolationLevel: IsolationLevel.ReadUncommitted)]
