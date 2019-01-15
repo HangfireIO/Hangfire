@@ -19,6 +19,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
+using Hangfire.Common;
 using Hangfire.Logging;
 using ThreadState = System.Threading.ThreadState;
 
@@ -51,6 +52,9 @@ namespace Hangfire.Processing
         private Stopwatch _stoppedAt;
         private CancellationTokenRegistration _stopRegistration;
         private CancellationTokenRegistration _abortRegistration;
+        private CancellationTokenExtentions.CancellationEvent _stopped;
+        private CancellationTokenExtentions.CancellationEvent _aborted;
+
         private volatile bool _disposed;
 
         public BackgroundExecution(
@@ -70,9 +74,11 @@ namespace Hangfire.Processing
             _stopRegistration = _stopToken.Register(SetStoppedAt);
             _abortRegistration = _abortToken.Register(SetStoppedAt);
 
-            _waitHandles = new[] { _running, _stopToken.WaitHandle, _abortToken.WaitHandle };
+            _stopped = _stopToken.GetCancellationEvent();
+            _aborted = _abortToken.GetCancellationEvent();
+            _waitHandles = new WaitHandle[] { _running, _stopped.WaitHandle, _aborted.WaitHandle };
 
-#if NETFULL
+#if !NETSTANDARD1_3
             AppDomainUnloadMonitor.EnsureInitialized();
 #endif
         }
@@ -92,7 +98,7 @@ namespace Hangfire.Processing
             // so ManagedThreadId doesn't work there.
             //using (LogProvider.OpenMappedContext("ExecutionId", executionId.ToString()))
             {
-#if NETFULL
+#if !NETSTANDARD1_3
                 try
 #endif
                 {
@@ -126,7 +132,7 @@ namespace Hangfire.Processing
                             callback(executionId, state);
                             HandleSuccess(out nextDelay);
                         }
-#if NETFULL
+#if !NETSTANDARD1_3
                         catch (ThreadAbortException) when (AppDomainUnloadMonitor.IsUnloading)
                         {
                             // Our thread is aborted due to AppDomain unload. It's better to give up to
@@ -151,7 +157,7 @@ namespace Hangfire.Processing
 
                     HandleStop(executionId);
                 }
-#if NETFULL
+#if !NETSTANDARD1_3
                 catch (ThreadAbortException ex)
                 {
                     // This is a rude stop. Since we are handling all the thread aborts
@@ -175,7 +181,7 @@ namespace Hangfire.Processing
             // implementation uses AsyncLocal instead of ThreadLocal ;-)
             //using (LogProvider.OpenMappedContext("ExecutionId", executionId.ToString()))
             {
-#if NETFULL
+#if !NETSTANDARD1_3
                 try
 #endif
                 {
@@ -209,7 +215,7 @@ namespace Hangfire.Processing
                             await callback(executionId, state).ConfigureAwait(true);
                             HandleSuccess(out nextDelay);
                         }
-#if NETFULL
+#if !NETSTANDARD1_3
                         catch (ThreadAbortException) when (AppDomainUnloadMonitor.IsUnloading)
                         {
                             // Our previous task was aborted due to AppDomain unload. It's better to
@@ -234,7 +240,7 @@ namespace Hangfire.Processing
 
                     HandleStop(executionId);
                 }
-#if NETFULL
+#if !NETSTANDARD1_3
                 catch (ThreadAbortException ex)
                 {
                     // This is a rude stop. Since we are handling all the thread aborts
@@ -256,6 +262,8 @@ namespace Hangfire.Processing
                 _abortRegistration.Dispose();
                 _stopRegistration.Dispose();
                 _running.Dispose();
+                _stopped.Dispose();
+                _aborted.Dispose();
             }
         }
 
@@ -302,7 +310,7 @@ namespace Hangfire.Processing
         {
             LogRetry(executionId, delay);
 
-#if NETFULL
+#if !NETSTANDARD1_3
             await await Task.WhenAny(_running.AsTask(_stopToken), Task.Delay(delay, _abortToken));
 #else
             await Task.Delay(delay, _stopToken);
@@ -331,7 +339,7 @@ namespace Hangfire.Processing
 
         private void HandleException(Guid executionId, Exception exception, out TimeSpan delay)
         {
-#if NETFULL
+#if !NETSTANDARD1_3
             // Normally, there should be no checking for AppDomain unload condition, because we can't
             // get here on appdomain unloads. But Mono < 5.4 has an issue with Thread.ResetAbort, and
             // it can prevent appdomain to be unloaded: https://bugzilla.xamarin.com/show_bug.cgi?id=5804.

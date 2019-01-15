@@ -179,8 +179,7 @@ namespace Hangfire.Core.Tests.Common
                 JobHelper.SetSerializerSettings(new JsonSerializerSettings
                 {
                     TypeNameHandling = TypeNameHandling.All,
-                    TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple
-                });
+                }.WithSimpleTypeNameAssemblyFormat());
 
                 var method = typeof (BackgroundJob).GetMethod("DoWork");
                 var args = new object[] { "123", "Test" };

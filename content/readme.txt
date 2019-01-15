@@ -50,11 +50,11 @@ namespace MyWebApplication
     {
         public void Configuration(IAppBuilder app)
         {
-		    GlobalConfiguration.Configuration
-			    .UseSqlServerStorage("<name or connection string>");
+            GlobalConfiguration.Configuration
+                .UseSqlServerStorage("<name or connection string>");
 
-			app.UseHangfireDashboard();
-			app.UseHangfireServer();
+            app.UseHangfireDashboard();
+            app.UseHangfireServer();
         }
     }
 }

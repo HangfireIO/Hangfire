@@ -72,7 +72,7 @@ namespace Hangfire
         
         private static void SetCurrentCulture(CultureInfo value)
         {
-#if NETFULL
+#if !NETSTANDARD1_3
             System.Threading.Thread.CurrentThread.CurrentCulture = value;
 #else
             CultureInfo.CurrentCulture = value;
@@ -82,7 +82,7 @@ namespace Hangfire
         // ReSharper disable once InconsistentNaming
         private static void SetCurrentUICulture(CultureInfo value)
         {
-#if NETFULL
+#if !NETSTANDARD1_3
             System.Threading.Thread.CurrentThread.CurrentUICulture = value;
 #else
             CultureInfo.CurrentUICulture = value;

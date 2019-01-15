@@ -74,6 +74,7 @@ namespace Hangfire.Server
 
         private readonly ILog _logger = LogProvider.For<RecurringJobScheduler>();
         private readonly IBackgroundJobFactory _factory;
+        private readonly IStateMachine _stateMachine;
         private readonly IThrottler _throttler;
         private readonly Func<DateTime> _nowInstantFactory;
 
@@ -82,7 +83,7 @@ namespace Hangfire.Server
         /// class with default background job factory.
         /// </summary>
         public RecurringJobScheduler()
-            : this(new BackgroundJobFactory())
+            : this(new BackgroundJobFactory(GlobalJobFilters.Filters), new StateMachine(GlobalJobFilters.Filters))
         {
         }
         
@@ -91,23 +92,27 @@ namespace Hangfire.Server
         /// class with custom background job factory.
         /// </summary>
         /// <param name="factory">Factory that will be used to create background jobs.</param>
+        /// <param name="stateMachine">State machine that's responsible for enqueuing jobs.</param>
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
-        public RecurringJobScheduler([NotNull] IBackgroundJobFactory factory)
-            : this(factory, DefaultNowInstantFactory, new EveryMinuteThrottler())
+        public RecurringJobScheduler([NotNull] IBackgroundJobFactory factory, [NotNull] IStateMachine stateMachine)
+            : this(factory, stateMachine, DefaultNowInstantFactory, new EveryMinuteThrottler())
         {
         }
 
         internal RecurringJobScheduler(
             [NotNull] IBackgroundJobFactory factory,
+            [NotNull] IStateMachine stateMachine,
             [NotNull] Func<DateTime> nowInstantFactory,
             [NotNull] IThrottler throttler)
         {
             if (factory == null) throw new ArgumentNullException(nameof(factory));
+            if (stateMachine == null) throw new ArgumentNullException(nameof(stateMachine));
             if (nowInstantFactory == null) throw new ArgumentNullException(nameof(nowInstantFactory));
             if (throttler == null) throw new ArgumentNullException(nameof(throttler));
             
             _factory = factory;
+            _stateMachine = stateMachine;
             _nowInstantFactory = nowInstantFactory;
             _throttler = throttler;
         }
@@ -125,6 +130,11 @@ namespace Hangfire.Server
 
                 foreach (var recurringJobId in recurringJobIds)
                 {
+                    if (context.IsShutdownRequested)
+                    {
+                        return;
+                    }
+
                     var recurringJob = connection.GetAllEntriesFromHash(
                         $"recurring-job:{recurringJobId}");
 
@@ -181,18 +191,21 @@ namespace Hangfire.Server
 
                 var nextInstant = cronExpression.GetNextOccurrence(lastInstant, timeZone);
 
+                BackgroundJob backgroundJob = null;
+                EnqueuedState state = null;
+
                 if (nextInstant <= nowInstant)
                 {
-                    var state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
+                    state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
                     if (recurringJob.ContainsKey("Queue") && !String.IsNullOrEmpty(recurringJob["Queue"]))
                     {
                         state.Queue = recurringJob["Queue"];
                     }
 
-                    var context = new CreateContext(storage, connection, job, state);
+                    var context = new CreateContext(storage, connection, job, null);
                     context.Parameters["RecurringJobId"] = recurringJobId;
 
-                    var backgroundJob = _factory.Create(context);
+                    backgroundJob = _factory.Create(context);
                     var jobId = backgroundJob?.Id;
 
                     if (String.IsNullOrEmpty(jobId))
@@ -211,14 +224,39 @@ namespace Hangfire.Server
                 {
                     changedFields.Add("CreatedAt", JobHelper.SerializeDateTime(nowInstant));
                 }
-                    
-                changedFields.Add("NextExecution", nextInstant.HasValue ? JobHelper.SerializeDateTime(nextInstant.Value) : null);
+                
+                var nextExecution = nextInstant.HasValue ? JobHelper.SerializeDateTime(nextInstant.Value) : null;
 
-                connection.SetRangeInHash(
-                    $"recurring-job:{recurringJobId}",
-                    changedFields);
+                if (!recurringJob.ContainsKey("NextExecution") || recurringJob["NextExecution"] != nextExecution)
+                {
+                    changedFields.Add("NextExecution", nextExecution);
+                }
+
+                if (backgroundJob != null || changedFields.Count != 0)
+                {
+                    using (var transaction = connection.CreateWriteTransaction())
+                    {
+                        if (backgroundJob != null)
+                        {
+                            _stateMachine.ApplyState(new ApplyStateContext(
+                                storage,
+                                connection,
+                                transaction,
+                                backgroundJob,
+                                state,
+                                null));
+                        }
+
+                        if (changedFields.Count != 0)
+                        {
+                            transaction.SetRangeInHash($"recurring-job:{recurringJobId}", changedFields);
+                        }
+                        
+                        transaction.Commit();
+                    }
+                }
             }
-#if NETFULL
+#if !NETSTANDARD1_3
             catch (TimeZoneNotFoundException ex)
             {
 #else

@@ -1,8 +1,10 @@
+extern alias ReferencedDapper;
+
 using System;
 using System.Data;
 using System.Linq;
 using System.Threading;
-using Dapper;
+using ReferencedDapper::Dapper;
 using Xunit;
 // ReSharper disable AssignNullToNotNullAttribute
 

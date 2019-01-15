@@ -51,7 +51,7 @@ namespace Hangfire.Processing
             _taskScheduler = taskScheduler;
             _tasks = new Task[maxConcurrency];
 
-#if NETFULL
+#if !NETSTANDARD1_3
             AppDomainUnloadMonitor.EnsureInitialized();
 #endif
 
@@ -146,7 +146,7 @@ namespace Hangfire.Processing
             }
             catch (Exception ex)
             {
-#if NETFULL
+#if !NETSTANDARD1_3
                 if (!(ex is ThreadAbortException) || !AppDomainUnloadMonitor.IsUnloading)
 #endif
                 {
@@ -157,7 +157,7 @@ namespace Hangfire.Processing
                     }
                     catch
                     {
-#if NETFULL
+#if !NETSTANDARD1_3
                         // todo add original and current exceptions
                         Trace.WriteLine("Unexpected exception occurred while logging an exception: ");
 #endif

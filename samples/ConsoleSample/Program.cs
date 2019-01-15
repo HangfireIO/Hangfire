@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Transactions;
 using Hangfire;
+using Hangfire.SqlServer;
+using Microsoft.Owin.Hosting;
 
 namespace ConsoleSample
 {
@@ -12,8 +15,13 @@ namespace ConsoleSample
         {
             GlobalConfiguration.Configuration
                 .UseColouredConsoleLogProvider()
-                .UseSqlServerStorage(@"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;")
-                .UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
+                .UseSqlServerStorage(@"Server=.\;Database=Hangfire.Sample;Trusted_Connection=True;", new SqlServerStorageOptions
+                {
+                    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                    QueuePollInterval = TimeSpan.FromTicks(1),
+                    TransactionIsolationLevel = IsolationLevel.ReadCommitted,
+                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(1)
+                });
 
             RecurringJob.AddOrUpdate(() => Console.WriteLine("Hello, world!"), Cron.Minutely);
             RecurringJob.AddOrUpdate("hourly", () => Console.WriteLine("Hello"), "25 15 * * *");
@@ -22,12 +30,7 @@ namespace ConsoleSample
             RecurringJob.AddOrUpdate("UTC", () => Console.WriteLine("UTC"), "15 18 * * *");
             RecurringJob.AddOrUpdate("Russian", () => Console.WriteLine("Russian"), "15 21 * * *", TimeZoneInfo.Local);
 
-            var options = new BackgroundJobServerOptions
-            {
-                Queues = new[] { "critical", "default" }
-            };
-            
-            using (new BackgroundJobServer(options))
+            using (WebApp.Start<Startup>("http://localhost:12345"))
             {
                 var count = 1;
 

@@ -98,15 +98,23 @@ namespace Hangfire.Core.Tests.Storage
         [InlineData("{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"Sample\",\"p\":[\"System.String\"],\"a\":[\"\\\"Hello\\\"\"]}")]
         public void Deserialize_DeserializesCorrectlyStringToInvocationData(string invocationData)
         {
-            var serializedData = InvocationData.Deserialize(invocationData);
+            try
+            {
+                JobHelper.SetSerializerSettings(new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
+                var serializedData = InvocationData.Deserialize(invocationData);
 
-            var job = serializedData.Deserialize();
+                var job = serializedData.Deserialize();
 
-            Assert.False(job.Type.GetTypeInfo().ContainsGenericParameters);
-            Assert.Equal("Sample", job.Method.Name);
-            Assert.Equal(typeof(string), job.Method.GetParameters()[0].ParameterType);
-            Assert.Equal(1, job.Args.Count);
-            Assert.Equal("Hello", job.Args[0]);
+                Assert.False(job.Type.GetTypeInfo().ContainsGenericParameters);
+                Assert.Equal("Sample", job.Method.Name);
+                Assert.Equal(typeof(string), job.Method.GetParameters()[0].ParameterType);
+                Assert.Equal(1, job.Args.Count);
+                Assert.Equal("Hello", job.Args[0]);
+            }
+            finally
+            {
+                JobHelper.SetSerializerSettings(null);
+            }
         }
 
         [Fact]

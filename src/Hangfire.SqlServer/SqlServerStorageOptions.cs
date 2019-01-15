@@ -15,7 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-#if NETFULL
+#if FEATURE_TRANSACTIONSCOPE
 using System.Transactions;
 #else
 using System.Data;

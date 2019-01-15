@@ -2,9 +2,7 @@
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
-#if NETFULL
 using Moq.Sequences;
-#endif
 using Xunit;
 
 namespace Hangfire.Core.Tests.States
@@ -66,7 +64,6 @@ namespace Hangfire.Core.Tests.States
             _applyContext.Transaction.Verify(x => x.PersistJob(JobId));
         }
 
-#if NETFULL
         [Fact, Sequence]
         public void ApplyState_CallsUnapplyHandlers_BeforeSettingTheState()
         {
@@ -89,7 +86,6 @@ namespace Hangfire.Core.Tests.States
 
             // Assert - Sequence
         }
-#endif
 
         [Fact]
         public void ApplyState_DoesNotCallUnapplyHandlers_ForDifferentStates()
@@ -107,7 +103,6 @@ namespace Hangfire.Core.Tests.States
                 Times.Never);
         }
 
-#if NETFULL
         [Fact, Sequence]
         public void ApplyState_ShouldCallApplyHandlers_AfterSettingTheState()
         {
@@ -131,7 +126,6 @@ namespace Hangfire.Core.Tests.States
 
             // Assert - Sequence
         }
-#endif
 
         [Fact]
         public void ApplyState_DoesNotCallApplyHandlers_ForDifferentStates()

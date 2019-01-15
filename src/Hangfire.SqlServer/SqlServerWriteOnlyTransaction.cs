@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
-#if NETFULL
+#if FEATURE_TRANSACTIONSCOPE
 using System.Transactions;
 #endif
 using Hangfire.Annotations;
@@ -149,7 +149,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
             _queueCommandQueue.Enqueue((connection, transaction) => persistentQueue.Enqueue(
                 connection,
-#if !NETFULL
+#if !FEATURE_TRANSACTIONSCOPE
                 transaction,
 #endif
                 queue,

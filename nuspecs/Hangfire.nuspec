@@ -18,78 +18,30 @@
     <copyright>Copyright © 2013-2018 Sergey Odinokov</copyright>
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
+    
+1.7.0-beta3
+
+Hangfire.Core
+
+• Ported – Merged updates from version 1.6.21.
+
+Hangfire.SqlServer
+
+• Ported – Merged updates from version 1.6.21.
       
 1.7.0-beta2
-      
-Merged updates from 1.6.18 – 1.6.20:
 
-    1.6.20
+Hangfire.Core
 
-    Hangfire.Core
+• Fixed – `MissingMethodException` when using Newtonsoft.Json 11 in .NET Core 2.X with continuations (by @pieceofsummer).
+• Ported – Merged updates from versions 1.6.18 – 1.6.20.
 
-    • SECURITY – Add "robots" meta tag to ensure browser don't index dashboard pages.
-    • SECURITY – Add support for antiforgery validation to prevent CSRF attacks (requires configuration).
+Hangfire.SqlServer
 
-    • Fixed – Perform state change retries using a fresh connection when job's distributed lock may be abandoned.
-    • Fixed – Disallow transitions to the Failed state on retries that bypass all the filters.
-    • Fixed – Remove possible rare CPU spikes due to the use of `CancellationToken.WaitHandle`.
-    • Fixed – Avoid resolving types and methods for logging in static constructors that may lead to process shutdown.
-    • Fixed – Prevent Recurring jobs dashboard from throwing `NullReferenceException` (by @mattkwiecien).
-    • Fixed – Replace wall clocks with monotonic ones when calculating local timeouts.
-    • Fixed – Change logger initialization to be deterministic and predictable by using instance fields.
-    • Fixed – Make `_currentLogProvider` field access to use volatile reads/writes.
-    • Fixed – Typo in `NotSupportedException`'s message (by @benrick).
-    • Fixed – Typo on the Failed jobs page (by @gareth-evans).
-
-    Hangfire.SqlServer
-
-    • Fixed – Remove the synthetic limitation to support Azure SQL Management instance (by @TimSQL).
-
-    Hangfire.AspNetCore
-
-    • SECURITY – Use ASP.NET Core's built-in antiforgery validation to prevent CSRF attacks.
-          
-    1.6.19
-
-    Hangfire.Core
-
-    • Fixed – NullReferenceException in JobMethodCallRenderer regression appeared in 1.6.18.
-
-    Hangfire.SqlServer
-
-    • Fixed – "String or binary data would be truncated" exception when state reason is too long.
-    • Fixed – Command handling in batch mode now stops after the first error due to "XACT_ABORT ON".
-    • Fixed – Make SqlCommandBatch disposable to dispose all the commands.
-
-    1.6.18
-
-    Hangfire.Core
-
-    • Added – Add on option to remove the storage connection string from the footer (by @sandorfr).
-    • Added – Add Dashboard UI Resource zh-TW (by @crablin).
-    • Fixed – OutOfMemoryException in dashboard when arguments are too big.
-    • Fixed – DisplayNameAttribute doesn't work when using dashboard in .NET Core.
-    • Fixed – Update rickshaw css to match the js version (by @pieceofsummer).
-    • Fixed – Bad exception when Job.FromExpression fails to resolve method for explicit interface implementations (by @f00).
-    • Fixed – Missing intValue-values in "/stats" endpoint (by @pieceofsummer).
-    • Fixed – Logging doesn't work with log4net integration in .NET Core (by @evollu).
-    • Fixed – Fix nuspec pointing to version of Newtonsoft.Json that does not exist (by @mvestergaard)
-    • Fixed – Server start time has a bad tooltip position (by @pieceofsummer).
-    • Fixed – Prevent connection string from blowing mobile page layout (by @pieceofsummer).
-    • Fixed – Number of recurring jobs per page is now correct (by @pieceofsummer).
-    • Project – Get rid of all the compile-time warnings (by @liakamp).
-    • Project – More details for build instructions for the project (by @kristofferjalen).
-    • Project – Unable to build project with space in folder path (by @stefanviberg).
-
-    Hangfire.AspNetCore
-
-    • Added – More Hangfire-related services are now registered in an IoC container (by @pieceofsummer).
-    • Fixed – Queue parameter is ignored in .NET Core when creating a job (by @pieceofsummer).
-    • Fixed – Fix issue with configuration block not called on .NET Core (by @pieceofsummer).
-
-    Hangfire.SqlServer
-
-    • Fixed – Rare deadlocks in SQL Server caused by the SetRangeInHash command.
+• Added – Blocking fetch support for sliding expiration-based fetch to avoid excessive polling.
+• Changed – Optimize sliding-expiration-based fetching to use even less CPU time.
+• Changed – Use write reordering and fine-grained locking scheme to improve parallelism.
+• Ported – Merged updates from versions 1.6.18 – 1.6.20.
     
 1.7.0-beta1
 
@@ -129,6 +81,11 @@ Hangfire.SqlServer
         <dependency id="Microsoft.Owin.Host.SystemWeb" version="3.0.0" />
       </group>
       <group targetFramework="netstandard1.3">
+        <dependency id="Hangfire.Core" version="[0.0.0]" />
+        <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
+        <dependency id="Hangfire.AspNetCore" version="[0.0.0]" />
+      </group>
+      <group targetFramework="netstandard2.0">
         <dependency id="Hangfire.Core" version="[0.0.0]" />
         <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
         <dependency id="Hangfire.AspNetCore" version="[0.0.0]" />

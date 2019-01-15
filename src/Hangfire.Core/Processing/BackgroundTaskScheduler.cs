@@ -105,7 +105,7 @@ namespace Hangfire.Processing
             // Stopped event should always be the first in this array, see the DispatchLoop method.
             _waitHandles = new WaitHandle[] { _stopped, _semaphore };
 
-#if NETFULL
+#if !NETSTANDARD1_3
             AppDomainUnloadMonitor.EnsureInitialized();
 #endif
 
@@ -199,7 +199,7 @@ namespace Hangfire.Processing
                 threads[i] = new Thread(threadStart)
                 {
                     Name = $"BackgroundThread #{i + 1}",
-#if NETFULL
+#if !NETSTANDARD1_3
                     Priority = ThreadPriority.BelowNormal,
 #endif
                     IsBackground = true,
@@ -211,7 +211,7 @@ namespace Hangfire.Processing
 
         private static void DefaultExceptionHandler(Exception exception)
         {
-#if NETFULL
+#if !NETSTANDARD1_3
             Trace.WriteLine("An unhandled exception occurred: " + exception);
 #endif
         }
@@ -256,7 +256,7 @@ namespace Hangfire.Processing
                         // todo will exit on disposed
                         //Console.WriteLine("ObjectDisposedException");
                     }
-#if NETFULL
+#if !NETSTANDARD1_3
                     catch (Exception ex) when (ex is ThreadAbortException || ex is ThreadInterruptedException)
                     {
                         if (task != null && !task.IsCompleted)
@@ -283,7 +283,7 @@ namespace Hangfire.Processing
 #endif
                 }
             }
-#if NETFULL
+#if !NETSTANDARD1_3
             catch (ThreadAbortException ex)
             {
                 // todo catch only when appdomain isn't unloaded, otherwise it's expected
@@ -306,7 +306,7 @@ namespace Hangfire.Processing
                 var handler = _exceptionHandler;
                 handler?.Invoke(exception);
             }
-#if NETFULL
+#if !NETSTANDARD1_3
             catch (Exception ex)
             {
                 Trace.WriteLine("Unexpected exception caught in exception handler itself." + Environment.NewLine + ex);

@@ -154,6 +154,7 @@ namespace Hangfire
             [CanBeNull] IBackgroundJobStateChanger stateChanger)
         {
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
+            var stateMachine = new StateMachine(filterProvider);
 
             factory = factory ?? new BackgroundJobFactory(filterProvider);
             performer = performer ?? new BackgroundJobPerformer(filterProvider, activator);
@@ -161,7 +162,7 @@ namespace Hangfire
 
             processes.Add(new Worker(_options.Queues, performer, stateChanger).UseBackgroundPool(_options.WorkerCount));
             processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger).UseBackgroundPool(1));
-            processes.Add(new RecurringJobScheduler(factory).UseBackgroundPool(1));
+            processes.Add(new RecurringJobScheduler(factory, stateMachine).UseBackgroundPool(1));
 
             return processes;
         }
