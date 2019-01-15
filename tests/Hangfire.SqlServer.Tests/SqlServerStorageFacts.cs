@@ -44,7 +44,7 @@ namespace Hangfire.SqlServer.Tests
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenConnectionfactoryIsNull()
+        public void Ctor_ThrowsAnException_WhenConnectionFactoryIsNull()
         {
             Func<DbConnection> connectionFactory = null;
 
@@ -64,17 +64,13 @@ namespace Hangfire.SqlServer.Tests
             Assert.Equal("options", exception.ParamName);
         }
 
-        [Fact, CleanDatabase]
+        [Fact]
         public void CreateAndOpenConnection_UsesConnectionFactory()
         {
-            var mockConnectionFactory = new Mock<Func<DbConnection>>();
-            
-            mockConnectionFactory.Setup(x => x()).Returns(ConnectionUtils.CreateConnection);
+            var connection = new Mock<DbConnection>();
+            var storage = new SqlServerStorage(() => connection.Object, _options);
 
-            var storage = new SqlServerStorage(mockConnectionFactory.Object);
-            var actualConnection = storage.CreateAndOpenConnection();
-
-            mockConnectionFactory.Verify(x => x(), Times.AtLeastOnce());
+            Assert.Same(connection.Object, storage.CreateAndOpenConnection());
         }
 
         [Fact, CleanDatabase(isolationLevel: IsolationLevel.ReadUncommitted)]
