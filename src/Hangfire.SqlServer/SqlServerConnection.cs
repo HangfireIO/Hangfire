@@ -261,13 +261,24 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
 
         public override string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
-            if (toScore < fromScore) throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.");
+            return GetFirstByLowestScoreFromSet(key, fromScore, toScore, 1).FirstOrDefault();
+        }
 
-            return _storage.UseConnection(_dedicatedConnection, connection => connection.ExecuteScalar<string>(
-                $@"select top 1 Value from [{_storage.SchemaName}].[Set] with (readcommittedlock, forceseek) where [Key] = @key and Score between @from and @to order by Score",
-                new { key, from = fromScore, to = toScore },
-                commandTimeout: _storage.CommandTimeout));
+        public override List<string> GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore, int count)
+        {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (count <= 0) throw new ArgumentException("The value must be a positive number", nameof(count));
+            if (toScore < fromScore) throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.", nameof(toScore));
+
+            return _storage.UseConnection(_dedicatedConnection, connection =>
+            {
+                var result = connection.Query<string>(
+                    $@"select top (@count) Value from [{_storage.SchemaName}].[Set] with (readcommittedlock, forceseek) where [Key] = @key and Score between @from and @to order by Score",
+                    new { count = count, key, from = fromScore, to = toScore },
+                    commandTimeout: _storage.CommandTimeout);
+
+                return result.ToList();
+            });
         }
 
         public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)

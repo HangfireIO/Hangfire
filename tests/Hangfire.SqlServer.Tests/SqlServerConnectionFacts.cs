@@ -610,8 +610,13 @@ select @id";
         [Fact, CleanDatabase]
         public void GetFirstByLowestScoreFromSet_ThrowsAnException_ToScoreIsLowerThanFromScore()
         {
-            UseConnection(connection => Assert.Throws<ArgumentException>(
-                () => connection.GetFirstByLowestScoreFromSet("key", 0, -1)));
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentException>(
+                    () => connection.GetFirstByLowestScoreFromSet("key", 0, -1));
+
+                Assert.Equal("toScore", exception.ParamName);
+            });
         }
 
         [Fact, CleanDatabase]
@@ -623,6 +628,73 @@ select @id";
                     "key", 0, 1);
 
                 Assert.Null(result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetFirstByLowestScoreFromSet_ThrowsArgException_WhenRequestingLessThanZero()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentException>(
+                    () => connection.GetFirstByLowestScoreFromSet("key", 0, 1, -1));
+
+                Assert.Equal("count", exception.ParamName);
+            });
+        }
+
+        [Fact]
+        public void GetFirstByLowestScoreFromSet_ReturnsEmpty_WhenNoneExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetFirstByLowestScoreFromSet("key", 0, 1, 10);
+                Assert.Empty(result);
+            });
+        }
+        
+        [Fact, CleanDatabase]
+        public void GetFirstByLowestScoreFromSet_ReturnsN_WhenMoreThanNExist()
+        {
+            const string arrangeSql = @"
+insert into HangFire.[Set] ([Key], Score, Value)
+values 
+('key', 1.0, '1234'),
+('key', -1.0, '567'),
+('key', -5.0, '890'),
+('another-key', -2.0, 'abcd')";
+            
+            UseConnections((sql, connection) =>
+            {
+                sql.Execute(arrangeSql);
+                
+                var result = connection.GetFirstByLowestScoreFromSet("key", -10.0, 10.0, 2);
+                
+                Assert.Equal(2, result.Count);
+                Assert.Equal("890", result.ElementAt(0));
+                Assert.Equal("567", result.ElementAt(1));
+            });
+        }
+        
+        [Fact, CleanDatabase]
+        public void GetFirstByLowestScoreFromSet_ReturnsN_WhenMoreThanNExist_And_RequestedCountIsGreaterThanN()
+        {
+            const string arrangeSql = @"
+insert into HangFire.[Set] ([Key], Score, Value)
+values 
+('key', 1.0, '1234'),
+('key', -1.0, '567'),
+('key', -5.0, '890'),
+('another-key', -2.0, 'abcd')";
+            
+            UseConnections((sql, connection) =>
+            {
+                sql.Execute(arrangeSql);
+                
+                var result = connection.GetFirstByLowestScoreFromSet("another-key", -10.0, 10.0, 5);
+                
+                Assert.Equal(1, result.Count);
+                Assert.Equal("abcd", result.First());
             });
         }
 
