@@ -264,7 +264,7 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
             return GetFirstByLowestScoreFromSet(key, fromScore, toScore, 1).FirstOrDefault();
         }
 
-        public override HashSet<string> GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore, int count)
+        public override List<string> GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore, int count)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (count <= 0) throw new ArgumentException("The value must be a positive number", nameof(count));
@@ -277,7 +277,7 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
                     new { count = count, key, from = fromScore, to = toScore },
                     commandTimeout: _storage.CommandTimeout);
 
-                return new HashSet<string>(result);
+                return result.ToList();
             });
         }
 
