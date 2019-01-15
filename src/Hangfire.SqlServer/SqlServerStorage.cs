@@ -41,7 +41,6 @@ namespace Hangfire.SqlServer
         private readonly Func<DbConnection> _connectionFactory;
         private readonly SqlServerStorageOptions _options;
         private readonly string _connectionString;
-        private readonly string _toString;
 
         public SqlServerStorage(string nameOrConnectionString)
             : this(nameOrConnectionString, new SqlServerStorageOptions())
@@ -68,7 +67,6 @@ namespace Hangfire.SqlServer
             _connectionString = GetConnectionString(nameOrConnectionString);
             _connectionFactory = () => new SqlConnection(_connectionString);
             _options = options;
-            _toString = ToStringImpl();
 
             Initialize();
         }
@@ -95,7 +93,6 @@ namespace Hangfire.SqlServer
 
             _existingConnection = existingConnection;
             _options = options;
-            _toString = ToStringImpl();
 
             Initialize();
         }
@@ -122,7 +119,6 @@ namespace Hangfire.SqlServer
 
             _connectionFactory = connectionFactory;
             _options = options;
-            _toString = ToStringImpl();
 
             Initialize();
         }
@@ -160,20 +156,11 @@ namespace Hangfire.SqlServer
 
         public override string ToString()
         {
-            return _toString;
-        }
-
-        private string ToStringImpl()
-        {
             const string canNotParseMessage = "<Connection string can not be parsed>";
-
-            var connectionString = _connectionString
-                ?? UseConnection(null, connection => connection.ConnectionString);
 
             try
             {
-                var parts = _connectionString
-                    .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                var parts = _connectionString.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(x => x.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries))
                     .Select(x => new { Key = x[0].Trim(), Value = x[1].Trim() })
                     .ToDictionary(x => x.Key, x => x.Value, StringComparer.OrdinalIgnoreCase);
