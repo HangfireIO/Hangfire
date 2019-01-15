@@ -668,7 +668,7 @@ values
         }
         
         [Fact, CleanDatabase]
-        public void GetFirstByLowestScoreFromSet_ReturnsN_WhenMoreThanNExist_And_RequestedMaxIsGreaterThanN()
+        public void GetFirstByLowestScoreFromSet_ReturnsN_WhenMoreThanNExist_And_RequestedCountIsGreaterThanN()
         {
             const string arrangeSql = @"
 insert into HangFire.[Set] ([Key], Score, Value)

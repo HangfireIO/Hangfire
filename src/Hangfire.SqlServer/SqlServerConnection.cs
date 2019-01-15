@@ -264,17 +264,17 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
             return GetFirstByLowestScoreFromSet(key, fromScore, toScore, 1).FirstOrDefault();
         }
 
-        public override HashSet<string> GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore, int max)
+        public override HashSet<string> GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore, int count)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
-            if (max <= 0) throw new ArgumentException("The `max` value must be non-negative, non-zero value");
-            if (toScore < fromScore) throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.");
+            if (count <= 0) throw new ArgumentException("The value must be a positive number", nameof(count));
+            if (toScore < fromScore) throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.", nameof(toScore));
 
             return _storage.UseConnection(_dedicatedConnection, connection =>
             {
                 var result = connection.Query<string>(
-                    $@"select top (@max) Value from [{_storage.SchemaName}].[Set] with (readcommittedlock, forceseek) where [Key] = @key and Score between @from and @to order by Score",
-                    new { max, key, from = fromScore, to = toScore },
+                    $@"select top (@count) Value from [{_storage.SchemaName}].[Set] with (readcommittedlock, forceseek) where [Key] = @key and Score between @from and @to order by Score",
+                    new { count = count, key, from = fromScore, to = toScore },
                     commandTimeout: _storage.CommandTimeout);
 
                 return new HashSet<string>(result);
