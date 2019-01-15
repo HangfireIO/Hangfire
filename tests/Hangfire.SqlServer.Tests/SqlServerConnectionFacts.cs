@@ -610,8 +610,13 @@ select @id";
         [Fact, CleanDatabase]
         public void GetFirstByLowestScoreFromSet_ThrowsAnException_ToScoreIsLowerThanFromScore()
         {
-            UseConnection(connection => Assert.Throws<ArgumentException>(
-                () => connection.GetFirstByLowestScoreFromSet("key", 0, -1)));
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentException>(
+                    () => connection.GetFirstByLowestScoreFromSet("key", 0, -1));
+
+                Assert.Equal("toScore", exception.ParamName);
+            });
         }
 
         [Fact, CleanDatabase]
@@ -629,9 +634,13 @@ select @id";
         [Fact, CleanDatabase]
         public void GetFirstByLowestScoreFromSet_ThrowsArgException_WhenRequestingLessThanZero()
         {
-            UseConnection(connection => 
-                Assert.Throws<ArgumentException>(() => connection.GetFirstByLowestScoreFromSet("key", 0, 1, -1))
-            );
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentException>(
+                    () => connection.GetFirstByLowestScoreFromSet("key", 0, 1, -1));
+
+                Assert.Equal("count", exception.ParamName);
+            });
         }
 
         [Fact]
