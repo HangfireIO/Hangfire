@@ -24,6 +24,7 @@ namespace Hangfire.Dashboard
 {
     internal sealed class OwinDashboardRequest : DashboardRequest
     {
+        private const string FormCollectionKey = "Microsoft.Owin.Form#collection";
         private readonly IOwinContext _context;
 
         public OwinDashboardRequest([NotNull] IDictionary<string, object> environment)
@@ -40,10 +41,32 @@ namespace Hangfire.Dashboard
 
         public override string GetQuery(string key) => _context.Request.Query[key];
 
+
+
         public override async Task<IList<string>> GetFormValuesAsync(string key)
         {
-            var form = await _context.ReadFormSafeAsync();
-            return form.GetValues(key) ?? new List<string>();
+            IList<string> values;
+
+            if(_context.Environment.ContainsKey(FormCollectionKey))
+            {
+                if(_context.Environment[FormCollectionKey] is IFormCollection)
+                {
+                    var form = (IFormCollection)_context.Request.Environment[FormCollectionKey];
+                    values = form.GetValues(key);
+                }
+                else
+                {
+                    dynamic form = _context.Request.Environment[FormCollectionKey];
+                    values = form.GetValues(key);
+                }
+            }
+            else
+            {
+                var form = await _context.Request.ReadFormAsync();
+                values = form.GetValues(key);
+            }
+            
+            return values ?? new List<string>();
         }
     }
 }
