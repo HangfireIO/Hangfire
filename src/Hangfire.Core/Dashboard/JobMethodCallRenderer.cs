@@ -29,7 +29,7 @@ namespace Hangfire.Dashboard
 {
     internal static class JobMethodCallRenderer
     {
-        private const int MaxArgumentToRenderSize = 4096;
+        private static readonly int MaxArgumentToRenderSize = 4096;
 
         public static NonEscapedString Render(Job job)
         {
