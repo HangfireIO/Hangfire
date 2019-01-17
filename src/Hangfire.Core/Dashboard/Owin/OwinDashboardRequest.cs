@@ -41,8 +41,6 @@ namespace Hangfire.Dashboard
 
         public override string GetQuery(string key) => _context.Request.Query[key];
 
-
-
         public override async Task<IList<string>> GetFormValuesAsync(string key)
         {
             IList<string> values;
