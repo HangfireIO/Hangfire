@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Logging;
@@ -147,43 +148,76 @@ namespace Hangfire.Server
         {
             return UseConnectionDistributedLock(context.Storage, connection =>
             {
-                for (var i = 0; i < BatchSize; i++)
+                if (IsBatchingAvailable(connection))
                 {
-                    if (context.IsShutdownRequested) return false;
-
                     var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
+                    var jobIds = ((JobStorageConnection)connection).GetFirstByLowestScoreFromSet("schedule", 0, timestamp, BatchSize);
 
-                    // TODO: it is very slow. Add batching.
-                    var jobId = connection.GetFirstByLowestScoreFromSet("schedule", 0, timestamp);
+                    if (jobIds == null || jobIds.Count == 0) return false;
 
-                    if (jobId == null)
+                    foreach (var jobId in jobIds)
                     {
-                        // No more scheduled jobs pending.
-                        return false;
+                        if (context.IsShutdownRequested) return false;
+                        EnqueueBackgroundJob(context, connection, jobId);
                     }
-
-                    var appliedState = _stateChanger.ChangeState(new StateChangeContext(
-                        context.Storage,
-                        connection,
-                        jobId,
-                        new EnqueuedState { Reason = $"Triggered by {ToString()}" },
-                        ScheduledState.StateName));
-
-                    if (appliedState == null)
+                }
+                else
+                {
+                    for (var i = 0; i < BatchSize; i++)
                     {
-                        // When a background job with the given id does not exist, we should
-                        // remove its id from a schedule manually. This may happen when someone
-                        // modifies a storage bypassing Hangfire API.
-                        using (var transaction = connection.CreateWriteTransaction())
-                        {
-                            transaction.RemoveFromSet("schedule", jobId);
-                            transaction.Commit();
-                        }
+                        if (context.IsShutdownRequested) return false;
+
+                        var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
+
+                        var jobId = connection.GetFirstByLowestScoreFromSet("schedule", 0, timestamp);
+                        if (jobId == null) return false;
+
+                        EnqueueBackgroundJob(context, connection, jobId);
                     }
                 }
 
                 return true;
             });
+        }
+
+        private void EnqueueBackgroundJob(BackgroundProcessContext context, IStorageConnection connection, string jobId)
+        {
+            var appliedState = _stateChanger.ChangeState(new StateChangeContext(
+                context.Storage,
+                connection,
+                jobId,
+                new EnqueuedState { Reason = $"Triggered by {ToString()}" },
+                ScheduledState.StateName));
+
+            if (appliedState == null)
+            {
+                // When a background job with the given id does not exist, we should
+                // remove its id from a schedule manually. This may happen when someone
+                // modifies a storage bypassing Hangfire API.
+                using (var transaction = connection.CreateWriteTransaction())
+                {
+                    transaction.RemoveFromSet("schedule", jobId);
+                    transaction.Commit();
+                }
+            }
+        }
+
+        private static bool IsBatchingAvailable(IStorageConnection connection)
+        {
+            var batchingAvailable = false;
+            if (connection is JobStorageConnection storageConnection)
+            {
+                try
+                {
+                    storageConnection.GetFirstByLowestScoreFromSet(null, 0, 0, 1);
+                }
+                catch (ArgumentNullException)
+                {
+                    batchingAvailable = true;
+                }
+            }
+
+            return batchingAvailable;
         }
 
         private T UseConnectionDistributedLock<T>(JobStorage storage, Func<IStorageConnection, T> action)
