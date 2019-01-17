@@ -69,6 +69,7 @@ namespace Hangfire.Server
         /// </remarks>
         public static readonly TimeSpan DefaultPollingDelay = TimeSpan.FromSeconds(15);
         private static readonly TimeSpan DefaultLockTimeout = TimeSpan.FromMinutes(1);
+        private static readonly int BatchSize = 1000;
 
         private readonly ILog _logger = LogProvider.For<DelayedJobScheduler>();
 
@@ -118,7 +119,7 @@ namespace Hangfire.Server
 
             var jobsEnqueued = 0;
 
-            while (EnqueueNextScheduledJob(context))
+            while (EnqueueNextScheduledJobs(context))
             {
                 jobsEnqueued++;
 
@@ -142,37 +143,42 @@ namespace Hangfire.Server
             return GetType().Name;
         }
 
-        private bool EnqueueNextScheduledJob(BackgroundProcessContext context)
+        private bool EnqueueNextScheduledJobs(BackgroundProcessContext context)
         {
             return UseConnectionDistributedLock(context.Storage, connection =>
             {
-                var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
-
-                // TODO: it is very slow. Add batching.
-                var jobId = connection.GetFirstByLowestScoreFromSet("schedule", 0, timestamp);
-
-                if (jobId == null)
+                for (var i = 0; i < BatchSize; i++)
                 {
-                    // No more scheduled jobs pending.
-                    return false;
-                }
-                
-                var appliedState = _stateChanger.ChangeState(new StateChangeContext(
-                    context.Storage,
-                    connection,
-                    jobId,
-                    new EnqueuedState { Reason = $"Triggered by {ToString()}" }, 
-                    ScheduledState.StateName));
+                    if (context.IsShutdownRequested) return false;
 
-                if (appliedState == null)
-                {
-                    // When a background job with the given id does not exist, we should
-                    // remove its id from a schedule manually. This may happen when someone
-                    // modifies a storage bypassing Hangfire API.
-                    using (var transaction = connection.CreateWriteTransaction())
+                    var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
+
+                    // TODO: it is very slow. Add batching.
+                    var jobId = connection.GetFirstByLowestScoreFromSet("schedule", 0, timestamp);
+
+                    if (jobId == null)
                     {
-                        transaction.RemoveFromSet("schedule", jobId);
-                        transaction.Commit();
+                        // No more scheduled jobs pending.
+                        return false;
+                    }
+
+                    var appliedState = _stateChanger.ChangeState(new StateChangeContext(
+                        context.Storage,
+                        connection,
+                        jobId,
+                        new EnqueuedState { Reason = $"Triggered by {ToString()}" },
+                        ScheduledState.StateName));
+
+                    if (appliedState == null)
+                    {
+                        // When a background job with the given id does not exist, we should
+                        // remove its id from a schedule manually. This may happen when someone
+                        // modifies a storage bypassing Hangfire API.
+                        using (var transaction = connection.CreateWriteTransaction())
+                        {
+                            transaction.RemoveFromSet("schedule", jobId);
+                            transaction.Commit();
+                        }
                     }
                 }
 
