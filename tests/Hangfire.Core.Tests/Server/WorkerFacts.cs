@@ -121,6 +121,23 @@ namespace Hangfire.Core.Tests.Server
             _fetchedJob.Verify(x => x.Requeue());
         }
 
+        [Fact]
+        public void Execute_MovesAJobToTheFailedState_WhenStateChangerThrowsAnException()
+        {
+            _stateChanger
+                .Setup(x => x.ChangeState(It.Is<StateChangeContext>(y => y.NewState.Name != FailedState.StateName)))
+                .Throws<InvalidOperationException>();
+
+            var worker = CreateWorker();
+
+            worker.Execute(_context.Object);
+
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(y => y.NewState.Name == FailedState.StateName)));
+
+            _fetchedJob.Verify(x => x.RemoveFromQueue(), Times.Once);
+            _fetchedJob.Verify(x => x.Requeue(), Times.Never);
+        }
+
 #if NETFULL
         [Fact, Sequence]
         public void Execute_ExecutesDefaultWorkflow_WhenJobIsCorrect()

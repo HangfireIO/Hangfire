@@ -49,10 +49,10 @@ select scope_identity() as Id";
                 var jobId = sql.Query(arrangeSql).Single().Id.ToString();
                 var anotherJobId = sql.Query(arrangeSql).Single().Id.ToString();
 
-                Commit(sql, x => x.ExpireJob(jobId, TimeSpan.FromDays(1)), useBatching);
+                Commit(sql, x => x.ExpireJob(jobId, TimeSpan.FromHours(24)), useBatching);
 
                 var job = GetTestJob(sql, jobId);
-                Assert.True(DateTime.UtcNow.AddMinutes(-1) < job.ExpireAt && job.ExpireAt <= DateTime.UtcNow.AddDays(1));
+                Assert.True(DateTime.UtcNow.AddHours(23) < job.ExpireAt && job.ExpireAt < DateTime.UtcNow.AddHours(25));
 
                 var anotherJob = GetTestJob(sql, anotherJobId);
                 Assert.Null(anotherJob.ExpireAt);

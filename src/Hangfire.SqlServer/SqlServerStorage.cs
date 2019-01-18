@@ -38,6 +38,7 @@ namespace Hangfire.SqlServer
     public class SqlServerStorage : JobStorage
     {
         private readonly DbConnection _existingConnection;
+        private readonly Func<DbConnection> _connectionFactory;
         private readonly SqlServerStorageOptions _options;
         private readonly string _connectionString;
 
@@ -64,6 +65,7 @@ namespace Hangfire.SqlServer
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             _connectionString = GetConnectionString(nameOrConnectionString);
+            _connectionFactory = () => new SqlConnection(_connectionString);
             _options = options;
 
             Initialize();
@@ -112,6 +114,32 @@ namespace Hangfire.SqlServer
             _existingConnection = existingConnection;
             _options = options;
             Transaction = transaction;
+
+            Initialize();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SqlServerStorage"/> class with
+        /// a connection factory <see cref="Func{DbConnection}"/> class that will be invoked
+        /// to create new database connections for querying the data.
+        /// </summary>
+        public SqlServerStorage([NotNull] Func<DbConnection> connectionFactory)
+            : this(connectionFactory, new SqlServerStorageOptions())
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SqlServerStorage"/> class with
+        /// a connection factory <see cref="Func{DbConnection}"/> class that will be invoked
+        /// to create new database connections for querying the data.
+        /// </summary>
+        public SqlServerStorage([NotNull] Func<DbConnection> connectionFactory, [NotNull] SqlServerStorageOptions options)
+        {
+            if (connectionFactory == null) throw new ArgumentNullException(nameof(connectionFactory));
+            if (options == null) throw new ArgumentNullException(nameof(options));
+
+            _connectionFactory = connectionFactory;
+            _options = options;
 
             Initialize();
         }
@@ -267,7 +295,8 @@ namespace Hangfire.SqlServer
 
         internal DbConnection CreateAndOpenConnection()
         {
-            var connection = _existingConnection ?? new SqlConnection(_connectionString);
+            var connection = _existingConnection
+                ?? _connectionFactory();
 
             if (connection.State == ConnectionState.Closed)
             {
@@ -292,11 +321,11 @@ namespace Hangfire.SqlServer
 
         private void Initialize()
         {
-            if (_options.PrepareSchemaIfNecessary)
+            if (_options.PrepareSchemaIfNecessary && Transaction == null)
             {
                 UseConnection(null, connection =>
                 {
-                    SqlServerObjectsInstaller.Install(connection, Transaction, _options.SchemaName);
+                    SqlServerObjectsInstaller.Install(connection, _options.SchemaName);
                 });
             }
 
@@ -369,7 +398,7 @@ where dbid = db_id(@name) and status != 'background' and status != 'sleeping'";
                         .Query<int>(sqlQuery, new { name = connection.Database })
                         .Single();
 
-                    return new Metric(value.ToString("N0"));
+                    return new Metric(value);
                 });
             });
 
@@ -391,7 +420,7 @@ where dbid = db_id(@name) and status != 'background'";
                         .Query<int>(sqlQuery, new { name = connection.Database })
                         .Single();
 
-                    return new Metric(value.ToString("N0"));
+                    return new Metric(value);
                 });
             });
     }

@@ -6,18 +6,98 @@
     <title>Hangfire</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
-    <projectUrl>http://hangfire.io/</projectUrl>
+    <projectUrl>https://www.hangfire.io/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <summary>An easy way to perform fire-and-forget, delayed and recurring tasks inside ASP.NET applications. No Windows Service required.</summary>
     <description>
       An easy and reliable way to perform fire-and-forget, delayed and recurring long-running, short-running, CPU or I/O intensive tasks inside ASP.NET application. No Windows Service / Task Scheduler required. Even ASP.NET is not required.
       Backed by Redis, SQL Server, SQL Azure or MSMQ. This is a .NET alternative to Sidekiq, Resque and Celery.
-      http://hangfire.io/
+      https://www.hangfire.io/
     </description>
-    <copyright>Copyright © 2013-2017 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013-2018 Sergey Odinokov</copyright>
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
-    <releaseNotes>http://hangfire.io/blog/
+    <releaseNotes>https://www.hangfire.io/blog/
+    
+1.6.21
+
+Hangfire.Core
+• Fixed – High CPU usage and long response time when accessing Failed jobs page with Linux stack traces.
+• Fixed – RecurringJobScheduler may block server shutdown and cause distributed lock to be abandoned.
+
+Hangfire.SqlServer
+• Fixed – Change locking scheme in the `Connection.SetRangeInHash` method to avoid deadlocks.
+
+Hangfire.AspNetCore
+• Fixed – Null-based implementation of the `IAntiforgery` interface doesn't lead to an exception.
+      
+1.6.20
+
+Hangfire.Core
+
+• SECURITY – Add "robots" meta tag to ensure browser don't index dashboard pages.
+• SECURITY – Add support for antiforgery validation to prevent CSRF attacks (requires configuration).
+
+• Fixed – Perform state change retries using a fresh connection when job's distributed lock may be abandoned.
+• Fixed – Disallow transitions to the Failed state on retries that bypass all the filters.
+• Fixed – Remove possible rare CPU spikes due to the use of `CancellationToken.WaitHandle`.
+• Fixed – Avoid resolving types and methods for logging in static constructors that may lead to process shutdown.
+• Fixed – Prevent Recurring jobs dashboard from throwing `NullReferenceException` (by @mattkwiecien).
+• Fixed – Replace wall clocks with monotonic ones when calculating local timeouts.
+• Fixed – Change logger initialization to be deterministic and predictable by using instance fields.
+• Fixed – Make `_currentLogProvider` field access to use volatile reads/writes.
+• Fixed – Typo in `NotSupportedException`'s message (by @benrick).
+• Fixed – Typo on the Failed jobs page (by @gareth-evans).
+
+Hangfire.SqlServer
+
+• Fixed – Remove the synthetic limitation to support Azure SQL Management instance (by @TimSQL).
+
+Hangfire.AspNetCore
+
+• SECURITY – Use ASP.NET Core's built-in antiforgery validation to prevent CSRF attacks.
+      
+1.6.19
+
+Hangfire.Core
+
+• Fixed – NullReferenceException in JobMethodCallRenderer regression appeared in 1.6.18.
+
+Hangfire.SqlServer
+
+• Fixed – "String or binary data would be truncated" exception when state reason is too long.
+• Fixed – Command handling in batch mode now stops after the first error due to "XACT_ABORT ON".
+• Fixed – Make SqlCommandBatch disposable to dispose all the commands.
+
+1.6.18
+
+Hangfire.Core
+
+• Added – Add on option to remove the storage connection string from the footer (by @sandorfr).
+• Added – Add Dashboard UI Resource zh-TW (by @crablin).
+• Fixed – OutOfMemoryException in dashboard when arguments are too big.
+• Fixed – DisplayNameAttribute doesn't work when using dashboard in .NET Core.
+• Fixed – Update rickshaw css to match the js version (by @pieceofsummer).
+• Fixed – Bad exception when Job.FromExpression fails to resolve method for explicit interface implementations (by @f00).
+• Fixed – Missing intValue-values in "/stats" endpoint (by @pieceofsummer).
+• Fixed – Logging doesn't work with log4net integration in .NET Core (by @evollu).
+• Fixed – Fix nuspec pointing to version of Newtonsoft.Json that does not exist (by @mvestergaard)
+• Fixed – Server start time has a bad tooltip position (by @pieceofsummer).
+• Fixed – Prevent connection string from blowing mobile page layout (by @pieceofsummer).
+• Fixed – Number of recurring jobs per page is now correct (by @pieceofsummer).
+• Project – Get rid of all the compile-time warnings (by @liakamp).
+• Project – More details for build instructions for the project (by @kristofferjalen).
+• Project – Unable to build project with space in folder path (by @stefanviberg).
+
+Hangfire.AspNetCore
+
+• Added – More Hangfire-related services are now registered in an IoC container (by @pieceofsummer).
+• Fixed – Queue parameter is ignored in .NET Core when creating a job (by @pieceofsummer).
+• Fixed – Fix issue with configuration block not called on .NET Core (by @pieceofsummer).
+
+Hangfire.SqlServer
+
+• Fixed – Rare deadlocks in SQL Server caused by the SetRangeInHash command.
     
 1.6.17
 

@@ -118,22 +118,23 @@ values (@invocationData, @arguments, @createdAt, @expireAt)";
 $@"insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value)
 values (@jobId, @name, @value)";
 
-                    var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue);
-
-                    foreach (var parameter in parameters)
+                    using (var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
                     {
-                        commandBatch.Append(insertParameterSql,
-                            new SqlParameter("@jobId", long.Parse(jobId)),
-                            new SqlParameter("@name", parameter.Key),
-                            new SqlParameter("@value", (object)parameter.Value ?? DBNull.Value));
+                        foreach (var parameter in parameters)
+                        {
+                            commandBatch.Append(insertParameterSql,
+                                new SqlParameter("@jobId", long.Parse(jobId)),
+                                new SqlParameter("@name", parameter.Key),
+                                new SqlParameter("@value", (object)parameter.Value ?? DBNull.Value));
+                        }
+
+                        commandBatch.Connection = connection;
+                        commandBatch.Transaction = _storage.Transaction;
+                        commandBatch.CommandTimeout = _storage.CommandTimeout;
+                        commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
+
+                        commandBatch.ExecuteNonQuery();
                     }
-
-                    commandBatch.Connection = connection;
-                    commandBatch.Transaction = _storage.Transaction;
-                    commandBatch.CommandTimeout = _storage.CommandTimeout;
-                    commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
-
-                    commandBatch.ExecuteNonQuery();
                 }
 
                 return jobId;
@@ -275,31 +276,42 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
 
-            string sql =
+            var sql =
 $@";merge [{_storage.SchemaName}].Hash with (holdlock) as Target
 using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
 on Target.[Key] = Source.[Key] and Target.Field = Source.Field
 when matched then update set Value = Source.Value
 when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
 
+            var lockResourceKey = $"{_storage.SchemaName}:Hash:Lock";
+
             _storage.UseTransaction(_dedicatedConnection, (connection, transaction) =>
             {
-                var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue);
-
-                foreach (var keyValuePair in keyValuePairs)
+                using (var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
                 {
-                    commandBatch.Append(sql,
-                        new SqlParameter("@key", key),
-                        new SqlParameter("@field", keyValuePair.Key),
-                        new SqlParameter("@value", (object)keyValuePair.Value ?? DBNull.Value));
+                    commandBatch.Append(
+                        "SET XACT_ABORT ON;exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive', @LockOwner=N'Transaction', @LockTimeout=-1;",
+                        new SqlParameter("@resource", lockResourceKey));
+
+                    foreach (var keyValuePair in keyValuePairs)
+                    {
+                        commandBatch.Append(sql,
+                            new SqlParameter("@key", key),
+                            new SqlParameter("@field", keyValuePair.Key),
+                            new SqlParameter("@value", (object) keyValuePair.Value ?? DBNull.Value));
+                    }
+
+                    commandBatch.Append(
+                        "exec sp_releaseapplock @Resource=@resource, @LockOwner=N'Transaction';",
+                        new SqlParameter("@resource", lockResourceKey));
+
+                    commandBatch.Connection = connection;
+                    commandBatch.Transaction = transaction;
+                    commandBatch.CommandTimeout = _storage.CommandTimeout;
+                    commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
+
+                    commandBatch.ExecuteNonQuery();
                 }
-
-                commandBatch.Connection = connection;
-                commandBatch.Transaction = transaction;
-                commandBatch.CommandTimeout = _storage.CommandTimeout;
-                commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
-
-                commandBatch.ExecuteNonQuery();
             });
         }
 

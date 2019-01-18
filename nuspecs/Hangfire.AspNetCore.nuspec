@@ -6,13 +6,21 @@
     <title>Hangfire ASP.NET Core Support</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
-    <projectUrl>http://hangfire.io/</projectUrl>
+    <projectUrl>https://www.hangfire.io/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>ASP.NET Core support for Hangfire (background job system for ASP.NET applications).</description>
     <copyright>Copyright © 2017 Sergey Odinokov</copyright>
     <tags>hangfire aspnetcore</tags>
-    <releaseNotes>http://hangfire.io/blog/
+    <releaseNotes>https://www.hangfire.io/blog/
+      
+1.6.20
+• SECURITY – Use ASP.NET Core's built-in antiforgery validation to prevent CSRF attacks.
+      
+1.6.18
+• Added – More Hangfire-related services are now registered in an IoC container (by @pieceofsummer).
+• Fixed – Queue parameter is ignored in .NET Core when creating a job (by @pieceofsummer).
+• Fixed – Fix issue with configuration block not called on .NET Core (by @pieceofsummer).
     
 1.6.13
 • Fixed – Types are resolved using the `GetServiceOrCreateInstance` method (by @Tsabo).
@@ -30,6 +38,7 @@
       <group targetFramework="net451">
         <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="1.0.0" />
         <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="1.0.0" />
+        <dependency id="Microsoft.AspNetCore.Antiforgery" version="1.0.0" />
         <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="1.0.0" />
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="1.0.0" />
         <dependency id="Hangfire.Core" version="[0.0.0]" />
@@ -40,6 +49,7 @@
         <dependency id="System.ComponentModel" version="4.0.1" />
         <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="1.0.0" />
         <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="1.0.0" />
+        <dependency id="Microsoft.AspNetCore.Antiforgery" version="1.0.0" />
         <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="1.0.0" />
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="1.0.0" />
         <dependency id="Hangfire.Core" version="[0.0.0]" />
@@ -56,5 +66,12 @@
     <file src="netstandard1.3\Hangfire.AspNetCore.pdb" target="lib\netstandard1.3" />
     
     <file src="..\src\Hangfire.AspNetCore\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
+
+    <file src="LICENSE.md" />
+    <file src="NOTICES" />
+    <file src="COPYING" />
+    <file src="COPYING.LESSER" />
+    <file src="LICENSE_STANDARD" />
+    <file src="LICENSE_ROYALTYFREE" />
   </files>
 </package>

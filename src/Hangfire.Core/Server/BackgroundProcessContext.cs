@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Hangfire.Annotations;
+using Hangfire.Common;
 
 namespace Hangfire.Server
 {
@@ -54,7 +55,7 @@ namespace Hangfire.Server
 
         public void Wait(TimeSpan timeout)
         {
-            CancellationToken.WaitHandle.WaitOne(timeout);
+            CancellationToken.Wait(timeout);
         }
     }
 }

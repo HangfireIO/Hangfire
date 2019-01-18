@@ -29,26 +29,21 @@ namespace Hangfire.SqlServer
         public static readonly int RequiredSchemaVersion = 5;
         private const int RetryAttempts = 3;
 
-        private static readonly ILog Log = LogProvider.GetLogger(typeof(SqlServerStorage));
-
-        public static void Install(DbConnection connection, DbTransaction transaction = null)
+        public static void Install(DbConnection connection)
         {
-            Install(connection, transaction, null);
+            Install(connection, null);
         }
 
-        public static void Install(DbConnection connection, DbTransaction transaction, string schema)
+        public static void Install(DbConnection connection, string schema)
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
 
-            Log.Info("Start installing Hangfire SQL objects...");
+            var log = LogProvider.GetLogger(typeof(SqlServerObjectsInstaller));
 
-            if (!IsSqlEditionSupported(connection, transaction))
-            {
-                throw new PlatformNotSupportedException("The SQL Server edition of the target server is unsupported, e.g. SQL Azure.");
-            }
+            log.Info("Start installing Hangfire SQL objects...");
 
             var script = GetStringResource(
-                typeof(SqlServerObjectsInstaller).GetTypeInfo().Assembly, 
+                typeof(SqlServerObjectsInstaller).GetTypeInfo().Assembly,
                 "Hangfire.SqlServer.Install.sql");
 
             script = script.Replace("SET @TARGET_SCHEMA_VERSION = 5;", "SET @TARGET_SCHEMA_VERSION = " + RequiredSchemaVersion + ";");
@@ -67,7 +62,7 @@ namespace Hangfire.SqlServer
                 {
                     if (ex.ErrorCode == 1205)
                     {
-                        Log.WarnException("Deadlock occurred during automatic migration execution. Retrying...", ex);
+                        log.WarnException("Deadlock occurred during automatic migration execution. Retrying...", ex);
                     }
                     else
                     {
@@ -76,23 +71,17 @@ namespace Hangfire.SqlServer
                 }
             }
 #else
-            connection.Execute(script, commandTimeout: 0, transaction: transaction);
+            connection.Execute(script, commandTimeout: 0);
 #endif
 
-            Log.Info("Hangfire SQL objects installed.");
-        }
-
-        private static bool IsSqlEditionSupported(DbConnection connection, DbTransaction transaction)
-        {
-            var edition = connection.Query<int>("SELECT SERVERPROPERTY ( 'EngineEdition' )", transaction: transaction).Single();
-            return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.SqlAzure;
+            log.Info("Hangfire SQL objects installed.");
         }
 
         private static string GetStringResource(Assembly assembly, string resourceName)
         {
             using (var stream = assembly.GetManifestResourceStream(resourceName))
             {
-                if (stream == null) 
+                if (stream == null)
                 {
                     throw new InvalidOperationException(
                         $"Requested resource `{resourceName}` was not found in the assembly `{assembly}`.");
@@ -103,18 +92,6 @@ namespace Hangfire.SqlServer
                     return reader.ReadToEnd();
                 }
             }
-        }
-
-        private static class SqlEngineEdition
-        {
-// ReSharper disable UnusedMember.Local
-            // See article http://technet.microsoft.com/en-us/library/ms174396.aspx for details on EngineEdition
-            public const int Personal = 1;
-            public const int Standard = 2;
-            public const int Enterprise = 3;
-            public const int Express = 4;
-            public const int SqlAzure = 5;
-// ReSharper restore UnusedMember.Local
         }
     }
 }

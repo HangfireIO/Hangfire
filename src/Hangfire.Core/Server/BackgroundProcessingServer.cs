@@ -44,7 +44,7 @@ namespace Hangfire.Server
     public sealed class BackgroundProcessingServer : IBackgroundProcess, IDisposable
     {
         public static readonly TimeSpan DefaultShutdownTimeout = TimeSpan.FromSeconds(15);
-        private static readonly ILog Logger = LogProvider.For<BackgroundProcessingServer>();
+        private readonly ILog _logger = LogProvider.For<BackgroundProcessingServer>();
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 #pragma warning disable 618
@@ -128,7 +128,7 @@ namespace Hangfire.Server
 
             if (!_bootstrapTask.Wait(_options.ShutdownTimeout))
             {
-                Logger.Warn("Processing server takes too long to shutdown. Performing ungraceful shutdown.");
+                _logger.Warn("Processing server takes too long to shutdown. Performing ungraceful shutdown.");
             }
         }
 
