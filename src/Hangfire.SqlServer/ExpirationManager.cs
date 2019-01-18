@@ -18,8 +18,10 @@ using System;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Threading;
+using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Server;
+using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
 {
@@ -27,8 +29,6 @@ namespace Hangfire.SqlServer
     internal class ExpirationManager : IServerComponent
 #pragma warning restore 618
     {
-        private static readonly ILog Logger = LogProvider.For<ExpirationManager>();
-
         private const string DistributedLockKey = "locks:expirationmanager";
         private static readonly TimeSpan DefaultLockTimeout = TimeSpan.FromMinutes(5);
         
@@ -48,6 +48,7 @@ namespace Hangfire.SqlServer
             "Hash",
         };
 
+        private readonly ILog _logger = LogProvider.For<ExpirationManager>();
         private readonly SqlServerStorage _storage;
         private readonly TimeSpan _checkInterval;
 
@@ -63,42 +64,63 @@ namespace Hangfire.SqlServer
         {
             foreach (var table in ProcessedTables)
             {
-                Logger.Debug($"Removing outdated records from the '{table}' table...");
+                _logger.Debug($"Removing outdated records from the '{table}' table...");
 
-                _storage.UseConnection(connection =>
+                UseConnectionDistributedLock(_storage, connection =>
+                {
+                    int affected;
+
+                    do
+                    {
+                        affected = ExecuteNonQuery(
+                            connection,
+                            GetQuery(_storage.SchemaName, table),
+                            cancellationToken,
+                            new SqlParameter("@count", NumberOfRecordsInSinglePass),
+                            new SqlParameter("@now", DateTime.UtcNow));
+
+                    } while (affected == NumberOfRecordsInSinglePass);
+                });
+
+                _logger.Trace($"Outdated records removed from the '{table}' table.");
+            }
+
+            cancellationToken.Wait(_checkInterval);
+        }
+
+        public override string ToString()
+        {
+            return GetType().ToString();
+        }
+
+        private void UseConnectionDistributedLock(SqlServerStorage storage, Action<DbConnection> action)
+        {
+            try
+            {
+                storage.UseConnection(null, connection =>
                 {
                     SqlServerDistributedLock.Acquire(connection, DistributedLockKey, DefaultLockTimeout);
 
                     try
                     {
-                        int affected;
-
-                        do
-                        {
-                            affected = ExecuteNonQuery(
-                                connection,
-                                GetQuery(_storage.SchemaName, table),
-                                cancellationToken,
-                                new SqlParameter("@count", NumberOfRecordsInSinglePass),
-                                new SqlParameter("@now", DateTime.UtcNow));
-
-                        } while (affected == NumberOfRecordsInSinglePass);
+                        action(connection);
                     }
                     finally
                     {
                         SqlServerDistributedLock.Release(connection, DistributedLockKey);
                     }
                 });
-
-                Logger.Trace($"Outdated records removed from the '{table}' table.");
             }
-
-            cancellationToken.WaitHandle.WaitOne(_checkInterval);
-        }
-
-        public override string ToString()
-        {
-            return GetType().ToString();
+            catch (DistributedLockTimeoutException e) when (e.Resource == DistributedLockKey)
+            {
+                // DistributedLockTimeoutException here doesn't mean that outdated records weren't removed.
+                // It just means another Hangfire server did this work.
+                _logger.Log(
+                    LogLevel.Debug,
+                    () => $@"An exception was thrown during acquiring distributed lock on the {DistributedLockKey} resource within {DefaultLockTimeout.TotalSeconds} seconds. Outdated records were not removed.
+It will be retried in {_checkInterval.TotalSeconds} seconds.",
+                    e);
+            }
         }
 
         private static string GetQuery(string schemaName, string table)
@@ -160,3 +182,4 @@ option (loop join, optimize for (@count = 20000));";
         }
     }
 }
+

@@ -58,6 +58,7 @@ namespace Hangfire.SqlServer
 
         private bool _completed;
 
+        [Obsolete("Don't use this class directly, use SqlServerConnection.AcquireDistributedLock instead as it provides better safety. Will be removed in 2.0.0.")]
         public SqlServerDistributedLock([NotNull] SqlServerStorage storage, [NotNull] string resource, TimeSpan timeout)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -148,7 +149,12 @@ namespace Hangfire.SqlServer
                     // for the code that is wrapped with this block. So it was
                     // a bad idea to have a separate connection for just
                     // distributed lock.
-                    // TODO: Think about distributed locks and connections.
+                    
+                    // OBSOLETE. This class is not used anymore by the SqlServerConnection
+                    // class. The problem above was solved there by establishing a
+                    // dedicated connection, when there is at least one acquired lock.
+                    // Since the acquisition, all the commands and transactions are routed
+                    // through that connection to ensure all the locks are still active.
                 }
             }
         }

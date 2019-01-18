@@ -17,6 +17,7 @@
 using System;
 using System.Threading;
 using Dapper;
+using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Server;
 
@@ -26,14 +27,13 @@ namespace Hangfire.SqlServer
     internal class CountersAggregator : IServerComponent
 #pragma warning restore 618
     {
-        private static readonly ILog Logger = LogProvider.For<CountersAggregator>();
-        
         // This number should be high enough to aggregate counters efficiently,
         // but low enough to not to cause large amount of row locks to be taken.
         // Lock escalation to page locks may pause the background processing.
         private const int NumberOfRecordsInSinglePass = 1000;
         private static readonly TimeSpan DelayBetweenPasses = TimeSpan.FromMilliseconds(500);
 
+        private readonly ILog _logger = LogProvider.For<CountersAggregator>();
         private readonly SqlServerStorage _storage;
         private readonly TimeSpan _interval;
 
@@ -47,13 +47,13 @@ namespace Hangfire.SqlServer
 
         public void Execute(CancellationToken cancellationToken)
         {
-            Logger.Debug("Aggregating records in 'Counter' table...");
+            _logger.Debug("Aggregating records in 'Counter' table...");
 
             int removedCount = 0;
 
             do
             {
-                _storage.UseConnection(connection =>
+                _storage.UseConnection(null, connection =>
                 {
                     removedCount = connection.Execute(
                         GetAggregationQuery(_storage),
@@ -63,15 +63,15 @@ namespace Hangfire.SqlServer
 
                 if (removedCount >= NumberOfRecordsInSinglePass)
                 {
-                    cancellationToken.WaitHandle.WaitOne(DelayBetweenPasses);
+                    cancellationToken.Wait(DelayBetweenPasses);
                     cancellationToken.ThrowIfCancellationRequested();
                 }
                 // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
             } while (removedCount >= NumberOfRecordsInSinglePass);
 
-            Logger.Trace("Records from the 'Counter' table aggregated.");
+            _logger.Trace("Records from the 'Counter' table aggregated.");
 
-            cancellationToken.WaitHandle.WaitOne(_interval);
+            cancellationToken.Wait(_interval);
         }
 
         public override string ToString()
@@ -89,6 +89,7 @@ $@"DECLARE @RecordsToAggregate TABLE
 	[ExpireAt] DATETIME NULL
 )
 
+SET XACT_ABORT ON
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED
 BEGIN TRAN
 

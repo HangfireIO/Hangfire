@@ -42,7 +42,7 @@
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CronExpressionDescriptor, Version=1.21.0, Culture=neutral, PublicKeyToken=a2ab0e0f73f9b037, processorArchitecture=MSIL">
+    <Reference Include="CronExpressionDescriptor, Version=1.21.0.0, Culture=neutral, PublicKeyToken=a2ab0e0f73f9b037">
       <HintPath>..\..\packages\CronExpressionDescriptor.1.21.0\lib\net45\CronExpressionDescriptor.dll</HintPath>
       <Private>True</Private>
     </Reference>
@@ -78,6 +78,8 @@
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="BackgroundJobServerOptions.cs" />
     <Compile Include="Client\CoreBackgroundJobFactory.cs" />
+    <Compile Include="Common\CancellationTokenExtentions.cs" />
+    <Compile Include="Common\MethodInfoExtensions.cs" />
     <Compile Include="Dashboard\Content\resx\Strings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -88,6 +90,7 @@
     <Compile Include="Dashboard\DashboardResponse.cs" />
     <Compile Include="Dashboard\IDashboardAuthorizationFilter.cs" />
     <Compile Include="Dashboard\IDashboardDispatcher.cs" />
+    <Compile Include="Dashboard\Owin\IOwinDashboardAntiforgery.cs" />
     <Compile Include="Dashboard\Owin\OwinDashboardContext.cs" />
     <Compile Include="Dashboard\Owin\OwinDashboardContextExtensions.cs" />
     <Compile Include="Dashboard\Owin\OwinDashboardRequest.cs" />
@@ -98,7 +101,6 @@
     <Compile Include="IRecurringJobManager.cs" />
     <Compile Include="Obsolete\Job.Obsolete.cs" />
     <Compile Include="Common\TypeExtensions.cs" />
-    <Compile Include="Dashboard\Owin\OwinRequestExtensions.cs" />
     <Compile Include="Dashboard\Pages\AwaitingJobsPage.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -436,6 +438,7 @@
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.woff" />
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.woff2" />
     <Compile Include="BackgroundJob.Instance.cs" />
+    <EmbeddedResource Include="Dashboard\Content\resx\Strings.zh-TW.resx" />
     <EmbeddedResource Include="Dashboard\Content\resx\Strings.zh.resx" />
     <EmbeddedResource Include="Dashboard\Content\resx\Strings.es.resx" />
     <EmbeddedResource Include="Dashboard\Content\resx\Strings.resx">

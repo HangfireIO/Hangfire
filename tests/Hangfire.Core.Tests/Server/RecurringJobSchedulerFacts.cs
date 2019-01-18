@@ -314,6 +314,18 @@ namespace Hangfire.Core.Tests.Server
                 It.Is<DateTime>(time => time < nextExecution)));
         }
 
+        [Fact]
+        public void Execute_DoesNotThrowDistributedLockTimeoutException()
+        {
+            _connection
+                .Setup(x => x.AcquireDistributedLock("recurring-jobs:lock", It.IsAny<TimeSpan>()))
+                .Throws(new DistributedLockTimeoutException("recurring-jobs:lock"));
+
+            var scheduler = CreateScheduler();
+
+            scheduler.Execute(_context.Object);
+        }
+
         private RecurringJobScheduler CreateScheduler()
         {
             return new RecurringJobScheduler(

@@ -16,6 +16,7 @@
 
 using System;
 using System.Threading;
+using Hangfire.Common;
 
 namespace Hangfire.Server
 {
@@ -36,7 +37,7 @@ namespace Hangfire.Server
 
         private static void WaitASecondOrThrowIfCanceled(CancellationToken token)
         {
-            token.WaitHandle.WaitOne(TimeSpan.FromSeconds(1));
+            token.Wait(TimeSpan.FromSeconds(1));
             token.ThrowIfCancellationRequested();
         }
     }

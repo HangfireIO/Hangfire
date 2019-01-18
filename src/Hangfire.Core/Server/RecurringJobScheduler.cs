@@ -66,8 +66,8 @@ namespace Hangfire.Server
     public class RecurringJobScheduler : IBackgroundProcess
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
-        private static readonly ILog Logger = LogProvider.For<RecurringJobScheduler>();
-        
+
+        private readonly ILog _logger = LogProvider.For<RecurringJobScheduler>();
         private readonly IBackgroundJobFactory _factory;
         private readonly Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> _instantFactory;
         private readonly IThrottler _throttler;
@@ -114,13 +114,17 @@ namespace Hangfire.Server
 
             _throttler.Throttle(context.CancellationToken);
 
-            using (var connection = context.Storage.GetConnection())
-            using (connection.AcquireDistributedLock("recurring-jobs:lock", LockTimeout))
+            UseConnectionDistributedLock(context.Storage, connection =>
             {
                 var recurringJobIds = connection.GetAllItemsFromSet("recurring-jobs");
 
                 foreach (var recurringJobId in recurringJobIds)
                 {
+                    if (context.IsShutdownRequested)
+                    {
+                        return;
+                    }
+
                     var recurringJob = connection.GetAllEntriesFromHash(
                         $"recurring-job:{recurringJobId}");
 
@@ -135,12 +139,12 @@ namespace Hangfire.Server
                     }
                     catch (JobLoadException ex)
                     {
-                        Logger.WarnException(
+                        _logger.WarnException(
                             $"Recurring job '{recurringJobId}' can not be scheduled due to job load exception.",
                             ex);
                     }
                 }
-            }
+            });
 
             // The code above may be completed in less than a second. Default throttler use
             // the second resolution, and without an extra delay, CPU and DB bursts may happen.
@@ -191,7 +195,7 @@ namespace Hangfire.Server
 
                     if (String.IsNullOrEmpty(jobId))
                     {
-                        Logger.Debug($"Recurring job '{recurringJobId}' execution at '{nowInstant.NowInstant}' has been canceled.");
+                        _logger.Debug($"Recurring job '{recurringJobId}' execution at '{nowInstant.NowInstant}' has been canceled.");
                     }
 
                     changedFields.Add("LastExecution", JobHelper.SerializeDateTime(nowInstant.NowInstant));
@@ -220,11 +224,33 @@ namespace Hangfire.Server
                 if (!ex.GetType().Name.Equals("TimeZoneNotFoundException")) throw;
 #endif
 
-                Logger.ErrorException(
+                _logger.ErrorException(
                     $"Recurring job '{recurringJobId}' was not triggered: {ex.Message}.",
                     ex);
             }
 
+        }
+
+        private void UseConnectionDistributedLock(JobStorage storage, Action<IStorageConnection> action)
+        {
+            var resource = "recurring-jobs:lock";
+            try
+            {
+                using (var connection = storage.GetConnection())
+                using (connection.AcquireDistributedLock(resource, LockTimeout))
+                {
+                    action(connection);
+                }
+            }
+            catch (DistributedLockTimeoutException e) when (e.Resource == resource)
+            {
+                // DistributedLockTimeoutException here doesn't mean that recurring jobs weren't scheduled.
+                // It just means another Hangfire server did this work.
+                _logger.Log(
+                    LogLevel.Debug,
+                    () => $@"An exception was thrown during acquiring distributed lock the {resource} resource within {LockTimeout.TotalSeconds} seconds. The recurring jobs have not been handled this time.",
+                    e);
+            }
         }
 
         private static DateTime GetLastInstant(IReadOnlyDictionary<string, string> recurringJob, IScheduleInstant instant)

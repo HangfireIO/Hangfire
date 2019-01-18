@@ -21,6 +21,7 @@ using System.Net;
 using System.Text;
 using Hangfire.Common;
 using System.ComponentModel;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Hangfire.Annotations;
@@ -31,7 +32,32 @@ namespace Hangfire.Dashboard
 {
     public class HtmlHelper
     {
+        private static readonly Type DisplayNameType;
+        private static readonly Func<object, string> GetDisplayName;
+
         private readonly RazorPage _page;
+
+        static HtmlHelper()
+        {
+            try
+            {
+#if NETFULL
+                DisplayNameType = typeof(DisplayNameAttribute);
+#else
+                DisplayNameType = Type.GetType("System.ComponentModel.DisplayNameAttribute, System.ComponentModel.Primitives");
+#endif
+                if (DisplayNameType == null) return;
+
+                var p = Expression.Parameter(typeof(object));
+                var converted = Expression.Convert(p, DisplayNameType);
+
+                GetDisplayName = Expression.Lambda<Func<object, string>>(Expression.Call(converted, "get_DisplayName", null), p).Compile();
+            }
+            catch
+            {
+                // Ignoring
+            }
+        }
 
         public HtmlHelper([NotNull] RazorPage page)
         {
@@ -106,20 +132,22 @@ namespace Hangfire.Dashboard
                 return Strings.Common_CannotFindTargetMethod;
             }
 
-#if NETFULL
-            var displayNameAttribute = job.Method.GetCustomAttribute(typeof(DisplayNameAttribute)) as DisplayNameAttribute;
-            if (displayNameAttribute != null && displayNameAttribute.DisplayName != null)
+
+            if (DisplayNameType != null && GetDisplayName != null)
             {
-                try
+                var attribute = job.Method.GetCustomAttribute(DisplayNameType);
+                if (attribute != null)
                 {
-                    return String.Format(displayNameAttribute.DisplayName, job.Args.ToArray());
-                }
-                catch (FormatException)
-                {
-                    return displayNameAttribute.DisplayName;
+                    try
+                    {
+                        return String.Format(GetDisplayName(attribute), job.Args.ToArray());
+                    }
+                    catch (FormatException)
+                    {
+                        return GetDisplayName(attribute);
+                    }
                 }
             }
-#endif
 
             return job.ToString();
         }

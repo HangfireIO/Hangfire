@@ -167,58 +167,60 @@ namespace Hangfire.Storage
                     // be converted to object type.
                     value = argument;
                 }
-                else
+                else 
                 {
-#if NETFULL
-                    try
-                    {
-                        var converter = TypeDescriptor.GetConverter(type);
-
-                        // ReferenceConverter can't correctly convert the serialized
-                        // data. This may happen when FromJson method threw an exception,
-                        // we should rethrow it instead of trying to deserialize.
-                        if (converter.GetType() == typeof(ReferenceConverter))
-                        {
-                            ExceptionDispatchInfo.Capture(jsonException).Throw();
-                            throw;
-                        }
-
-                        value = converter.ConvertFromInvariantString(argument);
-                    }
-                    catch (Exception)
-                    {
-                        ExceptionDispatchInfo.Capture(jsonException).Throw();
-                        throw;
-                    }
-#else
                     DateTime dateTime;
-                    if (type == typeof(DateTime) && ParseDateTimeArgument(argument, out dateTime))
+                    if (ParseDateTimeArgument(argument, out dateTime))
                     {
                         value = dateTime;
                     }
                     else
                     {
+#if NETFULL
+                        try
+                        {
+                            var converter = TypeDescriptor.GetConverter(type);
+
+                            // ReferenceConverter can't correctly convert the serialized
+                            // data. This may happen when FromJson method threw an exception,
+                            // we should rethrow it instead of trying to deserialize.
+                            if (converter.GetType() == typeof(ReferenceConverter))
+                            {
+                                ExceptionDispatchInfo.Capture(jsonException).Throw();
+                                throw;
+                            }
+
+                            value = converter.ConvertFromInvariantString(argument);
+                        }
+                        catch (Exception)
+                        {
+                            ExceptionDispatchInfo.Capture(jsonException).Throw();
+                            throw;
+                        }
+#else
                         throw;
-                    }
 #endif
+                    }
                 }
             }
             return value;
         }
 
+       
         internal static bool ParseDateTimeArgument(string argument, out DateTime value)
         {
             DateTime dateTime;
-            var result = DateTime.TryParse(argument, out dateTime);
+
+            var result = DateTime.TryParseExact(
+                argument,
+                "MM/dd/yyyy HH:mm:ss.ffff",
+                CultureInfo.CurrentCulture,
+                DateTimeStyles.None,
+                out dateTime);
 
             if (!result)
             {
-                result = DateTime.TryParseExact(
-                    argument, 
-                    "MM/dd/yyyy HH:mm:ss.ffff", 
-                    CultureInfo.CurrentCulture,
-                    DateTimeStyles.None, 
-                    out dateTime);
+                result = DateTime.TryParse(argument, null, DateTimeStyles.RoundtripKind, out dateTime);
             }
 
             value = dateTime;

@@ -26,12 +26,12 @@ using Hangfire.States;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Hangfire.Logging;
 
 namespace Hangfire
 {
     public static class HangfireServiceCollectionExtensions
     {
-        private static int _initialized = 0;
 
         public static IServiceCollection AddHangfire(
             [NotNull] this IServiceCollection services,
@@ -39,14 +39,19 @@ namespace Hangfire
         {
             if (services == null) throw new ArgumentNullException(nameof(services));
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            
+            // ===== Configurable services =====
 
-            services.TryAddSingleton(GetInitializedJobStorage);
+            services.TryAddSingletonChecked(_ => JobStorage.Current);
+            services.TryAddSingletonChecked(_ => JobActivator.Current);
+            services.TryAddSingletonChecked(_ => DashboardRoutes.Routes);
+            services.TryAddSingletonChecked<IJobFilterProvider>(_ => JobFilterProviders.Providers);
 
-            services.TryAddSingleton(_ => GlobalConfiguration.Configuration);
-            services.TryAddSingleton(_ => JobActivator.Current);
-            services.TryAddSingleton(_ => DashboardRoutes.Routes);
 
-            services.TryAddSingleton<IJobFilterProvider>(_ => GlobalJobFilters.Filters);
+            // ===== Internal services =====
+
+            // NOTE: these are not required to be checked, because they only depend on already checked configurables,
+            //       are not accessed directly, and can't be affected by customizations made from configuration block.
 
             services.TryAddSingleton<IBackgroundJobFactory>(x => new BackgroundJobFactory(
                 x.GetRequiredService<IJobFilterProvider>()));
@@ -58,62 +63,75 @@ namespace Hangfire
                 x.GetRequiredService<IJobFilterProvider>(),
                 x.GetRequiredService<JobActivator>()));
 
-            services.TryAddSingleton<IBackgroundJobClient>(x => new BackgroundJobClient(
+
+            // ===== Client services =====
+
+            // NOTE: these, on the other hand, need to be double-checked to be sure configuration block was executed, 
+            //       in case of a client-only scenario with all configurables above replaced with custom implementations.
+
+            services.TryAddSingletonChecked<IBackgroundJobClient>(x => new BackgroundJobClient(
                 x.GetRequiredService<JobStorage>(),
                 x.GetRequiredService<IBackgroundJobFactory>(),
                 x.GetRequiredService<IBackgroundJobStateChanger>()));
 
-            services.TryAddSingleton<IRecurringJobManager>(x => new RecurringJobManager(
+            services.TryAddSingletonChecked<IRecurringJobManager>(x => new RecurringJobManager(
                 x.GetRequiredService<JobStorage>(),
                 x.GetRequiredService<IBackgroundJobFactory>()));
 
-            services.TryAddSingleton<Action<IGlobalConfiguration>>(serviceProvider =>
+
+            // IGlobalConfiguration serves as a marker indicating that Hangfire's services 
+            // were added to the service container (checked by IApplicationBuilder extensions).
+            // 
+            // Being a singleton, it also guarantees that the configuration callback will be 
+            // executed just once upon initialization, so there's no need to double-check that.
+            // 
+            // It should never be replaced by another implementation !!!
+            // AddSingleton() will throw an exception if it was already registered
+
+            services.AddSingleton<IGlobalConfiguration>(serviceProvider =>
             {
-                return config =>
+                var configurationInstance = GlobalConfiguration.Configuration;
+
+                // init defaults for log provider and job activator
+                // they may be overwritten by the configuration callback later
+
+                var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+                if (loggerFactory != null)
                 {
-                    if (Interlocked.CompareExchange(ref _initialized, 1, 0) != 0) return;
+                    configurationInstance.UseLogProvider(new AspNetCoreLogProvider(loggerFactory));
+                }
 
-                    var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-                    if (loggerFactory != null)
-                    {
-                        config.UseLogProvider(new AspNetCoreLogProvider(loggerFactory));
-                    }
+                var scopeFactory = serviceProvider.GetService<IServiceScopeFactory>();
+                if (scopeFactory != null)
+                {
+                    configurationInstance.UseActivator(new AspNetCoreJobActivator(scopeFactory));
+                }
 
-                    var scopeFactory = serviceProvider.GetService<IServiceScopeFactory>();
-                    if (scopeFactory != null)
-                    {
-                        config.UseActivator(new AspNetCoreJobActivator(scopeFactory));
-                    }
+                // do configuration inside callback
 
-                    configuration(config);
-                };
+                configuration(configurationInstance);
+                
+                return configurationInstance;
             });
-
+            
             return services;
         }
-
-        private static JobStorage GetInitializedJobStorage(IServiceProvider serviceProvider)
+        
+        private static void TryAddSingletonChecked<T>(
+            [NotNull] this IServiceCollection serviceCollection, 
+            [NotNull] Func<IServiceProvider, T> implementationFactory)
+            where T : class
         {
-            // Non-initialized JobStorage instance may me asked to be resolved, when there 
-            // were no calls to noth UseHangfireServer and UseHangfireDashboard methods, for
-            // example, when application instance only use client methods.
-
-            // To not to introduce almost empty `UseHangfireClient` method, we are using lazy 
-            // initialization here, to run configuration action, when JobStorage instance is
-            // being resolved as a result of IBackgroundJobClient interface resolution.
-
-            if (Volatile.Read(ref _initialized) == 0)
+            serviceCollection.TryAddSingleton<T>(serviceProvider =>
             {
-                var configurationInstance = serviceProvider.GetService<IGlobalConfiguration>();
-                var configurationAction = serviceProvider.GetRequiredService<Action<IGlobalConfiguration>>();
+                if (serviceProvider == null) throw new ArgumentNullException(nameof(serviceProvider));
 
-                // This action is guarded against multiple calls itself, so Volatile.Read 
-                // check is enough. In the worst case, only two additional services will
-                // be resolved, that's not a problem.
-                configurationAction(configurationInstance);
-            }
+                // ensure the configuration was performed
+                serviceProvider.GetRequiredService<IGlobalConfiguration>();
 
-            return JobStorage.Current;
+                return implementationFactory(serviceProvider);
+            });
         }
+
     }
 }

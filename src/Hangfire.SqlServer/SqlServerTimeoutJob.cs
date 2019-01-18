@@ -9,7 +9,7 @@ namespace Hangfire.SqlServer
 {
     internal class SqlServerTimeoutJob : IFetchedJob
     {
-        private static readonly ILog Logger = LogProvider.GetLogger(typeof(SqlServerTimeoutJob));
+        private readonly ILog _logger = LogProvider.GetLogger(typeof(SqlServerTimeoutJob));
 
         private readonly object _syncRoot = new object();
         private readonly SqlServerStorage _storage;
@@ -49,7 +49,7 @@ namespace Hangfire.SqlServer
         {
             lock (_syncRoot)
             {
-                _storage.UseConnection(connection =>
+                _storage.UseConnection(null, connection =>
                 {
                     connection.Execute(
                         $"delete from {_storage.SchemaName}.JobQueue where Id = @id",
@@ -65,7 +65,7 @@ namespace Hangfire.SqlServer
         {
             lock (_syncRoot)
             {
-                _storage.UseConnection(connection =>
+                _storage.UseConnection(null, connection =>
                 {
                     connection.Execute(
                         $"update {_storage.SchemaName}.JobQueue set FetchedAt = null where Id = @id",
@@ -101,7 +101,7 @@ namespace Hangfire.SqlServer
 
                 try
                 {
-                    _storage.UseConnection(connection =>
+                    _storage.UseConnection(null, connection =>
                     {
                         connection.Execute(
                             $"update {_storage.SchemaName}.JobQueue set FetchedAt = getutcdate() where Id = @id",
@@ -109,11 +109,11 @@ namespace Hangfire.SqlServer
                             commandTimeout: _storage.CommandTimeout);
                     });
 
-                    Logger.Trace($"Keep-alive query for message {Id} sent");
+                    _logger.Trace($"Keep-alive query for message {Id} sent");
                 }
                 catch (Exception ex)
                 {
-                    Logger.DebugException($"Unable to execute keep-alive query for message {Id}", ex);
+                    _logger.DebugException($"Unable to execute keep-alive query for message {Id}", ex);
                 }
             }
         }

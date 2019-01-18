@@ -27,6 +27,7 @@ namespace Hangfire
             AppPath = "/";
             Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
             StatsPollingInterval = 2000;
+            DisplayStorageConnectionString = true;
         }
 
         /// <summary>
@@ -45,5 +46,7 @@ namespace Hangfire
         /// The interval the /stats endpoint should be polled with.
         /// </summary>
         public int StatsPollingInterval { get; set; }
+
+        public bool DisplayStorageConnectionString { get; set; }
     }
 }

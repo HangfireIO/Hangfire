@@ -4,6 +4,7 @@
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @using Hangfire.Dashboard.Resources
+@using Hangfire.States
 @using Hangfire.Storage
 @inherits RazorPage
 @{
@@ -23,7 +24,7 @@
 	    if (storageConnection != null)
 	    {
 	        pager = new Pager(from, perPage, storageConnection.GetRecurringJobCount());
-	        recurringJobs = storageConnection.GetRecurringJobs(pager.FromRecord, pager.FromRecord + pager.RecordsPerPage);
+	        recurringJobs = storageConnection.GetRecurringJobs(pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
 	    }
 	    else
 	    {
@@ -153,7 +154,7 @@
                                             if (!String.IsNullOrEmpty(job.LastJobId))
                                             {
                                                 <a href="@Url.JobDetails(job.LastJobId)">
-                                                    <span class="label label-default label-hover" style="@($"background-color: {JobHistoryRenderer.GetForegroundStateColor(job.LastJobState)};")">
+                                                    <span class="label label-default label-hover" style="@($"background-color: {JobHistoryRenderer.GetForegroundStateColor(job.LastJobState ?? EnqueuedState.StateName)};")">
                                                         @Html.RelativeTime(job.LastExecution.Value)
                                                     </span>
                                                 </a>

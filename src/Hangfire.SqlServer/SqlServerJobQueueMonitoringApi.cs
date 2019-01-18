@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
 #if NETFULL
 using System.Transactions;
@@ -38,7 +39,7 @@ namespace Hangfire.SqlServer
         private readonly object _cacheLock = new object();
 
         private List<string> _queuesCache = new List<string>();
-        private DateTime _cacheUpdated;
+        private Stopwatch _cacheUpdated;
 
         public SqlServerJobQueueMonitoringApi([NotNull] SqlServerStorage storage)
         {
@@ -52,15 +53,15 @@ namespace Hangfire.SqlServer
 
             lock (_cacheLock)
             {
-                if (_queuesCache.Count == 0 || _cacheUpdated.Add(QueuesCacheTimeout) < DateTime.UtcNow)
+                if (_queuesCache.Count == 0 || _cacheUpdated.Elapsed > QueuesCacheTimeout)
                 {
-                    var result = _storage.UseConnection(connection =>
+                    var result = _storage.UseConnection(null, connection =>
                     {
                         return connection.Query(sqlQuery, commandTimeout: _storage.CommandTimeout).Select(x => (string) x.Queue).ToList();
                     });
 
                     _queuesCache = result;
-                    _cacheUpdated = DateTime.UtcNow;
+                    _cacheUpdated = Stopwatch.StartNew();
                 }
 
                 return _queuesCache.ToList();
@@ -77,7 +78,7 @@ $@"select r.JobId from (
 ) as r
 where r.row_num between @start and @end";
 
-            return _storage.UseConnection(connection =>
+            return _storage.UseConnection(null, connection =>
             {
                 // TODO: Remove cast to `int` to support `bigint`.
                 return connection.Query<JobIdDto>(
@@ -100,7 +101,7 @@ select r.JobId from (
 ) as r
 where r.row_num between @start and @end";
 
-            return _storage.UseConnection(connection =>
+            return _storage.UseConnection(null, connection =>
             {
                 // TODO: Remove cast to `int` to support `bigint`.
                 return connection.Query<JobIdDto>(
@@ -124,7 +125,7 @@ from (
     where Queue = @queue
 ) q";
 
-            return _storage.UseConnection(connection =>
+            return _storage.UseConnection(null, connection =>
             {
                 var result = connection.Query(sqlQuery, new { queue = queue }).Single();
 
