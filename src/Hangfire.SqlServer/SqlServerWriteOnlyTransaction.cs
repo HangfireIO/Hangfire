@@ -44,6 +44,7 @@ namespace Hangfire.SqlServer
         private readonly SortedDictionary<string, List<Tuple<string, SqlParameter[]>>> _hashCommands = new SortedDictionary<string, List<Tuple<string, SqlParameter[]>>>();
         private readonly SortedDictionary<string, List<Tuple<string, SqlParameter[]>>> _listCommands = new SortedDictionary<string, List<Tuple<string, SqlParameter[]>>>();
         private readonly SortedDictionary<string, List<Tuple<string, SqlParameter[]>>> _setCommands = new SortedDictionary<string, List<Tuple<string, SqlParameter[]>>>();
+        private readonly SortedDictionary<string, List<Tuple<string, SqlParameter[]>>> _queueCommands = new SortedDictionary<string, List<Tuple<string, SqlParameter[]>>>();
 
         public SqlServerWriteOnlyTransaction([NotNull] SqlServerStorage storage, Func<DbConnection> dedicatedConnectionFunc)
         {
@@ -66,6 +67,7 @@ namespace Hangfire.SqlServer
                     AppendBatch(_hashCommands, commandBatch);
                     AppendBatch(_listCommands, commandBatch);
                     AppendBatch(_setCommands, commandBatch);
+                    AppendBatch(_queueCommands, commandBatch);
 
                     commandBatch.Connection = connection;
                     commandBatch.Transaction = transaction;
@@ -147,17 +149,26 @@ values (@jobId, @name, @reason, @createdAt, @data)";
             var provider = _storage.QueueProviders.GetProvider(queue);
             var persistentQueue = provider.GetJobQueue();
 
-            _queueCommandQueue.Enqueue((connection, transaction) => persistentQueue.Enqueue(
-                connection,
-#if !FEATURE_TRANSACTIONSCOPE
-                transaction,
-#endif
-                queue,
-                jobId));
-
             if (persistentQueue.GetType() == typeof(SqlServerJobQueue))
             {
+                AddCommand(
+                    _queueCommands,
+                    queue,
+                    $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)",
+                    new SqlParameter("@jobId", jobId),
+                    new SqlParameter("@queue", queue));
+
                 _afterCommitCommandQueue.Enqueue(() => SqlServerJobQueue.NewItemInQueueEvent.Set());
+            }
+            else
+            {
+                _queueCommandQueue.Enqueue((connection, transaction) => persistentQueue.Enqueue(
+                    connection,
+#if !FEATURE_TRANSACTIONSCOPE
+                    transaction,
+#endif
+                    queue,
+                    jobId));
             }
         }
 
