@@ -78,7 +78,7 @@ namespace Hangfire.Server
         /// class with default background job factory.
         /// </summary>
         public RecurringJobScheduler()
-            : this(new BackgroundJobFactory(GlobalJobFilters.Filters), new StateMachine(GlobalJobFilters.Filters))
+            : this(new BackgroundJobFactory(JobFilterProviders.Providers), new StateMachine(JobFilterProviders.Providers))
         {
         }
         
