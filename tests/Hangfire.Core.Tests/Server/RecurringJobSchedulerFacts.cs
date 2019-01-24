@@ -359,6 +359,69 @@ namespace Hangfire.Core.Tests.Server
             _stateMachine.Verify(x => x.ApplyState(It.IsAny<ApplyStateContext>()), Times.Never);
         }
 
+        [Fact]
+        public void Execute_AcquiresDistributedLock_ForEachRecurringJob()
+        {
+            var scheduler = CreateScheduler();
+
+            scheduler.Execute(_context.Object);
+
+            _connection.Verify(x => x.AcquireDistributedLock("lock:recurring-job:recurring-job-id", It.IsAny<TimeSpan>()));
+        }
+
+        [Fact]
+        public void Execute_SchedulesNextExecution_AfterCreatingAJob()
+        {
+            // Arrange
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _stateMachine.Verify(x => x.ApplyState(It.IsAny<ApplyStateContext>()));
+
+            _transaction.Verify(x => x.SetRangeInHash(
+                $"recurring-job:{RecurringJobId}",
+                It.Is<Dictionary<string, string>>(rj =>
+                    rj.ContainsKey("NextExecution") && 
+                    rj["NextExecution"] == JobHelper.SerializeDateTime(_nowInstant.AddMinutes(1)))));
+
+            _transaction.Verify(x => x.AddToSet(
+                "recurring-jobs", 
+                "recurring-job-id", 
+                JobHelper.ToTimestamp(_nowInstant.AddMinutes(1))));
+
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void Execute_FixedNextExecution_WhenItsNotATimeToRunAJob()
+        {
+            // Arrange
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddMinutes(1));
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _stateMachine.Verify(x => x.ApplyState(It.IsAny<ApplyStateContext>()), Times.Never);
+
+            _transaction.Verify(x => x.SetRangeInHash(
+                $"recurring-job:{RecurringJobId}",
+                It.Is<Dictionary<string, string>>(rj =>
+                    rj.ContainsKey("NextExecution") &&
+                    rj["NextExecution"] == JobHelper.SerializeDateTime(_nowInstant.AddMinutes(1)))));
+
+            _transaction.Verify(x => x.AddToSet(
+                "recurring-jobs",
+                "recurring-job-id",
+                JobHelper.ToTimestamp(_nowInstant.AddMinutes(1))));
+
+            _transaction.Verify(x => x.Commit());
+        }
+
         private RecurringJobScheduler CreateScheduler(DateTime? lastExecution = null)
         {
             var scheduler = new RecurringJobScheduler(
