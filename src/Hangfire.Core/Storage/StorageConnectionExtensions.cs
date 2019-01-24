@@ -36,6 +36,17 @@ namespace Hangfire.Storage
                 timeout);
         }
 
+        public static IDisposable AcquireDistributedRecurringJobLock(
+            [NotNull] this IStorageConnection connection,
+            [NotNull] string recurringJobId,
+            TimeSpan timeout)
+        {
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
+
+            return connection.AcquireDistributedLock($"lock:recurring-job:{recurringJobId}", timeout);
+        }
+
         public static long GetRecurringJobCount([NotNull] this JobStorageConnection connection)
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));

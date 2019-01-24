@@ -15,7 +15,7 @@ namespace Hangfire.Core.Tests.Server
 {
     public class RecurringJobSchedulerFacts
     {
-        private const string RecurringJobId = "recurring-job-id";
+        /*private const string RecurringJobId = "recurring-job-id";
 
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
@@ -383,6 +383,6 @@ namespace Hangfire.Core.Tests.Server
             }
 
             return scheduler;
-        }
+        }*/
     }
 }
