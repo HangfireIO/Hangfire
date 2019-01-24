@@ -57,7 +57,7 @@ namespace Hangfire.Storage
         {
             try
             {
-                var type = System.Type.GetType(Type, throwOnError: true, ignoreCase: true);
+                var type = System.Type.GetType(Type, throwOnError: true, ignoreCase: false);
                 var parameterTypes = JsonConvert.DeserializeObject<Type[]>(ParameterTypes, SerializerSettings);
                 var method = type.GetNonOpenMatchingMethod(Method, parameterTypes);
                 
