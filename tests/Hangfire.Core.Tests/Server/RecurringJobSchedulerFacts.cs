@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using ReferencedCronos::Cronos;
 using Hangfire.Client;
 using Hangfire.Common;
@@ -15,13 +16,12 @@ namespace Hangfire.Core.Tests.Server
 {
     public class RecurringJobSchedulerFacts
     {
-        /*private const string RecurringJobId = "recurring-job-id";
+        private const string RecurringJobId = "recurring-job-id";
 
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
         private readonly Dictionary<string, string> _recurringJob;
         private readonly Func<DateTime> _nowInstantFactory;
-        private readonly Mock<IThrottler> _throttler;
         private readonly BackgroundProcessContextMock _context;
         private readonly Mock<IBackgroundJobFactory> _factory;
         private readonly Mock<IStateMachine> _stateMachine;
@@ -35,8 +35,7 @@ namespace Hangfire.Core.Tests.Server
         public RecurringJobSchedulerFacts()
         {
             _context = new BackgroundProcessContextMock();
-
-            _throttler = new Mock<IThrottler>();
+            _context.CancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(1));
 
             // Setting up the successful path
 
@@ -57,8 +56,9 @@ namespace Hangfire.Core.Tests.Server
             _connection = new Mock<IStorageConnection>();
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
 
-            _connection.Setup(x => x.GetAllItemsFromSet("recurring-jobs"))
-                .Returns(new HashSet<string> { RecurringJobId });
+            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, JobHelper.ToTimestamp(_nowInstant)))
+                .Returns(RecurringJobId)
+                .Returns((string)null);
 
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{RecurringJobId}"))
                 .Returns(_recurringJob);
@@ -79,7 +79,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(null, _stateMachine.Object, _nowInstantFactory, _throttler.Object));
+                () => new RecurringJobScheduler(null, _stateMachine.Object, _nowInstantFactory));
 
             Assert.Equal("factory", exception.ParamName);
         }
@@ -89,7 +89,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(_factory.Object, null, _nowInstantFactory, _throttler.Object));
+                () => new RecurringJobScheduler(_factory.Object, null, _nowInstantFactory));
             
             Assert.Equal("stateMachine", exception.ParamName);
         }
@@ -99,19 +99,9 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(_factory.Object, _stateMachine.Object, null, _throttler.Object));
+                () => new RecurringJobScheduler(_factory.Object, _stateMachine.Object, null));
 
-            Assert.Equal("nowInstantFactory", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenThrottlerIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-// ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(_factory.Object, _stateMachine.Object, _nowInstantFactory, null));
-
-            Assert.Equal("throttler", exception.ParamName);
+            Assert.Equal("nowFactory", exception.ParamName);
         }
 
         [Fact]
@@ -353,7 +343,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_DoesNotUpdateRecurringJob_WhenItIsCorrectAndItWasNotTriggered()
+        public void Execute_DoesNotEnqueueRecurringJob_WhenItIsCorrectAndItWasNotTriggered()
         {
             // Arrange
             _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddMinutes(1));
@@ -366,7 +356,7 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
             
             // Assert
-            _transaction.Verify(x => x.Commit(), Times.Never);
+            _stateMachine.Verify(x => x.ApplyState(It.IsAny<ApplyStateContext>()), Times.Never);
         }
 
         private RecurringJobScheduler CreateScheduler(DateTime? lastExecution = null)
@@ -374,8 +364,7 @@ namespace Hangfire.Core.Tests.Server
             var scheduler = new RecurringJobScheduler(
                 _factory.Object,
                 _stateMachine.Object,
-                _nowInstantFactory,
-                _throttler.Object);
+                _nowInstantFactory);
 
             if (lastExecution.HasValue)
             {
@@ -383,6 +372,6 @@ namespace Hangfire.Core.Tests.Server
             }
 
             return scheduler;
-        }*/
+        }
     }
 }

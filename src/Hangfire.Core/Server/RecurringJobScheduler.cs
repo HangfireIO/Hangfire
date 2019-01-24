@@ -169,7 +169,7 @@ namespace Hangfire.Server
                     foreach (var recurringJobId in recurringJobIds)
                     {
                         if (context.IsShutdownRequested) return false;
-                        EnqueueBackgroundJob(context, connection, recurringJobId, now);
+                        TryEnqueueBackgroundJob(context, connection, recurringJobId, now);
                     }
                 }
                 else
@@ -184,12 +184,30 @@ namespace Hangfire.Server
                         var recurringJobId = connection.GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp);
                         if (recurringJobId == null) return false;
 
-                        EnqueueBackgroundJob(context, connection, recurringJobId, now);
+                        TryEnqueueBackgroundJob(context, connection, recurringJobId, now);
                     }
                 }
 
                 return true;
             });
+        }
+
+        private void TryEnqueueBackgroundJob(
+            BackgroundProcessContext context,
+            IStorageConnection connection,
+            string recurringJobId,
+            DateTime now)
+        {
+            try
+            {
+                EnqueueBackgroundJob(context, connection, recurringJobId, now);
+            }
+            catch (JobLoadException ex)
+            {
+                _logger.WarnException(
+                    $"Recurring job '{recurringJobId}' can not be scheduled due to job load exception.",
+                    ex);
+            }
         }
 
         private void EnqueueBackgroundJob(
@@ -215,14 +233,23 @@ namespace Hangfire.Server
 
                 try
                 {
-                    var nextExecution = recurringJob.ContainsKey("NextExecution")
-                        ? JobHelper.DeserializeNullableDateTime(recurringJob["NextExecution"])
-                        : null;
-
                     var changedFields = new Dictionary<string, string>();
                     var timeZone = recurringJob.ContainsKey("TimeZoneId")
                         ? TimeZoneInfo.FindSystemTimeZoneById(recurringJob["TimeZoneId"])
                         : TimeZoneInfo.Utc;
+
+                    var nextExecution = recurringJob.ContainsKey("NextExecution")
+                        ? JobHelper.DeserializeNullableDateTime(recurringJob["NextExecution"])
+                        : null;
+
+                    if (!nextExecution.HasValue)
+                    {
+                        var lastExecution = GetLastExecution(recurringJob, now);
+                        nextExecution = CronExpression.Parse(recurringJob["Cron"]).GetNextOccurrence(
+                            lastExecution,
+                            timeZone,
+                            inclusive: false);
+                    }
 
                     BackgroundJob backgroundJob = null;
                     EnqueuedState state = null;
@@ -346,6 +373,31 @@ namespace Hangfire.Server
             }
 
             return batchingAvailable;
+        }
+
+        private static DateTime GetLastExecution(IReadOnlyDictionary<string, string> recurringJob, DateTime nowInstant)
+        {
+            DateTime lastInstant;
+
+            if (recurringJob.ContainsKey("LastExecution"))
+            {
+                lastInstant = JobHelper.DeserializeDateTime(recurringJob["LastExecution"]);
+            }
+            else if (recurringJob.ContainsKey("CreatedAt"))
+            {
+                lastInstant = JobHelper.DeserializeDateTime(recurringJob["CreatedAt"]);
+            }
+            else if (recurringJob.ContainsKey("NextExecution"))
+            {
+                lastInstant = JobHelper.DeserializeDateTime(recurringJob["NextExecution"]);
+                lastInstant = lastInstant.AddSeconds(-1);
+            }
+            else
+            {
+                lastInstant = nowInstant.AddSeconds(-1);
+            }
+
+            return lastInstant;
         }
     }
 }
