@@ -48,6 +48,7 @@ namespace Hangfire.Dashboard
         public Tuple<IDashboardDispatcher, Match> FindDispatcher(string path)
         {
             if (path.Length == 0) path = "/";
+            else if (path.Length > 1) path = path.TrimEnd('/');
 
             foreach (var dispatcher in _dispatchers)
             {
