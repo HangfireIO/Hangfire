@@ -27,6 +27,7 @@ using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
+using Newtonsoft.Json;
 
 namespace Hangfire.Storage
 {
@@ -60,8 +61,7 @@ namespace Hangfire.Storage
             try
             {
                 var type = typeResolver(Type);
-                var serializedParameterTypes = JobHelper.FromJson<string[]>(ParameterTypes);
-                var parameterTypes = serializedParameterTypes?.Select(typeResolver).ToArray();
+                var parameterTypes = GetParameterTypes(typeResolver);
                 var method = type.GetNonOpenMatchingMethod(Method, parameterTypes);
                 
                 if (method == null)
@@ -88,6 +88,19 @@ namespace Hangfire.Storage
                 job.Method.Name,
                 JobHelper.ToJson(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()),
                 JobHelper.ToJson(SerializeArguments(job.Args)));
+        }
+
+        private Type[] GetParameterTypes(Func<string, Type> typeResolver)
+        {
+            try
+            {
+                var parameterTypes = JobHelper.FromJson<string[]>(ParameterTypes);
+                return parameterTypes?.Select(typeResolver).ToArray();
+            }
+            catch (JsonSerializationException)
+            {
+                return JobHelper.FromJson<Type[]>(ParameterTypes);
+            }
         }
 
         internal static string[] SerializeArguments(IReadOnlyCollection<object> arguments)
