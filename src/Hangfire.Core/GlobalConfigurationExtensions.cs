@@ -21,6 +21,7 @@ using Hangfire.Dashboard;
 using Hangfire.Dashboard.Pages;
 using Hangfire.Logging;
 using Hangfire.Logging.LogProviders;
+using Hangfire.Storage;
 
 namespace Hangfire
 {
@@ -156,6 +157,30 @@ namespace Hangfire
             HomePage.Metrics.Add(metric);
 
             return configuration;
+        }
+
+        public static IGlobalConfiguration UseTypeResolver(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] Func<string, Type> typeResolver)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            InvocationData.SetTypeResolver(typeResolver);
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseDefaultTypeResolver(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseTypeResolver(null);
+        }
+
+        public static IGlobalConfiguration UseIgnoredAssemblyVersionTypeResolver(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseTypeResolver(InvocationData.IgnoredAssemblyVersionTypeResolver);
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]

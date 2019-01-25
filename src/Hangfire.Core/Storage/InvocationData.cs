@@ -15,13 +15,16 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Text.RegularExpressions;
 using System.Threading;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
 
@@ -29,6 +32,13 @@ namespace Hangfire.Storage
 {
     public class InvocationData
     {
+        private static Func<string, Type> _typeResolver;
+
+        public static void SetTypeResolver([CanBeNull] Func<string, Type> typeResolver)
+        {
+            Volatile.Write(ref _typeResolver, typeResolver);
+        }
+
         public InvocationData(
             string type, string method, string parameterTypes, string arguments)
         {
@@ -45,20 +55,23 @@ namespace Hangfire.Storage
 
         public Job Deserialize()
         {
+            var typeResolver = Volatile.Read(ref _typeResolver) ?? DefaultTypeResolver;
+
             try
             {
-                var type = System.Type.GetType(Type, throwOnError: true, ignoreCase: true);
-                var parameterTypes = JobHelper.FromJson<Type[]>(ParameterTypes);
+                var type = typeResolver(Type);
+                var serializedParameterTypes = JobHelper.FromJson<string[]>(ParameterTypes);
+                var parameterTypes = serializedParameterTypes?.Select(typeResolver).ToArray();
                 var method = type.GetNonOpenMatchingMethod(Method, parameterTypes);
                 
                 if (method == null)
                 {
                     throw new InvalidOperationException(
-                        $"The type `{type.FullName}` does not contain a method with signature `{Method}({String.Join(", ", parameterTypes.Select(x => x.Name))})`");
+                        $"The type `{type.FullName}` does not contain a method with signature `{Method}({String.Join(", ", parameterTypes?.Select(x => x.Name) ?? new string[0])})`");
                 }
 
                 var serializedArguments = JobHelper.FromJson<string[]>(Arguments);
-                var arguments = DeserializeArguments(method, serializedArguments);
+                var arguments = serializedArguments != null ? DeserializeArguments(method, serializedArguments) : new object[0];
 
                 return new Job(type, method, arguments);
             }
@@ -225,6 +238,28 @@ namespace Hangfire.Storage
 
             value = dateTime;
             return result;
+        }
+
+        private static readonly Regex VersionRegex = new Regex(@", Version=\d+.\d+.\d+.\d+", RegexOptions.Compiled);
+        private static readonly Regex CultureRegex = new Regex(@", Culture=\w+", RegexOptions.Compiled);
+        private static readonly Regex PublicKeyTokenRegex = new Regex(@", PublicKeyToken=\w+", RegexOptions.Compiled);
+        private static readonly ConcurrentDictionary<string, Type> TypeCache = new ConcurrentDictionary<string, Type>();
+
+        internal static Type IgnoredAssemblyVersionTypeResolver(string typeName)
+        {
+            return TypeCache.GetOrAdd(typeName, value =>
+            {
+                value = VersionRegex.Replace(value, String.Empty);
+                value = CultureRegex.Replace(value, String.Empty);
+                value = PublicKeyTokenRegex.Replace(value, String.Empty);
+
+                return DefaultTypeResolver(value);
+            });
+        }
+
+        private static Type DefaultTypeResolver(string typeName)
+        {
+            return System.Type.GetType(typeName, throwOnError: true, ignoreCase: true);
         }
     }
 }
