@@ -89,15 +89,24 @@ namespace Hangfire.Core.Tests.Storage
         [Fact]
         public void Deserialize_HandlesFullyQualifiedAssemblyNames_OfNonSignedAssembly_OfDifferentVersion()
         {
-            var serializedData = new InvocationData(
-                "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests, Version=9.9.9.9, Culture=neutral, PublicKeyToken=null",
-                "Empty",
-                null,
-                null);
+            try
+            {
+                GlobalConfiguration.Configuration.UseIgnoredAssemblyVersionTypeResolver();
 
-            var job = serializedData.Deserialize();
+                var serializedData = new InvocationData(
+                    "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests, Version=9.9.9.9, Culture=neutral, PublicKeyToken=null",
+                    "Empty",
+                    null,
+                    null);
 
-            Assert.Equal(job.Type, typeof(InvocationDataFacts));
+                var job = serializedData.Deserialize();
+
+                Assert.Equal(job.Type, typeof(InvocationDataFacts));
+            }
+            finally
+            {
+                GlobalConfiguration.Configuration.UseDefaultTypeResolver();
+            }
         }
 
         [Fact]
