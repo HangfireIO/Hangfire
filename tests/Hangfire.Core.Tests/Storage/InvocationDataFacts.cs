@@ -164,7 +164,7 @@ namespace Hangfire.Core.Tests.Storage
                 "System.String, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
                 "IsNullOrEmpty",
                 "[\"System.String, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e\"]",
-                "[\"hello\"]");
+                JobHelper.ToJson(new[] { "hello" }));
 
             var job = serializedData.Deserialize();
 
