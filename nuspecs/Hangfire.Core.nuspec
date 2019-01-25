@@ -13,6 +13,14 @@
     <copyright>Copyright © 2013-2018 Sergey Odinokov</copyright>
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
+
+1.6.22
+• Added – Ability to use custom type resolvers to modify the type de-serialization logic.
+• Fixed – `JobLoadException` when processing jobs in .NET Framework, which were created in .NET Core.
+• Fixed – `JobLoadException` when jobs reside in a signed assembly and a new version is deployed.
+• Fixed – Don't produce extra logging message when there's an exception in a worker.
+• Fixed – Ensure form values are properly returned when there are different versions of Microsoft.Owin (by @DC-jc).
+• Fixed – Dashboard fails with 404 "Not Found" error if there's a trailing slash for some reason.
     
 1.6.21
 • Fixed – High CPU usage and long response time when accessing Failed jobs page with Linux stack traces.

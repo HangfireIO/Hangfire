@@ -13,6 +13,10 @@
     <copyright>Copyright © 2013 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://www.hangfire.io/blog/
+
+1.6.22
+• Added – Connection factory overload for the `SqlServerStorage` class (by @chinwobble).
+• Fixed – Inability to use package with Azure's managed service identity (by using a connection factory).
     
 1.6.21
 • Fixed – Change locking scheme in the `Connection.SetRangeInHash` method to avoid deadlocks.
