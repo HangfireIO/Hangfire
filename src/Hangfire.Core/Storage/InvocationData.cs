@@ -259,6 +259,7 @@ namespace Hangfire.Storage
 
         private static Type DefaultTypeResolver(string typeName)
         {
+            typeName = typeName.Replace("System.Private.CoreLib", "mscorlib");
             return System.Type.GetType(typeName, throwOnError: true, ignoreCase: true);
         }
     }

@@ -133,7 +133,7 @@ namespace Hangfire.Core.Tests.Storage
                 var serializedData = new InvocationData(
                     "Hangfire.Core.Tests.Storage.InvocationDataFacts+GenericType`1[[System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Hangfire.Core.Tests, Version=9.9.9.9, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
                     "Method",
-                    "[\"System.Int32, mscorlib, Version=9.9.9.9, Culture=neutral, PublicKeyToken=lalalalala\",\"System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e\"]",
+                    "[\"System.Int32, System.Private.CoreLib, Version=9.9.9.9, Culture=neutral, PublicKeyToken=lalalalala\",\"System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e\"]",
                     "[\"123\",\"456\"]");
 
                 var job = serializedData.Deserialize();
@@ -146,6 +146,22 @@ namespace Hangfire.Core.Tests.Storage
             {
                 GlobalConfiguration.Configuration.UseDefaultTypeResolver();
             }
+        }
+
+        [Fact]
+        public void Deserialize_HandlesSystemPrivateCoreLib_TypeForwarding()
+        {
+            var serializedData = new InvocationData(
+                "System.String, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+                "IsNullOrEmpty",
+                "[\"System.String, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e\"]",
+                "[\"hello\"]");
+
+            var job = serializedData.Deserialize();
+
+            Assert.Equal(typeof(string), job.Type);
+            Assert.Equal("IsNullOrEmpty", job.Method.Name);
+            Assert.Equal("hello", job.Args[0]);
         }
 
         [Fact]
