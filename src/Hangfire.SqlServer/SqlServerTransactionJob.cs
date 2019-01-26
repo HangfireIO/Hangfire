@@ -67,19 +67,36 @@ namespace Hangfire.SqlServer
         public string JobId { get; }
         public string Queue { get; }
 
-        public void RemoveFromQueue()
+        public void RemoveFromQueue() 
         {
-            lock (_lockObject)
+            lock (_lockObject) 
             {
-                _transaction.Commit();
+                try 
+                {
+                    _transaction.Commit();
+                } 
+                catch 
+                {
+                    // In rare cases, the transaction get's committed prior to RemoveFromQueue
+                    // so Commit() will throw an error.  In that case we dispose the transaction.
+                    _transaction.Dispose();
+                }
             }
         }
 
-        public void Requeue()
+        public void Requeue() 
         {
-            lock (_lockObject)
+            lock (_lockObject) 
             {
-                _transaction.Rollback();
+                try 
+                {
+                    _transaction.Rollback();
+                } 
+                catch {
+                    // In rare cases, the transaction get's committed prior to Requeue
+                    // so Rollback() will throw an error.  In that case we dispose the transaction.
+                    _transaction.Dispose();
+                }
             }
         }
 
@@ -108,7 +125,7 @@ namespace Hangfire.SqlServer
                 {
                     // Connection was closed. So we can't continue to send
                     // keep-alive queries. Unlike for distributed locks,
-                    // there is no any caveats of having this issue for
+                    // there is not any caveats of having this issue for
                     // queues, because Hangfire guarantees only the "at least
                     // once" processing.
                 }

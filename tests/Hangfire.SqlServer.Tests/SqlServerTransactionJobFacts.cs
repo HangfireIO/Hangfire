@@ -82,12 +82,26 @@ namespace Hangfire.SqlServer.Tests
         {
             // Arrange
             var processingJob = CreateFetchedJob("1", "default");
-
+            
             // Act
             processingJob.RemoveFromQueue();
 
             // Assert
             _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact, CleanDatabase]
+        public void RemoveFromQueue_DisposesTheTransaction_WhenTransactionAlreadyCommitted() 
+        {
+            // Arrange
+            _transaction.Setup(x => x.Commit()).Throws(new InvalidOperationException());
+            var processingJob = CreateFetchedJob("1", "default");
+
+            // Act
+            processingJob.RemoveFromQueue();
+
+            // Assert
+            _transaction.Verify(x => x.Dispose());
         }
 
         [Fact, CleanDatabase]
@@ -101,6 +115,20 @@ namespace Hangfire.SqlServer.Tests
 
             // Assert
             _transaction.Verify(x => x.Rollback());
+        }
+
+        [Fact, CleanDatabase]
+        public void Requeue_DisposesTheTransaction_WhenTransactionAlreadyCommitted() 
+        {
+            // Arrange
+            _transaction.Setup(x => x.Rollback()).Throws(new InvalidOperationException());
+            var processingJob = CreateFetchedJob("1", "default");
+
+            // Act
+            processingJob.Requeue();
+
+            // Assert
+            _transaction.Verify(x => x.Dispose());
         }
 
         [Fact, CleanDatabase]

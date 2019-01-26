@@ -117,7 +117,7 @@ namespace Hangfire.Server
                     }
 
                     // Checkpoint #3. Job is in the Processing state. However, there are
-                    // no guarantees that it was performed. We need to re-queue it even
+                    // no guarantees that it was performed. We need to re-queue it even if
                     // it was performed to guarantee that it was performed AT LEAST once.
                     // It will be re-queued after the JobTimeout was expired.
 
@@ -242,7 +242,7 @@ namespace Hangfire.Server
 
                 var result = _performer.Perform(performContext);
                 duration.Stop();
-
+                
                 return new SucceededState(result, (long) latency, duration.ElapsedMilliseconds);
             }
             catch (JobAbortedException)
@@ -258,7 +258,7 @@ namespace Hangfire.Server
                 {
                     Reason = ex.Message
                 };
-            }
+            }   
             catch (Exception ex)
             {
                 if (ex is OperationCanceledException && context.IsShutdownRequested)
