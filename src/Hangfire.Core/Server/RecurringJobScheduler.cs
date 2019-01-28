@@ -242,7 +242,7 @@ namespace Hangfire.Server
                         ? JobHelper.DeserializeNullableDateTime(recurringJob["NextExecution"])
                         : null;
 
-                    if (!nextExecution.HasValue)
+                    if (!nextExecution.HasValue && recurringJob.ContainsKey("Cron"))
                     {
                         var lastExecution = GetLastExecution(recurringJob, now);
                         nextExecution = CronExpression.Parse(recurringJob["Cron"]).GetNextOccurrence(
@@ -375,7 +375,7 @@ namespace Hangfire.Server
             return batchingAvailable;
         }
 
-        private static DateTime GetLastExecution(IReadOnlyDictionary<string, string> recurringJob, DateTime nowInstant)
+        internal static DateTime GetLastExecution(IReadOnlyDictionary<string, string> recurringJob, DateTime nowInstant)
         {
             DateTime lastInstant;
 

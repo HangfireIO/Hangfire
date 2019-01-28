@@ -22,6 +22,7 @@ using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
 using Cronos;
+using Hangfire.Server;
 
 namespace Hangfire
 {
@@ -123,18 +124,22 @@ namespace Hangfire
                     ? JobHelper.DeserializeNullableDateTime(recurringJob["NextExecution"])
                     : null;
 
-                if (!nextExecution.HasValue || nextExecution > now)
+                if (!nextExecution.HasValue)
                 {
-                    var expression = CronExpression.Parse(cronExpression);
-                    var oldExecution = nextExecution;
-                    nextExecution = expression.GetNextOccurrence(now, options.TimeZone, inclusive: true);
+                    var lastExecution = RecurringJobScheduler.GetLastExecution(recurringJob, now);
+                    nextExecution = CronExpression.Parse(cronExpression).GetNextOccurrence(
+                        lastExecution,
+                        options.TimeZone,
+                        inclusive: false);
+                }
 
-                    if (!recurringJob.ContainsKey("NextExecution") || oldExecution != nextExecution)
-                    {
-                        changedFields.Add("NextExecution", nextExecution.HasValue
-                            ? JobHelper.SerializeDateTime(nextExecution.Value)
-                            : String.Empty);
-                    }
+                var serializedNextExecution = nextExecution.HasValue ? JobHelper.SerializeDateTime(nextExecution.Value) : String.Empty;
+
+                if (!recurringJob.ContainsKey("NextExecution") || !recurringJob["NextExecution"].Equals(serializedNextExecution))
+                {
+                    changedFields.Add("NextExecution", nextExecution.HasValue
+                        ? JobHelper.SerializeDateTime(nextExecution.Value)
+                        : String.Empty);
                 }
 
                 if (changedFields.Count > 0)
@@ -186,10 +191,12 @@ namespace Hangfire
                         ? TimeZoneInfo.FindSystemTimeZoneById(recurringJob["TimeZoneId"])
                         : TimeZoneInfo.Utc;
 
-                    var nextExecution = CronExpression.Parse(recurringJob["Cron"]).GetNextOccurrence(
-                        now,
-                        timeZone,
-                        inclusive: false);
+                    var nextExecution = recurringJob.ContainsKey("Cron")
+                        ? CronExpression.Parse(recurringJob["Cron"]).GetNextOccurrence(
+                            now,
+                            timeZone,
+                            inclusive: false)
+                        : null;
 
                     changedFields.Add("LastExecution", JobHelper.SerializeDateTime(now));
                     changedFields.Add("LastJobId", backgroundJob.Id);
