@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Moq;
+using System;
+using System.Data.Common;
 using System.Linq;
 using System.Transactions;
 using Xunit;
@@ -39,6 +41,36 @@ namespace Hangfire.SqlServer.Tests
             var storage = new SqlServerStorage(connection);
 
             Assert.NotNull(storage);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenConnectionFactoryIsNull()
+        {
+            Func<DbConnection> connectionFactory = null;
+
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SqlServerStorage(connectionFactory));
+
+            Assert.Equal("connectionFactory", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenOptionsValueIsNull_WithConnectionFactory()
+        {
+            Func<DbConnection> connectionFactory = ConnectionUtils.CreateConnection;
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SqlServerStorage(connectionFactory, null));
+
+            Assert.Equal("options", exception.ParamName);
+        }
+
+        [Fact]
+        public void CreateAndOpenConnection_UsesConnectionFactory()
+        {
+            var connection = new Mock<DbConnection>();
+            var storage = new SqlServerStorage(() => connection.Object, _options);
+
+            Assert.Same(connection.Object, storage.CreateAndOpenConnection());
         }
 
         [Fact, CleanDatabase(isolationLevel: IsolationLevel.ReadUncommitted)]

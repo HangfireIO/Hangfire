@@ -15,17 +15,20 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
+using Newtonsoft.Json;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
-using System.Text;
-using Newtonsoft.Json;
 
 namespace Hangfire.Storage
 {
@@ -35,9 +38,16 @@ namespace Hangfire.Storage
         {
             TypeNameHandling = TypeNameHandling.None
         };
-        
+
         private static readonly string EmptyArray = "[]";
         private static readonly string[] SystemAssemblyNames = { "mscorlib", "System.Private.CoreLib" };
+
+        private static Func<string, Type> _typeResolver;
+
+        public static void SetTypeResolver([CanBeNull] Func<string, Type> typeResolver)
+        {
+            Volatile.Write(ref _typeResolver, typeResolver);
+        }
 
         public InvocationData(
             string type, string method, string parameterTypes, string arguments)
@@ -55,12 +65,14 @@ namespace Hangfire.Storage
 
         public Job Deserialize()
         {
+            var typeResolver = Volatile.Read(ref _typeResolver) ?? DefaultTypeResolver;
+
             try
             {
-                var type = System.Type.GetType(Type, throwOnError: true, ignoreCase: true);
-                var parameterTypes = JsonConvert.DeserializeObject<Type[]>(ParameterTypes, SerializerSettings);
+                var type = typeResolver(Type);
+                var parameterTypes = GetParameterTypes(typeResolver);
                 var method = type.GetNonOpenMatchingMethod(Method, parameterTypes);
-                
+
                 if (method == null)
                 {
                     throw new InvalidOperationException(
@@ -68,7 +80,7 @@ namespace Hangfire.Storage
                 }
 
                 var serializedArguments = JobHelper.FromJson<string[]>(Arguments);
-                var arguments = DeserializeArguments(method, serializedArguments);
+                var arguments = serializedArguments != null ? DeserializeArguments(method, serializedArguments) : new object[0];
 
                 return new Job(type, method, arguments);
             }
@@ -117,6 +129,21 @@ namespace Hangfire.Storage
             }, SerializerSettings);
         }
 
+        private Type[] GetParameterTypes(Func<string, Type> typeResolver)
+        {
+            if (ParameterTypes == null) return null;
+
+            try
+            {
+                var parameterTypes = JsonConvert.DeserializeObject<string[]>(ParameterTypes, SerializerSettings);
+                return parameterTypes?.Select(typeResolver).ToArray();
+            }
+            catch (JsonSerializationException)
+            {
+                return JsonConvert.DeserializeObject<Type[]>(ParameterTypes, SerializerSettings);
+            }
+        }
+
         internal static string[] SerializeArguments(IReadOnlyCollection<object> arguments)
         {
             var serializedArguments = new List<string>(arguments.Count);
@@ -128,7 +155,7 @@ namespace Hangfire.Storage
                 {
                     if (argument is DateTime)
                     {
-                        value = ((DateTime) argument).ToString("o", CultureInfo.InvariantCulture);
+                        value = ((DateTime)argument).ToString("o", CultureInfo.InvariantCulture);
                     }
                     else if (argument is CancellationToken)
                     {
@@ -201,13 +228,13 @@ namespace Hangfire.Storage
 #endif
             )
             {
-                if (type == typeof (object))
+                if (type == typeof(object))
                 {
                     // Special case for handling object types, because string can not
                     // be converted to object type.
                     value = argument;
                 }
-                else 
+                else
                 {
                     DateTime dateTime;
                     if (ParseDateTimeArgument(argument, out dateTime))
@@ -246,7 +273,7 @@ namespace Hangfire.Storage
             return value;
         }
 
-       
+
         internal static bool ParseDateTimeArgument(string argument, out DateTime value)
         {
             DateTime dateTime;
@@ -273,7 +300,7 @@ namespace Hangfire.Storage
             if (typeNamesBuilder == null) typeNamesBuilder = new StringBuilder();
 
             typeNamesBuilder.Append('[');
-            
+
             for (var i = 0; i < types.Length; i++)
             {
                 typeNamesBuilder.Append(beginTypeDelimiter);
@@ -282,7 +309,7 @@ namespace Hangfire.Storage
 
                 if (i != types.Length - 1) typeNamesBuilder.Append(',');
             }
-            
+
             return typeNamesBuilder.Append(']');
         }
 
@@ -301,6 +328,7 @@ namespace Hangfire.Storage
 
             typeNameBuilder.Append(type.Name);
 
+            // TODO: Serialize backtick and generic type argument count
             if (type.GenericTypeArguments.Length > 0)
             {
                 SerializeTypes(type.GenericTypeArguments, '[', ']', typeNameBuilder);
@@ -316,6 +344,29 @@ namespace Hangfire.Storage
             }
 
             return typeNameBuilder;
+        }
+
+        private static readonly Regex VersionRegex = new Regex(@", Version=\d+.\d+.\d+.\d+", RegexOptions.Compiled);
+        private static readonly Regex CultureRegex = new Regex(@", Culture=\w+", RegexOptions.Compiled);
+        private static readonly Regex PublicKeyTokenRegex = new Regex(@", PublicKeyToken=\w+", RegexOptions.Compiled);
+        private static readonly ConcurrentDictionary<string, Type> TypeCache = new ConcurrentDictionary<string, Type>();
+
+        internal static Type IgnoredAssemblyVersionTypeResolver(string typeName)
+        {
+            return TypeCache.GetOrAdd(typeName, value =>
+            {
+                value = VersionRegex.Replace(value, String.Empty);
+                value = CultureRegex.Replace(value, String.Empty);
+                value = PublicKeyTokenRegex.Replace(value, String.Empty);
+
+                return DefaultTypeResolver(value);
+            });
+        }
+
+        private static Type DefaultTypeResolver(string typeName)
+        {
+            typeName = typeName.Replace("System.Private.CoreLib", "mscorlib");
+            return System.Type.GetType(typeName, throwOnError: true, ignoreCase: true);
         }
 
         private class JobPayload

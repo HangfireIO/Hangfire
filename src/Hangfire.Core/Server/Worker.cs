@@ -138,17 +138,13 @@ namespace Hangfire.Server
                     // Success point. No things must be done after previous command
                     // was succeeded.
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     if (context.IsShutdownRequested)
                     {
                         _logger.Info(String.Format(
                             "Shutdown request requested while processing background job '{0}'. It will be re-queued.",
                             fetchedJob.JobId));
-                    }
-                    else
-                    {
-                        _logger.ErrorException("An exception occurred while processing a job. It will be re-queued.", ex);
                     }
 
                     Requeue(fetchedJob);
