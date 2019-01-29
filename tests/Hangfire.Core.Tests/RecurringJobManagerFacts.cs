@@ -214,6 +214,7 @@ namespace Hangfire.Core.Tests
             var manager = CreateManager();
 
             Assert.Throws<ArgumentNullException>(() => manager.Trigger(null));
+            Assert.False(true);
         }
 
         [Fact]
