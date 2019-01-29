@@ -240,20 +240,30 @@ namespace Hangfire.Core.Tests.Server
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void Execute_DoesNotFail_WhenRecurringJobDoesNotExist(bool useJobStorageConnection)
+        public void Execute_RemovesRecurringJobFromSchedule_WhenHashDoesNotExist(bool useJobStorageConnection)
         {
             // Arrange
             SetupConnection(useJobStorageConnection);
 
             if (useJobStorageConnection)
-                _storageConnection.Setup(x => x.GetAllItemsFromSet(It.IsAny<string>())).Returns(new HashSet<string> { "non-existing-job" });
+                _storageConnection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, JobHelper.ToTimestamp(_nowInstant), It.IsAny<int>()))
+                    .Returns(new List<string> { "non-existing-job" })
+                    .Returns((List<string>)null);
             else
-                _connection.Setup(x => x.GetAllItemsFromSet(It.IsAny<string>())).Returns(new HashSet<string> { "non-existing-job" });
+            {
+                _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, JobHelper.ToTimestamp(_nowInstant)))
+                    .Returns("non-existing-job")
+                    .Returns((string)null);
+                }
 
             var scheduler = CreateScheduler();
 
-            // Act & Assert (Does not throw)
+            // Act
             scheduler.Execute(_context.Object);
+
+            // Assert
+            _transaction.Verify(x => x.RemoveFromSet("recurring-jobs", "non-existing-job"));
+            _transaction.Verify(x => x.Commit());
         }
 
         [Theory]
