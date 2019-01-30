@@ -110,7 +110,7 @@
                         xAxes: [{ type: 'time', time: { unit: 'hour', tooltipFormat: 'll HH:mm' } }],
                         yAxes: [{ ticks: { maxTicksLimit: 6 }, stacked: true }]
                     },
-                    elements: { point: { radius: 0 } },
+                    elements: { line: { tension: 0 }, point: { radius: 0 } },
                     legend: { display: false },
                     tooltips: { mode: 'index', intersect: false }
                 }
