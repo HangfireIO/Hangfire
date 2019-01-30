@@ -168,7 +168,7 @@ WriteLiteral("    <link rel=\"stylesheet\" href=\"");
 
             
             #line 26 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(Url.To($"/css{version.Major}{version.Minor}{version.Build}"));
+                            Write(Url.To($"/css{version.Major}{version.Minor}{version.Build}0"));
 
             
             #line default
@@ -369,7 +369,7 @@ WriteLiteral("\">\r\n        </div>\r\n\r\n        <script src=\"");
 
             
             #line 87 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                Write(Url.To($"/js{version.Major}{version.Minor}{version.Build}"));
+                Write(Url.To($"/js{version.Major}{version.Minor}{version.Build}0"));
 
             
             #line default
