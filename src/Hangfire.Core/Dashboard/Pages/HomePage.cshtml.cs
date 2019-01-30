@@ -167,12 +167,13 @@ WriteLiteral("        <h3>");
             
             #line default
             #line hidden
-WriteLiteral("</h3>\r\n        <div id=\"realtimeGraph\" data-succeeded=\"");
+WriteLiteral("</h3>\r\n        <canvas width=\"1140\" height=\"250\" id=\"realtimeGraph\" data-succeede" +
+"d=\"");
 
 
             
             #line 44 "..\..\Dashboard\Pages\HomePage.cshtml"
-                                           Write(Statistics.Succeeded);
+                                                                        Write(Statistics.Succeeded);
 
             
             #line default
@@ -182,7 +183,7 @@ WriteLiteral("\" data-failed=\"");
 
             
             #line 44 "..\..\Dashboard\Pages\HomePage.cshtml"
-                                                                               Write(Statistics.Failed);
+                                                                                                            Write(Statistics.Failed);
 
             
             #line default
@@ -207,7 +208,7 @@ WriteLiteral("\"\r\n             data-failed-string=\"");
             
             #line default
             #line hidden
-WriteLiteral(@"""></div>
+WriteLiteral(@"""></canvas>
         <div style=""display: none;"">
             <span data-metric=""succeeded:count""></span>
             <span data-metric=""failed:count""></span>
@@ -276,7 +277,8 @@ WriteLiteral("\r\n        </h3>\r\n\r\n");
             
             #line default
             #line hidden
-WriteLiteral("            <div id=\"historyGraph\"\r\n                 data-succeeded=\"");
+WriteLiteral("            <canvas width=\"1140\" height=\"250\" id=\"historyGraph\"\r\n                " +
+" data-succeeded=\"");
 
 
             
@@ -316,7 +318,7 @@ WriteLiteral("\"\r\n                 data-failed-string=\"");
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n            </div>\r\n");
+WriteLiteral("\">\r\n            </canvas>\r\n");
 
 
             
