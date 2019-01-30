@@ -255,6 +255,29 @@ select scope_identity() as Id";
             });
         }
 
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void AddToQueue_EnqueuesAJobDirectly_WhenDefaultQueueProviderIsUsed(bool useBatching)
+        {
+            // We are relying on the fact that SqlServerJobQueue.Enqueue method will throw with a negative
+            // timeout. If we don't see this exception, and if the record is inserted, then everything is fine.
+            var options = new SqlServerStorageOptions { PrepareSchemaIfNecessary = false, CommandTimeout = TimeSpan.FromSeconds(-5) };
+            _queueProviders.Add(
+                new SqlServerJobQueueProvider(new Mock<SqlServerStorage>("connection=false;", options).Object, options),
+                new [] { "default" });
+
+            UseConnection(sql =>
+            {
+                Commit(sql, x => x.AddToQueue("default", "1"), useBatching);
+
+                var record = sql.Query("select * from HangFire.JobQueue").Single();
+                Assert.Equal("1", record.JobId.ToString());
+                Assert.Equal("default", record.Queue);
+                Assert.Null(record.FetchedAt);
+            });
+        }
+
         private static dynamic GetTestJob(IDbConnection connection, string jobId)
         {
             return connection
