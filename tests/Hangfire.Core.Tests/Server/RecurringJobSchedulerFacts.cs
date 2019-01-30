@@ -28,6 +28,7 @@ namespace Hangfire.Core.Tests.Server
         private readonly BackgroundJobMock _backgroundJobMock;
 
         private static readonly string _expressionString = "* * * * *";
+        private static readonly TimeSpan _delay = TimeSpan.FromTicks(1);
         private readonly CronExpression _cronExpression = CronExpression.Parse(_expressionString);
         private readonly DateTime _nowInstant = new DateTime(2017, 03, 30, 15, 30, 0, DateTimeKind.Utc);
         private readonly DateTime _nextInstant;
@@ -90,7 +91,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(null, _stateMachine.Object, _nowInstantFactory));
+                () => new RecurringJobScheduler(null, _stateMachine.Object, _delay, _nowInstantFactory));
 
             Assert.Equal("factory", exception.ParamName);
         }
@@ -100,7 +101,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(_factory.Object, null, _nowInstantFactory));
+                () => new RecurringJobScheduler(_factory.Object, null, _delay, _nowInstantFactory));
             
             Assert.Equal("stateMachine", exception.ParamName);
         }
@@ -110,7 +111,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(_factory.Object, _stateMachine.Object, null));
+                () => new RecurringJobScheduler(_factory.Object, _stateMachine.Object, _delay, null));
 
             Assert.Equal("nowFactory", exception.ParamName);
         }
@@ -541,6 +542,7 @@ namespace Hangfire.Core.Tests.Server
             var scheduler = new RecurringJobScheduler(
                 _factory.Object,
                 _stateMachine.Object,
+                _delay,
                 _nowInstantFactory);
 
             if (lastExecution.HasValue)

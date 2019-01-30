@@ -70,6 +70,7 @@ namespace Hangfire.Server
         private readonly IBackgroundJobFactory _factory;
         private readonly IStateMachine _stateMachine;
         private readonly Func<DateTime> _nowFactory;
+        private readonly TimeSpan _pollingDelay;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RecurringJobScheduler"/>
@@ -92,7 +93,7 @@ namespace Hangfire.Server
         public RecurringJobScheduler(
             [NotNull] IBackgroundJobFactory factory,
             [NotNull] IStateMachine stateMachine)
-            : this(factory, stateMachine, () => DateTime.UtcNow)
+            : this(factory, stateMachine, TimeSpan.Zero)
         {
         }
 
@@ -102,6 +103,25 @@ namespace Hangfire.Server
         /// </summary>
         /// <param name="factory">Factory that will be used to create background jobs.</param>
         /// <param name="stateMachine">State machine that's responsible for enqueuing jobs.</param>
+        /// <param name="pollingDelay">Delay before another polling attempt, when no jobs scheduled yet.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="stateMachine"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="nowFactory"/> is null.</exception>
+        public RecurringJobScheduler(
+            [NotNull] IBackgroundJobFactory factory,
+            [NotNull] IStateMachine stateMachine,
+            TimeSpan pollingDelay)
+            : this(factory, stateMachine, pollingDelay, () => DateTime.UtcNow)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RecurringJobScheduler"/> class
+        /// with custom background job factory, state machine and clocks.
+        /// </summary>
+        /// <param name="factory">Factory that will be used to create background jobs.</param>
+        /// <param name="stateMachine">State machine that's responsible for enqueuing jobs.</param>
+        /// <param name="pollingDelay">Delay before another polling attempt, when no jobs scheduled yet.</param>
         /// <param name="nowFactory">Factory function that returns the current time.</param>
         /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="stateMachine"/> is null.</exception>
@@ -109,6 +129,7 @@ namespace Hangfire.Server
         public RecurringJobScheduler(
             [NotNull] IBackgroundJobFactory factory,
             [NotNull] IStateMachine stateMachine,
+            TimeSpan pollingDelay,
             [NotNull] Func<DateTime> nowFactory)
         {
             if (factory == null) throw new ArgumentNullException(nameof(factory));
@@ -118,6 +139,7 @@ namespace Hangfire.Server
             _factory = factory;
             _stateMachine = stateMachine;
             _nowFactory = nowFactory;
+            _pollingDelay = pollingDelay;
         }
 
         /// <inheritdoc />
@@ -142,8 +164,15 @@ namespace Hangfire.Server
                 _logger.Info($"{jobsEnqueued} recurring job(s) enqueued.");
             }
 
-            var now = DateTime.UtcNow;
-            context.Wait(now.AddMilliseconds(-now.Millisecond).AddSeconds(-now.Second).AddMinutes(1) - now);
+            if (_pollingDelay > TimeSpan.Zero)
+            {
+                context.Wait(_pollingDelay);
+            }
+            else
+            {
+                var now = _nowFactory();
+                context.Wait(now.AddMilliseconds(-now.Millisecond).AddSeconds(-now.Second).AddMinutes(1) - now);
+            }
         }
 
         /// <inheritdoc />

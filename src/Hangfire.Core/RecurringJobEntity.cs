@@ -90,10 +90,30 @@ namespace Hangfire
 
         public DateTime? GetNextExecution()
         {
-            return CronExpression.Parse(Cron).GetNextOccurrence(
-                LastExecution ?? CreatedAt.AddSeconds(-1), 
-                TimeZone, 
-                inclusive: false);
+            var parts = Cron.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+            var format = CronFormat.Standard;
+
+            try
+            {
+                if (parts.Length == 6)
+                {
+                    format |= CronFormat.IncludeSeconds;
+                }
+                else if (parts.Length != 5)
+                {
+                    throw new CronFormatException(
+                        $"Wrong number of parts in the `{Cron}` cron expression, you can only use 5 or 6 (with seconds) part-based expressions.");
+                }
+
+                return CronExpression.Parse(Cron, format).GetNextOccurrence(
+                    LastExecution ?? CreatedAt.AddSeconds(-1),
+                    TimeZone,
+                    inclusive: false);
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException("CRON expression is invalid. Please see the inner exception for details.", "cronExpression", ex);
+            }
         }
 
         public bool IsChanged(out IReadOnlyDictionary<string, string> changedFields, out DateTime? nextExecution)

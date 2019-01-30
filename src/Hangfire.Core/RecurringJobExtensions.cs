@@ -97,6 +97,7 @@ namespace Hangfire
 
             var context = new CreateContext(storage, connection, recurringJob.Job, null);
             context.Parameters["RecurringJobId"] = recurringJob.RecurringJobId;
+            context.Parameters["Time"] = JobHelper.ToTimestamp(now);
 
             var backgroundJob = factory.Create(context);
 
