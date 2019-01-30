@@ -15,14 +15,12 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
-using Cronos;
 
 namespace Hangfire.Server
 {
@@ -65,56 +63,83 @@ namespace Hangfire.Server
     public class RecurringJobScheduler : IBackgroundProcess
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
-
-        private static readonly Func<DateTime> DefaultNowInstantFactory = () =>
-        {
-            var now = DateTime.UtcNow;
-            return now.AddSeconds(-now.Second);
-        };
+        private static readonly int BatchSize = 1000;
 
         private readonly ILog _logger = LogProvider.For<RecurringJobScheduler>();
+
         private readonly IBackgroundJobFactory _factory;
         private readonly IStateMachine _stateMachine;
-        private readonly IThrottler _throttler;
-        private readonly Func<DateTime> _nowInstantFactory;
+        private readonly Func<DateTime> _nowFactory;
+        private readonly TimeSpan _pollingDelay;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RecurringJobScheduler"/>
         /// class with default background job factory.
         /// </summary>
         public RecurringJobScheduler()
-            : this(new BackgroundJobFactory(GlobalJobFilters.Filters), new StateMachine(GlobalJobFilters.Filters))
+            : this(new BackgroundJobFactory(JobFilterProviders.Providers), new StateMachine(JobFilterProviders.Providers))
         {
         }
         
         /// <summary>
         /// Initializes a new instance of the <see cref="RecurringJobScheduler"/>
-        /// class with custom background job factory.
+        /// class with custom background job factory and a state machine.
         /// </summary>
         /// <param name="factory">Factory that will be used to create background jobs.</param>
         /// <param name="stateMachine">State machine that's responsible for enqueuing jobs.</param>
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
-        public RecurringJobScheduler([NotNull] IBackgroundJobFactory factory, [NotNull] IStateMachine stateMachine)
-            : this(factory, stateMachine, DefaultNowInstantFactory, new EveryMinuteThrottler())
+        /// <exception cref="ArgumentNullException"><paramref name="stateMachine"/> is null.</exception>
+        public RecurringJobScheduler(
+            [NotNull] IBackgroundJobFactory factory,
+            [NotNull] IStateMachine stateMachine)
+            : this(factory, stateMachine, TimeSpan.Zero)
         {
         }
 
-        internal RecurringJobScheduler(
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RecurringJobScheduler"/> class
+        /// with custom background job factory, state machine and clocks.
+        /// </summary>
+        /// <param name="factory">Factory that will be used to create background jobs.</param>
+        /// <param name="stateMachine">State machine that's responsible for enqueuing jobs.</param>
+        /// <param name="pollingDelay">Delay before another polling attempt, when no jobs scheduled yet.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="stateMachine"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="nowFactory"/> is null.</exception>
+        public RecurringJobScheduler(
             [NotNull] IBackgroundJobFactory factory,
             [NotNull] IStateMachine stateMachine,
-            [NotNull] Func<DateTime> nowInstantFactory,
-            [NotNull] IThrottler throttler)
+            TimeSpan pollingDelay)
+            : this(factory, stateMachine, pollingDelay, () => DateTime.UtcNow)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RecurringJobScheduler"/> class
+        /// with custom background job factory, state machine and clocks.
+        /// </summary>
+        /// <param name="factory">Factory that will be used to create background jobs.</param>
+        /// <param name="stateMachine">State machine that's responsible for enqueuing jobs.</param>
+        /// <param name="pollingDelay">Delay before another polling attempt, when no jobs scheduled yet.</param>
+        /// <param name="nowFactory">Factory function that returns the current time.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="stateMachine"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="nowFactory"/> is null.</exception>
+        public RecurringJobScheduler(
+            [NotNull] IBackgroundJobFactory factory,
+            [NotNull] IStateMachine stateMachine,
+            TimeSpan pollingDelay,
+            [NotNull] Func<DateTime> nowFactory)
         {
             if (factory == null) throw new ArgumentNullException(nameof(factory));
             if (stateMachine == null) throw new ArgumentNullException(nameof(stateMachine));
-            if (nowInstantFactory == null) throw new ArgumentNullException(nameof(nowInstantFactory));
-            if (throttler == null) throw new ArgumentNullException(nameof(throttler));
-            
+            if (nowFactory == null) throw new ArgumentNullException(nameof(nowFactory));
+
             _factory = factory;
             _stateMachine = stateMachine;
-            _nowInstantFactory = nowInstantFactory;
-            _throttler = throttler;
+            _nowFactory = nowFactory;
+            _pollingDelay = pollingDelay;
         }
 
         /// <inheritdoc />
@@ -122,43 +147,32 @@ namespace Hangfire.Server
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
 
-            _throttler.Throttle(context.CancellationToken);
+            var jobsEnqueued = 0;
 
-            UseConnectionDistributedLock(context.Storage, connection =>
+            while (EnqueueNextRecurringJobs(context))
             {
-                var recurringJobIds = connection.GetAllItemsFromSet("recurring-jobs");
+                jobsEnqueued++;
 
-                foreach (var recurringJobId in recurringJobIds)
+                if (context.IsShutdownRequested)
                 {
-                    if (context.IsShutdownRequested)
-                    {
-                        return;
-                    }
-
-                    var recurringJob = connection.GetAllEntriesFromHash(
-                        $"recurring-job:{recurringJobId}");
-
-                    if (recurringJob == null)
-                    {
-                        continue;
-                    }
-
-                    try
-                    {
-                        TryScheduleJob(context.Storage, connection, recurringJobId, recurringJob);
-                    }
-                    catch (JobLoadException ex)
-                    {
-                        _logger.WarnException(
-                            $"Recurring job '{recurringJobId}' can not be scheduled due to job load exception.",
-                            ex);
-                    }
+                    break;
                 }
-            });
+            }
 
-            // The code above may be completed in less than a second. Default throttler use
-            // the second resolution, and without an extra delay, CPU and DB bursts may happen.
-            _throttler.Delay(context.CancellationToken);
+            if (jobsEnqueued != 0)
+            {
+                _logger.Info($"{jobsEnqueued} recurring job(s) enqueued.");
+            }
+
+            if (_pollingDelay > TimeSpan.Zero)
+            {
+                context.Wait(_pollingDelay);
+            }
+            else
+            {
+                var now = _nowFactory();
+                context.Wait(now.AddMilliseconds(-now.Millisecond).AddSeconds(-now.Second).AddMinutes(1) - now);
+            }
         }
 
         /// <inheritdoc />
@@ -167,113 +181,138 @@ namespace Hangfire.Server
             return GetType().Name;
         }
 
-        private void TryScheduleJob(
-            JobStorage storage,
-            IStorageConnection connection, 
-            string recurringJobId, 
-            IReadOnlyDictionary<string, string> recurringJob)
+        private bool EnqueueNextRecurringJobs(BackgroundProcessContext context)
         {
-            var serializedJob = InvocationData.Deserialize(recurringJob["Job"]);
-            var job = serializedJob.Deserialize();
-            var cron = recurringJob["Cron"];
-            var cronExpression = CronExpression.Parse(cron);
-
-            try
+            return UseConnectionDistributedLock(context.Storage, connection =>
             {
-                var timeZone = recurringJob.ContainsKey("TimeZoneId")
-                    ? TimeZoneInfo.FindSystemTimeZoneById(recurringJob["TimeZoneId"])
-                    : TimeZoneInfo.Utc;
-
-                var nowInstant = _nowInstantFactory();
-                var lastInstant = GetLastInstant(recurringJob, nowInstant);
-
-                var changedFields = new Dictionary<string, string>();
-
-                var nextInstant = cronExpression.GetNextOccurrence(lastInstant, timeZone);
-
-                BackgroundJob backgroundJob = null;
-                EnqueuedState state = null;
-
-                if (nextInstant <= nowInstant)
+                if (IsBatchingAvailable(connection))
                 {
-                    state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
-                    if (recurringJob.ContainsKey("Queue") && !String.IsNullOrEmpty(recurringJob["Queue"]))
+                    var now = _nowFactory();
+                    var timestamp = JobHelper.ToTimestamp(now);
+                    var recurringJobIds = ((JobStorageConnection)connection).GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp, BatchSize);
+
+                    if (recurringJobIds == null || recurringJobIds.Count == 0) return false;
+
+                    foreach (var recurringJobId in recurringJobIds)
                     {
-                        state.Queue = recurringJob["Queue"];
-                    }
-
-                    var context = new CreateContext(storage, connection, job, null);
-                    context.Parameters["RecurringJobId"] = recurringJobId;
-
-                    backgroundJob = _factory.Create(context);
-                    var jobId = backgroundJob?.Id;
-
-                    if (String.IsNullOrEmpty(jobId))
-                    {
-                        _logger.Debug($"Recurring job '{recurringJobId}' execution at '{nowInstant}' has been canceled.");
-                    }
-
-                    changedFields.Add("LastExecution", JobHelper.SerializeDateTime(nowInstant));
-                    changedFields.Add("LastJobId", jobId ?? String.Empty);
-
-                    nextInstant = cronExpression.GetNextOccurrence(nowInstant, timeZone);
-                }
-                
-                // Fixing old recurring jobs that doesn't have the CreatedAt field
-                if (!recurringJob.ContainsKey("CreatedAt"))
-                {
-                    changedFields.Add("CreatedAt", JobHelper.SerializeDateTime(nowInstant));
-                }
-                
-                var nextExecution = nextInstant.HasValue ? JobHelper.SerializeDateTime(nextInstant.Value) : null;
-
-                if (!recurringJob.ContainsKey("NextExecution") || recurringJob["NextExecution"] != nextExecution)
-                {
-                    changedFields.Add("NextExecution", nextExecution);
-                }
-
-                if (backgroundJob != null || changedFields.Count != 0)
-                {
-                    using (var transaction = connection.CreateWriteTransaction())
-                    {
-                        if (backgroundJob != null)
-                        {
-                            _stateMachine.ApplyState(new ApplyStateContext(
-                                storage,
-                                connection,
-                                transaction,
-                                backgroundJob,
-                                state,
-                                null));
-                        }
-
-                        if (changedFields.Count != 0)
-                        {
-                            transaction.SetRangeInHash($"recurring-job:{recurringJobId}", changedFields);
-                        }
-                        
-                        transaction.Commit();
+                        if (context.IsShutdownRequested) return false;
+                        TryEnqueueBackgroundJob(context, connection, recurringJobId, now);
                     }
                 }
-            }
-#if !NETSTANDARD1_3
-            catch (TimeZoneNotFoundException ex)
-            {
-#else
-            catch (Exception ex)
-            {
-                // https://github.com/dotnet/corefx/issues/7552
-                if (!ex.GetType().Name.Equals("TimeZoneNotFoundException")) throw;
-#endif
+                else
+                {
+                    for (var i = 0; i < BatchSize; i++)
+                    {
+                        if (context.IsShutdownRequested) return false;
 
-                _logger.ErrorException(
-                    $"Recurring job '{recurringJobId}' was not triggered: {ex.Message}.",
-                    ex);
-            }
+                        var now = _nowFactory();
+                        var timestamp = JobHelper.ToTimestamp(now);
 
+                        var recurringJobId = connection.GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp);
+                        if (recurringJobId == null) return false;
+
+                        TryEnqueueBackgroundJob(context, connection, recurringJobId, now);
+                    }
+                }
+
+                return true;
+            });
         }
 
-        private void UseConnectionDistributedLock(JobStorage storage, Action<IStorageConnection> action)
+        private void TryEnqueueBackgroundJob(
+            BackgroundProcessContext context,
+            IStorageConnection connection,
+            string recurringJobId,
+            DateTime now)
+        {
+            try
+            {
+                EnqueueBackgroundJob(context, connection, recurringJobId, now);
+            }
+            catch (JobLoadException ex)
+            {
+                _logger.WarnException(
+                    $"Recurring job '{recurringJobId}' can not be scheduled due to job load exception.",
+                    ex);
+            }
+        }
+
+        private void EnqueueBackgroundJob(
+            BackgroundProcessContext context,
+            IStorageConnection connection, 
+            string recurringJobId,
+            DateTime now)
+        {
+            using (connection.AcquireDistributedRecurringJobLock(recurringJobId, LockTimeout))
+            {
+                try
+                {
+                    var recurringJob = connection.GetRecurringJob(recurringJobId, now);
+
+                    if (recurringJob == null)
+                    {
+                        using (var transaction = connection.CreateWriteTransaction())
+                        {
+                            transaction.RemoveFromSet("recurring-jobs", recurringJobId);
+                            transaction.Commit();
+                        }
+
+                        return;
+                    }
+
+                    BackgroundJob backgroundJob = null;
+
+                    var nextExecution = recurringJob.GetNextExecution();
+
+                    if (nextExecution.HasValue && nextExecution <= now)
+                    {
+                        backgroundJob = _factory.TriggerRecurringJob(context.Storage, connection, recurringJob, now);
+
+                        if (String.IsNullOrEmpty(backgroundJob?.Id))
+                        {
+                            _logger.Debug($"Recurring job '{recurringJobId}' execution at '{nextExecution}' has been canceled.");
+                        }
+                    }
+
+                    if (recurringJob.IsChanged(out var changedFields, out nextExecution))
+                    {
+                        using (var transaction = connection.CreateWriteTransaction())
+                        {
+                            if (backgroundJob != null)
+                            {
+                                _stateMachine.EnqueueBackgroundJob(
+                                    context.Storage,
+                                    connection,
+                                    transaction,
+                                    recurringJob,
+                                    backgroundJob,
+                                    "Triggered by recurring job scheduler");
+                            }
+
+                            transaction.UpdateRecurringJob(recurringJobId, changedFields, nextExecution);
+
+                            transaction.Commit();
+                        }
+                    }
+                }
+#if !NETSTANDARD1_3
+                catch (TimeZoneNotFoundException ex)
+                {
+#else
+                catch (Exception ex)
+                {
+                    // https://github.com/dotnet/corefx/issues/7552
+                    if (!ex.GetType().Name.Equals("TimeZoneNotFoundException")) throw;
+#endif
+
+                    _logger.ErrorException(
+                        $"Recurring job '{recurringJobId}' was not triggered: {ex.Message}.",
+                        ex);
+                }
+            }
+        }
+
+        private bool UseConnectionDistributedLock(JobStorage storage, Func<IStorageConnection, bool> action)
         {
             var resource = "recurring-jobs:lock";
             try
@@ -281,7 +320,7 @@ namespace Hangfire.Server
                 using (var connection = storage.GetConnection())
                 using (connection.AcquireDistributedLock(resource, LockTimeout))
                 {
-                    action(connection);
+                    return action(connection);
                 }
             }
             catch (DistributedLockTimeoutException e) when (e.Resource == resource)
@@ -293,31 +332,26 @@ namespace Hangfire.Server
                     () => $@"An exception was thrown during acquiring distributed lock the {resource} resource within {LockTimeout.TotalSeconds} seconds. The recurring jobs have not been handled this time.",
                     e);
             }
+
+            return false;
         }
 
-        private static DateTime GetLastInstant(IReadOnlyDictionary<string, string> recurringJob, DateTime nowInstant)
+        private static bool IsBatchingAvailable(IStorageConnection connection)
         {
-            DateTime lastInstant;
-
-            if (recurringJob.ContainsKey("LastExecution"))
+            var batchingAvailable = false;
+            if (connection is JobStorageConnection storageConnection)
             {
-                lastInstant = JobHelper.DeserializeDateTime(recurringJob["LastExecution"]);
-            }
-            else if (recurringJob.ContainsKey("CreatedAt"))
-            {
-                lastInstant = JobHelper.DeserializeDateTime(recurringJob["CreatedAt"]);
-            }
-            else if (recurringJob.ContainsKey("NextExecution"))
-            {
-                lastInstant = JobHelper.DeserializeDateTime(recurringJob["NextExecution"]);
-                lastInstant = lastInstant.AddSeconds(-1);
-            }
-            else
-            {
-                lastInstant = nowInstant.AddSeconds(-1);
+                try
+                {
+                    storageConnection.GetFirstByLowestScoreFromSet(null, 0, 0, 1);
+                }
+                catch (ArgumentNullException)
+                {
+                    batchingAvailable = true;
+                }
             }
 
-            return lastInstant;
+            return batchingAvailable;
         }
     }
 }

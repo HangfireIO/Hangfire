@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using ReferencedCronos::Cronos;
 using Hangfire.Client;
 using Hangfire.Common;
@@ -21,22 +22,22 @@ namespace Hangfire.Core.Tests.Server
         private readonly Mock<IWriteOnlyTransaction> _transaction;
         private readonly Dictionary<string, string> _recurringJob;
         private readonly Func<DateTime> _nowInstantFactory;
-        private readonly Mock<IThrottler> _throttler;
         private readonly BackgroundProcessContextMock _context;
         private readonly Mock<IBackgroundJobFactory> _factory;
         private readonly Mock<IStateMachine> _stateMachine;
         private readonly BackgroundJobMock _backgroundJobMock;
 
         private static readonly string _expressionString = "* * * * *";
+        private static readonly TimeSpan _delay = TimeSpan.FromTicks(1);
         private readonly CronExpression _cronExpression = CronExpression.Parse(_expressionString);
         private readonly DateTime _nowInstant = new DateTime(2017, 03, 30, 15, 30, 0, DateTimeKind.Utc);
         private readonly DateTime _nextInstant;
+        private readonly Mock<JobStorageConnection> _storageConnection;
 
         public RecurringJobSchedulerFacts()
         {
             _context = new BackgroundProcessContextMock();
-
-            _throttler = new Mock<IThrottler>();
+            _context.CancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(1));
 
             // Setting up the successful path
 
@@ -55,16 +56,27 @@ namespace Hangfire.Core.Tests.Server
             };
 
             _connection = new Mock<IStorageConnection>();
-            _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
 
-            _connection.Setup(x => x.GetAllItemsFromSet("recurring-jobs"))
-                .Returns(new HashSet<string> { RecurringJobId });
+            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, JobHelper.ToTimestamp(_nowInstant)))
+                .Returns(RecurringJobId)
+                .Returns((string)null);
 
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{RecurringJobId}"))
                 .Returns(_recurringJob);
-            
+
+            _storageConnection = new Mock<JobStorageConnection>();
+            _storageConnection.Setup(x => x.GetFirstByLowestScoreFromSet(null, It.IsAny<double>(), It.IsAny<double>(), It.IsAny<int>()))
+                .Throws<ArgumentNullException>();
+            _storageConnection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, JobHelper.ToTimestamp(_nowInstant), It.IsAny<int>()))
+                .Returns(new List<string> { RecurringJobId })
+                .Returns((List<string>)null);
+
+            _storageConnection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{RecurringJobId}")).Returns(_recurringJob);
+
             _transaction = new Mock<IWriteOnlyTransaction>();
+
             _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
+            _storageConnection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
 
             _backgroundJobMock = new BackgroundJobMock();
 
@@ -79,7 +91,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(null, _stateMachine.Object, _nowInstantFactory, _throttler.Object));
+                () => new RecurringJobScheduler(null, _stateMachine.Object, _delay, _nowInstantFactory));
 
             Assert.Equal("factory", exception.ParamName);
         }
@@ -89,7 +101,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(_factory.Object, null, _nowInstantFactory, _throttler.Object));
+                () => new RecurringJobScheduler(_factory.Object, null, _delay, _nowInstantFactory));
             
             Assert.Equal("stateMachine", exception.ParamName);
         }
@@ -99,19 +111,9 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(_factory.Object, _stateMachine.Object, null, _throttler.Object));
+                () => new RecurringJobScheduler(_factory.Object, _stateMachine.Object, _delay, null));
 
-            Assert.Equal("nowInstantFactory", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenThrottlerIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-// ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(_factory.Object, _stateMachine.Object, _nowInstantFactory, null));
-
-            Assert.Equal("throttler", exception.ParamName);
+            Assert.Equal("nowFactory", exception.ParamName);
         }
 
         [Fact]
@@ -125,9 +127,12 @@ namespace Hangfire.Core.Tests.Server
             Assert.Equal("context", exception.ParamName);
         }
 
-        [Fact]
-        public void Execute_EnqueuesAJob_WhenItIsTimeToRunIt()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Execute_EnqueuesAJob_WhenItIsTimeToRunIt(bool useJobStorageConnection)
         {
+            SetupConnection(useJobStorageConnection);
             var scheduler = CreateScheduler();
 
             scheduler.Execute(_context.Object);
@@ -137,9 +142,12 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
 
-        [Fact]
-        public void Execute_EnqueuesAJobToAGivenQueue_WhenItIsTimeToRunIt()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Execute_EnqueuesAJobToAGivenQueue_WhenItIsTimeToRunIt(bool useJobStorageConnection)
         {
+            SetupConnection(useJobStorageConnection);
             _recurringJob["Queue"] = "critical";
             var scheduler = CreateScheduler();
 
@@ -149,10 +157,13 @@ namespace Hangfire.Core.Tests.Server
                 It.Is<ApplyStateContext>(ctx => ((EnqueuedState)ctx.NewState).Queue == "critical")));
         }
 
-        [Fact]
-        public void Execute_UpdatesRecurringJobParameters_OnCompletion()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Execute_UpdatesRecurringJobParameters_OnCompletion(bool useJobStorageConnection)
         {
             // Arrange
+            SetupConnection(useJobStorageConnection);
             var scheduler = CreateScheduler();
 
             // Act
@@ -181,13 +192,20 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
 
-        [Fact]
-        public void Execute_DoesNotEnqueueRecurringJob_AndDoesNotUpdateIt_ButNextExecution_WhenItIsNotATimeToRunIt()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Execute_DoesNotEnqueueRecurringJob_AndDoesNotUpdateIt_ButNextExecution_WhenItIsNotATimeToRunIt(
+            bool useJobStorageConnection)
         {
+            // Arrange
+            SetupConnection(useJobStorageConnection);
             var scheduler = CreateScheduler(_nowInstant);
 
+            // Act
             scheduler.Execute(_context.Object);
 
+            // Assert
             _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
             _stateMachine.Verify(x => x.ApplyState(It.IsAny<ApplyStateContext>()), Times.Never);
 
@@ -200,37 +218,63 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
 
-        [Fact]
-        public void Execute_TakesIntoConsideration_LastExecutionTime_ConvertedToLocalTimezone()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Execute_TakesIntoConsideration_LastExecutionTime_ConvertedToLocalTimezone(bool useJobStorageConnection)
         {
+            // Arrange
+            SetupConnection(useJobStorageConnection);
             var time = _nowInstant;
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(time);
 
             var scheduler = CreateScheduler();
 
+            // Act
             scheduler.Execute(_context.Object);
 
+            // Assert
             _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
             _stateMachine.Verify(x => x.ApplyState(It.IsAny<ApplyStateContext>()), Times.Never);
         }
-        
-        [Fact]
-        public void Execute_DoesNotFail_WhenRecurringJobDoesNotExist()
-        {
-            _connection.Setup(x => x.GetAllItemsFromSet(It.IsAny<string>()))
-                .Returns(new HashSet<string> { "non-existing-job" });
-            var scheduler = CreateScheduler();
 
-            // Does not throw
-            scheduler.Execute(_context.Object);
-        }
-
-        [Fact]
-        public void Execute_HandlesJobLoadException()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Execute_RemovesRecurringJobFromSchedule_WhenHashDoesNotExist(bool useJobStorageConnection)
         {
             // Arrange
-            _recurringJob["Job"] =
-                JobHelper.ToJson(new InvocationData("SomeType", "SomeMethod", "Parameters", "arguments"));
+            SetupConnection(useJobStorageConnection);
+
+            if (useJobStorageConnection)
+                _storageConnection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, JobHelper.ToTimestamp(_nowInstant), It.IsAny<int>()))
+                    .Returns(new List<string> { "non-existing-job" })
+                    .Returns((List<string>)null);
+            else
+            {
+                _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, JobHelper.ToTimestamp(_nowInstant)))
+                    .Returns("non-existing-job")
+                    .Returns((string)null);
+                }
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _transaction.Verify(x => x.RemoveFromSet("recurring-jobs", "non-existing-job"));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Execute_HandlesJobLoadException(bool useJobStorageConnection)
+        {
+            // Arrange
+            SetupConnection(useJobStorageConnection);
+            _recurringJob["Job"] = JobHelper.ToJson(new InvocationData("SomeType", "SomeMethod", "Parameters", "arguments"));
 
             var scheduler = CreateScheduler();
 
@@ -238,12 +282,15 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
         }
 
-        [Fact]
-        public void Execute_GetsInstance_InAGivenTimeZone()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Execute_GetsInstance_InAGivenTimeZone(bool useJobStorageConnection)
         {
-            var timeZoneId = PlatformHelper.IsRunningOnWindows() ? "Hawaiian Standard Time" : "Pacific/Honolulu";
-
             // Arrange
+            SetupConnection(useJobStorageConnection);
+
+            var timeZoneId = PlatformHelper.IsRunningOnWindows() ? "Hawaiian Standard Time" : "Pacific/Honolulu";
             var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
             _recurringJob["TimeZoneId"] = timeZone.Id;
             var scheduler = CreateScheduler();
@@ -252,21 +299,30 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
         }
 
-        [Fact]
-        public void Execute_GetInstance_DoesNotCreateAJob_WhenGivenOneIsNotFound()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Execute_GetInstance_DoesNotCreateAJob_WhenGivenOneIsNotFound(bool useJobStorageConnection)
         {
+            // Arrange
+            SetupConnection(useJobStorageConnection);
             _recurringJob["TimeZoneId"] = "Some garbage";
             var scheduler = CreateScheduler();
 
+            // Act
             scheduler.Execute(_context.Object);
 
+            // Assert
             _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
         }
 
-        [Fact]
-        public void Execute_UsesGivenCreatedAtTime()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Execute_UsesGivenCreatedAtTime(bool useJobStorageConnection)
         {
             // Arrange
+            SetupConnection(useJobStorageConnection);
             var createdAt = _nowInstant.AddHours(-3);
             _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(createdAt);
 
@@ -278,10 +334,13 @@ namespace Hangfire.Core.Tests.Server
             _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Once);
         }
 
-        [Fact]
-        public void Execute_DoesNotFixCreatedAtField_IfItExists()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Execute_DoesNotFixCreatedAtField_IfItExists(bool useJobStorageConnection)
         {
             // Arrange
+            SetupConnection(useJobStorageConnection);
             _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(DateTime.UtcNow);
             var scheduler = CreateScheduler();
 
@@ -296,10 +355,13 @@ namespace Hangfire.Core.Tests.Server
                 Times.Never);
         }
 
-        [Fact]
-        public void Execute_FixedMissingCreatedAtField()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Execute_FixedMissingCreatedAtField(bool useJobStorageConnection)
         {
             // Arrange
+            SetupConnection(useJobStorageConnection);
             _recurringJob.Remove("CreatedAt");
             var scheduler = CreateScheduler();
 
@@ -316,10 +378,13 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
 
-        [Fact]
-        public void Execute_UsesNextExecutionTime_WhenBothLastExecutionAndCreatedAtAreNotAvailable()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Execute_UsesNextExecutionTime_WhenBothLastExecutionAndCreatedAtAreNotAvailable(bool useJobStorageConnection)
         {
             // Arrange
+            SetupConnection(useJobStorageConnection);
             var nextExecution = _nowInstant.AddHours(-10);
             _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(nextExecution);
             _recurringJob.Remove("CreatedAt");
@@ -340,22 +405,41 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
 
-        [Fact]
-        public void Execute_DoesNotThrowDistributedLockTimeoutException()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Execute_DoesNotThrowDistributedLockTimeoutException(bool useJobStorageConnection)
         {
-            _connection
-                .Setup(x => x.AcquireDistributedLock("recurring-jobs:lock", It.IsAny<TimeSpan>()))
-                .Throws(new DistributedLockTimeoutException("recurring-jobs:lock"));
+            // Arrange
+            SetupConnection(useJobStorageConnection);
+
+            if (useJobStorageConnection)
+            {
+                _storageConnection
+                    .Setup(x => x.AcquireDistributedLock("recurring-jobs:lock", It.IsAny<TimeSpan>()))
+                    .Throws(new DistributedLockTimeoutException("recurring-jobs:lock"));
+            }
+            else
+            {
+                _connection
+                    .Setup(x => x.AcquireDistributedLock("recurring-jobs:lock", It.IsAny<TimeSpan>()))
+                    .Throws(new DistributedLockTimeoutException("recurring-jobs:lock"));
+            }
 
             var scheduler = CreateScheduler();
 
+            // Act & Assert (Does Not Throw)
             scheduler.Execute(_context.Object);
         }
 
-        [Fact]
-        public void Execute_DoesNotUpdateRecurringJob_WhenItIsCorrectAndItWasNotTriggered()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Execute_DoesNotEnqueueRecurringJob_WhenItIsCorrectAndItWasNotTriggered(bool useJobStorageConnection)
         {
             // Arrange
+            SetupConnection(useJobStorageConnection);
+
             _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddMinutes(1));
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant);
             _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant);
@@ -366,7 +450,91 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
             
             // Assert
-            _transaction.Verify(x => x.Commit(), Times.Never);
+            _stateMachine.Verify(x => x.ApplyState(It.IsAny<ApplyStateContext>()), Times.Never);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Execute_AcquiresDistributedLock_ForEachRecurringJob(bool useJobStorageConnection)
+        {
+            // Arrange
+            SetupConnection(useJobStorageConnection);
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            if (useJobStorageConnection)
+                _storageConnection.Verify(x => x.AcquireDistributedLock("lock:recurring-job:recurring-job-id", It.IsAny<TimeSpan>()));
+            else
+                _connection.Verify(x => x.AcquireDistributedLock("lock:recurring-job:recurring-job-id", It.IsAny<TimeSpan>()));
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Execute_SchedulesNextExecution_AfterCreatingAJob(bool useJobStorageConnection)
+        {
+            // Arrange
+            SetupConnection(useJobStorageConnection);
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _stateMachine.Verify(x => x.ApplyState(It.IsAny<ApplyStateContext>()));
+
+            _transaction.Verify(x => x.SetRangeInHash(
+                $"recurring-job:{RecurringJobId}",
+                It.Is<Dictionary<string, string>>(rj =>
+                    rj.ContainsKey("NextExecution") && 
+                    rj["NextExecution"] == JobHelper.SerializeDateTime(_nowInstant.AddMinutes(1)))));
+
+            _transaction.Verify(x => x.AddToSet(
+                "recurring-jobs", 
+                "recurring-job-id", 
+                JobHelper.ToTimestamp(_nowInstant.AddMinutes(1))));
+
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Execute_FixesNextExecution_WhenItsNotATimeToRunAJob(bool useJobStorageConnection)
+        {
+            // Arrange
+            SetupConnection(useJobStorageConnection);
+            _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant);
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _stateMachine.Verify(x => x.ApplyState(It.IsAny<ApplyStateContext>()), Times.Never);
+
+            _transaction.Verify(x => x.SetRangeInHash(
+                $"recurring-job:{RecurringJobId}",
+                It.Is<Dictionary<string, string>>(rj =>
+                    rj.ContainsKey("NextExecution") &&
+                    rj["NextExecution"] == JobHelper.SerializeDateTime(_nowInstant.AddMinutes(1)))));
+
+            _transaction.Verify(x => x.AddToSet(
+                "recurring-jobs",
+                "recurring-job-id",
+                JobHelper.ToTimestamp(_nowInstant.AddMinutes(1))));
+
+            _transaction.Verify(x => x.Commit());
+        }
+
+        private void SetupConnection(bool useJobStorageConnection)
+        {
+            if (useJobStorageConnection) _context.Storage.Setup(x => x.GetConnection()).Returns(_storageConnection.Object);
+            else _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
         }
 
         private RecurringJobScheduler CreateScheduler(DateTime? lastExecution = null)
@@ -374,8 +542,8 @@ namespace Hangfire.Core.Tests.Server
             var scheduler = new RecurringJobScheduler(
                 _factory.Object,
                 _stateMachine.Object,
-                _nowInstantFactory,
-                _throttler.Object);
+                _delay,
+                _nowInstantFactory);
 
             if (lastExecution.HasValue)
             {
