@@ -39,7 +39,7 @@ Task Test -Depends Merge -Description "Run unit and integration tests against me
 			$fail_code = 1
 		}
 	} }
-	exit $fail_code
+	if ($fail_code -ne 0) { throw "Test run failed" }
 }
 
 Task Collect -Depends Test -Description "Copy all artifacts to the build folder." {
