@@ -65,7 +65,6 @@
                         yAxes: [{ ticks: { min: 0, suggestedMax: 500, maxTicksLimit: 6 }, stacked: true }]
                     },
                     elements: { line: { tension: 0 }, point: { radius: 0 } },
-                    plugins: { streaming: { frameRate: 15 } },
                     animation: { duration: 0 },
                     hover: { animationDuration: 0 },
                     responsiveAnimationDuration: 0,
