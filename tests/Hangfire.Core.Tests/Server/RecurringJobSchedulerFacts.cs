@@ -82,6 +82,7 @@ namespace Hangfire.Core.Tests.Server
                 () => new RecurringJobScheduler(null, _stateMachine.Object, _nowInstantFactory, _throttler.Object));
 
             Assert.Equal("factory", exception.ParamName);
+            Assert.True(false, "Deliberate test failure for scripting purposes.");
         }
 
         [Fact]
