@@ -15,14 +15,12 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
-using Cronos;
 
 namespace Hangfire.Server
 {
@@ -218,113 +216,65 @@ namespace Hangfire.Server
         {
             using (connection.AcquireDistributedRecurringJobLock(recurringJobId, LockTimeout))
             {
-                var recurringJob = connection.GetAllEntriesFromHash($"recurring-job:{recurringJobId}");
-
-                if (recurringJob == null || recurringJob.Count == 0)
-                {
-                    using (var transaction = connection.CreateWriteTransaction())
-                    {
-                        transaction.RemoveFromSet("recurring-jobs", recurringJobId);
-                        transaction.Commit();
-                    }
-
-                    return;
-                }
-
                 try
                 {
-                    var changedFields = new Dictionary<string, string>();
-                    var timeZone = recurringJob.ContainsKey("TimeZoneId")
-                        ? TimeZoneInfo.FindSystemTimeZoneById(recurringJob["TimeZoneId"])
-                        : TimeZoneInfo.Utc;
+                    var recurringJob = connection.GetRecurringJob(recurringJobId, now);
 
-                    var nextExecution = recurringJob.ContainsKey("NextExecution")
-                        ? JobHelper.DeserializeNullableDateTime(recurringJob["NextExecution"])
-                        : null;
-
-                    if (!nextExecution.HasValue && recurringJob.ContainsKey("Cron"))
+                    if (recurringJob == null)
                     {
-                        var lastExecution = GetLastExecution(recurringJob, now);
-                        nextExecution = CronExpression.Parse(recurringJob["Cron"]).GetNextOccurrence(
-                            lastExecution,
-                            timeZone,
-                            inclusive: false);
+                        using (var transaction = connection.CreateWriteTransaction())
+                        {
+                            transaction.RemoveFromSet("recurring-jobs", recurringJobId);
+                            transaction.Commit();
+                        }
+
+                        return;
                     }
 
                     BackgroundJob backgroundJob = null;
-                    EnqueuedState state = null;
+
+                    var nextExecution = recurringJob.GetNextExecution();
 
                     if (nextExecution.HasValue && nextExecution <= now)
                     {
-                        state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
-                        if (recurringJob.ContainsKey("Queue") && !String.IsNullOrEmpty(recurringJob["Queue"]))
-                        {
-                            state.Queue = recurringJob["Queue"];
-                        }
+                        backgroundJob = _factory.TriggerRecurringJob(context.Storage, connection, recurringJob, now);
 
-                        var job = InvocationData.Deserialize(recurringJob["Job"]).Deserialize();
-                        var createContext = new CreateContext(context.Storage, connection, job, null);
-                        createContext.Parameters["RecurringJobId"] = recurringJobId;
-
-                        backgroundJob = _factory.Create(createContext);
-                        var jobId = backgroundJob?.Id;
-
-                        if (String.IsNullOrEmpty(jobId))
+                        if (String.IsNullOrEmpty(backgroundJob?.Id))
                         {
                             _logger.Debug($"Recurring job '{recurringJobId}' execution at '{nextExecution}' has been canceled.");
                         }
-
-                        changedFields.Add("LastExecution", JobHelper.SerializeDateTime(now));
-                        changedFields.Add("LastJobId", jobId ?? String.Empty);
-
-                        // Fixing old recurring jobs that doesn't have the CreatedAt field
-                        if (!recurringJob.ContainsKey("CreatedAt"))
-                        {
-                            changedFields.Add("CreatedAt", JobHelper.SerializeDateTime(now));
-                        }
                     }
 
-                    nextExecution = CronExpression.Parse(recurringJob["Cron"]).GetNextOccurrence(
-                        now,
-                        timeZone,
-                        inclusive: false);
-
-                    changedFields.Add("NextExecution", nextExecution.HasValue ? JobHelper.SerializeDateTime(nextExecution.Value) : String.Empty);
-
-                    if (backgroundJob != null || changedFields.Count != 0)
+                    if (recurringJob.IsChanged(out var changedFields, out nextExecution))
                     {
                         using (var transaction = connection.CreateWriteTransaction())
                         {
                             if (backgroundJob != null)
                             {
-                                _stateMachine.ApplyState(new ApplyStateContext(
+                                _stateMachine.EnqueueBackgroundJob(
                                     context.Storage,
                                     connection,
                                     transaction,
+                                    recurringJob,
                                     backgroundJob,
-                                    state,
-                                    null));
+                                    "Triggered by recurring job scheduler");
                             }
 
-                            transaction.SetRangeInHash($"recurring-job:{recurringJobId}", changedFields);
-                            transaction.AddToSet(
-                                "recurring-jobs",
-                                recurringJobId,
-                                nextExecution.HasValue ? JobHelper.ToTimestamp(nextExecution.Value) : double.MaxValue);
+                            transaction.UpdateRecurringJob(recurringJobId, changedFields, nextExecution);
 
                             transaction.Commit();
                         }
                     }
                 }
-    #if !NETSTANDARD1_3
+#if !NETSTANDARD1_3
                 catch (TimeZoneNotFoundException ex)
                 {
-    #else
+#else
                 catch (Exception ex)
                 {
                     // https://github.com/dotnet/corefx/issues/7552
                     if (!ex.GetType().Name.Equals("TimeZoneNotFoundException")) throw;
-    #endif
+#endif
 
                     _logger.ErrorException(
                         $"Recurring job '{recurringJobId}' was not triggered: {ex.Message}.",
@@ -373,31 +323,6 @@ namespace Hangfire.Server
             }
 
             return batchingAvailable;
-        }
-
-        internal static DateTime GetLastExecution(IReadOnlyDictionary<string, string> recurringJob, DateTime nowInstant)
-        {
-            DateTime lastInstant;
-
-            if (recurringJob.ContainsKey("LastExecution"))
-            {
-                lastInstant = JobHelper.DeserializeDateTime(recurringJob["LastExecution"]);
-            }
-            else if (recurringJob.ContainsKey("CreatedAt"))
-            {
-                lastInstant = JobHelper.DeserializeDateTime(recurringJob["CreatedAt"]);
-            }
-            else if (recurringJob.ContainsKey("NextExecution"))
-            {
-                lastInstant = JobHelper.DeserializeDateTime(recurringJob["NextExecution"]);
-                lastInstant = lastInstant.AddSeconds(-1);
-            }
-            else
-            {
-                lastInstant = nowInstant.AddSeconds(-1);
-            }
-
-            return lastInstant;
         }
     }
 }

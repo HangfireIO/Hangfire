@@ -503,11 +503,11 @@ namespace Hangfire.Core.Tests.Server
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void Execute_FixedNextExecution_WhenItsNotATimeToRunAJob(bool useJobStorageConnection)
+        public void Execute_FixesNextExecution_WhenItsNotATimeToRunAJob(bool useJobStorageConnection)
         {
             // Arrange
             SetupConnection(useJobStorageConnection);
-            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddMinutes(1));
+            _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant);
             var scheduler = CreateScheduler();
 
             // Act

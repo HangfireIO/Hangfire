@@ -206,7 +206,7 @@ namespace Hangfire.Core.Tests
                 It.Is<Dictionary<string, string>>(rj => 
                     rj["Cron"] == "* * * * *"
                     && !String.IsNullOrEmpty(rj["Job"])
-                    && JobHelper.DeserializeDateTime(rj["CreatedAt"]) > DateTime.UtcNow.AddMinutes(-1))));
+                    && JobHelper.DeserializeDateTime(rj["CreatedAt"]) > _now.AddMinutes(-1))));
         }
 
         [Fact]
@@ -254,7 +254,8 @@ namespace Hangfire.Core.Tests
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}"))
                 .Returns(new Dictionary<string, string>
                 {
-                    { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) }
+                    { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) },
+                    { "Cron", Cron.Minutely() }
                 });
 
             var manager = CreateManager();
