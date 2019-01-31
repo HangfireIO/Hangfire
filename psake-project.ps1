@@ -31,15 +31,15 @@ Task Test -Depends Merge -Description "Run unit and integration tests against me
     # Dependencies shouldn't be re-built, because we need to run tests against merged assemblies to test
     # the same assemblies that are distributed to users. Since the `dotnet test` command doesn't support
     # the `--no-dependencies` command directly, we need to re-build tests themselves first.
-	$fail_code = 0
+	$exit_code = 0
     Exec { ls "tests\**\*.csproj" | % { dotnet build -c Release --no-dependencies $_.FullName } }
     Exec { ls "tests\**\*.csproj" | % { 
 		dotnet test -c Release --no-build $_.FullName
 		if ($LASTEXITCODE -ne 0) {
-			$fail_code = 1
+			$exit_code = $LASTEXITCODE
 		}
 	} }
-	if ($fail_code -ne 0) { throw "Test run failed" }
+	$host.SetShouldExit($exit_code)
 }
 
 Task Collect -Depends Test -Description "Copy all artifacts to the build folder." {
