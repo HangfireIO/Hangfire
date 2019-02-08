@@ -62,7 +62,7 @@
                             realtime: { duration: 60 * 1000, delay: pollInterval },
                             time: { unit: 'second', tooltipFormat: 'll HH:mm:ss' }
                         }],
-                        yAxes: [{ ticks: { min: 0, suggestedMax: 500, maxTicksLimit: 6 }, stacked: true }]
+                        yAxes: [{ ticks: { beginAtZero: true, precision: 0, min: 0, maxTicksLimit: 6, suggestedMax: 10 }, stacked: true }]
                     },
                     elements: { line: { tension: 0 }, point: { radius: 0 } },
                     animation: { duration: 0 },
@@ -108,7 +108,7 @@
                 options: {
                     scales: {
                         xAxes: [{ type: 'time', time: { unit: 'hour', tooltipFormat: 'll HH:mm' } }],
-                        yAxes: [{ ticks: { maxTicksLimit: 6 }, stacked: true }]
+                        yAxes: [{ ticks: { beginAtZero: true, precision: 0, maxTicksLimit: 6 }, stacked: true }]
                     },
                     elements: { line: { tension: 0 }, point: { radius: 0 } },
                     legend: { display: false },
