@@ -177,6 +177,11 @@ namespace Hangfire
                 result.Add("LastJobId", LastJobId ?? String.Empty);
             }
 
+            if (!_recurringJob.ContainsKey("V"))
+            {
+                result.Add("V", "2");
+            }
+
             return result;
         }
     }

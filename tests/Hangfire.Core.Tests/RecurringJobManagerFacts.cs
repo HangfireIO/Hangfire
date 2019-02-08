@@ -250,6 +250,34 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void AddOrUpdate_EnsuresExistingOldJobsAreUpdated()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
+            {
+                { "Cron", _cronExpression },
+                { "Job", InvocationData.Serialize(_job).Serialize() },
+                { "CreatedAt", JobHelper.SerializeDateTime(_now) },
+                { "NextExecution", JobHelper.SerializeDateTime(_now) },
+                { "Queue", "default" },
+                { "TimeZoneId", "UTC" }
+            });
+
+            var manager = CreateManager();
+
+            // Act
+            manager.AddOrUpdate(_id, _job, _cronExpression);
+
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash(
+                $"recurring-job:{_id}", 
+                It.Is<Dictionary<string, string>>(dict => dict["V"] == "2")));
+
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", _id, JobHelper.ToTimestamp(_now)));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
         public void Trigger_ThrowsAnException_WhenIdIsNull()
         {
             var manager = CreateManager();
