@@ -278,6 +278,26 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void AddOrUpdate_CanAddRecurringJob_WithCronThatNeverFires()
+        {
+            // Arrange
+            var manager = CreateManager();
+
+            // Act
+            manager.AddOrUpdate(_id, _job, "0 0 31 2 *");
+
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash(
+                $"recurring-job:{_id}", 
+                It.Is<Dictionary<string, string>>(dict => 
+                    dict.ContainsKey("Cron") && dict["Cron"] == "0 0 31 2 *" &&
+                    !dict.ContainsKey("NextExecution"))));
+
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", _id, -1.0D));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
         public void Trigger_ThrowsAnException_WhenIdIsNull()
         {
             var manager = CreateManager();
@@ -336,6 +356,33 @@ namespace Hangfire.Core.Tests
             manager.Trigger(_id);
 
             _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
+        }
+
+        [Fact]
+        public void Trigger_CanTriggerRecurringJob_WithCronThatNeverFires()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}"))
+                .Returns(new Dictionary<string, string>
+                {
+                    { "Job", JobHelper.ToJson(InvocationData.Serialize(_job)) },
+                    { "Cron", "0 0 31 2 *" },
+                });
+
+            var manager = CreateManager();
+
+            // Act
+            manager.Trigger(_id);
+
+            // Assert
+            _stateMachine.Verify(x => x.ApplyState(It.IsAny<ApplyStateContext>()));
+
+            _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{_id}", It.Is<Dictionary<string, string>>(dict =>
+                dict.ContainsKey("LastExecution") && dict["LastExecution"] == JobHelper.SerializeDateTime(_now) &&
+                !dict.ContainsKey("NextExecution"))));
+
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", _id, -1.0D));
+            _transaction.Verify(x => x.Commit());
         }
 
         [Fact]
