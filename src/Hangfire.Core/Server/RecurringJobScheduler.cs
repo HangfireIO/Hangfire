@@ -185,6 +185,8 @@ namespace Hangfire.Server
         {
             return UseConnectionDistributedLock(context.Storage, connection =>
             {
+                var result = false;
+
                 if (IsBatchingAvailable(connection))
                 {
                     var now = _nowFactory();
@@ -196,7 +198,11 @@ namespace Hangfire.Server
                     foreach (var recurringJobId in recurringJobIds)
                     {
                         if (context.IsShutdownRequested) return false;
-                        TryEnqueueBackgroundJob(context, connection, recurringJobId, now);
+
+                        if (TryEnqueueBackgroundJob(context, connection, recurringJobId, now))
+                        {
+                            result = true;
+                        }
                     }
                 }
                 else
@@ -211,15 +217,18 @@ namespace Hangfire.Server
                         var recurringJobId = connection.GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp);
                         if (recurringJobId == null) return false;
 
-                        TryEnqueueBackgroundJob(context, connection, recurringJobId, now);
+                        if (!TryEnqueueBackgroundJob(context, connection, recurringJobId, now))
+                        {
+                            return false;
+                        }
                     }
                 }
 
-                return true;
+                return result;
             });
         }
 
-        private void TryEnqueueBackgroundJob(
+        private bool TryEnqueueBackgroundJob(
             BackgroundProcessContext context,
             IStorageConnection connection,
             string recurringJobId,
@@ -227,17 +236,19 @@ namespace Hangfire.Server
         {
             try
             {
-                EnqueueBackgroundJob(context, connection, recurringJobId, now);
+                return EnqueueBackgroundJob(context, connection, recurringJobId, now);
             }
-            catch (JobLoadException ex)
+            catch (Exception ex)
             {
                 _logger.WarnException(
-                    $"Recurring job '{recurringJobId}' can not be scheduled due to job load exception.",
+                    $"Recurring job '{recurringJobId}' can not be scheduled due to an exception.",
                     ex);
             }
+
+            return false;
         }
 
-        private void EnqueueBackgroundJob(
+        private bool EnqueueBackgroundJob(
             BackgroundProcessContext context,
             IStorageConnection connection, 
             string recurringJobId,
@@ -257,7 +268,7 @@ namespace Hangfire.Server
                             transaction.Commit();
                         }
 
-                        return;
+                        return false;
                     }
 
                     BackgroundJob backgroundJob = null;
@@ -292,6 +303,7 @@ namespace Hangfire.Server
                             transaction.UpdateRecurringJob(recurringJobId, changedFields, nextExecution);
 
                             transaction.Commit();
+                            return true;
                         }
                     }
                 }
@@ -309,6 +321,8 @@ namespace Hangfire.Server
                         $"Recurring job '{recurringJobId}' was not triggered: {ex.Message}.",
                         ex);
                 }
+
+                return false;
             }
         }
 

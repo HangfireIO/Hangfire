@@ -531,6 +531,46 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Execute_DoesNotCycleImmediately_WhenItCantDeserializeEverything(bool useJobStorageConnection)
+        {
+            // Arrange
+            _context.CancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
+
+            SetupConnection(useJobStorageConnection);
+            if (useJobStorageConnection)
+            {
+                _storageConnection
+                    .Setup(x => x.GetFirstByLowestScoreFromSet(It.IsNotNull<string>(), It.IsAny<double>(), It.IsAny<double>(), It.IsAny<int>()))
+                    .Returns(new List<string> { RecurringJobId });
+            }
+            else
+            {
+                _connection
+                    .Setup(x => x.GetFirstByLowestScoreFromSet(It.IsAny<string>(), It.IsAny<double>(), It.IsAny<double>()))
+                    .Returns(RecurringJobId);
+            }
+
+            _recurringJob["Job"] = "Some job";
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            if (useJobStorageConnection)
+            {
+                _storageConnection.Verify(x => x.GetAllEntriesFromHash(It.IsAny<string>()), Times.Once);
+            }
+            else
+            {
+                _connection.Verify(x => x.GetAllEntriesFromHash(It.IsAny<string>()), Times.Once);
+            }
+        }
+
         private void SetupConnection(bool useJobStorageConnection)
         {
             if (useJobStorageConnection) _context.Storage.Setup(x => x.GetConnection()).Returns(_storageConnection.Object);
