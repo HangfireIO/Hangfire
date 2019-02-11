@@ -15,7 +15,6 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.AspNetCore;
 using Hangfire.Client;
@@ -26,16 +25,24 @@ using Hangfire.States;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Hangfire.Logging;
+#if NETSTANDARD2_0
+using Microsoft.Extensions.Hosting;
+#endif
 
 namespace Hangfire
 {
     public static class HangfireServiceCollectionExtensions
     {
-
         public static IServiceCollection AddHangfire(
             [NotNull] this IServiceCollection services,
             [NotNull] Action<IGlobalConfiguration> configuration)
+        {
+            return AddHangfire(services, (provider, config) => configuration(config));
+        }
+
+        public static IServiceCollection AddHangfire(
+            [NotNull] this IServiceCollection services,
+            [NotNull] Action<IServiceProvider, IGlobalConfiguration> configuration)
         {
             if (services == null) throw new ArgumentNullException(nameof(services));
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
@@ -71,12 +78,11 @@ namespace Hangfire
 
             services.TryAddSingletonChecked<IBackgroundJobClient>(x => new BackgroundJobClient(
                 x.GetRequiredService<JobStorage>(),
-                x.GetRequiredService<IBackgroundJobFactory>(),
-                x.GetRequiredService<IBackgroundJobStateChanger>()));
+                x.GetRequiredService<IJobFilterProvider>()));
 
             services.TryAddSingletonChecked<IRecurringJobManager>(x => new RecurringJobManager(
                 x.GetRequiredService<JobStorage>(),
-                x.GetRequiredService<IBackgroundJobFactory>()));
+                x.GetRequiredService<IJobFilterProvider>()));
 
 
             // IGlobalConfiguration serves as a marker indicating that Hangfire's services 
@@ -109,14 +115,37 @@ namespace Hangfire
 
                 // do configuration inside callback
 
-                configuration(configurationInstance);
+                configuration(serviceProvider, configurationInstance);
                 
                 return configurationInstance;
             });
             
             return services;
         }
-        
+
+#if NETSTANDARD2_0
+        public static IServiceCollection AddHangfireServer([NotNull] this IServiceCollection services)
+        {
+            if (services == null) throw new ArgumentNullException(nameof(services));
+
+            services.AddTransient<IHostedService, HangfireHostedService>(provider =>
+            {
+                ThrowIfNotConfigured(provider);
+
+                var options = provider.GetService<BackgroundJobServerOptions>() ?? new BackgroundJobServerOptions();
+                var storage = provider.GetService<JobStorage>() ?? JobStorage.Current;
+                var additionalProcesses = provider.GetServices<IBackgroundProcess>();
+
+                options.Activator = options.Activator ?? provider.GetService<JobActivator>();
+                options.FilterProvider = options.FilterProvider ?? provider.GetService<IJobFilterProvider>();
+
+                return new HangfireHostedService(storage, options, additionalProcesses);
+            });
+
+            return services;
+        }
+#endif
+
         private static void TryAddSingletonChecked<T>(
             [NotNull] this IServiceCollection serviceCollection, 
             [NotNull] Func<IServiceProvider, T> implementationFactory)
@@ -133,5 +162,14 @@ namespace Hangfire
             });
         }
 
+        internal static void ThrowIfNotConfigured(IServiceProvider serviceProvider)
+        {
+            var configuration = serviceProvider.GetService<IGlobalConfiguration>();
+            if (configuration == null)
+            {
+                throw new InvalidOperationException(
+                    "Unable to find the required services. Please add all the required services by calling 'IServiceCollection.AddHangfire' inside the call to 'ConfigureServices(...)' in the application startup code.");
+            }
+        }
     }
 }
