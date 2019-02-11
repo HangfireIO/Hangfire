@@ -131,7 +131,7 @@ namespace Hangfire.Server
 
             if (jobsEnqueued != 0)
             {
-                _logger.Info($"{jobsEnqueued} scheduled job(s) enqueued.");
+                _logger.Debug($"{jobsEnqueued} scheduled job(s) enqueued.");
             }
 
             context.Wait(_pollingDelay);

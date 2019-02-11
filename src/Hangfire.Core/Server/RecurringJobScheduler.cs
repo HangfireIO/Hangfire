@@ -161,7 +161,7 @@ namespace Hangfire.Server
 
             if (jobsEnqueued != 0)
             {
-                _logger.Info($"{jobsEnqueued} recurring job(s) enqueued.");
+                _logger.Debug($"{jobsEnqueued} recurring job(s) enqueued.");
             }
 
             if (_pollingDelay > TimeSpan.Zero)
