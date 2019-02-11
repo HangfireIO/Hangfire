@@ -19,7 +19,6 @@ using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
-using Cronos;
 
 namespace Hangfire
 {
@@ -42,20 +41,35 @@ namespace Hangfire
         }
 
         public RecurringJobManager([NotNull] JobStorage storage)
-            : this(storage, new BackgroundJobFactory())
+            : this(storage, JobFilterProviders.Providers)
         {
         }
 
+        public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IJobFilterProvider filterProvider)
+            : this(storage, filterProvider, () => DateTime.UtcNow)
+        {
+        }
+
+        public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IJobFilterProvider filterProvider, [NotNull] Func<DateTime> nowFactory)
+#pragma warning disable 618
+            : this(storage, new BackgroundJobFactory(filterProvider), new StateMachine(filterProvider), nowFactory)
+#pragma warning restore 618
+        {
+        }
+
+        [Obsolete("Please use RecurringJobManager(JobStorage, IJobFilterProvider) overload instead. Will be removed in 2.0.0.")]
         public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobFactory factory)
             : this(storage, factory, new StateMachine(JobFilterProviders.Providers))
         {
         }
 
+        [Obsolete("Please use RecurringJobManager(JobStorage, IJobFilterProvider) overload instead. Will be removed in 2.0.0.")]
         public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobFactory factory, [NotNull] IStateMachine stateMachine)
             : this(storage, factory, stateMachine, () => DateTime.UtcNow)
         {
         }
 
+        [Obsolete("Please use RecurringJobManager(JobStorage, IJobFilterProvider, Func<DateTime>) overload instead. Will be made internal in 2.0.0.")]
         public RecurringJobManager(
             [NotNull] JobStorage storage, 
             [NotNull] IBackgroundJobFactory factory, 

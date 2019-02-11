@@ -80,34 +80,15 @@ namespace Hangfire
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses)
-            : this(options, storage, additionalProcesses, 
-                   options.FilterProvider ?? JobFilterProviders.Providers,
-                   options.Activator ?? JobActivator.Current, 
-                   null, null, null)
-        {
-        }
-
-        [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public BackgroundJobServer(
-            [NotNull] BackgroundJobServerOptions options,
-            [NotNull] JobStorage storage,
-            [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
-            [NotNull] IJobFilterProvider filterProvider,
-            [NotNull] JobActivator activator,
-            [CanBeNull] IBackgroundJobFactory factory,
-            [CanBeNull] IBackgroundJobPerformer performer,
-            [CanBeNull] IBackgroundJobStateChanger stateChanger)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (options == null) throw new ArgumentNullException(nameof(options));
             if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
-            if (filterProvider == null) throw new ArgumentNullException(nameof(filterProvider));
-            if (activator == null) throw new ArgumentNullException(nameof(activator));
 
             _options = options;
 
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
-            processes.AddRange(GetRequiredProcesses(filterProvider, activator, factory, performer, stateChanger));
+            processes.AddRange(GetRequiredProcesses(options.FilterProvider, options.Activator));
             processes.AddRange(additionalProcesses.Select(x => x.UseBackgroundPool(1)));
 
             var properties = new Dictionary<string, object>
@@ -147,18 +128,18 @@ namespace Hangfire
         }
 
         private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses(
-            [NotNull] IJobFilterProvider filterProvider,
-            [NotNull] JobActivator activator,
-            [CanBeNull] IBackgroundJobFactory factory,
-            [CanBeNull] IBackgroundJobPerformer performer,
-            [CanBeNull] IBackgroundJobStateChanger stateChanger)
+            IJobFilterProvider filterProvider,
+            JobActivator activator)
         {
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
-            var stateMachine = new StateMachine(filterProvider);
 
-            factory = factory ?? new BackgroundJobFactory(filterProvider);
-            performer = performer ?? new BackgroundJobPerformer(filterProvider, activator);
-            stateChanger = stateChanger ?? new BackgroundJobStateChanger(filterProvider);
+            filterProvider = filterProvider ?? JobFilterProviders.Providers;
+            activator = activator ?? JobActivator.Current;
+
+            var stateMachine = new StateMachine(filterProvider);
+            var factory = new BackgroundJobFactory(filterProvider);
+            var performer = new BackgroundJobPerformer(filterProvider, activator);
+            var stateChanger = new BackgroundJobStateChanger(filterProvider);
 
             processes.Add(new Worker(_options.Queues, performer, stateChanger).UseBackgroundPool(_options.WorkerCount));
             processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger).UseBackgroundPool(1));

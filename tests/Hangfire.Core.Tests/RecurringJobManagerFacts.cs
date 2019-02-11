@@ -6,6 +6,7 @@ using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
 using Xunit;
+#pragma warning disable 618
 
 // ReSharper disable AssignNullToNotNullAttribute
 
@@ -62,7 +63,7 @@ namespace Hangfire.Core.Tests
         public void Ctor_ThrowsAnException_WhenFactoryIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RecurringJobManager(_storage.Object, null));
+                () => new RecurringJobManager(_storage.Object, (IBackgroundJobFactory)null));
 
             Assert.Equal("factory", exception.ParamName);
         }
