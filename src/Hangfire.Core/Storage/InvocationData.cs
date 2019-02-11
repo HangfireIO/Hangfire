@@ -17,11 +17,16 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+#if !NETSTANDARD1_3
 using System.ComponentModel;
+#endif
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+#if !NETSTANDARD1_3
 using System.Runtime.ExceptionServices;
+#endif
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -39,14 +44,17 @@ namespace Hangfire.Storage
             TypeNameHandling = TypeNameHandling.None
         };
 
-        private static readonly string EmptyArray = "[]";
-        private static readonly string[] SystemAssemblyNames = { "mscorlib", "System.Private.CoreLib" };
-
         private static Func<string, Type> _typeResolver;
+        private static Func<Type, string> _typeSerializer;
 
         public static void SetTypeResolver([CanBeNull] Func<string, Type> typeResolver)
         {
             Volatile.Write(ref _typeResolver, typeResolver);
+        }
+
+        public static void SetTypeSerializer([CanBeNull] Func<Type, string> typeSerializer)
+        {
+            Volatile.Write(ref _typeSerializer, typeSerializer);
         }
 
         public InvocationData(
@@ -92,11 +100,16 @@ namespace Hangfire.Storage
 
         public static InvocationData Serialize(Job job)
         {
-            return new InvocationData(
-                SerializeType(job.Type).ToString(),
-                job.Method.Name,
-                SerializeTypes(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()).ToString(),
-                JobHelper.ToJson(SerializeArguments(job.Args)));
+            var typeSerializer = Volatile.Read(ref _typeSerializer) ?? DefaultTypeSerializer;
+
+            var type = typeSerializer(job.Type);
+            var methodName = job.Method.Name;
+            var parameterTypes = JsonConvert.SerializeObject(
+                job.Method.GetParameters().Select(x => typeSerializer(x.ParameterType)).ToArray(),
+                SerializerSettings);
+            var arguments = JobHelper.ToJson(SerializeArguments(job.Args));
+
+            return new InvocationData(type, methodName, parameterTypes, arguments);
         }
 
         public static InvocationData Deserialize(string serializedData)
@@ -108,8 +121,8 @@ namespace Hangfire.Storage
                 return new InvocationData(
                     payload.TypeName,
                     payload.MethodName,
-                    payload.ParameterTypes?.Length > 0 ? JsonConvert.SerializeObject(payload.ParameterTypes, SerializerSettings) : EmptyArray,
-                    JobHelper.ToJson(payload.Arguments) ?? EmptyArray);
+                    payload.ParameterTypes?.Length > 0 ? JsonConvert.SerializeObject(payload.ParameterTypes, SerializerSettings) : null,
+                    JobHelper.ToJson(payload.Arguments));
             }
 
             return JobHelper.FromJson<InvocationData>(serializedData);
@@ -276,14 +289,12 @@ namespace Hangfire.Storage
 
         internal static bool ParseDateTimeArgument(string argument, out DateTime value)
         {
-            DateTime dateTime;
-
             var result = DateTime.TryParseExact(
                 argument,
                 "MM/dd/yyyy HH:mm:ss.ffff",
                 CultureInfo.CurrentCulture,
                 DateTimeStyles.None,
-                out dateTime);
+                out var dateTime);
 
             if (!result)
             {
@@ -294,32 +305,42 @@ namespace Hangfire.Storage
             return result;
         }
 
-        private static StringBuilder SerializeTypes(Type[] types, char beginTypeDelimiter = '"', char endTypeDelimiter = '"', StringBuilder typeNamesBuilder = null)
+        private static string DefaultTypeSerializer(Type type)
         {
-            if (types == null) return null;
-            if (typeNamesBuilder == null) typeNamesBuilder = new StringBuilder();
-
-            typeNamesBuilder.Append('[');
-
-            for (var i = 0; i < types.Length; i++)
-            {
-                typeNamesBuilder.Append(beginTypeDelimiter);
-                SerializeType(types[i], true, typeNamesBuilder);
-                typeNamesBuilder.Append(endTypeDelimiter);
-
-                if (i != types.Length - 1) typeNamesBuilder.Append(',');
-            }
-
-            return typeNamesBuilder.Append(']');
+            return type.AssemblyQualifiedName;
         }
 
-        private static StringBuilder SerializeType(Type type, bool withAssemblyName = true, StringBuilder typeNameBuilder = null)
+        private static readonly ConcurrentDictionary<Type, string> TypeSerializerCache = new ConcurrentDictionary<Type, string>();
+
+        internal static string SimpleAssemblyNameTypeSerializer(Type type)
         {
-            typeNameBuilder = typeNameBuilder ?? new StringBuilder();
+            return TypeSerializerCache.GetOrAdd(type, value =>
+            {
+                var builder = new StringBuilder();
+                SerializeType(value, true, builder);
+
+                return builder.ToString();
+            });
+        }
+
+        private static void SerializeType(Type type, bool withAssemblyName, StringBuilder typeNameBuilder)
+        {
+            if (type == typeof(System.Console))
+            {
+                typeNameBuilder.Append("System.Console, mscorlib");
+                return;
+            }
+
+            if (type == typeof(System.Threading.Thread))
+            {
+                typeNameBuilder.Append("System.Threading.Thread, mscorlib");
+                return;
+            }
 
             if (type.DeclaringType != null)
             {
-                SerializeType(type.DeclaringType, false, typeNameBuilder).Append('+');
+                SerializeType(type.DeclaringType, false, typeNameBuilder);
+                typeNameBuilder.Append('+');
             }
             else if (type.Namespace != null)
             {
@@ -328,22 +349,58 @@ namespace Hangfire.Storage
 
             typeNameBuilder.Append(type.Name);
 
-            // TODO: Serialize backtick and generic type argument count
             if (type.GenericTypeArguments.Length > 0)
             {
-                SerializeTypes(type.GenericTypeArguments, '[', ']', typeNameBuilder);
+                SerializeTypes(type.GenericTypeArguments, typeNameBuilder);
             }
 
-            if (!withAssemblyName) return typeNameBuilder;
+            if (!withAssemblyName) return;
 
-            var assemblyName = type.GetTypeInfo().Assembly.GetName().Name;
+            var typeInfo = type.GetTypeInfo();
 
-            if (!SystemAssemblyNames.Contains(assemblyName))
+            if (type != typeof(object) && type != typeof(string) && !typeInfo.IsPrimitive)
             {
+                string assemblyName;
+
+                var typeForwardedFrom = typeInfo.GetCustomAttribute<TypeForwardedFromAttribute>();
+                if (typeForwardedFrom != null)
+                {
+                    assemblyName = typeForwardedFrom.AssemblyFullName;
+
+                    var delimiterIndex = assemblyName.IndexOf(",", StringComparison.OrdinalIgnoreCase);
+
+                    assemblyName = delimiterIndex >= 0 ? assemblyName.Substring(0, delimiterIndex) : assemblyName;
+                }
+                else
+                {
+                    assemblyName = typeInfo.Assembly.GetName().Name;
+                }
+
+                if (assemblyName.Equals("System.Private.CoreLib", StringComparison.OrdinalIgnoreCase))
+                {
+                    assemblyName = "mscorlib";
+                }
+
                 typeNameBuilder.Append(", ").Append(assemblyName);
             }
+        }
 
-            return typeNameBuilder;
+        private static void SerializeTypes(Type[] types, StringBuilder typeNamesBuilder)
+        {
+            if (types == null) return;
+
+            typeNamesBuilder.Append('[');
+
+            for (var i = 0; i < types.Length; i++)
+            {
+                typeNamesBuilder.Append('[');
+                SerializeType(types[i], true, typeNamesBuilder);
+                typeNamesBuilder.Append(']');
+
+                if (i != types.Length - 1) typeNamesBuilder.Append(',');
+            }
+
+            typeNamesBuilder.Append(']');
         }
 
         private static readonly Regex VersionRegex = new Regex(@", Version=\d+.\d+.\d+.\d+", RegexOptions.Compiled);

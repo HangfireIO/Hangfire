@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Reflection;
 using Hangfire.Common;
 using Hangfire.Storage;
 using Newtonsoft.Json;
 using Xunit;
 using System.Globalization;
+using System.Threading;
 
 namespace Hangfire.Core.Tests.Storage
 {
     public class InvocationDataFacts
     {
-        private const string NamespaceName = "Hangfire.Core.Tests.Storage";
-        private const string AssemblyName = "Hangfire.Core.Tests";
-
         [Fact]
         public void Deserialize_CorrectlyDeserializes_AllTheData()
         {
@@ -217,7 +216,7 @@ namespace Hangfire.Core.Tests.Storage
         public void Serialize_CorrectlySerializesInvocationDataToString(string method, string parameterTypes,
             string args, string expectedParameterTypes, string expectedArgs)
         {
-            var type = $"{NamespaceName}.InvocationDataFacts, {AssemblyName}";
+            var type = $"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests";
 
             var invocationData = new InvocationData(type, method, parameterTypes, args);
 
@@ -339,19 +338,60 @@ namespace Hangfire.Core.Tests.Storage
             Assert.IsType<JsonReaderException>(exception.InnerException);
         }
 
-        [Theory]
-        [MemberData(nameof(MemberData))]
-        public void Serialize_CorrectlySerializesJobToInvocationData(Job job, string className, string parameterTypes, string serializedArgs, bool isGlobalNameSpace)
+        [Fact]
+        public void Serialize_CorrectlySerializesTheData()
         {
-            var prefix = isGlobalNameSpace ? "" : $"{NamespaceName}.";
+            var job = Job.FromExpression(() => Sample("Hello"));
 
-            var methodName = job.Method.Name;
             var invocationData = InvocationData.Serialize(job);
 
-            Assert.Equal($"{prefix}{className}, {AssemblyName}", invocationData.Type);
-            Assert.Equal(methodName, invocationData.Method);
-            Assert.Equal(parameterTypes, invocationData.ParameterTypes);
-            Assert.Equal(serializedArgs, invocationData.Arguments);
+            Assert.Equal(typeof(InvocationDataFacts).AssemblyQualifiedName, invocationData.Type);
+            Assert.Equal("Sample", invocationData.Method);
+            Assert.Equal(JobHelper.ToJson(new[] { typeof(string) }), invocationData.ParameterTypes);
+            Assert.Equal(JobHelper.ToJson(new[] { "\"Hello\"" }), invocationData.Arguments);
+        }
+
+        [Theory]
+        [MemberData(nameof(MemberData))]
+        public void Serialize_CorrectlySerializesJobToInvocationData(Job job, string typeName, string method, string parameterTypes, string serializedArgs)
+        {
+            try
+            {
+                InvocationData.SetTypeSerializer(InvocationData.SimpleAssemblyNameTypeSerializer);
+
+                var invocationData = InvocationData.Serialize(job);
+
+                Assert.Equal(typeName, invocationData.Type);
+                Assert.Equal(method, invocationData.Method);
+                Assert.Equal(parameterTypes, invocationData.ParameterTypes);
+                Assert.Equal(serializedArgs, invocationData.Arguments);
+            }
+            finally
+            {
+                InvocationData.SetTypeSerializer(null);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(MemberData))]
+        public void Deserialize_CorrectlyDeserializesJobFromInvocationData(Job job, string typeName, string method, string parameterTypes, string serializedArgs)
+        {
+            var deserializedJob = new InvocationData(typeName, method, parameterTypes, serializedArgs).Deserialize();
+
+            Assert.Equal(job.Type.FullName, deserializedJob.Type.FullName);
+            Assert.Equal(job.Method.Name, deserializedJob.Method.Name);
+
+            var parameters = job.Method.GetParameters();
+            var deserializedParameters = deserializedJob.Method.GetParameters();
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                Assert.Equal(parameters[i].ParameterType.FullName, deserializedParameters[i].ParameterType.FullName);
+            }
+
+            for (var i = 0; i < job.Args.Count; i++)
+            {
+                Assert.Equal(job.Args[i], deserializedJob.Args[i]);
+            }
         }
 
         public static IEnumerable<object[]> MemberData
@@ -360,32 +400,35 @@ namespace Hangfire.Core.Tests.Storage
             {
                 return new []
                 {
-                    new object[] { Job.FromExpression(() => Sample("str1")), "InvocationDataFacts", "[\"System.String\"]", "[\"\\\"str1\\\"\"]", false },
-                    new object[] { Job.FromExpression(() => ListMethod(new string[0])), nameof(InvocationDataFacts), "[\"System.Collections.Generic.IList`1[[System.String]]\"]", "[\"[]\"]", false },
+                    new object[] { Job.FromExpression(() => Thread.Sleep(TimeSpan.FromSeconds(5))), "System.Threading.Thread, mscorlib", "Sleep", "[\"System.TimeSpan, mscorlib\"]", "[\"\\\"00:00:05\\\"\"]" },
+                    new object[] { Job.FromExpression(() => Console.WriteLine("4567")), "System.Console, mscorlib", "WriteLine", "[\"System.String\"]", "[\"\\\"4567\\\"\"]" },
+                    new object[] { Job.FromExpression(() => Sample("str1")), "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests", "Sample", "[\"System.String\"]", "[\"\\\"str1\\\"\"]" },
+                    new object[] { Job.FromExpression(() => ListMethod(new string[0])), "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests", "ListMethod", "[\"System.Collections.Generic.IList`1[[System.String]], mscorlib\"]", "[\"[]\"]" },
 
-                    new object[] { Job.FromExpression(() => GenericMethod(1)), "InvocationDataFacts", "[\"System.Int32\"]", "[\"1\"]", false },
-                    new object[] { Job.FromExpression(() => GenericMethod(new InvocationDataFacts())), "InvocationDataFacts", $"[\"{NamespaceName}.InvocationDataFacts, {AssemblyName}\"]", "[\"{}\"]", false },
-                    new object[] { Job.FromExpression(() => GenericMethod(new GlobalType())), "InvocationDataFacts", $"[\"GlobalType, {AssemblyName}\"]", "[\"{}\"]", false },
-                    new object[] { Job.FromExpression(() => OtherGenericMethod(1, new List<int>())), "InvocationDataFacts", "[\"System.Int32\",\"System.Collections.Generic.List`1[[System.Int32]]\"]", "[\"1\",\"[]\"]", false },
+                    new object[] { Job.FromExpression(() => GenericMethod(1)), "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests", "GenericMethod", "[\"System.Int32\"]", "[\"1\"]" },
+                    //new object[] { Job.FromExpression(() => GenericMethod((StringDictionary)null)), "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests", "GenericMethod", "[\"System.Collections.Specialized.StringDictionary, System\"]", "[null]" },
+                    new object[] { Job.FromExpression(() => GenericMethod((InvocationDataFacts)null)), "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests", "GenericMethod", "[\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\"]", "[null]" },
+                    new object[] { Job.FromExpression(() => GenericMethod((GlobalType)null)), "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests", "GenericMethod", "[\"GlobalType, Hangfire.Core.Tests\"]", "[null]" },
+                    new object[] { Job.FromExpression(() => OtherGenericMethod(1, new List<int>())), "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests", "OtherGenericMethod", "[\"System.Int32\",\"System.Collections.Generic.List`1[[System.Int32]], mscorlib\"]", "[\"1\",\"[]\"]" },
 
-                    new object[] { Job.FromExpression<NestedType>(x => x.Method()), "InvocationDataFacts+NestedType", "[]", "[]", false },
-                    new object[] { Job.FromExpression<NestedType>(x => x.NestedGenericMethod(1)), "InvocationDataFacts+NestedType", "[\"System.Int32\"]", "[\"1\"]", false },
+                    new object[] { Job.FromExpression<NestedType>(x => x.Method()), "Hangfire.Core.Tests.Storage.InvocationDataFacts+NestedType, Hangfire.Core.Tests", "Method", "[]", "[]" },
+                    new object[] { Job.FromExpression<NestedType>(x => x.NestedGenericMethod(1)), "Hangfire.Core.Tests.Storage.InvocationDataFacts+NestedType, Hangfire.Core.Tests", "NestedGenericMethod", "[\"System.Int32\"]", "[\"1\"]" },
 
-                    new object[] { Job.FromExpression<GenericType<int>>(x => x.Method()), "InvocationDataFacts+GenericType`1[[System.Int32]]", "[]", "[]", false },
-                    new object[] { Job.FromExpression<GenericType<GlobalType>>(x => x.Method()), "InvocationDataFacts+GenericType`1[[GlobalType, Hangfire.Core.Tests]]", "[]", "[]", false },
-                    new object[] { Job.FromExpression<GenericType<InvocationDataFacts>>(x => x.Method()), $"InvocationDataFacts+GenericType`1[[{NamespaceName}.InvocationDataFacts, {AssemblyName}]]", "[]", "[]", false },
-                    new object[] { Job.FromExpression<GenericType<int>>(x => x.Method(1, 1)), "InvocationDataFacts+GenericType`1[[System.Int32]]", "[\"System.Int32\",\"System.Int32\"]", "[\"1\",\"1\"]", false },
-                    new object[] { Job.FromExpression<GenericType<int>.NestedGenericType<string>>(x => x.Method(1, "1")), "InvocationDataFacts+GenericType`1+NestedGenericType`1[[System.Int32],[System.String]]", "[\"System.Int32\",\"System.String\"]", "[\"1\",\"\\\"1\\\"\"]", false },
+                    new object[] { Job.FromExpression<GenericType<int>>(x => x.Method()), "Hangfire.Core.Tests.Storage.InvocationDataFacts+GenericType`1[[System.Int32]], Hangfire.Core.Tests", "Method", "[]", "[]" },
+                    new object[] { Job.FromExpression<GenericType<GlobalType>>(x => x.Method()), "Hangfire.Core.Tests.Storage.InvocationDataFacts+GenericType`1[[GlobalType, Hangfire.Core.Tests]], Hangfire.Core.Tests", "Method", "[]", "[]" },
+                    new object[] { Job.FromExpression<GenericType<InvocationDataFacts>>(x => x.Method()), "Hangfire.Core.Tests.Storage.InvocationDataFacts+GenericType`1[[Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests]], Hangfire.Core.Tests", "Method", "[]", "[]" },
+                    new object[] { Job.FromExpression<GenericType<int>>(x => x.Method(1, 1)), "Hangfire.Core.Tests.Storage.InvocationDataFacts+GenericType`1[[System.Int32]], Hangfire.Core.Tests", "Method", "[\"System.Int32\",\"System.Int32\"]", "[\"1\",\"1\"]" },
+                    new object[] { Job.FromExpression<GenericType<int>.NestedGenericType<string>>(x => x.Method(1, "1")), "Hangfire.Core.Tests.Storage.InvocationDataFacts+GenericType`1+NestedGenericType`1[[System.Int32],[System.String]], Hangfire.Core.Tests", "Method", "[\"System.Int32\",\"System.String\"]", "[\"1\",\"\\\"1\\\"\"]" },
 
-                    new object[] { Job.FromExpression<GlobalType>(x => x.Method()), "GlobalType", "[]", "[]", true},
-                    new object[] { Job.FromExpression<GlobalType>(x => x.GenericMethod(1)), "GlobalType", "[\"System.Int32\"]", "[\"1\"]", true},
-                    new object[] { Job.FromExpression<GlobalType.NestedType>(x => x.NestedMethod()), "GlobalType+NestedType", "[]", "[]", true},
-                    new object[] { Job.FromExpression<GlobalType.NestedGenericType<long>>(x => x.NestedGenericMethod(1, 1)), "GlobalType+NestedGenericType`1[[System.Int64]]", "[\"System.Int64\",\"System.Int32\"]", "[\"1\",\"1\"]", true},
+                    new object[] { Job.FromExpression<GlobalType>(x => x.Method()), "GlobalType, Hangfire.Core.Tests", "Method", "[]", "[]" },
+                    new object[] { Job.FromExpression<GlobalType>(x => x.GenericMethod(1)), "GlobalType, Hangfire.Core.Tests", "GenericMethod", "[\"System.Int32\"]", "[\"1\"]" },
+                    new object[] { Job.FromExpression<GlobalType.NestedType>(x => x.NestedMethod()), "GlobalType+NestedType, Hangfire.Core.Tests", "NestedMethod", "[]", "[]" },
+                    new object[] { Job.FromExpression<GlobalType.NestedGenericType<long>>(x => x.NestedGenericMethod(1, 1)), "GlobalType+NestedGenericType`1[[System.Int64]], Hangfire.Core.Tests", "NestedGenericMethod", "[\"System.Int64\",\"System.Int32\"]", "[\"1\",\"1\"]" },
 
-                    new object[] { Job.FromExpression<GlobalGenericType<int>>(x => x.Method()), "GlobalGenericType`1[[System.Int32]]", "[]", "[]", true},
-                    new object[] { Job.FromExpression<GlobalGenericType<object>>(x => x.GenericMethod(1)), "GlobalGenericType`1[[System.Object]]", "[\"System.Int32\"]", "[\"1\"]", true},
-                    new object[] { Job.FromExpression<GlobalGenericType<int>.NestedType>(x => x.Method()), "GlobalGenericType`1+NestedType[[System.Int32]]", "[]", "[]", true},
-                    new object[] { Job.FromExpression<GlobalGenericType<long>.NestedGenericType<int>>(x => x.Method(1, 1)), "GlobalGenericType`1+NestedGenericType`1[[System.Int64],[System.Int32]]", "[\"System.Int64\",\"System.Int32\"]", "[\"1\",\"1\"]", true},
+                    new object[] { Job.FromExpression<GlobalGenericType<int>>(x => x.Method()), "GlobalGenericType`1[[System.Int32]], Hangfire.Core.Tests", "Method", "[]", "[]" },
+                    new object[] { Job.FromExpression<GlobalGenericType<object>>(x => x.GenericMethod(1)), "GlobalGenericType`1[[System.Object]], Hangfire.Core.Tests", "GenericMethod", "[\"System.Int32\"]", "[\"1\"]" },
+                    new object[] { Job.FromExpression<GlobalGenericType<int>.NestedType>(x => x.Method()), "GlobalGenericType`1+NestedType[[System.Int32]], Hangfire.Core.Tests", "Method", "[]", "[]" },
+                    new object[] { Job.FromExpression<GlobalGenericType<long>.NestedGenericType<int>>(x => x.Method(1, 1)), "GlobalGenericType`1+NestedGenericType`1[[System.Int64],[System.Int32]], Hangfire.Core.Tests", "Method", "[\"System.Int64\",\"System.Int32\"]", "[\"1\",\"1\"]" },
                 };
             }
         }

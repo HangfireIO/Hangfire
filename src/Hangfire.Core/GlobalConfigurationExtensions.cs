@@ -185,11 +185,35 @@ namespace Hangfire
             return configuration;
         }
 
+        public static IGlobalConfiguration UseTypeSerializer(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] Func<Type, string> typeSerializer)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            InvocationData.SetTypeSerializer(typeSerializer);
+            return configuration;
+        }
+
         public static IGlobalConfiguration UseDefaultTypeResolver(
             [NotNull] this IGlobalConfiguration configuration)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             return configuration.UseTypeResolver(null);
+        }
+
+        public static IGlobalConfiguration UseDefaultTypeSerializer(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseTypeSerializer(null);
+        }
+
+        public static IGlobalConfiguration UseSimpleAssemblyNameTypeSerializer(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseTypeSerializer(InvocationData.SimpleAssemblyNameTypeSerializer);
         }
 
         public static IGlobalConfiguration UseIgnoredAssemblyVersionTypeResolver(
