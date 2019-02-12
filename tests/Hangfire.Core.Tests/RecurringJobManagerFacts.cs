@@ -25,6 +25,7 @@ namespace Hangfire.Core.Tests
         private readonly DateTime _now = new DateTime(2017, 03, 30, 15, 30, 0, DateTimeKind.Utc);
         private readonly Func<DateTime> _nowFactory;
         private readonly BackgroundJob _backgroundJob;
+        private readonly Mock<ITimeZoneResolver> _timeZoneResolver;
 
         public RecurringJobManagerFacts()
         {
@@ -36,6 +37,9 @@ namespace Hangfire.Core.Tests
             _factory = new Mock<IBackgroundJobFactory>();
             _stateMachine = new Mock<IStateMachine>();
             _nowFactory = () => _now;
+
+            _timeZoneResolver = new Mock<ITimeZoneResolver>();
+            _timeZoneResolver.Setup(x => x.GetTimeZoneById(It.IsAny<string>())).Returns(TimeZoneInfo.Utc);
 
             _connection = new Mock<IStorageConnection>();
             _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
@@ -78,10 +82,19 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void Ctor_ThrowsAnException_WhenTimeZoneResolverIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new RecurringJobManager(_storage.Object, _factory.Object, _stateMachine.Object, null, _nowFactory));
+
+            Assert.Equal("timeZoneResolver", exception.ParamName);
+        }
+
+        [Fact]
         public void Ctor_ThrowsAnException_WhenNowFactoryIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RecurringJobManager(_storage.Object, _factory.Object, _stateMachine.Object, null));
+                () => new RecurringJobManager(_storage.Object, _factory.Object, _stateMachine.Object, _timeZoneResolver.Object, null));
 
             Assert.Equal("nowFactory", exception.ParamName);
         }
@@ -299,6 +312,43 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void AddOrUpdate_UsesTimeZoneResolver_WhenCalculatingNextExecution()
+        {
+            // Arrange
+            var timeZone = TimeZoneInfo.FindSystemTimeZoneById(PlatformHelper.IsRunningOnWindows()
+                ? "Hawaiian Standard Time"
+                : "Pacific/Honolulu");
+
+            _timeZoneResolver.Setup(x => x.GetTimeZoneById(It.IsAny<string>())).Throws<InvalidOperationException>();
+            _timeZoneResolver
+                .Setup(x => x.GetTimeZoneById(It.Is<string>(id => id == "Hawaiian Standard Time" || id == "Pacific/Honolulu")))
+                .Returns(timeZone);
+
+            // We are returning IANA time zone on Windows and Windows time zone on Linux.
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
+            {
+                { "Cron", "0 0 * * *" },
+                { "Job", InvocationData.Serialize(_job).Serialize() },
+                { "CreatedAt", JobHelper.SerializeDateTime(_now) },
+                { "TimeZoneId", PlatformHelper.IsRunningOnWindows() ? "Pacific/Honolulu" : "Hawaiian Standard Time" },
+                { "NextExecution", JobHelper.SerializeDateTime(_now.AddHours(18).AddMinutes(30)) },
+                { "Queue", "default" },
+                { "V", "2" }
+            });
+
+            var manager = CreateManager();
+
+            // Act
+            manager.AddOrUpdate(_id, _job, "0 0 * * *", timeZone, "default");
+
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{_id}", It.Is<Dictionary<string, string>>(dict =>
+                dict.ContainsKey("TimeZoneId") && !dict.ContainsKey("NextExecution"))));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", _id, JobHelper.ToTimestamp(_now.AddHours(18).AddMinutes(30))));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
         public void Trigger_ThrowsAnException_WhenIdIsNull()
         {
             var manager = CreateManager();
@@ -409,7 +459,7 @@ namespace Hangfire.Core.Tests
 
         private RecurringJobManager CreateManager()
         {
-            return new RecurringJobManager(_storage.Object, _factory.Object, _stateMachine.Object, _nowFactory);
+            return new RecurringJobManager(_storage.Object, _factory.Object, _stateMachine.Object, _timeZoneResolver.Object, _nowFactory);
         }
 
         public static void Method() { }

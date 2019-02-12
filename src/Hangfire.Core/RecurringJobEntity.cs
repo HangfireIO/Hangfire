@@ -30,8 +30,11 @@ namespace Hangfire
         public RecurringJobEntity(
             [NotNull] string recurringJobId,
             [NotNull] IDictionary<string, string> recurringJob,
+            [NotNull] ITimeZoneResolver timeZoneResolver,
             DateTime now)
         {
+            if (timeZoneResolver == null) throw new ArgumentNullException(nameof(timeZoneResolver));
+
             _recurringJob = recurringJob ?? throw new ArgumentNullException(nameof(recurringJob));
 
             RecurringJobId = recurringJobId ?? throw new ArgumentNullException(nameof(recurringJobId));
@@ -42,7 +45,7 @@ namespace Hangfire
             }
 
             TimeZone = recurringJob.ContainsKey("TimeZoneId") && !String.IsNullOrWhiteSpace("TimeZoneId")
-                ? TimeZoneInfo.FindSystemTimeZoneById(recurringJob["TimeZoneId"])
+                ? timeZoneResolver.GetTimeZoneById(recurringJob["TimeZoneId"])
                 : TimeZoneInfo.Utc;
 
             if (recurringJob.ContainsKey("Cron") && !String.IsNullOrWhiteSpace(recurringJob["Cron"]))

@@ -88,7 +88,7 @@ namespace Hangfire
             _options = options;
 
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
-            processes.AddRange(GetRequiredProcesses(options.FilterProvider, options.Activator));
+            processes.AddRange(GetRequiredProcesses());
             processes.AddRange(additionalProcesses.Select(x => x.UseBackgroundPool(1)));
 
             var properties = new Dictionary<string, object>
@@ -127,14 +127,13 @@ namespace Hangfire
             _logger.Info("Hangfire Server stopped.");
         }
 
-        private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses(
-            IJobFilterProvider filterProvider,
-            JobActivator activator)
+        private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses()
         {
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
 
-            filterProvider = filterProvider ?? JobFilterProviders.Providers;
-            activator = activator ?? JobActivator.Current;
+            var filterProvider = _options.FilterProvider ?? JobFilterProviders.Providers;
+            var activator = _options.Activator ?? JobActivator.Current;
+            var timeZoneResolver = _options.TimeZoneResolver ?? new DefaultTimeZoneResolver();
 
             var stateMachine = new StateMachine(filterProvider);
             var factory = new BackgroundJobFactory(filterProvider);
@@ -143,7 +142,7 @@ namespace Hangfire
 
             processes.Add(new Worker(_options.Queues, performer, stateChanger).UseBackgroundPool(_options.WorkerCount));
             processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger).UseBackgroundPool(1));
-            processes.Add(new RecurringJobScheduler(factory, stateMachine, _options.SchedulePollingInterval).UseBackgroundPool(1));
+            processes.Add(new RecurringJobScheduler(factory, stateMachine, _options.SchedulePollingInterval, timeZoneResolver).UseBackgroundPool(1));
 
             return processes;
         }

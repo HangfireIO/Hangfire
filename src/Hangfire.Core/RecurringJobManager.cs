@@ -34,6 +34,7 @@ namespace Hangfire
         private readonly IBackgroundJobFactory _factory;
         private readonly IStateMachine _stateMachine;
         private readonly Func<DateTime> _nowFactory;
+        private readonly ITimeZoneResolver _timeZoneResolver;
 
         public RecurringJobManager()
             : this(JobStorage.Current)
@@ -46,13 +47,25 @@ namespace Hangfire
         }
 
         public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IJobFilterProvider filterProvider)
-            : this(storage, filterProvider, () => DateTime.UtcNow)
+            : this(storage, filterProvider, new DefaultTimeZoneResolver())
         {
         }
 
-        public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IJobFilterProvider filterProvider, [NotNull] Func<DateTime> nowFactory)
+        public RecurringJobManager(
+            [NotNull] JobStorage storage, 
+            [NotNull] IJobFilterProvider filterProvider,
+            [NotNull] ITimeZoneResolver timeZoneResolver)
+            : this(storage, filterProvider, timeZoneResolver, () => DateTime.UtcNow)
+        {
+        }
+
+        public RecurringJobManager(
+            [NotNull] JobStorage storage, 
+            [NotNull] IJobFilterProvider filterProvider, 
+            [NotNull] ITimeZoneResolver timeZoneResolver,
+            [NotNull] Func<DateTime> nowFactory)
 #pragma warning disable 618
-            : this(storage, new BackgroundJobFactory(filterProvider), new StateMachine(filterProvider), nowFactory)
+            : this(storage, new BackgroundJobFactory(filterProvider), new StateMachine(filterProvider), timeZoneResolver, nowFactory)
 #pragma warning restore 618
         {
         }
@@ -65,20 +78,21 @@ namespace Hangfire
 
         [Obsolete("Please use RecurringJobManager(JobStorage, IJobFilterProvider) overload instead. Will be removed in 2.0.0.")]
         public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobFactory factory, [NotNull] IStateMachine stateMachine)
-            : this(storage, factory, stateMachine, () => DateTime.UtcNow)
+            : this(storage, factory, stateMachine, new DefaultTimeZoneResolver(), () => DateTime.UtcNow)
         {
         }
 
-        [Obsolete("Please use RecurringJobManager(JobStorage, IJobFilterProvider, Func<DateTime>) overload instead. Will be made internal in 2.0.0.")]
-        public RecurringJobManager(
+        internal RecurringJobManager(
             [NotNull] JobStorage storage, 
             [NotNull] IBackgroundJobFactory factory, 
             [NotNull] IStateMachine stateMachine,
+            [NotNull] ITimeZoneResolver timeZoneResolver,
             [NotNull] Func<DateTime> nowFactory)
         {
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
             _stateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
+            _timeZoneResolver = timeZoneResolver ?? throw new ArgumentNullException(nameof(timeZoneResolver));
             _nowFactory = nowFactory ?? throw new ArgumentNullException(nameof(nowFactory));
         }
 
@@ -92,7 +106,7 @@ namespace Hangfire
             using (var connection = _storage.GetConnection())
             using (connection.AcquireDistributedRecurringJobLock(recurringJobId, DefaultTimeout))
             {
-                var recurringJob = connection.GetOrCreateRecurringJob(recurringJobId, _nowFactory());
+                var recurringJob = connection.GetOrCreateRecurringJob(recurringJobId, _timeZoneResolver, _nowFactory());
 
                 recurringJob.Job = job;
                 recurringJob.Cron = cronExpression;
@@ -119,7 +133,7 @@ namespace Hangfire
             {
                 var now = _nowFactory();
 
-                var recurringJob = connection.GetRecurringJob(recurringJobId, now);
+                var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
                 if (recurringJob == null) return;
 
                 var backgroundJob = _factory.TriggerRecurringJob(_storage, connection, recurringJob, now);

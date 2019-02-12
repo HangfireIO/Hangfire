@@ -40,29 +40,33 @@ namespace Hangfire
         public static RecurringJobEntity GetRecurringJob(
             [NotNull] this IStorageConnection connection,
             [NotNull] string recurringJobId,
+            [NotNull] ITimeZoneResolver timeZoneResolver,
             DateTime now)
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
             if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
+            if (timeZoneResolver == null) throw new ArgumentNullException(nameof(timeZoneResolver));
 
             var recurringJob = connection.GetAllEntriesFromHash($"recurring-job:{recurringJobId}");
             if (recurringJob == null || recurringJob.Count == 0) return null;
 
-            return new RecurringJobEntity(recurringJobId, recurringJob, now);
+            return new RecurringJobEntity(recurringJobId, recurringJob, timeZoneResolver, now);
         }
 
         public static RecurringJobEntity GetOrCreateRecurringJob(
             [NotNull] this IStorageConnection connection,
             [NotNull] string recurringJobId,
+            [NotNull] ITimeZoneResolver timeZoneResolver,
             DateTime now)
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
             if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
+            if (timeZoneResolver == null) throw new ArgumentNullException(nameof(timeZoneResolver));
 
             var recurringJob = connection.GetAllEntriesFromHash($"recurring-job:{recurringJobId}");
             if (recurringJob == null || recurringJob.Count == 0) recurringJob = new Dictionary<string, string>();
 
-            return new RecurringJobEntity(recurringJobId, recurringJob, now);
+            return new RecurringJobEntity(recurringJobId, recurringJob, timeZoneResolver, now);
         }
 
         public static void UpdateRecurringJob(

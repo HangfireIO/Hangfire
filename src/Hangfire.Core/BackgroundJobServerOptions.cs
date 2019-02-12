@@ -48,6 +48,7 @@ namespace Hangfire
             
             FilterProvider = null;
             Activator = null;
+            TimeZoneResolver = null;
         }
         
         public string ServerName { get; set; }
@@ -151,5 +152,8 @@ namespace Hangfire
 
         [CanBeNull]
         public JobActivator Activator { get; set; }
+
+        [CanBeNull]
+        public ITimeZoneResolver TimeZoneResolver { get; set; }
     }
 }

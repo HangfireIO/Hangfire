@@ -70,7 +70,8 @@ namespace Hangfire
 
             options.Activator = options.Activator ?? services.GetService<JobActivator>();
             options.FilterProvider = options.FilterProvider ?? services.GetService<IJobFilterProvider>();
-            
+            options.TimeZoneResolver = options.TimeZoneResolver ?? services.GetService<ITimeZoneResolver>();
+
             var server = new BackgroundJobServer(options, storage, additionalProcesses);
 
             lifetime.ApplicationStopping.Register(() => server.Stop(false));

@@ -22,6 +22,7 @@ namespace Hangfire.Core.Tests.Server
         private readonly Mock<IWriteOnlyTransaction> _transaction;
         private readonly Dictionary<string, string> _recurringJob;
         private readonly Func<DateTime> _nowInstantFactory;
+        private readonly Mock<ITimeZoneResolver> _timeZoneResolver;
         private readonly BackgroundProcessContextMock _context;
         private readonly Mock<IBackgroundJobFactory> _factory;
         private readonly Mock<IStateMachine> _stateMachine;
@@ -44,6 +45,10 @@ namespace Hangfire.Core.Tests.Server
             var timeZone = TimeZoneInfo.Local;
 
             _nowInstantFactory = () => _nowInstant;
+
+            _timeZoneResolver = new Mock<ITimeZoneResolver>();
+            _timeZoneResolver.Setup(x => x.GetTimeZoneById(It.IsAny<string>())).Throws<InvalidTimeZoneException>();
+            _timeZoneResolver.Setup(x => x.GetTimeZoneById(timeZone.Id)).Returns(timeZone);
 
             // ReSharper disable once PossibleInvalidOperationException
             _nextInstant = _cronExpression.GetNextOccurrence(_nowInstant, timeZone).Value;
@@ -91,7 +96,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(null, _stateMachine.Object, _delay, _nowInstantFactory));
+                () => new RecurringJobScheduler(null, _stateMachine.Object, _delay, _timeZoneResolver.Object, _nowInstantFactory));
 
             Assert.Equal("factory", exception.ParamName);
         }
@@ -101,9 +106,19 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(_factory.Object, null, _delay, _nowInstantFactory));
+                () => new RecurringJobScheduler(_factory.Object, null, _delay, _timeZoneResolver.Object, _nowInstantFactory));
             
             Assert.Equal("stateMachine", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenTimeZoneResolverIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                // ReSharper disable once AssignNullToNotNullAttribute
+                () => new RecurringJobScheduler(_factory.Object, _stateMachine.Object, _delay, null, _nowInstantFactory));
+
+            Assert.Equal("timeZoneResolver", exception.ParamName);
         }
 
         [Fact]
@@ -111,7 +126,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(_factory.Object, _stateMachine.Object, _delay, null));
+                () => new RecurringJobScheduler(_factory.Object, _stateMachine.Object, _delay, _timeZoneResolver.Object, null));
 
             Assert.Equal("nowFactory", exception.ParamName);
         }
@@ -571,6 +586,37 @@ namespace Hangfire.Core.Tests.Server
             }
         }
 
+        [Fact]
+        public void Execute_UsesTimeZoneResolver_WhenCalculatingNextExecution()
+        {
+            // Arrange
+            SetupConnection(false);
+
+            var timeZone = TimeZoneInfo.FindSystemTimeZoneById(PlatformHelper.IsRunningOnWindows()
+                ? "Hawaiian Standard Time"
+                : "Pacific/Honolulu");
+
+            _timeZoneResolver
+                .Setup(x => x.GetTimeZoneById(It.Is<string>(id => id == "Hawaiian Standard Time" || id == "Pacific/Honolulu")))
+                .Returns(timeZone);
+
+            // We are returning IANA time zone on Windows and Windows time zone on Linux.
+            _recurringJob["Cron"] = "0 0 * * *";
+            _recurringJob["TimeZoneId"] = PlatformHelper.IsRunningOnWindows() ? "Pacific/Honolulu" : "Hawaiian Standard Time";
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddHours(18).AddMinutes(30));
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{RecurringJobId}", It.Is<Dictionary<string, string>>(dict =>
+                dict.ContainsKey("TimeZoneId") && !dict.ContainsKey("NextExecution"))));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, JobHelper.ToTimestamp(_nowInstant.AddHours(18).AddMinutes(30))));
+            _transaction.Verify(x => x.Commit());
+        }
+
         private void SetupConnection(bool useJobStorageConnection)
         {
             if (useJobStorageConnection) _context.Storage.Setup(x => x.GetConnection()).Returns(_storageConnection.Object);
@@ -583,6 +629,7 @@ namespace Hangfire.Core.Tests.Server
                 _factory.Object,
                 _stateMachine.Object,
                 _delay,
+                _timeZoneResolver.Object,
                 _nowInstantFactory);
 
             if (lastExecution.HasValue)

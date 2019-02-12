@@ -70,6 +70,7 @@ namespace Hangfire.Server
         private readonly IBackgroundJobFactory _factory;
         private readonly IStateMachine _stateMachine;
         private readonly Func<DateTime> _nowFactory;
+        private readonly ITimeZoneResolver _timeZoneResolver;
         private readonly TimeSpan _pollingDelay;
 
         /// <summary>
@@ -106,12 +107,11 @@ namespace Hangfire.Server
         /// <param name="pollingDelay">Delay before another polling attempt, when no jobs scheduled yet.</param>
         /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="stateMachine"/> is null.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="nowFactory"/> is null.</exception>
         public RecurringJobScheduler(
             [NotNull] IBackgroundJobFactory factory,
             [NotNull] IStateMachine stateMachine,
             TimeSpan pollingDelay)
-            : this(factory, stateMachine, pollingDelay, () => DateTime.UtcNow)
+            : this(factory, stateMachine, pollingDelay, new DefaultTimeZoneResolver())
         {
         }
 
@@ -122,23 +122,35 @@ namespace Hangfire.Server
         /// <param name="factory">Factory that will be used to create background jobs.</param>
         /// <param name="stateMachine">State machine that's responsible for enqueuing jobs.</param>
         /// <param name="pollingDelay">Delay before another polling attempt, when no jobs scheduled yet.</param>
-        /// <param name="nowFactory">Factory function that returns the current time.</param>
+        /// <param name="timeZoneResolver">Function that returns a time zone object by its identifier.</param>
         /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="stateMachine"/> is null.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="nowFactory"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="timeZoneResolver"/> is null.</exception>
         public RecurringJobScheduler(
             [NotNull] IBackgroundJobFactory factory,
             [NotNull] IStateMachine stateMachine,
             TimeSpan pollingDelay,
+            [NotNull] ITimeZoneResolver timeZoneResolver)
+            : this(factory, stateMachine, pollingDelay, timeZoneResolver, () => DateTime.UtcNow)
+        {
+        }
+
+        public RecurringJobScheduler(
+            [NotNull] IBackgroundJobFactory factory,
+            [NotNull] IStateMachine stateMachine,
+            TimeSpan pollingDelay,
+            [NotNull] ITimeZoneResolver timeZoneResolver,
             [NotNull] Func<DateTime> nowFactory)
         {
             if (factory == null) throw new ArgumentNullException(nameof(factory));
             if (stateMachine == null) throw new ArgumentNullException(nameof(stateMachine));
             if (nowFactory == null) throw new ArgumentNullException(nameof(nowFactory));
+            if (timeZoneResolver == null) throw new ArgumentNullException(nameof(timeZoneResolver));
 
             _factory = factory;
             _stateMachine = stateMachine;
             _nowFactory = nowFactory;
+            _timeZoneResolver = timeZoneResolver;
             _pollingDelay = pollingDelay;
         }
 
@@ -258,7 +270,7 @@ namespace Hangfire.Server
             {
                 try
                 {
-                    var recurringJob = connection.GetRecurringJob(recurringJobId, now);
+                    var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
 
                     if (recurringJob == null)
                     {

@@ -70,6 +70,7 @@ namespace Hangfire
                 x.GetRequiredService<IJobFilterProvider>(),
                 x.GetRequiredService<JobActivator>()));
 
+            services.TryAddSingleton<ITimeZoneResolver>(x => new DefaultTimeZoneResolver());
 
             // ===== Client services =====
 
@@ -82,7 +83,8 @@ namespace Hangfire
 
             services.TryAddSingletonChecked<IRecurringJobManager>(x => new RecurringJobManager(
                 x.GetRequiredService<JobStorage>(),
-                x.GetRequiredService<IJobFilterProvider>()));
+                x.GetRequiredService<IJobFilterProvider>(),
+                x.GetRequiredService<ITimeZoneResolver>()));
 
 
             // IGlobalConfiguration serves as a marker indicating that Hangfire's services 
@@ -138,6 +140,7 @@ namespace Hangfire
 
                 options.Activator = options.Activator ?? provider.GetService<JobActivator>();
                 options.FilterProvider = options.FilterProvider ?? provider.GetService<IJobFilterProvider>();
+                options.TimeZoneResolver = options.TimeZoneResolver ?? provider.GetService<ITimeZoneResolver>();
 
                 return new HangfireHostedService(storage, options, additionalProcesses);
             });
