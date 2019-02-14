@@ -165,7 +165,7 @@ namespace Hangfire.Server
             {
                 jobsEnqueued++;
 
-                if (context.IsShutdownRequested)
+                if (context.IsStopping)
                 {
                     break;
                 }
@@ -209,7 +209,7 @@ namespace Hangfire.Server
 
                     foreach (var recurringJobId in recurringJobIds)
                     {
-                        if (context.IsShutdownRequested) return false;
+                        if (context.IsStopping) return false;
 
                         if (TryEnqueueBackgroundJob(context, connection, recurringJobId, now))
                         {
@@ -221,7 +221,7 @@ namespace Hangfire.Server
                 {
                     for (var i = 0; i < BatchSize; i++)
                     {
-                        if (context.IsShutdownRequested) return false;
+                        if (context.IsStopping) return false;
 
                         var now = _nowFactory();
                         var timestamp = JobHelper.ToTimestamp(now);

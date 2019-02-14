@@ -21,7 +21,9 @@ namespace Hangfire.Server
 {
     public sealed class BackgroundProcessingServerOptions
     {
+        internal static TimeSpan DefaultStopTimeout = TimeSpan.FromSeconds(10);
         internal static TimeSpan DefaultShutdownTimeout = TimeSpan.FromSeconds(15);
+        internal static TimeSpan DefaultLastChanceTimeout = TimeSpan.FromSeconds(1);
         internal static TimeSpan DefaultHeartbeatInterval = TimeSpan.FromSeconds(30);
 
         private Func<int, TimeSpan> _retryDelay;
@@ -31,33 +33,28 @@ namespace Hangfire.Server
             HeartbeatInterval = DefaultHeartbeatInterval;
             ServerCheckInterval = ServerWatchdog.DefaultCheckInterval;
             ServerTimeout = ServerWatchdog.DefaultServerTimeout;
-            RestartTimeout = TimeSpan.FromSeconds(15);
             RetryDelay = BackgroundExecutionOptions.GetBackOffMultiplier;
-            ShutdownTimeout = DefaultShutdownTimeout;
-            ForcedShutdownTimeout = TimeSpan.FromSeconds(1);
-            AbortTimeout = TimeSpan.FromMilliseconds(100);
             RestartDelay = TimeSpan.FromSeconds(15);
+
+            StopTimeout = DefaultStopTimeout;
+            ShutdownTimeout = DefaultShutdownTimeout;
+            LastChanceTimeout = DefaultLastChanceTimeout;
         }
 
         public TimeSpan HeartbeatInterval { get; set; }
         public TimeSpan ServerCheckInterval { get; set; }
         public TimeSpan ServerTimeout { get; set; }
-        public TimeSpan RestartTimeout { get; set; }
         public string ServerName { get; set; }
 
         public Func<int, TimeSpan> RetryDelay
         {
-            get { return _retryDelay; }
-            set
-            {
-                if (value == null) throw new ArgumentNullException(nameof(value));
-                _retryDelay = value;
-            }
+            get => _retryDelay;
+            set => _retryDelay = value ?? throw new ArgumentNullException(nameof(value));
         }
 
+        public TimeSpan StopTimeout { get; set; }
         public TimeSpan ShutdownTimeout { get; set; }
-        public TimeSpan ForcedShutdownTimeout { get; set; }
-        public TimeSpan AbortTimeout { get; set; }
+        public TimeSpan LastChanceTimeout { get; set; }
         public TimeSpan RestartDelay { get; set; }
     }
 }

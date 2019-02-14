@@ -97,7 +97,7 @@ namespace Hangfire.Core.Tests.Server
             worker.Execute(_context.Object);
 
             _connection.Verify(
-                x => x.FetchNextJob(_queues, _context.CancellationTokenSource.Token),
+                x => x.FetchNextJob(_queues, _context.StoppingTokenSource.Token),
                 Times.Once);
 
             _fetchedJob.Verify(x => x.RemoveFromQueue());
@@ -217,7 +217,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             var cts = new CancellationTokenSource();
-            _context.CancellationTokenSource = cts;
+            _context.StoppedTokenSource = cts;
 
             _performer.Setup(x => x.Perform(It.IsAny<PerformContext>()))
                 .Callback(() => cts.Cancel())

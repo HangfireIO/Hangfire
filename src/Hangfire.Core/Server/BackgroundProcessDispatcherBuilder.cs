@@ -45,8 +45,7 @@ namespace Hangfire.Server
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             var execution = new BackgroundExecution(
-                context.StopToken, 
-                context.AbortToken,
+                context.StoppingToken,
                 new BackgroundExecutionOptions
                 {
                     Name = _process.GetType().Name,
@@ -75,10 +74,11 @@ namespace Hangfire.Server
                 serverContext.Storage,
                 serverContext.Properties.ToDictionary(x => x.Key, x => x.Value),
                 executionId,
-                serverContext.StopToken,
-                serverContext.AbortToken);
+                serverContext.StoppingToken,
+                serverContext.StoppedToken,
+                serverContext.ShutdownToken);
 
-            while (!context.IsShutdownRequested)
+            while (!context.IsStopping)
             {
                 tuple.Item1.Execute(context);
                 tuple.Item3.NotifySucceeded();

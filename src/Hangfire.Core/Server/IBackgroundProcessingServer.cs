@@ -14,12 +14,20 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using Hangfire.Processing;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Hangfire.Server
 {
-    public interface IBackgroundProcessingServer : IBackgroundDispatcher
+    public interface IBackgroundProcessingServer : IDisposable
     {
-        void Stop(bool abort);
+        void SendStop();
+
+        bool WaitForShutdown();
+        Task WaitForShutdownAsync(CancellationToken cancellationToken);
+
+        bool Shutdown();
+        Task ShutdownAsync(CancellationToken cancellationToken);
     }
 }

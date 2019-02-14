@@ -80,15 +80,15 @@ namespace Hangfire.Server
             if (context == null) throw new ArgumentNullException(nameof(context));
 
             using (var connection = context.Storage.GetConnection())
-            using (var fetchedJob = connection.FetchNextJob(_queues, context.CancellationToken))
+            using (var fetchedJob = connection.FetchNextJob(_queues, context.StoppingToken))
             {
-                context.CancellationToken.ThrowIfCancellationRequested();
+                var requeueOnException = true;
 
                 try
                 {
                     using (var timeoutCts = new CancellationTokenSource(JobInitializationWaitTimeout))
                     using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
-                        context.CancellationToken,
+                        context.StoppingToken,
                         timeoutCts.Token))
                     {
                         var processingState = new ProcessingState(context.ServerId, context.ExecutionId.ToString());
@@ -99,17 +99,15 @@ namespace Hangfire.Server
                             fetchedJob, 
                             processingState, 
                             new[] { EnqueuedState.StateName, ProcessingState.StateName },
-                            linkedCts.Token);
+                            linkedCts.Token,
+                            context.StoppingToken);
 
                         // Cancel job processing if the job could not be loaded, was not in the initial state expected
                         // or if a job filter changed the state to something other than processing state
                         if (appliedState == null || !appliedState.Name.Equals(ProcessingState.StateName, StringComparison.OrdinalIgnoreCase))
                         {
-                            // We should re-queue a job identifier only when graceful shutdown
-                            // initiated.
-                            context.CancellationToken.ThrowIfCancellationRequested();
-
                             // We should forget a job in a wrong state, or when timeout exceeded.
+                            requeueOnException = false;
                             fetchedJob.RemoveFromQueue();
                             return;
                         }
@@ -125,7 +123,7 @@ namespace Hangfire.Server
                     if (state != null)
                     {
                         // Ignore return value, because we should not do anything when current state is not Processing.
-                        TryChangeState(context, connection, fetchedJob, state, new[] { ProcessingState.StateName }, CancellationToken.None);
+                        TryChangeState(context, connection, fetchedJob, state, new[] { ProcessingState.StateName }, CancellationToken.None, context.ShutdownToken);
                     }
 
                     // Checkpoint #4. The job was performed, and it is in the one
@@ -133,6 +131,7 @@ namespace Hangfire.Server
                     // It should not be re-queued, but we still need to remove its
                     // processing information.
 
+                    requeueOnException = false;
                     fetchedJob.RemoveFromQueue();
 
                     // Success point. No things must be done after previous command
@@ -140,14 +139,17 @@ namespace Hangfire.Server
                 }
                 catch (Exception)
                 {
-                    if (context.IsShutdownRequested)
+                    if (context.IsStopping)
                     {
-                        _logger.Info(String.Format(
-                            "Shutdown request requested while processing background job '{0}'. It will be re-queued.",
-                            fetchedJob.JobId));
+                        var action = requeueOnException ? "It will be re-queued" : "It will be removed from queue later";
+                        _logger.Info($"Worker stop requested while processing background job '{fetchedJob.JobId}'. {action}.");
                     }
 
-                    Requeue(fetchedJob);
+                    if (requeueOnException)
+                    {
+                        Requeue(fetchedJob);
+                    }
+
                     throw;
                 }
             }
@@ -159,9 +161,12 @@ namespace Hangfire.Server
             IFetchedJob fetchedJob,
             IState state,
             string[] expectedStates,
-            CancellationToken cancellationToken)
+            CancellationToken initializeToken,
+            CancellationToken abortToken)
         {
             Exception exception = null;
+
+            abortToken.ThrowIfCancellationRequested();
 
             for (var retryAttempt = 0; retryAttempt < MaxStateChangeAttempts; retryAttempt++)
             {
@@ -173,19 +178,19 @@ namespace Hangfire.Server
                         fetchedJob.JobId,
                         state,
                         expectedStates,
-                        cancellationToken));
+                        initializeToken));
                 }
                 catch (Exception ex)
                 {
                     _logger.DebugException(
-                        String.Format("State change attempt {0} of {1} failed due to an error, see inner exception for details", retryAttempt+1, MaxStateChangeAttempts), 
+                        $"State change attempt {retryAttempt + 1} of {MaxStateChangeAttempts} failed due to an error, see inner exception for details", 
                         ex);
 
                     exception = ex;
                 }
 
-                context.CancellationToken.Wait(TimeSpan.FromSeconds(retryAttempt));
-                context.CancellationToken.ThrowIfCancellationRequested();
+                abortToken.Wait(TimeSpan.FromSeconds(retryAttempt));
+                abortToken.ThrowIfCancellationRequested();
             }
 
             return _stateChanger.ChangeState(new StateChangeContext(
@@ -194,7 +199,7 @@ namespace Hangfire.Server
                 fetchedJob.JobId,
                 new FailedState(exception) { Reason = $"Failed to change state to a '{state.Name}' one due to an exception after {MaxStateChangeAttempts} retry attempts" },
                 expectedStates,
-                cancellationToken));
+                initializeToken));
         }
 
         private void Requeue(IFetchedJob fetchedJob)
@@ -227,7 +232,7 @@ namespace Hangfire.Server
 
                 var backgroundJob = new BackgroundJob(jobId, jobData.Job, jobData.CreatedAt);
 
-                var jobToken = new ServerJobCancellationToken(connection, jobId, context.ServerId, context.ExecutionId.ToString(), context.CancellationToken);
+                var jobToken = new ServerJobCancellationToken(connection, jobId, context.ServerId, context.ExecutionId.ToString(), context.StoppedToken);
                 var performContext = new PerformContext(connection, backgroundJob, jobToken);
 
                 var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
@@ -254,7 +259,7 @@ namespace Hangfire.Server
             }
             catch (Exception ex)
             {
-                if (ex is OperationCanceledException && context.IsShutdownRequested)
+                if (ex is OperationCanceledException && context.IsStopped)
                 {
                     throw;
                 }

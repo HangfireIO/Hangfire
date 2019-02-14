@@ -130,7 +130,7 @@ namespace Hangfire
         {
             if (services == null) throw new ArgumentNullException(nameof(services));
 
-            services.AddTransient<IHostedService, HangfireHostedService>(provider =>
+            services.AddTransient<IHostedService, BackgroundJobServerHostedService>(provider =>
             {
                 ThrowIfNotConfigured(provider);
 
@@ -142,7 +142,7 @@ namespace Hangfire
                 options.FilterProvider = options.FilterProvider ?? provider.GetService<IJobFilterProvider>();
                 options.TimeZoneResolver = options.TimeZoneResolver ?? provider.GetService<ITimeZoneResolver>();
 
-                return new HangfireHostedService(storage, options, additionalProcesses);
+                return new BackgroundJobServerHostedService(storage, options, additionalProcesses);
             });
 
             return services;

@@ -16,14 +16,10 @@
 
 using System;
 using System.Collections.Generic;
-#if !NETSTANDARD1_3
-using System.Diagnostics;
-#endif
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
-using Hangfire.Logging;
 using Hangfire.Processing;
 
 namespace Hangfire.Server
@@ -46,15 +42,15 @@ namespace Hangfire.Server
     {
         private static int _lastThreadId = 0;
 
-        private readonly ILog _logger = LogProvider.GetLogger(typeof(BackgroundProcessingServer));
-        private readonly CancellationTokenSource _stopCts = new CancellationTokenSource();
-        private readonly CancellationTokenSource _abortCts = new CancellationTokenSource();
+        private readonly CancellationTokenSource _stoppingCts = new CancellationTokenSource();
+        private readonly CancellationTokenSource _stoppedCts = new CancellationTokenSource();
+        private readonly CancellationTokenSource _shutdownCts = new CancellationTokenSource();
 
         private readonly IBackgroundServerProcess _process;
         private readonly BackgroundProcessingServerOptions _options;
         private readonly IBackgroundDispatcher _dispatcher;
 
-        private int _shutdown;
+        private int _disposed;
 
         public BackgroundProcessingServer([NotNull] IEnumerable<IBackgroundProcess> processes)
             : this(JobStorage.Current, processes)
@@ -109,11 +105,8 @@ namespace Hangfire.Server
             [NotNull] BackgroundServerProcess process,
             [NotNull] BackgroundProcessingServerOptions options)
         {
-            if (process == null) throw new ArgumentNullException(nameof(process));
-            if (options == null) throw new ArgumentNullException(nameof(options));
-
-            _process = process;
-            _options = options;
+            _process = process ?? throw new ArgumentNullException(nameof(process));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
 
             _dispatcher = CreateDispatcher();
 
@@ -123,69 +116,69 @@ namespace Hangfire.Server
 #endif
         }
 
-        public void Stop(bool abort)
-        {
-            _stopCts.Cancel();
-            if (abort)
-            {
-                _abortCts.Cancel();
-            }
-        }
-
-        public bool Wait(TimeSpan timeout)
-        {
-            ThrowIfDisposed();
-            return _dispatcher.Wait(timeout);
-        }
-
-        public Task WaitAsync(CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return _dispatcher.WaitAsync(cancellationToken);
-        }
-
-        [Obsolete("This method is deprecated, please use the Stop(bool) method instead. Will be removed in 2.0.0.")]
         public void SendStop()
         {
-            Stop(false);
+            ThrowIfDisposed();
+
+            _stoppingCts.Cancel();
+            _stoppedCts.CancelAfter(_options.StopTimeout);
+            _shutdownCts.CancelAfter(_options.ShutdownTimeout);
+        }
+
+        public bool WaitForShutdown()
+        {
+            ThrowIfDisposed();
+            return _dispatcher.Wait(_options.ShutdownTimeout + _options.LastChanceTimeout);
+        }
+
+        public async Task WaitForShutdownAsync(CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            await _dispatcher.WaitAsync(_options.ShutdownTimeout + _options.LastChanceTimeout, cancellationToken).ConfigureAwait(false);
+        }
+
+        public bool Shutdown()
+        {
+            ThrowIfDisposed();
+
+            SendStop();
+            return WaitForShutdown();
+        }
+
+        public Task ShutdownAsync(CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            SendStop();
+            return WaitForShutdownAsync(cancellationToken);
         }
 
         public void Dispose()
         {
-            Shutdown(_options.ShutdownTimeout);
+            if (Volatile.Read(ref _disposed) == 1) return;
+
+            if (!_stoppingCts.IsCancellationRequested)
+            {
+                Shutdown();
+            }
+
+            if (Interlocked.Exchange(ref _disposed, 1) == 1) return;
 
             _dispatcher.Dispose();
-            _abortCts.Dispose();
-            _stopCts.Dispose();
+            _stoppingCts.Dispose();
+            _stoppedCts.Dispose();
+            _shutdownCts.Dispose();
         }
 
         private void OnCurrentDomainUnload(object sender, EventArgs args)
         {
-            Shutdown(_options.ForcedShutdownTimeout);
-        }
+            if (Volatile.Read(ref _disposed) == 1) return;
 
-        private void Shutdown(TimeSpan timeout)
-        {
-            if (Interlocked.Exchange(ref _shutdown, 1) == 1)
-            {
-                return;
-            }
+            _stoppingCts.Cancel();
+            _stoppedCts.Cancel();
+            _shutdownCts.Cancel();
 
-            var stopTimeout = TimeSpan.Zero;
-
-            if (!_stopCts.IsCancellationRequested)
-            {
-                _logger.Info($"Shutdown initiated with the {timeout} timeout...");
-                _stopCts.Cancel();
-                
-                stopTimeout = timeout;
-            }
-
-            if (!_dispatcher.Wait(stopTimeout))
-            {
-                _abortCts.Cancel();
-                _dispatcher.Wait(_options.AbortTimeout);
-            }
+            _dispatcher.Wait(_options.LastChanceTimeout);
         }
 
         private static IBackgroundProcessDispatcherBuilder[] GetProcesses([NotNull] IEnumerable<IBackgroundProcess> processes)
@@ -197,8 +190,7 @@ namespace Hangfire.Server
         private IBackgroundDispatcher CreateDispatcher()
         {
             var execution = new BackgroundExecution(
-                _stopCts.Token,
-                _abortCts.Token,
+                _stoppingCts.Token,
                 new BackgroundExecutionOptions
                 {
                     Name = nameof(BackgroundServerProcess),
@@ -216,7 +208,7 @@ namespace Hangfire.Server
 
         private void RunServer(Guid executionId, object state)
         {
-            _process.Execute(executionId, (BackgroundExecution)state, _stopCts.Token, _abortCts.Token);
+            _process.Execute(executionId, (BackgroundExecution)state, _stoppingCts.Token, _stoppedCts.Token, _shutdownCts.Token);
         }
 
         private static IEnumerable<Thread> ThreadFactory(ThreadStart threadStart)
@@ -225,15 +217,12 @@ namespace Hangfire.Server
             {
                 IsBackground = true,
                 Name = $"{nameof(BackgroundServerProcess)} #{Interlocked.Increment(ref _lastThreadId)}",
-#if !NETSTANDARD1_3
-                Priority = ThreadPriority.AboveNormal
-#endif
             };
         }
 
         private void ThrowIfDisposed()
         {
-            if (Volatile.Read(ref _shutdown) == 1)
+            if (Volatile.Read(ref _disposed) == 1)
             {
                 throw new ObjectDisposedException(GetType().FullName);
             }

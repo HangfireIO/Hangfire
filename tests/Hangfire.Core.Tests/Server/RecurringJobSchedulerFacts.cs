@@ -38,7 +38,7 @@ namespace Hangfire.Core.Tests.Server
         public RecurringJobSchedulerFacts()
         {
             _context = new BackgroundProcessContextMock();
-            _context.CancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            _context.StoppingTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(1));
 
             // Setting up the successful path
 
@@ -552,7 +552,7 @@ namespace Hangfire.Core.Tests.Server
         public void Execute_DoesNotCycleImmediately_WhenItCantDeserializeEverything(bool useJobStorageConnection)
         {
             // Arrange
-            _context.CancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
+            _context.StoppingTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
 
             SetupConnection(useJobStorageConnection);
             if (useJobStorageConnection)

@@ -25,7 +25,6 @@ using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
-using System.ComponentModel;
 
 namespace Hangfire
 {
@@ -114,17 +113,52 @@ namespace Hangfire
                 GetProcessingServerOptions());
         }
 
-        [Obsolete("Use the Stop(bool) method instead, this one will be removed in 2.0.0.")]
         public void SendStop()
         {
             _logger.Debug("Hangfire Server is stopping...");
-            _processingServer.Stop(false);
+            _processingServer.SendStop();
         }
 
         public void Dispose()
         {
             _processingServer.Dispose();
-            _logger.Info("Hangfire Server stopped.");
+        }
+
+        [Obsolete("This method is a stub. There is no need to call the `Start` method. Will be removed in version 2.0.0.")]
+        public void Start()
+        {
+        }
+
+        [Obsolete("Please call the `Shutdown` method instead. Will be removed in version 2.0.0.")]
+        public void Stop()
+        {
+            Shutdown();
+        }
+
+        [Obsolete("Please call the `Shutdown` method instead. Will be removed in version 2.0.0.")]
+        public void Stop(bool force)
+        {
+            Shutdown();
+        }
+
+        public bool WaitForShutdown()
+        {
+            return _processingServer.WaitForShutdown();
+        }
+
+        public Task WaitForShutdownAsync(CancellationToken cancellationToken)
+        {
+            return _processingServer.WaitForShutdownAsync(cancellationToken);
+        }
+
+        public bool Shutdown()
+        {
+            return _processingServer.Shutdown();
+        }
+
+        public Task ShutdownAsync(CancellationToken cancellationToken)
+        {
+            return _processingServer.ShutdownAsync(cancellationToken);
         }
 
         private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses()
@@ -151,6 +185,7 @@ namespace Hangfire
         {
             return new BackgroundProcessingServerOptions
             {
+                StopTimeout = _options.StopTimeout,
                 ShutdownTimeout = _options.ShutdownTimeout,
                 HeartbeatInterval = _options.HeartbeatInterval,
 #pragma warning disable 618
@@ -159,31 +194,6 @@ namespace Hangfire
                 ServerName = _options.ServerName
 #pragma warning restore 618
             };
-        }
-
-        [Obsolete("This method is a stub. There is no need to call the `Start` method. Will be removed in version 2.0.0.")]
-        public void Start()
-        {
-        }
-
-        [Obsolete("This method is a stub. Please call the `Dispose` method instead. Will be removed in version 2.0.0.")]
-        public void Stop()
-        {
-        }
-
-        public bool Wait(TimeSpan timeout)
-        {
-            return _processingServer.Wait(timeout);
-        }
-
-        public Task WaitAsync(CancellationToken cancellationToken)
-        {
-            return _processingServer.WaitAsync(cancellationToken);
-        }
-
-        public void Stop(bool abort)
-        {
-            _processingServer.Stop(abort);
         }
     }
 }

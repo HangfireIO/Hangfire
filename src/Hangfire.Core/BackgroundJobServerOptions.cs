@@ -33,6 +33,7 @@ namespace Hangfire
         private TimeSpan _serverTimeout;
         private TimeSpan _serverCheckInterval;
         private TimeSpan _heartbeatInterval;
+        private TimeSpan _stopTimeout;
         private TimeSpan _shutdownTimeout;
         private TimeSpan _schedulePollingInterval;
 
@@ -40,6 +41,7 @@ namespace Hangfire
         {
             WorkerCount = Math.Min(Environment.ProcessorCount * 5, MaxDefaultWorkerCount);
             Queues = new[] { EnqueuedState.DefaultQueue };
+            StopTimeout = BackgroundProcessingServerOptions.DefaultStopTimeout;
             ShutdownTimeout = BackgroundProcessingServerOptions.DefaultShutdownTimeout;
             SchedulePollingInterval = DelayedJobScheduler.DefaultPollingDelay;
             HeartbeatInterval = BackgroundProcessingServerOptions.DefaultHeartbeatInterval;
@@ -73,6 +75,19 @@ namespace Hangfire
                 if (value.Length == 0) throw new ArgumentException("You should specify at least one queue to listen.", nameof(value));
 
                 _queues = value;
+            }
+        }
+
+        public TimeSpan StopTimeout
+        {
+            get => _stopTimeout;
+            set
+            {
+                if ((value < TimeSpan.Zero && value != Timeout.InfiniteTimeSpan) || value.TotalMilliseconds > Int32.MaxValue)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), $"StopTimeout must be either equal to or less than {Int32.MaxValue} milliseconds and non-negative or infinite");
+                }
+                _stopTimeout = value;
             }
         }
 

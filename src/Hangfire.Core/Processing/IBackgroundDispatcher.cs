@@ -23,6 +23,6 @@ namespace Hangfire.Processing
     public interface IBackgroundDispatcher : IDisposable
     {
         bool Wait(TimeSpan timeout);
-        Task WaitAsync(CancellationToken cancellationToken);
+        Task WaitAsync(TimeSpan timeout, CancellationToken cancellationToken);
     }
 }

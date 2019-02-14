@@ -24,7 +24,7 @@ namespace Hangfire.Core.Tests.Server
         public DelayedJobSchedulerFacts()
         {
             _context = new BackgroundProcessContextMock();
-            _context.CancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(1));
+            _context.StoppingTokenSource.CancelAfter(TimeSpan.FromSeconds(1));
 
             _connection = new Mock<JobStorageConnection>();
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);

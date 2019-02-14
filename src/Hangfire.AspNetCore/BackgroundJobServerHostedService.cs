@@ -9,15 +9,15 @@ using Microsoft.Extensions.Hosting;
 
 namespace Hangfire
 {
-    public class HangfireHostedService : IHostedService, IDisposable
+    public class BackgroundJobServerHostedService : IHostedService, IDisposable
     {
         private readonly BackgroundJobServerOptions _options;
         private readonly JobStorage _storage;
         private readonly IEnumerable<IBackgroundProcess> _additionalProcesses;
 
-        private IBackgroundProcessingServer _processingServer;
+        private BackgroundJobServer _processingServer;
 
-        public HangfireHostedService(
+        public BackgroundJobServerHostedService(
             [NotNull] JobStorage storage,
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses)
@@ -33,20 +33,14 @@ namespace Hangfire
             return Task.CompletedTask;
         }
 
-        public Task StopAsync(CancellationToken cancellationToken)
+        public async Task StopAsync(CancellationToken cancellationToken)
         {
-            _processingServer.Stop(false);
-            return _processingServer.WaitAsync(cancellationToken).ContinueWith(StopAbort, CancellationToken.None);
+            await _processingServer.ShutdownAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public void Dispose()
         {
             _processingServer?.Dispose();
-        }
-
-        private void StopAbort(Task antecedent)
-        {
-            _processingServer.Stop(true);
         }
     }
 }
