@@ -21,7 +21,11 @@
     <ProjectReference Include="..\Hangfire.Core\Hangfire.Core.csproj" />
   </ItemGroup>
   
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)'!='net45'">
+    <PackageReference Include="Dapper" Version="1.50.7" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net45'">
     <PackageReference Include="Dapper" Version="1.50.1" />
   </ItemGroup>
 
