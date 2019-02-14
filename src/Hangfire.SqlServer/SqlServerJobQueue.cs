@@ -116,7 +116,7 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                                 var fetchedJob = reader.Read<FetchedJob>().SingleOrDefault(x => x != null);
                                 if (fetchedJob != null)
                                 {
-                                    return new SqlServerTimeoutJob(_storage, fetchedJob.Id, fetchedJob.JobId.ToString(CultureInfo.InvariantCulture), fetchedJob.Queue);
+                                    return new SqlServerTimeoutJob(_storage, fetchedJob.Id, fetchedJob.JobId.ToString(CultureInfo.InvariantCulture), fetchedJob.Queue, fetchedJob.FetchedAt);
                                 }
                             }
                         }
@@ -148,7 +148,7 @@ set transaction isolation level read committed;
 
 update top (1) JQ
 set FetchedAt = GETUTCDATE()
-output INSERTED.Id, INSERTED.JobId, INSERTED.Queue
+output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
 from [{_storage.SchemaName}].JobQueue JQ with (forceseek, paglock, xlock)
 where Queue in @queues and
 (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()));";
@@ -175,7 +175,7 @@ BEGIN
     BEGIN
         update top (1) JQ
         set FetchedAt = GETUTCDATE()
-        output INSERTED.Id, INSERTED.JobId, INSERTED.Queue
+        output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
         from [{_storage.SchemaName}].JobQueue JQ with (forceseek, paglock, xlock)
         where Queue in @queues and
         (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()));
@@ -192,7 +192,7 @@ BEGIN
     EXEC sp_releaseapplock @Resource = @lockResource, @LockOwner = 'Session';
 END
 
-SELECT TOP (0) [Id], [JobId], [Queue] FROM [{_storage.SchemaName}].JobQueue;";
+SELECT TOP (0) [Id], [JobId], [Queue], [FetchedAt] FROM [{_storage.SchemaName}].JobQueue;";
         }
 
 
@@ -259,6 +259,7 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
             public long Id { get; set; }
             public long JobId { get; set; }
             public string Queue { get; set; }
+            public DateTime? FetchedAt { get; set; }
         }
     }
 }
