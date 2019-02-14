@@ -23,7 +23,6 @@ namespace Hangfire.Processing
 {
     internal static class TaskExtensions
     {
-#if !NETSTANDARD1_3
         internal static readonly WaitHandle InvalidWaitHandleInstance = new InvalidWaitHandle();
 
         public static Task<bool> AsTask([NotNull] this WaitHandle waitHandle, CancellationToken token)
@@ -46,28 +45,9 @@ namespace Hangfire.Processing
                 token.Register(Callback, Tuple.Create(registration, tcs, token), useSynchronizationContext: false);
             }
 
-            return await tcs.Task;
-        }
-#endif
-
-        public static async Task AsTask(this CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var tcs = CreateCompletionSource<object>();
-
-            if (cancellationToken.CanBeCanceled)
-            {
-                cancellationToken.Register(
-                    Action,
-                    Tuple.Create(tcs, cancellationToken),
-                    useSynchronizationContext: false);
-            }
-
-            await tcs.Task.ConfigureAwait(false);
+            return await tcs.Task.ConfigureAwait(false);
         }
 
-#if !NETSTANDARD1_3
         private static void CallBack(object state, bool timedOut)
         {
             // We do call the Unregister method to prevent race condition between
@@ -86,18 +66,11 @@ namespace Hangfire.Processing
             ctx.Item1.Unregister(InvalidWaitHandleInstance);
             TrySetCanceled(ctx.Item2, ctx.Item3);
         }
-#endif
 
-        private static void Action(object state)
-        {
-            var ctx = (Tuple<TaskCompletionSource<object>, CancellationToken>)state;
-            TrySetCanceled(ctx.Item1, ctx.Item2);
-        }
-        
         private static TaskCompletionSource<T> CreateCompletionSource<T>()
         {
             return new TaskCompletionSource<T>(
-#if NET46
+#if !NET45
                 TaskCreationOptions.RunContinuationsAsynchronously
 #endif
             );
@@ -106,22 +79,22 @@ namespace Hangfire.Processing
         private static void TrySetCanceled<T>(TaskCompletionSource<T> source, CancellationToken token)
         {
             source.TrySetCanceled(
-#if NET46
+#if !NET45
                 token
 #endif
                 );
         }
 
-#if !NETSTANDARD1_3
         private sealed class InvalidWaitHandle : WaitHandle
         {
+#if !NETSTANDARD1_3
             [Obsolete("Use the SafeWaitHandle property instead.")]
             public override IntPtr Handle
             {
                 get { return InvalidHandle; }
                 set { throw new InvalidOperationException(); }
             }
-        }
 #endif
+        }
     }
 }
