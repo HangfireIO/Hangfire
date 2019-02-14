@@ -45,7 +45,7 @@ namespace Hangfire.Dashboard
                 return;
             }
 
-            var jobIds = await context.Request.GetFormValuesAsync("jobs[]");
+            var jobIds = await context.Request.GetFormValuesAsync("jobs[]").ConfigureAwait(false);
             if (jobIds.Count == 0)
             {
                 context.Response.StatusCode = 422;

@@ -60,7 +60,7 @@ namespace Hangfire.Dashboard
             }
             else
             {
-                var form = await _context.Request.ReadFormAsync();
+                var form = await _context.Request.ReadFormAsync().ConfigureAwait(false);
                 values = form.GetValues(key);
             }
             
