@@ -43,7 +43,6 @@ namespace Hangfire.Processing
         private int _exceptionsCount;
 
         private CancellationToken _stopToken;
-        private CancellationToken _abortToken;
         private readonly BackgroundExecutionOptions _options;
         private readonly ILog _logger;
         private readonly WaitHandle[] _waitHandles;
@@ -51,40 +50,30 @@ namespace Hangfire.Processing
         private readonly Stopwatch _createdAt;
         private Stopwatch _stoppedAt;
         private CancellationTokenRegistration _stopRegistration;
-        private CancellationTokenRegistration _abortRegistration;
         private CancellationTokenExtentions.CancellationEvent _stopped;
-        private CancellationTokenExtentions.CancellationEvent _aborted;
 
         private volatile bool _disposed;
 
-        public BackgroundExecution(
-            CancellationToken stopToken,
-            CancellationToken abortToken,
-            [NotNull] BackgroundExecutionOptions options)
+        public BackgroundExecution(CancellationToken stopToken, [NotNull] BackgroundExecutionOptions options)
         {
-            if (options == null) throw new ArgumentNullException(nameof(options));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
 
-            _options = options;
             _logger = LogProvider.GetLogger(GetType());
             _createdAt = Stopwatch.StartNew();
 
             _stopToken = stopToken;
-            _abortToken = abortToken;
 
             _stopRegistration = _stopToken.Register(SetStoppedAt);
-            _abortRegistration = _abortToken.Register(SetStoppedAt);
 
             _stopped = _stopToken.GetCancellationEvent();
-            _aborted = _abortToken.GetCancellationEvent();
-            _waitHandles = new WaitHandle[] { _running, _stopped.WaitHandle, _aborted.WaitHandle };
+            _waitHandles = new WaitHandle[] { _running, _stopped.WaitHandle };
 
 #if !NETSTANDARD1_3
             AppDomainUnloadMonitor.EnsureInitialized();
 #endif
         }
 
-        public bool StopRequested => _disposed || _stopToken.IsCancellationRequested || AbortRequested;
-        public bool AbortRequested => _abortToken.IsCancellationRequested;
+        public bool StopRequested => _disposed || _stopToken.IsCancellationRequested;
 
         public void Run(Action<Guid, object> callback, object state)
         {
@@ -102,8 +91,7 @@ namespace Hangfire.Processing
                 try
 #endif
                 {
-                    TimeSpan nextDelay;
-                    HandleStarted(executionId, out nextDelay);
+                    HandleStarted(executionId, out var nextDelay);
 
                     // There should be no operations between the `while` and `try` blocks to
                     // avoid unintended stopping due to ThreadAbortException between the loop
@@ -163,7 +151,7 @@ namespace Hangfire.Processing
                     // This is a rude stop. Since we are handling all the thread aborts
                     // inside the loop, only appdomain unload can bring us there. In this
                     // case we don't reset thread abort.
-                    HandleAborted(executionId, ex);
+                    HandleThreadAbort(executionId, ex);
                 }
 #endif
             }
@@ -185,8 +173,7 @@ namespace Hangfire.Processing
                 try
 #endif
                 {
-                    TimeSpan nextDelay;
-                    HandleStarted(executionId, out nextDelay);
+                    HandleStarted(executionId, out var nextDelay);
 
                     // There should be no operations between the `while` and `try` blocks to
                     // avoid unintended stopping due to ThreadAbortException between the loop
@@ -246,7 +233,7 @@ namespace Hangfire.Processing
                     // This is a rude stop. Since we are handling all the thread aborts
                     // inside the loop, only appdomain unload can bring us there. In this
                     // case we don't reset thread abort.
-                    HandleAborted(executionId, ex);
+                    HandleThreadAbort(executionId, ex);
                 }
 #endif
             }
@@ -259,11 +246,9 @@ namespace Hangfire.Processing
                 if (_disposed) return;
                 _disposed = true;
 
-                _abortRegistration.Dispose();
                 _stopRegistration.Dispose();
                 _running.Dispose();
                 _stopped.Dispose();
-                _aborted.Dispose();
             }
         }
 
@@ -302,7 +287,6 @@ namespace Hangfire.Processing
 
             WaitHandle.WaitAny(_waitHandles, delay);
 
-            _abortToken.ThrowIfCancellationRequested();
             _stopToken.ThrowIfCancellationRequested();
         }
 
@@ -310,11 +294,7 @@ namespace Hangfire.Processing
         {
             LogRetry(executionId, delay);
 
-#if !NETSTANDARD1_3
-            await await Task.WhenAny(_running.AsTask(_stopToken), Task.Delay(delay, _abortToken));
-#else
-            await Task.Delay(delay, _stopToken);
-#endif
+            await await Task.WhenAny(_running.AsTask(_stopToken), Task.Delay(delay, _stopToken)).ConfigureAwait(true);
         }
 
         private void LogRetry(Guid executionId, TimeSpan delay)
@@ -340,7 +320,7 @@ namespace Hangfire.Processing
         private void HandleException(Guid executionId, Exception exception, out TimeSpan delay)
         {
 #if !NETSTANDARD1_3
-            // Normally, there should be no checking for AppDomain unload condition, because we can't
+            // Normally, there should be no checks for AppDomain unload condition, because we can't
             // get here on appdomain unloads. But Mono < 5.4 has an issue with Thread.ResetAbort, and
             // it can prevent appdomain to be unloaded: https://bugzilla.xamarin.com/show_bug.cgi?id=5804.
             // It's better to reassure this can't happen under all circumstances.
@@ -378,23 +358,16 @@ namespace Hangfire.Processing
 
         private void HandleStop(Guid executionId)
         {
-            if (AbortRequested)
-            {
-                HandleAborted(executionId, null);
-            }
-            else
-            {
-                var stoppedAt = Volatile.Read(ref _stoppedAt);
-                _logger.Debug($"{GetExecutionLoopTemplate(executionId)} stopped in {stoppedAt?.Elapsed.TotalMilliseconds ?? 0} ms");
-            }
+            var stoppedAt = Volatile.Read(ref _stoppedAt);
+            _logger.Debug($"{GetExecutionLoopTemplate(executionId)} stopped in {stoppedAt?.Elapsed.TotalMilliseconds ?? 0} ms");
         }
 
-        private void HandleAborted(Guid executionId, Exception exception)
+#if !NETSTANDARD1_3
+        private void HandleThreadAbort(Guid executionId, Exception exception)
         {
-            var stoppedAt = Volatile.Read(ref _stoppedAt);
-            _logger.DebugException($"{GetExecutionLoopTemplate(executionId)} was aborted in {stoppedAt?.Elapsed.TotalMilliseconds ?? 0} ms.",
-                exception);
+            _logger.WarnException($"{GetExecutionLoopTemplate(executionId)} caught ThreadAbortException, see inner exception for details", exception);
         }
+#endif
 
         private void ToRunningState()
         {
