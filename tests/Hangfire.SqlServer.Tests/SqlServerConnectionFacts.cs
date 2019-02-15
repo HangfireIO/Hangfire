@@ -221,7 +221,7 @@ namespace Hangfire.SqlServer.Tests
                 var createdAt = new DateTime(2012, 12, 12);
                 var jobId = connection.CreateExpiredJob(
                     Job.FromExpression(() => SampleMethod("Hello")),
-                    new Dictionary<string, string> { { "Key1", "Value1" }, { "Key2", "Value2" } },
+                    new Dictionary<string, string> { { "Key1", "Value1" }, { "Key2", "Value2" }, { "Key3", "Value3" } },
                     createdAt,
                     TimeSpan.FromDays(1));
 
@@ -251,6 +251,7 @@ namespace Hangfire.SqlServer.Tests
 
                 Assert.Equal("Value1", parameters["Key1"]);
                 Assert.Equal("Value2", parameters["Key2"]);
+                Assert.Equal("Value3", parameters["Key3"]);
             }, useBatching);
         }
 
@@ -268,12 +269,80 @@ namespace Hangfire.SqlServer.Tests
                     createdAt,
                     TimeSpan.FromDays(1));
 
-                var parameters = sql.Query(
-                        "select * from HangFire.JobParameter where JobId = @id",
-                        new { id = jobId })
+                var parameters = sql
+                    .Query("select * from HangFire.JobParameter where JobId = @id", new { id = jobId })
                     .ToDictionary(x => (string)x.Name, x => (string)x.Value);
 
                 Assert.Equal(null, parameters["Key1"]);
+            }, useBatching);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void CreateExpiredJob_CanCreateTwoParametersWithNullValues(bool useBatching)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string> { { "Key1", null }, { "Key2", null } },
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql
+                    .Query("select * from HangFire.JobParameter where JobId = @id", new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Equal(null, parameters["Key1"]);
+                Assert.Equal(null, parameters["Key2"]);
+            }, useBatching);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void CreateExpiredJob_CanCreateMultipleParametersWithNullValues(bool useBatching)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string> { { "Key1", null }, { "Key2", null }, { "Key3", null } },
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql
+                    .Query("select * from HangFire.JobParameter where JobId = @id", new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Equal(null, parameters["Key1"]);
+                Assert.Equal(null, parameters["Key2"]);
+                Assert.Equal(null, parameters["Key3"]);
+            }, useBatching);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void CreateExpiredJob_CanCreateJobWithoutParameters(bool useBatching)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string>(), 
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql
+                    .Query("select * from HangFire.JobParameter where JobId = @id", new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Empty(parameters);
             }, useBatching);
         }
 

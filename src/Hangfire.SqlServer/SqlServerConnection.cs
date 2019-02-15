@@ -91,49 +91,80 @@ namespace Hangfire.SqlServer
             if (job == null) throw new ArgumentNullException(nameof(job));
             if (parameters == null) throw new ArgumentNullException(nameof(parameters));
 
-            string createJobSql =
+            var queryString =
 $@"insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt)
 output inserted.Id
 values (@invocationData, N'', @createdAt, @expireAt)";
 
-            var invocationData = InvocationData.Serialize(job);
+            var invocationData = InvocationData.Serialize(job).Serialize();
+            var parametersArray = parameters.ToArray();
+
+            var queryParameters = new DynamicParameters();
+            queryParameters.Add("@invocationData", invocationData, DbType.String, size: -1);
+            queryParameters.Add("@createdAt", createdAt, DbType.DateTime);
+            queryParameters.Add("@expireAt", createdAt.Add(expireIn), DbType.DateTime);
+
+            if (parametersArray.Length <= 2)
+            {
+                if (parametersArray.Length == 1)
+                {
+                    queryString = $@"
+set xact_abort on; set nocount on; declare @jobId bigint;
+begin tran;
+insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) values (@invocationData, N'', @createdAt, @expireAt);
+select @jobId = scope_identity(); select @jobId;
+insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value);
+commit tran;";
+                    queryParameters.Add("@name", parametersArray[0].Key, DbType.String, size: 40);
+                    queryParameters.Add("@value", parametersArray[0].Value, DbType.String, size: -1);
+                }
+                else if (parametersArray.Length == 2)
+                {
+                    queryString = $@"
+set xact_abort on; set nocount on; declare @jobId bigint;
+begin tran;
+insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) values (@invocationData, N'', @createdAt, @expireAt);
+select @jobId = scope_identity(); select @jobId;
+insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name1, @value1), (@jobId, @name2, @value2);
+commit tran;";
+                    queryParameters.Add("@name1", parametersArray[0].Key, DbType.String, size: 40);
+                    queryParameters.Add("@value1", parametersArray[0].Value, DbType.String, size: -1);
+                    queryParameters.Add("@name2", parametersArray[1].Key, DbType.String, size: 40);
+                    queryParameters.Add("@value2", parametersArray[1].Value, DbType.String, size: -1);
+                }
+
+                return _storage.UseConnection(_dedicatedConnection, connection => connection
+                    .ExecuteScalar<long>(queryString, queryParameters, commandTimeout: _storage.CommandTimeout)
+                    .ToString());
+            }
 
             return _storage.UseTransaction(_dedicatedConnection, (connection, transaction) =>
             {
                 var jobId = connection.ExecuteScalar<long>(
-                    createJobSql,
-                    new
-                    {
-                        invocationData = invocationData.Serialize(),
-                        createdAt = createdAt,
-                        expireAt = createdAt.Add(expireIn)
-                    },
+                    queryString,
+                    queryParameters,
                     transaction,
                     commandTimeout: _storage.CommandTimeout).ToString();
 
-                if (parameters.Count > 0)
+                var insertParameterSql =
+$@"insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value)";
+
+                using (var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
                 {
-                    string insertParameterSql =
-$@"insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value)
-values (@jobId, @name, @value)";
+                    commandBatch.Connection = connection;
+                    commandBatch.Transaction = transaction;
+                    commandBatch.CommandTimeout = _storage.CommandTimeout;
+                    commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
 
-                    using (var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
+                    foreach (var parameter in parametersArray)
                     {
-                        commandBatch.Connection = connection;
-                        commandBatch.Transaction = transaction;
-                        commandBatch.CommandTimeout = _storage.CommandTimeout;
-                        commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
-
-                        foreach (var parameter in parameters)
-                        {
-                            commandBatch.Append(insertParameterSql,
-                                new SqlParameter("@jobId", long.Parse(jobId)),
-                                new SqlParameter("@name", parameter.Key),
-                                new SqlParameter("@value", (object)parameter.Value ?? DBNull.Value));
-                        }
-
-                        commandBatch.ExecuteNonQuery();
+                        commandBatch.Append(insertParameterSql,
+                            new SqlParameter("@jobId", SqlDbType.BigInt) { Value = long.Parse(jobId) },
+                            new SqlParameter("@name", SqlDbType.NVarChar, 40) { Value = parameter.Key },
+                            new SqlParameter("@value", SqlDbType.NVarChar, -1) { Value = (object)parameter.Value ?? DBNull.Value });
                     }
+
+                    commandBatch.ExecuteNonQuery();
                 }
 
                 return jobId;
