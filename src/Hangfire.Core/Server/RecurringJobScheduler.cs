@@ -72,6 +72,7 @@ namespace Hangfire.Server
         private readonly Func<DateTime> _nowFactory;
         private readonly ITimeZoneResolver _timeZoneResolver;
         private readonly TimeSpan _pollingDelay;
+        private bool? _batchingAvailable = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RecurringJobScheduler"/>
@@ -361,23 +362,32 @@ namespace Hangfire.Server
 
             return false;
         }
-
-        private static bool IsBatchingAvailable(IStorageConnection connection)
+        
+        private bool IsBatchingAvailable(IStorageConnection connection)
         {
-            var batchingAvailable = false;
-            if (connection is JobStorageConnection storageConnection)
+            if (!_batchingAvailable.HasValue)
             {
-                try
+                var batchingAvailable = false;
+                if (connection is JobStorageConnection storageConnection)
                 {
-                    storageConnection.GetFirstByLowestScoreFromSet(null, 0, 0, 1);
+                    try
+                    {
+                        storageConnection.GetFirstByLowestScoreFromSet(null, 0, 0, 1);
+                    }
+                    catch (NotSupportedException)
+                    {
+                        // batching is not supported
+                    }
+                    catch (ArgumentNullException)
+                    {
+                        batchingAvailable = true;
+                    }
                 }
-                catch (ArgumentNullException)
-                {
-                    batchingAvailable = true;
-                }
+                
+                _batchingAvailable = batchingAvailable;
             }
 
-            return batchingAvailable;
+            return _batchingAvailable.Value;
         }
     }
 }
