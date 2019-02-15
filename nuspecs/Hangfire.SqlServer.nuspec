@@ -14,12 +14,15 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
-1.6.22
-• Added – Connection factory overload for the `SqlServerStorage` class (by @chinwobble).
-• Fixed – Inability to use package with Azure's managed service identity (by using a connection factory).
-    
-1.6.21
-• Fixed – Change locking scheme in the `Connection.SetRangeInHash` method to avoid deadlocks.
+1.7.0-beta3
+• Changed – Short paths for the CreateExpiredJob method to avoid some round-trips.
+• Changed – Allow to use zero-based poll interval when sliding invisibility timeout.
+• Changed – Set `SqlParameter` types explicitly to not to duplicate query plans.
+• Changed – Batch support for `AddToQueue` method when default provider is used.
+• Changed – Check `FetchedAt` has expected value to prevent prolonging others' work.
+• Changed – Use more recent Dapper 1.50.7 on all platforms except .NET Framework 4.5.
+• Changed – Dapper package is internalized now even on .NET Core to avoid possible conflicts.
+• Ported – Merged updates from version 1.6.21 and 1.6.22.
       
 1.7.0-beta2
 • Added – Blocking fetch support for sliding expiration-based fetch to avoid excessive polling.

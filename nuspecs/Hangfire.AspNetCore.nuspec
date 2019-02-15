@@ -10,9 +10,14 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>ASP.NET Core support for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2017-2018 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2017-2019 Sergey Odinokov</copyright>
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
+
+1.7.0-beta3
+• Added – Full .NET Core 2.0 support by explicitly targeting .NET Standard 2.0.
+• Added – `BackgroundJobServerHostedService` class based on `IHostedService` interface.
+• Added – IServiceCollection.AddHangfire extension method to register the server during configuration.
 
 1.7.0-beta2
 

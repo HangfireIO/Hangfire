@@ -15,33 +15,59 @@
       Backed by Redis, SQL Server, SQL Azure or MSMQ. This is a .NET alternative to Sidekiq, Resque and Celery.
       https://www.hangfire.io/
     </description>
-    <copyright>Copyright © 2013-2018 Sergey Odinokov</copyright>
-    <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
+    <copyright>Copyright © 2013-2019 Sergey Odinokov</copyright>
+    <tags>Hangfire AspNet MVC AspNetCore SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
-1.6.22
-
-Hangfire.Core
-• Added – Ability to use custom type resolvers to modify the type de-serialization logic.
-• Fixed – `JobLoadException` when processing jobs in .NET Framework, which were created in .NET Core.
-• Fixed – `JobLoadException` when jobs reside in a signed assembly and a new version is deployed.
-• Fixed – Don't produce extra logging message when there's an exception in a worker.
-• Fixed – Ensure form values are properly returned when there are different versions of Microsoft.Owin (by @DC-jc).
-• Fixed – Dashboard fails with 404 "Not Found" error if there's a trailing slash for some reason.
-
-Hangfire.SqlServer
-• Added – Connection factory overload for the `SqlServerStorage` class (by @chinwobble).
-• Fixed – Inability to use package with Azure's managed service identity (by using a connection factory).
-    
 1.7.0-beta3
 
 Hangfire.Core
 
-• Ported – Merged updates from version 1.6.21.
+• Added – Multi-stage shutdown to wait for graceful completion before starting to abort jobs.
+• Added – Asynchronous checks for job cancellation, `IJobCancellationToken` can be replaced with `CancellationToken`.
+• Added – Possibility to create millions of recurring jobs without stressing the scheduler.
+• Added – Second-based recurring jobs are fully supported now with 6-part cron expressions.
+• Added – Support for custom TimeZoneInfo resolvers in recurring jobs for interoperability purposes.
+• Added – Package now explicitly targets .NET Standard 2.0, and .NET Framework 4.6 target added as well.
+• Added – Type roundtrip support between .NET Core and .NET Framework for most common types.
+• Added – Allow to specify queue names based on job arguments with `QueueAttribute` via patterns.
+• Added – `PerformContext.Storage` property to allow server filters to spawn connections.
+• Added – `GetFirstByLowestScoreFromSet` connection method overload that returns multiple items.
+• Changed – New type serialization is disabled by default for compatibility reasons.
+• Changed – Cronos package upgraded to 0.7.0 and internalized even on .NET Standard platforms.
+• Changed – Replace Rickshaw with Chart.js to have beautiful charts with less headache.
+• Changed – `DelayedJobScheduler` is able to use the new storage method to query multiple jobs at once.
+• Changed – `RecurringJobScheduler` now uses index-based checks to fetch only those jobs that should be scheduled.
+• Fixed – `ArgumentNullException` when job class contains method with non-resolvable generic arguments.
+• Fixed – Re-add missing fonts as embedded resources due to a regression appeared in 1.7.0-beta2.
+• Fixed – "Failed to initialize CoreCLR" error, by removing reference to `Microsoft.NETCore.Portable.Compatibility`.
+• Fixed – Possible race conditions in `RecurringJobScheduler` that may lead to job duplicates.
+• Fixed – Configuration inconsistency introduced in 1.6.18 leading to issues with custom `JobActivator`.
+• Fixed – Backward compatibility issue with type serialization when TypeNameHandling.All is used.
+• Fixed – Triggering the recurring task doesn't update its last execution time.
+• Fixed – Recurring job which don't have next execution (intentionally or not) don't cause exception.
+• Fixed – Dashboard recurring jobs sorting is random (now it's based on next execution time).
+• Fixed – Performance problems with huge amount of recurring jobs.
+• Fixed – NextExecution field of a recurring job has delay in value getting set.
+• Fixed – Dashboard graphs have improper sizing.
+• Ported – Merged updates from version 1.6.21 and 1.6.22.
+
+Hangfire.AspNetCore
+
+• Added – Full .NET Core 2.0 support by explicitly targeting .NET Standard 2.0.
+• Added – `BackgroundJobServerHostedService` class based on `IHostedService` interface.
+• Added – IServiceCollection.AddHangfire extension method to register the server during configuration.
 
 Hangfire.SqlServer
 
-• Ported – Merged updates from version 1.6.21.
+• Changed – Short paths for the CreateExpiredJob method to avoid some round-trips.
+• Changed – Allow to use zero-based poll interval when sliding invisibility timeout.
+• Changed – Set `SqlParameter` types explicitly to not to duplicate query plans.
+• Changed – Batch support for `AddToQueue` method when default provider is used.
+• Changed – Check `FetchedAt` has expected value to prevent prolonging others' work.
+• Changed – Use more recent Dapper 1.50.7 on all platforms except .NET Framework 4.5.
+• Changed – Dapper package is internalized now even on .NET Core to avoid possible conflicts.
+• Ported – Merged updates from version 1.6.21 and 1.6.22.
       
 1.7.0-beta2
 

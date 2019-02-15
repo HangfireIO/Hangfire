@@ -9,13 +9,45 @@
     <projectUrl>https://www.hangfire.io/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
-    <description>Core components for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2013-2018 Sergey Odinokov</copyright>
+    <summary>An easy way to perform fire-and-forget, delayed and recurring tasks inside ASP.NET applications. No Windows Service required.</summary>
+    <description>
+      An easy and reliable way to perform fire-and-forget, delayed and recurring long-running, short-running, CPU or I/O intensive tasks inside ASP.NET application. No Windows Service / Task Scheduler required. Even ASP.NET is not required.
+      Backed by Redis, SQL Server, SQL Azure or MSMQ. This is a .NET alternative to Sidekiq, Resque and Celery.
+      https://www.hangfire.io/
+    </description>
+    <copyright>Copyright © 2013-2019 Sergey Odinokov</copyright>
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
 1.7.0-beta3
-• Ported – Merged updates from version 1.6.21.
+• Added – Multi-stage shutdown to wait for graceful completion before starting to abort jobs.
+• Added – Asynchronous checks for job cancellation, `IJobCancellationToken` can be replaced with `CancellationToken`.
+• Added – Possibility to create millions of recurring jobs without stressing the scheduler.
+• Added – Second-based recurring jobs are fully supported now with 6-part cron expressions.
+• Added – Support for custom TimeZoneInfo resolvers in recurring jobs for interoperability purposes.
+• Added – Package now explicitly targets .NET Standard 2.0, and .NET Framework 4.6 target added as well.
+• Added – Type roundtrip support between .NET Core and .NET Framework for most common types.
+• Added – Allow to specify queue names based on job arguments with `QueueAttribute` via patterns.
+• Added – `PerformContext.Storage` property to allow server filters to spawn connections.
+• Added – `GetFirstByLowestScoreFromSet` connection method overload that returns multiple items.
+• Changed – New type serialization is disabled by default for compatibility reasons.
+• Changed – Cronos package upgraded to 0.7.0 and internalized even on .NET Standard platforms.
+• Changed – Replace Rickshaw with Chart.js to have beautiful charts with less headache.
+• Changed – `DelayedJobScheduler` is able to use the new storage method to query multiple jobs at once.
+• Changed – `RecurringJobScheduler` now uses index-based checks to fetch only those jobs that should be scheduled.
+• Fixed – `ArgumentNullException` when job class contains method with non-resolvable generic arguments.
+• Fixed – Re-add missing fonts as embedded resources due to a regression appeared in 1.7.0-beta2.
+• Fixed – "Failed to initialize CoreCLR" error, by removing reference to `Microsoft.NETCore.Portable.Compatibility`.
+• Fixed – Possible race conditions in `RecurringJobScheduler` that may lead to job duplicates.
+• Fixed – Configuration inconsistency introduced in 1.6.18 leading to issues with custom `JobActivator`.
+• Fixed – Backward compatibility issue with type serialization when TypeNameHandling.All is used.
+• Fixed – Triggering the recurring task doesn't update its last execution time.
+• Fixed – Recurring job which don't have next execution (intentionally or not) don't cause exception.
+• Fixed – Dashboard recurring jobs sorting is random (now it's based on next execution time).
+• Fixed – Performance problems with huge amount of recurring jobs.
+• Fixed – NextExecution field of a recurring job has delay in value getting set.
+• Fixed – Dashboard graphs have improper sizing.
+• Ported – Merged updates from version 1.6.21 and 1.6.22.
     
 1.7.0-beta2
 • Fixed – `MissingMethodException` when using Newtonsoft.Json 11 in .NET Core 2.X with continuations (by @pieceofsummer).
