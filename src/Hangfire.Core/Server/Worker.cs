@@ -142,7 +142,7 @@ namespace Hangfire.Server
                     if (context.IsStopping)
                     {
                         var action = requeueOnException ? "It will be re-queued" : "It will be removed from queue later";
-                        _logger.Info($"Worker stop requested while processing background job '{fetchedJob.JobId}'. {action}.");
+                        _logger.Warn($"Worker stop requested while processing background job '{fetchedJob.JobId}'. {action}.");
                     }
 
                     if (requeueOnException)

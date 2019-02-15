@@ -132,33 +132,23 @@ namespace Hangfire
         [Obsolete("Please call the `Shutdown` method instead. Will be removed in version 2.0.0.")]
         public void Stop()
         {
-            Shutdown();
+            SendStop();
         }
 
         [Obsolete("Please call the `Shutdown` method instead. Will be removed in version 2.0.0.")]
         public void Stop(bool force)
         {
-            Shutdown();
+            SendStop();
         }
 
-        public bool WaitForShutdown()
+        public bool WaitForShutdown(TimeSpan timeout)
         {
-            return _processingServer.WaitForShutdown();
+            return _processingServer.WaitForShutdown(timeout);
         }
 
         public Task WaitForShutdownAsync(CancellationToken cancellationToken)
         {
             return _processingServer.WaitForShutdownAsync(cancellationToken);
-        }
-
-        public bool Shutdown()
-        {
-            return _processingServer.Shutdown();
-        }
-
-        public Task ShutdownAsync(CancellationToken cancellationToken)
-        {
-            return _processingServer.ShutdownAsync(cancellationToken);
         }
 
         private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses()

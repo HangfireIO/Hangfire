@@ -24,10 +24,7 @@ namespace Hangfire.Server
     {
         void SendStop();
 
-        bool WaitForShutdown();
+        bool WaitForShutdown(TimeSpan timeout);
         Task WaitForShutdownAsync(CancellationToken cancellationToken);
-
-        bool Shutdown();
-        Task ShutdownAsync(CancellationToken cancellationToken);
     }
 }

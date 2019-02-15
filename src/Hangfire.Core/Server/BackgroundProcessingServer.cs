@@ -51,6 +51,7 @@ namespace Hangfire.Server
         private readonly IBackgroundDispatcher _dispatcher;
 
         private int _disposed;
+        private bool _awaited;
 
         public BackgroundProcessingServer([NotNull] IEnumerable<IBackgroundProcess> processes)
             : this(JobStorage.Current, processes)
@@ -125,32 +126,20 @@ namespace Hangfire.Server
             _shutdownCts.CancelAfter(_options.ShutdownTimeout);
         }
 
-        public bool WaitForShutdown()
+        public bool WaitForShutdown(TimeSpan timeout)
         {
             ThrowIfDisposed();
-            return _dispatcher.Wait(_options.ShutdownTimeout + _options.LastChanceTimeout);
+
+            Volatile.Write(ref _awaited, true);
+            return _dispatcher.Wait(timeout);
         }
 
         public async Task WaitForShutdownAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            await _dispatcher.WaitAsync(_options.ShutdownTimeout + _options.LastChanceTimeout, cancellationToken).ConfigureAwait(false);
-        }
 
-        public bool Shutdown()
-        {
-            ThrowIfDisposed();
-
-            SendStop();
-            return WaitForShutdown();
-        }
-
-        public Task ShutdownAsync(CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            SendStop();
-            return WaitForShutdownAsync(cancellationToken);
+            Volatile.Write(ref _awaited, true);
+            await _dispatcher.WaitAsync(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
         }
 
         public void Dispose()
@@ -159,7 +148,12 @@ namespace Hangfire.Server
 
             if (!_stoppingCts.IsCancellationRequested)
             {
-                Shutdown();
+                SendStop();
+            }
+
+            if (!Volatile.Read(ref _awaited))
+            {
+                WaitForShutdown(Timeout.InfiniteTimeSpan);
             }
 
             if (Interlocked.Exchange(ref _disposed, 1) == 1) return;
@@ -178,7 +172,7 @@ namespace Hangfire.Server
             _stoppedCts.Cancel();
             _shutdownCts.Cancel();
 
-            _dispatcher.Wait(_options.LastChanceTimeout);
+            WaitForShutdown(_options.LastChanceTimeout);
         }
 
         private static IBackgroundProcessDispatcherBuilder[] GetProcesses([NotNull] IEnumerable<IBackgroundProcess> processes)
