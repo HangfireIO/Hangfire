@@ -47,6 +47,7 @@ namespace Hangfire
             HeartbeatInterval = BackgroundProcessingServerOptions.DefaultHeartbeatInterval;
             ServerTimeout = ServerWatchdog.DefaultServerTimeout;
             ServerCheckInterval = ServerWatchdog.DefaultCheckInterval;
+            CancellationCheckInterval = ServerJobCancellationWatcher.DefaultCheckInterval;
             
             FilterProvider = null;
             Activator = null;
@@ -158,6 +159,8 @@ namespace Hangfire
 
             }
         }
+
+        public TimeSpan CancellationCheckInterval { get; set; }
 
         [Obsolete("Please use `ServerTimeout` or `ServerCheckInterval` options instead. Will be removed in 2.0.0.")]
         public ServerWatchdogOptions ServerWatchdogOptions { get; set; }

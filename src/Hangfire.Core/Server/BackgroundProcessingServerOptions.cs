@@ -33,6 +33,9 @@ namespace Hangfire.Server
             HeartbeatInterval = DefaultHeartbeatInterval;
             ServerCheckInterval = ServerWatchdog.DefaultCheckInterval;
             ServerTimeout = ServerWatchdog.DefaultServerTimeout;
+
+            CancellationCheckInterval = ServerJobCancellationWatcher.DefaultCheckInterval;
+
             RetryDelay = BackgroundExecutionOptions.GetBackOffMultiplier;
             RestartDelay = TimeSpan.FromSeconds(15);
 
@@ -44,6 +47,7 @@ namespace Hangfire.Server
         public TimeSpan HeartbeatInterval { get; set; }
         public TimeSpan ServerCheckInterval { get; set; }
         public TimeSpan ServerTimeout { get; set; }
+        public TimeSpan CancellationCheckInterval { get; set; }
         public string ServerName { get; set; }
 
         public Func<int, TimeSpan> RetryDelay

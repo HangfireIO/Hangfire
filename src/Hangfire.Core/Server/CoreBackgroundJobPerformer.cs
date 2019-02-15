@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading;
-using System.Threading.Tasks;
 using Hangfire.Annotations;
 using System.Runtime.CompilerServices;
 
@@ -72,7 +71,7 @@ namespace Hangfire.Server
             }
         }
 
-        internal static void HandleJobPerformanceException(Exception exception, CancellationToken shutdownToken)
+        internal static void HandleJobPerformanceException(Exception exception, IJobCancellationToken cancellationToken)
         {
             if (exception is JobAbortedException)
             {
@@ -81,8 +80,15 @@ namespace Hangfire.Server
                 // should NOT be re-queued.
                 ExceptionDispatchInfo.Capture(exception).Throw();
             }
+            
+            if (exception is OperationCanceledException && cancellationToken.IsAborted())
+            {
+                // OperationCanceledException exception is thrown because 
+                // ServerJobCancellationWatcher has detected the job was aborted.
+                throw new JobAbortedException();
+            }
 
-            if (exception is OperationCanceledException && shutdownToken.IsCancellationRequested)
+            if (exception is OperationCanceledException && cancellationToken.ShutdownToken.IsCancellationRequested)
             {
                 // OperationCanceledException exceptions are treated differently from
                 // others, when ShutdownToken's cancellation was requested, to notify
@@ -160,17 +166,17 @@ namespace Hangfire.Server
             }
             catch (ArgumentException ex)
             {
-                HandleJobPerformanceException(ex, context.CancellationToken.ShutdownToken);
+                HandleJobPerformanceException(ex, context.CancellationToken);
                 throw;
             }
             catch (AggregateException ex)
             {
-                HandleJobPerformanceException(ex.InnerException, context.CancellationToken.ShutdownToken);
+                HandleJobPerformanceException(ex.InnerException, context.CancellationToken);
                 throw;
             }
             catch (TargetInvocationException ex)
             {
-                HandleJobPerformanceException(ex.InnerException, context.CancellationToken.ShutdownToken);
+                HandleJobPerformanceException(ex.InnerException, context.CancellationToken);
                 throw;
             }
         }

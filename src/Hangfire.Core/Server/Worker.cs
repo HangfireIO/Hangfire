@@ -232,16 +232,18 @@ namespace Hangfire.Server
 
                 var backgroundJob = new BackgroundJob(jobId, jobData.Job, jobData.CreatedAt);
 
-                var jobToken = new ServerJobCancellationToken(connection, jobId, context.ServerId, context.ExecutionId.ToString(), context.StoppedToken);
-                var performContext = new PerformContext(connection, backgroundJob, jobToken);
+                using (var jobToken = new ServerJobCancellationToken(connection, jobId, context.ServerId, context.ExecutionId.ToString(), context.StoppedToken))
+                {
+                    var performContext = new PerformContext(connection, backgroundJob, jobToken);
 
-                var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
-                var duration = Stopwatch.StartNew();
+                    var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
+                    var duration = Stopwatch.StartNew();
 
-                var result = _performer.Perform(performContext);
-                duration.Stop();
+                    var result = _performer.Perform(performContext);
+                    duration.Stop();
 
-                return new SucceededState(result, (long) latency, duration.ElapsedMilliseconds);
+                    return new SucceededState(result, (long) latency, duration.ElapsedMilliseconds);
+                }
             }
             catch (JobAbortedException)
             {

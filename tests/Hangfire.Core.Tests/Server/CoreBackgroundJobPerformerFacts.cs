@@ -295,13 +295,13 @@ namespace Hangfire.Core.Tests.Server
             // Act & Assert
             Assert.Throws<TaskCanceledException>(() => performer.Perform(_context.Object));
         }
-
+        
         [Fact]
         public void Run_RethrowsJobAbortedException()
         {
             // Arrange
             _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
-            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(CancellationToken.None);
+            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(new CancellationToken(true));
             _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<JobAbortedException>();
 
             var performer = CreatePerformer();
