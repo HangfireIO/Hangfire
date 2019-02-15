@@ -39,18 +39,17 @@ namespace Hangfire.Server
             [NotNull] IStorageConnection connection,
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IJobCancellationToken cancellationToken)
-            // ReSharper disable once AssignNullToNotNullAttribute
             : this(null, connection, backgroundJob, cancellationToken)
         {
         }
 
         public PerformContext(
-            [NotNull] JobStorage storage,
+            [CanBeNull] JobStorage storage,
             [NotNull] IStorageConnection connection, 
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IJobCancellationToken cancellationToken)
         {
-            Storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            Storage = storage;
             Connection = connection ?? throw new ArgumentNullException(nameof(connection));
             BackgroundJob = backgroundJob ?? throw new ArgumentNullException(nameof(backgroundJob));
             CancellationToken = cancellationToken ?? throw new ArgumentNullException(nameof(cancellationToken));
@@ -58,7 +57,7 @@ namespace Hangfire.Server
             Items = new Dictionary<string, object>();
         }
 
-        [NotNull]
+        [CanBeNull]
         public JobStorage Storage { get; }
 
         /// <summary>

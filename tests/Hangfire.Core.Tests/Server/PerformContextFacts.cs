@@ -24,12 +24,10 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenStorageIsNull()
+        public void Ctor_DoesNotThrowAnException_WhenStorageIsNull()
         {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new PerformContext(null, _connection.Object, _backgroundJob.Object, _cancellationToken.Object));
-
-            Assert.Equal("storage", exception.ParamName);
+            var context = new PerformContext(null, _connection.Object, _backgroundJob.Object, _cancellationToken.Object);
+            Assert.NotNull(context);
         }
 
         [Fact]
