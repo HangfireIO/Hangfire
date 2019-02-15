@@ -97,6 +97,15 @@ namespace Hangfire
             return configuration.UseLogProvider(new ColouredConsoleLogProvider());
         }
 
+        public static IGlobalConfiguration<ColouredConsoleLogProvider> UseColouredConsoleLogProvider(
+            [NotNull] this IGlobalConfiguration configuration,
+            LogLevel minLevel)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            return configuration.UseLogProvider(new ColouredConsoleLogProvider(minLevel));
+        }
+
         public static IGlobalConfiguration<Log4NetLogProvider> UseLog4NetLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
         {

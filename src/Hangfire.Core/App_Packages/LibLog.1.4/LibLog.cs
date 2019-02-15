@@ -1371,6 +1371,8 @@ namespace Hangfire.Logging.LogProviders
 
     public class ColouredConsoleLogProvider : ILogProvider
     {
+        private readonly LogLevel _minLevel;
+
         static ColouredConsoleLogProvider()
         {
             MessageFormatter = DefaultMessageFormatter;
@@ -1384,9 +1386,19 @@ namespace Hangfire.Logging.LogProviders
                     };
         }
 
+        public ColouredConsoleLogProvider()
+            : this(LogLevel.Info)
+        {
+        }
+
+        public ColouredConsoleLogProvider(LogLevel minLevel)
+        {
+            _minLevel = minLevel;
+        }
+
         public ILog GetLogger(string name)
         {
-            return new ColouredConsoleLogger(name);
+            return new ColouredConsoleLogger(name, _minLevel);
         }
 
         /// <summary>
@@ -1438,14 +1450,21 @@ namespace Hangfire.Logging.LogProviders
         {
             private static readonly object Lock = new object();
             private readonly string _name;
+            private readonly LogLevel _minLevel;
 
-            public ColouredConsoleLogger(string name)
+            public ColouredConsoleLogger(string name, LogLevel minLevel)
             {
                 _name = name;
+                _minLevel = minLevel;
             }
 
             public bool Log(LogLevel logLevel, Func<string> messageFunc, Exception exception)
             {
+                if (logLevel < _minLevel)
+                {
+                    return false;
+                }
+
                 if (messageFunc == null)
                 {
                     return true;
