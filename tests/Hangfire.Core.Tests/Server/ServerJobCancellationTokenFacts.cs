@@ -79,10 +79,12 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void ShutdownTokenProperty_PointsToShutdownTokenValue()
+        public void ShutdownTokenProperty_PointsToValue_LinkedWithShutdownToken()
         {
             var token = CreateToken();
-            Assert.Equal(_cts.Token, token.ShutdownToken);
+            Assert.False(token.ShutdownToken.IsCancellationRequested);
+            _cts.Cancel();
+            Assert.True(token.ShutdownToken.IsCancellationRequested);
         }
 
         [Fact]
@@ -148,7 +150,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var token = CreateToken();
             
-            Assert.False(token.CancellationToken.IsCancellationRequested);
+            Assert.False(token.ShutdownToken.IsCancellationRequested);
         }
 
         [Fact]
@@ -158,7 +160,7 @@ namespace Hangfire.Core.Tests.Server
 
             token.Abort();
 
-            Assert.True(token.CancellationToken.IsCancellationRequested);
+            Assert.True(token.ShutdownToken.IsCancellationRequested);
         }
 
         [Fact]
@@ -169,7 +171,7 @@ namespace Hangfire.Core.Tests.Server
             ServerJobCancellationToken.CheckAllCancellationTokens(_connection.Object);
             
             Assert.False(token.IsAborted);
-            token.CancellationToken.ThrowIfCancellationRequested(); // does not throw
+            token.ShutdownToken.ThrowIfCancellationRequested(); // does not throw
         }
 
         [Fact]
@@ -181,7 +183,7 @@ namespace Hangfire.Core.Tests.Server
             ServerJobCancellationToken.CheckAllCancellationTokens(_connection.Object);
 
             Assert.Throws<OperationCanceledException>(
-                () => token.CancellationToken.ThrowIfCancellationRequested());
+                () => token.ShutdownToken.ThrowIfCancellationRequested());
             Assert.True(token.IsAborted);
         }
         
@@ -194,7 +196,7 @@ namespace Hangfire.Core.Tests.Server
             ServerJobCancellationToken.CheckAllCancellationTokens(_connection.Object);
 
             Assert.Throws<OperationCanceledException>(
-                () => token.CancellationToken.ThrowIfCancellationRequested());
+                () => token.ShutdownToken.ThrowIfCancellationRequested());
             Assert.True(token.IsAborted);
         }
         
@@ -207,7 +209,7 @@ namespace Hangfire.Core.Tests.Server
             ServerJobCancellationToken.CheckAllCancellationTokens(_connection.Object);
 
             Assert.Throws<OperationCanceledException>(
-                () => token.CancellationToken.ThrowIfCancellationRequested());
+                () => token.ShutdownToken.ThrowIfCancellationRequested());
             Assert.True(token.IsAborted);
         }
 
@@ -220,7 +222,7 @@ namespace Hangfire.Core.Tests.Server
             ServerJobCancellationToken.CheckAllCancellationTokens(_connection.Object);
 
             Assert.Throws<OperationCanceledException>(
-                () => token.CancellationToken.ThrowIfCancellationRequested());
+                () => token.ShutdownToken.ThrowIfCancellationRequested());
             Assert.True(token.IsAborted);
         }
 

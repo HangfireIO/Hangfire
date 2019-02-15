@@ -274,7 +274,6 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
             _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(new CancellationToken(true));
-            _context.CancellationToken.Setup(x => x.CancellationToken).Returns(new CancellationToken(true));
             _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<OperationCanceledException>();
 
             var performer = CreatePerformer();
@@ -289,7 +288,6 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
             _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(new CancellationToken(true));
-            _context.CancellationToken.Setup(x => x.CancellationToken).Returns(new CancellationToken(true));
             _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<TaskCanceledException>();
 
             var performer = CreatePerformer();
@@ -303,8 +301,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
-            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(CancellationToken.None);
-            _context.CancellationToken.Setup(x => x.CancellationToken).Returns(new CancellationToken(true));
+            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(new CancellationToken(true));
             _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<JobAbortedException>();
 
             var performer = CreatePerformer();
@@ -319,7 +316,6 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
             _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(CancellationToken.None);
-            _context.CancellationToken.Setup(x => x.CancellationToken).Returns(CancellationToken.None);
             _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<OperationCanceledException>();
 
             var performer = CreatePerformer();
@@ -334,13 +330,12 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(default(CancellationToken)));
             var source = new CancellationTokenSource();
-            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(CancellationToken.None);
-            _context.CancellationToken.Setup(x => x.CancellationToken).Returns(source.Token);
+            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(source.Token);
             var performer = CreatePerformer();
 
             // Act & Assert
             source.Cancel();
-            Assert.Throws<JobAbortedException>(
+            Assert.Throws<OperationCanceledException>(
                 () => performer.Perform(_context.Object));
         }
 

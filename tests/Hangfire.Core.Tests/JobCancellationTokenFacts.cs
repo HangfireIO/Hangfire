@@ -10,7 +10,6 @@ namespace Hangfire.Core.Tests
         {
             var token = new JobCancellationToken(true);
             Assert.True(token.ShutdownToken.IsCancellationRequested);
-            Assert.True(token.CancellationToken.IsCancellationRequested);
         }
 
         [Fact]
