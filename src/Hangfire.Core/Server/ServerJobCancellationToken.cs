@@ -119,9 +119,7 @@ namespace Hangfire.Server
             }
         }
 
-        public CancellationToken ShutdownToken => _shutdownToken;
-
-        public CancellationToken CancellationToken => _cancellationTokenHolder.Value.CancellationToken;
+        public CancellationToken ShutdownToken => _cancellationTokenHolder.Value.CancellationToken;
 
         public bool IsAborted => _cancellationTokenHolder.IsValueCreated ? _cancellationTokenHolder.Value.IsAborted : _isAborted;
 

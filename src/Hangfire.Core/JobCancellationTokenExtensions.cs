@@ -16,7 +16,7 @@ namespace Hangfire
                 return serverJobCancellationToken.IsAborted;
             }
             
-            return jobCancellationToken.CancellationToken.IsCancellationRequested;
+            return jobCancellationToken.ShutdownToken.IsCancellationRequested;
         }
     }
 }

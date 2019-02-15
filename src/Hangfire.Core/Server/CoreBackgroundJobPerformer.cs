@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading;
-using System.Threading.Tasks;
 using Hangfire.Annotations;
 using System.Runtime.CompilerServices;
 
@@ -31,7 +30,7 @@ namespace Hangfire.Server
             = new Dictionary<Type, Func<PerformContext, object>>
             {
                 { typeof (IJobCancellationToken), x => x.CancellationToken },
-                { typeof (CancellationToken), x => x.CancellationToken.CancellationToken },
+                { typeof (CancellationToken), x => x.CancellationToken.ShutdownToken },
                 { typeof (PerformContext), x => x }
             };
 
