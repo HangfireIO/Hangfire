@@ -29,26 +29,37 @@ namespace Hangfire.Server
     public class PerformContext
     {
         public PerformContext([NotNull] PerformContext context)
-            : this(context.Connection, context.BackgroundJob, context.CancellationToken)
+            : this(context.Storage, context.Connection, context.BackgroundJob, context.CancellationToken)
         {
             Items = context.Items;
         }
 
+        [Obsolete("Please use PerformContext(JobStorage, IStorageConnection, BackgroundJob, IJobCancellationToken) overload instead. Will be removed in 2.0.0.")]
         public PerformContext(
+            [NotNull] IStorageConnection connection,
+            [NotNull] BackgroundJob backgroundJob,
+            [NotNull] IJobCancellationToken cancellationToken)
+            // ReSharper disable once AssignNullToNotNullAttribute
+            : this(null, connection, backgroundJob, cancellationToken)
+        {
+        }
+
+        public PerformContext(
+            [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection, 
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IJobCancellationToken cancellationToken)
         {
-            if (connection == null) throw new ArgumentNullException(nameof(connection));
-            if (backgroundJob == null) throw new ArgumentNullException(nameof(backgroundJob));
-            if (cancellationToken == null) throw new ArgumentNullException(nameof(cancellationToken));
-
-            Connection = connection;
-            BackgroundJob = backgroundJob;
-            CancellationToken = cancellationToken;
+            Storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            BackgroundJob = backgroundJob ?? throw new ArgumentNullException(nameof(backgroundJob));
+            CancellationToken = cancellationToken ?? throw new ArgumentNullException(nameof(cancellationToken));
 
             Items = new Dictionary<string, object>();
         }
+
+        [NotNull]
+        public JobStorage Storage { get; }
 
         /// <summary>
         /// Gets an instance of the key-value storage. You can use it
