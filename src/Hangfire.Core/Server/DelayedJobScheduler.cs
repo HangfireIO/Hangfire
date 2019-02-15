@@ -75,7 +75,6 @@ namespace Hangfire.Server
 
         private readonly IBackgroundJobStateChanger _stateChanger;
         private readonly TimeSpan _pollingDelay;
-        private bool? _batchingAvailable = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DelayedJobScheduler"/>
@@ -148,7 +147,7 @@ namespace Hangfire.Server
         {
             return UseConnectionDistributedLock(context.Storage, connection =>
             {
-                if (IsBatchingAvailable(connection))
+                if (context.Storage.IsBatchingAvailable)
                 {
                     var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
                     var jobIds = ((JobStorageConnection)connection).GetFirstByLowestScoreFromSet("schedule", 0, timestamp, BatchSize);
@@ -200,33 +199,6 @@ namespace Hangfire.Server
                     transaction.Commit();
                 }
             }
-        }
-
-        private bool IsBatchingAvailable(IStorageConnection connection)
-        {
-            if (!_batchingAvailable.HasValue)
-            {
-                var batchingAvailable = false;
-                if (connection is JobStorageConnection storageConnection)
-                {
-                    try
-                    {
-                        storageConnection.GetFirstByLowestScoreFromSet(null, 0, 0, 1);
-                    }
-                    catch (NotSupportedException)
-                    {
-                        // batching is not supported
-                    }
-                    catch (ArgumentNullException)
-                    {
-                        batchingAvailable = true;
-                    }
-                }
-                
-                _batchingAvailable = batchingAvailable;
-            }
-
-            return _batchingAvailable.Value;
         }
 
         private T UseConnectionDistributedLock<T>(JobStorage storage, Func<IStorageConnection, T> action)

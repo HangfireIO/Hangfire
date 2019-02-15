@@ -71,6 +71,8 @@ namespace Hangfire
             }
         }
 
+        public virtual bool IsBatchingAvailable => false;
+
         public abstract IMonitoringApi GetMonitoringApi();
 
         public abstract IStorageConnection GetConnection();

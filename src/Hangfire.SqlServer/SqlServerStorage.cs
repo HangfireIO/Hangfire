@@ -132,6 +132,8 @@ namespace Hangfire.SqlServer
         internal int? CommandBatchMaxTimeout => _options.CommandBatchMaxTimeout.HasValue ? (int)_options.CommandBatchMaxTimeout.Value.TotalSeconds : (int?)null;
         internal TimeSpan? SlidingInvisibilityTimeout => _options.SlidingInvisibilityTimeout;
 
+        public override bool IsBatchingAvailable => true;
+
         public override IMonitoringApi GetMonitoringApi()
         {
             return new SqlServerMonitoringApi(this, _options.DashboardJobListLimit);
