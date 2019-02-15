@@ -247,7 +247,11 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
                         }
                     }
 
-                    WaitHandle.WaitAny(new WaitHandle[] { cancellationEvent.WaitHandle, NewItemInQueueEvent }, _options.QueuePollInterval);
+                    var pollInterval = _options.QueuePollInterval > TimeSpan.Zero
+                        ? _options.QueuePollInterval
+                        : TimeSpan.FromSeconds(1);
+
+                    WaitHandle.WaitAny(new WaitHandle[] { cancellationEvent.WaitHandle, NewItemInQueueEvent }, pollInterval);
                     cancellationToken.ThrowIfCancellationRequested();
                 } while (true);
             }

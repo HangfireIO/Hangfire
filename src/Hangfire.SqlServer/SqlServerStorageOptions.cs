@@ -54,10 +54,6 @@ namespace Hangfire.SqlServer
             {
                 var message = $"The QueuePollInterval property value should be positive. Given: {value}.";
 
-                if (value == TimeSpan.Zero)
-                {
-                    throw new ArgumentException(message, nameof(value));
-                }
                 if (value != value.Duration())
                 {
                     throw new ArgumentException(message, nameof(value));
