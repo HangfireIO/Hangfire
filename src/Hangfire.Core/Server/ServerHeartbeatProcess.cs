@@ -64,8 +64,12 @@ namespace Hangfire.Server
             }
             catch (BackgroundServerGoneException)
             {
-                _logger.Warn($"{BackgroundServerProcess.GetServerTemplate(context.ServerId)} was considered dead by other servers, restarting...");
-                _requestRestart();
+                if (!context.ShutdownToken.IsCancellationRequested)
+                {
+                    _logger.Warn($"{BackgroundServerProcess.GetServerTemplate(context.ServerId)} was considered dead by other servers, restarting...");
+                    _requestRestart();
+                }
+
                 return;
             }
             catch (Exception ex)
