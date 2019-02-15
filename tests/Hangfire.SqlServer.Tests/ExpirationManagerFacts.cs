@@ -1,8 +1,10 @@
-﻿using System;
+﻿extern alias ReferencedDapper;
+
+using System;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
-using Dapper;
+using ReferencedDapper::Dapper;
 using Xunit;
 
 namespace Hangfire.SqlServer.Tests
@@ -22,12 +24,12 @@ namespace Hangfire.SqlServer.Tests
         {
             using (var connection = CreateConnection())
             {
-                var entryId = CreateExpirationEntry(connection, DateTime.UtcNow.AddMonths(-1));
+                CreateExpirationEntry(connection, DateTime.UtcNow.AddMonths(-1));
                 var manager = CreateManager(connection);
 
                 manager.Execute(_cts.Token);
 
-                Assert.True(IsEntryExpired(connection, entryId));
+                Assert.True(IsEntryExpired(connection));
             }
         }
 
@@ -36,12 +38,12 @@ namespace Hangfire.SqlServer.Tests
         {
             using (var connection = CreateConnection())
             {
-                var entryId = CreateExpirationEntry(connection, null);
+                CreateExpirationEntry(connection, null);
                 var manager = CreateManager(connection);
 
                 manager.Execute(_cts.Token);
 
-                Assert.False(IsEntryExpired(connection, entryId));
+                Assert.False(IsEntryExpired(connection));
             }
         }
 
@@ -50,12 +52,12 @@ namespace Hangfire.SqlServer.Tests
         {
             using (var connection = CreateConnection())
             {
-                var entryId = CreateExpirationEntry(connection, DateTime.UtcNow.AddMonths(1));
+                CreateExpirationEntry(connection, DateTime.UtcNow.AddMonths(1));
                 var manager = CreateManager(connection);
 
                 manager.Execute(_cts.Token);
 
-                Assert.False(IsEntryExpired(connection, entryId));
+                Assert.False(IsEntryExpired(connection));
             }
         }
 
@@ -164,22 +166,19 @@ values ('key', 'field', '', @expireAt)";
             }
         }
 
-        private static int CreateExpirationEntry(SqlConnection connection, DateTime? expireAt)
+        private static void CreateExpirationEntry(SqlConnection connection, DateTime? expireAt)
         {
             const string insertSql = @"
 insert into HangFire.AggregatedCounter ([Key], [Value], [ExpireAt])
-values ('key', 1, @expireAt)
-select scope_identity() as Id";
+values (N'key', 1, @expireAt)";
 
-            var id = connection.Query(insertSql, new { expireAt }).Single();
-            var recordId = (int) id.Id;
-            return recordId;
+            connection.Execute(insertSql, new { expireAt });
         }
 
-        private static bool IsEntryExpired(SqlConnection connection, int entryId)
+        private static bool IsEntryExpired(SqlConnection connection)
         {
             var count = connection.Query<int>(
-                    "select count(*) from HangFire.AggregatedCounter where Id = @id", new { id = entryId }).Single();
+                    "select count(*) from HangFire.AggregatedCounter where [Key] = N'key'").Single();
             return count == 0;
         }
 

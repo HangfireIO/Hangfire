@@ -23,7 +23,7 @@
         @: <meta name="csrf-token" content="@Context.AntiforgeryToken">
     }
     @{ var version = GetType().GetTypeInfo().Assembly.GetName().Version; }
-    <link rel="stylesheet" href="@Url.To($"/css{version.Major}{version.Minor}{version.Build}")">
+    <link rel="stylesheet" href="@Url.To($"/css{version.Major}{version.Minor}{version.Build}0")">
 </head>
     <body>
         <!-- Wrap all page content here -->
@@ -84,6 +84,6 @@
              data-pollurl="@(Url.To("/stats"))">
         </div>
 
-        <script src="@Url.To($"/js{version.Major}{version.Minor}{version.Build}")"></script>
+        <script src="@Url.To($"/js{version.Major}{version.Minor}{version.Build}0")"></script>
     </body>
 </html>

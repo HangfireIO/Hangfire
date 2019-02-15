@@ -24,8 +24,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Hangfire.Common;
-using Hangfire.Client;
-using Hangfire.States;
 
 namespace Hangfire
 {
@@ -40,7 +38,7 @@ namespace Hangfire
             if (app == null) throw new ArgumentNullException(nameof(app));
             if (pathMatch == null) throw new ArgumentNullException(nameof(pathMatch));
 
-            ThrowIfNotConfigured(app);
+            HangfireServiceCollectionExtensions.ThrowIfNotConfigured(app.ApplicationServices);
 
             var services = app.ApplicationServices;
 
@@ -61,7 +59,7 @@ namespace Hangfire
         {
             if (app == null) throw new ArgumentNullException(nameof(app));
             
-            ThrowIfNotConfigured(app);
+            HangfireServiceCollectionExtensions.ThrowIfNotConfigured(app.ApplicationServices);
 
             var services = app.ApplicationServices;
             var lifetime = services.GetRequiredService<IApplicationLifetime>();
@@ -69,28 +67,21 @@ namespace Hangfire
             storage = storage ?? services.GetRequiredService<JobStorage>();
             options = options ?? services.GetService<BackgroundJobServerOptions>() ?? new BackgroundJobServerOptions();
             additionalProcesses = additionalProcesses ?? services.GetServices<IBackgroundProcess>();
-            
-            var server = new BackgroundJobServer(options, storage, additionalProcesses, 
-                options.FilterProvider ?? services.GetRequiredService<IJobFilterProvider>(),
-                options.Activator ?? services.GetRequiredService<JobActivator>(),
-                services.GetService<IBackgroundJobFactory>(),
-                services.GetService<IBackgroundJobPerformer>(),
-                services.GetService<IBackgroundJobStateChanger>());
+
+            options.Activator = options.Activator ?? services.GetService<JobActivator>();
+            options.FilterProvider = options.FilterProvider ?? services.GetService<IJobFilterProvider>();
+            options.TimeZoneResolver = options.TimeZoneResolver ?? services.GetService<ITimeZoneResolver>();
+
+            var server = new BackgroundJobServer(options, storage, additionalProcesses);
 
             lifetime.ApplicationStopping.Register(() => server.SendStop());
-            lifetime.ApplicationStopped.Register(() => server.Dispose());
+            lifetime.ApplicationStopped.Register(() =>
+            {
+                server.WaitForShutdown();
+                server.Dispose();
+            });
 
             return app;
-        }
-
-        private static void ThrowIfNotConfigured(IApplicationBuilder app)
-        {
-            var configuration = app.ApplicationServices.GetService<IGlobalConfiguration>();
-            if (configuration == null)
-            {
-                throw new InvalidOperationException(
-                    "Unable to find the required services. Please add all the required services by calling 'IServiceCollection.AddHangfire' inside the call to 'ConfigureServices(...)' in the application startup code.");
-            }
         }
     }
 }

@@ -21,6 +21,7 @@ using Hangfire.Dashboard;
 using Hangfire.Dashboard.Pages;
 using Hangfire.Logging;
 using Hangfire.Logging.LogProviders;
+using Hangfire.Storage;
 
 namespace Hangfire
 {
@@ -36,6 +37,18 @@ namespace Hangfire
             if (storage == null) throw new ArgumentNullException(nameof(storage));
 
             return configuration.Use(storage, x => JobStorage.Current = x);
+        }
+
+        public static IGlobalConfiguration<TStorage> WithJobExpirationTimeout<TStorage>(
+            [NotNull] this IGlobalConfiguration<TStorage> configuration,
+            [NotNull] TimeSpan timeout)
+            where TStorage : JobStorage
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            JobStorage.Current.JobExpirationTimeout = timeout;
+
+            return configuration;
         }
 
         public static IGlobalConfiguration<TActivator> UseActivator<TActivator>(
@@ -84,6 +97,15 @@ namespace Hangfire
             return configuration.UseLogProvider(new ColouredConsoleLogProvider());
         }
 
+        public static IGlobalConfiguration<ColouredConsoleLogProvider> UseColouredConsoleLogProvider(
+            [NotNull] this IGlobalConfiguration configuration,
+            LogLevel minLevel)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            return configuration.UseLogProvider(new ColouredConsoleLogProvider(minLevel));
+        }
+
         public static IGlobalConfiguration<Log4NetLogProvider> UseLog4NetLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
         {
@@ -92,7 +114,7 @@ namespace Hangfire
             return configuration.UseLogProvider(new Log4NetLogProvider());
         }
 
-#if NETFULL
+#if !NETSTANDARD1_3
         public static IGlobalConfiguration<ElmahLogProvider> UseElmahLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
         {
@@ -109,7 +131,9 @@ namespace Hangfire
 
             return configuration.UseLogProvider(new ElmahLogProvider(minLevel));
         }
+#endif
 
+#if !NETSTANDARD1_3
         public static IGlobalConfiguration<EntLibLogProvider> UseEntLibLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
         {
@@ -117,6 +141,7 @@ namespace Hangfire
 
             return configuration.UseLogProvider(new EntLibLogProvider());
         }
+#endif
 
         public static IGlobalConfiguration<SerilogLogProvider> UseSerilogLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
@@ -126,6 +151,7 @@ namespace Hangfire
             return configuration.UseLogProvider(new SerilogLogProvider());
         }
 
+#if !NETSTANDARD1_3
         public static IGlobalConfiguration<LoupeLogProvider> UseLoupeLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
         {
@@ -156,6 +182,54 @@ namespace Hangfire
             HomePage.Metrics.Add(metric);
 
             return configuration;
+        }
+
+        public static IGlobalConfiguration UseTypeResolver(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] Func<string, Type> typeResolver)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            InvocationData.SetTypeResolver(typeResolver);
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseTypeSerializer(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] Func<Type, string> typeSerializer)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            InvocationData.SetTypeSerializer(typeSerializer);
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseDefaultTypeResolver(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseTypeResolver(null);
+        }
+
+        public static IGlobalConfiguration UseDefaultTypeSerializer(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseTypeSerializer(null);
+        }
+
+        public static IGlobalConfiguration UseSimpleAssemblyNameTypeSerializer(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseTypeSerializer(InvocationData.SimpleAssemblyNameTypeSerializer);
+        }
+
+        public static IGlobalConfiguration UseIgnoredAssemblyVersionTypeResolver(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseTypeResolver(InvocationData.IgnoredAssemblyVersionTypeResolver);
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]

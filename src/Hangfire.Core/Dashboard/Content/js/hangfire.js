@@ -42,74 +42,37 @@
         return Metrics;
     })();
 
-    var BaseGraph = function () {
-        this.height = 200;
-    };
-
-    BaseGraph.prototype.update = function () {
-        var graph = this._graph;
-
-        var width = $(graph.element).innerWidth();
-        if (width !== graph.width) {
-            graph.configure({
-                width: width,
-                height: this.height
-            });
-        }
-
-        graph.update();
-    };
-
-    BaseGraph.prototype._initGraph = function (element, settings, xSettings, ySettings) {
-        var graph = this._graph = new Rickshaw.Graph($.extend({
-            element: element,
-            width: $(element).innerWidth(),
-            height: this.height,
-            interpolation: 'linear',
-            stroke: true
-        }, settings));
-
-        this._hoverDetail = new Rickshaw.Graph.HoverDetail({
-            graph: graph,
-            yFormatter: function (y) { return Math.floor(y); },
-            xFormatter: function (x) { return moment(new Date(x * 1000)).format("LLLL"); }
-        });
-
-        if (xSettings) {
-            this._xAxis = new Rickshaw.Graph.Axis.Time($.extend({
-              graph: graph,
-              timeFixture: new Rickshaw.Fixtures.Time.Local()
-            }, xSettings));
-        }
-        
-        if (ySettings) {
-            this._yAxis = new Rickshaw.Graph.Axis.Y($.extend({
-                graph: graph,
-                tickFormat: Rickshaw.Fixtures.Number.formatKMBT
-            }, ySettings));
-        }
-
-        graph.render();
-    }
-
     hangfire.RealtimeGraph = (function() {
-        function RealtimeGraph(element, succeeded, failed, succeededStr, failedStr) {
+        function RealtimeGraph(element, succeeded, failed, succeededStr, failedStr, pollInterval) {
             this._succeeded = succeeded;
             this._failed = failed;
-
-            this._initGraph(element, {
-                renderer: 'bar',
-                series: new Rickshaw.Series.FixedDuration([
-                        { name: failedStr, color: '#d9534f' },
-                        { name: succeededStr, color: '#5cb85c' }
-                ],
-                    undefined,
-                    { timeInterval: 2000, maxDataPoints: 100 }
-                )
-            }, null, {});
+            
+            this._chart = new Chart(element, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        { label: succeededStr, borderColor: '#62B35F', backgroundColor: '#6FCD6D' },
+                        { label: failedStr, borderColor: '#BB4847', backgroundColor: '#D55251' }
+                    ]
+                },
+                options: {
+                    scales: {
+                        xAxes: [{
+                            type: 'realtime',
+                            realtime: { duration: 60 * 1000, delay: pollInterval },
+                            time: { unit: 'second', tooltipFormat: 'll HH:mm:ss' }
+                        }],
+                        yAxes: [{ ticks: { beginAtZero: true, precision: 0, min: 0, maxTicksLimit: 6, suggestedMax: 10 }, stacked: true }]
+                    },
+                    elements: { line: { tension: 0 }, point: { radius: 0 } },
+                    animation: { duration: 0 },
+                    hover: { animationDuration: 0 },
+                    responsiveAnimationDuration: 0,
+                    legend: { display: false },
+                    tooltips: { mode: 'index', intersect: false }
+                }
+            });
         }
-
-        RealtimeGraph.prototype = Object.create(BaseGraph.prototype);
 
         RealtimeGraph.prototype.appendHistory = function (statistics) {
             var newSucceeded = parseInt(statistics["succeeded:count"].intValue);
@@ -119,8 +82,10 @@
                 var succeeded = newSucceeded - this._succeeded;
                 var failed = newFailed - this._failed;
 
-                this._graph.series.addData({ failed: failed, succeeded: succeeded });
-                this._graph.render();
+                this._chart.data.datasets[0].data.push({ x: new Date(), y: succeeded });
+                this._chart.data.datasets[1].data.push({ x: new Date(), y: failed });
+                
+                this._chart.update();
             }
             
             this._succeeded = newSucceeded;
@@ -132,23 +97,25 @@
 
     hangfire.HistoryGraph = (function() {
         function HistoryGraph(element, succeeded, failed, succeededStr, failedStr) {
-            this._initGraph(element, {
-                renderer: 'area',
-                series: [
-                    {
-                        color: '#d9534f',
-                        data: failed,
-                        name: failedStr
-                    }, {
-                        color: '#6ACD65',
-                        data: succeeded,
-                        name: succeededStr
-                    }
-                ]
-            }, {}, { ticksTreatment: 'glow' });
+            this._chart = new Chart(element, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        { label: succeededStr, borderColor: '#62B35F', backgroundColor: '#6FCD6D', data: succeeded },
+                        { label: failedStr, borderColor: '#BB4847', backgroundColor: '#D55251', data: failed }
+                    ]
+                },
+                options: {
+                    scales: {
+                        xAxes: [{ type: 'time', time: { unit: 'hour', tooltipFormat: 'll HH:mm' } }],
+                        yAxes: [{ ticks: { beginAtZero: true, precision: 0, maxTicksLimit: 6 }, stacked: true }]
+                    },
+                    elements: { line: { tension: 0 }, point: { radius: 0 } },
+                    legend: { display: false },
+                    tooltips: { mode: 'index', intersect: false }
+                }
+            });
         }
-
-        HistoryGraph.prototype = Object.create(BaseGraph.prototype);
 
         return HistoryGraph;
     })();
@@ -213,13 +180,13 @@
 
             this._initialize(config.locale);
 
-            this.realtimeGraph = this._createRealtimeGraph('realtimeGraph');
+            this.realtimeGraph = this._createRealtimeGraph('realtimeGraph', config.pollInterval);
             this.historyGraph = this._createHistoryGraph('historyGraph');
 
             this._poller.start();
         };
 
-        Page.prototype._createRealtimeGraph = function(elementId) {
+        Page.prototype._createRealtimeGraph = function(elementId, pollInterval) {
             var realtimeElement = document.getElementById(elementId);
             if (realtimeElement) {
                 var succeeded = parseInt($(realtimeElement).data('succeeded'));
@@ -227,14 +194,10 @@
 
                 var succeededStr = $(realtimeElement).data('succeeded-string');
                 var failedStr = $(realtimeElement).data('failed-string');
-                var realtimeGraph = new Hangfire.RealtimeGraph(realtimeElement, succeeded, failed, succeededStr, failedStr);
+                var realtimeGraph = new Hangfire.RealtimeGraph(realtimeElement, succeeded, failed, succeededStr, failedStr, pollInterval);
 
                 this._poller.addListener(function (data) {
                     realtimeGraph.appendHistory(data);
-                });
-
-                $(window).resize(function() {
-                    realtimeGraph.update();
                 });
 
                 return realtimeGraph;
@@ -251,7 +214,7 @@
                     for (var date in obj) {
                         if (obj.hasOwnProperty(date)) {
                             var value = obj[date];
-                            var point = { x: Date.parse(date) / 1000, y: value };
+                            var point = { x: Date.parse(date), y: value };
                             series.unshift(point);
                         }
                     }
@@ -264,13 +227,7 @@
                 var succeededStr = $(historyElement).data('succeeded-string');
                 var failedStr = $(historyElement).data('failed-string');
 
-                var historyGraph = new Hangfire.HistoryGraph(historyElement, succeeded, failed, succeededStr, failedStr);
-
-                $(window).resize(function () {
-                    historyGraph.update();
-                });
-
-                return historyGraph;
+                return new Hangfire.HistoryGraph(historyElement, succeeded, failed, succeededStr, failedStr);
             }
 
             return null;

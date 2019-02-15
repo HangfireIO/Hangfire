@@ -200,7 +200,7 @@ namespace Hangfire.States
                     return null;
                 }
 
-                context.CancellationToken.WaitHandle.WaitOne(firstAttempt ? 0 : 100);
+                context.CancellationToken.Wait(TimeSpan.FromMilliseconds(firstAttempt ? 0 : 100));
                 firstAttempt = false;
             }
         }

@@ -1,9 +1,11 @@
-﻿using System;
+﻿extern alias ReferencedDapper;
+
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
-using Dapper;
+using ReferencedDapper::Dapper;
 using Hangfire.States;
 using Moq;
 using Xunit;
@@ -241,7 +243,38 @@ select scope_identity() as Id";
             {
                 Commit(sql, x => x.AddToQueue("default", "1"), useBatching);
 
-                correctJobQueue.Verify(x => x.Enqueue(It.IsNotNull<IDbConnection>(), "default", "1"));
+                correctJobQueue.Verify(x => x.Enqueue(
+#if NETCOREAPP
+                    It.IsNotNull<System.Data.Common.DbConnection>(),
+                    It.IsNotNull<System.Data.Common.DbTransaction>(),
+#else
+                    It.IsNotNull<IDbConnection>(),
+#endif
+                    "default", 
+                    "1"));
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void AddToQueue_EnqueuesAJobDirectly_WhenDefaultQueueProviderIsUsed(bool useBatching)
+        {
+            // We are relying on the fact that SqlServerJobQueue.Enqueue method will throw with a negative
+            // timeout. If we don't see this exception, and if the record is inserted, then everything is fine.
+            var options = new SqlServerStorageOptions { PrepareSchemaIfNecessary = false, CommandTimeout = TimeSpan.FromSeconds(-5) };
+            _queueProviders.Add(
+                new SqlServerJobQueueProvider(new Mock<SqlServerStorage>("connection=false;", options).Object, options),
+                new [] { "default" });
+
+            UseConnection(sql =>
+            {
+                Commit(sql, x => x.AddToQueue("default", "1"), useBatching);
+
+                var record = sql.Query("select * from HangFire.JobQueue").Single();
+                Assert.Equal("1", record.JobId.ToString());
+                Assert.Equal("default", record.Queue);
+                Assert.Null(record.FetchedAt);
             });
         }
 
@@ -1148,6 +1181,124 @@ values (@key, @expireAt)";
                 var records = sql.Query("select * from HangFire.[List]").ToDictionary(x => (string)x.Key, x => (DateTime?)x.ExpireAt);
                 Assert.Null(records["list-1"]);
                 Assert.NotNull(records["list-2"]);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void InsertToList_HandlesListIdCanExceedInt32Max(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                sql.Query($"DBCC CHECKIDENT('HangFire.List', RESEED, {int.MaxValue + 1L});");
+
+                Commit(sql, x => x.InsertToList("my-key", "my-value"), useBatching);
+
+                var record = sql.Query("select * from HangFire.List").Single();
+
+                Assert.True(int.MaxValue < record.Id);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void ExpireJob_SetsJobExpirationData_WhenJobIdIsLongValue(bool useBatching)
+        {
+            const string arrangeSql = @"
+SET IDENTITY_INSERT HangFire.Job ON
+insert into HangFire.Job (Id, InvocationData, Arguments, CreatedAt)
+values (@jobId, '', '', getutcdate())";
+
+            UseConnection(sql =>
+            {
+                sql.Query(
+                    arrangeSql,
+                    new { jobId = int.MaxValue + 1L });
+
+                Commit(sql, x => x.ExpireJob((int.MaxValue + 1L).ToString(), TimeSpan.FromDays(1)), useBatching);
+
+                var job = GetTestJob(sql, (int.MaxValue + 1L).ToString());
+                Assert.True(DateTime.UtcNow.AddMinutes(-1) < job.ExpireAt && job.ExpireAt <= DateTime.UtcNow.AddDays(2));
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void PersistJob_ClearsTheJobExpirationData_WhenJobIdIsLongValue(bool useBatching)
+        {
+            const string arrangeSql = @"
+SET IDENTITY_INSERT HangFire.Job ON
+insert into HangFire.Job (Id, InvocationData, Arguments, CreatedAt, ExpireAt)
+values (@jobId, '', '', getutcdate(), getutcdate())";
+
+            UseConnection(sql =>
+            {
+                sql.Query(
+                    arrangeSql,
+                    new { jobId = int.MaxValue + 1L });
+
+                Commit(sql, x => x.PersistJob((int.MaxValue + 1L).ToString()), useBatching);
+
+                var job = GetTestJob(sql, (int.MaxValue + 1L).ToString());
+                Assert.Null(job.ExpireAt);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void SetJobState_WorksCorrect_WhenJobIdIsLongValue(bool useBatching)
+        {
+            const string arrangeSql = @"
+SET IDENTITY_INSERT HangFire.Job ON
+insert into HangFire.Job (Id, InvocationData, Arguments, CreatedAt)
+values (@jobId, '', '', getutcdate())";
+
+            UseConnection(sql =>
+            {
+                sql.Query(
+                    arrangeSql,
+                    new { jobId = int.MaxValue + 1L });
+
+                var state = new Mock<IState>();
+                state.Setup(x => x.Name).Returns("State");
+
+                Commit(sql, x => x.SetJobState((int.MaxValue + 1L).ToString(), state.Object), useBatching);
+                var job = GetTestJob(sql, (int.MaxValue + 1L).ToString());
+
+                var jobState = sql.Query("select * from HangFire.State").Single();
+                Assert.Equal(int.MaxValue + 1L, jobState.JobId);
+                Assert.Equal(job.StateId, jobState.Id);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void AddJobState_AddsAState_WhenJobIdIsLongValue(bool useBatching)
+        {
+            const string arrangeSql = @"
+SET IDENTITY_INSERT HangFire.Job ON
+insert into HangFire.Job (Id, InvocationData, Arguments, CreatedAt)
+values (@jobId, '', '', getutcdate())";
+
+            UseConnection(sql =>
+            {
+                sql.Query(
+                   arrangeSql,
+                   new { jobId = int.MaxValue + 1L });
+
+                var state = new Mock<IState>();
+                state.Setup(x => x.Name).Returns("State");
+
+                Commit(sql, x => x.AddJobState((int.MaxValue + 1L).ToString(), state.Object), useBatching);
+
+                var jobState = sql.Query("select * from HangFire.State").Single();
+
+                Assert.Equal(int.MaxValue + 1L, jobState.JobId);
             });
         }
 

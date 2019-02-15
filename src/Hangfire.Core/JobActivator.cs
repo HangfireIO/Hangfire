@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
+using Hangfire.Server;
 
 namespace Hangfire
 {
@@ -59,6 +60,11 @@ namespace Hangfire
 #pragma warning disable 618
             return BeginScope();
 #pragma warning restore 618
+        }
+
+        public virtual JobActivatorScope BeginScope(PerformContext context)
+        {
+            return this.BeginScope(new JobActivatorContext(context.Connection, context.BackgroundJob, context.CancellationToken));
         }
 
         class SimpleJobActivatorScope : JobActivatorScope

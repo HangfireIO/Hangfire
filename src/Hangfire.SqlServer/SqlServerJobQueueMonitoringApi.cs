@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
-#if NETFULL
+#if FEATURE_TRANSACTIONSCOPE
 using System.Transactions;
 #else
 using System.Data;
@@ -68,7 +68,7 @@ namespace Hangfire.SqlServer
             }  
         }
 
-        public IEnumerable<int> GetEnqueuedJobIds(string queue, int @from, int perPage)
+        public IEnumerable<long> GetEnqueuedJobIds(string queue, int @from, int perPage)
         {
             var sqlQuery =
 $@"select r.JobId from (
@@ -80,18 +80,17 @@ where r.row_num between @start and @end";
 
             return _storage.UseConnection(null, connection =>
             {
-                // TODO: Remove cast to `int` to support `bigint`.
                 return connection.Query<JobIdDto>(
                     sqlQuery,
                     new { queue = queue, start = from + 1, end = @from + perPage },
                     commandTimeout: _storage.CommandTimeout)
                     .ToList()
-                    .Select(x => (int)x.JobId)
+                    .Select(x => x.JobId)
                     .ToList();
             });
         }
 
-        public IEnumerable<int> GetFetchedJobIds(string queue, int @from, int perPage)
+        public IEnumerable<long> GetFetchedJobIds(string queue, int @from, int perPage)
         {
             var fetchedJobsSql = $@"
 select r.JobId from (
@@ -108,7 +107,7 @@ where r.row_num between @start and @end";
                         fetchedJobsSql,
                         new { queue = queue, start = from + 1, end = @from + perPage })
                     .ToList()
-                    .Select(x => (int)x.JobId)
+                    .Select(x => (long)x.JobId)
                     .ToList();
             });
         }

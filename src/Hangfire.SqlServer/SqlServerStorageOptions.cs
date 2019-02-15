@@ -15,7 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-#if NETFULL
+#if FEATURE_TRANSACTIONSCOPE
 using System.Transactions;
 #else
 using System.Data;
@@ -54,10 +54,6 @@ namespace Hangfire.SqlServer
             {
                 var message = $"The QueuePollInterval property value should be positive. Given: {value}.";
 
-                if (value == TimeSpan.Zero)
-                {
-                    throw new ArgumentException(message, nameof(value));
-                }
                 if (value != value.Duration())
                 {
                     throw new ArgumentException(message, nameof(value));
@@ -106,5 +102,7 @@ namespace Hangfire.SqlServer
                 _schemaName = value;
             }
         }
+
+        public Func<IDisposable> ImpersonationFunc { get; set; }
     }
 }

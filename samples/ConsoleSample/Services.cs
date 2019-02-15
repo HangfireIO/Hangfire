@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
+using Hangfire.Common;
 
 namespace ConsoleSample
 {
@@ -96,6 +97,13 @@ namespace ConsoleSample
             object[] na,
             List<string> sl)
         {
+        }
+
+        public void LongRunning(IJobCancellationToken token)
+        {
+            token.ShutdownToken.Wait(TimeSpan.FromMinutes(30));
+            token.ShutdownToken.ThrowIfCancellationRequested();
+            //Thread.Sleep(TimeSpan.FromMinutes(10));
         }
 
         public class CustomObject

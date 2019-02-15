@@ -120,7 +120,7 @@ namespace Hangfire.Common
                             }
                             else
                             {
-#if NETFULL
+#if !NETSTANDARD1_3
                                 var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
                                 value = converter.ConvertFromInvariantString(argument);
 #else

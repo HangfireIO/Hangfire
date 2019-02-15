@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Hangfire.Server;
@@ -14,7 +15,7 @@ namespace Hangfire.Core.Tests.Server
     public class DelayedJobSchedulerFacts
     {
         private const string JobId = "id";
-        private readonly Mock<IStorageConnection> _connection;
+        private readonly Mock<JobStorageConnection> _connection;
         private readonly Mock<IBackgroundJobStateChanger> _stateChanger;
         private readonly BackgroundProcessContextMock _context;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
@@ -23,9 +24,9 @@ namespace Hangfire.Core.Tests.Server
         public DelayedJobSchedulerFacts()
         {
             _context = new BackgroundProcessContextMock();
-            _context.CancellationTokenSource.Cancel();
+            _context.StoppingTokenSource.CancelAfter(TimeSpan.FromSeconds(1));
 
-            _connection = new Mock<IStorageConnection>();
+            _connection = new Mock<JobStorageConnection>();
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
 
             _stateChanger = new Mock<IBackgroundJobStateChanger>();
@@ -55,7 +56,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var scheduler = CreateScheduler();
 
-			scheduler.Execute(_context.Object);
+            scheduler.Execute(_context.Object);
 
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.BackgroundJobId == JobId &&
@@ -66,13 +67,40 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void Execute_MovesJobStateToEnqueued_UsingBatching_WhenAvailable()
+        {
+            // Arrange
+            _connection
+                .Setup(x => x.GetFirstByLowestScoreFromSet(null, It.IsAny<double>(), It.IsAny<double>(),It.IsAny<int>()))
+                .Throws<ArgumentNullException>();
+
+            _connection
+                .Setup(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0), It.IsAny<int>()))
+                .Returns(new List<string> { "job-1", "job-2" });
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.BackgroundJobId == "job-1" &&
+                ctx.NewState is EnqueuedState)));
+
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.BackgroundJobId == "job-2" &&
+                ctx.NewState is EnqueuedState)));
+        }
+
+        [Fact]
         public void Execute_DoesNotCallStateChanger_IfThereAreNoJobsToEnqueue()
         {
             _connection.Setup(x => x.GetFirstByLowestScoreFromSet(
                 "schedule", 0, It.Is<double>(time => time > 0))).Returns((string)null);
             var scheduler = CreateScheduler();
 
-			scheduler.Execute(_context.Object);
+            scheduler.Execute(_context.Object);
 
             _stateChanger.Verify(
                 x => x.ChangeState(It.IsAny<StateChangeContext>()),

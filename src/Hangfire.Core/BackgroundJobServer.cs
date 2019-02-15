@@ -17,17 +17,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
-using System.ComponentModel;
 
 namespace Hangfire
 {
-    public class BackgroundJobServer : IDisposable
+    public class BackgroundJobServer : IBackgroundProcessingServer
     {
         private readonly ILog _logger = LogProvider.For<BackgroundJobServer>();
 
@@ -78,35 +79,16 @@ namespace Hangfire
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses)
-            : this(options, storage, additionalProcesses, 
-                   options.FilterProvider ?? JobFilterProviders.Providers,
-                   options.Activator ?? JobActivator.Current, 
-                   null, null, null)
-        {
-        }
-
-        [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public BackgroundJobServer(
-            [NotNull] BackgroundJobServerOptions options,
-            [NotNull] JobStorage storage,
-            [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
-            [NotNull] IJobFilterProvider filterProvider,
-            [NotNull] JobActivator activator,
-            [CanBeNull] IBackgroundJobFactory factory,
-            [CanBeNull] IBackgroundJobPerformer performer,
-            [CanBeNull] IBackgroundJobStateChanger stateChanger)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (options == null) throw new ArgumentNullException(nameof(options));
             if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
-            if (filterProvider == null) throw new ArgumentNullException(nameof(filterProvider));
-            if (activator == null) throw new ArgumentNullException(nameof(activator));
 
             _options = options;
 
-            var processes = new List<IBackgroundProcess>();
-            processes.AddRange(GetRequiredProcesses(filterProvider, activator, factory, performer, stateChanger));
-            processes.AddRange(additionalProcesses);
+            var processes = new List<IBackgroundProcessDispatcherBuilder>();
+            processes.AddRange(GetRequiredProcesses());
+            processes.AddRange(additionalProcesses.Select(x => x.UseBackgroundPool(1)));
 
             var properties = new Dictionary<string, object>
             {
@@ -114,16 +96,15 @@ namespace Hangfire
                 { "WorkerCount", options.WorkerCount }
             };
 
-            _logger.Info("Starting Hangfire Server");
-            _logger.Info($"Using job storage: '{storage}'");
+            _logger.Info($"Starting Hangfire Server using job storage: '{storage}'");
 
             storage.WriteOptionsToLog(_logger);
 
-            _logger.Info("Using the following options for Hangfire Server:");
-            _logger.Info($"    Worker count: {options.WorkerCount}");
-            _logger.Info($"    Listening queues: {String.Join(", ", options.Queues.Select(x => "'" + x + "'"))}");
-            _logger.Info($"    Shutdown timeout: {options.ShutdownTimeout}");
-            _logger.Info($"    Schedule polling interval: {options.SchedulePollingInterval}");
+            _logger.Info("Using the following options for Hangfire Server:\r\n" +
+                $"    Worker count: {options.WorkerCount}\r\n" +
+                $"    Listening queues: {String.Join(", ", options.Queues.Select(x => "'" + x + "'"))}\r\n" +
+                $"    Shutdown timeout: {options.ShutdownTimeout}\r\n" +
+                $"    Schedule polling interval: {options.SchedulePollingInterval}");
             
             _processingServer = new BackgroundProcessingServer(
                 storage, 
@@ -141,29 +122,61 @@ namespace Hangfire
         public void Dispose()
         {
             _processingServer.Dispose();
-            _logger.Info("Hangfire Server stopped.");
         }
 
-        private IEnumerable<IBackgroundProcess> GetRequiredProcesses(
-            [NotNull] IJobFilterProvider filterProvider,
-            [NotNull] JobActivator activator,
-            [CanBeNull] IBackgroundJobFactory factory,
-            [CanBeNull] IBackgroundJobPerformer performer,
-            [CanBeNull] IBackgroundJobStateChanger stateChanger)
+        [Obsolete("This method is a stub. There is no need to call the `Start` method. Will be removed in version 2.0.0.")]
+        public void Start()
         {
-            var processes = new List<IBackgroundProcess>();
-            
-            factory = factory ?? new BackgroundJobFactory(filterProvider);
-            performer = performer ?? new BackgroundJobPerformer(filterProvider, activator);
-            stateChanger = stateChanger ?? new BackgroundJobStateChanger(filterProvider);
-            
-            for (var i = 0; i < _options.WorkerCount; i++)
-            {
-                processes.Add(new Worker(_options.Queues, performer, stateChanger));
-            }
-            
-            processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger));
-            processes.Add(new RecurringJobScheduler(factory));
+        }
+
+        [Obsolete("Please call the `Shutdown` method instead. Will be removed in version 2.0.0.")]
+        public void Stop()
+        {
+            Shutdown();
+        }
+
+        [Obsolete("Please call the `Shutdown` method instead. Will be removed in version 2.0.0.")]
+        public void Stop(bool force)
+        {
+            Shutdown();
+        }
+
+        public bool WaitForShutdown()
+        {
+            return _processingServer.WaitForShutdown();
+        }
+
+        public Task WaitForShutdownAsync(CancellationToken cancellationToken)
+        {
+            return _processingServer.WaitForShutdownAsync(cancellationToken);
+        }
+
+        public bool Shutdown()
+        {
+            return _processingServer.Shutdown();
+        }
+
+        public Task ShutdownAsync(CancellationToken cancellationToken)
+        {
+            return _processingServer.ShutdownAsync(cancellationToken);
+        }
+
+        private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses()
+        {
+            var processes = new List<IBackgroundProcessDispatcherBuilder>();
+
+            var filterProvider = _options.FilterProvider ?? JobFilterProviders.Providers;
+            var activator = _options.Activator ?? JobActivator.Current;
+            var timeZoneResolver = _options.TimeZoneResolver ?? new DefaultTimeZoneResolver();
+
+            var stateMachine = new StateMachine(filterProvider);
+            var factory = new BackgroundJobFactory(filterProvider);
+            var performer = new BackgroundJobPerformer(filterProvider, activator);
+            var stateChanger = new BackgroundJobStateChanger(filterProvider);
+
+            processes.Add(new Worker(_options.Queues, performer, stateChanger).UseBackgroundPool(_options.WorkerCount));
+            processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger).UseBackgroundPool(1));
+            processes.Add(new RecurringJobScheduler(factory, stateMachine, _options.SchedulePollingInterval, timeZoneResolver).UseBackgroundPool(1));
 
             return processes;
         }
@@ -172,6 +185,7 @@ namespace Hangfire
         {
             return new BackgroundProcessingServerOptions
             {
+                StopTimeout = _options.StopTimeout,
                 ShutdownTimeout = _options.ShutdownTimeout,
                 HeartbeatInterval = _options.HeartbeatInterval,
 #pragma warning disable 618
@@ -181,16 +195,6 @@ namespace Hangfire
                 CancellationCheckInterval = _options.CancellationCheckInterval,
                 ServerName = _options.ServerName
             };
-        }
-
-        [Obsolete("This method is a stub. There is no need to call the `Start` method. Will be removed in version 2.0.0.")]
-        public void Start()
-        {
-        }
-
-        [Obsolete("This method is a stub. Please call the `Dispose` method instead. Will be removed in version 2.0.0.")]
-        public void Stop()
-        {
         }
     }
 }

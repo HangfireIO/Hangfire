@@ -411,7 +411,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.True(_methodInvoked);
         }
 
-#if NETFULL
+#if !NETCOREAPP1_0
         [Fact, StaticLock]
         public void Perform_PassesCorrectDateTime_IfItWasSerialized_UsingTypeConverter()
         {
@@ -772,6 +772,11 @@ namespace Hangfire.Core.Tests.Common
                 await Task.Yield();
 
                 return FunctionReturningValue();
+            }
+            
+            public ValueTask<string> FunctionReturningValueTaskResultingInString()
+            {
+                return new ValueTask<string>(FunctionReturningTaskResultingInString());
             }
         }
 

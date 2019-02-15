@@ -73,7 +73,22 @@ namespace Hangfire
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="storage"/> is null.</exception>
         public BackgroundJobClient([NotNull] JobStorage storage)
-            : this(storage, new BackgroundJobFactory(), new BackgroundJobStateChanger())
+            : this(storage, JobFilterProviders.Providers)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BackgroundJobClient"/> class
+        /// with the specified storage and filter provider.
+        /// </summary>
+        /// <param name="storage">Job storage to use for background jobs.</param>
+        /// <param name="filterProvider">Filter provider responsible to locate job filters.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="storage"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="filterProvider"/> is null.</exception>
+        public BackgroundJobClient([NotNull] JobStorage storage, [NotNull] IJobFilterProvider filterProvider)
+#pragma warning disable 618
+            : this(storage, new BackgroundJobFactory(filterProvider), new BackgroundJobStateChanger(filterProvider))
+#pragma warning restore 618
         {
         }
         
@@ -89,6 +104,7 @@ namespace Hangfire
         /// <exception cref="ArgumentNullException"><paramref name="storage"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="stateChanger"/> is null.</exception>
+        [Obsolete("Please use BackgroundJobClient(JobStorage, IJobFilterProvider) overload instead. Will be made internal in 2.0.0.")]
         public BackgroundJobClient(
             [NotNull] JobStorage storage,
             [NotNull] IBackgroundJobFactory factory,

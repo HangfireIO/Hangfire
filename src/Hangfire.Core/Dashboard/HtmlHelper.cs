@@ -41,7 +41,7 @@ namespace Hangfire.Dashboard
         {
             try
             {
-#if NETFULL
+#if !NETSTANDARD1_3
                 DisplayNameType = typeof(DisplayNameAttribute);
 #else
                 DisplayNameType = Type.GetType("System.ComponentModel.DisplayNameAttribute, System.ComponentModel.Primitives");
@@ -132,6 +132,18 @@ namespace Hangfire.Dashboard
                 return Strings.Common_CannotFindTargetMethod;
             }
 
+            var jobDisplayNameAttribute = job.Method.GetCustomAttribute<JobDisplayNameAttribute>();
+            if (jobDisplayNameAttribute != null)
+            {
+                try
+                {
+                    return jobDisplayNameAttribute.Format(_page.Context, job);
+                }
+                catch (Exception)
+                {
+                    return jobDisplayNameAttribute.DisplayName;
+                }
+            }
 
             if (DisplayNameType != null && GetDisplayName != null)
             {
@@ -146,6 +158,19 @@ namespace Hangfire.Dashboard
                     {
                         return GetDisplayName(attribute);
                     }
+                }
+            }
+
+            var displayNameProvider = _page.DashboardOptions.DisplayNameFunc;
+            if (displayNameProvider != null)
+            {
+                try
+                {
+                    return displayNameProvider(_page.Context, job);
+                }
+                catch
+                {
+                    // Ignoring exceptions
                 }
             }
 
