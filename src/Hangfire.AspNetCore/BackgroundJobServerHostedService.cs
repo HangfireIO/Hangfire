@@ -33,9 +33,9 @@ namespace Hangfire
             return Task.CompletedTask;
         }
 
-        public async Task StopAsync(CancellationToken cancellationToken)
+        public Task StopAsync(CancellationToken cancellationToken)
         {
-            await _processingServer.ShutdownAsync(cancellationToken).ConfigureAwait(false);
+            return _processingServer.ShutdownAsync(cancellationToken);
         }
 
         public void Dispose()
