@@ -81,6 +81,13 @@ namespace Hangfire.Server
                 ExceptionDispatchInfo.Capture(exception).Throw();
             }
             
+            if (exception is OperationCanceledException && cancellationToken.IsAborted())
+            {
+                // OperationCanceledException exception is thrown because 
+                // ServerJobCancellationWatcher has detected the job was aborted.
+                throw new JobAbortedException();
+            }
+
             if (exception is OperationCanceledException && cancellationToken.ShutdownToken.IsCancellationRequested)
             {
                 // OperationCanceledException exceptions are treated differently from
@@ -89,13 +96,6 @@ namespace Hangfire.Server
                 // and a job identifier should BE re-queued.
                 ExceptionDispatchInfo.Capture(exception).Throw();
                 throw exception;
-            }
-
-            if (exception is OperationCanceledException && cancellationToken.IsAborted())
-            {
-                // OperationCanceledException exception is thrown because 
-                // ServerJobCancellationWatcher has detected the job was aborted.
-                throw new JobAbortedException();
             }
 
             // Other exceptions are wrapped with JobPerformanceException to preserve a

@@ -6,17 +6,14 @@ namespace Hangfire
     {
         public static bool IsAborted(this IJobCancellationToken jobCancellationToken)
         {
-            if (jobCancellationToken == null) return false;
-
-            var serverJobCancellationToken = jobCancellationToken as ServerJobCancellationToken;
-            if (serverJobCancellationToken != null)
+            if (jobCancellationToken is ServerJobCancellationToken serverJobCancellationToken)
             {
                 // for ServerJobCancellationToken we may simply check IsAborted property
                 // to prevent unnecessary creation of the linked CancellationTokenSource
                 return serverJobCancellationToken.IsAborted;
             }
             
-            return jobCancellationToken.ShutdownToken.IsCancellationRequested;
+            return false;
         }
     }
 }
