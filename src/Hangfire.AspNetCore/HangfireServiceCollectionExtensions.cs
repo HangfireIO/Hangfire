@@ -25,7 +25,6 @@ using Hangfire.States;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 #if NETSTANDARD2_0
 using Microsoft.Extensions.Hosting;
 #endif
@@ -131,21 +130,20 @@ namespace Hangfire
         {
             if (services == null) throw new ArgumentNullException(nameof(services));
 
-            services.TryAddEnumerable(
-                ServiceDescriptor.Singleton<IHostedService, BackgroundJobServerHostedService>(provider =>
-                {
-                    ThrowIfNotConfigured(provider);
+            services.AddTransient<IHostedService, BackgroundJobServerHostedService>(provider =>
+            {
+                ThrowIfNotConfigured(provider);
 
-                    var options = provider.GetService<BackgroundJobServerOptions>() ?? new BackgroundJobServerOptions();
-                    var storage = provider.GetService<JobStorage>() ?? JobStorage.Current;
-                    var additionalProcesses = provider.GetServices<IBackgroundProcess>();
+                var options = provider.GetService<BackgroundJobServerOptions>() ?? new BackgroundJobServerOptions();
+                var storage = provider.GetService<JobStorage>() ?? JobStorage.Current;
+                var additionalProcesses = provider.GetServices<IBackgroundProcess>();
 
-                    options.Activator = options.Activator ?? provider.GetService<JobActivator>();
-                    options.FilterProvider = options.FilterProvider ?? provider.GetService<IJobFilterProvider>();
-                    options.TimeZoneResolver = options.TimeZoneResolver ?? provider.GetService<ITimeZoneResolver>();
+                options.Activator = options.Activator ?? provider.GetService<JobActivator>();
+                options.FilterProvider = options.FilterProvider ?? provider.GetService<IJobFilterProvider>();
+                options.TimeZoneResolver = options.TimeZoneResolver ?? provider.GetService<ITimeZoneResolver>();
 
-                    return new BackgroundJobServerHostedService(storage, options, additionalProcesses);
-                }));
+                return new BackgroundJobServerHostedService(storage, options, additionalProcesses);
+            });
 
             return services;
         }
