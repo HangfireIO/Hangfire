@@ -64,7 +64,14 @@ namespace Hangfire.Server
             void HandleStoppingSignal() => _logger.Info($"{GetServerTemplate(serverId)} caught stopping signal...");
             void HandleStoppedSignal() => _logger.Info($"{GetServerTemplate(serverId)} caught stopped signal...");
             void HandleShutdownSignal() => _logger.Warn($"{GetServerTemplate(serverId)} caught shutdown signal...");
-            void HandleRestartSignal() => _logger.Info($"{GetServerTemplate(serverId)} caught restart signal...");
+
+            void HandleRestartSignal()
+            {
+                if (!stoppingToken.IsCancellationRequested)
+                {
+                    _logger.Info($"{GetServerTemplate(serverId)} caught restart signal...");
+                }
+            }
 
             //using (LogProvider.OpenMappedContext("ServerId", serverId.ToString()))
             using (var restartCts = new CancellationTokenSource())
@@ -98,6 +105,8 @@ namespace Hangfire.Server
                         execution.NotifySucceeded();
 
                         WaitForDispatchers(context, dispatchers);
+
+                        restartCts.Cancel();
                     }
                 }
                 finally
