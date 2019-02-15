@@ -117,7 +117,8 @@ namespace Hangfire.Server
 
         private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses()
         {
-            yield return new ServerWatchdog(_options.ServerCheckInterval, _options.ServerTimeout).UseBackgroundPool(1);
+            yield return new ServerWatchdog(_options.ServerCheckInterval, _options.ServerTimeout).UseBackgroundPool(threadCount: 1);
+            yield return new ServerJobCancellationWatcher(_options.CancellationCheckInterval).UseBackgroundPool(threadCount: 1);
         }
 
         private IEnumerable<IBackgroundProcessDispatcherBuilder> GetStorageComponents()

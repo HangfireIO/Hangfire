@@ -18,7 +18,8 @@ namespace Hangfire.Core.Tests.Server
             _checkInterval = Timeout.InfiniteTimeSpan;
 
             _context = new BackgroundProcessContextMock();
-            _context.CancellationTokenSource.Cancel();
+            _context.StoppingTokenSource.Cancel();
+            _context.StoppedTokenSource.Cancel();
 
             _connection = new Mock<IStorageConnection>();
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
@@ -27,12 +28,12 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_DelegatesCancellationToServerJobCancellationToken()
         {
-            var token = new ServerJobCancellationToken(_connection.Object, "job-id", _context.ServerId, "1", _context.CancellationTokenSource.Token);
+            var token = new ServerJobCancellationToken(_connection.Object, "job-id", _context.ServerId, "1", _context.StoppedTokenSource.Token);
 
             _connection.Setup(x => x.GetStateData(It.IsAny<string>())).Returns((StateData)null);
             var watchdog = new ServerJobCancellationWatcher(_checkInterval);
 
-			watchdog.Execute(_context.Object);
+            watchdog.Execute(_context.Object);
 
             _connection.Verify(x => x.GetStateData("job-id"));
             _connection.Verify(x => x.Dispose(), Times.Once);
