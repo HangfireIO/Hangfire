@@ -274,7 +274,8 @@ namespace Hangfire.Core.Tests
                 { "CreatedAt", JobHelper.SerializeDateTime(_now) },
                 { "NextExecution", JobHelper.SerializeDateTime(_now) },
                 { "Queue", "default" },
-                { "TimeZoneId", "UTC" }
+                { "TimeZoneId", "UTC" },
+                { "LastJobId", "1384" }
             });
 
             var manager = CreateManager();
@@ -285,7 +286,7 @@ namespace Hangfire.Core.Tests
             // Assert
             _transaction.Verify(x => x.SetRangeInHash(
                 $"recurring-job:{_id}", 
-                It.Is<Dictionary<string, string>>(dict => dict["V"] == "2")));
+                It.Is<Dictionary<string, string>>(dict => dict.Count == 1 && dict["V"] == "2")));
 
             _transaction.Verify(x => x.AddToSet("recurring-jobs", _id, JobHelper.ToTimestamp(_now)));
             _transaction.Verify(x => x.Commit());

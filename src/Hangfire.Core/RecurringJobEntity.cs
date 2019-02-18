@@ -58,6 +58,11 @@ namespace Hangfire
                 Job = InvocationData.Deserialize(recurringJob["Job"]).Deserialize();
             }
 
+            if (recurringJob.ContainsKey("LastJobId") && !String.IsNullOrWhiteSpace(recurringJob["LastJobId"]))
+            {
+                LastJobId = recurringJob["LastJobId"];
+            }
+
             if (recurringJob.ContainsKey("LastExecution") && !String.IsNullOrWhiteSpace(recurringJob["LastExecution"]))
             {
                 LastExecution = JobHelper.DeserializeDateTime(recurringJob["LastExecution"]);
