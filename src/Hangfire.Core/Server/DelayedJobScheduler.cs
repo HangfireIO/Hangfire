@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Logging;
@@ -72,6 +73,7 @@ namespace Hangfire.Server
         private static readonly int BatchSize = 1000;
 
         private readonly ILog _logger = LogProvider.For<DelayedJobScheduler>();
+        private readonly ConcurrentDictionary<Type, bool> _isBatchingAvailableCache = new ConcurrentDictionary<Type, bool>();
 
         private readonly IBackgroundJobStateChanger _stateChanger;
         private readonly TimeSpan _pollingDelay;
@@ -201,25 +203,30 @@ namespace Hangfire.Server
             }
         }
 
-        private static bool IsBatchingAvailable(IStorageConnection connection)
+        private bool IsBatchingAvailable(IStorageConnection connection)
         {
-            if (connection is JobStorageConnection storageConnection)
-            {
-                try
+            return _isBatchingAvailableCache.GetOrAdd(
+                connection.GetType(),
+                type =>
                 {
-                    storageConnection.GetFirstByLowestScoreFromSet(null, 0, 0, 1);
-                }
-                catch (ArgumentNullException ex) when (ex.ParamName == "key")
-                {
-                    return true;
-                }
-                catch (Exception)
-                {
-                    //
-                }
-            }
+                    if (connection is JobStorageConnection storageConnection)
+                    {
+                        try
+                        {
+                            storageConnection.GetFirstByLowestScoreFromSet(null, 0, 0, 1);
+                        }
+                        catch (ArgumentNullException ex) when (ex.ParamName == "key")
+                        {
+                            return true;
+                        }
+                        catch (Exception)
+                        {
+                            //
+                        }
+                    }
 
-            return false;
+                    return false;
+                });
         }
 
         private T UseConnectionDistributedLock<T>(JobStorage storage, Func<IStorageConnection, T> action)
