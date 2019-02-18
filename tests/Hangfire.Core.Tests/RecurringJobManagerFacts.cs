@@ -349,6 +349,31 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void AddOrUpdate_DoesNotReScheduleJob_WhenUpdatingIt()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
+            {
+                { "Cron", "* * * * *" },
+                { "Job", InvocationData.Serialize(_job).Serialize() },
+                { "CreatedAt", JobHelper.SerializeDateTime(_now.AddMinutes(-3)) },
+                { "LastExecution", JobHelper.SerializeDateTime(_now.AddMinutes(-2)) },
+                { "NextExecution", JobHelper.SerializeDateTime(_now.AddMinutes(-1)) }
+            });
+
+            var manager = CreateManager();
+
+            // Act
+            manager.AddOrUpdate(_id, _job, "* * * * *");
+
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{_id}", It.Is<Dictionary<string, string>>(dict =>
+                !dict.ContainsKey("NextExecution") || dict["NextExecution"] == JobHelper.SerializeDateTime(_now.AddMinutes(-1)))));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", _id, JobHelper.ToTimestamp(_now.AddMinutes(-1))));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
         public void Trigger_ThrowsAnException_WhenIdIsNull()
         {
             var manager = CreateManager();
@@ -433,6 +458,31 @@ namespace Hangfire.Core.Tests
                 !dict.ContainsKey("NextExecution"))));
 
             _transaction.Verify(x => x.AddToSet("recurring-jobs", _id, -1.0D));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void Trigger_SchedulesNextExecution_DependingOnCurrentTime_ToTheFuture()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
+            {
+                { "Cron", "* * * * *" },
+                { "Job", InvocationData.Serialize(_job).Serialize() },
+                { "CreatedAt", JobHelper.SerializeDateTime(_now.AddMinutes(-3)) },
+                { "LastExecution", JobHelper.SerializeDateTime(_now.AddMinutes(-2)) },
+                { "NextExecution", JobHelper.SerializeDateTime(_now.AddMinutes(-1)) }
+            });
+
+            var manager = CreateManager();
+
+            // Act
+            manager.Trigger(_id);
+
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{_id}", It.Is<Dictionary<string, string>>(dict =>
+                dict["NextExecution"] == JobHelper.SerializeDateTime(_now.AddMinutes(1)))));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", _id, JobHelper.ToTimestamp(_now.AddMinutes(1))));
             _transaction.Verify(x => x.Commit());
         }
 

@@ -617,6 +617,26 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
 
+        [Fact]
+        public void Execute_DoesNotScheduleRecurringJob_ToThePast()
+        {
+            // Arrange
+            SetupConnection(false);
+
+            _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddMinutes(-2));
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{RecurringJobId}", It.Is<Dictionary<string, string>>(dict =>
+                dict["NextExecution"] == JobHelper.SerializeDateTime(_nowInstant.AddMinutes(1)))));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, JobHelper.ToTimestamp(_nowInstant.AddMinutes(1))));
+            _transaction.Verify(x => x.Commit(), Times.Once);
+        }
+
         private void SetupConnection(bool useJobStorageConnection)
         {
             if (useJobStorageConnection) _context.Storage.Setup(x => x.GetConnection()).Returns(_storageConnection.Object);
