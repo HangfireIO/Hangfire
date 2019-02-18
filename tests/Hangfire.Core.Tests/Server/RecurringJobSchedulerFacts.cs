@@ -71,7 +71,7 @@ namespace Hangfire.Core.Tests.Server
 
             _storageConnection = new Mock<JobStorageConnection>();
             _storageConnection.Setup(x => x.GetFirstByLowestScoreFromSet(null, It.IsAny<double>(), It.IsAny<double>(), It.IsAny<int>()))
-                .Throws<ArgumentNullException>();
+                .Throws(new ArgumentNullException("key"));
             _storageConnection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, JobHelper.ToTimestamp(_nowInstant), It.IsAny<int>()))
                 .Returns(new List<string> { RecurringJobId })
                 .Returns((List<string>)null);
@@ -635,6 +635,29 @@ namespace Hangfire.Core.Tests.Server
                 dict["NextExecution"] == JobHelper.SerializeDateTime(_nowInstant.AddMinutes(1)))));
             _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, JobHelper.ToTimestamp(_nowInstant.AddMinutes(1))));
             _transaction.Verify(x => x.Commit(), Times.Once);
+        }
+
+        [Fact]
+        public void Execute_DoesNotUseBatchedMethod_WhenStorageConnectionThrowsAnException()
+        {
+            // Arrange
+            SetupConnection(true);
+            _storageConnection
+                .Setup(x => x.GetFirstByLowestScoreFromSet(It.IsAny<string>(), It.IsAny<double>(), It.IsAny<double>(), It.IsAny<int>()))
+                .Throws<NotSupportedException>();
+            _storageConnection
+                .Setup(x => x.GetFirstByLowestScoreFromSet(It.IsAny<string>(), It.IsAny<double>(), It.IsAny<double>()))
+                .Returns(RecurringJobId);
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, JobHelper.ToTimestamp(_nowInstant.AddMinutes(1))));
+            _transaction.Verify(x => x.Commit());
         }
 
         private void SetupConnection(bool useJobStorageConnection)

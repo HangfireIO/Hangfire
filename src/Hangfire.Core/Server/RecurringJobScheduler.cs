@@ -364,20 +364,23 @@ namespace Hangfire.Server
 
         private static bool IsBatchingAvailable(IStorageConnection connection)
         {
-            var batchingAvailable = false;
             if (connection is JobStorageConnection storageConnection)
             {
                 try
                 {
                     storageConnection.GetFirstByLowestScoreFromSet(null, 0, 0, 1);
                 }
-                catch (ArgumentNullException)
+                catch (ArgumentNullException ex) when (ex.ParamName == "key")
                 {
-                    batchingAvailable = true;
+                    return true;
+                }
+                catch (Exception)
+                {
+                    //
                 }
             }
 
-            return batchingAvailable;
+            return false;
         }
     }
 }
