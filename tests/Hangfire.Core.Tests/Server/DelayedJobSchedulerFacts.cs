@@ -72,7 +72,7 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             _connection
                 .Setup(x => x.GetFirstByLowestScoreFromSet(null, It.IsAny<double>(), It.IsAny<double>(),It.IsAny<int>()))
-                .Throws<ArgumentNullException>();
+                .Throws(new ArgumentNullException("key"));
 
             _connection
                 .Setup(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0), It.IsAny<int>()))
@@ -90,6 +90,29 @@ namespace Hangfire.Core.Tests.Server
 
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.BackgroundJobId == "job-2" &&
+                ctx.NewState is EnqueuedState)));
+        }
+
+        [Fact]
+        public void Execute_DoesNotUseBatching_WhenConnectionMethod_ThrowsAnException()
+        {
+            // Arrange
+            _connection
+                .Setup(x => x.GetFirstByLowestScoreFromSet(It.IsAny<string>(), It.IsAny<double>(), It.IsAny<double>(),It.IsAny<int>()))
+                .Throws<NotImplementedException>();
+
+            _connection
+                .Setup(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0)))
+                .Returns("job-1");
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.BackgroundJobId == "job-1" &&
                 ctx.NewState is EnqueuedState)));
         }
 
