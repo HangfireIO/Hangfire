@@ -19,6 +19,13 @@
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.7.0-beta4
+• Changed – `StopTimeout` introduced in 1.7.0-beta3 now defaults to zero seconds.
+• Fixed – `NotSupportedException` thrown by `RecurringJobScheduler` (regression).
+• Fixed – `NotSupportedException` thrown by `DelayedJobScheduler` (regression).
+• Fixed – `RecurringJobManager.AddOrUpdate` method doesn't preserve `LastJobId` (regression).
+• Fixed – Cache results of the `IsBatchingAvailable` method per connection type.
+
 1.7.0-beta3
 • Added – Multi-stage shutdown to wait for graceful completion before starting to abort jobs.
 • Added – Asynchronous checks for job cancellation, `IJobCancellationToken` can be replaced with `CancellationToken` (by @pieceofsummer).
