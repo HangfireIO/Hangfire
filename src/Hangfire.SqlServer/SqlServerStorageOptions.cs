@@ -31,7 +31,7 @@ namespace Hangfire.SqlServer
 
         public SqlServerStorageOptions()
         {
-            TransactionIsolationLevel = null;
+            TransactionIsolationLevel = IsolationLevel.ReadCommitted;
             QueuePollInterval = TimeSpan.FromSeconds(15);
             SlidingInvisibilityTimeout = null;
 #pragma warning disable 618
