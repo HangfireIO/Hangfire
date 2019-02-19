@@ -33,7 +33,7 @@ namespace Hangfire.SqlServer
         {
             TransactionIsolationLevel = IsolationLevel.ReadCommitted;
             QueuePollInterval = TimeSpan.FromSeconds(15);
-            SlidingInvisibilityTimeout = null;
+            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5);
 #pragma warning disable 618
             InvisibilityTimeout = TimeSpan.FromMinutes(30);
 #pragma warning restore 618
