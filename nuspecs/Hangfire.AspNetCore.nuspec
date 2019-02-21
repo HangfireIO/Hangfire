@@ -16,8 +16,9 @@
 
 1.7.0-beta3
 • Added – Full .NET Core 2.0 support by explicitly targeting .NET Standard 2.0.
+• Added – An overloaded AddHangfire method with `IServiceProvider` parameter (by @ericgreenmix and @denis-ivanov).
 • Added – `BackgroundJobServerHostedService` class based on `IHostedService` interface.
-• Added – IServiceCollection.AddHangfire extension method to register the server during configuration.
+• Added – `IServiceCollection.AddHangfireServer` method to register the server during configuration.
 
 1.7.0-beta2
 
