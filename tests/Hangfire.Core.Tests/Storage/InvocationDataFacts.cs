@@ -604,6 +604,41 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(value, job.Args[0]);
         }
 
+        [Fact, CleanSerializerSettings]
+        public void Deserialize_HandlesChangingProcessOfInternalDataSerialization()
+        {
+            SerializationHelper.SetUserSerializerSettings(SerializerSettingsHelper.DangerousSettings);
+
+            var serializedData = new InvocationData(
+                typeof(InvocationDataFacts).AssemblyQualifiedName,
+                "ComplicatedMethod",
+                SerializationHelper.Serialize(new[]
+                {
+                    typeof(IList<string>),
+                    typeof(SomeClass)
+                }, SerializationOption.User),
+                SerializationHelper.Serialize(new[]
+                {
+                    SerializationHelper.Serialize(new List<string> { "one", "two" }, SerializationOption.User),
+                    SerializationHelper.Serialize(new SomeClass { StringValue = "value" }, SerializationOption.User)
+                }, SerializationOption.User));
+
+            var job = serializedData.Deserialize();
+
+            Assert.Equal(typeof(InvocationDataFacts), job.Type);
+            Assert.Equal(2, job.Args.Count);
+
+            Assert.Equal(typeof(List<string>), job.Args[0].GetType());
+            Assert.Equal("one", (job.Args[0] as List<string>)?[0]);
+            Assert.Equal("two", (job.Args[0] as List<string>)?[1]);
+
+            Assert.Equal(typeof(SomeClass), job.Args[1].GetType());
+            Assert.Equal("value", (job.Args[1] as SomeClass)?.StringValue);
+            Assert.Equal(0, (job.Args[1] as SomeClass)?.DefaultValue);
+            Assert.Equal(null, (job.Args[1] as SomeClass)?.NullObject);
+        }
+
+
         public static void Method()
         {
         }
@@ -630,6 +665,17 @@ namespace Hangfire.Core.Tests.Storage
 
         public static void NullableDateTimeMethod(DateTime? arg)
         {
+        }
+
+        public static void ComplicatedMethod(IList<string> arg, SomeClass objArg)
+        {
+        }
+
+        public class SomeClass
+        {
+            public string StringValue { get; set; }
+            public object NullObject { get; set; }
+            public int DefaultValue { get; set; }
         }
 
         public class NestedType

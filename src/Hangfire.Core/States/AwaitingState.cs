@@ -40,12 +40,6 @@ namespace Hangfire.States
     {
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromDays(365);
 
-        private static JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
-        {
-            TypeNameHandling = TypeNameHandling.Objects,
-            DefaultValueHandling = DefaultValueHandling.Ignore
-        }.WithSimpleTypeNameAssemblyFormat();
-        
         /// <summary>
         /// Represents the name of the <i>Awaiting</i> state. This field is read-only.
         /// </summary>
@@ -189,8 +183,8 @@ namespace Hangfire.States
         ///         <term><c>NextState</c></term>
         ///         <term><see cref="IState"/></term>
         ///         <term>
-        ///             <see cref="JsonConvert.DeserializeObject(string, JsonSerializerSettings)"/> with 
-        ///             <see cref="TypeNameHandling.Objects"/>
+        ///             <see cref="SerializationHelper.Deserialize{T}(string, SerializationOption)"/> with 
+        ///             <see cref="SerializationOption.DefaultWithTypes"/>
         ///         </term>
         ///         <description>Please see the <see cref="NextState"/> property.</description>
         ///     </item>
@@ -209,7 +203,7 @@ namespace Hangfire.States
             return new Dictionary<string, string>
             {
                 { "ParentId", ParentId },
-                { "NextState", JsonConvert.SerializeObject(NextState, SerializerSettings) },
+                { "NextState", SerializationHelper.Serialize(NextState, SerializationOption.DefaultWithTypes) },
                 { "Options", Options.ToString("D") },
                 { "Expiration", Expiration.ToString() }
             };

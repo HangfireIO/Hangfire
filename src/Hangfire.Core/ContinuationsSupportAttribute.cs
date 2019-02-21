@@ -171,9 +171,7 @@ namespace Hangfire
                 {
                     try
                     {
-                        nextState = JsonConvert.DeserializeObject<IState>(
-                            currentState.Data["NextState"],
-                            new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Objects });
+                        nextState = SerializationHelper.Deserialize<IState>(currentState.Data["NextState"], SerializationOption.DefaultWithTypes);
                     }
                     catch (Exception ex)
                     {
@@ -252,12 +250,12 @@ namespace Hangfire
         private static void SetContinuations(
             IStorageConnection connection, string jobId, List<Continuation> continuations)
         {
-            connection.SetJobParameter(jobId, "Continuations", JobHelper.ToJson(continuations));
+            connection.SetJobParameter(jobId, "Continuations", SerializationHelper.Serialize(continuations));
         }
 
         private static List<Continuation> GetContinuations(IStorageConnection connection, string jobId)
         {
-            return JobHelper.FromJson<List<Continuation>>(connection.GetJobParameter(
+            return SerializationHelper.Deserialize<List<Continuation>>(connection.GetJobParameter(
                 jobId, "Continuations")) ?? new List<Continuation>();
         }
 

@@ -1,12 +1,14 @@
 ﻿using System;
+#if NETCOREAPP1_0
 using System.Reflection;
-using System.Runtime.Serialization.Formatters;
+#endif
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Storage;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xunit;
+#pragma warning disable 618
 
 // ReSharper disable AssignNullToNotNullAttribute
 
@@ -179,7 +181,8 @@ namespace Hangfire.Core.Tests.Common
                 JobHelper.SetSerializerSettings(new JsonSerializerSettings
                 {
                     TypeNameHandling = TypeNameHandling.All,
-                }.WithSimpleTypeNameAssemblyFormat());
+                    TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple
+                });
 
                 var method = typeof (BackgroundJob).GetMethod("DoWork");
                 var args = new object[] { "123", "Test" };

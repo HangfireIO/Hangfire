@@ -234,7 +234,7 @@ where j.Id = @jobId";
                 }
 
                 var data = new Dictionary<string, string>(
-                    JobHelper.FromJson<Dictionary<string, string>>(sqlState.Data),
+                    SerializationHelper.Deserialize<Dictionary<string, string>>(sqlState.Data),
                     StringComparer.OrdinalIgnoreCase);
 
                 return new StateData
@@ -392,7 +392,7 @@ using (VALUES (@id, @data, @heartbeat)) as Source (Id, Data, Heartbeat)
 on Target.Id = Source.Id
 when matched then update set Data = Source.Data, LastHeartbeat = Source.Heartbeat
 when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat);",
-                    new { id = serverId, data = JobHelper.ToJson(data), heartbeat = DateTime.UtcNow },
+                    new { id = serverId, data = SerializationHelper.Serialize(data), heartbeat = DateTime.UtcNow },
                     commandTimeout: _storage.CommandTimeout);
             });
         }

@@ -508,6 +508,24 @@ namespace Hangfire.Core.Tests
             _transaction.Verify(x => x.Commit());
         }
 
+        [Fact, CleanSerializerSettings]
+        public void HandlesChangingProcessOfInvocationDataSerialization()
+        {
+            SerializationHelper.SetUserSerializerSettings(SerializerSettingsHelper.DangerousSettings);
+
+            var initialJob = Job.FromExpression(() => Console.WriteLine());
+            var invocationData = InvocationData.Serialize(initialJob);
+
+            var serializedInvocationData = SerializationHelper.Serialize(invocationData, SerializationOption.User);
+
+            var deserializedInvocationData = SerializationHelper.Deserialize<InvocationData>(serializedInvocationData);
+            var deserializedJob = deserializedInvocationData.Deserialize();
+
+            Assert.Equal(initialJob.Args, deserializedJob.Args);
+            Assert.Equal(initialJob.Method, deserializedJob.Method);
+            Assert.Equal(initialJob.Type, deserializedJob.Type);
+        }
+
         private RecurringJobManager CreateManager()
         {
             return new RecurringJobManager(_storage.Object, _factory.Object, _stateMachine.Object, _timeZoneResolver.Object, _nowFactory);

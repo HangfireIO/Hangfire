@@ -30,20 +30,15 @@ using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using Newtonsoft.Json;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
+using Newtonsoft.Json;
 
 namespace Hangfire.Storage
 {
     public class InvocationData
     {
-        private static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
-        {
-            TypeNameHandling = TypeNameHandling.None
-        };
-
         private static Func<string, Type> _typeResolver;
         private static Func<Type, string> _typeSerializer;
 
@@ -87,7 +82,7 @@ namespace Hangfire.Storage
                         $"The type `{type.FullName}` does not contain a method with signature `{Method}({String.Join(", ", parameterTypes.Select(x => x.Name))})`");
                 }
 
-                var serializedArguments = JobHelper.FromJson<string[]>(Arguments);
+                var serializedArguments = SerializationHelper.Deserialize<string[]>(Arguments);
                 var arguments = serializedArguments != null ? DeserializeArguments(method, serializedArguments) : new object[0];
 
                 return new Job(type, method, arguments);
@@ -104,42 +99,42 @@ namespace Hangfire.Storage
 
             var type = typeSerializer(job.Type);
             var methodName = job.Method.Name;
-            var parameterTypes = JsonConvert.SerializeObject(
-                job.Method.GetParameters().Select(x => typeSerializer(x.ParameterType)).ToArray(),
-                SerializerSettings);
-            var arguments = JobHelper.ToJson(SerializeArguments(job.Args));
+            var parameterTypes = SerializationHelper.Serialize(
+                job.Method.GetParameters().Select(x => typeSerializer(x.ParameterType)).ToArray());
+            var arguments = SerializationHelper.Serialize(SerializeArguments(job.Args));
 
             return new InvocationData(type, methodName, parameterTypes, arguments);
         }
 
         public static InvocationData Deserialize(string serializedData)
         {
-            var payload = JsonConvert.DeserializeObject<JobPayload>(serializedData, SerializerSettings);
+            var payload = SerializationHelper.Deserialize<JobPayload>(serializedData);
 
             if (payload.TypeName != null && payload.MethodName != null)
             {
                 return new InvocationData(
                     payload.TypeName,
                     payload.MethodName,
-                    payload.ParameterTypes?.Length > 0 ? JsonConvert.SerializeObject(payload.ParameterTypes, SerializerSettings) : null,
-                    JobHelper.ToJson(payload.Arguments));
+                    payload.ParameterTypes?.Length > 0 ? SerializationHelper.Serialize(payload.ParameterTypes) : null,
+                    SerializationHelper.Serialize(payload.Arguments));
             }
 
-            return JobHelper.FromJson<InvocationData>(serializedData);
+            return SerializationHelper.Deserialize<InvocationData>(serializedData);
         }
 
         public string Serialize()
         {
-            var parameterTypes = JsonConvert.DeserializeObject<string[]>(ParameterTypes, SerializerSettings);
-            var arguments = JobHelper.FromJson<string[]>(Arguments);
+            // TODO: Possible Type[] Conversion error!
+            var parameterTypes = SerializationHelper.Deserialize<string[]>(ParameterTypes);
+            var arguments = SerializationHelper.Deserialize<string[]>(Arguments);
 
-            return JsonConvert.SerializeObject(new JobPayload
+            return SerializationHelper.Serialize(new JobPayload
             {
                 TypeName = Type,
                 MethodName = Method,
                 ParameterTypes = parameterTypes != null && parameterTypes.Length > 0 ? parameterTypes : null,
                 Arguments = arguments != null && arguments.Length > 0 ? arguments : null
-            }, SerializerSettings);
+            });
         }
 
         private Type[] GetParameterTypes(Func<string, Type> typeResolver)
@@ -148,12 +143,12 @@ namespace Hangfire.Storage
 
             try
             {
-                var parameterTypes = JsonConvert.DeserializeObject<string[]>(ParameterTypes, SerializerSettings);
+                var parameterTypes = SerializationHelper.Deserialize<string[]>(ParameterTypes);
                 return parameterTypes?.Select(typeResolver).ToArray();
             }
-            catch (JsonSerializationException)
+            catch (Exception)
             {
-                return JsonConvert.DeserializeObject<Type[]>(ParameterTypes, SerializerSettings);
+                return SerializationHelper.Deserialize<Type[]>(ParameterTypes);
             }
         }
 
@@ -179,7 +174,7 @@ namespace Hangfire.Storage
                     }
                     else
                     {
-                        value = JobHelper.ToJson(argument);
+                        value = SerializationHelper.Serialize(argument, SerializationOption.User);
                     }
                 }
                 else
@@ -232,7 +227,7 @@ namespace Hangfire.Storage
             try
             {
                 value = argument != null
-                    ? JobHelper.FromJson(argument, type)
+                    ? SerializationHelper.Deserialize(argument, type, SerializationOption.User)
                     : null;
             }
             catch (Exception

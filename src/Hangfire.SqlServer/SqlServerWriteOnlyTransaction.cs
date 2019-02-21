@@ -124,7 +124,7 @@ update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @
                 new SqlParameter("@name", SqlDbType.NVarChar, 20) { Value = state.Name },
                 new SqlParameter("@reason", SqlDbType.NVarChar, 100) { Value = (object)state.Reason?.Substring(0, Math.Min(99, state.Reason.Length)) ?? DBNull.Value },
                 new SqlParameter("@createdAt", SqlDbType.DateTime) { Value = DateTime.UtcNow },
-                new SqlParameter("@data", SqlDbType.NVarChar, -1) { Value = (object)JobHelper.ToJson(state.SerializeData()) ?? DBNull.Value });
+                new SqlParameter("@data", SqlDbType.NVarChar, -1) { Value = (object)SerializationHelper.Serialize(state.SerializeData()) ?? DBNull.Value });
                 //new SqlParameter("@id", SqlDbType.BigInt) { Value = long.Parse(jobId) });
         }
 
@@ -142,7 +142,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
                 new SqlParameter("@name", SqlDbType.NVarChar, 20) { Value = state.Name },
                 new SqlParameter("@reason", SqlDbType.NVarChar, 100) { Value = (object)state.Reason?.Substring(0, Math.Min(99, state.Reason.Length)) ?? DBNull.Value },
                 new SqlParameter("@createdAt", SqlDbType.DateTime) { Value = DateTime.UtcNow },
-                new SqlParameter("@data", SqlDbType.NVarChar, -1) { Value = (object)JobHelper.ToJson(state.SerializeData()) ?? DBNull.Value });
+                new SqlParameter("@data", SqlDbType.NVarChar, -1) { Value = (object)SerializationHelper.Serialize(state.SerializeData()) ?? DBNull.Value });
         }
 
         public override void AddToQueue(string queue, string jobId)
