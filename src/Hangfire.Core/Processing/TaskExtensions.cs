@@ -15,6 +15,8 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
@@ -23,7 +25,8 @@ namespace Hangfire.Processing
 {
     internal static class TaskExtensions
     {
-        internal static readonly WaitHandle InvalidWaitHandleInstance = new InvalidWaitHandle();
+        private static readonly Type[] EmptyTypes = new Type[0];
+        private static readonly WaitHandle InvalidWaitHandleInstance = new InvalidWaitHandle();
 
         public static Task<bool> AsTask([NotNull] this WaitHandle waitHandle, CancellationToken token)
         {
@@ -63,6 +66,46 @@ namespace Hangfire.Processing
             }
 
             await tcs.Task.ConfigureAwait(false);
+        }
+
+        public static bool IsAwaitable(this Type type, out AwaitableContext awaitable)
+        {
+            // Starting with C# 7, async methods can return any type that has an accessible GetAwaiter method. 
+            // The object returned by the GetAwaiter method must implement the ICriticalNotifyCompletion interface.
+            // Ref: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/async-return-types
+            // 
+            // Other sources state that ICriticalNotifyCompletion is optional though:
+            // Ref: https://blogs.msdn.microsoft.com/pfxteam/2012/04/12/asyncawait-faq/
+            // Ref: https://codeblog.jonskeet.uk/category/eduasync/
+            // Ref: http://putridparrot.com/blog/creating-awaitable-types/
+            // 
+            // Either way, INotifyCompletion is still required nevertheless.
+
+            awaitable = null;
+
+            // primitive types can't be awaitable
+            if (type.GetTypeInfo().IsPrimitive) return false;
+
+            // awaitable type must have a public parameterless GetAwaiter instance method, ...
+            var getAwaiter = type.GetRuntimeMethod("GetAwaiter", EmptyTypes);
+            if (getAwaiter == null || getAwaiter.IsStatic || !getAwaiter.IsPublic) return false;
+
+            var awaiterType = getAwaiter.ReturnType;
+
+            // ... its return type must implement INotifyCompletion, ...
+            if (!typeof(INotifyCompletion).GetTypeInfo().IsAssignableFrom(awaiterType.GetTypeInfo())) return false;
+
+            // ... have a boolean IsCompleted instance property with a public getter, ...
+            var isCompleted = awaiterType.GetRuntimeProperty("IsCompleted");
+            if (isCompleted == null || isCompleted.PropertyType != typeof(bool)) return false;
+            if (!isCompleted.CanRead || isCompleted.GetMethod.IsStatic || !isCompleted.GetMethod.IsPublic) return false;
+
+            // ... and also have a public parameterless GetResult instance method
+            var getResult = awaiterType.GetRuntimeMethod("GetResult", EmptyTypes);
+            if (getResult == null || getResult.IsStatic || !getResult.IsPublic) return false;
+
+            awaitable = new AwaitableContext(getAwaiter, isCompleted, getResult);
+            return true;
         }
 
         private static void CallBack(object state, bool timedOut)

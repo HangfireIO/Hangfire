@@ -241,7 +241,6 @@ namespace Hangfire.Core.Tests.Server
             Assert.Equal("exception", thrownException.InnerException.Message);
         }
 
-#pragma warning disable 4014
         [Fact]
         public void Run_ThrowsPerformanceException_WithUnwrappedInnerException_ForTasks()
         {
@@ -254,7 +253,6 @@ namespace Hangfire.Core.Tests.Server
             Assert.IsType<InvalidOperationException>(thrownException.InnerException);
             Assert.Equal("exception", thrownException.InnerException.Message);
         }
-#pragma warning restore 4014
 
         [Fact]
         public void Perform_ThrowsPerformanceException_WhenMethodThrownTaskCanceledException()
@@ -350,7 +348,6 @@ namespace Hangfire.Core.Tests.Server
             Assert.Equal("Return value", result);
         }
 
-#pragma warning disable 4014
         [Fact]
         public void Run_DoesNotReturnValue_WhenCallingFunctionReturningPlainTask()
         {
@@ -361,9 +358,7 @@ namespace Hangfire.Core.Tests.Server
 
             Assert.Equal(null, result);
         }
-#pragma warning restore 4014
 
-#pragma warning disable 4014
         [Fact]
         public void Run_ReturnsTaskResult_WhenCallingFunctionReturningGenericTask()
         {
@@ -374,9 +369,7 @@ namespace Hangfire.Core.Tests.Server
 
             Assert.Equal("Return value", result);
         }
-#pragma warning restore 4014
 
-#pragma warning disable 4014
         [Fact]
         public void Run_ReturnsTaskResult_WhenCallingFunctionReturningValueTask()
         {
@@ -387,7 +380,18 @@ namespace Hangfire.Core.Tests.Server
 
             Assert.Equal("Return value", result);
         }
-#pragma warning restore 4014
+
+        [Fact]
+        public void Perform_ExecutesAsyncMethod_AlwaysWithinTheSameThread()
+        {
+            SynchronizationContext.SetSynchronizationContext(null);
+            _context.BackgroundJob.Job = Job.FromExpression(() => AsyncMethod(Thread.CurrentThread.ManagedThreadId));
+            var performer = CreatePerformer();
+
+            var result = performer.Perform(_context.Object);
+
+            Assert.True((bool)result);
+        }
 
         public void InstanceMethod()
         {
@@ -476,6 +480,41 @@ namespace Hangfire.Core.Tests.Server
         public static void TaskCanceledExceptionMethod()
         {
             throw new TaskCanceledException();
+        }
+
+        public static async Task<bool> AsyncMethod(int threadId)
+        {
+            if (threadId != Thread.CurrentThread.ManagedThreadId)
+            {
+                throw new InvalidOperationException("Start");
+            }
+
+            await Task.Yield();
+
+            if (threadId != Thread.CurrentThread.ManagedThreadId)
+            {
+                throw new InvalidOperationException("After Yield");
+            }
+
+            await Task.Delay(1).ConfigureAwait(true);
+
+            if (threadId != Thread.CurrentThread.ManagedThreadId)
+            {
+                throw new InvalidOperationException("After Delay");
+            }
+
+            Parallel.For(0, 4, new ParallelOptions { MaxDegreeOfParallelism = 4, TaskScheduler = TaskScheduler.Current },
+                i =>
+                {
+                    Thread.Sleep(TimeSpan.FromSeconds(1));
+                });
+
+            if (threadId != Thread.CurrentThread.ManagedThreadId)
+            {
+                throw new InvalidOperationException("After Parallel.For");
+            }
+
+            return true;
         }
 
         private CoreBackgroundJobPerformer CreatePerformer()
