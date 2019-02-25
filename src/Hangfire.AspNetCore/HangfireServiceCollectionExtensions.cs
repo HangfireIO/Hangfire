@@ -60,16 +60,6 @@ namespace Hangfire
             // NOTE: these are not required to be checked, because they only depend on already checked configurables,
             //       are not accessed directly, and can't be affected by customizations made from configuration block.
 
-            services.TryAddSingleton<IBackgroundJobFactory>(x => new BackgroundJobFactory(
-                x.GetRequiredService<IJobFilterProvider>()));
-
-            services.TryAddSingleton<IBackgroundJobStateChanger>(x => new BackgroundJobStateChanger(
-                x.GetRequiredService<IJobFilterProvider>()));
-
-            services.TryAddSingleton<IBackgroundJobPerformer>(x => new BackgroundJobPerformer(
-                x.GetRequiredService<IJobFilterProvider>(),
-                x.GetRequiredService<JobActivator>()));
-
             services.TryAddSingleton<ITimeZoneResolver>(x => new DefaultTimeZoneResolver());
 
             // ===== Client services =====
