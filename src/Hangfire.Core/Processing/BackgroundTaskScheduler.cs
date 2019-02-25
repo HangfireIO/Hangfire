@@ -57,6 +57,9 @@ namespace Hangfire.Processing
         // enqueue continuations to local queues (comparing to ContinueWith-based continuations).
         private readonly ConcurrentQueue<Task> _queue = new ConcurrentQueue<Task>();
 
+        private readonly Thread[] _threads;
+        private readonly HashSet<int> _ourThreadIds;
+
         // Regular semaphore is used to perform waits, when there are no tasks to be
         // processed. It doesn't use any kind of busy waiting to allow "foreground"
         // schedulers to perform useful work, instead of consuming CPU time by spinning
@@ -68,8 +71,6 @@ namespace Hangfire.Processing
         private readonly WaitHandle[] _waitHandles;
         private readonly Action<Exception> _exceptionHandler;
 
-        [ThreadStatic]
-        private static int _threadOwnerId;
         private int _disposed;
 
         /// <summary>Initializes a new instance of the <see cref="BackgroundTaskScheduler"/> with
@@ -118,23 +119,28 @@ namespace Hangfire.Processing
             AppDomainUnloadMonitor.EnsureInitialized();
 #endif
 
-            var threads = threadFactory(DispatchLoop)?.ToArray();
+            _threads = threadFactory(DispatchLoop)?.ToArray();
 
-            if (threads == null || threads.Length == 0)
+            if (_threads == null || _threads.Length == 0)
             {
                 throw new ArgumentException("At least one non-started thread should be created.", nameof(threadFactory));
             }
 
-            if (threads.Any(thread => thread == null || (thread.ThreadState & ThreadState.Unstarted) == 0))
+            if (_threads.Any(thread => thread == null || (thread.ThreadState & ThreadState.Unstarted) == 0))
             {
                 throw new ArgumentException("All the threads should be non-null and in the ThreadState.Unstarted state.", nameof(threadFactory));
             }
 
-            foreach (var thread in threads)
+            foreach (var thread in _threads)
             {
                 thread.Start();
             }
+
+            _ourThreadIds = new HashSet<int>(_threads.Select(x => x.ManagedThreadId));
         }
+
+        /// <inheritdoc />
+        public override int MaximumConcurrencyLevel => _threads.Length;
 
         /// <summary>Signals all the threads to be stopped and releases all the unmanaged resources.
         /// This method should be called only when you are uninterested on the corresponding tasks,
@@ -190,11 +196,9 @@ namespace Hangfire.Processing
             // we allow to inline only requests from the current scheduler, i.e. just to save
             // some time, since no queueing will be involved.
 
-            // This method can be called before _threadOwnerId is initialized, but this race
-            // is benign, since the "false" value will be returned, and inlining will be
-            // disallowed.
+            if (!_ourThreadIds.Contains(Thread.CurrentThread.ManagedThreadId)) return false;
 
-            return Id == _threadOwnerId && TryExecuteTask(task);
+            return TryExecuteTask(task);
         }
 
         /// <inheritdoc />
@@ -232,8 +236,6 @@ namespace Hangfire.Processing
         {
             try
             {
-                _threadOwnerId = Id;
-
                 // The outer loop is needed to keep threads under our control by catching
                 // TIE and TAE exceptions to prevent their destructive behavior of killing
                 // our threads without need to re-create them as implemented in ThreadPool.
