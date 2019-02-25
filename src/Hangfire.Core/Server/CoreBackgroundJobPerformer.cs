@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Processing;
@@ -36,11 +37,12 @@ namespace Hangfire.Server
             };
 
         private readonly JobActivator _activator;
+        private readonly TaskScheduler _taskScheduler;
 
-        public CoreBackgroundJobPerformer([NotNull] JobActivator activator)
+        public CoreBackgroundJobPerformer([NotNull] JobActivator activator, [CanBeNull] TaskScheduler taskScheduler)
         {
-            if (activator == null) throw new ArgumentNullException(nameof(activator));
-            _activator = activator;
+            _activator = activator ?? throw new ArgumentNullException(nameof(activator));
+            _taskScheduler = taskScheduler;
         }
 
         public object Perform(PerformContext context)
@@ -117,6 +119,11 @@ namespace Hangfire.Server
 
                 if (methodInfo.ReturnType.IsAwaitable(out var awaitable))
                 {
+                    if (_taskScheduler != null)
+                    {
+                        return InvokeOnTaskScheduler(context, tuple, awaitable);
+                    }
+
                     return InvokeOnTaskPump(context, tuple, awaitable);
                 }
 
@@ -137,6 +144,22 @@ namespace Hangfire.Server
                 HandleJobPerformanceException(ex.InnerException, context.CancellationToken);
                 throw;
             }
+        }
+
+        private object InvokeOnTaskScheduler(PerformContext context, Tuple<MethodInfo, object, object[]> tuple, AwaitableContext awaitable)
+        {
+            var task = Task.Factory.StartNew(
+                InvokeSynchronously,
+                tuple,
+                context.CancellationToken.ShutdownToken,
+                TaskCreationOptions.None,
+                _taskScheduler);
+
+            var result = task.GetAwaiter().GetResult();
+            if (result == null) return null;
+
+            var awaiter = awaitable.GetAwaiter(result);
+            return awaitable.GetResult(awaiter);
         }
 
         private static object InvokeOnTaskPump(PerformContext context, Tuple<MethodInfo, object, object[]> tuple, AwaitableContext awaitable)

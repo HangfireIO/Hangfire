@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,9 +33,16 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new CoreBackgroundJobPerformer(null));
+                () => new CoreBackgroundJobPerformer(null, null));
 
             Assert.Equal("activator", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_DoesNotThrowAnException_WhenTaskSchedulerIsNull()
+        {
+            var performer = new CoreBackgroundJobPerformer(_activator.Object, null);
+            Assert.NotNull(performer);
         }
 
         [Fact, StaticLock]
@@ -393,6 +402,20 @@ namespace Hangfire.Core.Tests.Server
             Assert.True((bool)result);
         }
 
+        [Fact]
+        public void Perform_ExecutesAsyncMethod_OnCustomScheduler_WhenItIsSet()
+        {
+            SynchronizationContext.SetSynchronizationContext(null);
+            var scheduler = new MyCustomTaskScheduler();
+
+            _context.BackgroundJob.Job = Job.FromExpression(() => TaskExceptionMethod());
+            var performer = CreatePerformer(scheduler);
+
+            Assert.Throws<JobPerformanceException>(() => performer.Perform(_context.Object));
+            
+            Assert.True(scheduler.TasksPerformed > 1);
+        }
+
         public void InstanceMethod()
         {
             _methodInvoked = true;
@@ -517,9 +540,30 @@ namespace Hangfire.Core.Tests.Server
             return true;
         }
 
-        private CoreBackgroundJobPerformer CreatePerformer()
+        private CoreBackgroundJobPerformer CreatePerformer(TaskScheduler taskScheduler = null)
         {
-            return new CoreBackgroundJobPerformer(_activator.Object);
+            return new CoreBackgroundJobPerformer(_activator.Object, taskScheduler);
+        }
+
+        private class MyCustomTaskScheduler : TaskScheduler
+        {
+            public int TasksPerformed { get; private set; }
+
+            protected override void QueueTask(Task task)
+            {
+                TryExecuteTask(task);
+                TasksPerformed++;
+            }
+
+            protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued)
+            {
+                return false;
+            }
+
+            protected override IEnumerable<Task> GetScheduledTasks()
+            {
+                return Enumerable.Empty<Task>();
+            }
         }
     }
 }

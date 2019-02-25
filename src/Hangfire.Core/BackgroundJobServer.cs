@@ -161,7 +161,7 @@ namespace Hangfire
 
             var stateMachine = new StateMachine(filterProvider);
             var factory = new BackgroundJobFactory(filterProvider);
-            var performer = new BackgroundJobPerformer(filterProvider, activator);
+            var performer = new BackgroundJobPerformer(filterProvider, activator, _options.TaskScheduler);
             var stateChanger = new BackgroundJobStateChanger(filterProvider);
 
             processes.Add(new Worker(_options.Queues, performer, stateChanger).UseBackgroundPool(_options.WorkerCount));

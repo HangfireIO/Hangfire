@@ -16,6 +16,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
@@ -52,6 +53,7 @@ namespace Hangfire
             FilterProvider = null;
             Activator = null;
             TimeZoneResolver = null;
+            TaskScheduler = null;
         }
         
         public string ServerName { get; set; }
@@ -173,5 +175,8 @@ namespace Hangfire
 
         [CanBeNull]
         public ITimeZoneResolver TimeZoneResolver { get; set; }
+
+        [CanBeNull]
+        public TaskScheduler TaskScheduler { get; set; }
     }
 }

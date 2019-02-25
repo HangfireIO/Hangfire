@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Common;
 
@@ -40,7 +41,15 @@ namespace Hangfire.Server
         public BackgroundJobPerformer(
             [NotNull] IJobFilterProvider filterProvider,
             [NotNull] JobActivator activator)
-            : this(filterProvider, new CoreBackgroundJobPerformer(activator))
+            : this(filterProvider, activator, null)
+        {
+        }
+
+        public BackgroundJobPerformer(
+            [NotNull] IJobFilterProvider filterProvider,
+            [NotNull] JobActivator activator,
+            [CanBeNull] TaskScheduler taskScheduler)
+            : this(filterProvider, new CoreBackgroundJobPerformer(activator, taskScheduler))
         {
         }
 
