@@ -102,12 +102,11 @@ where r.row_num between @start and @end";
 
             return _storage.UseConnection(null, connection =>
             {
-                // TODO: Remove cast to `int` to support `bigint`.
                 return connection.Query<JobIdDto>(
                         fetchedJobsSql,
                         new { queue = queue, start = from + 1, end = @from + perPage })
                     .ToList()
-                    .Select(x => (long)x.JobId)
+                    .Select(x => x.JobId)
                     .ToList();
             });
         }
