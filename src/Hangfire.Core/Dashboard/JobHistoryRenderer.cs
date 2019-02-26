@@ -254,9 +254,7 @@ namespace Hangfire.Dashboard
 
             if (stateData.ContainsKey("NextState"))
             {
-                var nextState = JsonConvert.DeserializeObject<IState>(
-                    stateData["NextState"],
-                    new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
+                var nextState = SerializationHelper.Deserialize<IState>(stateData["NextState"], SerializationOption.DefaultWithTypes);
 
                 builder.Append($"<dt>Next State</dt><dd>{helper.StateLabel(nextState.Name)}</dd>");
             }

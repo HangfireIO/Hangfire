@@ -234,7 +234,7 @@ namespace Hangfire.SqlServer.Tests
                 Assert.Equal(null, (int?) sqlJob.StateId);
                 Assert.Equal(null, (string) sqlJob.StateName);
 
-                var invocationData = InvocationData.Deserialize((string)sqlJob.InvocationData);
+                var invocationData = InvocationData.DeserializePayload((string)sqlJob.InvocationData);
 
                 var job = invocationData.Deserialize();
                 Assert.Equal(typeof(SqlServerConnectionFacts), job.Type);
@@ -1759,6 +1759,44 @@ values (@jobId, @name, @value)";
 
                 Assert.Equal("value", value);
             });
+        }
+
+        [Fact, CleanSerializerSettings]
+        public void HandlesChangingProcessOfStateDataSerialization()
+        {
+            GlobalConfiguration.Configuration.UseSerializationSettings(SerializerSettingsHelper.DangerousSettings);
+            var stateData = new Dictionary<string, string>
+            {
+                { "key1", "value1" },
+                { "key2", null }
+            };
+            var serializedData = SerializationHelper.Serialize(stateData, SerializationOption.User);
+
+            var deserializedStateData = SerializationHelper.Deserialize<Dictionary<string, string>>(serializedData);
+
+            Assert.NotNull(deserializedStateData);
+            Assert.Equal(2, deserializedStateData.Count);
+
+            Assert.Equal("value1", deserializedStateData["key1"]);
+            Assert.Equal(null, deserializedStateData["key2"]);
+        }
+
+        [Fact, CleanSerializerSettings]
+        public void HandlesChangingProcessOfInvocationDataSerialization()
+        {
+            GlobalConfiguration.Configuration.UseSerializationSettings(SerializerSettingsHelper.DangerousSettings);
+
+            var initialJob = Job.FromExpression(() => Console.WriteLine());
+            var invocationData = InvocationData.Serialize(initialJob);
+
+            var serializedInvocationData = SerializationHelper.Serialize(invocationData, SerializationOption.User);
+
+            var deserializedStateData = SerializationHelper.Deserialize<InvocationData>(serializedInvocationData);
+            var deserializedJob = deserializedStateData.Deserialize();
+
+            Assert.Equal(initialJob.Args, deserializedJob.Args);
+            Assert.Equal(initialJob.Method, deserializedJob.Method);
+            Assert.Equal(initialJob.Type, deserializedJob.Type);
         }
 
         private void UseConnections(Action<SqlConnection, SqlServerConnection> action, bool useBatching = false)

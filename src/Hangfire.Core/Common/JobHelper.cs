@@ -23,34 +23,28 @@ namespace Hangfire.Common
 {
     public static class JobHelper
     {
-        private static JsonSerializerSettings _serializerSettings;
-
+        [Obsolete("Please use `GlobalConfiguration.UseSerializationSettings` instead. Will be removed in 2.0.0")]
         public static void SetSerializerSettings(JsonSerializerSettings setting)
         {
-            _serializerSettings = setting;
+            SerializationHelper.SetUserSerializerSettings(setting);
         }
 
+        [Obsolete("Please use `SerializationHelper.Serialize` with appropriate serialization option instead. Will be removed in 2.0.0")]
         public static string ToJson(object value)
         {
-            return value != null
-                ? JsonConvert.SerializeObject(value, _serializerSettings)
-                : null;
+            return SerializationHelper.Serialize(value, SerializationOption.User);
         }
 
+        [Obsolete("Please use `SerializationHelper.Deserialize` with appropriate serialization option instead. Will be removed in 2.0.0")]
         public static T FromJson<T>(string value)
         {
-            return value != null
-                ? JsonConvert.DeserializeObject<T>(value, _serializerSettings)
-                : default(T);
+            return SerializationHelper.Deserialize<T>(value, SerializationOption.User);
         }
 
+        [Obsolete("Please use `SerializationHelper.Deserialize` with appropriate serialization option instead. Will be removed in 2.0.0")]
         public static object FromJson(string value, [NotNull] Type type)
         {
-            if (type == null) throw new ArgumentNullException(nameof(type));
-
-            return value != null
-                ? JsonConvert.DeserializeObject(value, type, _serializerSettings)
-                : null;
+            return SerializationHelper.Deserialize(value, type, SerializationOption.User);
         }
 
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);

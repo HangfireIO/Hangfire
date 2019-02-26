@@ -17,11 +17,13 @@
 using System;
 using System.ComponentModel;
 using Hangfire.Annotations;
+using Hangfire.Common;
 using Hangfire.Dashboard;
 using Hangfire.Dashboard.Pages;
 using Hangfire.Logging;
 using Hangfire.Logging.LogProviders;
 using Hangfire.Storage;
+using Newtonsoft.Json;
 
 namespace Hangfire
 {
@@ -230,6 +232,21 @@ namespace Hangfire
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             return configuration.UseTypeResolver(InvocationData.IgnoredAssemblyVersionTypeResolver);
+        }
+
+        /// <summary>
+        /// These settings is used to serialize user data like arguments or parameters.
+        /// You can use <see cref="SerializationHelper.Serialize(object, SerializationOption)"/> with <see cref="SerializationOption.User"/> option
+        /// to serialize with specified settings
+        /// </summary>
+        public static IGlobalConfiguration UseSerializationSettings(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] JsonSerializerSettings settings)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            SerializationHelper.SetUserSerializerSettings(settings);
+            return configuration;
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]

@@ -56,17 +56,18 @@ namespace Hangfire.States
             Result = result;
             Latency = latency;
             PerformanceDuration = performanceDuration;
-            
         }
 
         /// <summary>
         /// Gets a date/time when the current state instance was created.
         /// </summary>
+        [JsonIgnore]
         public DateTime SucceededAt { get; }
 
         /// <summary>
         /// Gets the value returned by a job method.
         /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public object Result { get; }
         
         /// <summary>
@@ -90,6 +91,7 @@ namespace Hangfire.States
         public string Name => StateName;
 
         /// <inheritdoc />
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Reason { get; set; }
 
         /// <inheritdoc />
@@ -150,7 +152,7 @@ namespace Hangfire.States
         ///     <item>
         ///         <term><c>Result</c></term>
         ///         <term><see cref="object"/></term>
-        ///         <term><see cref="JobHelper.FromJson"/></term>
+        ///         <term><see cref="SerializationHelper.Serialize(object, SerializationOption)"/> with <see cref="SerializationOption.User"/> argument</term>
         ///         <description>
         ///             <para>Please see the <see cref="Result"/> property.</para>
         ///             <para>This key may be missing from the dictionary, when the return 
@@ -175,7 +177,7 @@ namespace Hangfire.States
 
                 try
                 {
-                    serializedResult = JobHelper.ToJson(Result);
+                    serializedResult = SerializationHelper.Serialize(Result, SerializationOption.User);
                 }
                 catch (Exception)
                 {

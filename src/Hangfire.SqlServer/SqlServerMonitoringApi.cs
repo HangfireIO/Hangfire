@@ -132,7 +132,7 @@ namespace Hangfire.SqlServer
                 // ReSharper disable once LoopCanBeConvertedToQuery
                 foreach (var server in servers)
                 {
-                    var data = JobHelper.FromJson<ServerData>(server.Data);
+                    var data = SerializationHelper.Deserialize<ServerData>(server.Data);
                     result.Add(new ServerDto
                     {
                         Name = server.Id,
@@ -284,7 +284,7 @@ select * from [{_storage.SchemaName}].State with (nolock, forceseek) where JobId
                                 CreatedAt = x.CreatedAt,
                                 Reason = x.Reason,
                                 Data = new SafeDictionary<string, string>(
-                                    JobHelper.FromJson<Dictionary<string, string>>(x.Data),
+                                    SerializationHelper.Deserialize<Dictionary<string, string>>(x.Data),
                                     StringComparer.OrdinalIgnoreCase),
                             })
                             .ToList();
@@ -482,7 +482,7 @@ where j.Id in @jobIds";
 
         private static Job DeserializeJob(string invocationData, string arguments)
         {
-            var data = InvocationData.Deserialize(invocationData);
+            var data = InvocationData.DeserializePayload(invocationData);
 
             if (!String.IsNullOrEmpty(arguments))
             {
@@ -491,7 +491,7 @@ where j.Id in @jobIds";
 
             try
             {
-                return data.Deserialize();
+                return data.DeserializeJob();
             }
             catch (JobLoadException)
             {
@@ -542,7 +542,7 @@ order by j.Id desc";
                 
                 if (job.InvocationData != null)
                 {
-                    var deserializedData = JobHelper.FromJson<Dictionary<string, string>>(job.StateData);
+                    var deserializedData = SerializationHelper.Deserialize<Dictionary<string, string>>(job.StateData);
                     var stateData = deserializedData != null
                         ? new SafeDictionary<string, string>(deserializedData, StringComparer.OrdinalIgnoreCase)
                         : null;

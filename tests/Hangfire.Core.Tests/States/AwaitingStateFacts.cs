@@ -1,4 +1,5 @@
 ﻿using System;
+using Hangfire.Common;
 using Hangfire.States;
 using Xunit;
 
@@ -23,18 +24,17 @@ namespace Hangfire.Core.Tests.States
         public void SerializeData_ReturnsCorrectData()
         {
             var state = CreateState();
-            
+
             var data = state.SerializeData();
 
             Assert.Equal(state.ParentId, data["ParentId"]);
             Assert.Matches(
-                "^{\"\\$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\"," +
-                "\"EnqueuedAt\":\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{1,7}(Z|[+-]\\d{2}:\\d{2})\"}$", 
+                "^{\"\\$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\"}$",
                 data["NextState"]);
             Assert.Equal(state.Options.ToString("D"), data["Options"]);
             Assert.Equal(state.Expiration.ToString(), data["Expiration"]);
         }
-        
+
         [Fact]
         public void IsFinal_ReturnsFalse()
         {
@@ -47,6 +47,18 @@ namespace Hangfire.Core.Tests.States
         {
             var state = CreateState();
             Assert.False(state.IgnoreJobLoadException);
+        }
+
+        [Fact, CleanSerializerSettings]
+        public void SerializeData_HandlesChangingProcessOfInternalDataSerialization()
+        {
+            SerializationHelper.SetUserSerializerSettings(SerializerSettingsHelper.DangerousSettings);
+
+            var nextStateSerialized = SerializationHelper.Serialize(new EnqueuedState(), SerializationOption.User);
+
+            var nextState = SerializationHelper.Deserialize<IState>(nextStateSerialized, SerializationOption.DefaultWithTypes) as EnqueuedState;
+            Assert.NotNull(nextState);
+            Assert.NotEqual(default(DateTime), nextState.EnqueuedAt);
         }
 
         private static AwaitingState CreateState()

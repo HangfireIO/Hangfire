@@ -225,7 +225,7 @@ namespace Hangfire.Core.Tests.Storage
             if (expectedArgs != null) expectedString += $",\"a\":{expectedArgs}";
             expectedString += "}";
 
-            Assert.Equal(expectedString, invocationData.Serialize());
+            Assert.Equal(expectedString, invocationData.SerializePayload());
         }
 
         [Theory]
@@ -243,7 +243,7 @@ namespace Hangfire.Core.Tests.Storage
             try
             {
                 JobHelper.SetSerializerSettings(new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
-                var serializedData = InvocationData.Deserialize(invocationData);
+                var serializedData = InvocationData.DeserializePayload(invocationData);
 
                 var job = serializedData.Deserialize();
 
@@ -264,7 +264,7 @@ namespace Hangfire.Core.Tests.Storage
         {
             var invocationData = "{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"Method\"}";
 
-            var serializedData = InvocationData.Deserialize(invocationData);
+            var serializedData = InvocationData.DeserializePayload(invocationData);
 
             var job = serializedData.Deserialize();
 
@@ -349,6 +349,22 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal("Sample", invocationData.Method);
             Assert.Equal(JobHelper.ToJson(new[] { typeof(string) }), invocationData.ParameterTypes);
             Assert.Equal(JobHelper.ToJson(new[] { "\"Hello\"" }), invocationData.Arguments);
+        }
+
+        [Fact]
+        public void Serialize_CorrectlyHandles_ParameterTypes_InPossibleOldFormat()
+        {
+            var invocationData = new InvocationData(
+                "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests",
+                "ComplicatedMethod",
+                "{\"$type\":\"System.Type[], mscorlib\",\"$values\":[\"System.Collections.Generic.IList`1[[System.String, mscorlib]], mscorlib\",\"Hangfire.Core.Tests.Storage.InvocationDataFacts+SomeClass, Hangfire.Core.Tests\"]}",
+                "[null, null]");
+
+            var serialized = invocationData.SerializePayload();
+            var job = InvocationData.DeserializePayload(serialized).Deserialize();
+
+            Assert.Equal(typeof(InvocationDataFacts), job.Type);
+            Assert.Equal(typeof(InvocationDataFacts).GetMethod("ComplicatedMethod"), job.Method);
         }
 
         [Theory]
@@ -604,6 +620,41 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(value, job.Args[0]);
         }
 
+        [Fact, CleanSerializerSettings]
+        public void Deserialize_HandlesChangingProcessOfInternalDataSerialization()
+        {
+            SerializationHelper.SetUserSerializerSettings(SerializerSettingsHelper.DangerousSettings);
+
+            var serializedData = new InvocationData(
+                typeof(InvocationDataFacts).AssemblyQualifiedName,
+                "ComplicatedMethod",
+                SerializationHelper.Serialize(new[]
+                {
+                    typeof(IList<string>),
+                    typeof(SomeClass)
+                }, SerializationOption.User),
+                SerializationHelper.Serialize(new[]
+                {
+                    SerializationHelper.Serialize(new List<string> { "one", "two" }, SerializationOption.User),
+                    SerializationHelper.Serialize(new SomeClass { StringValue = "value" }, SerializationOption.User)
+                }, SerializationOption.User));
+
+            var job = serializedData.Deserialize();
+
+            Assert.Equal(typeof(InvocationDataFacts), job.Type);
+            Assert.Equal(2, job.Args.Count);
+
+            Assert.Equal(typeof(List<string>), job.Args[0].GetType());
+            Assert.Equal("one", (job.Args[0] as List<string>)?[0]);
+            Assert.Equal("two", (job.Args[0] as List<string>)?[1]);
+
+            Assert.Equal(typeof(SomeClass), job.Args[1].GetType());
+            Assert.Equal("value", (job.Args[1] as SomeClass)?.StringValue);
+            Assert.Equal(0, (job.Args[1] as SomeClass)?.DefaultValue);
+            Assert.Equal(null, (job.Args[1] as SomeClass)?.NullObject);
+        }
+
+
         public static void Method()
         {
         }
@@ -630,6 +681,17 @@ namespace Hangfire.Core.Tests.Storage
 
         public static void NullableDateTimeMethod(DateTime? arg)
         {
+        }
+
+        public static void ComplicatedMethod(IList<string> arg, SomeClass objArg)
+        {
+        }
+
+        public class SomeClass
+        {
+            public string StringValue { get; set; }
+            public object NullObject { get; set; }
+            public int DefaultValue { get; set; }
         }
 
         public class NestedType
