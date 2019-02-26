@@ -351,6 +351,22 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(JobHelper.ToJson(new[] { "\"Hello\"" }), invocationData.Arguments);
         }
 
+        [Fact]
+        public void Serialize_CorrectlyHandles_ParameterTypes_InPossibleOldFormat()
+        {
+            var invocationData = new InvocationData(
+                "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests",
+                "ComplicatedMethod",
+                "{\"$type\":\"System.Type[], mscorlib\",\"$values\":[\"System.Collections.Generic.IList`1[[System.String, mscorlib]], mscorlib\",\"Hangfire.Core.Tests.Storage.InvocationDataFacts+SomeClass, Hangfire.Core.Tests\"]}",
+                "[null, null]");
+
+            var serialized = invocationData.Serialize();
+            var job = InvocationData.Deserialize(serialized).Deserialize();
+
+            Assert.Equal(typeof(InvocationDataFacts), job.Type);
+            Assert.Equal(typeof(InvocationDataFacts).GetMethod("ComplicatedMethod"), job.Method);
+        }
+
         [Theory]
         [MemberData(nameof(MemberData))]
         public void Serialize_CorrectlySerializesJobToInvocationData(Job job, string typeName, string method, string parameterTypes, string serializedArgs)

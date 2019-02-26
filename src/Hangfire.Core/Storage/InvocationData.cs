@@ -39,6 +39,8 @@ namespace Hangfire.Storage
 {
     public class InvocationData
     {
+        private static readonly object[] EmptyArray = new object[0];
+
         private static Func<string, Type> _typeResolver;
         private static Func<Type, string> _typeSerializer;
 
@@ -52,8 +54,7 @@ namespace Hangfire.Storage
             Volatile.Write(ref _typeSerializer, typeSerializer);
         }
 
-        public InvocationData(
-            string type, string method, string parameterTypes, string arguments)
+        public InvocationData(string type, string method, string parameterTypes, string arguments)
         {
             Type = type;
             Method = method;
@@ -73,7 +74,10 @@ namespace Hangfire.Storage
             try
             {
                 var type = typeResolver(Type);
-                var parameterTypes = GetParameterTypes(typeResolver);
+
+                var serializedParameterTypes = SerializationHelper.Deserialize<string[]>(ParameterTypes);
+                var parameterTypes = serializedParameterTypes?.Select(typeResolver).ToArray();
+
                 var method = type.GetNonOpenMatchingMethod(Method, parameterTypes);
 
                 if (method == null)
@@ -83,7 +87,7 @@ namespace Hangfire.Storage
                 }
 
                 var serializedArguments = SerializationHelper.Deserialize<string[]>(Arguments);
-                var arguments = serializedArguments != null ? DeserializeArguments(method, serializedArguments) : new object[0];
+                var arguments = DeserializeArguments(method, serializedArguments);
 
                 return new Job(type, method, arguments);
             }
@@ -106,25 +110,24 @@ namespace Hangfire.Storage
             return new InvocationData(type, methodName, parameterTypes, arguments);
         }
 
-        public static InvocationData Deserialize(string serializedData)
+        public static InvocationData Deserialize(string payload)
         {
-            var payload = SerializationHelper.Deserialize<JobPayload>(serializedData);
+            var jobPayload = SerializationHelper.Deserialize<JobPayload>(payload);
 
-            if (payload.TypeName != null && payload.MethodName != null)
+            if (jobPayload.TypeName != null && jobPayload.MethodName != null)
             {
                 return new InvocationData(
-                    payload.TypeName,
-                    payload.MethodName,
-                    payload.ParameterTypes?.Length > 0 ? SerializationHelper.Serialize(payload.ParameterTypes) : null,
-                    SerializationHelper.Serialize(payload.Arguments));
+                    jobPayload.TypeName,
+                    jobPayload.MethodName,
+                    SerializationHelper.Serialize(jobPayload.ParameterTypes),
+                    SerializationHelper.Serialize(jobPayload.Arguments));
             }
 
-            return SerializationHelper.Deserialize<InvocationData>(serializedData);
+            return SerializationHelper.Deserialize<InvocationData>(payload);
         }
 
         public string Serialize()
         {
-            // TODO: Possible Type[] Conversion error!
             var parameterTypes = SerializationHelper.Deserialize<string[]>(ParameterTypes);
             var arguments = SerializationHelper.Deserialize<string[]>(Arguments);
 
@@ -132,24 +135,9 @@ namespace Hangfire.Storage
             {
                 TypeName = Type,
                 MethodName = Method,
-                ParameterTypes = parameterTypes != null && parameterTypes.Length > 0 ? parameterTypes : null,
-                Arguments = arguments != null && arguments.Length > 0 ? arguments : null
+                ParameterTypes = parameterTypes?.Length > 0 ? parameterTypes : null,
+                Arguments = arguments?.Length > 0 ? arguments : null
             });
-        }
-
-        private Type[] GetParameterTypes(Func<string, Type> typeResolver)
-        {
-            if (ParameterTypes == null) return null;
-
-            try
-            {
-                var parameterTypes = SerializationHelper.Deserialize<string[]>(ParameterTypes);
-                return parameterTypes?.Select(typeResolver).ToArray();
-            }
-            catch (Exception)
-            {
-                return SerializationHelper.Deserialize<Type[]>(ParameterTypes);
-            }
         }
 
         internal static string[] SerializeArguments(IReadOnlyCollection<object> arguments)
@@ -194,6 +182,8 @@ namespace Hangfire.Storage
 
         internal static object[] DeserializeArguments(MethodInfo methodInfo, string[] arguments)
         {
+            if (arguments == null) return EmptyArray;
+
             var parameters = methodInfo.GetParameters();
             var result = new List<object>(arguments.Length);
 
@@ -415,7 +405,7 @@ namespace Hangfire.Storage
             });
         }
 
-        private static Type DefaultTypeResolver(string typeName)
+        internal static Type DefaultTypeResolver(string typeName)
         {
             typeName = typeName.Replace("System.Private.CoreLib", "mscorlib");
             return System.Type.GetType(typeName, throwOnError: true, ignoreCase: true);
