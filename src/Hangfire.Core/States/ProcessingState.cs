@@ -50,6 +50,7 @@ namespace Hangfire.States
         /// <summary>
         /// Gets a date/time when the current state instance was created.
         /// </summary>
+        [JsonIgnore]
         public DateTime StartedAt { get; }
 
         /// <summary>
@@ -76,6 +77,7 @@ namespace Hangfire.States
         public string Name => StateName;
 
         /// <inheritdoc />
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Reason { get; set; }
 
         /// <inheritdoc />

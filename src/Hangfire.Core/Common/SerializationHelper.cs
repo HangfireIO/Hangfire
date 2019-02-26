@@ -15,10 +15,8 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Globalization;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
-using System.Runtime.Serialization;
 using System.Threading;
 using Hangfire.Annotations;
 using Newtonsoft.Json;
@@ -160,40 +158,7 @@ namespace Hangfire.Common
             var property = typeNameAssemblyFormatHandling ?? typeNameAssemblyFormat;
             property.SetValue(serializerSettings, Enum.Parse(property.PropertyType, "Simple"));
 
-            // It's necessary to set default values explicitly in order to `JsonConvert.DefaultSettings` don't affect hangfire serialization.
-            // See more http://www.newtonsoft.com/json/help/html/DefaultSettings.htm and 
-            // https://github.com/JamesNK/Newtonsoft.Json/blob/master/Src/Newtonsoft.Json/JsonConvert.cs#L63
-
-            // TODO: ENSURE ALL OF THEM ARE SUPPORTED ON THE LATEST VERSION
             serializerSettings.TypeNameHandling = typeNameHandling;
-            serializerSettings.NullValueHandling = NullValueHandling.Ignore;
-            serializerSettings.DefaultValueHandling = DefaultValueHandling.Ignore;
-            serializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
-            serializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind;
-            serializerSettings.DateParseHandling = DateParseHandling.DateTime;
-            serializerSettings.FloatFormatHandling = FloatFormatHandling.DefaultValue;
-            serializerSettings.FloatParseHandling = FloatParseHandling.Double;
-            serializerSettings.StringEscapeHandling = StringEscapeHandling.Default;
-            serializerSettings.DateFormatString = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFFK";
-            serializerSettings.Formatting = Formatting.None;
-            serializerSettings.CheckAdditionalContent = false;
-            serializerSettings.ConstructorHandling = ConstructorHandling.Default;
-            serializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Error;
-            serializerSettings.MissingMemberHandling = MissingMemberHandling.Ignore;
-            serializerSettings.ObjectCreationHandling = ObjectCreationHandling.Auto;
-            serializerSettings.PreserveReferencesHandling = PreserveReferencesHandling.None;
-            serializerSettings.Culture = CultureInfo.InvariantCulture;
-            serializerSettings.Context = new StreamingContext();
-
-            var defaultJsonSerializer = new JsonSerializer();
-
-            serializerSettings.ContractResolver = defaultJsonSerializer.ContractResolver;
-#pragma warning disable 618
-            serializerSettings.ReferenceResolver = defaultJsonSerializer.ReferenceResolver;
-#pragma warning restore 618
-            serializerSettings.Binder = defaultJsonSerializer.Binder;
-
-            serializerSettings.MaxDepth = Int32.MaxValue;
 
             return serializerSettings;
         }

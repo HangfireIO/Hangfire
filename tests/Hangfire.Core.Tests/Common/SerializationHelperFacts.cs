@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Globalization;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters;
 using Hangfire.Common;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -48,43 +45,6 @@ namespace Hangfire.Core.Tests.Common
 
             var result = SerializationHelper.Serialize(new ClassA("A"), SerializationOption.User);
             Assert.Equal(@"{""propertyA"":""A""}", result);
-        }
-
-        [Fact, CleanSerializerSettings]
-        public void Serialize_HandleJsonDefaultSettingsDoesNotAffect_WhenOptionIsDefaultSettings()
-        {
-            JsonConvert.DefaultSettings = () => new JsonSerializerSettings
-            {
-                TypeNameHandling = TypeNameHandling.All,
-                NullValueHandling = NullValueHandling.Ignore,
-                DefaultValueHandling = DefaultValueHandling.Include,
-                Binder = new CustomSerializerBinder(),
-                DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
-                DateFormatString = "ddMMyyyy"
-            };
-
-            var result = SerializationHelper.Serialize(new ClassB { StringValue = "B", DateTimeValue = new DateTime(1961, 4, 12) });
-            Assert.Equal(@"{""StringValue"":""B"",""DateTimeValue"":""1961-04-12T00:00:00""}", result);
-        }
-
-        [Fact, CleanSerializerSettings]
-        public void Serialize_HandleJsonDefaultSettingsDoesNotAffect_WhenOptionIsDefaultSettingsWithTypes()
-        {
-            JsonConvert.DefaultSettings = () => new JsonSerializerSettings
-            {
-                TypeNameHandling = TypeNameHandling.All,
-                NullValueHandling = NullValueHandling.Ignore,
-                DefaultValueHandling = DefaultValueHandling.Include,
-                Binder = new CustomSerializerBinder(),
-                DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
-                DateFormatString = "ddMMyyyy"
-            };
-
-            var result = SerializationHelper.Serialize(
-                new ClassB { StringValue = "B", DateTimeValue = new DateTime(1961, 4, 12) },
-                SerializationOption.DefaultWithTypes);
-
-            Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.SerializationHelperFacts+ClassB, Hangfire.Core.Tests"",""StringValue"":""B"",""DateTimeValue"":""1961-04-12T00:00:00""}", result);
         }
 
         [Fact]
@@ -139,7 +99,6 @@ namespace Hangfire.Core.Tests.Common
             SerializationHelper.SetUserSerializerSettings(new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.All,
-                Binder = new CustomSerializerBinder()
             });
 
             var valueJson = SerializationHelper.Serialize(new ClassA("A"), SerializationOption.User);
@@ -201,7 +160,6 @@ namespace Hangfire.Core.Tests.Common
             SerializationHelper.SetUserSerializerSettings(new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.All,
-                Binder = new CustomSerializerBinder()
             });
 
             var valueJson = SerializationHelper.Serialize(new ClassA("A"), SerializationOption.User);
@@ -226,26 +184,7 @@ namespace Hangfire.Core.Tests.Common
             var serializerSettings = SerializationHelper.GetDefaultSettings(TypeNameHandling.None);
 
             Assert.Equal(TypeNameHandling.None, serializerSettings.TypeNameHandling);
-            Assert.Equal(FormatterAssemblyStyle.Simple, serializerSettings.TypeNameAssemblyFormat);
-            Assert.Equal(NullValueHandling.Ignore, serializerSettings.NullValueHandling);
-            Assert.Equal(DefaultValueHandling.Ignore, serializerSettings.DefaultValueHandling);
-            Assert.Equal(DateFormatHandling.IsoDateFormat, serializerSettings.DateFormatHandling);
-            Assert.Equal(DateTimeZoneHandling.RoundtripKind, serializerSettings.DateTimeZoneHandling);
-            Assert.Equal(DateParseHandling.DateTime, serializerSettings.DateParseHandling);
-            Assert.Equal(FloatFormatHandling.DefaultValue, serializerSettings.FloatFormatHandling);
-            Assert.Equal(FloatParseHandling.Double, serializerSettings.FloatParseHandling);
-            Assert.Equal(StringEscapeHandling.Default, serializerSettings.StringEscapeHandling);
-            Assert.Equal(@"yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFFK", serializerSettings.DateFormatString);
-            Assert.Equal(Formatting.None, serializerSettings.Formatting);
-            Assert.Equal(false, serializerSettings.CheckAdditionalContent);
-            Assert.Equal(ConstructorHandling.Default, serializerSettings.ConstructorHandling);
-            Assert.Equal(ReferenceLoopHandling.Error, serializerSettings.ReferenceLoopHandling);
-            Assert.Equal(MissingMemberHandling.Ignore, serializerSettings.MissingMemberHandling);
-            Assert.Equal(ObjectCreationHandling.Auto, serializerSettings.ObjectCreationHandling);
-            Assert.Equal(PreserveReferencesHandling.None, serializerSettings.PreserveReferencesHandling);
-            Assert.Equal(CultureInfo.InvariantCulture, serializerSettings.Culture);
-            Assert.IsType<DefaultSerializationBinder>(serializerSettings.Binder);
-            Assert.IsType<StreamingContext>(serializerSettings.Context);
+            Assert.Equal(TypeNameAssemblyFormatHandling.Simple, serializerSettings.TypeNameAssemblyFormatHandling);
         }
 
         [Fact]
@@ -254,6 +193,7 @@ namespace Hangfire.Core.Tests.Common
             var serializerSettings = SerializationHelper.GetDefaultSettings(TypeNameHandling.Objects);
 
             Assert.Equal(TypeNameHandling.Objects, serializerSettings.TypeNameHandling);
+            Assert.Equal(TypeNameAssemblyFormatHandling.Simple, serializerSettings.TypeNameAssemblyFormatHandling);
         }
 
         private interface IClass
@@ -283,20 +223,6 @@ namespace Hangfire.Core.Tests.Common
 
             // ReSharper disable once UnusedAutoPropertyAccessor.Local
             public DateTime? DateTimeValue { get; set; }
-        }
-
-        private class CustomSerializerBinder : SerializationBinder
-        {
-            public override void BindToName(Type serializedType, out string assemblyName, out string typeName)
-            {
-                assemblyName = "someAssembly";
-                typeName = serializedType.FullName.ToUpper();
-            }
-
-            public override Type BindToType(string assemblyName, string typeName)
-            {
-                return typeof(ClassA);
-            }
         }
     }
 }

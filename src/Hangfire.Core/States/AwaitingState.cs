@@ -117,6 +117,7 @@ namespace Hangfire.States
         /// Gets the next state, to which a background job will be moved.
         /// </summary>
         [NotNull]
+        [JsonProperty(TypeNameHandling = TypeNameHandling.Objects)]
         public IState NextState { get; }
 
         /// <summary>
@@ -140,6 +141,7 @@ namespace Hangfire.States
         public string Name => StateName;
 
         /// <inheritdoc />
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Reason { get; set; }
 
         /// <inheritdoc />

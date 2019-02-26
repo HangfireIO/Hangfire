@@ -85,11 +85,13 @@ namespace Hangfire.States
         /// <summary>
         /// Gets a date/time when the current state instance was created.
         /// </summary>
+        [JsonIgnore]
         public DateTime FailedAt { get; }
 
         /// <summary>
         /// Gets the exception that occurred during the background job processing.
         /// </summary>
+        [JsonProperty(TypeNameHandling = TypeNameHandling.Objects)]
         public Exception Exception { get; }
 
         /// <inheritdoc />
@@ -102,6 +104,7 @@ namespace Hangfire.States
         public string Name => StateName;
 
         /// <inheritdoc />
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Reason { get; set; }
 
         /// <inheritdoc />
