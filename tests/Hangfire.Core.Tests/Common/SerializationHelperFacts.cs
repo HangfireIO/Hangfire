@@ -223,25 +223,7 @@ namespace Hangfire.Core.Tests.Common
         [Fact]
         public void ApplyDefaultSerializerSettings_SetsDefaultSettings()
         {
-            var serializerSettings = new JsonSerializerSettings
-            {
-                TypeNameHandling = TypeNameHandling.Arrays,
-                TypeNameAssemblyFormat = FormatterAssemblyStyle.Full,
-                DateFormatString = "",
-                Formatting = Formatting.Indented,
-                CheckAdditionalContent = true,
-                ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                MissingMemberHandling = MissingMemberHandling.Error,
-                NullValueHandling = NullValueHandling.Ignore,
-                DefaultValueHandling = DefaultValueHandling.Ignore,
-                ObjectCreationHandling = ObjectCreationHandling.Replace,
-                PreserveReferencesHandling = PreserveReferencesHandling.All,
-                Culture = new CultureInfo("de"),
-                Binder = new CustomSerializerBinder(),
-            };
-
-            SerializationHelper.ApplyDefaultSerializerSettings(serializerSettings);
+            var serializerSettings = SerializationHelper.GetDefaultSettings(TypeNameHandling.None);
 
             Assert.Equal(TypeNameHandling.None, serializerSettings.TypeNameHandling);
             Assert.Equal(FormatterAssemblyStyle.Simple, serializerSettings.TypeNameAssemblyFormat);
@@ -269,23 +251,9 @@ namespace Hangfire.Core.Tests.Common
         [Fact]
         public void ApplyDefaultSerializerSettings_SetsDefaultSettings_WhenTypeNameHandlingIsSet()
         {
-            var serializerSettings = new JsonSerializerSettings
-            {
-                TypeNameHandling = TypeNameHandling.None
-            };
-
-            SerializationHelper.ApplyDefaultSerializerSettings(serializerSettings, TypeNameHandling.Objects);
+            var serializerSettings = SerializationHelper.GetDefaultSettings(TypeNameHandling.Objects);
 
             Assert.Equal(TypeNameHandling.Objects, serializerSettings.TypeNameHandling);
-        }
-
-        [Fact]
-        public void ApplyDefaultSerializerSettings_ThrowsException_WhenSerializerSettingsIsNull()
-        {
-            // ReSharper disable once AssignNullToNotNullAttribute
-            var exception = Assert.Throws<ArgumentNullException>(() => SerializationHelper.ApplyDefaultSerializerSettings(null));
-
-            Assert.Equal("serializerSettings", exception.ParamName);
         }
 
         private interface IClass
