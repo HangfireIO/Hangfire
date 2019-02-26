@@ -19,6 +19,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Runtime.Serialization;
+using System.Threading;
 using Hangfire.Annotations;
 using Newtonsoft.Json;
 
@@ -55,7 +56,6 @@ namespace Hangfire.Common
         private static readonly JsonSerializerSettings DefaultSerializerSettings = new JsonSerializerSettings();
         private static readonly JsonSerializerSettings DefaultSerializerSettingsWithTypes = new JsonSerializerSettings();
 
-        // TODO: ADD THREAD SAFETY
         private static JsonSerializerSettings _userSerializerSettings;
 
         static SerializationHelper()
@@ -203,7 +203,7 @@ namespace Hangfire.Common
 
         internal static void SetUserSerializerSettings(JsonSerializerSettings settings)
         {
-            _userSerializerSettings = settings;
+            Volatile.Write(ref _userSerializerSettings, settings);
         }
 
         private static JsonSerializerSettings GetSerializerSettings(SerializationOption serializationOption)
@@ -212,7 +212,7 @@ namespace Hangfire.Common
             {
                 case SerializationOption.Default: return DefaultSerializerSettings;
                 case SerializationOption.DefaultWithTypes: return DefaultSerializerSettingsWithTypes;
-                case SerializationOption.User: return _userSerializerSettings;
+                case SerializationOption.User: return Volatile.Read(ref _userSerializerSettings);
                 default: throw new ArgumentOutOfRangeException(nameof(serializationOption), serializationOption, null);
             }
         }
