@@ -67,7 +67,19 @@ namespace Hangfire.Storage
         public string ParameterTypes { get; }
         public string Arguments { get; set; }
 
+        [Obsolete("Please use DeserializeJob() method instead. Will be removed in 2.0.0 for clarity.")]
         public Job Deserialize()
+        {
+            return DeserializeJob();
+        }
+
+        [Obsolete("Please use SerializeJob(Job) method instead. Will be removed in 2.0.0 for clarity.")]
+        public static InvocationData Serialize(Job job)
+        {
+            return SerializeJob(job);
+        }
+
+        public Job DeserializeJob()
         {
             var typeResolver = Volatile.Read(ref _typeResolver) ?? DefaultTypeResolver;
 
@@ -97,7 +109,7 @@ namespace Hangfire.Storage
             }
         }
 
-        public static InvocationData Serialize(Job job)
+        public static InvocationData SerializeJob(Job job)
         {
             var typeSerializer = Volatile.Read(ref _typeSerializer) ?? DefaultTypeSerializer;
 
@@ -110,7 +122,7 @@ namespace Hangfire.Storage
             return new InvocationData(type, methodName, parameterTypes, arguments);
         }
 
-        public static InvocationData Deserialize(string payload)
+        public static InvocationData DeserializePayload(string payload)
         {
             var jobPayload = SerializationHelper.Deserialize<JobPayload>(payload);
 
@@ -126,7 +138,7 @@ namespace Hangfire.Storage
             return SerializationHelper.Deserialize<InvocationData>(payload);
         }
 
-        public string Serialize()
+        public string SerializePayload()
         {
             var parameterTypes = SerializationHelper.Deserialize<string[]>(ParameterTypes);
             var arguments = SerializationHelper.Deserialize<string[]>(Arguments);

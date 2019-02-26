@@ -270,7 +270,7 @@ namespace Hangfire.Core.Tests
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
             {
                 { "Cron", _cronExpression },
-                { "Job", InvocationData.Serialize(_job).Serialize() },
+                { "Job", InvocationData.Serialize(_job).SerializePayload() },
                 { "CreatedAt", JobHelper.SerializeDateTime(_now) },
                 { "NextExecution", JobHelper.SerializeDateTime(_now) },
                 { "Queue", "default" },
@@ -329,7 +329,7 @@ namespace Hangfire.Core.Tests
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
             {
                 { "Cron", "0 0 * * *" },
-                { "Job", InvocationData.Serialize(_job).Serialize() },
+                { "Job", InvocationData.Serialize(_job).SerializePayload() },
                 { "CreatedAt", JobHelper.SerializeDateTime(_now) },
                 { "TimeZoneId", PlatformHelper.IsRunningOnWindows() ? "Pacific/Honolulu" : "Hawaiian Standard Time" },
                 { "NextExecution", JobHelper.SerializeDateTime(_now.AddHours(18).AddMinutes(30)) },
@@ -356,7 +356,7 @@ namespace Hangfire.Core.Tests
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
             {
                 { "Cron", "* * * * *" },
-                { "Job", InvocationData.Serialize(_job).Serialize() },
+                { "Job", InvocationData.Serialize(_job).SerializePayload() },
                 { "CreatedAt", JobHelper.SerializeDateTime(_now.AddMinutes(-3)) },
                 { "LastExecution", JobHelper.SerializeDateTime(_now.AddMinutes(-2)) },
                 { "NextExecution", JobHelper.SerializeDateTime(_now.AddMinutes(-1)) }
@@ -469,7 +469,7 @@ namespace Hangfire.Core.Tests
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
             {
                 { "Cron", "* * * * *" },
-                { "Job", InvocationData.Serialize(_job).Serialize() },
+                { "Job", InvocationData.Serialize(_job).SerializePayload() },
                 { "CreatedAt", JobHelper.SerializeDateTime(_now.AddMinutes(-3)) },
                 { "LastExecution", JobHelper.SerializeDateTime(_now.AddMinutes(-2)) },
                 { "NextExecution", JobHelper.SerializeDateTime(_now.AddMinutes(-1)) }

@@ -55,7 +55,7 @@ namespace Hangfire
 
             if (recurringJob.ContainsKey("Job") && !String.IsNullOrWhiteSpace(recurringJob["Job"]))
             {
-                Job = InvocationData.Deserialize(recurringJob["Job"]).Deserialize();
+                Job = InvocationData.DeserializePayload(recurringJob["Job"]).DeserializeJob();
             }
 
             if (recurringJob.ContainsKey("LastJobId") && !String.IsNullOrWhiteSpace(recurringJob["LastJobId"]))
@@ -149,7 +149,7 @@ namespace Hangfire
                 result.Add("TimeZoneId", TimeZone.Id);
             }
 
-            var serializedJob = InvocationData.Serialize(Job).Serialize();
+            var serializedJob = InvocationData.SerializeJob(Job).SerializePayload();
 
             if ((_recurringJob.ContainsKey("Job") ? _recurringJob["Job"] : null) != serializedJob)
             {

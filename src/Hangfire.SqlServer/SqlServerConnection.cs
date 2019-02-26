@@ -96,7 +96,7 @@ $@"insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt
 output inserted.Id
 values (@invocationData, N'', @createdAt, @expireAt)";
 
-            var invocationData = InvocationData.Serialize(job).Serialize();
+            var invocationData = InvocationData.SerializeJob(job).SerializePayload();
             var parametersArray = parameters.ToArray();
 
             var queryParameters = new DynamicParameters();
@@ -186,7 +186,7 @@ $@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.Schema
                 if (jobData == null) return null;
 
                 // TODO: conversion exception could be thrown.
-                var invocationData = InvocationData.Deserialize(jobData.InvocationData);
+                var invocationData = InvocationData.DeserializePayload(jobData.InvocationData);
 
                 if (!String.IsNullOrEmpty(jobData.Arguments))
                 {
@@ -198,7 +198,7 @@ $@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.Schema
 
                 try
                 {
-                    job = invocationData.Deserialize();
+                    job = invocationData.DeserializeJob();
                 }
                 catch (JobLoadException ex)
                 {

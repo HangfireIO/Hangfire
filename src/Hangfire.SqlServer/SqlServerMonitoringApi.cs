@@ -482,7 +482,7 @@ where j.Id in @jobIds";
 
         private static Job DeserializeJob(string invocationData, string arguments)
         {
-            var data = InvocationData.Deserialize(invocationData);
+            var data = InvocationData.DeserializePayload(invocationData);
 
             if (!String.IsNullOrEmpty(arguments))
             {
@@ -491,7 +491,7 @@ where j.Id in @jobIds";
 
             try
             {
-                return data.Deserialize();
+                return data.DeserializeJob();
             }
             catch (JobLoadException)
             {

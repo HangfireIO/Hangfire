@@ -225,7 +225,7 @@ namespace Hangfire.Core.Tests.Storage
             if (expectedArgs != null) expectedString += $",\"a\":{expectedArgs}";
             expectedString += "}";
 
-            Assert.Equal(expectedString, invocationData.Serialize());
+            Assert.Equal(expectedString, invocationData.SerializePayload());
         }
 
         [Theory]
@@ -243,7 +243,7 @@ namespace Hangfire.Core.Tests.Storage
             try
             {
                 JobHelper.SetSerializerSettings(new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
-                var serializedData = InvocationData.Deserialize(invocationData);
+                var serializedData = InvocationData.DeserializePayload(invocationData);
 
                 var job = serializedData.Deserialize();
 
@@ -264,7 +264,7 @@ namespace Hangfire.Core.Tests.Storage
         {
             var invocationData = "{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"Method\"}";
 
-            var serializedData = InvocationData.Deserialize(invocationData);
+            var serializedData = InvocationData.DeserializePayload(invocationData);
 
             var job = serializedData.Deserialize();
 
@@ -360,8 +360,8 @@ namespace Hangfire.Core.Tests.Storage
                 "{\"$type\":\"System.Type[], mscorlib\",\"$values\":[\"System.Collections.Generic.IList`1[[System.String, mscorlib]], mscorlib\",\"Hangfire.Core.Tests.Storage.InvocationDataFacts+SomeClass, Hangfire.Core.Tests\"]}",
                 "[null, null]");
 
-            var serialized = invocationData.Serialize();
-            var job = InvocationData.Deserialize(serialized).Deserialize();
+            var serialized = invocationData.SerializePayload();
+            var job = InvocationData.DeserializePayload(serialized).Deserialize();
 
             Assert.Equal(typeof(InvocationDataFacts), job.Type);
             Assert.Equal(typeof(InvocationDataFacts).GetMethod("ComplicatedMethod"), job.Method);

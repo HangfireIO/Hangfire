@@ -234,7 +234,7 @@ namespace Hangfire.SqlServer.Tests
                 Assert.Equal(null, (int?) sqlJob.StateId);
                 Assert.Equal(null, (string) sqlJob.StateName);
 
-                var invocationData = InvocationData.Deserialize((string)sqlJob.InvocationData);
+                var invocationData = InvocationData.DeserializePayload((string)sqlJob.InvocationData);
 
                 var job = invocationData.Deserialize();
                 Assert.Equal(typeof(SqlServerConnectionFacts), job.Type);
