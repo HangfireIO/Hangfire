@@ -15,8 +15,11 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Globalization;
+using System.IO;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using System.Threading;
 using Hangfire.Annotations;
 using Newtonsoft.Json;
@@ -49,10 +52,10 @@ namespace Hangfire.Common
     public static class SerializationHelper
     {
         private static readonly Lazy<JsonSerializerSettings> DefaultSerializerSettings =
-            new Lazy<JsonSerializerSettings>(() => GetDefaultSettings(TypeNameHandling.None), LazyThreadSafetyMode.PublicationOnly);
+            new Lazy<JsonSerializerSettings>(() => GetProtectedSettings(TypeNameHandling.None), LazyThreadSafetyMode.PublicationOnly);
 
         private static readonly Lazy<JsonSerializerSettings> DefaultSerializerSettingsWithTypes =
-            new Lazy<JsonSerializerSettings>(() => GetDefaultSettings(TypeNameHandling.Objects), LazyThreadSafetyMode.PublicationOnly);
+            new Lazy<JsonSerializerSettings>(() => GetProtectedSettings(TypeNameHandling.Objects), LazyThreadSafetyMode.PublicationOnly);
 
         private static JsonSerializerSettings _userSerializerSettings;
 
@@ -78,7 +81,21 @@ namespace Hangfire.Common
 
             var serializerSettings = GetSerializerSettings(option);
 
-            return JsonConvert.SerializeObject(value, serializerSettings);
+            if (option == SerializationOption.User)
+            {
+                return JsonConvert.SerializeObject(value, serializerSettings);
+            }
+
+            // For internal purposes we should ensure that JsonConvert.DefaultSettings don't affect
+            // the serialization process, and the only way is to create a custom serializer.
+            using (var stringWriter = new StringWriter(new StringBuilder(256), CultureInfo.InvariantCulture))
+            using (var jsonWriter = new JsonTextWriter(stringWriter))
+            {
+                var serializer = JsonSerializer.Create(serializerSettings);
+                serializer.Serialize(jsonWriter, value, null);
+
+                return stringWriter.ToString();
+            }
         }
 
         /// <summary>
@@ -103,23 +120,39 @@ namespace Hangfire.Common
             if (value == null) return null;
 
             var serializerSettings = GetSerializerSettings(option);
+            Exception exception = null;
+
+            if (option != SerializationOption.User)
+            {
+                try
+                {
+                    // For internal purposes we should ensure that JsonConvert.DefaultSettings don't affect
+                    // the deserialization process, and the only way is to create a custom serializer.
+                    using (var stringReader = new StringReader(value))
+                    using (var jsonReader = new JsonTextReader(stringReader))
+                    {
+                        var serializer = JsonSerializer.Create(serializerSettings);
+                        return serializer.Deserialize(jsonReader, type);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // If there was an exception, we should try to deserialize the value using user-based
+                    // settings, because prior to 1.7.0 they were used for almost everything. So we are saving
+                    // the exception to re-throw it if even serializer based on user settings couldn't handle
+                    // our value. In that case an original exception should be thrown as it is the reason.
+                    exception = ex;
+                }
+            }
 
             try
             {
                 return JsonConvert.DeserializeObject(value, type, serializerSettings);
             }
-            catch (Exception outerException) when (option != SerializationOption.User)
+            catch (Exception) when (exception != null)
             {
-                try
-                {
-                    // It's here for backward compatibility. Earlier internal data serializer used user setting.
-                    return Deserialize(value, type, SerializationOption.User);
-                }
-                catch (Exception)
-                {
-                    ExceptionDispatchInfo.Capture(outerException).Throw();
-                    throw;
-                }
+                ExceptionDispatchInfo.Capture(exception).Throw();
+                throw;
             }
         }
 
@@ -146,7 +179,7 @@ namespace Hangfire.Common
             return (T) Deserialize(value, typeof(T), option);
         }
 
-        internal static JsonSerializerSettings GetDefaultSettings(TypeNameHandling typeNameHandling)
+        internal static JsonSerializerSettings GetProtectedSettings(TypeNameHandling typeNameHandling)
         {
             var serializerSettings = new JsonSerializerSettings();
 
@@ -159,6 +192,7 @@ namespace Hangfire.Common
             property.SetValue(serializerSettings, Enum.Parse(property.PropertyType, "Simple"));
 
             serializerSettings.TypeNameHandling = typeNameHandling;
+            serializerSettings.CheckAdditionalContent = true; // Default option in JsonConvert.Deserialize method
 
             return serializerSettings;
         }
