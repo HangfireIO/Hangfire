@@ -668,7 +668,7 @@ namespace Hangfire.Core.Tests.Storage
                 .DeserializePayload("{\"$type\":\"Hangfire.Storage.InvocationData, Hangfire.Core\",\"Type\":\"System.Console, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089\",\"Method\":\"WriteLine\",\"ParameterTypes\":\"{\\\"$type\\\":\\\"System.Type[], mscorlib\\\",\\\"$values\\\":[\\\"System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089\\\"]}\",\"Arguments\":\"{\\\"$type\\\":\\\"System.String[], mscorlib\\\",\\\"$values\\\":[\\\"\\\\\\\"Hello \\\\\\\"\\\"]}\"}")
                 .DeserializeJob();
 
-            Assert.Equal("System.Console", job.Type.FullName);
+            Assert.Equal(typeof(Console), job.Type);
             Assert.Equal("WriteLine", job.Method.Name);
             Assert.Equal("Hello ", job.Args[0]);
         }
