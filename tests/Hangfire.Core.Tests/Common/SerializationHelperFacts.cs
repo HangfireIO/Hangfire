@@ -32,7 +32,7 @@ namespace Hangfire.Core.Tests.Common
         [Fact]
         public void Serialize_ReturnsCorrectJson_WhenOptionsIsDefaultWithTypes()
         {
-            var result = SerializationHelper.Serialize(new ClassA("B"), SerializationOption.DefaultWithTypes);
+            var result = SerializationHelper.Serialize(new ClassA("B"), SerializationOption.TypedInternal);
             Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.SerializationHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""B""}", result);
         }
 
@@ -80,7 +80,7 @@ namespace Hangfire.Core.Tests.Common
 
             var result = SerializationHelper.Serialize(
                 new ClassB { StringValue = "B", DateTimeValue = new DateTime(1961, 4, 12) },
-                SerializationOption.DefaultWithTypes);
+                SerializationOption.TypedInternal);
 
             Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.SerializationHelperFacts+ClassB, Hangfire.Core.Tests"",""StringValue"":""B"",""NullValue"":null,""DefaultValue"":0,""DateTimeValue"":""1961-04-12T00:00:00""}", result);
         }
@@ -123,7 +123,7 @@ namespace Hangfire.Core.Tests.Common
         {
             var valueJson = @"{""$type"":""Hangfire.Core.Tests.Common.SerializationHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""A""}";
 
-            var value = SerializationHelper.Deserialize(valueJson, typeof(ClassA), SerializationOption.DefaultWithTypes);
+            var value = SerializationHelper.Deserialize(valueJson, typeof(ClassA), SerializationOption.TypedInternal);
             var customObj = value as ClassA;
 
             Assert.NotNull(customObj);
@@ -141,7 +141,7 @@ namespace Hangfire.Core.Tests.Common
 
             var valueJson = SerializationHelper.Serialize(new ClassA("A"), SerializationOption.User);
 
-            var value = SerializationHelper.Deserialize(valueJson, typeof(ClassA), SerializationOption.DefaultWithTypes);
+            var value = SerializationHelper.Deserialize(valueJson, typeof(ClassA), SerializationOption.TypedInternal);
 
             var classAObj = value as ClassA;
 
@@ -186,7 +186,7 @@ namespace Hangfire.Core.Tests.Common
         {
             var valueJson = @"{""PropertyA"":""A""}";
 
-            var value = SerializationHelper.Deserialize<ClassA>(valueJson, SerializationOption.DefaultWithTypes);
+            var value = SerializationHelper.Deserialize<ClassA>(valueJson, SerializationOption.TypedInternal);
             Assert.NotNull(value);
             Assert.Equal("A", value.PropertyA);
         }
@@ -202,7 +202,7 @@ namespace Hangfire.Core.Tests.Common
 
             var valueJson = SerializationHelper.Serialize(new ClassA("A"), SerializationOption.User);
 
-            var value = SerializationHelper.Deserialize<ClassA>(valueJson, SerializationOption.DefaultWithTypes);
+            var value = SerializationHelper.Deserialize<ClassA>(valueJson, SerializationOption.TypedInternal);
 
             Assert.NotNull(value);
             Assert.Equal("A", value.PropertyA);

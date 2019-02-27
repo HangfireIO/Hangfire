@@ -171,7 +171,7 @@ namespace Hangfire
                 {
                     try
                     {
-                        nextState = SerializationHelper.Deserialize<IState>(currentState.Data["NextState"], SerializationOption.DefaultWithTypes);
+                        nextState = SerializationHelper.Deserialize<IState>(currentState.Data["NextState"], SerializationOption.TypedInternal);
                     }
                     catch (Exception ex)
                     {

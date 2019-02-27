@@ -56,7 +56,7 @@ namespace Hangfire.Core.Tests.States
 
             var nextStateSerialized = SerializationHelper.Serialize(new EnqueuedState(), SerializationOption.User);
 
-            var nextState = SerializationHelper.Deserialize<IState>(nextStateSerialized, SerializationOption.DefaultWithTypes) as EnqueuedState;
+            var nextState = SerializationHelper.Deserialize<IState>(nextStateSerialized, SerializationOption.TypedInternal) as EnqueuedState;
             Assert.NotNull(nextState);
             Assert.NotEqual(default(DateTime), nextState.EnqueuedAt);
         }

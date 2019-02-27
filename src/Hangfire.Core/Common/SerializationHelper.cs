@@ -31,13 +31,13 @@ namespace Hangfire.Common
         /// <summary>
         /// For internal data using isolated settings that can't be changed from user code.
         /// </summary>
-        Default,
+        Internal,
 
         /// <summary>
         /// For internal data using isolated settings with types information (<see cref="TypeNameHandling.Objects"/> setting) 
         /// that can't be changed from user code.
         /// </summary>
-        DefaultWithTypes,
+        TypedInternal,
 
         /// <summary>
         /// For user data like arguments and parameters, configurable via <see cref="SerializationHelper.SetUserSerializerSettings"/>.
@@ -60,22 +60,22 @@ namespace Hangfire.Common
         private static JsonSerializerSettings _userSerializerSettings;
 
         /// <summary>
-        /// Serializes data with <see cref="SerializationOption.Default"/> option.
+        /// Serializes data with <see cref="SerializationOption.Internal"/> option.
         /// Use this method to serialize internal data. Using isolated settings that can't be changed from user code.
         /// </summary>
-        public static string Serialize(object value)
+        public static string Serialize([CanBeNull] object value)
         {
-            return Serialize(value, SerializationOption.Default);
+            return Serialize(value, SerializationOption.Internal);
         }
 
         /// <summary>
         /// Serializes data with specified option. 
-        /// Use <see cref="SerializationOption.Default"/> option to serialize internal data.
-        /// Use <see cref="SerializationOption.DefaultWithTypes"/> option if you need to store type information.
+        /// Use <see cref="SerializationOption.Internal"/> option to serialize internal data.
+        /// Use <see cref="SerializationOption.TypedInternal"/> option if you need to store type information.
         /// Use <see cref="SerializationOption.User"/> option to serialize user data like arguments and parameters,
         /// configurable via <see cref="SetUserSerializerSettings"/>.
         /// </summary>
-        public static string Serialize(object value, SerializationOption option)
+        public static string Serialize([CanBeNull] object value, SerializationOption option)
         {
             if (value == null) return null;
 
@@ -92,29 +92,29 @@ namespace Hangfire.Common
             using (var jsonWriter = new JsonTextWriter(stringWriter))
             {
                 var serializer = JsonSerializer.Create(serializerSettings);
-                serializer.Serialize(jsonWriter, value, null);
+                serializer.Serialize(jsonWriter, value);
 
                 return stringWriter.ToString();
             }
         }
 
         /// <summary>
-        /// Deserializes data with <see cref="SerializationOption.Default"/> option.
+        /// Deserializes data with <see cref="SerializationOption.Internal"/> option.
         /// Use this method to deserialize internal data. Using isolated settings that can't be changed from user code.
         /// </summary>
-        public static object Deserialize(string value, [NotNull] Type type)
+        public static object Deserialize([CanBeNull] string value, [NotNull] Type type)
         {
-            return Deserialize(value, type, SerializationOption.Default);
+            return Deserialize(value, type, SerializationOption.Internal);
         }
 
         /// <summary>
         /// Deserializes data with specified option. 
-        /// Use <see cref="SerializationOption.Default"/> to deserialize internal data.
-        /// Use <see cref="SerializationOption.DefaultWithTypes"/> if deserializable internal data has type names information.
+        /// Use <see cref="SerializationOption.Internal"/> to deserialize internal data.
+        /// Use <see cref="SerializationOption.TypedInternal"/> if deserializable internal data has type names information.
         /// Use <see cref="SerializationOption.User"/> to deserialize user data like arguments and parameters, 
         /// configurable via <see cref="SetUserSerializerSettings"/>.
         /// </summary>
-        public static object Deserialize(string value, [NotNull] Type type, SerializationOption option)
+        public static object Deserialize([CanBeNull] string value, [NotNull] Type type, SerializationOption option)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
             if (value == null) return null;
@@ -157,23 +157,23 @@ namespace Hangfire.Common
         }
 
         /// <summary>
-        /// Deserializes data with <see cref="SerializationOption.Default"/> option.
+        /// Deserializes data with <see cref="SerializationOption.Internal"/> option.
         /// Use this method to deserialize internal data. Using isolated settings that can't be changed from user code.
         /// </summary>
-        public static T Deserialize<T>(string value)
+        public static T Deserialize<T>([CanBeNull] string value)
         {
             if (value == null) return default(T);
-            return Deserialize<T>(value, SerializationOption.Default);
+            return Deserialize<T>(value, SerializationOption.Internal);
         }
 
         /// <summary>
         /// Deserializes data with specified option. 
-        /// Use <see cref="SerializationOption.Default"/> to deserialize internal data.
-        /// Use <see cref="SerializationOption.DefaultWithTypes"/> if deserializable internal data has type names information.
+        /// Use <see cref="SerializationOption.Internal"/> to deserialize internal data.
+        /// Use <see cref="SerializationOption.TypedInternal"/> if deserializable internal data has type names information.
         /// Use <see cref="SerializationOption.User"/> to deserialize user data like arguments and parameters, 
         /// configurable via <see cref="SetUserSerializerSettings"/>.
         /// </summary>
-        public static T Deserialize<T>(string value, SerializationOption option)
+        public static T Deserialize<T>([CanBeNull] string value, SerializationOption option)
         {
             if (value == null) return default(T);
             return (T) Deserialize(value, typeof(T), option);
@@ -197,7 +197,7 @@ namespace Hangfire.Common
             return serializerSettings;
         }
 
-        internal static void SetUserSerializerSettings(JsonSerializerSettings settings)
+        internal static void SetUserSerializerSettings([CanBeNull] JsonSerializerSettings settings)
         {
             Volatile.Write(ref _userSerializerSettings, settings);
         }
@@ -206,8 +206,8 @@ namespace Hangfire.Common
         {
             switch (serializationOption)
             {
-                case SerializationOption.Default: return DefaultSerializerSettings.Value;
-                case SerializationOption.DefaultWithTypes: return DefaultSerializerSettingsWithTypes.Value;
+                case SerializationOption.Internal: return DefaultSerializerSettings.Value;
+                case SerializationOption.TypedInternal: return DefaultSerializerSettingsWithTypes.Value;
                 case SerializationOption.User: return Volatile.Read(ref _userSerializerSettings);
                 default: throw new ArgumentOutOfRangeException(nameof(serializationOption), serializationOption, null);
             }
