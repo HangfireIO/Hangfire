@@ -448,8 +448,71 @@ namespace Hangfire.Storage
 
         internal static Type DefaultTypeResolver(string typeName)
         {
+#if NETSTANDARD1_3
             typeName = typeName.Replace("System.Private.CoreLib", "mscorlib");
-            return System.Type.GetType(typeName, throwOnError: true, ignoreCase: true);
+            return System.Type.GetType(
+                typeName,
+                throwOnError: true,
+                ignoreCase: true);
+#else
+            return System.Type.GetType(
+                typeName,
+                typeResolver: TypeResolver,
+                assemblyResolver: CachedAssemblyResolver,
+                throwOnError: true,
+                ignoreCase: true);
+#endif
+        }
+
+        private static readonly AssemblyName MscorlibAssemblyName = new AssemblyName("mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089");
+        private static readonly ConcurrentDictionary<string, Assembly> AssemblyCache = new ConcurrentDictionary<string, Assembly>();
+
+        private static Assembly CachedAssemblyResolver(AssemblyName assemblyName)
+        {
+            return AssemblyCache.GetOrAdd(assemblyName.FullName, AssemblyResolver);
+        }
+
+        private static Assembly AssemblyResolver(string assemblyString)
+        {
+            var assemblyName = new AssemblyName(assemblyString);
+
+            if (assemblyName.Name.Equals("System.Private.CoreLib", StringComparison.OrdinalIgnoreCase) ||
+                assemblyName.Name.Equals("mscorlib", StringComparison.OrdinalIgnoreCase))
+            {
+                assemblyName = MscorlibAssemblyName;
+            }
+
+            var publicKeyToken = assemblyName.GetPublicKeyToken();
+
+#if !NETSTANDARD1_3
+            if (assemblyName.Version == null && assemblyName.CultureInfo == null && publicKeyToken == null)
+            {
+#pragma warning disable 618
+                return Assembly.LoadWithPartialName(assemblyName.Name);
+#pragma warning restore 618
+            }
+#endif
+
+            try
+            {
+                return Assembly.Load(assemblyName);
+            }
+            catch (Exception)
+            {
+                var shortName = new AssemblyName(assemblyName.Name);
+                if (publicKeyToken != null)
+                {
+                    shortName.SetPublicKeyToken(publicKeyToken);
+                }
+
+                return Assembly.Load(shortName);
+            }
+        }
+
+        private static Type TypeResolver(Assembly assembly, string typeName, bool ignoreCase)
+        {
+            assembly = assembly ?? typeof(int).GetTypeInfo().Assembly;
+            return assembly.GetType(typeName, true, ignoreCase);
         }
 
         private class JobPayload
