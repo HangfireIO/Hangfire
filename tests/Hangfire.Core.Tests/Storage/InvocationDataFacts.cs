@@ -654,6 +654,24 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(null, (job.Args[1] as SomeClass)?.NullObject);
         }
 
+        [Fact, CleanSerializerSettings]
+        public void DeserializeJob_CanPreviousFormat_WhenTypeNameHandlingOptionIsSetToAll()
+        {
+            var settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All };
+
+            JsonConvert.DefaultSettings = () => settings;
+#pragma warning disable 618
+            JobHelper.SetSerializerSettings(settings);
+#pragma warning restore 618
+
+            var job = InvocationData
+                .DeserializePayload("{\"$type\":\"Hangfire.Storage.InvocationData, Hangfire.Core\",\"Type\":\"System.Console, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089\",\"Method\":\"WriteLine\",\"ParameterTypes\":\"{\\\"$type\\\":\\\"System.Type[], mscorlib\\\",\\\"$values\\\":[\\\"System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089\\\"]}\",\"Arguments\":\"{\\\"$type\\\":\\\"System.String[], mscorlib\\\",\\\"$values\\\":[\\\"\\\\\\\"Hello \\\\\\\"\\\"]}\"}")
+                .DeserializeJob();
+
+            Assert.Equal(typeof(Console), job.Type);
+            Assert.Equal("WriteLine", job.Method.Name);
+            Assert.Equal("Hello ", job.Args[0]);
+        }
 
         public static void Method()
         {

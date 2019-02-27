@@ -24,9 +24,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-#if !NETSTANDARD1_3
 using System.Runtime.ExceptionServices;
-#endif
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -87,19 +85,19 @@ namespace Hangfire.Storage
             {
                 var type = typeResolver(Type);
 
-                var serializedParameterTypes = SerializationHelper.Deserialize<string[]>(ParameterTypes);
-                var parameterTypes = serializedParameterTypes?.Select(typeResolver).ToArray();
+                var parameterTypesArray = DeserializeParameterTypesArray();
+                var parameterTypes = parameterTypesArray?.Select(typeResolver).ToArray();
 
                 var method = type.GetNonOpenMatchingMethod(Method, parameterTypes);
 
                 if (method == null)
                 {
                     throw new InvalidOperationException(
-                        $"The type `{type.FullName}` does not contain a method with signature `{Method}({String.Join(", ", parameterTypes.Select(x => x.Name))})`");
+                        $"The type `{type.FullName}` does not contain a method with signature `{Method}({String.Join(", ", parameterTypes?.Select(x => x.Name) ?? parameterTypesArray)})`");
                 }
 
-                var serializedArguments = SerializationHelper.Deserialize<string[]>(Arguments);
-                var arguments = DeserializeArguments(method, serializedArguments);
+                var argumentsArray = SerializationHelper.Deserialize<string[]>(Arguments);
+                var arguments = DeserializeArguments(method, argumentsArray);
 
                 return new Job(type, method, arguments);
             }
@@ -124,9 +122,19 @@ namespace Hangfire.Storage
 
         public static InvocationData DeserializePayload(string payload)
         {
-            var jobPayload = SerializationHelper.Deserialize<JobPayload>(payload);
+            JobPayload jobPayload = null;
+            Exception exception = null;
 
-            if (jobPayload.TypeName != null && jobPayload.MethodName != null)
+            try
+            {
+                jobPayload = SerializationHelper.Deserialize<JobPayload>(payload);
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+            }
+
+            if (exception == null && jobPayload.TypeName != null && jobPayload.MethodName != null)
             {
                 return new InvocationData(
                     jobPayload.TypeName,
@@ -140,7 +148,7 @@ namespace Hangfire.Storage
 
         public string SerializePayload()
         {
-            var parameterTypes = SerializationHelper.Deserialize<string[]>(ParameterTypes);
+            var parameterTypes = DeserializeParameterTypesArray();
             var arguments = SerializationHelper.Deserialize<string[]>(Arguments);
 
             return SerializationHelper.Serialize(new JobPayload
@@ -150,6 +158,27 @@ namespace Hangfire.Storage
                 ParameterTypes = parameterTypes?.Length > 0 ? parameterTypes : null,
                 Arguments = arguments?.Length > 0 ? arguments : null
             });
+        }
+
+        private string[] DeserializeParameterTypesArray()
+        {
+            try
+            {
+                return SerializationHelper.Deserialize<string[]>(ParameterTypes);
+            }
+            catch (Exception outerException)
+            {
+                try
+                {
+                    var parameterTypes = SerializationHelper.Deserialize<Type[]>(ParameterTypes);
+                    return parameterTypes.Select(SimpleAssemblyNameTypeSerializer).ToArray();
+                }
+                catch (Exception)
+                {
+                    ExceptionDispatchInfo.Capture(outerException).Throw();
+                    throw;
+                }
+            }
         }
 
         internal static string[] SerializeArguments(IReadOnlyCollection<object> arguments)
