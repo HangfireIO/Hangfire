@@ -15,7 +15,6 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 #if !NETSTANDARD1_3
 using System.ComponentModel;
@@ -23,10 +22,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
@@ -79,7 +75,7 @@ namespace Hangfire.Storage
 
         public Job DeserializeJob()
         {
-            var typeResolver = Volatile.Read(ref _typeResolver) ?? DefaultTypeResolver;
+            var typeResolver = GetTypeResolver();
 
             try
             {
@@ -109,7 +105,7 @@ namespace Hangfire.Storage
 
         public static InvocationData SerializeJob(Job job)
         {
-            var typeSerializer = Volatile.Read(ref _typeSerializer) ?? DefaultTypeSerializer;
+            var typeSerializer = GetTypeSerializer();
 
             var type = typeSerializer(job.Type);
             var methodName = job.Method.Name;
@@ -168,10 +164,12 @@ namespace Hangfire.Storage
             }
             catch (Exception outerException)
             {
+                var typeSerializer = GetTypeSerializer();
+
                 try
                 {
                     var parameterTypes = SerializationHelper.Deserialize<Type[]>(ParameterTypes);
-                    return parameterTypes.Select(SimpleAssemblyNameTypeSerializer).ToArray();
+                    return parameterTypes.Select(typeSerializer).ToArray();
                 }
                 catch (Exception)
                 {
@@ -252,6 +250,16 @@ namespace Hangfire.Storage
             return result.ToArray();
         }
 
+        private static Func<string, Type> GetTypeResolver()
+        {
+            return Volatile.Read(ref _typeResolver) ?? TypeHelper.DefaultTypeResolver;
+        }
+
+        private static Func<Type, string> GetTypeSerializer()
+        {
+            return Volatile.Read(ref _typeSerializer) ?? TypeHelper.DefaultTypeSerializer;
+        }
+
         private static object DeserializeArgument(string argument, Type type)
         {
             object value;
@@ -312,7 +320,6 @@ namespace Hangfire.Storage
             return value;
         }
 
-
         internal static bool ParseDateTimeArgument(string argument, out DateTime value)
         {
             var result = DateTime.TryParseExact(
@@ -329,190 +336,6 @@ namespace Hangfire.Storage
 
             value = dateTime;
             return result;
-        }
-
-        private static string DefaultTypeSerializer(Type type)
-        {
-            return type.AssemblyQualifiedName;
-        }
-
-        private static readonly ConcurrentDictionary<Type, string> TypeSerializerCache = new ConcurrentDictionary<Type, string>();
-
-        internal static string SimpleAssemblyNameTypeSerializer(Type type)
-        {
-            return TypeSerializerCache.GetOrAdd(type, value =>
-            {
-                var builder = new StringBuilder();
-                SerializeType(value, true, builder);
-
-                return builder.ToString();
-            });
-        }
-
-        private static void SerializeType(Type type, bool withAssemblyName, StringBuilder typeNameBuilder)
-        {
-            if (type == typeof(System.Console))
-            {
-                typeNameBuilder.Append("System.Console, mscorlib");
-                return;
-            }
-
-            if (type == typeof(System.Threading.Thread))
-            {
-                typeNameBuilder.Append("System.Threading.Thread, mscorlib");
-                return;
-            }
-
-            if (type.DeclaringType != null)
-            {
-                SerializeType(type.DeclaringType, false, typeNameBuilder);
-                typeNameBuilder.Append('+');
-            }
-            else if (type.Namespace != null)
-            {
-                typeNameBuilder.Append(type.Namespace).Append('.');
-            }
-
-            typeNameBuilder.Append(type.Name);
-
-            if (type.GenericTypeArguments.Length > 0)
-            {
-                SerializeTypes(type.GenericTypeArguments, typeNameBuilder);
-            }
-
-            if (!withAssemblyName) return;
-
-            var typeInfo = type.GetTypeInfo();
-
-            if (type != typeof(object) && type != typeof(string) && !typeInfo.IsPrimitive)
-            {
-                string assemblyName;
-
-                var typeForwardedFrom = typeInfo.GetCustomAttribute<TypeForwardedFromAttribute>();
-                if (typeForwardedFrom != null)
-                {
-                    assemblyName = typeForwardedFrom.AssemblyFullName;
-
-                    var delimiterIndex = assemblyName.IndexOf(",", StringComparison.OrdinalIgnoreCase);
-
-                    assemblyName = delimiterIndex >= 0 ? assemblyName.Substring(0, delimiterIndex) : assemblyName;
-                }
-                else
-                {
-                    assemblyName = typeInfo.Assembly.GetName().Name;
-                }
-
-                if (assemblyName.Equals("System.Private.CoreLib", StringComparison.OrdinalIgnoreCase))
-                {
-                    assemblyName = "mscorlib";
-                }
-
-                typeNameBuilder.Append(", ").Append(assemblyName);
-            }
-        }
-
-        private static void SerializeTypes(Type[] types, StringBuilder typeNamesBuilder)
-        {
-            if (types == null) return;
-
-            typeNamesBuilder.Append('[');
-
-            for (var i = 0; i < types.Length; i++)
-            {
-                typeNamesBuilder.Append('[');
-                SerializeType(types[i], true, typeNamesBuilder);
-                typeNamesBuilder.Append(']');
-
-                if (i != types.Length - 1) typeNamesBuilder.Append(',');
-            }
-
-            typeNamesBuilder.Append(']');
-        }
-
-        private static readonly Regex VersionRegex = new Regex(@", Version=\d+.\d+.\d+.\d+", RegexOptions.Compiled);
-        private static readonly Regex CultureRegex = new Regex(@", Culture=\w+", RegexOptions.Compiled);
-        private static readonly Regex PublicKeyTokenRegex = new Regex(@", PublicKeyToken=\w+", RegexOptions.Compiled);
-        private static readonly ConcurrentDictionary<string, Type> TypeCache = new ConcurrentDictionary<string, Type>();
-
-        internal static Type IgnoredAssemblyVersionTypeResolver(string typeName)
-        {
-            return TypeCache.GetOrAdd(typeName, value =>
-            {
-                value = VersionRegex.Replace(value, String.Empty);
-                value = CultureRegex.Replace(value, String.Empty);
-                value = PublicKeyTokenRegex.Replace(value, String.Empty);
-
-                return DefaultTypeResolver(value);
-            });
-        }
-
-        internal static Type DefaultTypeResolver(string typeName)
-        {
-#if NETSTANDARD1_3
-            typeName = typeName.Replace("System.Private.CoreLib", "mscorlib");
-            return System.Type.GetType(
-                typeName,
-                throwOnError: true,
-                ignoreCase: true);
-#else
-            return System.Type.GetType(
-                typeName,
-                typeResolver: TypeResolver,
-                assemblyResolver: CachedAssemblyResolver,
-                throwOnError: true,
-                ignoreCase: true);
-#endif
-        }
-
-        private static readonly AssemblyName MscorlibAssemblyName = new AssemblyName("mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089");
-        private static readonly ConcurrentDictionary<string, Assembly> AssemblyCache = new ConcurrentDictionary<string, Assembly>();
-
-        private static Assembly CachedAssemblyResolver(AssemblyName assemblyName)
-        {
-            return AssemblyCache.GetOrAdd(assemblyName.FullName, AssemblyResolver);
-        }
-
-        private static Assembly AssemblyResolver(string assemblyString)
-        {
-            var assemblyName = new AssemblyName(assemblyString);
-
-            if (assemblyName.Name.Equals("System.Private.CoreLib", StringComparison.OrdinalIgnoreCase) ||
-                assemblyName.Name.Equals("mscorlib", StringComparison.OrdinalIgnoreCase))
-            {
-                assemblyName = MscorlibAssemblyName;
-            }
-
-            var publicKeyToken = assemblyName.GetPublicKeyToken();
-
-#if !NETSTANDARD1_3
-            if (assemblyName.Version == null && assemblyName.CultureInfo == null && publicKeyToken == null)
-            {
-#pragma warning disable 618
-                return Assembly.LoadWithPartialName(assemblyName.Name);
-#pragma warning restore 618
-            }
-#endif
-
-            try
-            {
-                return Assembly.Load(assemblyName);
-            }
-            catch (Exception)
-            {
-                var shortName = new AssemblyName(assemblyName.Name);
-                if (publicKeyToken != null)
-                {
-                    shortName.SetPublicKeyToken(publicKeyToken);
-                }
-
-                return Assembly.Load(shortName);
-            }
-        }
-
-        private static Type TypeResolver(Assembly assembly, string typeName, bool ignoreCase)
-        {
-            assembly = assembly ?? typeof(int).GetTypeInfo().Assembly;
-            return assembly.GetType(typeName, true, ignoreCase);
         }
 
         private class JobPayload

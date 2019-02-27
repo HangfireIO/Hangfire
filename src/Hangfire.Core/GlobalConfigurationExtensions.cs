@@ -224,14 +224,14 @@ namespace Hangfire
             [NotNull] this IGlobalConfiguration configuration)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
-            return configuration.UseTypeSerializer(InvocationData.SimpleAssemblyNameTypeSerializer);
+            return configuration.UseTypeSerializer(TypeHelper.SimpleAssemblyTypeSerializer);
         }
 
         public static IGlobalConfiguration UseIgnoredAssemblyVersionTypeResolver(
             [NotNull] this IGlobalConfiguration configuration)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
-            return configuration.UseTypeResolver(InvocationData.IgnoredAssemblyVersionTypeResolver);
+            return configuration.UseTypeResolver(TypeHelper.IgnoredAssemblyVersionTypeResolver);
         }
 
         /// <summary>

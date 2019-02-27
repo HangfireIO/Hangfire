@@ -373,7 +373,7 @@ namespace Hangfire.Core.Tests.Storage
         {
             try
             {
-                InvocationData.SetTypeSerializer(InvocationData.SimpleAssemblyNameTypeSerializer);
+                InvocationData.SetTypeSerializer(TypeHelper.SimpleAssemblyTypeSerializer);
 
                 var invocationData = InvocationData.Serialize(job);
 
