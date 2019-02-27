@@ -448,8 +448,49 @@ namespace Hangfire.Storage
 
         internal static Type DefaultTypeResolver(string typeName)
         {
-            typeName = typeName.Replace("System.Private.CoreLib", "mscorlib");
-            return System.Type.GetType(typeName, throwOnError: true, ignoreCase: true);
+            return System.Type.GetType(
+                typeName,
+                typeResolver: TypeResolver,
+                assemblyResolver: AssemblyResolver,
+                throwOnError: true,
+                ignoreCase: true);
+        }
+
+        private static Assembly AssemblyResolver(AssemblyName assemblyName)
+        {
+            if (assemblyName.Name.Equals("System.Private.CoreLib", StringComparison.OrdinalIgnoreCase))
+            {
+                assemblyName = new AssemblyName("mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089");
+            }
+
+            var publicKeyToken = assemblyName.GetPublicKeyToken();
+
+            if (assemblyName.Version != null || assemblyName.CultureInfo != null || publicKeyToken != null)
+            {
+                try
+                {
+                    return Assembly.Load(assemblyName.FullName);
+                }
+                catch (Exception)
+                {
+                    var shortName = new AssemblyName(assemblyName.Name);
+                    if (publicKeyToken != null)
+                    {
+                        shortName.SetPublicKeyToken(publicKeyToken);
+                    }
+
+                    return Assembly.Load(shortName);
+                }
+            }
+
+#pragma warning disable 618
+            return Assembly.LoadWithPartialName(assemblyName.Name);
+#pragma warning restore 618
+        }
+
+        private static Type TypeResolver(Assembly assembly, string typeName, bool ignoreCase)
+        {
+            return assembly.GetType(typeName, true, ignoreCase);
         }
 
         private class JobPayload
