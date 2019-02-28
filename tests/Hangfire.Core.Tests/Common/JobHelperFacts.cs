@@ -18,6 +18,7 @@ namespace Hangfire.Core.Tests.Common
     {
         private static readonly DateTime WellKnownDateTime = new DateTime(1988, 04, 20, 01, 12, 32, DateTimeKind.Utc);
         private const int WellKnownTimestamp = 577501952;
+        private const long WellKnownMillisecondTimestamp = 577501952000;
 
         [Fact]
         public void ToJson_EncodesNullValueAsNull()
@@ -80,7 +81,7 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void ToTimestamp_ReturnsDateTime_ForGivenTimestamp()
+        public void FromTimestamp_ReturnsDateTime_ForGivenTimestamp()
         {
             var result = JobHelper.FromTimestamp(WellKnownTimestamp);
 
@@ -88,11 +89,83 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void SerializeDateTime_ReturnsString_InISO8601Format()
+        public void ToMillisecondTimestamp_ReturnsTheCorrectResult()
+        {
+            var result = JobHelper.ToMillisecondTimestamp(WellKnownDateTime);
+            Assert.Equal(WellKnownMillisecondTimestamp, result);
+        }
+
+        [Fact]
+        public void FromMillisecondTimestamp_ReturnsTheCorrectDateTime()
+        {
+            var result = JobHelper.FromMillisecondTimestamp(WellKnownMillisecondTimestamp);
+            Assert.Equal(WellKnownDateTime, result);
+        }
+
+        [Fact, CompatibilityLevel(CompatibilityLevel.Version_Pre_170)]
+        public void SerializeDateTime_ReturnsString_InISO8601Format_In_Version_Pre_170()
         {
             var result = JobHelper.SerializeDateTime(WellKnownDateTime);
 
-            Assert.Equal(WellKnownDateTime.ToString("o"), result);
+            Assert.Equal(WellKnownDateTime.ToString("O"), result);
+        }
+
+        [Fact, CompatibilityLevel(CompatibilityLevel.Version_170)]
+        public void SerializeDateTime_ReturnsString_WithMillisecondTimestamp_In_Version_170()
+        {
+            var result = JobHelper.SerializeDateTime(WellKnownDateTime);
+
+            Assert.Equal(WellKnownMillisecondTimestamp.ToString(), result);
+        }
+
+        [Fact, CompatibilityLevel(CompatibilityLevel.Version_170)]
+        public void SerializeDateTime_ReturnsMillisecondTimestamp_ForRecentDates()
+        {
+            var dateTime = DateTime.UtcNow;
+            var result = JobHelper.SerializeDateTime(dateTime);
+
+            Assert.True(long.TryParse(result, out var timestamp));
+            Assert.Equal(JobHelper.ToMillisecondTimestamp(dateTime), timestamp);
+        }
+
+        [Fact, CompatibilityLevel(CompatibilityLevel.Version_170)]
+        public void SerializeDateTime_ReturnsMillisecondTimestamp_AtLeastUpTo2100()
+        {
+            var dateTime = new DateTime(2100, 01, 01, 00, 00, 00, DateTimeKind.Utc);
+            var result = JobHelper.SerializeDateTime(dateTime);
+
+            Assert.True(long.TryParse(result, out var timestamp));
+            Assert.Equal(JobHelper.ToMillisecondTimestamp(dateTime), timestamp);
+        }
+
+        [Fact, CompatibilityLevel(CompatibilityLevel.Version_170)]
+        public void SerializeDateTime_ReturnsISO8601String_ForConflictingRanges_WithSecondBasedTimestamps()
+        {
+            var dateTime = new DateTime(1975, 01, 01, 00, 00, 00, DateTimeKind.Utc);
+            var result = JobHelper.SerializeDateTime(dateTime);
+
+            Assert.False(long.TryParse(result, out _));
+            Assert.Equal(dateTime.ToString("O"), result);
+        }
+
+        [Fact, CompatibilityLevel(CompatibilityLevel.Version_170)]
+        public void SerializeDateTime_ReturnsISO8601String_WhenTimestampIsNotApplicable()
+        {
+            var dateTime = new DateTime(1900, 01, 01, 00, 00, 00, DateTimeKind.Utc);
+            var result = JobHelper.SerializeDateTime(dateTime);
+
+            Assert.False(long.TryParse(result, out _));
+            Assert.Equal(dateTime.ToString("O"), result);
+        }
+
+        [Fact, CompatibilityLevel(CompatibilityLevel.Version_170)]
+        public void SerializeDateTime_ReturnsISO8601String_WithMaxDateTime()
+        {
+            var dateTime = DateTime.MaxValue;
+            var result = JobHelper.SerializeDateTime(dateTime);
+
+            Assert.False(long.TryParse(result, out _));
+            Assert.Equal(dateTime.ToString("O"), result);
         }
 
         [Fact]
@@ -107,6 +180,13 @@ namespace Hangfire.Core.Tests.Common
         public void DeserializeDateTime_CanDeserialize_ISO8601Format()
         {
             var result = JobHelper.DeserializeDateTime(WellKnownDateTime.ToString("o"));
+            Assert.Equal(WellKnownDateTime, result);
+        }
+
+        [Fact]
+        public void DeserializeDateTime_CanDeserialize_MillisecondTimestamp()
+        {
+            var result = JobHelper.DeserializeDateTime(WellKnownMillisecondTimestamp.ToString());
             Assert.Equal(WellKnownDateTime, result);
         }
 
