@@ -144,16 +144,21 @@ namespace Hangfire.Storage
 
         public string SerializePayload()
         {
-            var parameterTypes = DeserializeParameterTypesArray();
-            var arguments = SerializationHelper.Deserialize<string[]>(Arguments);
-
-            return SerializationHelper.Serialize(new JobPayload
+            if (GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_170))
             {
-                TypeName = Type,
-                MethodName = Method,
-                ParameterTypes = parameterTypes?.Length > 0 ? parameterTypes : null,
-                Arguments = arguments?.Length > 0 ? arguments : null
-            });
+                var parameterTypes = DeserializeParameterTypesArray();
+                var arguments = SerializationHelper.Deserialize<string[]>(Arguments);
+
+                return SerializationHelper.Serialize(new JobPayload
+                {
+                    TypeName = Type,
+                    MethodName = Method,
+                    ParameterTypes = parameterTypes?.Length > 0 ? parameterTypes : null,
+                    Arguments = arguments?.Length > 0 ? arguments : null
+                });
+            }
+
+            return SerializationHelper.Serialize(this);
         }
 
         private string[] DeserializeParameterTypesArray()

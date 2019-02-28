@@ -210,22 +210,68 @@ namespace Hangfire.Core.Tests.Storage
                 () => serializedData.Deserialize());
         }
 
-        [Theory]
-        [InlineData("Method", "[]", "[]", null, null)]
-        [InlineData("Sample", "[\"System.String\"]", "[\"\\\"Hello\\\"\"]", "[\"System.String\"]", "[\"\\\"Hello\\\"\"]")]
-        public void Serialize_CorrectlySerializesInvocationDataToString(string method, string parameterTypes,
-            string args, string expectedParameterTypes, string expectedArgs)
+        [Fact, CompatibilityLevel(CompatibilityLevel.Version_Pre_170)]
+        public void SerializePayload_CorrectlySerializesInvocationDataToString_WithOldFormat_InVersion_Pre_170()
         {
-            var type = $"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests";
+            var invocationData = new InvocationData(
+                "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests",
+                "Sample",
+                "[\"System.String\"]",
+                "[\"\\\"Hello\\\"\"]");
 
-            var invocationData = new InvocationData(type, method, parameterTypes, args);
+            var payload = invocationData.SerializePayload();
 
-            var expectedString = $"{{\"t\":\"{type}\",\"m\":\"{method}\"";
-            if (expectedParameterTypes != null) expectedString += $",\"p\":{expectedParameterTypes}";
-            if (expectedArgs != null) expectedString += $",\"a\":{expectedArgs}";
-            expectedString += "}";
+            Assert.Equal(
+                "{\"Type\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"Method\":\"Sample\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"Hello\\\\\\\"\\\"]\"}",
+                payload);
+        }
 
-            Assert.Equal(expectedString, invocationData.SerializePayload());
+        [Fact, CompatibilityLevel(CompatibilityLevel.Version_Pre_170)]
+        public void SerializePayload_SerializesInvocationDataToString_WithoutNullifyingEmptyEntries_InVersion_Pre_170()
+        {
+            var invocationData = new InvocationData(
+                "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests",
+                "Method",
+                "[]",
+                "[]");
+
+            var payload = invocationData.SerializePayload();
+
+            Assert.Equal(
+                "{\"Type\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"Method\":\"Method\",\"ParameterTypes\":\"[]\",\"Arguments\":\"[]\"}",
+                payload);
+        }
+
+        [Fact, CompatibilityLevel(CompatibilityLevel.Version_170)]
+        public void SerializePayload_CorrectlySerializesInvocationDataToString_WithNewFormat_InVersion_170()
+        {
+            var invocationData = new InvocationData(
+                "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests",
+                "Sample",
+                "[\"System.String\"]",
+                "[\"\\\"Hello\\\"\"]");
+
+            var payload = invocationData.SerializePayload();
+
+            Assert.Equal(
+                "{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"Sample\",\"p\":[\"System.String\"],\"a\":[\"\\\"Hello\\\"\"]}",
+                payload);
+        }
+
+        [Fact, CompatibilityLevel(CompatibilityLevel.Version_170)]
+        public void SerializePayload_SerializesInvocationDataToString_WithNullifyingEmptyEntries_InVersion_170()
+        {
+            var invocationData = new InvocationData(
+                "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests",
+                "Method",
+                "[]",
+                "[]");
+
+            var payload = invocationData.SerializePayload();
+
+            Assert.Equal(
+                "{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"Method\"}",
+                payload);
         }
 
         [Theory]
