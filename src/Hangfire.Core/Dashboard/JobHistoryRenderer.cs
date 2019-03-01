@@ -261,7 +261,13 @@ namespace Hangfire.Dashboard
 
             if (stateData.ContainsKey("Options"))
             {
-                builder.Append($"<dt>Options</dt><dd><code>{helper.HtmlEncode(stateData["Options"])}</code></dd>");
+                var optionsDescription = stateData["Options"];
+                if (Enum.TryParse(optionsDescription, out JobContinuationOptions options))
+                {
+                    optionsDescription = options.ToString("G");
+                }
+
+                builder.Append($"<dt>Options</dt><dd><code>{helper.HtmlEncode(optionsDescription)}</code></dd>");
             }
 
             builder.Append("</dl>");
