@@ -50,7 +50,8 @@ namespace Hangfire.States
         /// </remarks>
         public static readonly string StateName = "Succeeded";
 
-        internal SucceededState(object result, long latency, long performanceDuration)
+        [JsonConstructor]
+        public SucceededState(object result, long latency, long performanceDuration)
         {
             SucceededAt = DateTime.UtcNow;
             Result = result;
