@@ -599,7 +599,7 @@ values (scope_identity(), @queue)";
 
         private static CancellationToken CreateTimingOutCancellationToken()
         {
-            var source = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var source = new CancellationTokenSource(TimeSpan.FromSeconds(1));
             return source.Token;
         }
 
