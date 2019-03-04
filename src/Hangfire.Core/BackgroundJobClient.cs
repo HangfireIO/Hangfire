@@ -153,6 +153,20 @@ namespace Hangfire
             }
         }
 
+        /// <summary>
+        /// Attempts to change the state of all background jobs in a given state
+        /// to the specified one.
+        /// </summary>
+        /// 
+        /// <param name="fromState">Current state of the background jobs to be changed.</param>
+        /// <param name="toState">New state for the backgound jobs.</param>
+        /// 
+        /// <returns><see langword="true"/>, if <b>toState</b> state was applied
+        /// successfully to any job, otherwise <see langword="false"/>.</returns>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="fromState"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="toState"/> is null.</exception>
+        /// <exception cref="BackgroundJobClientException">State change failed due to an exception.</exception>
         public bool ChangeAllState(string fromState, IState toState)
         {
             if (fromState == null) throw new ArgumentNullException(nameof(fromState));

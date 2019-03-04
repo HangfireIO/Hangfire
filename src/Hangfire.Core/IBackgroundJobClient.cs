@@ -95,20 +95,5 @@ namespace Hangfire
         /// value will be returned.</para>
         /// </remarks>
         bool ChangeState([NotNull] string jobId, [NotNull] IState state, [CanBeNull] string expectedState);
-
-        /// <summary>
-        /// Attempts to change the state of all background jobs in a given
-        /// state to a specified one.
-        /// </summary>
-        /// 
-        /// <param name="fromState">Current state of the background jobs.</param>
-        /// <param name="toState">Expected to-be state of the background jobs.</param>
-        /// 
-        /// <returns><see langword="true"/>, if a <b>given</b> state was applied
-        /// successfully otherwise <see langword="false"/>.</returns>
-        /// 
-        /// <exception cref="ArgumentNullException"><paramref name="fromState"/> is null.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="toState"/> is null.</exception>
-        bool ChangeAllState(string fromState, IState toState);
     }
 }

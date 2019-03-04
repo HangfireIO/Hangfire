@@ -641,5 +641,27 @@ namespace Hangfire
             var state = new AwaitingState(parentId, nextState ?? new EnqueuedState(), options);
             return client.Create(Job.FromExpression(methodCall), state);
         }
+
+        /// <summary>
+        /// Attempts to change the state of all background jobs in a given state
+        /// to the specified one.
+        /// </summary>
+        /// <param name="client">A job client instance.</param>
+        /// <param name="fromState">Current state of the background jobs to be changed.</param>
+        /// <param name="toState">New state for the backgound jobs.</param>
+        /// <returns><see langword="true"/>, if <b>toState</b> state was applied
+        /// successfully to any job, otherwise <see langword="false"/>.</returns>
+        public static bool ChangeAllState(
+            [NotNull] this IBackgroundJobClient client,
+            [NotNull] string fromState,
+            [NotNull] IState toState)
+        {
+            if (client == null) throw new ArgumentNullException(nameof(client));
+
+            if (!(client is BackgroundJobClient instance))
+                return false;
+
+            return instance.ChangeAllState(fromState, toState);
+        }
     }
 }
