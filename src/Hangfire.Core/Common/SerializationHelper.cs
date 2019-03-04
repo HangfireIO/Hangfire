@@ -79,22 +79,38 @@ namespace Hangfire.Common
         {
             if (value == null) return null;
 
-            var serializerSettings = GetSerializerSettings(option);
-
-            if (option == SerializationOption.User)
+            if (GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_170))
             {
-                return JsonConvert.SerializeObject(value, serializerSettings);
+                var serializerSettings = GetSerializerSettings(option);
+
+                if (option == SerializationOption.User)
+                {
+                    return JsonConvert.SerializeObject(value, serializerSettings);
+                }
+
+                // For internal purposes we should ensure that JsonConvert.DefaultSettings don't affect
+                // the serialization process, and the only way is to create a custom serializer.
+                using (var stringWriter = new StringWriter(new StringBuilder(256), CultureInfo.InvariantCulture))
+                using (var jsonWriter = new JsonTextWriter(stringWriter))
+                {
+                    var serializer = JsonSerializer.Create(serializerSettings);
+                    serializer.Serialize(jsonWriter, value);
+
+                    return stringWriter.ToString();
+                }
             }
-
-            // For internal purposes we should ensure that JsonConvert.DefaultSettings don't affect
-            // the serialization process, and the only way is to create a custom serializer.
-            using (var stringWriter = new StringWriter(new StringBuilder(256), CultureInfo.InvariantCulture))
-            using (var jsonWriter = new JsonTextWriter(stringWriter))
+            else
             {
-                var serializer = JsonSerializer.Create(serializerSettings);
-                serializer.Serialize(jsonWriter, value);
+                // Previously almost all the data was serialized with the user settings, except
+                // when we explicitly needed to persist the type information. In the latter case
+                // custom settings passed to serializer, identical to TypedInternal.
+                var serializerSettings = GetSerializerSettings(option == SerializationOption.TypedInternal
+                    ? SerializationOption.TypedInternal
+                    : SerializationOption.User);
 
-                return stringWriter.ToString();
+                // JsonConvert is used here, because previously global default settings affected
+                // the serialization process.
+                return JsonConvert.SerializeObject(value, serializerSettings);
             }
         }
 
