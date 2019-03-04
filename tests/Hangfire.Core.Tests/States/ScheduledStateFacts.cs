@@ -1,6 +1,7 @@
 ﻿using System;
 using Hangfire.Common;
 using Hangfire.States;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Hangfire.Core.Tests.States
@@ -61,11 +62,12 @@ namespace Hangfire.Core.Tests.States
         {
             var dateTime = DateTime.UtcNow;
             var state = new ScheduledState(dateTime);
+            var convertedDateTime = JsonConvert.SerializeObject(dateTime);
 
             var serialized = SerializationHelper.Serialize(state, SerializationOption.TypedInternal);
 
             Assert.Equal(
-                "{\"$type\":\"Hangfire.States.ScheduledState, Hangfire.Core\",\"EnqueueAt\":\"" + dateTime.ToString("O") + "\"}",
+                "{\"$type\":\"Hangfire.States.ScheduledState, Hangfire.Core\",\"EnqueueAt\":" + convertedDateTime + "}",
                 serialized);
         }
     }
