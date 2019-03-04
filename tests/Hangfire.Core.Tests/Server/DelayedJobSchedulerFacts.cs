@@ -24,7 +24,6 @@ namespace Hangfire.Core.Tests.Server
         public DelayedJobSchedulerFacts()
         {
             _context = new BackgroundProcessContextMock();
-            _context.StoppingTokenSource.CancelAfter(TimeSpan.FromSeconds(1));
 
             _connection = new Mock<JobStorageConnection>();
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
@@ -38,8 +37,10 @@ namespace Hangfire.Core.Tests.Server
                 .Setup(x => x.AcquireDistributedLock("locks:schedulepoller", It.IsAny<TimeSpan>()))
                 .Returns(_distributedLock.Object);
 
-            _connection.Setup(x => x.GetFirstByLowestScoreFromSet(
-                "schedule", 0, It.Is<double>(time => time > 0))).Returns(JobId);
+            _connection
+                .SetupSequence(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0)))
+                .Returns(JobId)
+                .Throws(new OperationCanceledException("stopped"));
         }
 
         [Fact]
@@ -54,9 +55,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_MovesJobStateToEnqueued()
         {
-            var scheduler = CreateScheduler();
-
-            scheduler.Execute(_context.Object);
+            RunSchedulerAndWait();
 
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.BackgroundJobId == JobId &&
@@ -75,13 +74,12 @@ namespace Hangfire.Core.Tests.Server
                 .Throws(new ArgumentNullException("key"));
 
             _connection
-                .Setup(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0), It.IsAny<int>()))
-                .Returns(new List<string> { "job-1", "job-2" });
-
-            var scheduler = CreateScheduler();
+                .SetupSequence(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0), It.IsAny<int>()))
+                .Returns(new List<string> { "job-1", "job-2" })
+                .Throws(new OperationCanceledException("stopped"));
 
             // Act
-            scheduler.Execute(_context.Object);
+            RunSchedulerAndWait();
 
             // Assert
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
@@ -102,13 +100,12 @@ namespace Hangfire.Core.Tests.Server
                 .Throws<NotImplementedException>();
 
             _connection
-                .Setup(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0)))
-                .Returns("job-1");
-
-            var scheduler = CreateScheduler();
+                .SetupSequence(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0)))
+                .Returns("job-1")
+                .Throws(new OperationCanceledException("stopped"));
 
             // Act
-            scheduler.Execute(_context.Object);
+            RunSchedulerAndWait();
 
             // Assert
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
@@ -119,8 +116,12 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_DoesNotCallStateChanger_IfThereAreNoJobsToEnqueue()
         {
-            _connection.Setup(x => x.GetFirstByLowestScoreFromSet(
-                "schedule", 0, It.Is<double>(time => time > 0))).Returns((string)null);
+            _connection
+                .SetupSequence(x => x.GetFirstByLowestScoreFromSet(
+                "schedule", 0, It.Is<double>(time => time > 0)))
+                .Returns((string)null)
+                .Throws(new OperationCanceledException("stopped"));
+
             var scheduler = CreateScheduler();
 
             scheduler.Execute(_context.Object);
@@ -137,9 +138,7 @@ namespace Hangfire.Core.Tests.Server
                 .Setup(x => x.ChangeState(It.IsAny<StateChangeContext>()))
                 .Returns<IState>(null);
 
-            var scheduler = CreateScheduler();
-
-            scheduler.Execute(_context.Object);
+            RunSchedulerAndWait();
 
             _transaction.Verify(x => x.RemoveFromSet("schedule", JobId));
             _transaction.Verify(x => x.Commit());
@@ -148,9 +147,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_ActsWithinADistributedLock()
         {
-            var scheduler = CreateScheduler();
-
-            scheduler.Execute(_context.Object);
+            RunSchedulerAndWait();
 
             _connection.Verify(x => x.AcquireDistributedLock(It.IsAny<string>(), It.IsAny<TimeSpan>()));
             _distributedLock.Verify(x => x.Dispose());
@@ -168,9 +165,17 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
         }
 
+        private void RunSchedulerAndWait()
+        {
+            var scheduler = CreateScheduler();
+            var exception = Assert.Throws<OperationCanceledException>(() => scheduler.Execute(_context.Object));
+
+            Assert.Equal("stopped", exception.Message);
+        }
+
         private DelayedJobScheduler CreateScheduler()
         {
-            return new DelayedJobScheduler(Timeout.InfiniteTimeSpan, _stateChanger.Object);
+            return new DelayedJobScheduler(TimeSpan.Zero, _stateChanger.Object);
         }
     }
 }
