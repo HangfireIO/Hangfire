@@ -209,6 +209,8 @@ namespace Hangfire.Common
             property.SetValue(serializerSettings, Enum.Parse(property.PropertyType, "Simple"));
 
             serializerSettings.TypeNameHandling = typeNameHandling;
+            serializerSettings.DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate;
+            serializerSettings.NullValueHandling = NullValueHandling.Ignore;
             serializerSettings.CheckAdditionalContent = true; // Default option in JsonConvert.Deserialize method
 
             return serializerSettings;

@@ -154,15 +154,15 @@ namespace Hangfire.Core.Tests.Common
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.All,
-                NullValueHandling = NullValueHandling.Ignore,
-                DefaultValueHandling = DefaultValueHandling.Ignore,
+                NullValueHandling = NullValueHandling.Include,
+                DefaultValueHandling = DefaultValueHandling.Include,
                 Binder = new CustomSerializerBinder(),
                 DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
                 DateFormatString = "ddMMyyyy"
             };
 
             var result = SerializationHelper.Serialize(new ClassB { StringValue = "B", DateTimeValue = new DateTime(1961, 4, 12) });
-            Assert.Equal(@"{""StringValue"":""B"",""NullValue"":null,""DefaultValue"":0,""DateTimeValue"":""1961-04-12T00:00:00""}", result);
+            Assert.Equal(@"{""StringValue"":""B"",""DateTimeValue"":""1961-04-12T00:00:00""}", result);
         }
 
         [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_Pre_170), CleanSerializerSettings]
@@ -192,8 +192,8 @@ namespace Hangfire.Core.Tests.Common
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.None,
-                NullValueHandling = NullValueHandling.Ignore,
-                DefaultValueHandling = DefaultValueHandling.Ignore,
+                NullValueHandling = NullValueHandling.Include,
+                DefaultValueHandling = DefaultValueHandling.Include,
                 Binder = new CustomSerializerBinder(),
                 DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
                 DateFormatString = "ddMMyyyy"
@@ -203,7 +203,7 @@ namespace Hangfire.Core.Tests.Common
                 new ClassB { StringValue = "B", DateTimeValue = new DateTime(1961, 4, 12) },
                 SerializationOption.TypedInternal);
 
-            Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.SerializationHelperFacts+ClassB, Hangfire.Core.Tests"",""StringValue"":""B"",""NullValue"":null,""DefaultValue"":0,""DateTimeValue"":""1961-04-12T00:00:00""}", result);
+            Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.SerializationHelperFacts+ClassB, Hangfire.Core.Tests"",""StringValue"":""B"",""DateTimeValue"":""1961-04-12T00:00:00""}", result);
         }
 
         [DataCompatibilityRangeFact]
