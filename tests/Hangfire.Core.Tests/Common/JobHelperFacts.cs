@@ -20,21 +20,21 @@ namespace Hangfire.Core.Tests.Common
         private const int WellKnownTimestamp = 577501952;
         private const long WellKnownMillisecondTimestamp = 577501952000;
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void ToJson_EncodesNullValueAsNull()
         {
             var result = JobHelper.ToJson(null);
             Assert.Null(result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void ToJson_EncodesGivenValue_ToJsonString()
         {
             var result = JobHelper.ToJson("hello");
             Assert.Equal("\"hello\"", result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void FromJson_DecodesNullAsDefaultValue()
         {
             var stringResult = JobHelper.FromJson<string>(null);
@@ -44,34 +44,34 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(0, intResult);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void FromJson_DecodesFromJsonString()
         {
             var result = JobHelper.FromJson<string>("\"hello\"");
             Assert.Equal("hello", result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void FromJson_ThrowsAnException_WhenTypeIsNull()
         {
             Assert.Throws<ArgumentNullException>(() => JobHelper.FromJson("1", null));
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void FromJson_WithType_DecodesFromJsonString()
         {
             var result = (string) JobHelper.FromJson("\"hello\"", typeof (string));
             Assert.Equal("hello", result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void FromJson_WithType_DecodesNullValue_ToNull()
         {
             var result = (string) JobHelper.FromJson(null, typeof (string));
             Assert.Null(result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void ToTimestamp_ReturnsUnixTimestamp_OfTheGivenDateTime()
         {
             var result = JobHelper.ToTimestamp(
@@ -80,7 +80,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(WellKnownTimestamp, result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void FromTimestamp_ReturnsDateTime_ForGivenTimestamp()
         {
             var result = JobHelper.FromTimestamp(WellKnownTimestamp);
@@ -88,21 +88,21 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(WellKnownDateTime, result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void ToMillisecondTimestamp_ReturnsTheCorrectResult()
         {
             var result = JobHelper.ToMillisecondTimestamp(WellKnownDateTime);
             Assert.Equal(WellKnownMillisecondTimestamp, result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void FromMillisecondTimestamp_ReturnsTheCorrectDateTime()
         {
             var result = JobHelper.FromMillisecondTimestamp(WellKnownMillisecondTimestamp);
             Assert.Equal(WellKnownDateTime, result);
         }
 
-        [Fact, CompatibilityLevel(CompatibilityLevel.Version_Pre_170)]
+        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_Pre_170)]
         public void SerializeDateTime_ReturnsString_InISO8601Format_In_Version_Pre_170()
         {
             var result = JobHelper.SerializeDateTime(WellKnownDateTime);
@@ -110,7 +110,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(WellKnownDateTime.ToString("O"), result);
         }
 
-        [Fact, CompatibilityLevel(CompatibilityLevel.Version_170)]
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
         public void SerializeDateTime_ReturnsString_WithMillisecondTimestamp_In_Version_170()
         {
             var result = JobHelper.SerializeDateTime(WellKnownDateTime);
@@ -118,7 +118,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(WellKnownMillisecondTimestamp.ToString(), result);
         }
 
-        [Fact, CompatibilityLevel(CompatibilityLevel.Version_170)]
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
         public void SerializeDateTime_ReturnsMillisecondTimestamp_ForRecentDates()
         {
             var dateTime = DateTime.UtcNow;
@@ -128,7 +128,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(JobHelper.ToMillisecondTimestamp(dateTime), timestamp);
         }
 
-        [Fact, CompatibilityLevel(CompatibilityLevel.Version_170)]
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
         public void SerializeDateTime_ReturnsMillisecondTimestamp_AtLeastUpTo2100()
         {
             var dateTime = new DateTime(2100, 01, 01, 00, 00, 00, DateTimeKind.Utc);
@@ -138,7 +138,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(JobHelper.ToMillisecondTimestamp(dateTime), timestamp);
         }
 
-        [Fact, CompatibilityLevel(CompatibilityLevel.Version_170)]
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
         public void SerializeDateTime_ReturnsISO8601String_ForConflictingRanges_WithSecondBasedTimestamps()
         {
             var dateTime = new DateTime(1975, 01, 01, 00, 00, 00, DateTimeKind.Utc);
@@ -148,7 +148,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(dateTime.ToString("O"), result);
         }
 
-        [Fact, CompatibilityLevel(CompatibilityLevel.Version_170)]
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
         public void SerializeDateTime_ReturnsISO8601String_WhenTimestampIsNotApplicable()
         {
             var dateTime = new DateTime(1900, 01, 01, 00, 00, 00, DateTimeKind.Utc);
@@ -158,7 +158,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(dateTime.ToString("O"), result);
         }
 
-        [Fact, CompatibilityLevel(CompatibilityLevel.Version_170)]
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
         public void SerializeDateTime_ReturnsISO8601String_WithMaxDateTime()
         {
             var dateTime = DateTime.MaxValue;
@@ -168,7 +168,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(dateTime.ToString("O"), result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void DeserializeDateTime_CanDeserialize_Timestamps()
         {
             var result = JobHelper.DeserializeDateTime(WellKnownTimestamp.ToString());
@@ -176,49 +176,49 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(WellKnownDateTime, result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void DeserializeDateTime_CanDeserialize_ISO8601Format()
         {
             var result = JobHelper.DeserializeDateTime(WellKnownDateTime.ToString("o"));
             Assert.Equal(WellKnownDateTime, result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void DeserializeDateTime_CanDeserialize_MillisecondTimestamp()
         {
             var result = JobHelper.DeserializeDateTime(WellKnownMillisecondTimestamp.ToString());
             Assert.Equal(WellKnownDateTime, result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void DeserializeNullableDateTime_ReturnsNull_IfNullOrEmptyStringGiven()
         {
             Assert.Null(JobHelper.DeserializeNullableDateTime(""));
             Assert.Null(JobHelper.DeserializeNullableDateTime(null));
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void DeserializeNullableDateTime_ReturnsCorrectValue_OnNonNullString()
         {
             var result = JobHelper.DeserializeNullableDateTime(WellKnownTimestamp.ToString());
             Assert.Equal(WellKnownDateTime, result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void FromJson_WithObjectType_DecodesFromJsonString()
         {
             var result = (ClassA)JobHelper.FromJson(@"{ ""PropertyA"": ""hello"" }", typeof(ClassA));
             Assert.Equal("hello", result.PropertyA);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void ForSerializeUseDefaultConfigurationOfJsonNet()
         {
             var result = JobHelper.ToJson(new ClassA("A"));
             Assert.Equal(@"{""PropertyA"":""A""}", result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void ForSerializeCanUseCustomConfigurationOfJsonNet()
         {
             try
@@ -234,7 +234,7 @@ namespace Hangfire.Core.Tests.Common
             }
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void ForDeserializeCanUseCustomConfigurationOfJsonNet()
         {
             try
@@ -253,7 +253,7 @@ namespace Hangfire.Core.Tests.Common
             }
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void ForDeserializeCanUseCustomConfigurationOfJsonNetWithInvocationData()
         {
             try
@@ -281,7 +281,7 @@ namespace Hangfire.Core.Tests.Common
             }
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void ForDeserializeWithGenericMethodCanUseCustomConfigurationOfJsonNet()
         {
             try
