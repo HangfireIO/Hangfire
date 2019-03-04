@@ -8,12 +8,13 @@ using Newtonsoft.Json;
 using Xunit;
 using System.Globalization;
 using System.Threading;
+#pragma warning disable 618
 
 namespace Hangfire.Core.Tests.Storage
 {
     public class InvocationDataFacts
     {
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_CorrectlyDeserializes_AllTheData()
         {
             var type = typeof(InvocationDataFacts);
@@ -21,6 +22,7 @@ namespace Hangfire.Core.Tests.Storage
 
             var serializedData = new InvocationData(
                 type.AssemblyQualifiedName,
+                // ReSharper disable once PossibleNullReferenceException
                 methodInfo.Name,
                 JobHelper.ToJson(new [] { typeof(string) }),
                 JobHelper.ToJson(new [] { JobHelper.ToJson("Hello") }));
@@ -32,7 +34,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal("Hello", job.Args[0]);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_HandlesNullOrEmpty_ParameterTypesAndArguments()
         {
             var serializedData = new InvocationData(
@@ -46,7 +48,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(job.Type, typeof(JobStorage));
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_HandlesTypesWithoutAssemblyName_FromMscorlibAssembly()
         {
             var serializedData = new InvocationData(
@@ -60,7 +62,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(job.Type, typeof(DateTime));
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_HandlesPartialAssemblyNames()
         {
             var serializedData = new InvocationData(
@@ -74,7 +76,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(job.Type, typeof(InvocationDataFacts));
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_HandlesFullAssemblyNames()
         {
             var serializedData = new InvocationData(
@@ -88,7 +90,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(job.Type, typeof(InvocationDataFacts));
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_HandlesFullyQualifiedAssemblyNames_OfNonSignedAssembly_OfDifferentVersion()
         {
             try
@@ -111,7 +113,7 @@ namespace Hangfire.Core.Tests.Storage
             }
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_HandlesFullyQualifiedAssemblyNames_OfSignedAssembly_OfDifferentVersion()
         {
             try
@@ -134,7 +136,7 @@ namespace Hangfire.Core.Tests.Storage
             }
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_HandlesGenericTypes_WithFullyQualifiedAssemblyNames_OfSignedAssembly_OfDifferentVersion()
         {
             try
@@ -159,7 +161,7 @@ namespace Hangfire.Core.Tests.Storage
             }
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_HandlesSystemPrivateCoreLib_TypeForwarding()
         {
             var serializedData = new InvocationData(
@@ -175,7 +177,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal("hello", job.Args[0]);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_WrapsAnException_WithTheJobLoadException()
         {
             var serializedData = new InvocationData(null, null, null, null);
@@ -184,7 +186,7 @@ namespace Hangfire.Core.Tests.Storage
                 () => serializedData.Deserialize());
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_ThrowsAnException_WhenTypeCanNotBeFound()
         {
             var serializedData = new InvocationData(
@@ -197,7 +199,7 @@ namespace Hangfire.Core.Tests.Storage
                 () => serializedData.Deserialize());
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_ThrowsAnException_WhenMethodCanNotBeFound()
         {
             var serializedData = new InvocationData(
@@ -210,7 +212,7 @@ namespace Hangfire.Core.Tests.Storage
                 () => serializedData.Deserialize());
         }
 
-        [Fact, CompatibilityLevel(CompatibilityLevel.Version_Pre_170)]
+        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_Pre_170)]
         public void SerializePayload_CorrectlySerializesInvocationDataToString_WithOldFormat_InVersion_Pre_170()
         {
             var invocationData = new InvocationData(
@@ -226,7 +228,7 @@ namespace Hangfire.Core.Tests.Storage
                 payload);
         }
 
-        [Fact, CompatibilityLevel(CompatibilityLevel.Version_Pre_170)]
+        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_Pre_170)]
         public void SerializePayload_SerializesInvocationDataToString_WithoutNullifyingEmptyEntries_InVersion_Pre_170()
         {
             var invocationData = new InvocationData(
@@ -242,7 +244,7 @@ namespace Hangfire.Core.Tests.Storage
                 payload);
         }
 
-        [Fact, CompatibilityLevel(CompatibilityLevel.Version_170)]
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
         public void SerializePayload_CorrectlySerializesInvocationDataToString_WithNewFormat_InVersion_170()
         {
             var invocationData = new InvocationData(
@@ -258,7 +260,7 @@ namespace Hangfire.Core.Tests.Storage
                 payload);
         }
 
-        [Fact, CompatibilityLevel(CompatibilityLevel.Version_170)]
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
         public void SerializePayload_SerializesInvocationDataToString_WithNullifyingEmptyEntries_InVersion_170()
         {
             var invocationData = new InvocationData(
@@ -274,7 +276,7 @@ namespace Hangfire.Core.Tests.Storage
                 payload);
         }
 
-        [Theory]
+        [DataCompatibilityRangeTheory]
 
         // Previous serialization format.
         [InlineData("{\"$type\":\"Hangfire.Storage.InvocationData, Hangfire.Core\",\"Type\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\",\"Method\":\"Sample\",\"ParameterTypes\":\"{\\\"$type\\\":\\\"System.Type[], mscorlib\\\",\\\"$values\\\":[\\\"System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089\\\"]}\",\"Arguments\":\"{\\\"$type\\\":\\\"System.String[], mscorlib\\\",\\\"$values\\\":[\\\"\\\\\\\"Hello\\\\\\\"\\\"]}\"}")]
@@ -305,7 +307,7 @@ namespace Hangfire.Core.Tests.Storage
             }
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_DeserializesCorrectlyShortFormatStringToInvocationData()
         {
             var invocationData = "{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"Method\"}";
@@ -320,7 +322,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(0, job.Args.Count);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_HandlesGenericTypes()
         {
             var serializedData = InvocationData.Serialize(
@@ -332,7 +334,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(typeof(string), job.Type.GetGenericArguments()[0]);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_HandlesGenericMethods_WithOpenTypeParameters()
         {
             var serializedData = InvocationData.Serialize(
@@ -343,7 +345,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.False(job.Method.ContainsGenericParameters);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_HandlesMethodsDefinedInInterfaces()
         {
             var serializedData = new InvocationData(
@@ -357,7 +359,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(typeof(IParent), job.Type);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_HandlesMethodsDefinedInParentInterfaces()
         {
             var serializedData = new InvocationData(
@@ -371,7 +373,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(typeof(IChild), job.Type);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_RethrowsJsonException_InsteadOfNullValue_WhenReferenceConverterChosen()
         {
             var serializedData = new InvocationData(
@@ -384,7 +386,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.IsType<JsonReaderException>(exception.InnerException);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Serialize_CorrectlySerializesTheData()
         {
             var job = Job.FromExpression(() => Sample("Hello"));
@@ -397,7 +399,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(JobHelper.ToJson(new[] { "\"Hello\"" }), invocationData.Arguments);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Serialize_CorrectlyHandles_ParameterTypes_InPossibleOldFormat()
         {
             var invocationData = new InvocationData(
@@ -413,7 +415,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(typeof(InvocationDataFacts).GetMethod("ComplicatedMethod"), job.Method);
         }
 
-        [Theory]
+        [DataCompatibilityRangeTheory]
         [MemberData(nameof(MemberData))]
         public void Serialize_CorrectlySerializesJobToInvocationData(Job job, string typeName, string method, string parameterTypes, string serializedArgs)
         {
@@ -434,7 +436,7 @@ namespace Hangfire.Core.Tests.Storage
             }
         }
 
-        [Theory]
+        [DataCompatibilityRangeTheory]
         [MemberData(nameof(MemberData))]
         public void Deserialize_CorrectlyDeserializesJobFromInvocationData(Job job, string typeName, string method, string parameterTypes, string serializedArgs)
         {
@@ -502,7 +504,7 @@ namespace Hangfire.Core.Tests.Storage
             }
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_CorrectlyDeserializes_LocalDateTimeArguments_ConvertedToRoundtripFormat()
         {
             var value = DateTime.Now;
@@ -517,7 +519,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(value, (DateTime)job.Args[0]);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_CorrectlyDeserializes_UnknownDateTimeArguments_ConvertedToRoundtripFormat()
         {
             var value = new DateTime(2017, 1, 1, 1, 1, 1, 1, DateTimeKind.Unspecified);
@@ -532,7 +534,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(value, (DateTime)job.Args[0]);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_CorrectlyDeserializes_UtcDateTimeArguments_ConvertedToRoundtripFormat()
         {
 
@@ -548,7 +550,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(value, (DateTime)job.Args[0]);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_CorrectlyDeserializes_LocalDateTimeArguments_ConvertedToOldFormat_WithLoweredPrecision()
         {
             var value = DateTime.Now;
@@ -570,7 +572,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(value.Second, actualValue.Second);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_CorrectlyDeserializes_UnknownDateTimeArguments_ConvertedToOldFormat_WithLoweredPrecision()
         {
             var value = new DateTime(2017, 1, 1, 1, 1, 1, 1, DateTimeKind.Unspecified);
@@ -592,7 +594,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(value.Second, actualValue.Second);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_CorrectlyDeserializes_UtcDateTimeArguments_ConvertedToOldFormat_WithLoweredPrecision()
         {
             var value = DateTime.UtcNow;
@@ -615,7 +617,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(value.Second, actualValue.Second);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_CorrectlyDeserializes_NullableUtcDateTimeArguments()
         {
             DateTime? value = DateTime.UtcNow;
@@ -630,7 +632,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(value, job.Args[0]);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_CorrectlySeserializes_NullableUtcDateTimeArguments_With_Null()
         {
             DateTime? value = null;
@@ -642,7 +644,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(value, job.Args[0]);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_CorrectlyDeserializes_NullableLocalDateTimeArguments()
         {
             DateTime? value = DateTime.Now;
@@ -657,11 +659,10 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(value, job.Args[0]);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_CorrectlyDeserializes_NullableDateTimeArguments_With_Null_Value()
         {
             DateTime? value = null;
-            var result = value is DateTime;
             var serializedData = new InvocationData(
                 typeof(InvocationDataFacts).AssemblyQualifiedName,
                 nameof(NullableDateTimeMethod),
@@ -673,7 +674,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(value, job.Args[0]);
         }
 
-        [Fact, CleanSerializerSettings]
+        [DataCompatibilityRangeFact, CleanSerializerSettings]
         public void Deserialize_HandlesChangingProcessOfInternalDataSerialization()
         {
             SerializationHelper.SetUserSerializerSettings(SerializerSettingsHelper.DangerousSettings);
@@ -707,7 +708,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(null, (job.Args[1] as SomeClass)?.NullObject);
         }
 
-        [Fact, CleanSerializerSettings]
+        [DataCompatibilityRangeFact, CleanSerializerSettings]
         public void DeserializeJob_CanPreviousFormat_WhenTypeNameHandlingOptionIsSetToAll()
         {
             var settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All };
