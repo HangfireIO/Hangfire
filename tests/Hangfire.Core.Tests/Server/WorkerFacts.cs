@@ -110,7 +110,7 @@ namespace Hangfire.Core.Tests.Server
                 .Setup(x => x.ChangeState(It.IsAny<StateChangeContext>()))
                 .Throws<InvalidOperationException>();
 
-            var worker = CreateWorker();
+            var worker = CreateWorker(1);
 
             Assert.Throws<InvalidOperationException>(
                 () => worker.Execute(_context.Object));
@@ -126,7 +126,7 @@ namespace Hangfire.Core.Tests.Server
                 .Setup(x => x.ChangeState(It.Is<StateChangeContext>(y => y.NewState.Name != FailedState.StateName)))
                 .Throws<InvalidOperationException>();
 
-            var worker = CreateWorker();
+            var worker = CreateWorker(1);
 
             worker.Execute(_context.Object);
 
@@ -343,9 +343,9 @@ namespace Hangfire.Core.Tests.Server
                 ctx.NewState is FailedState)));
         }
 
-        private Worker CreateWorker()
+        private Worker CreateWorker(int maxStateChangeAttempts = 10)
         {
-            return new Worker(_queues, _performer.Object, _stateChanger.Object);
+            return new Worker(_queues, _performer.Object, _stateChanger.Object, TimeSpan.FromSeconds(5), maxStateChangeAttempts);
         }
 
         public static void Method() { }

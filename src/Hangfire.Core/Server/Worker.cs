@@ -41,8 +41,8 @@ namespace Hangfire.Server
     /// <seealso cref="EnqueuedState"/>
     public class Worker : IBackgroundProcess
     {
-        private static readonly TimeSpan JobInitializationWaitTimeout = TimeSpan.FromMinutes(1);
-        private static readonly int MaxStateChangeAttempts = 10;
+        private readonly TimeSpan _jobInitializationWaitTimeout;
+        private readonly int _maxStateChangeAttempts;
 
         private readonly ILog _logger = LogProvider.For<Worker>();
 
@@ -62,8 +62,18 @@ namespace Hangfire.Server
 
         public Worker(
             [NotNull] IEnumerable<string> queues,
-            [NotNull] IBackgroundJobPerformer performer, 
+            [NotNull] IBackgroundJobPerformer performer,
             [NotNull] IBackgroundJobStateChanger stateChanger)
+            : this(queues, performer, stateChanger, jobInitializationTimeout: TimeSpan.FromMinutes(1), maxStateChangeAttempts: 10)
+        {
+        }
+
+        internal Worker(
+            [NotNull] IEnumerable<string> queues,
+            [NotNull] IBackgroundJobPerformer performer, 
+            [NotNull] IBackgroundJobStateChanger stateChanger,
+            TimeSpan jobInitializationTimeout,
+            int maxStateChangeAttempts)
         {
             if (queues == null) throw new ArgumentNullException(nameof(queues));
             if (performer == null) throw new ArgumentNullException(nameof(performer));
@@ -72,6 +82,9 @@ namespace Hangfire.Server
             _queues = queues.ToArray();
             _performer = performer;
             _stateChanger = stateChanger;
+
+            _jobInitializationWaitTimeout = jobInitializationTimeout;
+            _maxStateChangeAttempts = maxStateChangeAttempts;
         }
 
         /// <inheritdoc />
@@ -86,7 +99,7 @@ namespace Hangfire.Server
 
                 try
                 {
-                    using (var timeoutCts = new CancellationTokenSource(JobInitializationWaitTimeout))
+                    using (var timeoutCts = new CancellationTokenSource(_jobInitializationWaitTimeout))
                     using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
                         context.StoppingToken,
                         timeoutCts.Token))
@@ -168,7 +181,7 @@ namespace Hangfire.Server
 
             abortToken.ThrowIfCancellationRequested();
 
-            for (var retryAttempt = 0; retryAttempt < MaxStateChangeAttempts; retryAttempt++)
+            for (var retryAttempt = 0; retryAttempt < _maxStateChangeAttempts; retryAttempt++)
             {
                 try
                 {
@@ -183,7 +196,7 @@ namespace Hangfire.Server
                 catch (Exception ex)
                 {
                     _logger.DebugException(
-                        $"State change attempt {retryAttempt + 1} of {MaxStateChangeAttempts} failed due to an error, see inner exception for details", 
+                        $"State change attempt {retryAttempt + 1} of {_maxStateChangeAttempts} failed due to an error, see inner exception for details", 
                         ex);
 
                     exception = ex;
@@ -197,7 +210,7 @@ namespace Hangfire.Server
                 context.Storage,
                 connection,
                 fetchedJob.JobId,
-                new FailedState(exception) { Reason = $"Failed to change state to a '{state.Name}' one due to an exception after {MaxStateChangeAttempts} retry attempts" },
+                new FailedState(exception) { Reason = $"Failed to change state to a '{state.Name}' one due to an exception after {_maxStateChangeAttempts} retry attempts" },
                 expectedStates,
                 initializeToken));
         }
