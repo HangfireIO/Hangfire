@@ -7,7 +7,7 @@ namespace Hangfire.Core.Tests
 {
     public class GloabalConfigurationExtensionsFacts
     {
-        [Fact]
+        [Fact, CleanSerializerSettings]
         public void UseSerializationSettings_AffectSerializationWithUserSettings()
         {
             GlobalConfiguration.Configuration.UseSerializationSettings(new JsonSerializerSettings
