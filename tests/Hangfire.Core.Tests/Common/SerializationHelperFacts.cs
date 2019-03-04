@@ -9,34 +9,34 @@ namespace Hangfire.Core.Tests.Common
 {
     public class SerializationHelperFacts
     {
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Serialize_ReturnsNull_WhenValueIsNull()
         {
             Assert.Null(SerializationHelper.Serialize(null));
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Serialize_ReturnsCorrectResult_WhenValueIsString()
         {
             var result = SerializationHelper.Serialize("Simple string");
             Assert.Equal("\"Simple string\"", result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Serialize_ReturnsCorrectValue_WhenValueIsCustomObject()
         {
             var result = SerializationHelper.Serialize(new ClassA("B"));
             Assert.Equal(@"{""PropertyA"":""B""}", result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Serialize_ReturnsCorrectJson_WhenOptionsIsDefaultWithTypes()
         {
             var result = SerializationHelper.Serialize(new ClassA("B"), SerializationOption.TypedInternal);
             Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.SerializationHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""B""}", result);
         }
 
-        [Fact, CleanSerializerSettings]
+        [DataCompatibilityRangeFact, CleanSerializerSettings]
         public void Serialize_SerializesWithUserSettings_WhenOptionsIsUser()
         {
             SerializationHelper.SetUserSerializerSettings(new JsonSerializerSettings
@@ -48,8 +48,27 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(@"{""propertyA"":""A""}", result);
         }
 
-        [Fact, CleanSerializerSettings]
-        public void Serialize_HandleJsonDefaultSettingsDoesNotAffect_WhenOptionIsDefaultSettings()
+        [DataCompatibilityRangeFact, CleanSerializerSettings]
+        public void Serialize_JsonDefaultSettingsAffectResult_WhenOptionIs_User()
+        {
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.All,
+                NullValueHandling = NullValueHandling.Ignore,
+                DefaultValueHandling = DefaultValueHandling.Ignore,
+                Binder = new CustomSerializerBinder(),
+                DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
+                DateFormatString = "ddMMyyyy"
+            };
+
+            var result = SerializationHelper.Serialize(new ClassB { StringValue = "B", DateTimeValue = new DateTime(1961, 4, 12) }, SerializationOption.User);
+            Assert.Equal(
+                "{\"$type\":\"HANGFIRE.CORE.TESTS.COMMON.SERIALIZATIONHELPERFACTS+CLASSB, someAssembly\",\"StringValue\":\"B\",\"DateTimeValue\":\"12041961\"}",
+                result);
+        }
+
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170), CleanSerializerSettings]
+        public void Serialize_JsonDefaultSettingsDoNotAffectResult_WhenOptionIs_Internal_StartingFromVersion_170()
         {
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             {
@@ -65,12 +84,12 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(@"{""StringValue"":""B"",""NullValue"":null,""DefaultValue"":0,""DateTimeValue"":""1961-04-12T00:00:00""}", result);
         }
 
-        [Fact, CleanSerializerSettings]
-        public void Serialize_HandleJsonDefaultSettingsDoesNotAffect_WhenOptionIsDefaultSettingsWithTypes()
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170), CleanSerializerSettings]
+        public void Serialize_JsonDefaultSettingsDoNotAffectResult_WhenOptionIs_TypedInternal_StartingFromVersion_170()
         {
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             {
-                TypeNameHandling = TypeNameHandling.All,
+                TypeNameHandling = TypeNameHandling.None,
                 NullValueHandling = NullValueHandling.Ignore,
                 DefaultValueHandling = DefaultValueHandling.Ignore,
                 Binder = new CustomSerializerBinder(),
@@ -85,14 +104,14 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.SerializationHelperFacts+ClassB, Hangfire.Core.Tests"",""StringValue"":""B"",""NullValue"":null,""DefaultValue"":0,""DateTimeValue"":""1961-04-12T00:00:00""}", result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_ReturnsNull_WhenValueIsNull()
         {
             var result = SerializationHelper.Deserialize(null, typeof(string));
             Assert.Null(result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_ThrowsException_WhenTypeIsNull()
         {
             // ReSharper disable once AssignNullToNotNullAttribute
@@ -100,14 +119,14 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal("type", exception.ParamName);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_ReturnsCorrectValue_WhenValueIsString()
         {
             var result = SerializationHelper.Deserialize("\"hello\"", typeof(string));
             Assert.Equal("hello", result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_ReturnsCorrectObject_WhenTypeIsCustomClass()
         {
             var valueJson = @"{""PropertyA"":""A""}";
@@ -118,7 +137,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal("A", value.PropertyA);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void Deserialize_ReturnsCorrectObject_WhenOptionsIsDefaultWithTypes()
         {
             var valueJson = @"{""$type"":""Hangfire.Core.Tests.Common.SerializationHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""A""}";
@@ -130,7 +149,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal("A", customObj.PropertyA);
         }
 
-        [Fact, CleanSerializerSettings]
+        [DataCompatibilityRangeFact, CleanSerializerSettings]
         //This test is here to check backward compatibility. Earlier user settings is used for serialization internal data.
         public void Deserialize_HandlesUsingUserOption_WhenUsingDefaultWithTypesOptionThrewException()
         {
@@ -149,28 +168,28 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal("A", classAObj.PropertyA);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void DeserializeGeneric_ReturnsNull_WhenValueIsNull()
         {
             var result = SerializationHelper.Deserialize<object>(null);
             Assert.Null(result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void DeserializeGeneric_ReturnsDefaultValue_WhenGenericArgumentIsValueType()
         {
             var result = SerializationHelper.Deserialize<int>(null);
             Assert.Equal(0, result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void DeserializeGeneric_ReturnsCorrectValue_WhenValueIsString()
         {
             var result = SerializationHelper.Deserialize<string>("\"hello\"");
             Assert.Equal("hello", result);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void DeserializeGeneric_ReturnsCorrectObject_WhenTypeIsCustomClass()
         {
             var valueJson = @"{""PropertyA"":""A""}";
@@ -181,8 +200,8 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal("A", value.PropertyA);
         }
 
-        [Fact]
-        public void DeserializeGeneric_ReturnsCorrectObject_WhenOptionsIsDefatultWithTypes()
+        [DataCompatibilityRangeFact]
+        public void DeserializeGeneric_ReturnsCorrectObject_WhenOptionsIsDefaultWithTypes()
         {
             var valueJson = @"{""PropertyA"":""A""}";
 
@@ -191,7 +210,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal("A", value.PropertyA);
         }
 
-        [Fact, CleanSerializerSettings]
+        [DataCompatibilityRangeFact, CleanSerializerSettings]
         //This test is here to check backward compatibility. Earlier user settings is used for serialization internal data.
         public void DeserializeGeneric_HandlesUsingUserOption_WhenUsingDefaultWithTypesOptionThrewException()
         {
@@ -208,7 +227,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal("A", value.PropertyA);
         }
 
-        [Fact, CleanSerializerSettings]
+        [DataCompatibilityRangeFact, CleanSerializerSettings]
         public void DeserializeGeneric_RethrowsJsonException_WhenValueHasIncorrectFormat()
         {
             var valueJson = "asdfaljsadkfh";
@@ -216,7 +235,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Throws<JsonReaderException>(() => SerializationHelper.Deserialize<ClassA>(valueJson));
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void ApplyDefaultSerializerSettings_SetsDefaultSettings()
         {
             var serializerSettings = SerializationHelper.GetProtectedSettings(TypeNameHandling.None);
@@ -226,7 +245,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.True(serializerSettings.CheckAdditionalContent);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void ApplyDefaultSerializerSettings_SetsDefaultSettings_WhenTypeNameHandlingIsSet()
         {
             var serializerSettings = SerializationHelper.GetProtectedSettings(TypeNameHandling.Objects);
