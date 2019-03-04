@@ -77,6 +77,7 @@ namespace Hangfire.States
         /// <param name="parentId">The identifier of a background job to wait for.</param>
         /// <param name="nextState">The next state for the continuation.</param>
         /// <param name="options">Options to configure a continuation.</param>
+        [JsonConstructor]
         public AwaitingState([NotNull] string parentId, [NotNull] IState nextState, JobContinuationOptions options)
             : this(parentId, nextState, options, DefaultExpiration)
         {
@@ -90,7 +91,6 @@ namespace Hangfire.States
         /// <param name="nextState">The next state for the continuation.</param>
         /// <param name="options">Options to configure the continuation.</param>
         /// <param name="expiration">The expiration time for the continuation.</param>
-        [JsonConstructor]
         public AwaitingState(
             [NotNull] string parentId,
             [NotNull] IState nextState,
@@ -117,7 +117,6 @@ namespace Hangfire.States
         /// Gets the next state, to which a background job will be moved.
         /// </summary>
         [NotNull]
-        [JsonProperty(TypeNameHandling = TypeNameHandling.Objects)]
         public IState NextState { get; }
 
         /// <summary>
@@ -141,7 +140,6 @@ namespace Hangfire.States
         public string Name => StateName;
 
         /// <inheritdoc />
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Reason { get; set; }
 
         /// <inheritdoc />

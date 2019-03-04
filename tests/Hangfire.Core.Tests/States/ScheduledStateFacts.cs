@@ -55,5 +55,18 @@ namespace Hangfire.Core.Tests.States
             var state = new ScheduledState(DateTime.UtcNow);
             Assert.False(state.IgnoreJobLoadException);
         }
+
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
+        public void JsonSerialize_ReturnsEfficientString_AfterVersion170()
+        {
+            var dateTime = DateTime.UtcNow;
+            var state = new ScheduledState(dateTime);
+
+            var serialized = SerializationHelper.Serialize(state, SerializationOption.TypedInternal);
+
+            Assert.Equal(
+                "{\"$type\":\"Hangfire.States.ScheduledState, Hangfire.Core\",\"EnqueueAt\":\"" + dateTime.ToString("O") + "\"}",
+                serialized);
+        }
     }
 }

@@ -107,6 +107,7 @@ namespace Hangfire.States
         /// <exception cref="ArgumentException">
         /// The <paramref name="queue"/> argument is not a valid queue name.
         /// </exception>
+        [JsonConstructor]
         public EnqueuedState([NotNull] string queue)
         {
             ValidateQueueName(nameof(queue), queue);
@@ -141,7 +142,6 @@ namespace Hangfire.States
         /// </exception>
         [NotNull]
         [DefaultValue(DefaultQueue)]
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public string Queue
         {
             get { return _queue; }
@@ -168,7 +168,6 @@ namespace Hangfire.States
         public string Name => StateName;
 
         /// <inheritdoc />
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Reason { get; set; }
 
         /// <inheritdoc />

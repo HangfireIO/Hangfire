@@ -107,7 +107,6 @@ namespace Hangfire.States
         public string Name => StateName;
 
         /// <inheritdoc />
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Reason { get; set; }
 
         /// <inheritdoc />

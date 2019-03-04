@@ -61,6 +61,39 @@ namespace Hangfire.Core.Tests.States
             Assert.NotEqual(default(DateTime), nextState.EnqueuedAt);
         }
 
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
+        public void JsonSerialize_ReturnsEfficientString_AfterVersion170()
+        {
+            var state = new AwaitingState("parent");
+
+            var serialized = SerializationHelper.Serialize(state, SerializationOption.TypedInternal);
+
+            Assert.Equal(
+                "{\"$type\":\"Hangfire.States.AwaitingState, Hangfire.Core\",\"ParentId\":\"parent\",\"NextState\":{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\"}}",
+                serialized);
+        }
+
+        [DataCompatibilityRangeFact]
+        public void JsonDeserialize_CanHandlePreviousFormat()
+        {
+            var json = "{\"$type\":\"Hangfire.States.AwaitingState, Hangfire.Core\",\"ParentId\":\"parent\",\"NextState\":{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\"},\"Options\":1,\"Name\":\"Awaiting\"}";
+            var state = SerializationHelper.Deserialize<AwaitingState>(json, SerializationOption.TypedInternal);
+
+            Assert.Equal("parent", state.ParentId);
+            Assert.Equal("Enqueued", state.NextState.Name);
+        }
+
+        [DataCompatibilityRangeFact]
+        public void JsonDeserialize_CanHandleNewFormat()
+        {
+            var json = "{\"$type\":\"Hangfire.States.AwaitingState, Hangfire.Core\",\"ParentId\":\"parent\",\"NextState\":{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\"}}";
+            var state = SerializationHelper.Deserialize<AwaitingState>(json, SerializationOption.TypedInternal);
+
+            Assert.Equal("parent", state.ParentId);
+            Assert.Equal(null, state.Reason);
+            Assert.Equal("Enqueued", state.NextState.Name);
+        }
+
         private static AwaitingState CreateState()
         {
             return new AwaitingState("1", new EnqueuedState(), JobContinuationOptions.OnlyOnSucceededState, TimeSpan.FromDays(1));

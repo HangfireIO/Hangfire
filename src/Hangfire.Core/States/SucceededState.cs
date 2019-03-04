@@ -68,7 +68,6 @@ namespace Hangfire.States
         /// <summary>
         /// Gets the value returned by a job method.
         /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public object Result { get; }
         
         /// <summary>
@@ -92,7 +91,6 @@ namespace Hangfire.States
         public string Name => StateName;
 
         /// <inheritdoc />
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Reason { get; set; }
 
         /// <inheritdoc />
