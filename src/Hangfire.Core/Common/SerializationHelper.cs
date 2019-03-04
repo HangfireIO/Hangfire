@@ -135,11 +135,12 @@ namespace Hangfire.Common
             if (type == null) throw new ArgumentNullException(nameof(type));
             if (value == null) return null;
 
-            var serializerSettings = GetSerializerSettings(option);
             Exception exception = null;
 
             if (option != SerializationOption.User)
             {
+                var serializerSettings = GetSerializerSettings(option);
+
                 try
                 {
                     // For internal purposes we should ensure that JsonConvert.DefaultSettings don't affect
@@ -163,7 +164,7 @@ namespace Hangfire.Common
 
             try
             {
-                return JsonConvert.DeserializeObject(value, type, serializerSettings);
+                return JsonConvert.DeserializeObject(value, type, GetSerializerSettings(SerializationOption.User));
             }
             catch (Exception) when (exception != null)
             {

@@ -253,21 +253,42 @@ namespace Hangfire.Core.Tests.Common
 
         [DataCompatibilityRangeFact, CleanSerializerSettings]
         //This test is here to check backward compatibility. Earlier user settings is used for serialization internal data.
-        public void Deserialize_HandlesUsingUserOption_WhenUsingTypedInternalOptionThrewException()
+        public void Deserialize_HandlesDeserializationUsingUserOption_WhenUsingInternalOptionThrewException()
         {
             SerializationHelper.SetUserSerializerSettings(new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.All,
+                NullValueHandling = NullValueHandling.Ignore,
+                DefaultValueHandling = DefaultValueHandling.Ignore,
+                Binder = new CustomSerializerBinder(),
+                DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
+                DateFormatString = "ddMMyyyy"
             });
 
-            var valueJson = SerializationHelper.Serialize(new ClassA("A"), SerializationOption.User);
+            var json = "{\"$type\":\"HANGFIRE.CORE.TESTS.COMMON.SERIALIZATIONHELPERFACTS+CLASSB, someAssembly\",\"StringValue\":\"B\",\"DateTimeValue\":\"12041961\"}";
 
-            var value = SerializationHelper.Deserialize(valueJson, typeof(ClassA), SerializationOption.TypedInternal);
+            var value = SerializationHelper.Deserialize(json, typeof(ClassB));
 
-            var classAObj = value as ClassA;
+            var obj = value as ClassB;
 
-            Assert.NotNull(classAObj);
-            Assert.Equal("A", classAObj.PropertyA);
+            Assert.NotNull(obj);
+            Assert.Equal("B", obj.StringValue);
+            Assert.Equal(new DateTime(1961, 04, 12), obj.DateTimeValue);
+        }
+
+        [DataCompatibilityRangeFact, CleanSerializerSettings]
+        //This test is here to check backward compatibility. Earlier user settings is used for serialization internal data.
+        public void Deserialize_RethrowsAnException_WhenUsingInternalOptionThrewException_AndUserSettingsAttemptFailedToo()
+        {
+            SerializationHelper.SetUserSerializerSettings(new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.All,
+                DateFormatString = "ddMMyyyy"
+            });
+
+            var json = "{\"$type\":\"HANGFIRE.CORE.TESTS.COMMON.SERIALIZATIONHELPERFACTS+CLASSB, someAssembly\",\"StringValue\":\"B\",\"DateTimeValue\":\"12041961\"}";
+
+            Assert.Throws<JsonReaderException>(() => SerializationHelper.Deserialize(json, typeof(ClassB)));
         }
 
         [DataCompatibilityRangeFact]
@@ -398,7 +419,8 @@ namespace Hangfire.Core.Tests.Common
 
             public override Type BindToType(string assemblyName, string typeName)
             {
-                return typeof(ClassA);
+                if (typeName.Contains("ClassA")) return typeof(ClassA);
+                return typeof(ClassB);
             }
         }
     }
