@@ -660,6 +660,34 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
 
+        [Fact]
+        public void Execute_AlwaysUpdatesScoreForTheSetItem_EvenIfRecurringJobWasNotChanged()
+        {
+            // Arrange
+            _context.StoppingTokenSource = new CancellationTokenSource();
+            SetupConnection(false);
+
+            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
+                .Returns(RecurringJobId)
+                .Returns((string)null);
+
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddMinutes(-1));
+            _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant);
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddMinutes(1));
+            _recurringJob["V"] = "2";
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>()), Times.Never);
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, JobHelper.ToTimestamp(_nowInstant.AddMinutes(1))));
+            _transaction.Verify(x => x.Commit());
+        }
+
         private void SetupConnection(bool useJobStorageConnection)
         {
             if (useJobStorageConnection) _context.Storage.Setup(x => x.GetConnection()).Returns(_storageConnection.Object);

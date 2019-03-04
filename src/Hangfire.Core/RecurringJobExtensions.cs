@@ -79,7 +79,10 @@ namespace Hangfire
             if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
             if (changedFields == null) throw new ArgumentNullException(nameof(changedFields));
 
-            transaction.SetRangeInHash($"recurring-job:{recurringJobId}", changedFields);
+            if (changedFields.Count > 0)
+            {
+                transaction.SetRangeInHash($"recurring-job:{recurringJobId}", changedFields);
+            }
 
             transaction.AddToSet(
                 "recurring-jobs",

@@ -299,26 +299,29 @@ namespace Hangfire.Server
                         }
                     }
 
-                    if (recurringJob.IsChanged(out var changedFields, out nextExecution))
+                    recurringJob.IsChanged(out var changedFields, out nextExecution);
+
+                    // We always start a transaction, regardless our recurring job was updated or not,
+                    // to prevent from infinite loop, when there's an old processing server (pre-1.7.0)
+                    // in our environment that doesn't know it should modify the score for entries in
+                    // the recurring jobs set.
+                    using (var transaction = connection.CreateWriteTransaction())
                     {
-                        using (var transaction = connection.CreateWriteTransaction())
+                        if (backgroundJob != null)
                         {
-                            if (backgroundJob != null)
-                            {
-                                _stateMachine.EnqueueBackgroundJob(
-                                    context.Storage,
-                                    connection,
-                                    transaction,
-                                    recurringJob,
-                                    backgroundJob,
-                                    "Triggered by recurring job scheduler");
-                            }
-
-                            transaction.UpdateRecurringJob(recurringJobId, changedFields, nextExecution);
-
-                            transaction.Commit();
-                            return true;
+                            _stateMachine.EnqueueBackgroundJob(
+                                context.Storage,
+                                connection,
+                                transaction,
+                                recurringJob,
+                                backgroundJob,
+                                "Triggered by recurring job scheduler");
                         }
+
+                        transaction.UpdateRecurringJob(recurringJobId, changedFields, nextExecution);
+
+                        transaction.Commit();
+                        return true;
                     }
                 }
 #if !NETSTANDARD1_3
