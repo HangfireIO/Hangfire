@@ -658,7 +658,8 @@ namespace Hangfire
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            if (!(client is BackgroundJobClient instance))
+            var instance = client as BackgroundJobClient;
+            if (instance == null)
                 return false;
 
             return instance.ChangeAllState(fromState, toState);
