@@ -206,6 +206,10 @@ namespace Hangfire.Server
                 abortToken.ThrowIfCancellationRequested();
             }
 
+            _logger.ErrorException(
+                $"{_maxStateChangeAttempts} state change attempt(s) failed due to an exception, moving job to the FailedState",
+                exception);
+
             return _stateChanger.ChangeState(new StateChangeContext(
                 context.Storage,
                 connection,
