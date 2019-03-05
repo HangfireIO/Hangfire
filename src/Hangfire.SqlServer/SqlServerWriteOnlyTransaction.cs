@@ -125,7 +125,6 @@ update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @
                 new SqlParameter("@reason", SqlDbType.NVarChar, 100) { Value = (object)state.Reason?.Substring(0, Math.Min(99, state.Reason.Length)) ?? DBNull.Value },
                 new SqlParameter("@createdAt", SqlDbType.DateTime) { Value = DateTime.UtcNow },
                 new SqlParameter("@data", SqlDbType.NVarChar, -1) { Value = (object)SerializationHelper.Serialize(state.SerializeData()) ?? DBNull.Value });
-                //new SqlParameter("@id", SqlDbType.BigInt) { Value = long.Parse(jobId) });
         }
 
         public override void AddJobState(string jobId, IState state)
