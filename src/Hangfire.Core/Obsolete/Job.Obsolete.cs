@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Server;
 using Hangfire.Storage;
@@ -50,8 +46,8 @@ namespace Hangfire.Common
                     instance = Activate(activator);
                 }
 
-                var deserializedArguments = DeserializeArguments(cancellationToken);
-                result = InvokeMethod(instance, deserializedArguments, cancellationToken);
+                var arguments = GetArguments(cancellationToken);
+                result = InvokeMethod(instance, arguments, cancellationToken);
             }
             finally
             {
@@ -84,17 +80,17 @@ namespace Hangfire.Common
         }
 
         [Obsolete("Will be removed in 2.0.0")]
-        private object[] DeserializeArguments(IJobCancellationToken cancellationToken)
+        private object[] GetArguments(IJobCancellationToken cancellationToken)
         {
             try
             {
                 var parameters = Method.GetParameters();
-                var result = new List<object>(Arguments.Length);
+                var result = new List<object>(Args.Count);
 
                 for (var i = 0; i < parameters.Length; i++)
                 {
                     var parameter = parameters[i];
-                    var argument = Arguments[i];
+                    var argument = Args[i];
 
                     object value;
 
@@ -104,38 +100,7 @@ namespace Hangfire.Common
                     }
                     else
                     {
-                        try
-                        {
-                            value = argument != null
-                                ? SerializationHelper.Deserialize(argument, parameter.ParameterType, SerializationOption.User)
-                                : null;
-                        }
-                        catch (Exception)
-                        {
-                            if (parameter.ParameterType == typeof(object))
-                            {
-                                // Special case for handling object types, because string can not
-                                // be converted to object type.
-                                value = argument;
-                            }
-                            else
-                            {
-#if !NETSTANDARD1_3
-                                var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
-                                value = converter.ConvertFromInvariantString(argument);
-#else
-                                DateTime dateTime;
-                                if (parameter.ParameterType == typeof(DateTime) && InvocationData.ParseDateTimeArgument(argument, out dateTime))
-                                {
-                                    value = dateTime;
-                                }
-                                else
-                                {
-                                    throw;
-                                }
-#endif
-                            }
-                        }
+                        value = argument;
                     }
 
                     result.Add(value);
