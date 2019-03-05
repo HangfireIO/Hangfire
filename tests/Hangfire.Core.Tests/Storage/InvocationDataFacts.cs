@@ -67,7 +67,7 @@ namespace Hangfire.Core.Tests.Storage
         {
             var serializedData = new InvocationData(
                 "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests",
-                "Method",
+                "Empty",
                 null,
                 null);
 
@@ -81,7 +81,7 @@ namespace Hangfire.Core.Tests.Storage
         {
             var serializedData = new InvocationData(
                 "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-                "Method",
+                "Empty",
                 null,
                 null);
 
@@ -99,7 +99,7 @@ namespace Hangfire.Core.Tests.Storage
 
                 var serializedData = new InvocationData(
                     "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests, Version=9.9.9.9, Culture=neutral, PublicKeyToken=null",
-                    "Method",
+                    "Empty",
                     null,
                     null);
 
@@ -122,7 +122,7 @@ namespace Hangfire.Core.Tests.Storage
 
                 var serializedData = new InvocationData(
                     "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests, Version=9.9.9.9, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-                    "Method",
+                    "Empty",
                     null,
                     null);
 
@@ -212,6 +212,35 @@ namespace Hangfire.Core.Tests.Storage
                 () => serializedData.Deserialize());
         }
 
+        [DataCompatibilityRangeFact]
+        public void Serialize_CorrectlySerializesTheData()
+        {
+            var job = Job.FromExpression(() => Sample("Hello"));
+
+            var invocationData = InvocationData.Serialize(job);
+
+            Assert.Equal(typeof(InvocationDataFacts).AssemblyQualifiedName, invocationData.Type);
+            Assert.Equal("Sample", invocationData.Method);
+            Assert.Equal(JobHelper.ToJson(new[] { typeof(string) }), invocationData.ParameterTypes);
+            Assert.Equal(JobHelper.ToJson(new[] { "\"Hello\"" }), invocationData.Arguments);
+        }
+
+        [DataCompatibilityRangeFact]
+        public void Serialize_CorrectlyHandles_ParameterTypes_InPossibleOldFormat()
+        {
+            var invocationData = new InvocationData(
+                "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests",
+                "ComplicatedMethod",
+                "{\"$type\":\"System.Type[], mscorlib\",\"$values\":[\"System.Collections.Generic.IList`1[[System.String, mscorlib]], mscorlib\",\"Hangfire.Core.Tests.Storage.InvocationDataFacts+SomeClass, Hangfire.Core.Tests\"]}",
+                "[null, null]");
+
+            var serialized = invocationData.SerializePayload();
+            var job = InvocationData.DeserializePayload(serialized).Deserialize();
+
+            Assert.Equal(typeof(InvocationDataFacts), job.Type);
+            Assert.Equal(typeof(InvocationDataFacts).GetMethod("ComplicatedMethod"), job.Method);
+        }
+
         [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_Pre_170)]
         public void SerializePayload_CorrectlySerializesInvocationDataToString_WithOldFormat_InVersion_Pre_170()
         {
@@ -249,14 +278,14 @@ namespace Hangfire.Core.Tests.Storage
         {
             var invocationData = new InvocationData(
                 "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests",
-                "Method",
+                "Empty",
                 "[]",
                 "[]");
 
             var payload = invocationData.SerializePayload();
 
             Assert.Equal(
-                "{\"Type\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"Method\":\"Method\",\"ParameterTypes\":\"[]\",\"Arguments\":\"[]\"}",
+                "{\"Type\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"Method\":\"Empty\",\"ParameterTypes\":\"[]\",\"Arguments\":\"[]\"}",
                 payload);
         }
 
@@ -297,14 +326,14 @@ namespace Hangfire.Core.Tests.Storage
         {
             var invocationData = new InvocationData(
                 "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests",
-                "Method",
+                "Empty",
                 "[]",
                 "[]");
 
             var payload = invocationData.SerializePayload();
 
             Assert.Equal(
-                "{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"Method\"}",
+                "{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"Empty\"}",
                 payload);
         }
 
@@ -342,14 +371,14 @@ namespace Hangfire.Core.Tests.Storage
         [DataCompatibilityRangeFact]
         public void Deserialize_DeserializesCorrectlyShortFormatStringToInvocationData()
         {
-            var invocationData = "{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"Method\"}";
+            var invocationData = "{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"Empty\"}";
 
             var serializedData = InvocationData.DeserializePayload(invocationData);
 
             var job = serializedData.Deserialize();
 
             Assert.False(job.Type.GetTypeInfo().ContainsGenericParameters);
-            Assert.Equal("Method", job.Method.Name);
+            Assert.Equal("Empty", job.Method.Name);
             Assert.Equal(0, job.Method.GetParameters().Length);
             Assert.Equal(0, job.Args.Count);
         }
@@ -416,35 +445,6 @@ namespace Hangfire.Core.Tests.Storage
 
             var exception = Assert.Throws<JobLoadException>(() => serializedData.Deserialize());
             Assert.IsType<JsonReaderException>(exception.InnerException);
-        }
-
-        [DataCompatibilityRangeFact]
-        public void Serialize_CorrectlySerializesTheData()
-        {
-            var job = Job.FromExpression(() => Sample("Hello"));
-
-            var invocationData = InvocationData.Serialize(job);
-
-            Assert.Equal(typeof(InvocationDataFacts).AssemblyQualifiedName, invocationData.Type);
-            Assert.Equal("Sample", invocationData.Method);
-            Assert.Equal(JobHelper.ToJson(new[] { typeof(string) }), invocationData.ParameterTypes);
-            Assert.Equal(JobHelper.ToJson(new[] { "\"Hello\"" }), invocationData.Arguments);
-        }
-
-        [DataCompatibilityRangeFact]
-        public void Serialize_CorrectlyHandles_ParameterTypes_InPossibleOldFormat()
-        {
-            var invocationData = new InvocationData(
-                "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests",
-                "ComplicatedMethod",
-                "{\"$type\":\"System.Type[], mscorlib\",\"$values\":[\"System.Collections.Generic.IList`1[[System.String, mscorlib]], mscorlib\",\"Hangfire.Core.Tests.Storage.InvocationDataFacts+SomeClass, Hangfire.Core.Tests\"]}",
-                "[null, null]");
-
-            var serialized = invocationData.SerializePayload();
-            var job = InvocationData.DeserializePayload(serialized).Deserialize();
-
-            Assert.Equal(typeof(InvocationDataFacts), job.Type);
-            Assert.Equal(typeof(InvocationDataFacts).GetMethod("ComplicatedMethod"), job.Method);
         }
 
         [DataCompatibilityRangeTheory]
@@ -759,7 +759,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal("Hello ", job.Args[0]);
         }
 
-        public static void Method()
+        public static void Empty()
         {
         }
 
@@ -787,23 +787,6 @@ namespace Hangfire.Core.Tests.Storage
         {
         }
 
-        public static void ComplicatedMethod(IList<string> arg, SomeClass objArg)
-        {
-        }
-
-        public class SomeClass
-        {
-            public string StringValue { get; set; }
-            public object NullObject { get; set; }
-            public int DefaultValue { get; set; }
-        }
-
-        public class NestedType
-        {
-            public void Method() { }
-            public void NestedGenericMethod<T>(T arg1) { }
-        }
-
         public class GenericType<T1>
         {
             public void Method()
@@ -822,6 +805,23 @@ namespace Hangfire.Core.Tests.Storage
             }
         }
 
+        public static void ComplicatedMethod(IList<string> arg, SomeClass objArg)
+        {
+        }
+
+        public class SomeClass
+        {
+            public string StringValue { get; set; }
+            public object NullObject { get; set; }
+            public int DefaultValue { get; set; }
+        }
+
+        public class NestedType
+        {
+            public void Method() { }
+            public void NestedGenericMethod<T>(T arg1) { }
+        }
+
         public interface IParent
         {
             void Method();
@@ -830,7 +830,6 @@ namespace Hangfire.Core.Tests.Storage
         public interface IChild : IParent
         {
         }
-
     }
 
 }
