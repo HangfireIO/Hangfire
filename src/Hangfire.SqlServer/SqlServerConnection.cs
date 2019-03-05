@@ -94,15 +94,18 @@ namespace Hangfire.SqlServer
             var queryString =
 $@"insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt)
 output inserted.Id
-values (@invocationData, N'', @createdAt, @expireAt)";
+values (@invocationData, @arguments, @createdAt, @expireAt)";
 
-            var invocationData = InvocationData.SerializeJob(job).SerializePayload();
-            var parametersArray = parameters.ToArray();
+            var invocationData = InvocationData.SerializeJob(job);
+            var payload = invocationData.SerializePayload(excludeArguments: true);
 
             var queryParameters = new DynamicParameters();
-            queryParameters.Add("@invocationData", invocationData, DbType.String, size: -1);
+            queryParameters.Add("@invocationData", payload, DbType.String, size: -1);
+            queryParameters.Add("@arguments", invocationData.Arguments, DbType.String, size: -1);
             queryParameters.Add("@createdAt", createdAt, DbType.DateTime);
             queryParameters.Add("@expireAt", createdAt.Add(expireIn), DbType.DateTime);
+
+            var parametersArray = parameters.ToArray();
 
             if (parametersArray.Length <= 2)
             {
@@ -111,7 +114,7 @@ values (@invocationData, N'', @createdAt, @expireAt)";
                     queryString = $@"
 set xact_abort on; set nocount on; declare @jobId bigint;
 begin tran;
-insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) values (@invocationData, N'', @createdAt, @expireAt);
+insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) values (@invocationData, @arguments, @createdAt, @expireAt);
 select @jobId = scope_identity(); select @jobId;
 insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value);
 commit tran;";
@@ -123,7 +126,7 @@ commit tran;";
                     queryString = $@"
 set xact_abort on; set nocount on; declare @jobId bigint;
 begin tran;
-insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) values (@invocationData, N'', @createdAt, @expireAt);
+insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) values (@invocationData, @arguments, @createdAt, @expireAt);
 select @jobId = scope_identity(); select @jobId;
 insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name1, @value1), (@jobId, @name2, @value2);
 commit tran;";

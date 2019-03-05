@@ -142,12 +142,12 @@ namespace Hangfire.Storage
             return SerializationHelper.Deserialize<InvocationData>(payload);
         }
 
-        public string SerializePayload()
+        public string SerializePayload(bool excludeArguments = false)
         {
             if (GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_170))
             {
                 var parameterTypes = DeserializeParameterTypesArray();
-                var arguments = SerializationHelper.Deserialize<string[]>(Arguments);
+                var arguments = excludeArguments ? null : SerializationHelper.Deserialize<string[]>(Arguments);
 
                 return SerializationHelper.Serialize(new JobPayload
                 {
@@ -158,7 +158,9 @@ namespace Hangfire.Storage
                 });
             }
 
-            return SerializationHelper.Serialize(this);
+            return SerializationHelper.Serialize(excludeArguments
+                ? new InvocationData(Type, Method, ParameterTypes, null)
+                : this);
         }
 
         private string[] DeserializeParameterTypesArray()

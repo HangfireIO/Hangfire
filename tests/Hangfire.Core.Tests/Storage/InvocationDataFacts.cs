@@ -229,6 +229,22 @@ namespace Hangfire.Core.Tests.Storage
         }
 
         [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_Pre_170)]
+        public void SerializePayload_DoesNotIncludeArgumentsWhenStatedSo_WithOldFormat_InVersion_Pre_170()
+        {
+            var invocationData = new InvocationData(
+                "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests",
+                "Sample",
+                "[\"System.String\"]",
+                "[\"\\\"Hello\\\"\"]");
+
+            var payload = invocationData.SerializePayload(excludeArguments: true);
+
+            Assert.Equal(
+                "{\"Type\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"Method\":\"Sample\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":null}",
+                payload);
+        }
+
+        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_Pre_170)]
         public void SerializePayload_SerializesInvocationDataToString_WithoutNullifyingEmptyEntries_InVersion_Pre_170()
         {
             var invocationData = new InvocationData(
@@ -257,6 +273,22 @@ namespace Hangfire.Core.Tests.Storage
 
             Assert.Equal(
                 "{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"Sample\",\"p\":[\"System.String\"],\"a\":[\"\\\"Hello\\\"\"]}",
+                payload);
+        }
+
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
+        public void SerializePayload_DoesNotIncludeArgumentsWhenStatedSo_WithNewFormat_InVersion_170()
+        {
+            var invocationData = new InvocationData(
+                "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests",
+                "Sample",
+                "[\"System.String\"]",
+                "[\"\\\"Hello\\\"\"]");
+
+            var payload = invocationData.SerializePayload(excludeArguments: true);
+
+            Assert.Equal(
+                "{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"Sample\",\"p\":[\"System.String\"]}",
                 payload);
         }
 
