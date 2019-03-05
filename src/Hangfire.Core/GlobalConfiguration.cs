@@ -15,6 +15,11 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 // ReSharper disable InconsistentNaming
+
+using System;
+using System.ComponentModel;
+using Hangfire.Annotations;
+
 namespace Hangfire
 {
     public enum CompatibilityLevel
@@ -27,15 +32,35 @@ namespace Hangfire
     {
         public static IGlobalConfiguration Configuration { get; } = new GlobalConfiguration();
 
-        public static CompatibilityLevel CompatibilityLevel = CompatibilityLevel.Version_Pre_170;
+        internal CompatibilityLevel CompatibilityLevel = CompatibilityLevel.Version_Pre_170;
 
-        public static bool HasCompatibilityLevel(CompatibilityLevel level)
+        internal static bool HasCompatibilityLevel(CompatibilityLevel level)
         {
-            return CompatibilityLevel >= level;
+            return ((GlobalConfiguration)Configuration).CompatibilityLevel >= level;
         }
 
         internal GlobalConfiguration()
         {
+        }
+    }
+
+    public static class CompatibilityLevelGlobalConfigurationExtensions
+    {
+        public static IGlobalConfiguration SetDataCompatibilityLevel(
+            [NotNull] this IGlobalConfiguration configuration,
+            CompatibilityLevel compatibilityLevel)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+#if !NETSTANDARD1_3
+            if (!Enum.IsDefined(typeof(CompatibilityLevel), compatibilityLevel))
+                throw new InvalidEnumArgumentException(nameof(compatibilityLevel), (int) compatibilityLevel,
+                    typeof(CompatibilityLevel));
+#endif
+
+            ((GlobalConfiguration) configuration).CompatibilityLevel = compatibilityLevel;
+
+            return configuration;
         }
     }
 }
