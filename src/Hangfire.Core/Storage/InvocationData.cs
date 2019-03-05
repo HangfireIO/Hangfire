@@ -195,7 +195,8 @@ namespace Hangfire.Storage
 
                 if (argument != null)
                 {
-                    if (argument is DateTime dateTime)
+                    if (!GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_170) &&
+                        argument is DateTime dateTime)
                     {
                         value = dateTime.ToString("o", CultureInfo.InvariantCulture);
                     }

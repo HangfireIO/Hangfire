@@ -242,6 +242,30 @@ namespace Hangfire.Core.Tests.Storage
         }
 
         [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_Pre_170)]
+        public void Serialize_SerializesDateTimeUsingCustomFormatter_BeforeVersion170()
+        {
+            var dateTimeString = "2019-03-05T13:20:04.5932150Z";
+            var dateTime = DateTime.Parse(dateTimeString, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+            var dateTimeData = InvocationData.SerializeJob(Job.FromExpression(() => DateTimeMethod(dateTime)));
+            var nullableData = InvocationData.SerializeJob(Job.FromExpression(() => NullableDateTimeMethod(dateTime)));
+
+            Assert.Equal($"[\"{dateTimeString}\"]", dateTimeData.Arguments);
+            Assert.Equal($"[\"{dateTimeString}\"]", nullableData.Arguments);
+        }
+
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
+        public void Serialize_SerializesDateTimeUsingRegularJsonFormatter_AfterVersion170()
+        {
+            var dateTimeString = "\"2019-03-05T13:20:04.5932150Z\"";
+            var dateTime = SerializationHelper.Deserialize<DateTime>(dateTimeString, SerializationOption.User);
+            var dateTimeData = InvocationData.SerializeJob(Job.FromExpression(() => DateTimeMethod(dateTime)));
+            var nullableData = InvocationData.SerializeJob(Job.FromExpression(() => NullableDateTimeMethod(dateTime)));
+
+            Assert.Equal($"[\"\\\"2019-03-05T13:20:04.593215Z\\\"\"]", dateTimeData.Arguments);
+            Assert.Equal($"[\"\\\"2019-03-05T13:20:04.593215Z\\\"\"]", nullableData.Arguments);
+        }
+
+        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_Pre_170)]
         public void SerializePayload_CorrectlySerializesInvocationDataToString_WithOldFormat_InVersion_Pre_170()
         {
             var invocationData = new InvocationData(
@@ -704,6 +728,28 @@ namespace Hangfire.Core.Tests.Storage
             var job = serializedData.Deserialize();
 
             Assert.Equal(value, job.Args[0]);
+        }
+
+        [DataCompatibilityRangeFact]
+        public void Deserialize_CorrectlyDeserializes_DateTimesInRegularJsonFormat()
+        {
+            var dateTimeString = "\"2019-03-05T13:20:04.5932150Z\"";
+            var dateTime = SerializationHelper.Deserialize<DateTime>(dateTimeString, SerializationOption.User);
+
+            var dateTimeJob = new InvocationData(
+                GetType().AssemblyQualifiedName,
+                "DateTimeMethod",
+                JobHelper.ToJson(new [] { typeof(DateTime) }),
+                "[\"\\\"2019-03-05T13:20:04.593215Z\\\"\"]").DeserializeJob();
+
+            var nullableJob = new InvocationData(
+                GetType().AssemblyQualifiedName,
+                "NullableDateTimeMethod",
+                JobHelper.ToJson(new[] { typeof(DateTime?) }),
+                "[\"\\\"2019-03-05T13:20:04.593215Z\\\"\"]").DeserializeJob();
+
+            Assert.Equal(dateTime, dateTimeJob.Args[0]);
+            Assert.Equal(dateTime, nullableJob.Args[0]);
         }
 
         [DataCompatibilityRangeFact, CleanSerializerSettings]
