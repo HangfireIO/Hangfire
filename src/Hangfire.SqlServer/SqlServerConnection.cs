@@ -333,9 +333,12 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             {
                 using (var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
                 {
-                    commandBatch.Append(
-                        "SET XACT_ABORT ON;exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive', @LockOwner=N'Transaction', @LockTimeout=-1;",
-                        new SqlParameter("@resource", lockResourceKey));
+                    if (!_storage.Options.DisableGlobalLocks)
+                    {
+                        commandBatch.Append(
+                            "SET XACT_ABORT ON;exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive', @LockOwner=N'Transaction', @LockTimeout=-1;",
+                            new SqlParameter("@resource", lockResourceKey));
+                    }
 
                     foreach (var keyValuePair in keyValuePairs)
                     {
@@ -345,9 +348,12 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
                             new SqlParameter("@value", (object) keyValuePair.Value ?? DBNull.Value));
                     }
 
-                    commandBatch.Append(
-                        "exec sp_releaseapplock @Resource=@resource, @LockOwner=N'Transaction';",
-                        new SqlParameter("@resource", lockResourceKey));
+                    if (!_storage.Options.DisableGlobalLocks)
+                    {
+                        commandBatch.Append(
+                            "exec sp_releaseapplock @Resource=@resource, @LockOwner=N'Transaction';",
+                            new SqlParameter("@resource", lockResourceKey));
+                    }
 
                     commandBatch.Connection = connection;
                     commandBatch.Transaction = transaction;

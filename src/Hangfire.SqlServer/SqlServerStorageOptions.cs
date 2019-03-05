@@ -43,6 +43,7 @@ namespace Hangfire.SqlServer
             DashboardJobListLimit = 10000;
             _schemaName = Constants.DefaultSchema;
             TransactionTimeout = TimeSpan.FromMinutes(5);
+            DisableGlobalLocks = false;
         }
 
         public IsolationLevel? TransactionIsolationLevel { get; set; }
@@ -104,5 +105,6 @@ namespace Hangfire.SqlServer
         }
 
         public Func<IDisposable> ImpersonationFunc { get; set; }
+        public bool DisableGlobalLocks { get; set; }
     }
 }

@@ -47,6 +47,8 @@ namespace Hangfire.SqlServer
         private readonly SortedDictionary<string, List<Tuple<string, SqlParameter[]>>> _setCommands = new SortedDictionary<string, List<Tuple<string, SqlParameter[]>>>();
         private readonly SortedDictionary<string, List<Tuple<string, SqlParameter[]>>> _queueCommands = new SortedDictionary<string, List<Tuple<string, SqlParameter[]>>>();
 
+        private readonly SortedSet<string> _lockedResources = new SortedSet<string>();
+
         public SqlServerWriteOnlyTransaction([NotNull] SqlServerStorage storage, Func<DbConnection> dedicatedConnectionFunc)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -62,6 +64,16 @@ namespace Hangfire.SqlServer
                 using (var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
                 {
                     commandBatch.Append("set xact_abort on;set nocount on;");
+
+                    if (!_storage.Options.DisableGlobalLocks)
+                    {
+                        foreach (var lockedResource in _lockedResources)
+                        {
+                            commandBatch.Append(
+                                "exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'",
+                                new SqlParameter("@resource", lockedResource));
+                        }
+                    }
 
                     AppendBatch(_jobCommands, commandBatch);
                     AppendBatch(_counterCommands, commandBatch);
@@ -228,6 +240,7 @@ on Target.[Key] = Source.[Key] and Target.Value = Source.Value
 when matched then update set Score = Source.Score
 when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.Value, Source.Score);";
 
+            AcquireSetLock();
             AddCommand(
                 _setCommands,
                 key,
@@ -241,6 +254,7 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
         {
             string query = $@"delete from [{_storage.SchemaName}].[Set] where [Key] = @key and Value = @value";
 
+            AcquireSetLock();
             AddCommand(
                 _setCommands,
                 key,
@@ -251,6 +265,7 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
 
         public override void InsertToList(string key, string value)
         {
+            AcquireListLock();
             AddCommand(
                 _listCommands,
                 key,
@@ -264,6 +279,7 @@ insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
 
         public override void RemoveFromList(string key, string value)
         {
+            AcquireListLock();
             AddCommand(
                 _listCommands,
                 key,
@@ -280,6 +296,8 @@ $@";with cte as (
     from [{_storage.SchemaName}].List with (xlock)
     where [Key] = @key)
 delete from cte where row_num not between @start and @end";
+
+            AcquireListLock();
 
             AddCommand(
                 _listCommands,
@@ -302,6 +320,8 @@ on Target.[Key] = Source.[Key] and Target.Field = Source.Field
 when matched then update set Value = Source.Value
 when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
 
+            AcquireHashLock();
+
             foreach (var pair in keyValuePairs)
             {
                 AddCommand(
@@ -320,6 +340,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
 
             string query = $@"delete from [{_storage.SchemaName}].Hash where [Key] = @key";
 
+            AcquireHashLock();
             AddCommand(_hashCommands, key, query, new SqlParameter("@key", SqlDbType.NVarChar, 100) { Value = key });
         }
 
@@ -332,6 +353,8 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             string query =
 $@"insert into [{_storage.SchemaName}].[Set] ([Key], Value, Score)
 values (@key, @value, 0.0)";
+
+            AcquireSetLock();
 
             foreach (var item in items)
             {
@@ -346,6 +369,8 @@ values (@key, @value, 0.0)";
             if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"delete from [{_storage.SchemaName}].[Set] where [Key] = @key";
+
+            AcquireSetLock();
             AddCommand(_setCommands, key, query, new SqlParameter("@key", SqlDbType.NVarChar, 100) { Value = key });
         }
 
@@ -356,6 +381,7 @@ values (@key, @value, 0.0)";
              string query = $@"
 update [{_storage.SchemaName}].[Hash] set ExpireAt = @expireAt where [Key] = @key";
 
+            AcquireHashLock();
             AddCommand(_hashCommands, key, query,
                 new SqlParameter("@key", SqlDbType.NVarChar, 100) { Value = key },
                 new SqlParameter("@expireAt", SqlDbType.DateTime) { Value = DateTime.UtcNow.Add(expireIn) });
@@ -368,6 +394,7 @@ update [{_storage.SchemaName}].[Hash] set ExpireAt = @expireAt where [Key] = @ke
             string query = $@"
 update [{_storage.SchemaName}].[Set] set ExpireAt = @expireAt where [Key] = @key";
 
+            AcquireSetLock();
             AddCommand(_setCommands, key, query,
                 new SqlParameter("@key", SqlDbType.NVarChar, 100) { Value = key },
                 new SqlParameter("@expireAt", SqlDbType.DateTime) { Value = DateTime.UtcNow.Add(expireIn) });
@@ -380,6 +407,7 @@ update [{_storage.SchemaName}].[Set] set ExpireAt = @expireAt where [Key] = @key
             string query = $@"
 update [{_storage.SchemaName}].[List] set ExpireAt = @expireAt where [Key] = @key";
 
+            AcquireListLock();
             AddCommand(_listCommands, key, query,
                 new SqlParameter("@key", SqlDbType.NVarChar, 100) { Value = key },
                 new SqlParameter("@expireAt", SqlDbType.DateTime) { Value = DateTime.UtcNow.Add(expireIn) });
@@ -392,6 +420,7 @@ update [{_storage.SchemaName}].[List] set ExpireAt = @expireAt where [Key] = @ke
             string query = $@"
 update [{_storage.SchemaName}].Hash set ExpireAt = null where [Key] = @key";
 
+            AcquireHashLock();
             AddCommand(_hashCommands, key, query, new SqlParameter("@key", SqlDbType.NVarChar, 100) { Value = key });
         }
 
@@ -402,6 +431,7 @@ update [{_storage.SchemaName}].Hash set ExpireAt = null where [Key] = @key";
             string query = $@"
 update [{_storage.SchemaName}].[Set] set ExpireAt = null where [Key] = @key";
 
+            AcquireSetLock();
             AddCommand(_setCommands, key, query, new SqlParameter("@key", SqlDbType.NVarChar, 100) { Value = key });
         }
 
@@ -412,6 +442,7 @@ update [{_storage.SchemaName}].[Set] set ExpireAt = null where [Key] = @key";
             string query = $@"
 update [{_storage.SchemaName}].[List] set ExpireAt = null where [Key] = @key";
 
+            AcquireListLock();
             AddCommand(_listCommands, key, query, new SqlParameter("@key", SqlDbType.NVarChar, 100) { Value = key });
         }
 
@@ -443,6 +474,26 @@ update [{_storage.SchemaName}].[List] set ExpireAt = null where [Key] = @key";
             }
 
             commands.Add(Tuple.Create(commandText, parameters));
+        }
+
+        private void AcquireListLock()
+        {
+            AcquireLock("List");
+        }
+
+        private void AcquireSetLock()
+        {
+            AcquireLock("Set");
+        }
+
+        private void AcquireHashLock()
+        {
+            AcquireLock("Hash");
+        }
+
+        private void AcquireLock(string resource)
+        {
+            _lockedResources.Add($"{_storage.SchemaName}:{resource}:Lock");
         }
     }
 }
