@@ -286,7 +286,7 @@ namespace Hangfire.Storage
                     // be converted to object type.
                     value = argument;
                 }
-                else if (ParseDateTimeArgument(argument, out var dateTime))
+                else if ((type == typeof(DateTime) || type == typeof(DateTime?)) && ParseDateTimeArgument(argument, out var dateTime))
                 {
                     value = dateTime;
                 }
