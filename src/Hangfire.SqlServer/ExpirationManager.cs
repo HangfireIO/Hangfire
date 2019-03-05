@@ -126,9 +126,12 @@ It will be retried in {_checkInterval.TotalSeconds} seconds.",
         private static string GetExpireQuery(string schemaName, string table)
         {
             return $@"
+set deadlock_priority low;
 set transaction isolation level read committed;
+set lock_timeout 1000;
 delete top (@count) from [{schemaName}].[{table}]
-where ExpireAt < @now";
+where ExpireAt < @now
+option (loop join, optimize for (@count = 20000));";
         }
 
         private static int ExecuteNonQuery(
