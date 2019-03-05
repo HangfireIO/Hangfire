@@ -94,12 +94,13 @@ namespace Hangfire.Dashboard
             for (var i = 0; i < parameters.Length; i++)
             {
                 var parameter = parameters[i];
-
 #pragma warning disable 618
-                if (i < job.Arguments.Length)
-                {
-                    var argument = job.Arguments[i];
+                var arguments = job.Arguments;
 #pragma warning restore 618
+
+                if (i < arguments.Length)
+                {
+                    var argument = arguments[i];
 
                     if (argument != null && argument.Length > MaxArgumentToRenderSize)
                     {
