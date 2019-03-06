@@ -31,9 +31,9 @@ namespace Hangfire.SqlServer
 
         public SqlServerStorageOptions()
         {
-            TransactionIsolationLevel = IsolationLevel.ReadCommitted;
+            TransactionIsolationLevel = null;
             QueuePollInterval = TimeSpan.FromSeconds(15);
-            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5);
+            SlidingInvisibilityTimeout = null;
 #pragma warning disable 618
             InvisibilityTimeout = TimeSpan.FromMinutes(30);
 #pragma warning restore 618
@@ -42,7 +42,7 @@ namespace Hangfire.SqlServer
             PrepareSchemaIfNecessary = true;
             DashboardJobListLimit = 10000;
             _schemaName = Constants.DefaultSchema;
-            TransactionTimeout = TimeSpan.FromMinutes(5);
+            TransactionTimeout = TimeSpan.FromMinutes(1);
             DisableGlobalLocks = false;
         }
 
