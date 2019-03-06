@@ -395,18 +395,10 @@ namespace Hangfire.Core.Tests.Common
         {
             var serializerSettings = SerializationHelper.GetInternalSettings();
 
-            Assert.Equal(TypeNameHandling.None, serializerSettings.TypeNameHandling);
+            Assert.Equal(TypeNameHandling.Auto, serializerSettings.TypeNameHandling);
             Assert.Equal(TypeNameAssemblyFormatHandling.Simple, serializerSettings.TypeNameAssemblyFormatHandling);
-            Assert.True(serializerSettings.CheckAdditionalContent);
-        }
-
-        [DataCompatibilityRangeFact]
-        public void GetProtectedSettings_SetsDefaultSettings_WhenTypeNameHandlingIsSet()
-        {
-            var serializerSettings = SerializationHelper.GetInternalSettings(TypeNameHandling.Objects);
-
-            Assert.Equal(TypeNameHandling.Objects, serializerSettings.TypeNameHandling);
-            Assert.Equal(TypeNameAssemblyFormatHandling.Simple, serializerSettings.TypeNameAssemblyFormatHandling);
+            Assert.Equal(DefaultValueHandling.IgnoreAndPopulate, serializerSettings.DefaultValueHandling);
+            Assert.Equal(NullValueHandling.Ignore, serializerSettings.NullValueHandling);
             Assert.True(serializerSettings.CheckAdditionalContent);
         }
 
