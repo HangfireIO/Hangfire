@@ -63,7 +63,7 @@ namespace Hangfire.Common
         /// Serializes data with <see cref="SerializationOption.Internal"/> option.
         /// Use this method to serialize internal data. Using isolated settings that can't be changed from user code.
         /// </summary>
-        public static string Serialize([CanBeNull] object value)
+        public static string Serialize<T>([CanBeNull] T value)
         {
             return Serialize(value, SerializationOption.Internal);
         }
@@ -75,7 +75,19 @@ namespace Hangfire.Common
         /// Use <see cref="SerializationOption.User"/> option to serialize user data like arguments and parameters,
         /// configurable via <see cref="SetUserSerializerSettings"/>.
         /// </summary>
-        public static string Serialize([CanBeNull] object value, SerializationOption option)
+        public static string Serialize<T>([CanBeNull] T value, SerializationOption option)
+        {
+            return Serialize(value, typeof(T), option);
+        }
+
+        /// <summary>
+        /// Serializes data with specified option. 
+        /// Use <see cref="SerializationOption.Internal"/> option to serialize internal data.
+        /// Use <see cref="SerializationOption.TypedInternal"/> option if you need to store type information.
+        /// Use <see cref="SerializationOption.User"/> option to serialize user data like arguments and parameters,
+        /// configurable via <see cref="SetUserSerializerSettings"/>.
+        /// </summary>
+        public static string Serialize([CanBeNull] object value, [CanBeNull] Type type, SerializationOption option)
         {
             if (value == null) return null;
 
@@ -85,7 +97,8 @@ namespace Hangfire.Common
 
                 if (option == SerializationOption.User)
                 {
-                    return JsonConvert.SerializeObject(value, serializerSettings);
+                    var formatting = serializerSettings?.Formatting ?? Formatting.None;
+                    return JsonConvert.SerializeObject(value, type, formatting, serializerSettings);
                 }
 
                 // For internal purposes we should ensure that JsonConvert.DefaultSettings don't affect
@@ -94,7 +107,7 @@ namespace Hangfire.Common
                 using (var jsonWriter = new JsonTextWriter(stringWriter))
                 {
                     var serializer = JsonSerializer.Create(serializerSettings);
-                    serializer.Serialize(jsonWriter, value);
+                    serializer.Serialize(jsonWriter, value, type);
 
                     return stringWriter.ToString();
                 }
@@ -110,7 +123,8 @@ namespace Hangfire.Common
 
                 // JsonConvert is used here, because previously global default settings affected
                 // the serialization process.
-                return JsonConvert.SerializeObject(value, serializerSettings);
+                var formatting = serializerSettings?.Formatting ?? Formatting.None;
+                return JsonConvert.SerializeObject(value, type, formatting, serializerSettings);
             }
         }
 

@@ -12,7 +12,7 @@ namespace Hangfire.Core.Tests.Common
         [DataCompatibilityRangeFact]
         public void Serialize_ReturnsNull_WhenValueIsNull()
         {
-            Assert.Null(SerializationHelper.Serialize(null));
+            Assert.Null(SerializationHelper.Serialize((string)null));
         }
 
         [DataCompatibilityRangeFact]
@@ -204,6 +204,38 @@ namespace Hangfire.Core.Tests.Common
                 SerializationOption.TypedInternal);
 
             Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.SerializationHelperFacts+ClassB, Hangfire.Core.Tests"",""StringValue"":""B"",""DateTimeValue"":""1961-04-12T00:00:00""}", result);
+        }
+
+        [DataCompatibilityRangeFact, CleanSerializerSettings]
+        public void Serialize_WithSpecifiedType_DoesNotIncludeTypeProperty_WhenItEqualsToDeclared_AndTypeNameHandlingAutoIsUsed()
+        {
+            JobHelper.SetSerializerSettings(new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Auto
+            });
+
+            var result = SerializationHelper.Serialize(
+                new ClassA("hello"),
+                typeof(ClassA),
+                SerializationOption.User);
+
+            Assert.Equal("{\"PropertyA\":\"hello\"}", result);
+        }
+
+        [DataCompatibilityRangeFact, CleanSerializerSettings]
+        public void Serialize_WithSpecifiedType_IncludesTypeProperty_WhenItDoesNotEqualToDeclared_AndTypeNameHandlingAutoIsUsed()
+        {
+            JobHelper.SetSerializerSettings(new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Auto
+            });
+
+            var result = SerializationHelper.Serialize(
+                new ClassA("hello"),
+                typeof(object),
+                SerializationOption.User);
+
+            Assert.Equal("{\"$type\":\"Hangfire.Core.Tests.Common.SerializationHelperFacts+ClassA, Hangfire.Core.Tests\",\"PropertyA\":\"hello\"}", result);
         }
 
         [DataCompatibilityRangeFact]

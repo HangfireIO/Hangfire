@@ -32,7 +32,7 @@ namespace Hangfire.Common
         [Obsolete("Please use `SerializationHelper.Serialize` with appropriate serialization option instead. Will be removed in 2.0.0")]
         public static string ToJson(object value)
         {
-            return SerializationHelper.Serialize(value, SerializationOption.User);
+            return SerializationHelper.Serialize(value, null, SerializationOption.User);
         }
 
         [Obsolete("Please use `SerializationHelper.Deserialize` with appropriate serialization option instead. Will be removed in 2.0.0")]

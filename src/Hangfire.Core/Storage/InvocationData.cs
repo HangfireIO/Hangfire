@@ -209,7 +209,7 @@ namespace Hangfire.Storage
                     }
                     else
                     {
-                        value = SerializationHelper.Serialize(argument, SerializationOption.User);
+                        value = SerializationHelper.Serialize(argument, null, SerializationOption.User);
                     }
                 }
                 else
