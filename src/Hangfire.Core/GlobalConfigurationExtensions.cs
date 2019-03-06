@@ -249,6 +249,15 @@ namespace Hangfire
             return configuration;
         }
 
+        public static IGlobalConfiguration UseRecommendedSerializerSettings(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            SerializationHelper.SetUserSerializerSettings(SerializationHelper.GetInternalSettings());
+            return configuration;
+        }
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static IGlobalConfiguration<T> Use<T>(
             [NotNull] this IGlobalConfiguration configuration, T entry,
