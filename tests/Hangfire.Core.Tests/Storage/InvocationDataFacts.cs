@@ -7,6 +7,7 @@ using Hangfire.Storage;
 using Newtonsoft.Json;
 using Xunit;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 #pragma warning disable 618
 
@@ -263,6 +264,41 @@ namespace Hangfire.Core.Tests.Storage
 
             Assert.Equal($"[\"\\\"2019-03-05T13:20:04.593215Z\\\"\"]", dateTimeData.Arguments);
             Assert.Equal($"[\"\\\"2019-03-05T13:20:04.593215Z\\\"\"]", nullableData.Arguments);
+        }
+
+        [DataCompatibilityRangeFact(), CleanSerializerSettings]
+        public void Serialize_WithTypeNameHandlingAuto_PreservesTypeInformation()
+        {
+            JobHelper.SetSerializerSettings(new JsonSerializerSettings
+            {
+                DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+                TypeNameHandling = TypeNameHandling.Auto
+            });
+
+            var job = Job.FromExpression(() => GenericMethod<object>(new SomeClass()));
+            var data = InvocationData.SerializeJob(job);
+
+            Assert.Equal("[\"{\\\"$type\\\":\\\"Hangfire.Core.Tests.Storage.InvocationDataFacts+SomeClass, Hangfire.Core.Tests\\\"}\"]", data.Arguments);
+        }
+
+        [DataCompatibilityRangeFact, CleanSerializerSettings]
+        public void Deserialize_CanHandleArgumentWithExplicitTypeName_WhenUsingTypeNameHandlingAuto()
+        {
+            JobHelper.SetSerializerSettings(new JsonSerializerSettings
+            {
+                TypeNameHandling =  TypeNameHandling.Auto
+            });
+
+            var data = new InvocationData(
+                "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests",
+                "GenericMethod",
+                "[\"System.Object, mscorlib\"]",
+                "[\"{\\\"$type\\\":\\\"Hangfire.Core.Tests.Storage.InvocationDataFacts+SomeClass, Hangfire.Core.Tests\\\"}\"]");
+
+            var job = data.DeserializeJob();
+            Assert.Equal("GenericMethod", job.Method.Name);
+            Assert.Equal(new object[] { typeof(object) }, job.Method.GetParameters().Select(x => x.ParameterType).ToArray());
+            Assert.IsType<SomeClass>(job.Args[0]);
         }
 
         [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_Pre_170)]

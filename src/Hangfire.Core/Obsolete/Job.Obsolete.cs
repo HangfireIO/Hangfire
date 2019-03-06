@@ -27,7 +27,7 @@ namespace Hangfire.Common
         /// <exclude />
         [NotNull]
         [Obsolete("Please use `Args` property instead to avoid unnecessary serializations/deserializations. Will be deleted in 2.0.0.")]
-        public string[] Arguments => InvocationData.SerializeArguments(Args);
+        public string[] Arguments => InvocationData.SerializeArguments(Method, Args);
 
         /// <exclude />
         [Obsolete("This method is deprecated. Please use `CoreBackgroundJobPerformer` or `BackgroundJobPerformer` classes instead. Will be removed in 2.0.0.")]

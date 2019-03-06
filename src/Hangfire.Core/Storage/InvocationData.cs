@@ -111,7 +111,7 @@ namespace Hangfire.Storage
             var methodName = job.Method.Name;
             var parameterTypes = SerializationHelper.Serialize(
                 job.Method.GetParameters().Select(x => typeSerializer(x.ParameterType)).ToArray());
-            var arguments = SerializationHelper.Serialize(SerializeArguments(job.Args));
+            var arguments = SerializationHelper.Serialize(SerializeArguments(job.Method, job.Args));
 
             return new InvocationData(type, methodName, parameterTypes, arguments);
         }
@@ -186,11 +186,16 @@ namespace Hangfire.Storage
             }
         }
 
-        internal static string[] SerializeArguments(IReadOnlyCollection<object> arguments)
+        internal static string[] SerializeArguments(MethodInfo methodInfo, IReadOnlyList<object> arguments)
         {
             var serializedArguments = new List<string>(arguments.Count);
-            foreach (var argument in arguments)
+            var parameters = methodInfo.GetParameters();
+
+            for (var i = 0; i < parameters.Length; i++)
             {
+                var parameter = parameters[i];
+                var argument = arguments[i];
+
                 string value;
 
                 if (argument != null)
@@ -209,7 +214,10 @@ namespace Hangfire.Storage
                     }
                     else
                     {
-                        value = SerializationHelper.Serialize(argument, null, SerializationOption.User);
+                        value = SerializationHelper.Serialize(
+                            argument,
+                            parameter.ParameterType,
+                            SerializationOption.User);
                     }
                 }
                 else
