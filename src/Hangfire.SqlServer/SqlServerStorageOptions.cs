@@ -44,6 +44,7 @@ namespace Hangfire.SqlServer
             _schemaName = Constants.DefaultSchema;
             TransactionTimeout = TimeSpan.FromMinutes(1);
             DisableGlobalLocks = false;
+            UsePageLocksOnDequeue = false;
         }
 
         public IsolationLevel? TransactionIsolationLevel { get; set; }
@@ -106,5 +107,6 @@ namespace Hangfire.SqlServer
 
         public Func<IDisposable> ImpersonationFunc { get; set; }
         public bool DisableGlobalLocks { get; set; }
+        public bool UsePageLocksOnDequeue { get; set; }
     }
 }

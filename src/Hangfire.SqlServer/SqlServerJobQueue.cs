@@ -149,7 +149,7 @@ set transaction isolation level read committed;
 update top (1) JQ
 set FetchedAt = GETUTCDATE()
 output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
-from [{_storage.SchemaName}].JobQueue JQ with (forceseek, paglock, xlock)
+from [{_storage.SchemaName}].JobQueue JQ with ({GetSlidingFetchTableHints()})
 where Queue in @queues and
 (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()));";
         }
@@ -176,7 +176,7 @@ BEGIN
         update top (1) JQ
         set FetchedAt = GETUTCDATE()
         output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
-        from [{_storage.SchemaName}].JobQueue JQ with (forceseek, paglock, xlock)
+        from [{_storage.SchemaName}].JobQueue JQ with ({GetSlidingFetchTableHints()})
         where Queue in @queues and
         (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()));
 
@@ -195,6 +195,15 @@ END
 SELECT TOP (0) [Id], [JobId], [Queue], [FetchedAt] FROM [{_storage.SchemaName}].JobQueue;";
         }
 
+        private string GetSlidingFetchTableHints()
+        {
+            if (_storage.Options.UsePageLocksOnDequeue)
+            {
+                return "forceseek, paglock, xlock";
+            }
+
+            return "forceseek, readpast, updlock, rowlock";
+        }
 
         private SqlServerTransactionJob DequeueUsingTransaction(string[] queues, CancellationToken cancellationToken)
         {

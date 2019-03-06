@@ -60,7 +60,7 @@ namespace Hangfire.SqlServer
                 _storage.UseConnection(null, connection =>
                 {
                     connection.Execute(
-                        $"delete JQ from {_storage.SchemaName}.JobQueue JQ with (paglock, xlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
+                        $"delete JQ from {_storage.SchemaName}.JobQueue JQ with ({GetTableHints()}) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
                         new { queue = Queue, id = Id, fetchedAt = FetchedAt },
                         commandTimeout: _storage.CommandTimeout);
                 });
@@ -101,6 +101,16 @@ namespace Hangfire.SqlServer
                     Requeue();
                 }
             }
+        }
+
+        private string GetTableHints()
+        {
+            if (_storage.Options.UsePageLocksOnDequeue)
+            {
+                return "forceseek, paglock, xlock";
+            }
+
+            return "forceseek, rowlock";
         }
 
         private void ExecuteKeepAliveQuery(object obj)
