@@ -393,7 +393,7 @@ namespace Hangfire.Core.Tests.Common
         [DataCompatibilityRangeFact]
         public void GetProtectedSettings_SetsDefaultSettings()
         {
-            var serializerSettings = SerializationHelper.GetProtectedSettings(TypeNameHandling.None);
+            var serializerSettings = SerializationHelper.GetInternalSettings();
 
             Assert.Equal(TypeNameHandling.None, serializerSettings.TypeNameHandling);
             Assert.Equal(TypeNameAssemblyFormatHandling.Simple, serializerSettings.TypeNameAssemblyFormatHandling);
@@ -403,7 +403,7 @@ namespace Hangfire.Core.Tests.Common
         [DataCompatibilityRangeFact]
         public void GetProtectedSettings_SetsDefaultSettings_WhenTypeNameHandlingIsSet()
         {
-            var serializerSettings = SerializationHelper.GetProtectedSettings(TypeNameHandling.Objects);
+            var serializerSettings = SerializationHelper.GetInternalSettings(TypeNameHandling.Objects);
 
             Assert.Equal(TypeNameHandling.Objects, serializerSettings.TypeNameHandling);
             Assert.Equal(TypeNameAssemblyFormatHandling.Simple, serializerSettings.TypeNameAssemblyFormatHandling);
