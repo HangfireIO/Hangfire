@@ -10,7 +10,7 @@ namespace Hangfire.SqlServer.Tests
         [Fact, CleanSerializerSettings]
         public void HandlesChangingProcessOfServerDataSerialization()
         {
-            GlobalConfiguration.Configuration.UseSerializationSettings(SerializerSettingsHelper.DangerousSettings);
+            GlobalConfiguration.Configuration.UseSerializerSettings(SerializerSettingsHelper.DangerousSettings);
 
             var serverData = new ServerData
             {

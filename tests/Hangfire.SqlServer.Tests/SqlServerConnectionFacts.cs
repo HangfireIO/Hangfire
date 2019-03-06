@@ -1765,7 +1765,7 @@ values (@jobId, @name, @value)";
         [Fact, CleanSerializerSettings]
         public void HandlesChangingProcessOfStateDataSerialization()
         {
-            GlobalConfiguration.Configuration.UseSerializationSettings(SerializerSettingsHelper.DangerousSettings);
+            GlobalConfiguration.Configuration.UseSerializerSettings(SerializerSettingsHelper.DangerousSettings);
             var stateData = new Dictionary<string, string>
             {
                 { "key1", "value1" },
@@ -1785,7 +1785,7 @@ values (@jobId, @name, @value)";
         [Fact, CleanSerializerSettings]
         public void HandlesChangingProcessOfInvocationDataSerialization()
         {
-            GlobalConfiguration.Configuration.UseSerializationSettings(SerializerSettingsHelper.DangerousSettings);
+            GlobalConfiguration.Configuration.UseSerializerSettings(SerializerSettingsHelper.DangerousSettings);
 
             var initialJob = Job.FromExpression(() => Console.WriteLine());
             var invocationData = InvocationData.Serialize(initialJob);

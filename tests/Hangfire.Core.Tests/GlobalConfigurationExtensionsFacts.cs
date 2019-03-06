@@ -10,7 +10,7 @@ namespace Hangfire.Core.Tests
         [Fact, CleanSerializerSettings]
         public void UseSerializationSettings_AffectSerializationWithUserSettings()
         {
-            GlobalConfiguration.Configuration.UseSerializationSettings(new JsonSerializerSettings
+            GlobalConfiguration.Configuration.UseSerializerSettings(new JsonSerializerSettings
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             });
