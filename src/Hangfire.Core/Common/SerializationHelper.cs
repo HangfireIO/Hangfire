@@ -52,10 +52,7 @@ namespace Hangfire.Common
     public static class SerializationHelper
     {
         private static readonly Lazy<JsonSerializerSettings> DefaultSerializerSettings =
-            new Lazy<JsonSerializerSettings>(() => GetProtectedSettings(TypeNameHandling.None), LazyThreadSafetyMode.PublicationOnly);
-
-        private static readonly Lazy<JsonSerializerSettings> DefaultSerializerSettingsWithTypes =
-            new Lazy<JsonSerializerSettings>(() => GetProtectedSettings(TypeNameHandling.Objects), LazyThreadSafetyMode.PublicationOnly);
+            new Lazy<JsonSerializerSettings>(() => GetInternalSettings(), LazyThreadSafetyMode.PublicationOnly);
 
         private static JsonSerializerSettings _userSerializerSettings;
 
@@ -210,7 +207,7 @@ namespace Hangfire.Common
             return (T) Deserialize(value, typeof(T), option);
         }
 
-        internal static JsonSerializerSettings GetProtectedSettings(TypeNameHandling typeNameHandling)
+        internal static JsonSerializerSettings GetInternalSettings()
         {
             var serializerSettings = new JsonSerializerSettings();
 
@@ -222,7 +219,7 @@ namespace Hangfire.Common
             var property = typeNameAssemblyFormatHandling ?? typeNameAssemblyFormat;
             property.SetValue(serializerSettings, Enum.Parse(property.PropertyType, "Simple"));
 
-            serializerSettings.TypeNameHandling = typeNameHandling;
+            serializerSettings.TypeNameHandling = TypeNameHandling.Auto;
             serializerSettings.DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate;
             serializerSettings.NullValueHandling = NullValueHandling.Ignore;
             serializerSettings.CheckAdditionalContent = true; // Default option in JsonConvert.Deserialize method
@@ -239,8 +236,8 @@ namespace Hangfire.Common
         {
             switch (serializationOption)
             {
-                case SerializationOption.Internal: return DefaultSerializerSettings.Value;
-                case SerializationOption.TypedInternal: return DefaultSerializerSettingsWithTypes.Value;
+                case SerializationOption.Internal:
+                case SerializationOption.TypedInternal: return DefaultSerializerSettings.Value;
                 case SerializationOption.User: return Volatile.Read(ref _userSerializerSettings);
                 default: throw new ArgumentOutOfRangeException(nameof(serializationOption), serializationOption, null);
             }

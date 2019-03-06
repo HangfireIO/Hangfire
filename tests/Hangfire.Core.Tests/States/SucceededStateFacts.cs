@@ -70,12 +70,12 @@ namespace Hangfire.Core.Tests.States
             Assert.False(state.IgnoreJobLoadException);
         }
 
-        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
-        public void JsonSerialize_ReturnsEfficientString_AfterVersion170()
+        [DataCompatibilityRangeFact]
+        public void JsonSerialize_ReturnsCorrectString()
         {
             var state = new SucceededState(null, 1, 2);
 
-            var serialized = SerializationHelper.Serialize(state, SerializationOption.TypedInternal);
+            var serialized = SerializationHelper.Serialize<IState>(state, SerializationOption.TypedInternal);
 
             Assert.Equal(
                 "{\"$type\":\"Hangfire.States.SucceededState, Hangfire.Core\",\"Latency\":1,\"PerformanceDuration\":2}",

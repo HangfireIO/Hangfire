@@ -32,7 +32,7 @@ namespace Hangfire.Core.Tests.Common
         [DataCompatibilityRangeFact]
         public void Serialize_ReturnsCorrectJson_WhenOptionsIsTypedInternal()
         {
-            var result = SerializationHelper.Serialize(new ClassA("B"), SerializationOption.TypedInternal);
+            var result = SerializationHelper.Serialize<object>(new ClassA("B"), SerializationOption.TypedInternal);
             Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.SerializationHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""B""}", result);
         }
 
@@ -80,7 +80,7 @@ namespace Hangfire.Core.Tests.Common
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             });
 
-            var result = SerializationHelper.Serialize(new ClassA("A"), SerializationOption.TypedInternal);
+            var result = SerializationHelper.Serialize<object>(new ClassA("A"), SerializationOption.TypedInternal);
             Assert.Equal(
                 @"{""$type"":""Hangfire.Core.Tests.Common.SerializationHelperFacts+ClassA, Hangfire.Core.Tests"",""PropertyA"":""A""}",
                 result);
@@ -177,7 +177,7 @@ namespace Hangfire.Core.Tests.Common
                 DateFormatString = "ddMMyyyy"
             };
 
-            var result = SerializationHelper.Serialize(
+            var result = SerializationHelper.Serialize<object>(
                 new ClassB { StringValue = "B", DateTimeValue = new DateTime(1961, 4, 12) },
                 SerializationOption.TypedInternal);
 
@@ -199,7 +199,7 @@ namespace Hangfire.Core.Tests.Common
                 DateFormatString = "ddMMyyyy"
             };
 
-            var result = SerializationHelper.Serialize(
+            var result = SerializationHelper.Serialize<object>(
                 new ClassB { StringValue = "B", DateTimeValue = new DateTime(1961, 4, 12) },
                 SerializationOption.TypedInternal);
 
@@ -320,7 +320,7 @@ namespace Hangfire.Core.Tests.Common
 
             var json = "{\"$type\":\"HANGFIRE.CORE.TESTS.COMMON.SERIALIZATIONHELPERFACTS+CLASSB, someAssembly\",\"StringValue\":\"B\",\"DateTimeValue\":\"12041961\"}";
 
-            Assert.Throws<JsonReaderException>(() => SerializationHelper.Deserialize(json, typeof(ClassB)));
+            Assert.Throws<JsonSerializationException>(() => SerializationHelper.Deserialize(json, typeof(ClassB)));
         }
 
         [DataCompatibilityRangeFact]
