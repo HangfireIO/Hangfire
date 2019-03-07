@@ -42,7 +42,7 @@ namespace Hangfire.Core.Tests.States
 
             Assert.Equal(3, data.Count);
             Assert.Equal(state.ParentId, data["ParentId"]);
-            Assert.Equal("{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\"}", data["NextState"]);
+            Assert.Equal("{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\",\"Queue\":\"default\"}", data["NextState"]);
             Assert.Equal(state.Options.ToString("D"), data["Options"]);
         }
 
@@ -92,14 +92,14 @@ namespace Hangfire.Core.Tests.States
             var serialized = SerializationHelper.Serialize<IState>(state, SerializationOption.TypedInternal);
 
             Assert.Equal(
-                "{\"$type\":\"Hangfire.States.AwaitingState, Hangfire.Core\",\"ParentId\":\"parent\",\"NextState\":{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\"}}",
+                "{\"$type\":\"Hangfire.States.AwaitingState, Hangfire.Core\",\"ParentId\":\"parent\",\"NextState\":{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\",\"Queue\":\"default\"}}",
                 serialized);
         }
 
         [DataCompatibilityRangeFact]
         public void JsonDeserialize_CanHandlePreviousFormat()
         {
-            var json = "{\"$type\":\"Hangfire.States.AwaitingState, Hangfire.Core\",\"ParentId\":\"parent\",\"NextState\":{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\"},\"Options\":1,\"Name\":\"Awaiting\"}";
+            var json = "{\"$type\":\"Hangfire.States.AwaitingState, Hangfire.Core\",\"ParentId\":\"parent\",\"NextState\":{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\",\"Queue\":\"default\"},\"Options\":1,\"Name\":\"Awaiting\"}";
             var state = SerializationHelper.Deserialize<AwaitingState>(json, SerializationOption.TypedInternal);
 
             Assert.Equal("parent", state.ParentId);
@@ -109,7 +109,7 @@ namespace Hangfire.Core.Tests.States
         [DataCompatibilityRangeFact]
         public void JsonDeserialize_CanHandleNewFormat()
         {
-            var json = "{\"$type\":\"Hangfire.States.AwaitingState, Hangfire.Core\",\"ParentId\":\"parent\",\"NextState\":{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\"}}";
+            var json = "{\"$type\":\"Hangfire.States.AwaitingState, Hangfire.Core\",\"ParentId\":\"parent\",\"NextState\":{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\",\"Queue\":\"default\"}}";
             var state = SerializationHelper.Deserialize<AwaitingState>(json, SerializationOption.TypedInternal);
 
             Assert.Equal("parent", state.ParentId);
