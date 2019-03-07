@@ -64,6 +64,32 @@ namespace Hangfire.Core.Tests.States
             Assert.False(state.IsFinal);
         }
 
+        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        public void JsonSerialize_ReturnsCorrectString_Before170()
+        {
+            var state = new ProcessingState("server1", "worker1");
+
+            var serialized = SerializationHelper.Serialize<IState>(state, SerializationOption.TypedInternal);
+
+            Assert.Equal(
+                "{\"$type\":\"Hangfire.States.ProcessingState, Hangfire.Core\",\"ServerId\":\"server1\"," +
+                "\"WorkerId\":\"worker1\",\"Reason\":null}",
+                serialized);
+        }
+
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
+        public void JsonSerialize_ReturnsCorrectString_After170()
+        {
+            var state = new ProcessingState("server1", "worker1");
+
+            var serialized = SerializationHelper.Serialize<IState>(state, SerializationOption.TypedInternal);
+
+            Assert.Equal(
+                "{\"$type\":\"Hangfire.States.ProcessingState, Hangfire.Core\",\"ServerId\":\"server1\"," +
+                "\"WorkerId\":\"worker1\"}",
+                serialized);
+        }
+
         [Fact]
         public void IgnoreExceptions_ReturnsFalse()
         {
