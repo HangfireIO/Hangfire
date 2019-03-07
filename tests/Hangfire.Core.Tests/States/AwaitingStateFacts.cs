@@ -20,8 +20,8 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(AwaitingState.StateName, state.Name);
         }
 
-        [DataCompatibilityRangeFact]
-        public void SerializeData_ReturnsCorrectData()
+        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        public void SerializeData_ReturnsCorrectData_Before170()
         {
             var state = CreateState();
 
@@ -33,6 +33,19 @@ namespace Hangfire.Core.Tests.States
                 data["NextState"]);
             Assert.Equal(state.Options.ToString("D"), data["Options"]);
             Assert.Equal(state.Expiration.ToString(), data["Expiration"]);
+        }
+
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
+        public void SerializeData_ReturnsCorrectData_After170()
+        {
+            var state = CreateState();
+
+            var data = state.SerializeData();
+
+            Assert.Equal(3, data.Count);
+            Assert.Equal(state.ParentId, data["ParentId"]);
+            Assert.Equal("{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\"}", data["NextState"]);
+            Assert.Equal(state.Options.ToString("D"), data["Options"]);
         }
 
         [Fact]

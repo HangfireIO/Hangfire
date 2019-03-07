@@ -132,12 +132,18 @@ namespace Hangfire.States
         /// </remarks>
         public Dictionary<string, string> SerializeData()
         {
-            return new Dictionary<string, string>
+            var result = new Dictionary<string, string>
             {
-                { "StartedAt", JobHelper.SerializeDateTime(StartedAt) },
                 { "ServerId", ServerId },
                 { "WorkerId", WorkerId }
             };
+
+            if (!GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_170))
+            {
+                result.Add("StartedAt", JobHelper.SerializeDateTime(StartedAt));
+            }
+
+            return result;
         }
     }
 }

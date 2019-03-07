@@ -164,13 +164,19 @@ namespace Hangfire.States
         /// </remarks>
         public Dictionary<string, string> SerializeData()
         {
-            return new Dictionary<string, string>
+            var result = new Dictionary<string, string>
             {
-                { "FailedAt", JobHelper.SerializeDateTime(FailedAt) },
                 { "ExceptionType", Exception.GetType().FullName },
                 { "ExceptionMessage", Exception.Message },
                 { "ExceptionDetails", Exception.ToString() }
             };
+
+            if (!GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_170))
+            {
+                result.Add("FailedAt", JobHelper.SerializeDateTime(FailedAt));
+            }
+
+            return result;
         }
     }
 }

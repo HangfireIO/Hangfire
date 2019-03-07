@@ -156,11 +156,17 @@ namespace Hangfire.States
         /// </remarks>
         public Dictionary<string, string> SerializeData()
         {
-            return new Dictionary<string, string>
+            var result = new Dictionary<string, string>
             {
-                { "EnqueueAt", JobHelper.SerializeDateTime(EnqueueAt) },
-                { "ScheduledAt", JobHelper.SerializeDateTime(ScheduledAt) }
+                { "EnqueueAt", JobHelper.SerializeDateTime(EnqueueAt) }
             };
+
+            if (!GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_170))
+            {
+                result.Add("ScheduledAt", JobHelper.SerializeDateTime(ScheduledAt));
+            }
+
+            return result;
         }
 
         internal class Handler : IStateHandler

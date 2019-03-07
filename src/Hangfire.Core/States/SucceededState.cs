@@ -165,10 +165,14 @@ namespace Hangfire.States
         {
             var data = new Dictionary<string, string>
             {
-                { "SucceededAt",  JobHelper.SerializeDateTime(SucceededAt) },
                 { "PerformanceDuration", PerformanceDuration.ToString(CultureInfo.InvariantCulture) },
                 { "Latency", Latency.ToString(CultureInfo.InvariantCulture) }
             };
+
+            if (!GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_170))
+            {
+                data.Add("SucceededAt",  JobHelper.SerializeDateTime(SucceededAt));
+            }
 
             if (Result != null)
             {
