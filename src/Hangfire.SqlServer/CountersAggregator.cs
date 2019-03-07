@@ -96,7 +96,7 @@ BEGIN TRAN
 
 DELETE TOP (@count) C
 OUTPUT DELETED.[Key], DELETED.[Value], DELETED.[ExpireAt] INTO @RecordsToAggregate
-FROM [{storage.SchemaName}].[Counter] C WITH (XLOCK, PAGLOCK, READPAST, INDEX(0))
+FROM [{storage.SchemaName}].[Counter] C WITH (XLOCK, PAGLOCK, INDEX(0))
 
 SET NOCOUNT ON
 
