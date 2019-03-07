@@ -19,6 +19,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using Hangfire.Annotations;
@@ -220,6 +221,7 @@ namespace Hangfire.Common
             serializerSettings.DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate;
             serializerSettings.NullValueHandling = NullValueHandling.Ignore;
             serializerSettings.CheckAdditionalContent = true; // Default option in JsonConvert.Deserialize method
+            serializerSettings.Binder = new TypeHelperSerializationBinder();
 
             return serializerSettings;
         }
@@ -227,6 +229,45 @@ namespace Hangfire.Common
         internal static void SetUserSerializerSettings([CanBeNull] JsonSerializerSettings settings)
         {
             Volatile.Write(ref _userSerializerSettings, settings);
+        }
+
+        private class TypeHelperSerializationBinder : SerializationBinder
+        {
+            public override Type BindToType(string assemblyName, string typeName)
+            {
+                return TypeHelper.CurrentTypeResolver($"{typeName}, {assemblyName}");
+            }
+
+            public override void BindToName(Type serializedType, out string assemblyName, out string typeName)
+            {
+                assemblyName = null;
+                typeName = TypeHelper.CurrentTypeSerializer(serializedType);
+
+                if (typeName == null) return;
+
+                var delimiterIndex = GetAssemblyNameDelimiterIndex(typeName);
+
+                if (delimiterIndex >= 0)
+                {
+                    assemblyName = typeName.Substring(delimiterIndex + 1).Trim();
+                    typeName = typeName.Substring(0, delimiterIndex).Trim();
+                }
+            }
+
+            private static int GetAssemblyNameDelimiterIndex(string typeName)
+            {
+                var level = 0;
+
+                for (var index = 0; index < typeName.Length; index++)
+                {
+                    var current = typeName[index];
+                    if (current == '[') level++;
+                    else if (current == ']') level--;
+                    else if (current == ',' && level == 0) return index;
+                }
+
+                return -1;
+            }
         }
 
         private static JsonSerializerSettings GetLegacyTypedSerializerSettings()
