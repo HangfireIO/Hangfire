@@ -20,6 +20,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
+using Hangfire.Logging;
 using Hangfire.Processing;
 
 namespace Hangfire.Server
@@ -41,6 +42,8 @@ namespace Hangfire.Server
     public sealed class BackgroundProcessingServer : IBackgroundProcessingServer
     {
         private static int _lastThreadId = 0;
+
+        private readonly ILog _logger = LogProvider.GetLogger(typeof(BackgroundProcessingServer));
 
         private readonly CancellationTokenSource _stoppingCts = new CancellationTokenSource();
         private readonly CancellationTokenSource _stoppedCts = new CancellationTokenSource();
@@ -158,6 +161,11 @@ namespace Hangfire.Server
 
             if (Interlocked.Exchange(ref _disposed, 1) == 1) return;
 
+#if !NETSTANDARD1_3
+            AppDomain.CurrentDomain.DomainUnload -= OnCurrentDomainUnload;
+            AppDomain.CurrentDomain.ProcessExit -= OnCurrentDomainUnload;
+#endif
+
             _dispatcher.Dispose();
             _stoppingCts.Dispose();
             _stoppedCts.Dispose();
@@ -167,6 +175,8 @@ namespace Hangfire.Server
         private void OnCurrentDomainUnload(object sender, EventArgs args)
         {
             if (Volatile.Read(ref _disposed) == 1) return;
+
+            _logger.Warn("Stopping the server due to DomainUnload or ProcessExit event...");
 
             _stoppingCts.Cancel();
             _stoppedCts.Cancel();
