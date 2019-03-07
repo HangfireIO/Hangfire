@@ -151,7 +151,7 @@ namespace Hangfire.States
         ///     <item>
         ///         <term><c>Result</c></term>
         ///         <term><see cref="object"/></term>
-        ///         <term><see cref="SerializationHelper.Serialize(object, SerializationOption)"/> with <see cref="SerializationOption.User"/> argument</term>
+        ///         <term><see cref="SerializationHelper.Serialize{T}(T, SerializationOption)"/> with <see cref="SerializationOption.User"/> argument</term>
         ///         <description>
         ///             <para>Please see the <see cref="Result"/> property.</para>
         ///             <para>This key may be missing from the dictionary, when the return 
