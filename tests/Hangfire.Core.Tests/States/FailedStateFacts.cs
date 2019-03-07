@@ -61,38 +61,5 @@ namespace Hangfire.Core.Tests.States
             var state = new FailedState(new Exception());
             Assert.False(state.IgnoreJobLoadException);
         }
-
-        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
-        public void JsonSerialize_ReturnsCorrectString_Before170()
-        {
-            var state = new FailedState(new Exception("message"));
-
-            var serialized = SerializationHelper.Serialize<IState>(state, SerializationOption.TypedInternal);
-
-            Assert.Equal(
-                "{\"$type\":\"Hangfire.States.FailedState, Hangfire.Core\"," +
-                "\"Exception\":{\"$type\":\"System.Exception, mscorlib\"," +
-                "\"ClassName\":\"System.Exception\",\"Message\":\"message\"," +
-                "\"Data\":null,\"InnerException\":null,\"HelpURL\":null,\"StackTraceString\":null," +
-                "\"RemoteStackTraceString\":null,\"RemoteStackIndex\":0,\"ExceptionMethod\":null," +
-                "\"HResult\":-2146233088,\"Source\":null,\"WatsonBuckets\":null},\"Reason\":null}",
-                serialized);
-        }
-
-        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
-        public void JsonSerialize_ReturnsCorrectString_After170()
-        {
-            var state = new FailedState(new Exception("message"));
-
-            var serialized = SerializationHelper.Serialize<IState>(state, SerializationOption.TypedInternal);
-
-            Assert.Equal(
-                "{\"$type\":\"Hangfire.States.FailedState, Hangfire.Core\"," +
-                "\"Exception\":{\"ClassName\":\"System.Exception\",\"Message\":\"message\"," +
-                "\"Data\":null,\"InnerException\":null,\"HelpURL\":null,\"StackTraceString\":null," +
-                "\"RemoteStackTraceString\":null,\"RemoteStackIndex\":0,\"ExceptionMethod\":null," +
-                "\"HResult\":-2146233088,\"Source\":null,\"WatsonBuckets\":null}}",
-                serialized);
-        }
     }
 }
