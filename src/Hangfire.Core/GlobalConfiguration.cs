@@ -24,7 +24,7 @@ namespace Hangfire
 {
     public enum CompatibilityLevel
     {
-        Version_Pre_170 = 100,
+        Version_110 = 110,
         Version_170 = 170,
     }
 
@@ -32,7 +32,7 @@ namespace Hangfire
     {
         public static IGlobalConfiguration Configuration { get; } = new GlobalConfiguration();
 
-        internal CompatibilityLevel CompatibilityLevel = CompatibilityLevel.Version_Pre_170;
+        internal CompatibilityLevel CompatibilityLevel = CompatibilityLevel.Version_110;
 
         internal static bool HasCompatibilityLevel(CompatibilityLevel level)
         {
