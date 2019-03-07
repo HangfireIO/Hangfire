@@ -242,7 +242,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(typeof(InvocationDataFacts).GetMethod("ComplicatedMethod"), job.Method);
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
         public void Serialize_SerializesDateTimeUsingCustomFormatter_BeforeVersion170()
         {
             var dateTimeString = "2019-03-05T13:20:04.5932150Z";
@@ -301,7 +301,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.IsType<SomeClass>(job.Args[0]);
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
         public void SerializePayload_CorrectlySerializesInvocationDataToString_WithOldFormat_InVersion_Pre_170()
         {
             var invocationData = new InvocationData(
@@ -317,7 +317,7 @@ namespace Hangfire.Core.Tests.Storage
                 payload);
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
         public void SerializePayload_DoesNotIncludeArgumentsWhenStatedSo_WithOldFormat_InVersion_Pre_170()
         {
             var invocationData = new InvocationData(
@@ -333,7 +333,7 @@ namespace Hangfire.Core.Tests.Storage
                 payload);
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
         public void SerializePayload_SerializesInvocationDataToString_WithoutNullifyingEmptyEntries_InVersion_Pre_170()
         {
             var invocationData = new InvocationData(

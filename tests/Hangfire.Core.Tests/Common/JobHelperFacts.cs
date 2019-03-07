@@ -102,7 +102,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(WellKnownDateTime, result);
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
         public void SerializeDateTime_ReturnsString_InISO8601Format_In_Version_Pre_170()
         {
             var result = JobHelper.SerializeDateTime(WellKnownDateTime);

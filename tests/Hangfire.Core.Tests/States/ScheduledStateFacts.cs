@@ -31,7 +31,7 @@ namespace Hangfire.Core.Tests.States
             Assert.True(state.EnqueueAt < DateTime.UtcNow.AddDays(1).AddMinutes(1));
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
         public void SerializeData_ReturnsCorrectData_Before170()
         {
             var state = new ScheduledState(new DateTime(2012, 12, 12));
@@ -68,7 +68,7 @@ namespace Hangfire.Core.Tests.States
             Assert.False(state.IgnoreJobLoadException);
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
         public void JsonSerialize_ReturnsCorrectString_Before170()
         {
             var dateTime = DateTime.UtcNow;

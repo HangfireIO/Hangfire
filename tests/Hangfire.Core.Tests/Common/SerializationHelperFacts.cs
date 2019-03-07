@@ -48,19 +48,19 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(@"{""propertyA"":""A""}", result);
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110), CleanSerializerSettings]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170), CleanSerializerSettings]
         public void Serialize_SerializesWithUserSettings_WhenOptionsIsInternal_BeforeVersion170()
         {
             SerializationHelper.SetUserSerializerSettings(new JsonSerializerSettings
             {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
             });
 
             var result = SerializationHelper.Serialize(new ClassA("A"));
             Assert.Equal(@"{""propertyA"":""A""}", result);
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110), CleanSerializerSettings]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170), CleanSerializerSettings]
         public void Serialize_SerializesWithDefaultSettingsWithTypeInformation_WhenOptionIsTypedInternal_BeforeVersion170()
         {
             SerializationHelper.SetUserSerializerSettings(new JsonSerializerSettings
@@ -104,7 +104,7 @@ namespace Hangfire.Core.Tests.Common
                 result);
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110), CleanSerializerSettings]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170), CleanSerializerSettings]
         public void Serialize_ProducesObjectThatCanBeDeserialized_UsingJsonConvert_WithInternalSettings_BeforeVersion170()
         {
             // Arrange
@@ -147,7 +147,7 @@ namespace Hangfire.Core.Tests.Common
                 result);
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110), CleanSerializerSettings]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170), CleanSerializerSettings]
         public void Serialize_JsonDefaultSettingsDoAffectResult_WhenOptionIs_Internal_BeforeVersion_170()
         {
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
@@ -183,7 +183,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(@"{""StringValue"":""B"",""DateTimeValue"":""1961-04-12T00:00:00""}", result);
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110), CleanSerializerSettings]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170), CleanSerializerSettings]
         public void Serialize_JsonDefaultSettingsDoAffectResult_WhenOptionIs_TypedInternal_BeforeVersion_170()
         {
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings

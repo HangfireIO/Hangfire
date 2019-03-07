@@ -22,7 +22,7 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(SucceededState.StateName, state.Name);
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
         public void SerializeData_ReturnsCorrectData_Before170()
         {
             var state = CreateState();
@@ -83,7 +83,7 @@ namespace Hangfire.Core.Tests.States
             Assert.False(state.IgnoreJobLoadException);
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
         public void JsonSerialize_ReturnsCorrectString_Before170()
         {
             var state = new SucceededState(null, 1, 2);

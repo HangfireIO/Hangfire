@@ -20,7 +20,7 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(AwaitingState.StateName, state.Name);
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
         public void SerializeData_ReturnsCorrectData_Before170()
         {
             var state = CreateState();
@@ -72,7 +72,7 @@ namespace Hangfire.Core.Tests.States
             Assert.NotEqual(default(DateTime), nextState.EnqueuedAt);
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
         public void JsonSerialize_ReturnsCorrectString_Before170()
         {
             var state = new AwaitingState("parent");

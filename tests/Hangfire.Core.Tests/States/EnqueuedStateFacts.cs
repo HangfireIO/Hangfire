@@ -49,7 +49,7 @@ namespace Hangfire.Core.Tests.States
             state.Queue = "1234567890_allowed";
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
         public void SerializeData_ReturnsCorrectData_Before170()
         {
             var state = new EnqueuedState();
@@ -87,7 +87,7 @@ namespace Hangfire.Core.Tests.States
             Assert.False(state.IgnoreJobLoadException);
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
         public void JsonSerialize_ReturnsCorrectString_Before170()
         {
             var state = new EnqueuedState("default");

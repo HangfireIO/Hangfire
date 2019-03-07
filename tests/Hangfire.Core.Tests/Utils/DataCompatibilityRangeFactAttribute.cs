@@ -10,7 +10,7 @@ namespace Hangfire.Core.Tests
     internal class DataCompatibilityRangeFactAttribute : FactAttribute
     {
         internal static readonly CompatibilityLevel PossibleMinLevel;
-        internal static readonly CompatibilityLevel PossibleMaxLevel;
+        internal static readonly CompatibilityLevel PossibleMaxExcludingLevel;
 
         static DataCompatibilityRangeFactAttribute()
         {
@@ -19,16 +19,16 @@ namespace Hangfire.Core.Tests
                 .ToArray();
 
             PossibleMinLevel = compatibilityLevels.Min();
-            PossibleMaxLevel = compatibilityLevels.Max();
+            PossibleMaxExcludingLevel = compatibilityLevels.Max() + 1;
         }
 
         public DataCompatibilityRangeFactAttribute()
         {
             MinLevel = PossibleMinLevel;
-            MaxLevel = PossibleMaxLevel;
+            MaxExcludingLevel = PossibleMaxExcludingLevel;
         }
 
         public CompatibilityLevel MinLevel { get; set; }
-        public CompatibilityLevel MaxLevel { get; set; }
+        public CompatibilityLevel MaxExcludingLevel { get; set; }
     }
 }

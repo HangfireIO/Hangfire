@@ -53,7 +53,7 @@ namespace Hangfire.Core.Tests.States
             Assert.True(state.DeletedAt < DateTime.UtcNow.AddMinutes(1));
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
         public void SerializeData_ReturnsSerializedStateData_Before170()
         {
             var state = CreateState();
@@ -74,7 +74,7 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(0, data.Count);
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
         public void JsonSerialize_ReturnsCorrectString_Before170()
         {
             var state = new DeletedState();

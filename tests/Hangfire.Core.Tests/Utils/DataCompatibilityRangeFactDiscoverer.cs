@@ -60,13 +60,13 @@ namespace Hangfire.Core.Tests
                 .ToArray();
 
             var minLevel = attributeInfo.GetNamedArgument<CompatibilityLevel>("MinLevel");
-            var maxLevel = attributeInfo.GetNamedArgument<CompatibilityLevel>("MaxLevel");
+            var maxExcludingLevel = attributeInfo.GetNamedArgument<CompatibilityLevel>("MaxExcludingLevel");
 
             var result = new List<CompatibilityLevel>();
 
             foreach (var compatibilityLevel in compatibilityLevels)
             {
-                if (compatibilityLevel >= minLevel && compatibilityLevel <= maxLevel)
+                if (compatibilityLevel >= minLevel && compatibilityLevel < maxExcludingLevel)
                 {
                     result.Add(compatibilityLevel);
                 }

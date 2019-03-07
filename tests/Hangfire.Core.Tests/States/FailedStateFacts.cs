@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using Hangfire.Common;
 using Hangfire.States;
 using Xunit;
@@ -22,7 +21,7 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(FailedState.StateName, state.Name);
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
         public void SerializeData_ReturnsCorrectData_Before170()
         {
             var state = new FailedState(new Exception("Message"));
@@ -63,7 +62,7 @@ namespace Hangfire.Core.Tests.States
             Assert.False(state.IgnoreJobLoadException);
         }
 
-        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
         public void JsonSerialize_ReturnsCorrectString_Before170()
         {
             var state = new FailedState(new Exception("message"));
