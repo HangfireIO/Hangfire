@@ -87,8 +87,20 @@ namespace Hangfire.Core.Tests.States
             Assert.False(state.IgnoreJobLoadException);
         }
 
-        [DataCompatibilityRangeFact]
-        public void JsonSerialize_ReturnsCorrectString()
+        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        public void JsonSerialize_ReturnsCorrectString_Before170()
+        {
+            var state = new EnqueuedState("default");
+
+            var serialized = SerializationHelper.Serialize<IState>(state, SerializationOption.TypedInternal);
+
+            Assert.Equal(
+                "{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\",\"Queue\":\"default\",\"Reason\":null}",
+                serialized);
+        }
+
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
+        public void JsonSerialize_ReturnsCorrectString_After170()
         {
             var state = new EnqueuedState("default");
 

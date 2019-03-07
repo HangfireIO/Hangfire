@@ -60,6 +60,24 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(@"{""propertyA"":""A""}", result);
         }
 
+        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110), CleanSerializerSettings]
+        public void Serialize_SerializesWithDefaultSettingsWithTypeInformation_WhenOptionIsTypedInternal_BeforeVersion170()
+        {
+            SerializationHelper.SetUserSerializerSettings(new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.None,
+                NullValueHandling = NullValueHandling.Ignore,
+                DefaultValueHandling = DefaultValueHandling.Ignore,
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            });
+
+            var result = SerializationHelper.Serialize(new ClassB { StringValue = "hi"}, SerializationOption.TypedInternal);
+            Assert.Equal(
+                "{\"$type\":\"Hangfire.Core.Tests.Common.SerializationHelperFacts+ClassB, Hangfire.Core.Tests\"," + 
+                "\"StringValue\":\"hi\",\"NullValue\":null,\"DefaultValue\":0,\"DateTimeValue\":null}", 
+                result);
+        }
+
         [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170), CleanSerializerSettings]
         public void Serialize_DoesNotSerializeWithUserSettings_WhenOptionsIsInternal_AfterVersion170()
         {

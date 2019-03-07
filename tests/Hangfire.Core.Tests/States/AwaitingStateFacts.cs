@@ -28,9 +28,7 @@ namespace Hangfire.Core.Tests.States
             var data = state.SerializeData();
 
             Assert.Equal(state.ParentId, data["ParentId"]);
-            Assert.Equal(
-                "{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\"}",
-                data["NextState"]);
+            Assert.Equal("{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\",\"Queue\":\"default\",\"Reason\":null}", data["NextState"]);
             Assert.Equal(state.Options.ToString("D"), data["Options"]);
             Assert.Equal(state.Expiration.ToString(), data["Expiration"]);
         }
@@ -74,8 +72,20 @@ namespace Hangfire.Core.Tests.States
             Assert.NotEqual(default(DateTime), nextState.EnqueuedAt);
         }
 
-        [DataCompatibilityRangeFact]
-        public void JsonSerialize_ReturnsCorrectString()
+        [DataCompatibilityRangeFact(MaxLevel = CompatibilityLevel.Version_110)]
+        public void JsonSerialize_ReturnsCorrectString_Before170()
+        {
+            var state = new AwaitingState("parent");
+
+            var serialized = SerializationHelper.Serialize<IState>(state, SerializationOption.TypedInternal);
+
+            Assert.Equal(
+                "{\"$type\":\"Hangfire.States.AwaitingState, Hangfire.Core\",\"ParentId\":\"parent\",\"NextState\":{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\",\"Queue\":\"default\",\"Reason\":null},\"Options\":0,\"Reason\":null}",
+                serialized);
+        }
+
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
+        public void JsonSerialize_ReturnsCorrectString_After170()
         {
             var state = new AwaitingState("parent");
 
