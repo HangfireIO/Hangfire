@@ -18,6 +18,9 @@ using System;
 
 namespace Hangfire.SqlServer
 {
+#if !NETSTANDARD1_3
+    [Serializable]
+#endif
     public class SqlServerDistributedLockException : Exception
     {
         public SqlServerDistributedLockException(string message)
