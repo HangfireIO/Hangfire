@@ -20,6 +20,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace Hangfire.Common
 {
@@ -34,6 +35,21 @@ namespace Hangfire.Common
         private static readonly Regex VersionRegex = new Regex(@", Version=\d+.\d+.\d+.\d+", RegexOptions.Compiled);
         private static readonly Regex CultureRegex = new Regex(@", Culture=\w+", RegexOptions.Compiled);
         private static readonly Regex PublicKeyTokenRegex = new Regex(@", PublicKeyToken=\w+", RegexOptions.Compiled);
+
+        private static Func<string, Type> _currentTypeResolver;
+        private static Func<Type, string> _currentTypeSerializer;
+
+        public static Func<string, Type> CurrentTypeResolver
+        {
+            get => Volatile.Read(ref _currentTypeResolver) ?? DefaultTypeResolver;
+            set => Volatile.Write(ref _currentTypeResolver, value);
+        }
+
+        public static Func<Type, string> CurrentTypeSerializer
+        {
+            get => Volatile.Read(ref _currentTypeSerializer) ?? DefaultTypeSerializer;
+            set => Volatile.Write(ref _currentTypeSerializer, value);
+        }
 
         public static string DefaultTypeSerializer(Type type)
         {

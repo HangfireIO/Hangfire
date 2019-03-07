@@ -35,17 +35,14 @@ namespace Hangfire.Storage
     {
         private static readonly object[] EmptyArray = new object[0];
 
-        private static Func<string, Type> _typeResolver;
-        private static Func<Type, string> _typeSerializer;
-
         public static void SetTypeResolver([CanBeNull] Func<string, Type> typeResolver)
         {
-            Volatile.Write(ref _typeResolver, typeResolver);
+            TypeHelper.CurrentTypeResolver = typeResolver;
         }
 
         public static void SetTypeSerializer([CanBeNull] Func<Type, string> typeSerializer)
         {
-            Volatile.Write(ref _typeSerializer, typeSerializer);
+            TypeHelper.CurrentTypeSerializer = typeSerializer;
         }
 
         public InvocationData(string type, string method, string parameterTypes, string arguments)
@@ -75,7 +72,7 @@ namespace Hangfire.Storage
 
         public Job DeserializeJob()
         {
-            var typeResolver = GetTypeResolver();
+            var typeResolver = TypeHelper.CurrentTypeResolver;
 
             try
             {
@@ -105,7 +102,7 @@ namespace Hangfire.Storage
 
         public static InvocationData SerializeJob(Job job)
         {
-            var typeSerializer = GetTypeSerializer();
+            var typeSerializer = TypeHelper.CurrentTypeSerializer;
 
             var type = typeSerializer(job.Type);
             var methodName = job.Method.Name;
@@ -171,12 +168,10 @@ namespace Hangfire.Storage
             }
             catch (Exception outerException)
             {
-                var typeSerializer = GetTypeSerializer();
-
                 try
                 {
                     var parameterTypes = SerializationHelper.Deserialize<Type[]>(ParameterTypes);
-                    return parameterTypes.Select(typeSerializer).ToArray();
+                    return parameterTypes.Select(TypeHelper.CurrentTypeSerializer).ToArray();
                 }
                 catch (Exception)
                 {
@@ -264,16 +259,6 @@ namespace Hangfire.Storage
             }
 
             return result.ToArray();
-        }
-
-        private static Func<string, Type> GetTypeResolver()
-        {
-            return Volatile.Read(ref _typeResolver) ?? TypeHelper.DefaultTypeResolver;
-        }
-
-        private static Func<Type, string> GetTypeSerializer()
-        {
-            return Volatile.Read(ref _typeSerializer) ?? TypeHelper.DefaultTypeSerializer;
         }
 
         private static object DeserializeArgument(string argument, Type type)
