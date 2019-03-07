@@ -107,7 +107,7 @@ namespace Hangfire.Core.Tests.States
             var serialized = SerializationHelper.Serialize<IState>(state, SerializationOption.TypedInternal);
 
             Assert.Equal(
-                "{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\"}",
+                "{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\",\"Queue\":\"default\"}",
                 serialized);
         }
 
@@ -124,7 +124,7 @@ namespace Hangfire.Core.Tests.States
         [DataCompatibilityRangeFact]
         public void JsonDeserialize_CanHandleNewFormat()
         {
-            var json = "{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\"}";
+            var json = "{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\",\"Queue\":\"default\"}";
             var state = SerializationHelper.Deserialize<EnqueuedState>(json);
 
             Assert.Equal("default", state.Queue);

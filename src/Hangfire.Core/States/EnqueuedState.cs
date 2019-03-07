@@ -141,7 +141,6 @@ namespace Hangfire.States
         /// The value specified for a set operation is not a valid queue name.
         /// </exception>
         [NotNull]
-        [DefaultValue(DefaultQueue)]
         public string Queue
         {
             get { return _queue; }
