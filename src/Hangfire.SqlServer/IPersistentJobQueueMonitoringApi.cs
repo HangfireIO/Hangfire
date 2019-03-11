@@ -24,6 +24,7 @@ namespace Hangfire.SqlServer
 
         IEnumerable<long> GetEnqueuedJobIds(string queue, int from, int perPage);
 
+        // TODO: Extend return type by including DateTime to allow getting the FetchedAt value in 2.0
         IEnumerable<long> GetFetchedJobIds(string queue, int from, int perPage);
 
         EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue);
