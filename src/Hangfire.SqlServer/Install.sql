@@ -17,7 +17,7 @@
 SET NOCOUNT ON
 SET XACT_ABORT ON
 DECLARE @TARGET_SCHEMA_VERSION INT;
-SET @TARGET_SCHEMA_VERSION = 6;
+SET @TARGET_SCHEMA_VERSION = 7;
 
 PRINT 'Installing Hangfire SQL objects...';
 
@@ -639,15 +639,28 @@ BEGIN
 	PRINT 'Re-created constraint [FK_HangFire_JobParameter_Job]';
 
 	SET @CURRENT_SCHEMA_VERSION = 6;
-END	
+END
 
-/*IF @CURRENT_SCHEMA_VERSION = 6
+IF @CURRENT_SCHEMA_VERSION = 6
 BEGIN
 	PRINT 'Installing schema version 7';
 
-	 Insert migration here
+	DROP INDEX [IX_HangFire_Set_Score] ON [$(HangFireSchema)].[Set];
+	PRINT 'Dropped index [IX_HangFire_Set_Score]';
+
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Set_Score] ON [$(HangFireSchema)].[Set] ([Key], [Score]);
+	PRINT 'Created index [IX_HangFire_Set_Score] with the proper composite key';
 
 	SET @CURRENT_SCHEMA_VERSION = 7;
+END
+
+/*IF @CURRENT_SCHEMA_VERSION = 7
+BEGIN
+	PRINT 'Installing schema version 8';
+
+	 Insert migration here
+
+	SET @CURRENT_SCHEMA_VERSION = 8;
 END*/
 
 UPDATE [$(HangFireSchema)].[Schema] SET [Version] = @CURRENT_SCHEMA_VERSION

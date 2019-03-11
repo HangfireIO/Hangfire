@@ -17,7 +17,6 @@
 using System;
 using System.Data.Common;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using Dapper;
 using Hangfire.Logging;
@@ -26,7 +25,6 @@ namespace Hangfire.SqlServer
 {
     public static class SqlServerObjectsInstaller
     {
-        public static readonly int RequiredSchemaVersion = 6;
         private const int RetryAttempts = 3;
 
         public static void Install(DbConnection connection)
@@ -45,8 +43,6 @@ namespace Hangfire.SqlServer
             var script = GetStringResource(
                 typeof(SqlServerObjectsInstaller).GetTypeInfo().Assembly, 
                 "Hangfire.SqlServer.Install.sql");
-
-            script = script.Replace("SET @TARGET_SCHEMA_VERSION = 6;", "SET @TARGET_SCHEMA_VERSION = " + RequiredSchemaVersion + ";");
 
             script = script.Replace("$(HangFireSchema)", !string.IsNullOrWhiteSpace(schema) ? schema : Constants.DefaultSchema);
 
