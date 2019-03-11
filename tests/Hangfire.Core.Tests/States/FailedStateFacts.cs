@@ -21,27 +21,14 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(FailedState.StateName, state.Name);
         }
 
-        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
-        public void SerializeData_ReturnsCorrectData_Before170()
+        [Fact]
+        public void SerializeData_ReturnsCorrectData()
         {
             var state = new FailedState(new Exception("Message"));
 
             var serializedData = state.SerializeData();
 
             Assert.Equal(JobHelper.SerializeDateTime(state.FailedAt), serializedData["FailedAt"]);
-            Assert.Equal("System.Exception", serializedData["ExceptionType"]);
-            Assert.Equal("Message", serializedData["ExceptionMessage"]);
-            Assert.Equal(state.Exception.ToString(), serializedData["ExceptionDetails"]);
-        }
-
-        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
-        public void SerializeData_ReturnsCorrectData_After170()
-        {
-            var state = new FailedState(new Exception("Message"));
-
-            var serializedData = state.SerializeData();
-
-            Assert.Equal(3, serializedData.Count);
             Assert.Equal("System.Exception", serializedData["ExceptionType"]);
             Assert.Equal("Message", serializedData["ExceptionMessage"]);
             Assert.Equal(state.Exception.ToString(), serializedData["ExceptionDetails"]);

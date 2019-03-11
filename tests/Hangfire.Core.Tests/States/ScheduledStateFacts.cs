@@ -31,8 +31,8 @@ namespace Hangfire.Core.Tests.States
             Assert.True(state.EnqueueAt < DateTime.UtcNow.AddDays(1).AddMinutes(1));
         }
 
-        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
-        public void SerializeData_ReturnsCorrectData_Before170()
+        [Fact]
+        public void SerializeData_ReturnsCorrectData()
         {
             var state = new ScheduledState(new DateTime(2012, 12, 12));
 
@@ -40,17 +40,6 @@ namespace Hangfire.Core.Tests.States
 
             Assert.Equal(JobHelper.SerializeDateTime(state.EnqueueAt), data["EnqueueAt"]);
             Assert.Equal(JobHelper.SerializeDateTime(state.ScheduledAt), data["ScheduledAt"]);
-        }
-
-        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
-        public void SerializeData_ReturnsCorrectData_After170()
-        {
-            var state = new ScheduledState(new DateTime(2012, 12, 12));
-
-            var data = state.SerializeData();
-
-            Assert.Equal(1, data.Count);
-            Assert.Equal(JobHelper.SerializeDateTime(state.EnqueueAt), data["EnqueueAt"]);
         }
 
         [Fact]

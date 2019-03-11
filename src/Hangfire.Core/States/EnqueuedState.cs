@@ -216,17 +216,11 @@ namespace Hangfire.States
         /// </remarks>
         public Dictionary<string, string> SerializeData()
         {
-            var result = new Dictionary<string, string>
+            return new Dictionary<string, string>
             {
+                { "EnqueuedAt", JobHelper.SerializeDateTime(EnqueuedAt) },
                 { "Queue", Queue }
             };
-
-            if (!GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_170))
-            {
-                result.Add("EnqueuedAt", JobHelper.SerializeDateTime(EnqueuedAt));
-            }
-
-            return result;
         }
 
         internal static void ValidateQueueName([InvokerParameterName] string parameterName, string value)

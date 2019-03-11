@@ -32,8 +32,8 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(ProcessingState.StateName, state.Name);
         }
 
-        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
-        public void SerializeData_ReturnsCorrectData_Before170()
+        [Fact]
+        public void SerializeData_ReturnsCorrectData()
         {
             var state = CreateState();
 
@@ -41,19 +41,7 @@ namespace Hangfire.Core.Tests.States
 
             Assert.Equal(JobHelper.SerializeDateTime(state.StartedAt), data["StartedAt"]);
             Assert.Equal(ServerId, data["ServerId"]);
-            Assert.Equal(WorkerId, data["WorkerId"]);
-        }
-
-        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
-        public void SerializeData_ReturnsCorrectData_After170()
-        {
-            var state = CreateState();
-
-            var data = state.SerializeData();
-
-            Assert.Equal(2, data.Count);
-            Assert.Equal(ServerId, data["ServerId"]);
-            Assert.Equal(WorkerId, data["WorkerId"]);
+            Assert.Equal(WorkerId.ToString(), data["WorkerId"]);
         }
 
         [Fact]

@@ -128,11 +128,6 @@ namespace Hangfire.States
         /// </remarks>
         public Dictionary<string, string> SerializeData()
         {
-            if (GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_170))
-            {
-                return new Dictionary<string, string>();
-            }
-
             return new Dictionary<string, string>
             {
                 { "DeletedAt", JobHelper.SerializeDateTime(DeletedAt) }

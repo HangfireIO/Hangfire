@@ -200,19 +200,13 @@ namespace Hangfire.States
         /// </remarks>
         public Dictionary<string, string> SerializeData()
         {
-            var result = new Dictionary<string, string>
+            return new Dictionary<string, string>
             {
                 { "ParentId", ParentId },
                 { "NextState", SerializationHelper.Serialize(NextState, SerializationOption.TypedInternal) },
-                { "Options", Options.ToString("D") }
+                { "Options", Options.ToString("D") },
+                { "Expiration", Expiration.ToString() }
             };
-
-            if (!GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_170))
-            {
-                result.Add("Expiration", Expiration.ToString());
-            }
-
-            return result;
         }
 
         internal class Handler : IStateHandler

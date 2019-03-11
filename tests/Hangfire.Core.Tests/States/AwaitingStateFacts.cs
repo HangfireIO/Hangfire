@@ -40,7 +40,6 @@ namespace Hangfire.Core.Tests.States
 
             var data = state.SerializeData();
 
-            Assert.Equal(3, data.Count);
             Assert.Equal(state.ParentId, data["ParentId"]);
             Assert.Equal("{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\",\"Queue\":\"default\"}", data["NextState"]);
             Assert.Equal(state.Options.ToString("D"), data["Options"]);

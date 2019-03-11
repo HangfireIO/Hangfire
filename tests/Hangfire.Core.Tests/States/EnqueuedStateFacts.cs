@@ -49,8 +49,8 @@ namespace Hangfire.Core.Tests.States
             state.Queue = "1234567890_allowed";
         }
 
-        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
-        public void SerializeData_ReturnsCorrectData_Before170()
+        [Fact]
+        public void SerializeData_ReturnsCorrectData()
         {
             var state = new EnqueuedState();
 
@@ -58,17 +58,6 @@ namespace Hangfire.Core.Tests.States
 
             Assert.Equal(state.Queue, serializedData["Queue"]);
             Assert.Equal(JobHelper.SerializeDateTime(state.EnqueuedAt), serializedData["EnqueuedAt"]);
-        }
-
-        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
-        public void SerializeData_ReturnsCorrectData_After170()
-        {
-            var state = new EnqueuedState();
-
-            var serializedData = state.SerializeData();
-
-            Assert.Equal(1, serializedData.Count);
-            Assert.Equal(state.Queue, serializedData["Queue"]);
         }
 
         [Fact]
