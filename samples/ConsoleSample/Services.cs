@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
 using Hangfire.Common;
+using Hangfire.States;
 
 namespace ConsoleSample
 {
@@ -120,6 +121,13 @@ namespace ConsoleSample
         public void WriteBlankLine()
         {
             Console.WriteLine();
+        }
+
+        [IdempotentCompletion(Asynchronous = true)]
+        public static IState WriteLine(string value)
+        {
+            Console.WriteLine(value);
+            return new AwaitingState("asfafs", new EnqueuedState("criticalll"));
         }
     }
 }

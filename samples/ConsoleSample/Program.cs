@@ -15,22 +15,28 @@ namespace ConsoleSample
         {
             GlobalConfiguration.Configuration
                 .UseColouredConsoleLogProvider()
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                 .UseSimpleAssemblyNameTypeSerializer()
-                .UseIgnoredAssemblyVersionTypeResolver()
+                .UseRecommendedSerializerSettings()
                 .UseSqlServerStorage(@"Server=.\;Database=Hangfire.Sample;Trusted_Connection=True;", new SqlServerStorageOptions
                 {
                     CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
                     QueuePollInterval = TimeSpan.FromTicks(1),
                     TransactionIsolationLevel = IsolationLevel.ReadCommitted,
-                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(1)
+                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(1),
+                    PrepareSchemaIfNecessary = false,
+                    UsePageLocksOnDequeue = true
                 });
+
+            var job1 = BackgroundJob.Enqueue(() => Services.WriteLine("First Job"));
+            var job2 = BackgroundJob.ContinueWith(job1, () => Services.WriteLine("Second Job"));
 
             RecurringJob.AddOrUpdate("seconds", () => Console.WriteLine("Hello, seconds!"), "*/15 * * * * *");
             RecurringJob.AddOrUpdate(() => Console.WriteLine("Hello, world!"), Cron.Minutely);
             RecurringJob.AddOrUpdate("hourly", () => Console.WriteLine("Hello"), "25 15 * * *");
             RecurringJob.AddOrUpdate("neverfires", () => Console.WriteLine("Can only be triggered"), "0 0 31 2 *");
 
-            RecurringJob.AddOrUpdate("Hawaiian", () => Console.WriteLine("Hawaiian"),  "15 08 * * *", TimeZoneInfo.FindSystemTimeZoneById("Hawaiian Standard Time"));
+            RecurringJob.AddOrUpdate("Hawaiian", () => Console.WriteLine("Hawaiian"), "15 08 * * *", TimeZoneInfo.FindSystemTimeZoneById("Hawaiian Standard Time"));
             RecurringJob.AddOrUpdate("UTC", () => Console.WriteLine("UTC"), "15 18 * * *");
             RecurringJob.AddOrUpdate("Russian", () => Console.WriteLine("Russian"), "15 21 * * *", TimeZoneInfo.Local);
 
@@ -124,7 +130,7 @@ namespace ConsoleSample
                         {
                             BackgroundJob.Enqueue<Services>(x => x.Custom(
                                 new Random().Next(),
-                                new []{ "Hello", "world!" },
+                                new[] { "Hello", "world!" },
                                 new Services.CustomObject { Id = 123 },
                                 DayOfWeek.Friday
                                 ));
@@ -181,7 +187,7 @@ namespace ConsoleSample
                         try
                         {
                             var workCount = int.Parse(command.Substring(5));
-                            Parallel.For(0, workCount, i =>
+                            Parallel.For(0, workCount, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, i =>
                             {
                                 if (i % 2 == 0)
                                 {
