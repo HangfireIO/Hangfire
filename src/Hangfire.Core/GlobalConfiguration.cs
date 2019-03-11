@@ -18,6 +18,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Threading;
 using Hangfire.Annotations;
 
 namespace Hangfire
@@ -30,13 +31,19 @@ namespace Hangfire
 
     public class GlobalConfiguration : IGlobalConfiguration
     {
+        private static int _compatibilityLevel = (int)CompatibilityLevel.Version_110;
+
         public static IGlobalConfiguration Configuration { get; } = new GlobalConfiguration();
 
-        internal CompatibilityLevel CompatibilityLevel = CompatibilityLevel.Version_110;
+        internal static CompatibilityLevel CompatibilityLevel
+        {
+            get => (CompatibilityLevel)Volatile.Read(ref _compatibilityLevel);
+            set => Volatile.Write(ref _compatibilityLevel, (int)value);
+        }
 
         internal static bool HasCompatibilityLevel(CompatibilityLevel level)
         {
-            return ((GlobalConfiguration)Configuration).CompatibilityLevel >= level;
+            return CompatibilityLevel >= level;
         }
 
         internal GlobalConfiguration()
@@ -58,7 +65,7 @@ namespace Hangfire
                     typeof(CompatibilityLevel));
 #endif
 
-            ((GlobalConfiguration) configuration).CompatibilityLevel = compatibilityLevel;
+            GlobalConfiguration.CompatibilityLevel = compatibilityLevel;
 
             return configuration;
         }

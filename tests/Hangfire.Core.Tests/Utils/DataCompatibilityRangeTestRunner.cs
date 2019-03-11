@@ -21,7 +21,6 @@ namespace Hangfire.Core.Tests
         protected override async Task<Tuple<decimal, string>> InvokeTestAsync(ExceptionAggregator aggregator)
         {
             CompatibilityLevel? oldCompatibilityLevel = null;
-            var configuration = (GlobalConfiguration) GlobalConfiguration.Configuration;
 
             try
             {
@@ -30,14 +29,14 @@ namespace Hangfire.Core.Tests
                 var compatibilityLevel = (CompatibilityLevel)TestMethodArguments[TestMethodArguments.Length - 1];
                 TestMethodArguments = TestMethodArguments.Take(TestMethodArguments.Length - 1).ToArray();
 
-                oldCompatibilityLevel = configuration.CompatibilityLevel;
-                configuration.CompatibilityLevel = compatibilityLevel;
+                oldCompatibilityLevel = GlobalConfiguration.CompatibilityLevel;
+                GlobalConfiguration.CompatibilityLevel = compatibilityLevel;
 
                 return await base.InvokeTestAsync(aggregator);
             }
             finally
             {
-                if (oldCompatibilityLevel.HasValue) configuration.CompatibilityLevel = oldCompatibilityLevel.Value;
+                if (oldCompatibilityLevel.HasValue) GlobalConfiguration.CompatibilityLevel = oldCompatibilityLevel.Value;
                 SyncRoot.Release();
             }
         }
