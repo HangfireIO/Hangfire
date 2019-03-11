@@ -191,7 +191,7 @@ namespace Hangfire.Server
                     return action(connection);
                 }
             }
-            catch (DistributedLockTimeoutException e) when (e.Resource == resource)
+            catch (DistributedLockTimeoutException e) when (e.Resource.EndsWith(resource))
             {
                 // DistributedLockTimeoutException here doesn't mean that delayed jobs weren't enqueued.
                 // It just means another Hangfire server did this work.
