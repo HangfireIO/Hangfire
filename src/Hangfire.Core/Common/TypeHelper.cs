@@ -71,17 +71,15 @@ namespace Hangfire.Common
         {
 #if NETSTANDARD1_3
             typeName = typeName.Replace("System.Private.CoreLib", "mscorlib");
-            return System.Type.GetType(
+            return Type.GetType(
                 typeName,
-                throwOnError: true,
-                ignoreCase: true);
+                throwOnError: true);
 #else
             return Type.GetType(
                 typeName,
                 typeResolver: TypeResolver,
                 assemblyResolver: CachedAssemblyResolver,
-                throwOnError: true,
-                ignoreCase: true);
+                throwOnError: true);
 #endif
         }
 
