@@ -19,6 +19,47 @@
     <tags>Hangfire AspNet MVC AspNetCore SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.7.0-rc1
+
+Hangfire.Core
+
+• Added – Expose the IGlobalConfiguration.SetDataCompatibilityLevel method.
+• Added – Allow to specify custom TaskScheduler for processing server.
+• Added – You can use dynamically loaded assemblies now using the default type resolver.
+• Added – Add IGlobalConfiguration.UseRecommendedSerializerSettings method.
+• Changed – Split serializing to internal and user scopes to isolate them (CompatibilityLevel).
+• Changed – Use more compact representation of dates when using SerializeDateTime (CompatibilityLevel).
+• Changed – Stop special casing DateTime argument serialization in Version_170 (CompatibilityLevel).
+• Changed – Specify parameter type when serializing arguments, TypeNameHandling.Auto is now great.
+• Fixed – Log an error, when all the state change attempts failed due to an exception (Backport).
+• Fixed – Make SucceededState constructor public to allow state serialization (Backport).
+• Fixed – Ensure RecurringJobScheduler doesn't go into infinite loop when there's an old server.
+• Fixed – Don't allow to affect internal serialization settings even by JsonConvert.DefaultSettings.
+• Fixed – Queue async continuations back to the worker thread.
+• Fixed – Implement BackgroundTaskScheduler.MaximumConcurrencyLevel property.
+• Fixed – AwaitingState dashboard renderer to display options as string
+• Fixed – Don't serialize arguments multiple times when showing a job (Backport).
+• Fixed – DateTimeOffset conversion error when it was serialized with TypeConverter (Backport).
+• Fixed – Remove duplicate of argument deserialization code for obsolete class (Backport).
+• Fixed – Decorate all the exceptions with the SerializableAttribute (Backport).
+• Project – Add DataCompatibilityRangeFact and DataCompatibilityRangeTheory classes for compatibility checks.
+• Project – Reduce the test execution time by removing unnecessary waits.
+• Ported – Merged updates from version 1.6.23.
+
+Hangfire.AspNetCore
+• Changed – Remove services that are inconsistent with server options (list them and backport).
+• Ported – Merged updates from version 1.6.23.
+
+Hangfire.SqlServer
+
+• Added – Migration for Schema 7 to fix the IX_HangFire_Set_Score index to include the `Key` column.
+• Changed – Store arguments in the corresponding column in SQL Server again (differ in betas).
+• Changed – Continue to use global locks by default in SQL Server storage (differ in betas).
+• Changed – Bring ExpirationManager and CountersAggregator to their previous state (differ in betas).
+• Changed – Monitoring API doesn't check state data to see state transition time (Backport).
+• Fixed – Cannot resolve the collation conflict in CountersAggregator (Backport).
+• Ported – Merged updates from version 1.6.23.
+
 1.7.0-beta4
 
 Hangfire.Core
@@ -118,6 +159,7 @@ Hangfire.Core
 
 Hangfire.SqlServer
 
+* Added – Migration for Schema 6 to use...
 • Added – Callback method to allow to open the database with impersonation (by @BjoernHund).
 • Changed – Identity columns either converted to the `bigint` type, or entirely removed.
 • Changed – Clustered indexes were organized according to the access patterns of their tables.
