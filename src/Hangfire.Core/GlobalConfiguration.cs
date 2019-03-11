@@ -51,7 +51,7 @@ namespace Hangfire
         }
     }
 
-    public static class CompatibilityLevelGlobalConfigurationExtensions
+    public static class CompatibilityLevelExtensions
     {
         public static IGlobalConfiguration SetDataCompatibilityLevel(
             [NotNull] this IGlobalConfiguration configuration,
