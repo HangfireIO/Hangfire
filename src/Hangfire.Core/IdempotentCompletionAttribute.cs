@@ -27,10 +27,10 @@ namespace Hangfire
             Order = 0;
         }
 
-        public bool Asynchronous { get; set; }
-
         public void OnStateElection(ElectStateContext context)
         {
+            if (String.IsNullOrEmpty(context.CurrentState)) return;
+
             var serializedState = context.GetJobParameter<string>("Completion");
 
             if (!String.IsNullOrEmpty(serializedState))
@@ -40,11 +40,6 @@ namespace Hangfire
             else if (context.CandidateState.IsFinal)
             {
                 context.SetJobParameter("Completion", SerializationHelper.Serialize(context.CandidateState));
-
-                if (Asynchronous)
-                {
-                    context.CandidateState = new EnqueuedState { Reason = "Asynchronous completion" };
-                }
             }
         }
     }
