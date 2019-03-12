@@ -406,7 +406,7 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
 
             string query =
 $@"select [Value] from (
-	select [Value], row_number() over (order by [Id] ASC) as row_num
+	select [Value], row_number() over (order by [Key] ASC) as row_num
 	from [{_storage.SchemaName}].[Set] with (readcommittedlock)
 	where [Key] = @key 
 ) as s where s.row_num between @startingFrom and @endingAt";
