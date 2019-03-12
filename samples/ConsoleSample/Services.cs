@@ -123,7 +123,7 @@ namespace ConsoleSample
             Console.WriteLine();
         }
 
-        [IdempotentCompletion(Asynchronous = true)]
+        [IdempotentCompletion]
         public static IState WriteLine(string value)
         {
             Console.WriteLine(value);
