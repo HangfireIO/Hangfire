@@ -221,7 +221,11 @@ namespace Hangfire.Common
             serializerSettings.DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate;
             serializerSettings.NullValueHandling = NullValueHandling.Ignore;
             serializerSettings.CheckAdditionalContent = true; // Default option in JsonConvert.Deserialize method
+#if NETSTANDARD2_0
+            serializerSettings.SerializationBinder = new TypeHelperSerializationBinder();
+#else
             serializerSettings.Binder = new TypeHelperSerializationBinder();
+#endif
 
             return serializerSettings;
         }
@@ -232,6 +236,9 @@ namespace Hangfire.Common
         }
 
         private class TypeHelperSerializationBinder : SerializationBinder
+#if NETSTANDARD2_0
+            , Newtonsoft.Json.Serialization.ISerializationBinder
+#endif
         {
             public override Type BindToType(string assemblyName, string typeName)
             {
