@@ -15,7 +15,6 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Hangfire.Dashboard
@@ -28,8 +27,6 @@ namespace Hangfire.Dashboard
 
         public abstract string LocalIpAddress { get; }
         public abstract string RemoteIpAddress { get; }
-
-        public abstract CancellationToken Aborted { get; }
 
         public abstract string GetQuery(string key);
         public abstract Task<IList<string>> GetFormValuesAsync(string key);
