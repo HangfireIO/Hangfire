@@ -289,7 +289,8 @@ namespace Hangfire.Core.Tests.Common
 			CreateAndPerform(CustomStructValue, true);
 		}
 
-		public class MyClass : IEquatable<MyClass>
+#pragma warning disable 659
+        public class MyClass : IEquatable<MyClass>
 		{
 			public DateTime CreatedAt { get; set; }
 
@@ -299,15 +300,14 @@ namespace Hangfire.Core.Tests.Common
                 return CreatedAt.Equals(other.CreatedAt);
             }
 
-#pragma warning disable 659
             public override bool Equals(object obj)
-#pragma warning restore 659
             {
                 return Equals(obj as MyClass);
             }
         }
-		
-		private static readonly MyClass CustomClassValue = new MyClass { CreatedAt = DateTime.UtcNow };
+#pragma warning restore 659
+
+        private static readonly MyClass CustomClassValue = new MyClass { CreatedAt = DateTime.UtcNow };
 		public void Method(MyClass value) { Assert.Equal(CustomClassValue.CreatedAt, value.CreatedAt); }
 
 		[Fact]
