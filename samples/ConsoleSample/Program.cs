@@ -29,7 +29,7 @@ namespace ConsoleSample
                 });
 
             var job1 = BackgroundJob.Enqueue(() => Services.WriteLine("First Job"));
-            var job2 = BackgroundJob.ContinueWith(job1, () => Services.WriteLine("Second Job"));
+            var job2 = BackgroundJob.ContinueJobWith(job1, () => Services.WriteLine("Second Job"));
 
             RecurringJob.AddOrUpdate("seconds", () => Console.WriteLine("Hello, seconds!"), "*/15 * * * * *");
             RecurringJob.AddOrUpdate(() => Console.WriteLine("Hello, world!"), Cron.Minutely);
@@ -228,10 +228,10 @@ namespace ConsoleSample
 
             for (var i = 1; i < value.Length; i++)
             {
-                lastId = BackgroundJob.ContinueWith<Services>(lastId, x => x.Write(value[i]));
+                lastId = BackgroundJob.ContinueJobWith<Services>(lastId, x => x.Write(value[i]));
             }
 
-            BackgroundJob.ContinueWith<Services>(lastId, x => x.WriteBlankLine());
+            BackgroundJob.ContinueJobWith<Services>(lastId, x => x.WriteBlankLine());
         }
     }
 }
