@@ -133,9 +133,17 @@
                                         {
                                             @: @Html.JobName(job.Job)
                                         }
-                                        else
+                                        else if (job.LoadException != null && job.LoadException.InnerException != null)
                                         {
                                             <em>@job.LoadException.InnerException.Message</em>
+                                        }
+                                        else if (job.LoadException != null)
+                                        {
+                                            <em>@job.LoadException.Message</em>
+                                        }
+                                        else
+                                        {
+                                            <em>@Strings.Common_NotAvailable</em>
                                         }
                                     </td>
                                     <td class="align-right min-width">
