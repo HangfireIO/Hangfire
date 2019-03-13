@@ -14,6 +14,10 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.6.23
+• Fixed – Make `GetRangeFromSet` to be forward compatible with the 1.7.0 schema.
+• Fixed – Changed some SQL queries to not to cause index scans when using 1.7.0 schema.
+
 1.6.22
 • Added – Connection factory overload for the `SqlServerStorage` class (by @chinwobble).
 • Fixed – Inability to use package with Azure's managed service identity (by using a connection factory).

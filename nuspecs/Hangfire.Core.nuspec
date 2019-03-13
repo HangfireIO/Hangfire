@@ -10,9 +10,16 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>Core components for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2013-2018 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013-2019 Sergey Odinokov</copyright>
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
+
+1.6.23
+• Added – Slow log to see warning messages when filters or queries take more than 1 minute.
+• Fixed – Catching `DistributedLockTimeoutException` based on resource name in schedulers (by @bogdandanielb).
+• Fixed – Serilog context property name does not follow Serilog convention (by @pobiega).
+• Fixed – Add more guards against `NullReferenceException` on Recurring Jobs page.
+• Fixed – Don't handle recurring jobs created by newer version of Hangfire.
 
 1.6.22
 • Added – Ability to use custom type resolvers to modify the type de-serialization logic.

@@ -15,9 +15,25 @@
       Backed by Redis, SQL Server, SQL Azure or MSMQ. This is a .NET alternative to Sidekiq, Resque and Celery.
       https://www.hangfire.io/
     </description>
-    <copyright>Copyright © 2013-2018 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013-2019 Sergey Odinokov</copyright>
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
+
+1.6.23
+
+Hangfire.Core
+• Added – Slow log to see warning messages when filters or queries take more than 1 minute.
+• Fixed – Catching `DistributedLockTimeoutException` based on resource name in schedulers (by @bogdandanielb).
+• Fixed – Serilog context property name does not follow Serilog convention (by @pobiega).
+• Fixed – Add more guards against `NullReferenceException` on Recurring Jobs page.
+• Fixed – Don't handle recurring jobs created by newer version of Hangfire.
+
+Hangfire.AspNetCore
+• Fixed – Could not load type `Microsoft.***.FormattedLogValues` in ASP.NET Core 3.0.
+
+Hangfire.SqlServer
+• Fixed – Make `GetRangeFromSet` to be forward compatible with the 1.7.0 schema.
+• Fixed – Changed some SQL queries to not to cause index scans when using 1.7.0 schema.
 
 1.6.22
 

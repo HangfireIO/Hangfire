@@ -13,6 +13,10 @@
     <copyright>Copyright © 2017 Sergey Odinokov</copyright>
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
+
+1.6.23
+• Fixed – Could not load type `Microsoft.***.FormattedLogValues` in ASP.NET Core 3.0.
+
       
 1.6.20
 • SECURITY – Use ASP.NET Core's built-in antiforgery validation to prevent CSRF attacks.
