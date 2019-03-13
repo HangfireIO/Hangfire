@@ -442,7 +442,7 @@ where [Key] in @keys";
             string enqueuedJobsSql = 
 $@"select j.*, s.Reason as StateReason, s.Data as StateData 
 from [{_storage.SchemaName}].Job j with (nolock)
-left join [{_storage.SchemaName}].State s with (nolock) on s.Id = j.StateId
+left join [{_storage.SchemaName}].State s with (nolock) on s.Id = j.StateId and s.JobId = j.Id
 where j.Id in @jobIds";
 
             var jobs = connection.Query<SqlJob>(
@@ -514,7 +514,7 @@ $@";with cte as
 select j.*, s.Reason as StateReason, s.Data as StateData
 from [{_storage.SchemaName}].Job j with (nolock)
 inner join cte on cte.Id = j.Id 
-left join [{_storage.SchemaName}].State s with (nolock) on j.StateId = s.Id
+left join [{_storage.SchemaName}].State s with (nolock) on j.StateId = s.Id and j.Id = s.JobId
 where cte.row_num between @start and @end
 order by j.Id desc";
 
@@ -560,7 +560,7 @@ order by j.Id desc";
             string fetchedJobsSql = 
 $@"select j.*, s.Reason as StateReason, s.Data as StateData 
 from [{_storage.SchemaName}].Job j with (nolock)
-left join [{_storage.SchemaName}].State s with (nolock) on s.Id = j.StateId
+left join [{_storage.SchemaName}].State s with (nolock) on s.Id = j.StateId and s.JobId = j.Id
 where j.Id in @jobIds";
 
             var jobs = connection.Query<SqlJob>(

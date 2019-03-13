@@ -187,7 +187,7 @@ $@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.Schema
             string sql = 
 $@"select s.Name, s.Reason, s.Data
 from [{_storage.SchemaName}].State s with (readcommittedlock)
-inner join [{_storage.SchemaName}].Job j with (readcommittedlock) on j.StateId = s.Id
+inner join [{_storage.SchemaName}].Job j with (readcommittedlock) on j.StateId = s.Id and j.Id = s.JobId
 where j.Id = @jobId";
 
             return _storage.UseConnection(_dedicatedConnection, connection =>
@@ -450,7 +450,7 @@ where [Key] = @key) as s";
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = $@"select count([Id]) from [{_storage.SchemaName}].Hash with (readcommittedlock) where [Key] = @key";
+            string query = $@"select count(*) from [{_storage.SchemaName}].Hash with (readcommittedlock) where [Key] = @key";
 
             return _storage.UseConnection(_dedicatedConnection, connection => 
                 connection.ExecuteScalar<long>(query, new { key = key }, commandTimeout: _storage.CommandTimeout));
