@@ -166,6 +166,12 @@ namespace Hangfire.Server
             string recurringJobId, 
             IReadOnlyDictionary<string, string> recurringJob)
         {
+            // If a recurring job has the "V" field, then it was created by a newer
+            // version. Despite we can handle 1.7.0-based recurring jobs just fine,
+            // future versions may introduce new features anyway, so it's safer to
+            // let other servers to handle this recurring job.
+            if (recurringJob.ContainsKey("V")) return;
+
             var serializedJob = JobHelper.FromJson<InvocationData>(recurringJob["Job"]);
             var job = serializedJob.Deserialize();
             var cron = recurringJob["Cron"];

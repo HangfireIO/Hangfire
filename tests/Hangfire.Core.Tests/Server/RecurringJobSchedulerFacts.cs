@@ -104,6 +104,20 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void Execute_DoesNotHandleRecurringJobs_CreatedByNewerVersion()
+        {
+            _recurringJob["V"] = "2";
+            var scheduler = CreateScheduler();
+
+            scheduler.Execute(_context.Object);
+
+            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
+            _connection.Verify(
+                x => x.SetRangeInHash(It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>()),
+                Times.Never);
+        }
+
+        [Fact]
         public void Execute_EnqueuesAJobToAGivenQueue_WhenItIsTimeToRunIt()
         {
             _recurringJob["Queue"] = "critical";
