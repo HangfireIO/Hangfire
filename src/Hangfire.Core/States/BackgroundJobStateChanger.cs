@@ -118,7 +118,8 @@ namespace Hangfire.States
                         transaction,
                         new BackgroundJob(context.BackgroundJobId, jobData.Job, jobData.CreatedAt),
                         stateToApply,
-                        jobData.State);
+                        jobData.State,
+                        context.Profiler);
 
                     var appliedState = _stateMachine.ApplyState(applyContext);
 
