@@ -43,8 +43,10 @@ namespace Hangfire.Profiling
         {
             public InstanceAction([CanBeNull] TInstance instance, [NotNull] Action<TInstance> action)
             {
+                if (action == null) throw new ArgumentNullException(nameof(action));
+
                 Instance = instance;
-                Action = action ?? throw new ArgumentNullException(nameof(action));
+                Action = action;
             }
 
             [CanBeNull]
