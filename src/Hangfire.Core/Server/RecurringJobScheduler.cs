@@ -21,6 +21,7 @@ using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Logging;
+using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
 using NCrontab;
@@ -69,6 +70,7 @@ namespace Hangfire.Server
 
         private readonly ILog _logger = LogProvider.For<RecurringJobScheduler>();
         private readonly IBackgroundJobFactory _factory;
+        private readonly IProfiler _profiler;
         private readonly Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> _instantFactory;
         private readonly IThrottler _throttler;
 
@@ -105,6 +107,7 @@ namespace Hangfire.Server
             _factory = factory;
             _instantFactory = instantFactory;
             _throttler = throttler;
+            _profiler = new SlowLogProfiler(_logger);
         }
 
         /// <inheritdoc />
@@ -187,7 +190,7 @@ namespace Hangfire.Server
                         state.Queue = recurringJob["Queue"];
                     }
 
-                    var context = new CreateContext(storage, connection, job, state);
+                    var context = new CreateContext(storage, connection, job, state, _profiler);
                     context.Parameters["RecurringJobId"] = recurringJobId;
 
                     var backgroundJob = _factory.Create(context);

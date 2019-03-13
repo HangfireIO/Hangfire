@@ -15,9 +15,11 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Logging;
+using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
 
@@ -73,6 +75,7 @@ namespace Hangfire.Server
         private readonly ILog _logger = LogProvider.For<DelayedJobScheduler>();
 
         private readonly IBackgroundJobStateChanger _stateChanger;
+        private readonly IProfiler _profiler;
         private readonly TimeSpan _pollingDelay;
 
         /// <summary>
@@ -109,6 +112,7 @@ namespace Hangfire.Server
 
             _stateChanger = stateChanger;
             _pollingDelay = pollingDelay;
+            _profiler = new SlowLogProfiler(_logger);
         }
 
         /// <inheritdoc />
@@ -162,7 +166,9 @@ namespace Hangfire.Server
                     connection,
                     jobId,
                     new EnqueuedState { Reason = $"Triggered by {ToString()}" }, 
-                    ScheduledState.StateName));
+                    new [] { ScheduledState.StateName },
+                    CancellationToken.None,
+                    _profiler));
 
                 if (appliedState == null)
                 {
