@@ -356,7 +356,11 @@
     <Compile Include="Common\JobFilterAttribute.cs" />
     <Compile Include="Common\JobFilterAttributeFilterProvider.cs" />
     <Compile Include="Common\JobFilterInfo.cs" />
+    <Compile Include="Profiling\IProfiler.cs" />
     <Compile Include="States\IStateMachine.cs" />
+    <Compile Include="Profiling\EmptyProfiler.cs" />
+    <Compile Include="Profiling\ProfilerExtensions.cs" />
+    <Compile Include="Profiling\SlowLogProfiler.cs" />
     <Compile Include="States\StateMachine.cs" />
     <Compile Include="States\StateChangeContext.cs" />
     <Compile Include="States\StateHandlerCollection.cs" />
