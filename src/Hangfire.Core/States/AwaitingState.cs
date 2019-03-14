@@ -203,8 +203,7 @@ namespace Hangfire.States
             var result = new Dictionary<string, string>
             {
                 { "ParentId", ParentId },
-                { "NextState", SerializationHelper.Serialize(NextState, SerializationOption.TypedInternal) },
-                { "Expiration", Expiration.ToString() }
+                { "NextState", SerializationHelper.Serialize(NextState, SerializationOption.TypedInternal) }
             };
 
             if (GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_170))
@@ -214,6 +213,7 @@ namespace Hangfire.States
             else
             {
                 result.Add("Options", Options.ToString("G"));
+                result.Add("Expiration", Expiration.ToString());
             }
 
             return result;

@@ -43,6 +43,7 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(state.ParentId, data["ParentId"]);
             Assert.Equal("{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\",\"Queue\":\"default\"}", data["NextState"]);
             Assert.Equal(state.Options.ToString("D"), data["Options"]);
+            Assert.False(data.ContainsKey("Expiration"));
         }
 
         [Fact]
