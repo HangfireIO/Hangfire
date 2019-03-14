@@ -84,7 +84,7 @@ namespace Hangfire.SqlServer
             return 
 $@"DECLARE @RecordsToAggregate TABLE
 (
-	[Key] NVARCHAR(100) COLLATE DATABASE_DEFAULT NOT NULL,
+	[Key] NVARCHAR(100) COLLATE DATABASE_DEFAULT NOT NULL INDEX IX1 CLUSTERED,
 	[Value] INT NOT NULL,
 	[ExpireAt] DATETIME NULL
 )
