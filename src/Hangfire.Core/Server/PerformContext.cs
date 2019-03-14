@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.Profiling;
 using Hangfire.Storage;
 
 namespace Hangfire.Server
@@ -29,7 +30,7 @@ namespace Hangfire.Server
     public class PerformContext
     {
         public PerformContext([NotNull] PerformContext context)
-            : this(context.Storage, context.Connection, context.BackgroundJob, context.CancellationToken)
+            : this(context.Storage, context.Connection, context.BackgroundJob, context.CancellationToken, context.Profiler)
         {
             Items = context.Items;
         }
@@ -48,11 +49,27 @@ namespace Hangfire.Server
             [NotNull] IStorageConnection connection, 
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IJobCancellationToken cancellationToken)
+            : this(storage, connection, backgroundJob, cancellationToken, EmptyProfiler.Instance)
         {
+        }
+
+        internal PerformContext(
+            [CanBeNull] JobStorage storage,
+            [NotNull] IStorageConnection connection, 
+            [NotNull] BackgroundJob backgroundJob,
+            [NotNull] IJobCancellationToken cancellationToken,
+            [NotNull] IProfiler profiler)
+        {
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            if (backgroundJob == null) throw new ArgumentNullException(nameof(backgroundJob));
+            if (cancellationToken == null) throw new ArgumentNullException(nameof(cancellationToken));
+            if (profiler == null) throw new ArgumentNullException(nameof(profiler));
+
             Storage = storage;
-            Connection = connection ?? throw new ArgumentNullException(nameof(connection));
-            BackgroundJob = backgroundJob ?? throw new ArgumentNullException(nameof(backgroundJob));
-            CancellationToken = cancellationToken ?? throw new ArgumentNullException(nameof(cancellationToken));
+            Connection = connection;
+            BackgroundJob = backgroundJob;
+            CancellationToken = cancellationToken;
+            Profiler = profiler;
 
             Items = new Dictionary<string, object>();
         }
@@ -86,6 +103,9 @@ namespace Hangfire.Server
         [NotNull]
         public IStorageConnection Connection { get; }
         
+        [NotNull]
+        internal IProfiler Profiler { get; }
+
         public void SetJobParameter(string name, object value)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));

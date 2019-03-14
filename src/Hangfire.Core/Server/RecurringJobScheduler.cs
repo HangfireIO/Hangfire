@@ -20,6 +20,7 @@ using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Logging;
+using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
 
@@ -74,6 +75,7 @@ namespace Hangfire.Server
         private readonly Func<DateTime> _nowFactory;
         private readonly ITimeZoneResolver _timeZoneResolver;
         private readonly TimeSpan _pollingDelay;
+        private readonly IProfiler _profiler;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RecurringJobScheduler"/>
@@ -154,6 +156,7 @@ namespace Hangfire.Server
             _nowFactory = nowFactory;
             _timeZoneResolver = timeZoneResolver;
             _pollingDelay = pollingDelay;
+            _profiler = new SlowLogProfiler(_logger);
         }
 
         /// <inheritdoc />
@@ -285,13 +288,22 @@ namespace Hangfire.Server
                         return false;
                     }
 
+                    // If a recurring job has the "V" field, then it was created by a newer
+                    // version. Despite we can handle 1.7.0-based recurring jobs just fine,
+                    // future versions may introduce new features anyway, so it's safer to
+                    // let other servers to handle this recurring job.
+                    if (recurringJob.Version.HasValue && recurringJob.Version > 2)
+                    {
+                        return false;
+                    }
+
                     BackgroundJob backgroundJob = null;
 
                     var nextExecution = recurringJob.GetNextExecution();
 
                     if (nextExecution.HasValue && nextExecution <= now)
                     {
-                        backgroundJob = _factory.TriggerRecurringJob(context.Storage, connection, recurringJob, now);
+                        backgroundJob = _factory.TriggerRecurringJob(context.Storage, connection, _profiler, recurringJob, now);
 
                         if (String.IsNullOrEmpty(backgroundJob?.Id))
                         {
@@ -315,7 +327,8 @@ namespace Hangfire.Server
                                 transaction,
                                 recurringJob,
                                 backgroundJob,
-                                "Triggered by recurring job scheduler");
+                                "Triggered by recurring job scheduler",
+                                _profiler);
                         }
 
                         transaction.UpdateRecurringJob(recurringJobId, changedFields, nextExecution);
@@ -354,7 +367,7 @@ namespace Hangfire.Server
                     return action(connection);
                 }
             }
-            catch (DistributedLockTimeoutException e) when (e.Resource == resource)
+            catch (DistributedLockTimeoutException e) when (e.Resource.EndsWith(resource))
             {
                 // DistributedLockTimeoutException here doesn't mean that recurring jobs weren't scheduled.
                 // It just means another Hangfire server did this work.

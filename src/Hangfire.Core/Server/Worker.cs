@@ -22,6 +22,7 @@ using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Logging;
+using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
 
@@ -50,6 +51,7 @@ namespace Hangfire.Server
 
         private readonly IBackgroundJobPerformer _performer;
         private readonly IBackgroundJobStateChanger _stateChanger;
+        private readonly IProfiler _profiler;
         
         public Worker() : this(EnqueuedState.DefaultQueue)
         {
@@ -85,6 +87,8 @@ namespace Hangfire.Server
 
             _jobInitializationWaitTimeout = jobInitializationTimeout;
             _maxStateChangeAttempts = maxStateChangeAttempts;
+
+            _profiler = new SlowLogProfiler(_logger);
         }
 
         /// <inheritdoc />
@@ -191,7 +195,8 @@ namespace Hangfire.Server
                         fetchedJob.JobId,
                         state,
                         expectedStates,
-                        initializeToken));
+                        initializeToken,
+                        _profiler));
                 }
                 catch (Exception ex)
                 {
@@ -216,7 +221,8 @@ namespace Hangfire.Server
                 fetchedJob.JobId,
                 new FailedState(exception) { Reason = $"Failed to change state to a '{state.Name}' one due to an exception after {_maxStateChangeAttempts} retry attempts" },
                 expectedStates,
-                initializeToken));
+                initializeToken,
+                _profiler));
         }
 
         private void Requeue(IFetchedJob fetchedJob)
@@ -251,7 +257,7 @@ namespace Hangfire.Server
 
                 using (var jobToken = new ServerJobCancellationToken(connection, jobId, context.ServerId, context.ExecutionId.ToString(), context.StoppedToken))
                 {
-                    var performContext = new PerformContext(context.Storage, connection, backgroundJob, jobToken);
+                    var performContext = new PerformContext(context.Storage, connection, backgroundJob, jobToken, _profiler);
 
                     var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
                     var duration = Stopwatch.StartNew();

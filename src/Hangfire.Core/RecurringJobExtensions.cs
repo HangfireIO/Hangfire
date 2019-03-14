@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
+using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
 
@@ -94,15 +95,17 @@ namespace Hangfire
             [NotNull] this IBackgroundJobFactory factory,
             [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
+            [NotNull] IProfiler profiler,
             [NotNull] RecurringJobEntity recurringJob,
             DateTime now)
         {
             if (factory == null) throw new ArgumentNullException(nameof(factory));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (connection == null) throw new ArgumentNullException(nameof(connection));
+            if (profiler == null) throw new ArgumentNullException(nameof(profiler));
             if (recurringJob == null) throw new ArgumentNullException(nameof(recurringJob));
 
-            var context = new CreateContext(storage, connection, recurringJob.Job, null);
+            var context = new CreateContext(storage, connection, recurringJob.Job, null, profiler);
             context.Parameters["RecurringJobId"] = recurringJob.RecurringJobId;
             context.Parameters["Time"] = JobHelper.ToTimestamp(now);
 
@@ -121,7 +124,8 @@ namespace Hangfire
             [NotNull] IWriteOnlyTransaction transaction,
             [NotNull] RecurringJobEntity recurringJob,
             [NotNull] BackgroundJob backgroundJob,
-            [CanBeNull] string reason)
+            [CanBeNull] string reason,
+            [NotNull] IProfiler profiler)
         {
             if (stateMachine == null) throw new ArgumentNullException(nameof(stateMachine));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -129,6 +133,7 @@ namespace Hangfire
             if (transaction == null) throw new ArgumentNullException(nameof(transaction));
             if (recurringJob == null) throw new ArgumentNullException(nameof(recurringJob));
             if (backgroundJob == null) throw new ArgumentNullException(nameof(backgroundJob));
+            if (profiler == null) throw new ArgumentNullException(nameof(profiler));
 
             var state = new EnqueuedState { Reason = reason };
 
@@ -143,7 +148,8 @@ namespace Hangfire
                 transaction,
                 backgroundJob,
                 state,
-                null));
+                null,
+                profiler));
         }
     }
 }

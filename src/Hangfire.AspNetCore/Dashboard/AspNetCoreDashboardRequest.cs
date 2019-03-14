@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Microsoft.AspNetCore.Http;
@@ -38,13 +37,11 @@ namespace Hangfire.Dashboard
         public override string PathBase => _context.Request.PathBase.Value;
         public override string LocalIpAddress => _context.Connection.LocalIpAddress.ToString();
         public override string RemoteIpAddress => _context.Connection.RemoteIpAddress.ToString();
-        public override CancellationToken Aborted => _context.RequestAborted;
-
         public override string GetQuery(string key) => _context.Request.Query[key];
 
         public override async Task<IList<string>> GetFormValuesAsync(string key)
         {
-            var form = await _context.Request.ReadFormAsync(Aborted);
+            var form = await _context.Request.ReadFormAsync();
             return form[key];
         }
     }

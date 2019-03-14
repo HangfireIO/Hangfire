@@ -160,6 +160,21 @@ namespace Hangfire.Core.Tests.Server
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
+        public void Execute_DoesNotHandleRecurringJobs_CreatedByNewerVersion(bool useJobStorageConnection)
+        {
+            SetupConnection(useJobStorageConnection);
+            _recurringJob["V"] = "3";
+            var scheduler = CreateScheduler();
+
+            scheduler.Execute(_context.Object);
+
+            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
+            _transaction.Verify(x => x.Commit(), Times.Never);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void Execute_EnqueuesAJobToAGivenQueue_WhenItIsTimeToRunIt(bool useJobStorageConnection)
         {
             SetupConnection(useJobStorageConnection);

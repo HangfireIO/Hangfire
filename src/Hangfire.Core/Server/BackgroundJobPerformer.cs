@@ -20,6 +20,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.Profiling;
 
 namespace Hangfire.Server
 {
@@ -130,7 +131,10 @@ namespace Hangfire.Server
         {
             try
             {
-                filter.OnPerforming(preContext);
+                preContext.Profiler.InvokeMeasured(
+                    filter,
+                    x => x.OnPerforming(preContext),
+                    $"OnPerforming for {preContext.BackgroundJob.Id}");
             }
             catch (Exception filterException)
             {
@@ -160,7 +164,10 @@ namespace Hangfire.Server
 
                 try
                 {
-                    filter.OnPerformed(postContext);
+                    postContext.Profiler.InvokeMeasured(
+                        filter,
+                        x => x.OnPerformed(postContext),
+                        $"OnPerformed for {postContext.BackgroundJob.Id}");
                 }
                 catch (Exception filterException)
                 {
@@ -181,7 +188,10 @@ namespace Hangfire.Server
             {
                 try
                 {
-                    filter.OnPerformed(postContext);
+                    postContext.Profiler.InvokeMeasured(
+                        filter,
+                        x => x.OnPerformed(postContext),
+                        $"OnPerformed for {postContext.BackgroundJob.Id}");
                 }
                 catch (Exception filterException)
                 {

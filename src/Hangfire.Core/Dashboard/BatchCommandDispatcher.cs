@@ -54,13 +54,10 @@ namespace Hangfire.Dashboard
 
             foreach (var jobId in jobIds)
             {
-                if (context.Request.Aborted.IsCancellationRequested) break;
                 _command(context, jobId);
             }
-            
-            context.Response.StatusCode = context.Request.Aborted.IsCancellationRequested
-                ? (int)HttpStatusCode.RequestTimeout
-                : (int)HttpStatusCode.NoContent;
+
+            context.Response.StatusCode = (int)HttpStatusCode.NoContent;
         }
     }
 }

@@ -57,7 +57,8 @@ namespace Hangfire.Client
                         transaction,
                         backgroundJob,
                         context.InitialState,
-                        null);
+                        oldStateName: null,
+                        profiler: context.Profiler);
 
                     _stateMachine.ApplyState(applyContext);
 

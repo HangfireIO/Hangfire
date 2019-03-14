@@ -18,6 +18,7 @@ using System;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
+using Hangfire.Profiling;
 using Hangfire.States;
 
 namespace Hangfire
@@ -136,7 +137,7 @@ namespace Hangfire
                 var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
                 if (recurringJob == null) return;
 
-                var backgroundJob = _factory.TriggerRecurringJob(_storage, connection, recurringJob, now);
+                var backgroundJob = _factory.TriggerRecurringJob(_storage, connection, EmptyProfiler.Instance, recurringJob, now);
 
                 if (recurringJob.IsChanged(out var changedFields, out var nextExecution))
                 {
@@ -150,7 +151,8 @@ namespace Hangfire
                                 transaction,
                                 recurringJob,
                                 backgroundJob,
-                                "Triggered using recurring job manager");
+                                "Triggered using recurring job manager",
+                                EmptyProfiler.Instance);
                         }
 
                         transaction.UpdateRecurringJob(recurringJobId, changedFields, nextExecution);

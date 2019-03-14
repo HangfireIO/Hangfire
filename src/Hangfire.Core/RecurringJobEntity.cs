@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Cronos;
 using Hangfire.Annotations;
 using Hangfire.Common;
@@ -81,6 +82,11 @@ namespace Hangfire
             {
                 CreatedAt = now;
             }
+
+            if (recurringJob.ContainsKey("V") && !String.IsNullOrWhiteSpace(recurringJob["V"]))
+            {
+                Version = int.Parse(recurringJob["V"], CultureInfo.InvariantCulture);
+            }
         }
 
         public string RecurringJobId { get; }
@@ -95,6 +101,7 @@ namespace Hangfire
 
         public DateTime? LastExecution { get; set; }
         public string LastJobId { get; set; }
+        public int? Version { get; set; }
 
         public DateTime? GetNextExecution()
         {

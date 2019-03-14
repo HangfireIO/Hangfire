@@ -1,5 +1,5 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2016 Sergey Odinokov.
+// This file is part of Hangfire.
+// Copyright © 2019 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -14,21 +14,25 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using System;
 
-namespace Hangfire.Dashboard
+namespace Hangfire.Profiling
 {
-    public abstract class DashboardRequest
+    internal sealed class EmptyProfiler : IProfiler
     {
-        public abstract string Method { get; }
-        public abstract string Path { get; }
-        public abstract string PathBase { get; }
+        internal static readonly IProfiler Instance = new EmptyProfiler();
 
-        public abstract string LocalIpAddress { get; }
-        public abstract string RemoteIpAddress { get; }
+        private EmptyProfiler()
+        {
+        }
 
-        public abstract string GetQuery(string key);
-        public abstract Task<IList<string>> GetFormValuesAsync(string key);
+        public TResult InvokeMeasured<TInstance, TResult>(
+            TInstance instance, 
+            Func<TInstance, TResult> action,
+            string message)
+        {
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            return action(instance);
+        }
     }
 }
