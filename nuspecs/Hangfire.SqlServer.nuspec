@@ -52,6 +52,7 @@
 
       <group targetFramework="netstandard2.0">
         <dependency id="Hangfire.Core" version="[0.0.0]" />
+        <dependency id="System.Data.SqlClient" version="4.4.0" />
       </group>
     </dependencies>
   </metadata>
