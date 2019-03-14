@@ -19,6 +19,42 @@
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.7.0-rc1
+
+This release contains BREAKING CHANGES for 1.7.0 beta users to allow rolling upgrades from version 1.6.X. If you are using previous betas just add the following lines to your configuration:
+
+GlobalConfiguration.Configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+    .UseSimpleAssemblyNameTypeSerializer();
+
+• Added – `IGlobalConfiguration.SetDataCompatibilityLevel` to enable rolling upgrades from version 1.6.
+• Added – `IGlobalConfiguration.UseRecommendedSerializerSettings` method for new installations.
+• Added – Assemblies now loaded automatically when resolving a type when using default type resolver.
+• Added – Custom `TaskScheduler` can now be specified in `BackgroundJobServerOptions` for workers.
+• Added – `IdempotentCompletionAttribute` filter to enforce strict order for continuations.
+• Added – `IBackgroundJobClient.ContinueJobWith` methods to replace `ContinueWith` ones in future for clarity.
+• Changed – Split serializer setting to Internal and User scopes to isolate them (Version_170 Switch).
+• Changed – Don't allow to affect internal serialization even by `JsonConvert.DefaultSettings` (Version_170 Switch).
+• Changed – Share the same type binder between Hangfire itself and Newtonsoft.Json (Version_170 Switch).
+• Changed – Use more compact representation of dates when using `SerializeDateTime` (Version_170 Switch).
+• Changed – Stop using special case for `DateTime` argument serialization (Version_170 Switch).
+• Changed – Don't serialize unused `AwaitingState.Expiration` field (Version_170 Switch).
+• Changed – Use custom `SynchronizationContext` for async methods to run their continuations on worker thread.
+• Changed – Specify parameter type when serializing arguments to allow using `TypeNameHandling.Auto` option.
+• Changed – Use case sensitive search when resolving a type as by default in .NET.
+• Changed – Make `SucceededState` constructor public to allow state serialization.
+• Fixed – Worker now logs an error, when all the state change attempts failed due to an exception.
+• Fixed – Ensure `RecurringJobScheduler` doesn't go into infinite loop when there's server of an older version.
+• Fixed – Implement `BackgroundTaskScheduler.MaximumConcurrencyLevel` property.
+• Fixed – Dashboard renderer for `AwaitingState` displays `Option` property as string again.
+• Fixed – Don't serialize arguments multiple times when showing job details in dashboard.
+• Fixed – `DateTimeOffset` conversion error when it was serialized with `TypeConverter`.
+• Fixed – Remove duplicate of argument deserialization code for obsolete `Job` class methods.
+• Fixed – Decorate all the exceptions with the `SerializableAttribute`.
+• Project – Add `DataCompatibilityRangeFact` and `DataCompatibilityRangeTheory` classes for compatibility checks.
+• Project – Reduce test execution time by removing unnecessary waits.
+• Ported – Merged updates from version 1.6.23.
+
 1.7.0-beta4
 • Changed – `StopTimeout` introduced in 1.7.0-beta3 now defaults to zero seconds.
 • Fixed – `NotSupportedException` thrown by `RecurringJobScheduler` (regression).

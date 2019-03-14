@@ -14,6 +14,10 @@
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.7.0-rc1
+• Changed – Remove internal service registrations that are inconsistent with server options.
+• Ported – Merged updates from version 1.6.23.
+
 1.7.0-beta3
 • Added – Full .NET Core 2.0 support by explicitly targeting .NET Standard 2.0.
 • Added – An overloaded AddHangfire method with `IServiceProvider` parameter (by @ericgreenmix and @denis-ivanov).

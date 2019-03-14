@@ -21,43 +21,58 @@
 
 1.7.0-rc1
 
+This release contains BREAKING CHANGES for 1.7.0 beta users to allow rolling upgrades from version 1.6.X. If you are using previous betas just add the following lines to your configuration:
+
+GlobalConfiguration.Configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+    .UseSimpleAssemblyNameTypeSerializer();
+
 Hangfire.Core
 
-• Added – Expose the IGlobalConfiguration.SetDataCompatibilityLevel method.
-• Added – Allow to specify custom TaskScheduler for processing server.
-• Added – You can use dynamically loaded assemblies now using the default type resolver.
-• Added – Add IGlobalConfiguration.UseRecommendedSerializerSettings method.
-• Changed – Split serializing to internal and user scopes to isolate them (CompatibilityLevel).
-• Changed – Use more compact representation of dates when using SerializeDateTime (CompatibilityLevel).
-• Changed – Stop special casing DateTime argument serialization in Version_170 (CompatibilityLevel).
-• Changed – Specify parameter type when serializing arguments, TypeNameHandling.Auto is now great.
-• Fixed – Log an error, when all the state change attempts failed due to an exception (Backport).
-• Fixed – Make SucceededState constructor public to allow state serialization (Backport).
-• Fixed – Ensure RecurringJobScheduler doesn't go into infinite loop when there's an old server.
-• Fixed – Don't allow to affect internal serialization settings even by JsonConvert.DefaultSettings.
-• Fixed – Queue async continuations back to the worker thread.
-• Fixed – Implement BackgroundTaskScheduler.MaximumConcurrencyLevel property.
-• Fixed – AwaitingState dashboard renderer to display options as string
-• Fixed – Don't serialize arguments multiple times when showing a job (Backport).
-• Fixed – DateTimeOffset conversion error when it was serialized with TypeConverter (Backport).
-• Fixed – Remove duplicate of argument deserialization code for obsolete class (Backport).
-• Fixed – Decorate all the exceptions with the SerializableAttribute (Backport).
-• Project – Add DataCompatibilityRangeFact and DataCompatibilityRangeTheory classes for compatibility checks.
-• Project – Reduce the test execution time by removing unnecessary waits.
+• Added – `IGlobalConfiguration.SetDataCompatibilityLevel` to enable rolling upgrades from version 1.6.
+• Added – `IGlobalConfiguration.UseRecommendedSerializerSettings` method for new installations.
+• Added – Assemblies now loaded automatically when resolving a type when using default type resolver.
+• Added – Custom `TaskScheduler` can now be specified in `BackgroundJobServerOptions` for workers.
+• Added – `IdempotentCompletionAttribute` filter to enforce strict order for continuations.
+• Added – `IBackgroundJobClient.ContinueJobWith` methods to replace `ContinueWith` ones in future for clarity.
+• Changed – Split serializer setting to Internal and User scopes to isolate them (Version_170 Switch).
+• Changed – Don't allow to affect internal serialization even by `JsonConvert.DefaultSettings` (Version_170 Switch).
+• Changed – Share the same type binder between Hangfire itself and Newtonsoft.Json (Version_170 Switch).
+• Changed – Use more compact representation of dates when using `SerializeDateTime` (Version_170 Switch).
+• Changed – Stop using special case for `DateTime` argument serialization (Version_170 Switch).
+• Changed – Don't serialize unused `AwaitingState.Expiration` field (Version_170 Switch).
+• Changed – Use custom `SynchronizationContext` for async methods to run their continuations on worker thread.
+• Changed – Specify parameter type when serializing arguments to allow using `TypeNameHandling.Auto` option.
+• Changed – Use case sensitive search when resolving a type as by default in .NET.
+• Changed – Make `SucceededState` constructor public to allow state serialization.
+• Fixed – Worker now logs an error, when all the state change attempts failed due to an exception.
+• Fixed – Ensure `RecurringJobScheduler` doesn't go into infinite loop when there's server of an older version.
+• Fixed – Implement `BackgroundTaskScheduler.MaximumConcurrencyLevel` property.
+• Fixed – Dashboard renderer for `AwaitingState` displays `Option` property as string again.
+• Fixed – Don't serialize arguments multiple times when showing job details in dashboard.
+• Fixed – `DateTimeOffset` conversion error when it was serialized with `TypeConverter`.
+• Fixed – Remove duplicate of argument deserialization code for obsolete `Job` class methods.
+• Fixed – Decorate all the exceptions with the `SerializableAttribute`.
+• Project – Add `DataCompatibilityRangeFact` and `DataCompatibilityRangeTheory` classes for compatibility checks.
+• Project – Reduce test execution time by removing unnecessary waits.
 • Ported – Merged updates from version 1.6.23.
 
 Hangfire.AspNetCore
-• Changed – Remove services that are inconsistent with server options (list them and backport).
+
+• Changed – Remove internal service registrations that are inconsistent with server options.
 • Ported – Merged updates from version 1.6.23.
 
 Hangfire.SqlServer
 
-• Added – Migration for Schema 7 to fix the IX_HangFire_Set_Score index to include the `Key` column.
-• Changed – Store arguments in the corresponding column in SQL Server again (differ in betas).
-• Changed – Continue to use global locks by default in SQL Server storage (differ in betas).
-• Changed – Bring ExpirationManager and CountersAggregator to their previous state (differ in betas).
-• Changed – Monitoring API doesn't check state data to see state transition time (Backport).
-• Fixed – Cannot resolve the collation conflict in CountersAggregator (Backport).
+• Added – `Schema 7` migration to fix the `IX_HangFire_Set_Score` index to include the `Key` column.
+• Added – `SqlServerStorageOptions.DisableGlobalLocks` property to avoid custom locking scheme.
+• Added – `SqlServerStorageOptions.UsePageLocksOnDequeue` property to use less CPU consuming fetch.
+• Changed – Store arguments in the corresponding column in SQL Server again.
+• Changed – Continue to use global locks by default in SQL Server storage.
+• Changed – Bring `ExpirationManager` and `CountersAggregator` to their previous state.
+• Changed – Monitoring API doesn't check state data to see state transition time.
+• Changed – Update `CountersAggregator` to use clustered key for temp table.
+• Fixed – Cannot resolve the collation conflict in `CountersAggregator`.
 • Ported – Merged updates from version 1.6.23.
 
 1.7.0-beta4

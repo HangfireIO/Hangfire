@@ -14,6 +14,18 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.7.0-rc1
+• Added – `Schema 7` migration to fix the `IX_HangFire_Set_Score` index to include the `Key` column.
+• Added – `SqlServerStorageOptions.DisableGlobalLocks` property to avoid custom locking scheme.
+• Added – `SqlServerStorageOptions.UsePageLocksOnDequeue` property to use less CPU consuming fetch.
+• Changed – Store arguments in the corresponding column in SQL Server again.
+• Changed – Continue to use global locks by default in SQL Server storage.
+• Changed – Bring `ExpirationManager` and `CountersAggregator` to their previous state.
+• Changed – Monitoring API doesn't check state data to see state transition time.
+• Changed – Update `CountersAggregator` to use clustered key for temp table.
+• Fixed – Cannot resolve the collation conflict in `CountersAggregator`.
+• Ported – Merged updates from version 1.6.23.
+
 1.7.0-beta3
 • Changed – Short paths for the CreateExpiredJob method to avoid some round-trips.
 • Changed – Allow to use zero-based poll interval when sliding invisibility timeout.
