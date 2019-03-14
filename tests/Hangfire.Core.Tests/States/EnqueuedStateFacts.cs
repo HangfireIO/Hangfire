@@ -119,5 +119,15 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal("default", state.Queue);
             Assert.Equal(null, state.Reason);
         }
+
+        [DataCompatibilityRangeFact]
+        public void JsonDeserialize_CanHandle170Beta1Format_WithDefaultValueForQueue()
+        {
+            var json = "{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\"}";
+            var state = SerializationHelper.Deserialize<EnqueuedState>(json);
+
+            Assert.Equal("default", state.Queue);
+            Assert.Equal(null, state.Reason);
+        }
     }
 }
