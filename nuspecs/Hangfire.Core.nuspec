@@ -26,6 +26,7 @@
 • Added – Custom `TaskScheduler` can now be specified in `BackgroundJobServerOptions` for workers.
 • Added – `IdempotentCompletionAttribute` filter to enforce strict order for continuations.
 • Added – `IBackgroundJobClient.ContinueJobWith` methods to replace `ContinueWith` ones in future for clarity.
+• Added – `JobStorage.LinearizableReads` virtual property to avoid unnecessary waits in state changer.
 • Changed – Split serializer setting to Internal and User scopes to isolate them (Version_170 Switch).
 • Changed – Don't allow to affect internal serialization even by `JsonConvert.DefaultSettings` (Version_170 Switch).
 • Changed – Share the same type binder between Hangfire itself and Newtonsoft.Json (Version_170 Switch).

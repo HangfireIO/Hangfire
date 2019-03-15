@@ -29,6 +29,7 @@ Hangfire.Core
 • Added – Custom `TaskScheduler` can now be specified in `BackgroundJobServerOptions` for workers.
 • Added – `IdempotentCompletionAttribute` filter to enforce strict order for continuations.
 • Added – `IBackgroundJobClient.ContinueJobWith` methods to replace `ContinueWith` ones in future for clarity.
+• Added – `JobStorage.LinearizableReads` virtual property to avoid unnecessary waits in state changer.
 • Changed – Split serializer setting to Internal and User scopes to isolate them (Version_170 Switch).
 • Changed – Don't allow to affect internal serialization even by `JsonConvert.DefaultSettings` (Version_170 Switch).
 • Changed – Share the same type binder between Hangfire itself and Newtonsoft.Json (Version_170 Switch).
@@ -58,14 +59,18 @@ Hangfire.AspNetCore
 
 Hangfire.SqlServer
 
+• Added – `SqlServerStorageOptions.EnableHeavyMigrations` switch to automatically install even heavy migrations.
 • Added – `Schema 7` migration to fix the `IX_HangFire_Set_Score` index to include the `Key` column.
 • Added – `SqlServerStorageOptions.DisableGlobalLocks` property to avoid custom locking scheme.
 • Added – `SqlServerStorageOptions.UsePageLocksOnDequeue` property to use less CPU consuming fetch.
+• Changed – `Schema 6` migration is disabled by default for existing installations, because it may take too long.
+• Changed – Don't throw an exception when using automatic migrations and current schema is newer than expected.
 • Changed – Store arguments in the corresponding column in SQL Server again.
 • Changed – Continue to use global locks by default in SQL Server storage.
 • Changed – Bring `ExpirationManager` and `CountersAggregator` to their previous state.
 • Changed – Monitoring API doesn't check state data to see state transition time.
 • Changed – Update `CountersAggregator` to use clustered key for temp table.
+• Fixed – Avoid unnecessary waits in state changer when job was already expired.
 • Fixed – Cannot resolve the collation conflict in `CountersAggregator`.
 • Ported – Merged updates from version 1.6.23.
 

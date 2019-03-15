@@ -15,14 +15,18 @@
     <releaseNotes>https://www.hangfire.io/blog/
 
 1.7.0-rc1
+• Added – `SqlServerStorageOptions.EnableHeavyMigrations` switch to automatically install even heavy migrations.
 • Added – `Schema 7` migration to fix the `IX_HangFire_Set_Score` index to include the `Key` column.
 • Added – `SqlServerStorageOptions.DisableGlobalLocks` property to avoid custom locking scheme.
 • Added – `SqlServerStorageOptions.UsePageLocksOnDequeue` property to use less CPU consuming fetch.
+• Changed – `Schema 6` migration is disabled by default for existing installations, because it may take too long.
+• Changed – Don't throw an exception when using automatic migrations and current schema is newer than expected.
 • Changed – Store arguments in the corresponding column in SQL Server again.
 • Changed – Continue to use global locks by default in SQL Server storage.
 • Changed – Bring `ExpirationManager` and `CountersAggregator` to their previous state.
 • Changed – Monitoring API doesn't check state data to see state transition time.
 • Changed – Update `CountersAggregator` to use clustered key for temp table.
+• Fixed – Avoid unnecessary waits in state changer when job was already expired.
 • Fixed – Cannot resolve the collation conflict in `CountersAggregator`.
 • Ported – Merged updates from version 1.6.23.
 
