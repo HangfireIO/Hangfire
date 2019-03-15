@@ -17,7 +17,9 @@
 SET NOCOUNT ON
 SET XACT_ABORT ON
 DECLARE @TARGET_SCHEMA_VERSION INT;
+DECLARE @DISABLE_HEAVY_MIGRATIONS BIT;
 SET @TARGET_SCHEMA_VERSION = 7;
+--SET @DISABLE_HEAVY_MIGRATIONS = 1;
 
 PRINT 'Installing Hangfire SQL objects...';
 
@@ -69,6 +71,12 @@ END
 -- Install [$(HangFireSchema)] schema objects
 IF @CURRENT_SCHEMA_VERSION IS NULL
 BEGIN
+    IF @DISABLE_HEAVY_MIGRATIONS = 1
+    BEGIN
+        SET @DISABLE_HEAVY_MIGRATIONS = 0;
+        PRINT 'Enabling HEAVY_MIGRATIONS, because we are installing objects from scratch';
+    END
+
     PRINT 'Installing schema version 1';
         
     -- Create job tables
@@ -382,7 +390,13 @@ BEGIN
 	SET @CURRENT_SCHEMA_VERSION = 5;
 END
 
-IF @CURRENT_SCHEMA_VERSION = 5
+IF @CURRENT_SCHEMA_VERSION = 5 AND @DISABLE_HEAVY_MIGRATIONS = 1
+BEGIN
+    PRINT CONCAT('Migration process STOPPED at schema version ', @CURRENT_SCHEMA_VERSION,
+          '. WILL NOT upgrade to schema version ', @TARGET_SCHEMA_VERSION,
+          ', because @DISABLE_HEAVY_MIGRATIONS option is set.');
+END
+ELSE IF @CURRENT_SCHEMA_VERSION = 5
 BEGIN
 	PRINT 'Installing schema version 6';
 

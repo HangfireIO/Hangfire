@@ -301,7 +301,7 @@ namespace Hangfire.SqlServer
             {
                 UseConnection(null, connection =>
                 {
-                    SqlServerObjectsInstaller.Install(connection, _options.SchemaName);
+                    SqlServerObjectsInstaller.Install(connection, _options.SchemaName, _options.EnableHeavyMigrations);
                 });
             }
 

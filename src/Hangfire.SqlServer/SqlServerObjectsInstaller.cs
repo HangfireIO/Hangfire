@@ -34,6 +34,11 @@ namespace Hangfire.SqlServer
 
         public static void Install(DbConnection connection, string schema)
         {
+            Install(connection, schema, false);
+        }
+
+        public static void Install(DbConnection connection, string schema, bool enableHeavyMigrations)
+        {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
 
             var log = LogProvider.GetLogger(typeof(SqlServerObjectsInstaller));
@@ -45,6 +50,11 @@ namespace Hangfire.SqlServer
                 "Hangfire.SqlServer.Install.sql");
 
             script = script.Replace("$(HangFireSchema)", !string.IsNullOrWhiteSpace(schema) ? schema : Constants.DefaultSchema);
+
+            if (!enableHeavyMigrations)
+            {
+                script = script.Replace("--SET @DISABLE_HEAVY_MIGRATIONS = 1;", "SET @DISABLE_HEAVY_MIGRATIONS = 1;");
+            }
 
 #if !NETSTANDARD1_3
             for (var i = 0; i < RetryAttempts; i++)

@@ -108,5 +108,6 @@ namespace Hangfire.SqlServer
         public Func<IDisposable> ImpersonationFunc { get; set; }
         public bool DisableGlobalLocks { get; set; }
         public bool UsePageLocksOnDequeue { get; set; }
+        public bool EnableHeavyMigrations { get; set; }
     }
 }
