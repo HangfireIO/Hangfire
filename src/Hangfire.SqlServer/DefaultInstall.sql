@@ -61,8 +61,10 @@ PRINT 'Current Hangfire schema version: ' + CASE @CURRENT_SCHEMA_VERSION WHEN NU
 IF @CURRENT_SCHEMA_VERSION IS NOT NULL AND @CURRENT_SCHEMA_VERSION > @TARGET_SCHEMA_VERSION
 BEGIN
     ROLLBACK TRANSACTION;
-    RAISERROR(N'Hangfire current database schema version %d is newer than the configured SqlServerStorage schema version %d. Please update to the latest Hangfire.SqlServer NuGet package.', 11, 1,
-        @CURRENT_SCHEMA_VERSION, @TARGET_SCHEMA_VERSION);
+    PRINT CONCAT('Hangfire current database schema version ', @CURRENT_SCHEMA_VERSION,
+          ' is newer than the configured SqlServerStorage schema version ', @TARGET_SCHEMA_VERSION,
+          '. Will not apply any migrations.');
+    RETURN;
 END
 
 -- Install [HangFire] schema objects
