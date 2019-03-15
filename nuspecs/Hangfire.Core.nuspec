@@ -20,13 +20,6 @@
     <releaseNotes>https://www.hangfire.io/blog/
 
 1.7.0-rc1
-
-This release contains BREAKING CHANGES for 1.7.0 beta users to allow rolling upgrades from version 1.6.X. If you are using previous betas just add the following lines to your configuration:
-
-GlobalConfiguration.Configuration
-    .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-    .UseSimpleAssemblyNameTypeSerializer();
-
 • Added – `IGlobalConfiguration.SetDataCompatibilityLevel` to enable rolling upgrades from version 1.6.
 • Added – `IGlobalConfiguration.UseRecommendedSerializerSettings` method for new installations.
 • Added – Assemblies now loaded automatically when resolving a type when using default type resolver.
