@@ -224,8 +224,8 @@ namespace Hangfire.Server
                 var parameter = parameters[i];
                 var argument = context.BackgroundJob.Job.Args[i];
 
-                var value = Substitutions.ContainsKey(parameter.ParameterType) 
-                    ? Substitutions[parameter.ParameterType](context) 
+                var value = Substitutions.TryGetValue(parameter.ParameterType, out var parameterType) 
+                    ? parameterType(context) 
                     : argument;
 
                 result.Add(value);

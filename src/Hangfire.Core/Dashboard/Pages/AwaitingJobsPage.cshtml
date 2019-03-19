@@ -126,9 +126,9 @@
                                             @Html.JobNameLink(jobId, jobData.Job)
                                         </td>
                                         <td class="min-width">
-                                            @if (stateData != null && stateData.Data.ContainsKey("Options") && !String.IsNullOrWhiteSpace(stateData.Data["Options"]))
+                                            @if (stateData != null && stateData.Data.TryGetValue("Options", out var options) && !String.IsNullOrWhiteSpace(options))
                                             {
-                                                <code>@stateData.Data["Options"]</code>
+                                                <code>@options</code>
                                             }
                                             else
                                             {

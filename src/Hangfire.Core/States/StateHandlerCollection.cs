@@ -40,22 +40,23 @@ namespace Hangfire.States
             if (handler == null) throw new ArgumentNullException(nameof(handler));
             if (handler.StateName == null) throw new ArgumentException("The StateName property of the given state handler must be non null.", nameof(handler));
 
-            if (!_handlers.ContainsKey(handler.StateName))
+            if (!_handlers.TryGetValue(handler.StateName, out var stateHandlers))
             {
-                _handlers.Add(handler.StateName, new List<IStateHandler>());    
+                stateHandlers = new List<IStateHandler>();
+                _handlers.Add(handler.StateName, stateHandlers);
             }
 
-            _handlers[handler.StateName].Add(handler);
+            stateHandlers.Add(handler);
         }
 
         public IEnumerable<IStateHandler> GetHandlers(string stateName)
         {
-            if (stateName == null || !_handlers.ContainsKey(stateName))
+            if (stateName == null || !_handlers.TryGetValue(stateName, out var stateHandlers))
             {
                 return Enumerable.Empty<IStateHandler>();
             }
 
-            return _handlers[stateName].ToArray();
+            return stateHandlers.ToArray();
         }
     }
 }

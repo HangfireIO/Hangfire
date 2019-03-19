@@ -173,9 +173,9 @@ namespace Hangfire.SqlServer
 
                 foreach (var alias in new[] { "Data Source", "Server", "Address", "Addr", "Network Address" })
                 {
-                    if (parts.ContainsKey(alias))
+                    if (parts.TryGetValue(alias, out var partAlias))
                     {
-                        builder.Append(parts[alias]);
+                        builder.Append(partAlias);
                         break;
                     }
                 }
@@ -184,9 +184,9 @@ namespace Hangfire.SqlServer
 
                 foreach (var alias in new[] { "Database", "Initial Catalog" })
                 {
-                    if (parts.ContainsKey(alias))
+                    if (parts.TryGetValue(alias, out var partAlias))
                     {
-                        builder.Append(parts[alias]);
+                        builder.Append(partAlias);
                         break;
                     }
                 }

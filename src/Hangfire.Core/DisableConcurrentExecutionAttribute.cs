@@ -43,12 +43,12 @@ namespace Hangfire
 
         public void OnPerformed(PerformedContext filterContext)
         {
-            if (!filterContext.Items.ContainsKey("DistributedLock"))
+            if (!filterContext.Items.TryGetValue("DistributedLock", out var distributedLockValue))
             {
                 throw new InvalidOperationException("Can not release a distributed lock: it was not acquired.");
             }
 
-            var distributedLock = (IDisposable)filterContext.Items["DistributedLock"];
+            var distributedLock = (IDisposable)distributedLockValue;
             distributedLock.Dispose();
         }
 

@@ -69,8 +69,8 @@ namespace Hangfire.Client
 
             try
             {
-                return Parameters.ContainsKey(name)
-                    ? (T)Parameters[name]
+                return Parameters.TryGetValue(name, out var parameter)
+                    ? (T)parameter
                     : default(T);
             }
             catch (Exception ex)

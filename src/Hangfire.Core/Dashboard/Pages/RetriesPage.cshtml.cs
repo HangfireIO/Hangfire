@@ -549,7 +549,7 @@ WriteLiteral("                                            <td class=\"align-righ
 
             
             #line 135 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                                 if (stateData != null && stateData.Data.ContainsKey("EnqueueAt"))
+                                                 if (stateData != null && stateData.Data.TryGetValue("EnqueueAt", out var enqueueAt))
                                                 {
                                                     
             
@@ -557,7 +557,7 @@ WriteLiteral("                                            <td class=\"align-righ
             #line hidden
             
             #line 137 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                               Write(Html.RelativeTime(JobHelper.DeserializeDateTime(stateData.Data["EnqueueAt"])));
+                                               Write(Html.RelativeTime(JobHelper.DeserializeDateTime(enqueueAt)));
 
             
             #line default

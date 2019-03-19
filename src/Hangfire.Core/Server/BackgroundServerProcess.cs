@@ -260,14 +260,14 @@ namespace Hangfire.Server
         {
             var serverContext = new ServerContext();
 
-            if (properties.ContainsKey("Queues") && properties["Queues"] is string[] array)
+            if (properties.TryGetValue("Queues", out var queues) && queues is string[] array)
             {
                 serverContext.Queues = array;
             }
 
-            if (properties.ContainsKey("WorkerCount"))
+            if (properties.TryGetValue("WorkerCount", out var workerCount))
             {
-                serverContext.WorkerCount = (int)properties["WorkerCount"];
+                serverContext.WorkerCount = (int)workerCount;
             }
 
             return serverContext;

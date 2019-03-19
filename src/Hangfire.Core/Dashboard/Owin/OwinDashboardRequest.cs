@@ -45,17 +45,16 @@ namespace Hangfire.Dashboard
         {
             IList<string> values;
 
-            if(_context.Environment.ContainsKey(FormCollectionKey))
+            if(_context.Environment.TryGetValue(FormCollectionKey, out var formCollection))
             {
-                if(_context.Environment[FormCollectionKey] is IFormCollection)
+                if(formCollection is IFormCollection form)
                 {
-                    var form = (IFormCollection)_context.Request.Environment[FormCollectionKey];
                     values = form.GetValues(key);
                 }
                 else
                 {
-                    dynamic form = _context.Request.Environment[FormCollectionKey];
-                    values = form.GetValues(key);
+                    dynamic dynamicForm = formCollection;
+                    values = dynamicForm.GetValues(key);
                 }
             }
             else

@@ -60,13 +60,13 @@ namespace Hangfire
         {
             if (filterContext == null) throw new ArgumentNullException(nameof(filterContext));
 
-            if (filterContext.Items.ContainsKey("PreviousCulture"))
+            if (filterContext.Items.TryGetValue("PreviousCulture", out var previousCulture))
             {
-                SetCurrentCulture((CultureInfo) filterContext.Items["PreviousCulture"]);
+                SetCurrentCulture((CultureInfo) previousCulture);
             }
-            if (filterContext.Items.ContainsKey("PreviousUICulture"))
+            if (filterContext.Items.TryGetValue("PreviousUICulture", out var previousUICulture))
             {
-                SetCurrentUICulture((CultureInfo)filterContext.Items["PreviousUICulture"]);
+                SetCurrentUICulture((CultureInfo) previousUICulture);
             }
         }
         
