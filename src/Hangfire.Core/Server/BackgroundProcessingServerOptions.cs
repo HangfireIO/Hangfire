@@ -22,7 +22,6 @@ namespace Hangfire.Server
     public sealed class BackgroundProcessingServerOptions
     {
         internal static TimeSpan DefaultStopTimeout = TimeSpan.Zero;
-        internal static TimeSpan DefaultShutdownTimeout = TimeSpan.FromSeconds(15);
         internal static TimeSpan DefaultLastChanceTimeout = TimeSpan.FromSeconds(1);
         internal static TimeSpan DefaultHeartbeatInterval = TimeSpan.FromSeconds(30);
 
@@ -40,7 +39,7 @@ namespace Hangfire.Server
             RestartDelay = TimeSpan.FromSeconds(15);
 
             StopTimeout = DefaultStopTimeout;
-            ShutdownTimeout = DefaultShutdownTimeout;
+            ShutdownTimeout = BackgroundProcessingServer.DefaultShutdownTimeout;
             LastChanceTimeout = DefaultLastChanceTimeout;
         }
 
