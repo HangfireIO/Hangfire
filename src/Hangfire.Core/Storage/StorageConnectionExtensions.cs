@@ -90,14 +90,14 @@ namespace Hangfire.Storage
                     dto.LoadException = ex;
                 }
 
-                if (hash.ContainsKey("NextExecution"))
+                if (hash.TryGetValue("NextExecution", out var nextExecution))
                 {
-                    dto.NextExecution = JobHelper.DeserializeNullableDateTime(hash["NextExecution"]);
+                    dto.NextExecution = JobHelper.DeserializeNullableDateTime(nextExecution);
                 }
 
-                if (hash.ContainsKey("LastJobId") && !string.IsNullOrWhiteSpace(hash["LastJobId"]))
+                if (hash.TryGetValue("LastJobId", out var lastJobId) && !string.IsNullOrWhiteSpace(lastJobId))
                 {
-                    dto.LastJobId = hash["LastJobId"];
+                    dto.LastJobId = lastJobId;
 
                     var stateData = connection.GetStateData(dto.LastJobId);
                     if (stateData != null)
@@ -106,24 +106,24 @@ namespace Hangfire.Storage
                     }
                 }
                 
-                if (hash.ContainsKey("Queue"))
+                if (hash.TryGetValue("Queue", out var queue))
                 {
-                    dto.Queue = hash["Queue"];
+                    dto.Queue = queue;
                 }
 
-                if (hash.ContainsKey("LastExecution"))
+                if (hash.TryGetValue("LastExecution", out var lastExecution))
                 {
-                    dto.LastExecution = JobHelper.DeserializeNullableDateTime(hash["LastExecution"]);
+                    dto.LastExecution = JobHelper.DeserializeNullableDateTime(lastExecution);
                 }
 
-                if (hash.ContainsKey("TimeZoneId"))
+                if (hash.TryGetValue("TimeZoneId", out var timeZoneId))
                 {
-                    dto.TimeZoneId = hash["TimeZoneId"];
+                    dto.TimeZoneId = timeZoneId;
                 }
 
-                if (hash.ContainsKey("CreatedAt"))
+                if (hash.TryGetValue("CreatedAt", out var createdAt))
                 {
-                    dto.CreatedAt = JobHelper.DeserializeNullableDateTime(hash["CreatedAt"]);
+                    dto.CreatedAt = JobHelper.DeserializeNullableDateTime(createdAt);
                 }
 
                 result.Add(dto);

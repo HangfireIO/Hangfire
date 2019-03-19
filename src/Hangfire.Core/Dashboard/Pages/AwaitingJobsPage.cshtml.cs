@@ -508,7 +508,7 @@ WriteLiteral("                                        <td class=\"min-width\">\r
 
             
             #line 129 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
-                                             if (stateData != null && stateData.Data.ContainsKey("Options") && !String.IsNullOrWhiteSpace(stateData.Data["Options"]))
+                                             if (stateData != null && stateData.Data.TryGetValue("Options", out var options) && !String.IsNullOrWhiteSpace(options))
                                             {
 
             
@@ -519,7 +519,7 @@ WriteLiteral("                                                <code>");
 
             
             #line 131 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
-                                                 Write(stateData.Data["Options"]);
+                                                 Write(options);
 
             
             #line default

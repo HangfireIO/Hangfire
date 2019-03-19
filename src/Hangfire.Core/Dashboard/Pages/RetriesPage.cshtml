@@ -132,9 +132,9 @@ else
                                                 @(stateData?.Reason)
                                             </td>
                                             <td class="align-right">
-                                                @if (stateData != null && stateData.Data.ContainsKey("EnqueueAt"))
+                                                @if (stateData != null && stateData.Data.TryGetValue("EnqueueAt", out var enqueueAt))
                                                 {
-                                                    @Html.RelativeTime(JobHelper.DeserializeDateTime(stateData.Data["EnqueueAt"]))
+                                                    @Html.RelativeTime(JobHelper.DeserializeDateTime(enqueueAt))
                                                 }
                                             </td>
                                             <td class="align-right">

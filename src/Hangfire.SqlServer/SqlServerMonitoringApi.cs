@@ -87,7 +87,7 @@ namespace Hangfire.SqlServer
                 {
                     Job = job,
                     InProcessingState = ProcessingState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
-                    ServerId = stateData.ContainsKey("ServerId") ? stateData["ServerId"] : stateData["ServerName"],
+                    ServerId = stateData.TryGetValue("ServerId", out var serverId) ? serverId : stateData["ServerName"],
                     StartedAt = sqlJob.StateChanged,
                 }));
         }
@@ -178,8 +178,8 @@ namespace Hangfire.SqlServer
                     Job = job,
                     InSucceededState = SucceededState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
                     Result = stateData["Result"],
-                    TotalDuration = stateData.ContainsKey("PerformanceDuration") && stateData.ContainsKey("Latency")
-                        ? (long?)long.Parse(stateData["PerformanceDuration"]) + (long?)long.Parse(stateData["Latency"])
+                    TotalDuration = stateData.TryGetValue("PerformanceDuration", out var performanceDuration) && stateData.TryGetValue("Latency", out var latency)
+                        ? (long?)long.Parse(performanceDuration) + (long?)long.Parse(latency)
                         : null,
                     SucceededAt = sqlJob.StateChanged
                 }));
@@ -449,7 +449,7 @@ where j.Id in @jobIds";
                 .ToDictionary(x => x.Id, x => x);
 
             var sortedSqlJobs = jobIds
-                .Select(jobId => jobs.ContainsKey(jobId) ? jobs[jobId] : new SqlJob { Id = jobId })
+                .Select(jobId => jobs.TryGetValue(jobId, out var job) ? job : new SqlJob { Id = jobId })
                 .ToList();
             
             return DeserializeJobs(
