@@ -25,6 +25,9 @@ namespace Hangfire.SqlServer
 {
     public static class SqlServerObjectsInstaller
     {
+        [Obsolete("This field is unused and will be removed in 2.0.0.")]
+        public static readonly int RequiredSchemaVersion = 5;
+
         private const int RetryAttempts = 3;
 
         public static void Install(DbConnection connection)
