@@ -22,7 +22,7 @@ using Hangfire.Processing;
 
 namespace Hangfire.Server
 {
-    public sealed class BackgroundProcessDispatcherBuilderAsync : IBackgroundProcessDispatcherBuilder
+    internal sealed class BackgroundProcessDispatcherBuilderAsync : IBackgroundProcessDispatcherBuilder
     {
         private readonly int _maxConcurrency;
         private readonly bool _ownsScheduler;

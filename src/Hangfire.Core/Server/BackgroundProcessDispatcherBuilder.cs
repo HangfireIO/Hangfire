@@ -23,7 +23,7 @@ using Hangfire.Processing;
 
 namespace Hangfire.Server
 {
-    public sealed class BackgroundProcessDispatcherBuilder : IBackgroundProcessDispatcherBuilder
+    internal sealed class BackgroundProcessDispatcherBuilder : IBackgroundProcessDispatcherBuilder
     {
         private readonly IBackgroundProcess _process;
         private readonly Func<ThreadStart, IEnumerable<Thread>> _threadFactory;

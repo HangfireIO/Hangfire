@@ -18,7 +18,7 @@ using System;
 
 namespace Hangfire.Processing
 {
-    public sealed class BackgroundExecutionOptions
+    internal sealed class BackgroundExecutionOptions
     {
         private static readonly TimeSpan DefaultMaxAttemptDelay = TimeSpan.FromMinutes(5);
         private TimeSpan _warningThreshold;
