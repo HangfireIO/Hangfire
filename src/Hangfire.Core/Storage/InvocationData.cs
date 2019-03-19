@@ -35,11 +35,13 @@ namespace Hangfire.Storage
     {
         private static readonly object[] EmptyArray = new object[0];
 
+        [Obsolete("Please use IGlobalConfiguration.UseTypeResolver instead. Will be removed in 2.0.0.")]
         public static void SetTypeResolver([CanBeNull] Func<string, Type> typeResolver)
         {
             TypeHelper.CurrentTypeResolver = typeResolver;
         }
 
+        [Obsolete("Please use IGlobalConfiguration.UseTypeSerializer instead. Will be removed in 2.0.0.")]
         public static void SetTypeSerializer([CanBeNull] Func<Type, string> typeSerializer)
         {
             TypeHelper.CurrentTypeSerializer = typeSerializer;

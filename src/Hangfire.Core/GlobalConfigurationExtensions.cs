@@ -192,7 +192,7 @@ namespace Hangfire
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
-            InvocationData.SetTypeResolver(typeResolver);
+            TypeHelper.CurrentTypeResolver = typeResolver;
             return configuration;
         }
 
@@ -202,7 +202,7 @@ namespace Hangfire
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
-            InvocationData.SetTypeSerializer(typeSerializer);
+            TypeHelper.CurrentTypeSerializer = typeSerializer;
             return configuration;
         }
 
