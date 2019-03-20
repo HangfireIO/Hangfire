@@ -16,6 +16,7 @@
 
 using System;
 using System.Threading;
+using Hangfire.Server;
 
 namespace Hangfire
 {
