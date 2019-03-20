@@ -369,9 +369,22 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Run_ReturnsTaskResult_WhenCallingFunctionReturningGenericTask()
+        public void Run_DoesNotReturnValue_WhenCallingFunctionReturningValueTask()
         {
-            _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningTaskResultingInString());
+            _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningValueTask());
+            var performer = CreatePerformer();
+
+            var result = performer.Perform(_context.Object);
+
+            Assert.Equal(null, result);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Run_ReturnsTaskResult_WhenCallingFunctionReturningGenericTask(bool continueOnCapturedContext)
+        {
+            _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningTaskResultingInString(continueOnCapturedContext));
             var performer = CreatePerformer();
 
             var result = performer.Perform(_context.Object);
@@ -379,10 +392,12 @@ namespace Hangfire.Core.Tests.Server
             Assert.Equal("Return value", result);
         }
 
-        [Fact]
-        public void Run_ReturnsTaskResult_WhenCallingFunctionReturningValueTask()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Run_ReturnsTaskResult_WhenCallingFunctionReturningValueTask(bool continueOnCapturedContext)
         {
-            _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningValueTaskResultingInString());
+            _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningValueTaskResultingInString(continueOnCapturedContext));
             var performer = CreatePerformer();
 
             var result = performer.Perform(_context.Object);
@@ -535,6 +550,17 @@ namespace Hangfire.Core.Tests.Server
             if (threadId != Thread.CurrentThread.ManagedThreadId)
             {
                 throw new InvalidOperationException("After Parallel.For");
+            }
+
+            await Task.Delay(1).ConfigureAwait(false);
+
+#if NETCOREAPP1_0
+            if (threadId == Thread.CurrentThread.ManagedThreadId)
+#else
+            if (!Thread.CurrentThread.IsThreadPoolThread)
+#endif
+            {
+                throw new InvalidOperationException("Not running on ThreadPool after ConfigureAwait(false)");
             }
 
             return true;

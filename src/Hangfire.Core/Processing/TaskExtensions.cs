@@ -68,44 +68,42 @@ namespace Hangfire.Processing
             await tcs.Task.ConfigureAwait(false);
         }
 
-        public static bool IsAwaitable(this Type type, out AwaitableContext awaitable)
+        public static bool IsTaskLike(this Type type, out Func<object, Task> getTaskFunc)
         {
-            // Starting with C# 7, async methods can return any type that has an accessible GetAwaiter method. 
-            // The object returned by the GetAwaiter method must implement the ICriticalNotifyCompletion interface.
-            // Ref: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/async-return-types
-            // 
-            // Other sources state that ICriticalNotifyCompletion is optional though:
-            // Ref: https://blogs.msdn.microsoft.com/pfxteam/2012/04/12/asyncawait-faq/
-            // Ref: https://codeblog.jonskeet.uk/category/eduasync/
-            // Ref: http://putridparrot.com/blog/creating-awaitable-types/
-            // 
-            // Either way, INotifyCompletion is still required nevertheless.
+            var typeInfo = type.GetTypeInfo();
 
-            awaitable = null;
+            // There are no primitive types that behave as Task
+            if (!typeInfo.IsPrimitive)
+            {
+                if (typeof(Task).GetTypeInfo().IsAssignableFrom(typeInfo))
+                {
+                    getTaskFunc = obj => (Task)obj;
+                    return true;
+                }
 
-            // primitive types can't be awaitable
-            if (type.GetTypeInfo().IsPrimitive) return false;
+                // We are don't relying on GetAwaiter/GetResult methods for ValueTask,
+                // because it's not a valid pattern to use them as written here:
+                // https://devblogs.microsoft.com/dotnet/understanding-the-whys-whats-and-whens-of-valuetask/#user-content-valid-consumption-patterns-for-valuetasks
+                // So we're using their `AsTask` method to create a task first, and then
+                // waiting on it.
+                // This method can be replaced with wrapping in a custom awaiter like
+                // in ASP.NET Core, but this step requires using the `await` keyword
+                // to get the result, so can be implemented only in future.
+                if (typeInfo.FullName.StartsWith("System.Threading.Tasks.ValueTask", StringComparison.Ordinal))
+                {
+                    var asTask = type.GetRuntimeMethod("AsTask", EmptyTypes);
 
-            // awaitable type must have a public parameterless GetAwaiter instance method, ...
-            var getAwaiter = type.GetRuntimeMethod("GetAwaiter", EmptyTypes);
-            if (getAwaiter == null || getAwaiter.IsStatic || !getAwaiter.IsPublic) return false;
+                    if (asTask != null && asTask.IsPublic && !asTask.IsStatic &&
+                        typeof(Task).GetTypeInfo().IsAssignableFrom(asTask.ReturnType.GetTypeInfo()))
+                    {
+                        getTaskFunc = obj => (Task) asTask.Invoke(obj, null);
+                        return true;
+                    }
+                }
+            }
 
-            var awaiterType = getAwaiter.ReturnType;
-
-            // ... its return type must implement INotifyCompletion, ...
-            if (!typeof(INotifyCompletion).GetTypeInfo().IsAssignableFrom(awaiterType.GetTypeInfo())) return false;
-
-            // ... have a boolean IsCompleted instance property with a public getter, ...
-            var isCompleted = awaiterType.GetRuntimeProperty("IsCompleted");
-            if (isCompleted == null || isCompleted.PropertyType != typeof(bool)) return false;
-            if (!isCompleted.CanRead || isCompleted.GetMethod.IsStatic || !isCompleted.GetMethod.IsPublic) return false;
-
-            // ... and also have a public parameterless GetResult instance method
-            var getResult = awaiterType.GetRuntimeMethod("GetResult", EmptyTypes);
-            if (getResult == null || getResult.IsStatic || !getResult.IsPublic) return false;
-
-            awaitable = new AwaitableContext(getAwaiter, isCompleted, getResult);
-            return true;
+            getTaskFunc = null;
+            return false;
         }
 
         private static void CallBack(object state, bool timedOut)

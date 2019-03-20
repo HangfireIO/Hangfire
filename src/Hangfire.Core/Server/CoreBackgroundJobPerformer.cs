@@ -117,14 +117,14 @@ namespace Hangfire.Server
                 var methodInfo = context.BackgroundJob.Job.Method;
                 var tuple = Tuple.Create(methodInfo, instance, arguments);
 
-                if (methodInfo.ReturnType.IsAwaitable(out var awaitable))
+                if (methodInfo.ReturnType.IsTaskLike(out var getTaskFunc))
                 {
                     if (_taskScheduler != null)
                     {
-                        return InvokeOnTaskScheduler(context, tuple, awaitable);
+                        return InvokeOnTaskScheduler(context, tuple, getTaskFunc);
                     }
 
-                    return InvokeOnTaskPump(context, tuple, awaitable);
+                    return InvokeOnTaskPump(context, tuple, getTaskFunc);
                 }
 
                 return InvokeSynchronously(tuple);
@@ -144,25 +144,42 @@ namespace Hangfire.Server
                 HandleJobPerformanceException(ex.InnerException, context.CancellationToken);
                 throw;
             }
+            catch (Exception ex)
+            {
+                HandleJobPerformanceException(ex, context.CancellationToken);
+                throw;
+            }
         }
 
-        private object InvokeOnTaskScheduler(PerformContext context, Tuple<MethodInfo, object, object[]> tuple, AwaitableContext awaitable)
+        private object InvokeOnTaskScheduler(PerformContext context, Tuple<MethodInfo, object, object[]> tuple, Func<object, Task> getTaskFunc)
         {
-            var task = Task.Factory.StartNew(
+            var scheduledTask = Task.Factory.StartNew(
                 InvokeSynchronously,
                 tuple,
                 context.CancellationToken.ShutdownToken,
                 TaskCreationOptions.None,
                 _taskScheduler);
 
-            var result = task.GetAwaiter().GetResult();
+            var result = scheduledTask.GetAwaiter().GetResult();
             if (result == null) return null;
 
-            var awaiter = awaitable.GetAwaiter(result);
-            return awaitable.GetResult(awaiter);
+            var task = getTaskFunc(result);
+
+            task.GetAwaiter().GetResult();
+            return GetTaskResult(task);
         }
 
-        private static object InvokeOnTaskPump(PerformContext context, Tuple<MethodInfo, object, object[]> tuple, AwaitableContext awaitable)
+        private static object GetTaskResult(Task task)
+        {
+            var resultProperty = task.GetType().GetRuntimeProperty("Result");
+            var result = resultProperty?.GetValue(task);
+
+            return result != null && !result.GetType().FullName.Equals("System.Threading.Tasks.VoidTaskResult", StringComparison.Ordinal)
+                ? result
+                : null;
+        }
+
+        private static object InvokeOnTaskPump(PerformContext context, Tuple<MethodInfo, object, object[]> tuple, Func<object, Task> getTaskFunc)
         {
             // Using SynchronizationContext here is the best default option, where workers
             // are still running on synchronous dispatchers, and where a single job performer
@@ -185,16 +202,19 @@ namespace Hangfire.Server
                     var result = InvokeSynchronously(tuple);
                     if (result == null) return null;
 
-                    var awaiter = awaitable.GetAwaiter(result);
-                    var waitHandles = new[] { syncContext.WaitHandle, cancellationEvent.WaitHandle };
+                    var task = getTaskFunc(result);
+                    var asyncResult = (IAsyncResult)task;
 
-                    while (!awaitable.IsCompleted(awaiter) && WaitHandle.WaitAny(waitHandles) == 0)
+                    var waitHandles = new[] { syncContext.WaitHandle, asyncResult.AsyncWaitHandle, cancellationEvent.WaitHandle };
+
+                    while (!asyncResult.IsCompleted && WaitHandle.WaitAny(waitHandles) == 0)
                     {
                         var workItem = syncContext.Dequeue();
                         workItem.Item1(workItem.Item2);
                     }
 
-                    return awaitable.GetResult(awaiter);
+                    task.GetAwaiter().GetResult();
+                    return GetTaskResult(task);
                 }
             }
             finally
