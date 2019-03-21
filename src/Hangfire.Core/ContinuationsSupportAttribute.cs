@@ -240,7 +240,7 @@ namespace Hangfire
                         $"Can not start continuation '{continuationJobId}' for background job '{context.BackgroundJob.Id}': timeout expired while trying to fetch continuation state.");
                 }
 
-                Thread.Sleep(firstAttempt ? 0 : 1);
+                Thread.Sleep(firstAttempt ? 0 : 100);
                 firstAttempt = false;
             }
 
