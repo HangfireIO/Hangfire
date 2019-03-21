@@ -53,7 +53,7 @@ namespace Hangfire
             FilterProvider = null;
             Activator = null;
             TimeZoneResolver = null;
-            TaskScheduler = null;
+            TaskScheduler = TaskScheduler.Default;
         }
         
         public string ServerName { get; set; }
