@@ -35,7 +35,10 @@ namespace Hangfire
 
             if (!String.IsNullOrEmpty(serializedState))
             {
-                context.CandidateState = SerializationHelper.Deserialize<IState>(serializedState);
+                if (context.CandidateState is ProcessingState || context.CandidateState.IsFinal)
+                {
+                    context.CandidateState = SerializationHelper.Deserialize<IState>(serializedState);
+                }
             }
             else if (context.CandidateState.IsFinal)
             {
