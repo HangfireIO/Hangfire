@@ -13,7 +13,8 @@ namespace ConsoleSample
 
             app.UseHangfireServer(new BackgroundJobServerOptions
             {
-                Queues = new[] { "critical", "default" }
+                Queues = new[] { "critical", "default" },
+                TaskScheduler = null
             });
         }
     }

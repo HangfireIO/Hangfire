@@ -40,9 +40,8 @@ namespace NetCoreSample
                     });
 
                     services.AddHangfire((provider, configuration) => configuration
-                        //.UseColouredConsoleLogProvider()
+                        .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                         .UseSimpleAssemblyNameTypeSerializer()
-                        .UseIgnoredAssemblyVersionTypeResolver()
                         .UseSqlServerStorage(
                             @"Server=.\;Database=Hangfire.Sample;Trusted_Connection=True;", 
                             provider.GetRequiredService<SqlServerStorageOptions>()));

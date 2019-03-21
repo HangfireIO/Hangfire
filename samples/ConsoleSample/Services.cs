@@ -14,30 +14,30 @@ namespace ConsoleSample
     {
         private static readonly Random Rand = new Random();
 
-        public void EmptyDefault()
+        public async Task EmptyDefault()
         {
         }
 
         public async Task Async(CancellationToken cancellationToken)
         {
             await Task.Yield();
-            await Task.Delay(TimeSpan.FromDays(1), cancellationToken);
+            await Task.Delay(TimeSpan.FromSeconds(20), cancellationToken);
         }
 
         [Queue("critical")]
-        public void EmptyCritical()
+        public async Task EmptyCritical()
         {
         }
 
         [AutomaticRetry(Attempts = 0), LatencyTimeout(30)]
-        public void Error()
+        public async Task Error()
         {
             Console.WriteLine("Beginning error task...");
             throw new InvalidOperationException(null, new FileLoadException());
         }
 
         [Queue("critical")]
-        public void Random(int number)
+        public async Task Random(int number)
         {
             int time;
             lock (Rand)
@@ -54,7 +54,7 @@ namespace ConsoleSample
             Console.WriteLine("Finished task: " + number);
         }
 
-        public void Cancelable(int iterationCount, IJobCancellationToken token)
+        public async Task Cancelable(int iterationCount, IJobCancellationToken token)
         {
             try
             {
@@ -74,16 +74,16 @@ namespace ConsoleSample
         }
 
         [DisplayName("Name: {0}")]
-        public void Args(string name, int authorId, DateTime createdAt)
+        public async Task Args(string name, int authorId, DateTime createdAt)
         {
             Console.WriteLine($"{name}, {authorId}, {createdAt}");
         }
 
-        public void Custom(int id, string[] values, CustomObject objects, DayOfWeek dayOfWeek)
+        public async Task Custom(int id, string[] values, CustomObject objects, DayOfWeek dayOfWeek)
         {
         }
 
-        public void FullArgs(
+        public async Task FullArgs(
             bool b,
             int i,
             char c,
@@ -100,7 +100,7 @@ namespace ConsoleSample
         {
         }
 
-        public void LongRunning(IJobCancellationToken token)
+        public async Task LongRunning(IJobCancellationToken token)
         {
             token.ShutdownToken.Wait(TimeSpan.FromMinutes(30));
             token.ShutdownToken.ThrowIfCancellationRequested();
@@ -113,18 +113,18 @@ namespace ConsoleSample
             public CustomObject[] Children { get; set; }
         }
 
-        public void Write(char character)
+        public async Task Write(char character)
         {
             Console.Write(character);
         }
 
-        public void WriteBlankLine()
+        public async Task WriteBlankLine()
         {
             Console.WriteLine();
         }
 
         [IdempotentCompletion]
-        public static IState WriteLine(string value)
+        public static async Task <IState> WriteLine(string value)
         {
             Console.WriteLine(value);
             return new AwaitingState("asfafs", new EnqueuedState("criticalll"));
