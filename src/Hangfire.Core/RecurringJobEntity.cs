@@ -45,7 +45,7 @@ namespace Hangfire
                 Queue = recurringJob["Queue"];
             }
 
-            TimeZone = recurringJob.ContainsKey("TimeZoneId") && !String.IsNullOrWhiteSpace("TimeZoneId")
+            TimeZone = recurringJob.ContainsKey("TimeZoneId") && !String.IsNullOrWhiteSpace(recurringJob["TimeZoneId"])
                 ? timeZoneResolver.GetTimeZoneById(recurringJob["TimeZoneId"])
                 : TimeZoneInfo.Utc;
 

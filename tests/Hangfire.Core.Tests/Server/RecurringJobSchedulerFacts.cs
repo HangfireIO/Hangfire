@@ -703,6 +703,29 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
 
+        [Fact]
+        public void Execute_UsesUtcTimeZone_WhenCorrespondingFieldIsNullOrEmpty()
+        {
+            // Arrange
+            _context.StoppingTokenSource = new CancellationTokenSource();
+            SetupConnection(false);
+
+            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
+                .Returns(RecurringJobId)
+                .Returns((string)null);
+
+            _recurringJob["TimeZoneId"] = null;
+            _recurringJob["Cron"] = "0 30 15 30 03 *";
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()));
+        }
+
         private void SetupConnection(bool useJobStorageConnection)
         {
             if (useJobStorageConnection) _context.Storage.Setup(x => x.GetConnection()).Returns(_storageConnection.Object);
