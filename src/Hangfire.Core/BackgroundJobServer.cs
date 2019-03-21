@@ -80,10 +80,13 @@ namespace Hangfire
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses)
+#pragma warning disable 618
             : this(options, storage, additionalProcesses, null, null, null, null)
+#pragma warning restore 618
         {
         }
 
+        [Obsolete("Create your own BackgroundJobServer-like type and pass custom services to it. This constructor will be removed in 2.0.0.")]
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public BackgroundJobServer(
             [NotNull] BackgroundJobServerOptions options,

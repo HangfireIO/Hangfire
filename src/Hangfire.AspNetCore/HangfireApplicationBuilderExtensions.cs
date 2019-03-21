@@ -80,7 +80,9 @@ namespace Hangfire
             var stateChanger = services.GetService<IBackgroundJobStateChanger>();
 
             var server = factory != null && performer != null && stateMachine != null && stateChanger != null
+#pragma warning disable 618
                 ? new BackgroundJobServer(options, storage, additionalProcesses, factory, performer, stateMachine, stateChanger)
+#pragma warning restore 618
                 : new BackgroundJobServer(options, storage, additionalProcesses);
 
             lifetime.ApplicationStopping.Register(() => server.SendStop());

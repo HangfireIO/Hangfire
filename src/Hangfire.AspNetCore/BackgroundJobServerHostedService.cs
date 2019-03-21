@@ -27,10 +27,13 @@ namespace Hangfire
             [NotNull] JobStorage storage,
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses)
+#pragma warning disable 618
             : this(storage, options, additionalProcesses, null, null, null, null)
+#pragma warning restore 618
         {
         }
 
+        [Obsolete("This constructor uses an obsolete constructor overload of the BackgroundJobServer type that will be removed in 2.0.0.")]
         public BackgroundJobServerHostedService(
             [NotNull] JobStorage storage,
             [NotNull] BackgroundJobServerOptions options,
@@ -54,7 +57,9 @@ namespace Hangfire
         public Task StartAsync(CancellationToken cancellationToken)
         {
             _processingServer = _factory != null && _performer != null && _stateMachine != null && _stateChanger != null
+#pragma warning disable 618
                 ? new BackgroundJobServer(_options, _storage, _additionalProcesses, _factory, _performer, _stateMachine, _stateChanger)
+#pragma warning restore 618
                 : new BackgroundJobServer(_options, _storage, _additionalProcesses);
 
             return Task.CompletedTask;
