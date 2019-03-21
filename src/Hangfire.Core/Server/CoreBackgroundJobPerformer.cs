@@ -116,8 +116,9 @@ namespace Hangfire.Server
             {
                 var methodInfo = context.BackgroundJob.Job.Method;
                 var tuple = Tuple.Create(methodInfo, instance, arguments);
+                var returnType = methodInfo.ReturnType;
 
-                if (methodInfo.ReturnType.IsTaskLike(out var getTaskFunc))
+                if (returnType.IsTaskLike(out var getTaskFunc))
                 {
                     if (_taskScheduler != null)
                     {
@@ -163,20 +164,7 @@ namespace Hangfire.Server
             var result = scheduledTask.GetAwaiter().GetResult();
             if (result == null) return null;
 
-            var task = getTaskFunc(result);
-
-            task.GetAwaiter().GetResult();
-            return GetTaskResult(task);
-        }
-
-        private static object GetTaskResult(Task task)
-        {
-            var resultProperty = task.GetType().GetRuntimeProperty("Result");
-            var result = resultProperty?.GetValue(task);
-
-            return result != null && !result.GetType().FullName.Equals("System.Threading.Tasks.VoidTaskResult", StringComparison.Ordinal)
-                ? result
-                : null;
+            return getTaskFunc(result).GetTaskLikeResult(result, tuple.Item1.ReturnType);
         }
 
         private static object InvokeOnTaskPump(PerformContext context, Tuple<MethodInfo, object, object[]> tuple, Func<object, Task> getTaskFunc)
@@ -213,8 +201,7 @@ namespace Hangfire.Server
                         workItem.Item1(workItem.Item2);
                     }
 
-                    task.GetAwaiter().GetResult();
-                    return GetTaskResult(task);
+                    return task.GetTaskLikeResult(result, tuple.Item1.ReturnType);
                 }
             }
             finally

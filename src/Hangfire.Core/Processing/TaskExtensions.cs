@@ -16,7 +16,6 @@
 
 using System;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
@@ -104,6 +103,40 @@ namespace Hangfire.Processing
 
             getTaskFunc = null;
             return false;
+        }
+
+        public static object GetTaskLikeResult([NotNull] this Task task, object obj, Type returnType)
+        {
+            if (task == null) throw new ArgumentNullException(nameof(task));
+
+            if (task != obj)
+            {
+                // We shouldn't call GetAwaiter/GetResult on ValueTask directly, because
+                // there may be a race condition as tells us this article:
+                // https://devblogs.microsoft.com/dotnet/understanding-the-whys-whats-and-whens-of-valuetask/#user-content-valid-consumption-patterns-for-valuetasks
+                // So we are waiting on task, returned by the AsTask method to ensure it's
+                // completed, before querying for the result.
+                task.GetAwaiter().GetResult();
+            }
+
+            // ReturnType is used instead of task.GetType, because we should return `null` result,
+            // when method is returning non-generic Task. However async state machines may use
+            // Task<VoidTaskResult> or Task<VoidResult> for these cases, and the number of such
+            // void types is pretty high. So it's much safer to call GetAwaiter/GetResult on an
+            // original result object.
+
+            // Awaitable type must have a public parameterless GetAwaiter instance method, ...
+            var getAwaiter = returnType.GetRuntimeMethod("GetAwaiter", EmptyTypes);
+            if (getAwaiter == null || getAwaiter.IsStatic || !getAwaiter.IsPublic) return null;
+
+            var awaiterType = getAwaiter.ReturnType;
+
+            // ... and also have a public parameterless GetResult instance method
+            var getResult = awaiterType.GetRuntimeMethod("GetResult", EmptyTypes);
+            if (getResult == null || getResult.IsStatic || !getResult.IsPublic) return null;
+
+            var awaiter = getAwaiter.Invoke(obj, null);
+            return getResult.Invoke(awaiter, null);
         }
 
         private static void CallBack(object state, bool timedOut)
