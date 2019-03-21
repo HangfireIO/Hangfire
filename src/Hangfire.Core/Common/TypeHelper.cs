@@ -184,7 +184,8 @@ namespace Hangfire.Common
         {
             var assemblyName = new AssemblyName(assemblyString);
 
-            if (assemblyName.Name.Equals("System.Private.CoreLib", StringComparison.OrdinalIgnoreCase) ||
+            if (assemblyName.Name.Equals("System.Console", StringComparison.OrdinalIgnoreCase) ||
+                assemblyName.Name.Equals("System.Private.CoreLib", StringComparison.OrdinalIgnoreCase) ||
                 assemblyName.Name.Equals("mscorlib", StringComparison.OrdinalIgnoreCase))
             {
                 assemblyName = MscorlibAssemblyName;
