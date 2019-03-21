@@ -42,7 +42,7 @@ namespace Hangfire.Server
         public BackgroundJobPerformer(
             [NotNull] IJobFilterProvider filterProvider,
             [NotNull] JobActivator activator)
-            : this(filterProvider, activator, null)
+            : this(filterProvider, activator, TaskScheduler.Default)
         {
         }
 
