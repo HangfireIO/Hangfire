@@ -63,9 +63,9 @@ PRINT 'Current Hangfire schema version: ' + CASE @CURRENT_SCHEMA_VERSION WHEN NU
 IF @CURRENT_SCHEMA_VERSION IS NOT NULL AND @CURRENT_SCHEMA_VERSION > @TARGET_SCHEMA_VERSION
 BEGIN
     ROLLBACK TRANSACTION;
-    PRINT CONCAT('Hangfire current database schema version ', @CURRENT_SCHEMA_VERSION,
-          ' is newer than the configured SqlServerStorage schema version ', @TARGET_SCHEMA_VERSION,
-          '. Will not apply any migrations.');
+    PRINT 'Hangfire current database schema version ' + CAST(@CURRENT_SCHEMA_VERSION AS NVARCHAR) +
+          ' is newer than the configured SqlServerStorage schema version ' + CAST(@TARGET_SCHEMA_VERSION AS NVARCHAR) +
+          '. Will not apply any migrations.';
     RETURN;
 END
 
@@ -393,9 +393,9 @@ END
 
 IF @CURRENT_SCHEMA_VERSION = 5 AND @DISABLE_HEAVY_MIGRATIONS = 1
 BEGIN
-    PRINT CONCAT('Migration process STOPPED at schema version ', @CURRENT_SCHEMA_VERSION,
-          '. WILL NOT upgrade to schema version ', @TARGET_SCHEMA_VERSION,
-          ', because @DISABLE_HEAVY_MIGRATIONS option is set.');
+    PRINT 'Migration process STOPPED at schema version ' + CAST(@CURRENT_SCHEMA_VERSION AS NVARCHAR) +
+          '. WILL NOT upgrade to schema version ' + CAST(@TARGET_SCHEMA_VERSION AS NVARCHAR) +
+          ', because @DISABLE_HEAVY_MIGRATIONS option is set.';
 END
 ELSE IF @CURRENT_SCHEMA_VERSION = 5
 BEGIN
