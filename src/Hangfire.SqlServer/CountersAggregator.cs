@@ -81,10 +81,14 @@ namespace Hangfire.SqlServer
 
         private static string GetAggregationQuery(SqlServerStorage storage)
         {
-            return 
+            // Starting from SQL Server 2014 it's possible to get a query with
+            // much lower cost by adding a clustered index on [Key] column.
+            // However extended support for SQL Server 2012 SP4 ends only on
+            // July 12, 2022.
+            return
 $@"DECLARE @RecordsToAggregate TABLE
 (
-	[Key] NVARCHAR(100) COLLATE DATABASE_DEFAULT NOT NULL INDEX IX1 CLUSTERED,
+	[Key] NVARCHAR(100) COLLATE DATABASE_DEFAULT NOT NULL,
 	[Value] INT NOT NULL,
 	[ExpireAt] DATETIME NULL
 )
