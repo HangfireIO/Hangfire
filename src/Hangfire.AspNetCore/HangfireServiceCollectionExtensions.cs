@@ -67,14 +67,40 @@ namespace Hangfire
             // NOTE: these, on the other hand, need to be double-checked to be sure configuration block was executed, 
             //       in case of a client-only scenario with all configurables above replaced with custom implementations.
 
-            services.TryAddSingletonChecked<IBackgroundJobClient>(x => new BackgroundJobClient(
-                x.GetRequiredService<JobStorage>(),
-                x.GetRequiredService<IJobFilterProvider>()));
+            services.TryAddSingletonChecked<IBackgroundJobClient>(x =>
+            {
+                var factory = x.GetService<IBackgroundJobFactory>();
+                var stateChanger = x.GetService<IBackgroundJobStateChanger>();
 
-            services.TryAddSingletonChecked<IRecurringJobManager>(x => new RecurringJobManager(
-                x.GetRequiredService<JobStorage>(),
-                x.GetRequiredService<IJobFilterProvider>(),
-                x.GetRequiredService<ITimeZoneResolver>()));
+                if (factory != null && stateChanger != null)
+                {
+                    return new BackgroundJobClient(x.GetRequiredService<JobStorage>(), factory, stateChanger);
+                }
+
+                return new BackgroundJobClient(
+                    x.GetRequiredService<JobStorage>(),
+                    x.GetRequiredService<IJobFilterProvider>());
+            });
+
+            services.TryAddSingletonChecked<IRecurringJobManager>(x =>
+            {
+                var factory = x.GetService<IBackgroundJobFactory>();
+                var stateMachine = x.GetService<IStateMachine>();
+
+                if (factory != null && stateMachine != null)
+                {
+                    return new RecurringJobManager(
+                        x.GetRequiredService<JobStorage>(),
+                        factory,
+                        stateMachine,
+                        x.GetRequiredService<ITimeZoneResolver>());
+                }
+
+                return new RecurringJobManager(
+                    x.GetRequiredService<JobStorage>(),
+                    x.GetRequiredService<IJobFilterProvider>(),
+                    x.GetRequiredService<ITimeZoneResolver>());
+            });
 
 
             // IGlobalConfiguration serves as a marker indicating that Hangfire's services 
@@ -132,7 +158,13 @@ namespace Hangfire
                 options.FilterProvider = options.FilterProvider ?? provider.GetService<IJobFilterProvider>();
                 options.TimeZoneResolver = options.TimeZoneResolver ?? provider.GetService<ITimeZoneResolver>();
 
-                return new BackgroundJobServerHostedService(storage, options, additionalProcesses);
+                var factory = provider.GetService<IBackgroundJobFactory>();
+                var performer = provider.GetService<IBackgroundJobPerformer>();
+                var stateMachine = provider.GetService<IStateMachine>();
+                var stateChanger = provider.GetService<IBackgroundJobStateChanger>();
+
+                return new BackgroundJobServerHostedService(
+                    storage, options, additionalProcesses, factory, performer, stateMachine, stateChanger);
             });
 
             return services;

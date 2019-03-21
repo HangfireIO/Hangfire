@@ -16,7 +16,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
@@ -79,6 +81,19 @@ namespace Hangfire
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses)
+            : this(options, storage, additionalProcesses, null, null, null, null)
+        {
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public BackgroundJobServer(
+            [NotNull] BackgroundJobServerOptions options,
+            [NotNull] JobStorage storage,
+            [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
+            [CanBeNull] IBackgroundJobFactory factory,
+            [CanBeNull] IBackgroundJobPerformer performer,
+            [CanBeNull] IStateMachine stateMachine,
+            [CanBeNull] IBackgroundJobStateChanger stateChanger)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (options == null) throw new ArgumentNullException(nameof(options));
@@ -87,7 +102,7 @@ namespace Hangfire
             _options = options;
 
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
-            processes.AddRange(GetRequiredProcesses());
+            processes.AddRange(GetRequiredProcesses(factory, performer, stateMachine, stateChanger));
             processes.AddRange(additionalProcesses.Select(x => x.UseBackgroundPool(1)));
 
             var properties = new Dictionary<string, object>
@@ -151,18 +166,32 @@ namespace Hangfire
             return _processingServer.WaitForShutdownAsync(cancellationToken);
         }
 
-        private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses()
+        private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses(
+            [CanBeNull] IBackgroundJobFactory factory,
+            [CanBeNull] IBackgroundJobPerformer performer,
+            [CanBeNull] IStateMachine stateMachine,
+            [CanBeNull] IBackgroundJobStateChanger stateChanger)
         {
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
-
-            var filterProvider = _options.FilterProvider ?? JobFilterProviders.Providers;
-            var activator = _options.Activator ?? JobActivator.Current;
             var timeZoneResolver = _options.TimeZoneResolver ?? new DefaultTimeZoneResolver();
 
-            var stateMachine = new StateMachine(filterProvider);
-            var factory = new BackgroundJobFactory(filterProvider);
-            var performer = new BackgroundJobPerformer(filterProvider, activator, _options.TaskScheduler);
-            var stateChanger = new BackgroundJobStateChanger(filterProvider);
+            if (factory == null && performer == null && stateMachine == null && stateChanger == null)
+            {
+                var filterProvider = _options.FilterProvider ?? JobFilterProviders.Providers;
+                var activator = _options.Activator ?? JobActivator.Current;
+
+                stateMachine = new StateMachine(filterProvider);
+                factory = new BackgroundJobFactory(filterProvider);
+                performer = new BackgroundJobPerformer(filterProvider, activator, _options.TaskScheduler);
+                stateChanger = new BackgroundJobStateChanger(filterProvider);
+            }
+            else
+            {
+                if (factory == null) throw new ArgumentNullException(nameof(factory));
+                if (performer == null) throw new ArgumentNullException(nameof(performer));
+                if (stateMachine == null) throw new ArgumentNullException(nameof(stateMachine));
+                if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
+            }
 
             processes.Add(new Worker(_options.Queues, performer, stateChanger).UseBackgroundPool(_options.WorkerCount));
             processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger).UseBackgroundPool(1));

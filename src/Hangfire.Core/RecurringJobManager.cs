@@ -65,21 +65,23 @@ namespace Hangfire
             [NotNull] IJobFilterProvider filterProvider, 
             [NotNull] ITimeZoneResolver timeZoneResolver,
             [NotNull] Func<DateTime> nowFactory)
-#pragma warning disable 618
             : this(storage, new BackgroundJobFactory(filterProvider), new StateMachine(filterProvider), timeZoneResolver, nowFactory)
-#pragma warning restore 618
         {
         }
 
-        [Obsolete("Please use RecurringJobManager(JobStorage, IJobFilterProvider) overload instead. Will be removed in 2.0.0.")]
+        [Obsolete("Please use RecurringJobManager(JobStorage, IBackgroundJobFactory, IStateMachine) overload instead. Will be removed in 2.0.0.")]
         public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobFactory factory)
             : this(storage, factory, new StateMachine(JobFilterProviders.Providers))
         {
         }
 
-        [Obsolete("Please use RecurringJobManager(JobStorage, IJobFilterProvider) overload instead. Will be removed in 2.0.0.")]
         public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobFactory factory, [NotNull] IStateMachine stateMachine)
-            : this(storage, factory, stateMachine, new DefaultTimeZoneResolver(), () => DateTime.UtcNow)
+            : this(storage, factory, stateMachine, new DefaultTimeZoneResolver())
+        {
+        }
+
+        public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobFactory factory, [NotNull] IStateMachine stateMachine, [NotNull] ITimeZoneResolver timeZoneResolver)
+            : this(storage, factory, stateMachine, timeZoneResolver, () => DateTime.UtcNow)
         {
         }
 

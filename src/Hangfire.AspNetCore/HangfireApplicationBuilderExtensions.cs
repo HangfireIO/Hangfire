@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
+using Hangfire.Client;
 using Hangfire.Dashboard;
 using Hangfire.Server;
 using Microsoft.AspNetCore.Builder;
@@ -24,6 +25,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Hangfire.Common;
+using Hangfire.States;
 
 namespace Hangfire
 {
@@ -72,7 +74,14 @@ namespace Hangfire
             options.FilterProvider = options.FilterProvider ?? services.GetService<IJobFilterProvider>();
             options.TimeZoneResolver = options.TimeZoneResolver ?? services.GetService<ITimeZoneResolver>();
 
-            var server = new BackgroundJobServer(options, storage, additionalProcesses);
+            var factory = services.GetService<IBackgroundJobFactory>();
+            var performer = services.GetService<IBackgroundJobPerformer>();
+            var stateMachine = services.GetService<IStateMachine>();
+            var stateChanger = services.GetService<IBackgroundJobStateChanger>();
+
+            var server = factory != null && performer != null && stateMachine != null && stateChanger != null
+                ? new BackgroundJobServer(options, storage, additionalProcesses, factory, performer, stateMachine, stateChanger)
+                : new BackgroundJobServer(options, storage, additionalProcesses);
 
             lifetime.ApplicationStopping.Register(() => server.SendStop());
             lifetime.ApplicationStopped.Register(() => server.Dispose());
