@@ -19,6 +19,12 @@
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.7.0-rc2
+• Changed – Allow `IdempotentCompletion` filter to move a job to non-final and non-processing states.
+• Changed – Make `TaskScheduler.Default` the default scheduler for async jobs to avoid breaking changes.
+• Changed – Increase delays between continuation state fetch attempts to reduce storage load.
+• Fixed – Deadlock in async methods when `ConfigureAwait(false)` is used (regression in RC 1).
+
 1.7.0-rc1
 • Added – `IGlobalConfiguration.SetDataCompatibilityLevel` to enable rolling upgrades from version 1.6.
 • Added – `IGlobalConfiguration.UseRecommendedSerializerSettings` method for new installations.

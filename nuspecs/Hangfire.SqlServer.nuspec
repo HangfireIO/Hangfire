@@ -14,6 +14,10 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.7.0-rc2
+• Fixed – Don't use clustered index on table variable in `CountersAggregator`, works only in MSSQL 2014.
+• Fixed – Don't use the `CONCAT` function in migration script, works only in MSSQL 2012.
+
 1.7.0-rc1
 • Added – `SqlServerStorageOptions.EnableHeavyMigrations` switch to automatically install even heavy migrations.
 • Added – `Schema 7` migration to fix the `IX_HangFire_Set_Score` index to include the `Key` column.
