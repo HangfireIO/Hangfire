@@ -521,4 +521,10 @@
   <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
     <value>完成</value>
   </data>
+  <data name="Common_DeleteAll" xml:space="preserve">
+    <value>删除所有</value>
+  </data>
+  <data name="Common_DeleteAllConfirm" xml:space="preserve">
+    <value>你真的想删除所有的工作？</value>
+  </data>
 </root>

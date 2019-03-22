@@ -15,6 +15,8 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
@@ -149,6 +151,79 @@ namespace Hangfire
             {
                 throw new BackgroundJobClientException("State change of a background job failed. See inner exception for details", ex);
             }
+        }
+
+        /// <summary>
+        /// Attempts to change the state of all background jobs in a given state
+        /// to the specified one.
+        /// </summary>
+        /// 
+        /// <param name="fromState">Current state of the background jobs to be changed.</param>
+        /// <param name="toState">New state for the backgound jobs.</param>
+        /// 
+        /// <returns><see langword="true"/>, if <b>toState</b> state was applied
+        /// successfully to any job, otherwise <see langword="false"/>.</returns>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="fromState"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="toState"/> is null.</exception>
+        /// <exception cref="BackgroundJobClientException">State change failed due to an exception.</exception>
+        public bool ChangeAllState(string fromState, IState toState)
+        {
+            if (fromState == null) throw new ArgumentNullException(nameof(fromState));
+            if (toState == null) throw new ArgumentNullException(nameof(toState));
+
+            try
+            {
+                var monitor = _storage.GetMonitoringApi();
+                var jobIds = GetJobIds(fromState);
+                if (jobIds == null) return false;
+
+                using (var connection = _storage.GetConnection())
+                {
+                    foreach (var jobId in jobIds.ToList())
+                    {
+                        var appliedState = _stateChanger.ChangeState(new StateChangeContext(
+                            _storage,
+                            connection,
+                            jobId,
+                            toState,
+                            new[] { fromState }));
+
+                        if (appliedState == null || !appliedState.Name.Equals(toState.Name, StringComparison.OrdinalIgnoreCase))
+                            throw new Exception($"Applied state of jobId {jobId} was not the expected state of {toState.Name}");
+                    }
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new BackgroundJobClientException("State change of a background job failed. See inner exception for details", ex);
+            }
+        }
+
+        private IEnumerable<string> GetJobIds(string state)
+        {
+            var monitor = _storage.GetMonitoringApi();
+
+            if (state == FailedState.StateName)
+            {
+                var jobs = monitor.FailedJobs(0, int.MaxValue);
+                return jobs.Select(j => j.Key);
+            }
+
+            if (state == SucceededState.StateName)
+            {
+                var jobs = monitor.SucceededJobs(0, int.MaxValue);
+                return jobs.Select(j => j.Key);
+            }
+
+            if (state == DeletedState.StateName)
+            {
+                var jobs = monitor.DeletedJobs(0, int.MaxValue);
+                return jobs.Select(j => j.Key);
+            }
+
+            return null;
         }
     }
 }
