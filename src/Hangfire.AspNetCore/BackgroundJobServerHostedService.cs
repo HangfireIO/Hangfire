@@ -55,7 +55,7 @@ namespace Hangfire
         {
             _processingServer = _factory != null && _performer != null && _stateChanger != null
 #pragma warning disable 618
-                ? new BackgroundJobServer(_options, _storage, _additionalProcesses, _factory, _performer, _stateChanger)
+                ? new BackgroundJobServer(_options, _storage, _additionalProcesses, null, null, _factory, _performer, _stateChanger)
 #pragma warning restore 618
                 : new BackgroundJobServer(_options, _storage, _additionalProcesses);
 

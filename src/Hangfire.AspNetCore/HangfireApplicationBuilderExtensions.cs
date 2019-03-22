@@ -80,7 +80,7 @@ namespace Hangfire
 
             var server = factory != null && performer != null && stateChanger != null
 #pragma warning disable 618
-                ? new BackgroundJobServer(options, storage, additionalProcesses, factory, performer, stateChanger)
+                ? new BackgroundJobServer(options, storage, additionalProcesses, null, null, factory, performer, stateChanger)
 #pragma warning restore 618
                 : new BackgroundJobServer(options, storage, additionalProcesses);
 

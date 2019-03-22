@@ -81,7 +81,7 @@ namespace Hangfire
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses)
 #pragma warning disable 618
-            : this(options, storage, additionalProcesses, null, null, null)
+            : this(options, storage, additionalProcesses, null, null, null, null, null)
 #pragma warning restore 618
         {
         }
@@ -92,6 +92,8 @@ namespace Hangfire
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
+            [CanBeNull] IJobFilterProvider filterProvider,
+            [CanBeNull] JobActivator activator,
             [CanBeNull] IBackgroundJobFactory factory,
             [CanBeNull] IBackgroundJobPerformer performer,
             [CanBeNull] IBackgroundJobStateChanger stateChanger)
@@ -103,7 +105,7 @@ namespace Hangfire
             _options = options;
 
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
-            processes.AddRange(GetRequiredProcesses(factory, performer, stateChanger));
+            processes.AddRange(GetRequiredProcesses(filterProvider, activator, factory, performer, stateChanger));
             processes.AddRange(additionalProcesses.Select(x => x.UseBackgroundPool(1)));
 
             var properties = new Dictionary<string, object>
@@ -168,6 +170,8 @@ namespace Hangfire
         }
 
         private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses(
+            [CanBeNull] IJobFilterProvider filterProvider,
+            [CanBeNull] JobActivator activator,
             [CanBeNull] IBackgroundJobFactory factory,
             [CanBeNull] IBackgroundJobPerformer performer,
             [CanBeNull] IBackgroundJobStateChanger stateChanger)
@@ -177,8 +181,8 @@ namespace Hangfire
 
             if (factory == null && performer == null && stateChanger == null)
             {
-                var filterProvider = _options.FilterProvider ?? JobFilterProviders.Providers;
-                var activator = _options.Activator ?? JobActivator.Current;
+                filterProvider = filterProvider ?? _options.FilterProvider ?? JobFilterProviders.Providers;
+                activator = activator ?? _options.Activator ?? JobActivator.Current;
 
                 factory = new BackgroundJobFactory(filterProvider);
                 performer = new BackgroundJobPerformer(filterProvider, activator, _options.TaskScheduler);
