@@ -74,11 +74,7 @@ namespace Hangfire
             options.FilterProvider = options.FilterProvider ?? services.GetService<IJobFilterProvider>();
             options.TimeZoneResolver = options.TimeZoneResolver ?? services.GetService<ITimeZoneResolver>();
 
-            var factory = services.GetService<IBackgroundJobFactory>();
-            var performer = services.GetService<IBackgroundJobPerformer>();
-            var stateChanger = services.GetService<IBackgroundJobStateChanger>();
-
-            var server = factory != null && performer != null && stateChanger != null
+            var server = HangfireServiceCollectionExtensions.GetInternalServices(services, out var factory, out var stateChanger, out var performer)
 #pragma warning disable 618
                 ? new BackgroundJobServer(options, storage, additionalProcesses, null, null, factory, performer, stateChanger)
 #pragma warning restore 618

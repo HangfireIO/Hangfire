@@ -69,10 +69,7 @@ namespace Hangfire
 
             services.TryAddSingletonChecked<IBackgroundJobClient>(x =>
             {
-                var factory = x.GetService<IBackgroundJobFactory>();
-                var stateChanger = x.GetService<IBackgroundJobStateChanger>();
-
-                if (factory != null && stateChanger != null)
+                if (GetInternalServices(x, out var factory, out var stateChanger, out _))
                 {
                     return new BackgroundJobClient(x.GetRequiredService<JobStorage>(), factory, stateChanger);
                 }
@@ -84,9 +81,7 @@ namespace Hangfire
 
             services.TryAddSingletonChecked<IRecurringJobManager>(x =>
             {
-                var factory = x.GetService<IBackgroundJobFactory>();
-
-                if (factory != null)
+                if (GetInternalServices(x, out var factory, out _, out _))
                 {
                     return new RecurringJobManager(
                         x.GetRequiredService<JobStorage>(),
@@ -156,9 +151,7 @@ namespace Hangfire
                 options.FilterProvider = options.FilterProvider ?? provider.GetService<IJobFilterProvider>();
                 options.TimeZoneResolver = options.TimeZoneResolver ?? provider.GetService<ITimeZoneResolver>();
 
-                var factory = provider.GetService<IBackgroundJobFactory>();
-                var performer = provider.GetService<IBackgroundJobPerformer>();
-                var stateChanger = provider.GetService<IBackgroundJobStateChanger>();
+                GetInternalServices(provider, out var factory, out var stateChanger, out var performer);
 
 #pragma warning disable 618
                 return new BackgroundJobServerHostedService(
@@ -169,6 +162,28 @@ namespace Hangfire
             return services;
         }
 #endif
+
+        internal static bool GetInternalServices(
+            IServiceProvider provider,
+            out IBackgroundJobFactory factory,
+            out IBackgroundJobStateChanger stateChanger,
+            out IBackgroundJobPerformer performer)
+        {
+            factory = provider.GetService<IBackgroundJobFactory>();
+            performer = provider.GetService<IBackgroundJobPerformer>();
+            stateChanger = provider.GetService<IBackgroundJobStateChanger>();
+
+            if (factory != null && performer != null && stateChanger != null)
+            {
+                return true;
+            }
+
+            factory = null;
+            performer = null;
+            stateChanger = null;
+
+            return false;
+        }
 
         private static void TryAddSingletonChecked<T>(
             [NotNull] this IServiceCollection serviceCollection, 
