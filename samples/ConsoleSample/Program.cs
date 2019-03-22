@@ -21,11 +21,13 @@ namespace ConsoleSample
                 .UseSqlServerStorage(@"Server=.\;Database=Hangfire.Sample;Trusted_Connection=True;", new SqlServerStorageOptions
                 {
                     CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-                    QueuePollInterval = TimeSpan.FromTicks(1),
+                    QueuePollInterval = TimeSpan.Zero,
                     TransactionIsolationLevel = IsolationLevel.ReadCommitted,
                     SlidingInvisibilityTimeout = TimeSpan.FromMinutes(1),
                     PrepareSchemaIfNecessary = false,
-                    UsePageLocksOnDequeue = true
+                    UsePageLocksOnDequeue = true,
+                    DisableGlobalLocks = true,
+                    EnableHeavyMigrations = true
                 });
 
             var job1 = BackgroundJob.Enqueue(() => Services.WriteLine("First Job"));
