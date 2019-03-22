@@ -55,9 +55,6 @@ namespace Hangfire.Common
         private static readonly Lazy<JsonSerializerSettings> InternalSerializerSettings =
             new Lazy<JsonSerializerSettings>(GetInternalSettings, LazyThreadSafetyMode.PublicationOnly);
 
-        private static readonly Lazy<JsonSerializerSettings> LegacyTypedSerializerSettings =
-            new Lazy<JsonSerializerSettings>(GetLegacyTypedSerializerSettings, LazyThreadSafetyMode.PublicationOnly);
-
         private static JsonSerializerSettings _userSerializerSettings;
 
         /// <summary>
