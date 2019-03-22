@@ -27,6 +27,7 @@ namespace Hangfire.SqlServer
     {
         private TimeSpan _queuePollInterval;
         private string _schemaName;
+        private TimeSpan _jobExpirationCheckInterval;
         private TimeSpan? _slidingInvisibilityTimeout;
 
         public SqlServerStorageOptions()
