@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Text;
 using Hangfire.Common;
 using Hangfire.States;
-using Newtonsoft.Json;
 
 namespace Hangfire.Dashboard
 {

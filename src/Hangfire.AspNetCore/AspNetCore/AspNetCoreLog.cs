@@ -18,7 +18,6 @@ using System;
 using Hangfire.Annotations;
 using Hangfire.Logging;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Internal;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Hangfire.AspNetCore

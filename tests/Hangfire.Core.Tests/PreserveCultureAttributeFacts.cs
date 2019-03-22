@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using System.Globalization;
-using System.Threading;
 using Hangfire.Client;
 using Hangfire.Server;
 using Hangfire.States;

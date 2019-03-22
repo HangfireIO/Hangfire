@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+using System;
 using Hangfire.Common;
 using Hangfire.States;
 using Xunit;

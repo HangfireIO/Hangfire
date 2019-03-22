@@ -22,7 +22,6 @@ using Hangfire.Dashboard;
 using Hangfire.Dashboard.Pages;
 using Hangfire.Logging;
 using Hangfire.Logging.LogProviders;
-using Hangfire.Storage;
 using Newtonsoft.Json;
 
 namespace Hangfire

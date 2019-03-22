@@ -23,7 +23,6 @@ using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
-using Newtonsoft.Json;
 
 namespace Hangfire
 {

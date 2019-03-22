@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
-using Hangfire.Client;
 using Hangfire.Dashboard;
 using Hangfire.Server;
 using Microsoft.AspNetCore.Builder;
@@ -25,7 +24,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Hangfire.Common;
-using Hangfire.States;
 
 namespace Hangfire
 {
