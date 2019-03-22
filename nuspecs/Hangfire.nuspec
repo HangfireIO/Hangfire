@@ -26,6 +26,8 @@ Hangfire.Core
 • Changed – Allow `IdempotentCompletion` filter to move a job to non-final and non-processing states.
 • Changed – Make `TaskScheduler.Default` the default scheduler for async jobs to avoid breaking changes.
 • Changed – Increase delays between continuation state fetch attempts to reduce storage load.
+• Changed – Avoid breaking changes in `BackgroundJobServer` and `RecurringJobScheduler` classes.
+• Changed – Add `IBackgroundJobFactory.StateMachine` property (breaking change for low level API).
 • Fixed – Deadlock in async methods when `ConfigureAwait(false)` is used (regression in RC 1).
 
 Hangfire.AspNetCore
