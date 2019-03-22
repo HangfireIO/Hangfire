@@ -18,7 +18,6 @@ namespace Hangfire
         private readonly IEnumerable<IBackgroundProcess> _additionalProcesses;
         private readonly IBackgroundJobFactory _factory;
         private readonly IBackgroundJobPerformer _performer;
-        private readonly IStateMachine _stateMachine;
         private readonly IBackgroundJobStateChanger _stateChanger;
 
         private IBackgroundProcessingServer _processingServer;
@@ -28,7 +27,7 @@ namespace Hangfire
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses)
 #pragma warning disable 618
-            : this(storage, options, additionalProcesses, null, null, null, null)
+            : this(storage, options, additionalProcesses, null, null, null)
 #pragma warning restore 618
         {
         }
@@ -40,7 +39,6 @@ namespace Hangfire
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
             [CanBeNull] IBackgroundJobFactory factory,
             [CanBeNull] IBackgroundJobPerformer performer,
-            [CanBeNull] IStateMachine stateMachine,
             [CanBeNull] IBackgroundJobStateChanger stateChanger)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
@@ -50,15 +48,14 @@ namespace Hangfire
 
             _factory = factory;
             _performer = performer;
-            _stateMachine = stateMachine;
             _stateChanger = stateChanger;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _processingServer = _factory != null && _performer != null && _stateMachine != null && _stateChanger != null
+            _processingServer = _factory != null && _performer != null && _stateChanger != null
 #pragma warning disable 618
-                ? new BackgroundJobServer(_options, _storage, _additionalProcesses, _factory, _performer, _stateMachine, _stateChanger)
+                ? new BackgroundJobServer(_options, _storage, _additionalProcesses, _factory, _performer, _stateChanger)
 #pragma warning restore 618
                 : new BackgroundJobServer(_options, _storage, _additionalProcesses);
 

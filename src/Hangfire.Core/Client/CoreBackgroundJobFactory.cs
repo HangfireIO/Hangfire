@@ -32,6 +32,8 @@ namespace Hangfire.Client
             _stateMachine = stateMachine;
         }
 
+        public IStateMachine StateMachine => _stateMachine;
+
         public BackgroundJob Create(CreateContext context)
         {
             var parameters = context.Parameters.ToDictionary(

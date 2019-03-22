@@ -21,7 +21,6 @@ using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Profiling;
-using Hangfire.States;
 using Hangfire.Storage;
 
 namespace Hangfire.Server
@@ -71,7 +70,6 @@ namespace Hangfire.Server
         private readonly ConcurrentDictionary<Type, bool> _isBatchingAvailableCache = new ConcurrentDictionary<Type, bool>();
 
         private readonly IBackgroundJobFactory _factory;
-        private readonly IStateMachine _stateMachine;
         private readonly Func<DateTime> _nowFactory;
         private readonly ITimeZoneResolver _timeZoneResolver;
         private readonly TimeSpan _pollingDelay;
@@ -82,7 +80,7 @@ namespace Hangfire.Server
         /// class with default background job factory.
         /// </summary>
         public RecurringJobScheduler()
-            : this(new BackgroundJobFactory(JobFilterProviders.Providers), new StateMachine(JobFilterProviders.Providers))
+            : this(new BackgroundJobFactory(JobFilterProviders.Providers))
         {
         }
         
@@ -91,14 +89,11 @@ namespace Hangfire.Server
         /// class with custom background job factory and a state machine.
         /// </summary>
         /// <param name="factory">Factory that will be used to create background jobs.</param>
-        /// <param name="stateMachine">State machine that's responsible for enqueuing jobs.</param>
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="stateMachine"/> is null.</exception>
         public RecurringJobScheduler(
-            [NotNull] IBackgroundJobFactory factory,
-            [NotNull] IStateMachine stateMachine)
-            : this(factory, stateMachine, TimeSpan.Zero)
+            [NotNull] IBackgroundJobFactory factory)
+            : this(factory, TimeSpan.Zero)
         {
         }
 
@@ -107,15 +102,12 @@ namespace Hangfire.Server
         /// with custom background job factory, state machine and clocks.
         /// </summary>
         /// <param name="factory">Factory that will be used to create background jobs.</param>
-        /// <param name="stateMachine">State machine that's responsible for enqueuing jobs.</param>
         /// <param name="pollingDelay">Delay before another polling attempt, when no jobs scheduled yet.</param>
         /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="stateMachine"/> is null.</exception>
         public RecurringJobScheduler(
             [NotNull] IBackgroundJobFactory factory,
-            [NotNull] IStateMachine stateMachine,
             TimeSpan pollingDelay)
-            : this(factory, stateMachine, pollingDelay, new DefaultTimeZoneResolver())
+            : this(factory, pollingDelay, new DefaultTimeZoneResolver())
         {
         }
 
@@ -124,35 +116,29 @@ namespace Hangfire.Server
         /// with custom background job factory, state machine and clocks.
         /// </summary>
         /// <param name="factory">Factory that will be used to create background jobs.</param>
-        /// <param name="stateMachine">State machine that's responsible for enqueuing jobs.</param>
         /// <param name="pollingDelay">Delay before another polling attempt, when no jobs scheduled yet.</param>
         /// <param name="timeZoneResolver">Function that returns a time zone object by its identifier.</param>
         /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="stateMachine"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="timeZoneResolver"/> is null.</exception>
         public RecurringJobScheduler(
             [NotNull] IBackgroundJobFactory factory,
-            [NotNull] IStateMachine stateMachine,
             TimeSpan pollingDelay,
             [NotNull] ITimeZoneResolver timeZoneResolver)
-            : this(factory, stateMachine, pollingDelay, timeZoneResolver, () => DateTime.UtcNow)
+            : this(factory, pollingDelay, timeZoneResolver, () => DateTime.UtcNow)
         {
         }
 
         public RecurringJobScheduler(
             [NotNull] IBackgroundJobFactory factory,
-            [NotNull] IStateMachine stateMachine,
             TimeSpan pollingDelay,
             [NotNull] ITimeZoneResolver timeZoneResolver,
             [NotNull] Func<DateTime> nowFactory)
         {
             if (factory == null) throw new ArgumentNullException(nameof(factory));
-            if (stateMachine == null) throw new ArgumentNullException(nameof(stateMachine));
             if (nowFactory == null) throw new ArgumentNullException(nameof(nowFactory));
             if (timeZoneResolver == null) throw new ArgumentNullException(nameof(timeZoneResolver));
 
             _factory = factory;
-            _stateMachine = stateMachine;
             _nowFactory = nowFactory;
             _timeZoneResolver = timeZoneResolver;
             _pollingDelay = pollingDelay;
@@ -321,7 +307,7 @@ namespace Hangfire.Server
                     {
                         if (backgroundJob != null)
                         {
-                            _stateMachine.EnqueueBackgroundJob(
+                            _factory.StateMachine.EnqueueBackgroundJob(
                                 context.Storage,
                                 connection,
                                 transaction,

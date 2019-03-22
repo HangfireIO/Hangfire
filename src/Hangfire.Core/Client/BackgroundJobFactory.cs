@@ -50,6 +50,8 @@ namespace Hangfire.Client
             _innerFactory = innerFactory;
         }
 
+        public IStateMachine StateMachine => _innerFactory.StateMachine;
+
         public BackgroundJob Create(CreateContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));

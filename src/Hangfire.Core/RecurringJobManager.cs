@@ -19,7 +19,6 @@ using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Profiling;
-using Hangfire.States;
 
 namespace Hangfire
 {
@@ -33,7 +32,6 @@ namespace Hangfire
 
         private readonly JobStorage _storage;
         private readonly IBackgroundJobFactory _factory;
-        private readonly IStateMachine _stateMachine;
         private readonly Func<DateTime> _nowFactory;
         private readonly ITimeZoneResolver _timeZoneResolver;
 
@@ -65,36 +63,28 @@ namespace Hangfire
             [NotNull] IJobFilterProvider filterProvider, 
             [NotNull] ITimeZoneResolver timeZoneResolver,
             [NotNull] Func<DateTime> nowFactory)
-            : this(storage, new BackgroundJobFactory(filterProvider), new StateMachine(filterProvider), timeZoneResolver, nowFactory)
+            : this(storage, new BackgroundJobFactory(filterProvider), timeZoneResolver, nowFactory)
         {
         }
 
-        [Obsolete("Please use RecurringJobManager(JobStorage, IBackgroundJobFactory, IStateMachine) overload instead. Will be removed in 2.0.0.")]
         public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobFactory factory)
-            : this(storage, factory, new StateMachine(JobFilterProviders.Providers))
+            : this(storage, factory, new DefaultTimeZoneResolver())
         {
         }
 
-        public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobFactory factory, [NotNull] IStateMachine stateMachine)
-            : this(storage, factory, stateMachine, new DefaultTimeZoneResolver())
-        {
-        }
-
-        public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobFactory factory, [NotNull] IStateMachine stateMachine, [NotNull] ITimeZoneResolver timeZoneResolver)
-            : this(storage, factory, stateMachine, timeZoneResolver, () => DateTime.UtcNow)
+        public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobFactory factory, [NotNull] ITimeZoneResolver timeZoneResolver)
+            : this(storage, factory, timeZoneResolver, () => DateTime.UtcNow)
         {
         }
 
         internal RecurringJobManager(
             [NotNull] JobStorage storage, 
-            [NotNull] IBackgroundJobFactory factory, 
-            [NotNull] IStateMachine stateMachine,
+            [NotNull] IBackgroundJobFactory factory,
             [NotNull] ITimeZoneResolver timeZoneResolver,
             [NotNull] Func<DateTime> nowFactory)
         {
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-            _stateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
             _timeZoneResolver = timeZoneResolver ?? throw new ArgumentNullException(nameof(timeZoneResolver));
             _nowFactory = nowFactory ?? throw new ArgumentNullException(nameof(nowFactory));
         }
@@ -147,7 +137,7 @@ namespace Hangfire
                     {
                         if (backgroundJob != null)
                         {
-                            _stateMachine.EnqueueBackgroundJob(
+                            _factory.StateMachine.EnqueueBackgroundJob(
                                 _storage,
                                 connection,
                                 transaction,

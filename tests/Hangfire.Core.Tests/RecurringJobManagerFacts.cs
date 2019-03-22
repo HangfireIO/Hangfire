@@ -36,6 +36,7 @@ namespace Hangfire.Core.Tests
             _storage = new Mock<JobStorage>();
             _factory = new Mock<IBackgroundJobFactory>();
             _stateMachine = new Mock<IStateMachine>();
+            _factory.SetupGet(x => x.StateMachine).Returns(_stateMachine.Object);
             _nowFactory = () => _now;
 
             _timeZoneResolver = new Mock<ITimeZoneResolver>();
@@ -73,19 +74,10 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenStateMachineIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new RecurringJobManager(_storage.Object, _factory.Object, null));
-
-            Assert.Equal("stateMachine", exception.ParamName);
-        }
-
-        [Fact]
         public void Ctor_ThrowsAnException_WhenTimeZoneResolverIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RecurringJobManager(_storage.Object, _factory.Object, _stateMachine.Object, null, _nowFactory));
+                () => new RecurringJobManager(_storage.Object, _factory.Object, null, _nowFactory));
 
             Assert.Equal("timeZoneResolver", exception.ParamName);
         }
@@ -94,7 +86,7 @@ namespace Hangfire.Core.Tests
         public void Ctor_ThrowsAnException_WhenNowFactoryIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RecurringJobManager(_storage.Object, _factory.Object, _stateMachine.Object, _timeZoneResolver.Object, null));
+                () => new RecurringJobManager(_storage.Object, _factory.Object, _timeZoneResolver.Object, null));
 
             Assert.Equal("nowFactory", exception.ParamName);
         }
@@ -528,7 +520,7 @@ namespace Hangfire.Core.Tests
 
         private RecurringJobManager CreateManager()
         {
-            return new RecurringJobManager(_storage.Object, _factory.Object, _stateMachine.Object, _timeZoneResolver.Object, _nowFactory);
+            return new RecurringJobManager(_storage.Object, _factory.Object, _timeZoneResolver.Object, _nowFactory);
         }
 
         public static void Method() { }

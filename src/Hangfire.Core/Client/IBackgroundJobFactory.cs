@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using Hangfire.Annotations;
+using Hangfire.States;
 
 namespace Hangfire.Client
 {
@@ -25,6 +26,12 @@ namespace Hangfire.Client
     /// </summary>
     public interface IBackgroundJobFactory
     {
+        /// <summary>
+        /// Gets a state machine that's responsible for initial state change.
+        /// </summary>
+        [NotNull]
+        IStateMachine StateMachine { get; }
+
         /// <summary>
         /// Runs the process of job creation with the specified context.
         /// </summary>

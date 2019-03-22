@@ -81,7 +81,7 @@ namespace Hangfire
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses)
 #pragma warning disable 618
-            : this(options, storage, additionalProcesses, null, null, null, null)
+            : this(options, storage, additionalProcesses, null, null, null)
 #pragma warning restore 618
         {
         }
@@ -94,7 +94,6 @@ namespace Hangfire
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
             [CanBeNull] IBackgroundJobFactory factory,
             [CanBeNull] IBackgroundJobPerformer performer,
-            [CanBeNull] IStateMachine stateMachine,
             [CanBeNull] IBackgroundJobStateChanger stateChanger)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -104,7 +103,7 @@ namespace Hangfire
             _options = options;
 
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
-            processes.AddRange(GetRequiredProcesses(factory, performer, stateMachine, stateChanger));
+            processes.AddRange(GetRequiredProcesses(factory, performer, stateChanger));
             processes.AddRange(additionalProcesses.Select(x => x.UseBackgroundPool(1)));
 
             var properties = new Dictionary<string, object>
@@ -171,18 +170,16 @@ namespace Hangfire
         private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses(
             [CanBeNull] IBackgroundJobFactory factory,
             [CanBeNull] IBackgroundJobPerformer performer,
-            [CanBeNull] IStateMachine stateMachine,
             [CanBeNull] IBackgroundJobStateChanger stateChanger)
         {
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
             var timeZoneResolver = _options.TimeZoneResolver ?? new DefaultTimeZoneResolver();
 
-            if (factory == null && performer == null && stateMachine == null && stateChanger == null)
+            if (factory == null && performer == null && stateChanger == null)
             {
                 var filterProvider = _options.FilterProvider ?? JobFilterProviders.Providers;
                 var activator = _options.Activator ?? JobActivator.Current;
 
-                stateMachine = new StateMachine(filterProvider);
                 factory = new BackgroundJobFactory(filterProvider);
                 performer = new BackgroundJobPerformer(filterProvider, activator, _options.TaskScheduler);
                 stateChanger = new BackgroundJobStateChanger(filterProvider);
@@ -191,13 +188,12 @@ namespace Hangfire
             {
                 if (factory == null) throw new ArgumentNullException(nameof(factory));
                 if (performer == null) throw new ArgumentNullException(nameof(performer));
-                if (stateMachine == null) throw new ArgumentNullException(nameof(stateMachine));
                 if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
             }
 
             processes.Add(new Worker(_options.Queues, performer, stateChanger).UseBackgroundPool(_options.WorkerCount));
             processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger).UseBackgroundPool(1));
-            processes.Add(new RecurringJobScheduler(factory, stateMachine, _options.SchedulePollingInterval, timeZoneResolver).UseBackgroundPool(1));
+            processes.Add(new RecurringJobScheduler(factory, _options.SchedulePollingInterval, timeZoneResolver).UseBackgroundPool(1));
 
             return processes;
         }

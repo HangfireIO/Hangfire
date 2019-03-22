@@ -76,12 +76,11 @@ namespace Hangfire
 
             var factory = services.GetService<IBackgroundJobFactory>();
             var performer = services.GetService<IBackgroundJobPerformer>();
-            var stateMachine = services.GetService<IStateMachine>();
             var stateChanger = services.GetService<IBackgroundJobStateChanger>();
 
-            var server = factory != null && performer != null && stateMachine != null && stateChanger != null
+            var server = factory != null && performer != null && stateChanger != null
 #pragma warning disable 618
-                ? new BackgroundJobServer(options, storage, additionalProcesses, factory, performer, stateMachine, stateChanger)
+                ? new BackgroundJobServer(options, storage, additionalProcesses, factory, performer, stateChanger)
 #pragma warning restore 618
                 : new BackgroundJobServer(options, storage, additionalProcesses);
 

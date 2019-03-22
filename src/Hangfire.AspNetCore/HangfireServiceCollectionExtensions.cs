@@ -85,14 +85,12 @@ namespace Hangfire
             services.TryAddSingletonChecked<IRecurringJobManager>(x =>
             {
                 var factory = x.GetService<IBackgroundJobFactory>();
-                var stateMachine = x.GetService<IStateMachine>();
 
-                if (factory != null && stateMachine != null)
+                if (factory != null)
                 {
                     return new RecurringJobManager(
                         x.GetRequiredService<JobStorage>(),
                         factory,
-                        stateMachine,
                         x.GetRequiredService<ITimeZoneResolver>());
                 }
 
@@ -160,11 +158,12 @@ namespace Hangfire
 
                 var factory = provider.GetService<IBackgroundJobFactory>();
                 var performer = provider.GetService<IBackgroundJobPerformer>();
-                var stateMachine = provider.GetService<IStateMachine>();
                 var stateChanger = provider.GetService<IBackgroundJobStateChanger>();
 
+#pragma warning disable 618
                 return new BackgroundJobServerHostedService(
-                    storage, options, additionalProcesses, factory, performer, stateMachine, stateChanger);
+#pragma warning restore 618
+                    storage, options, additionalProcesses, factory, performer, stateChanger);
             });
 
             return services;
