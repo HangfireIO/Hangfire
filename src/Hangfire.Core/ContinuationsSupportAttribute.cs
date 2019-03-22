@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire.
+// This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
@@ -30,7 +30,7 @@ namespace Hangfire
     public class ContinuationsSupportAttribute : JobFilterAttribute, IElectStateFilter, IApplyStateFilter
     {
         private static readonly TimeSpan AddJobLockTimeout = TimeSpan.FromMinutes(1);
-        private static readonly TimeSpan ContinuationStateFetchTimeout = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan ContinuationStateFetchTimeout = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan ContinuationInvalidTimeout = TimeSpan.FromMinutes(15);
 
         private readonly ILog _logger = LogProvider.For<ContinuationsSupportAttribute>();
@@ -238,11 +238,13 @@ namespace Hangfire
 
                 if (started.Elapsed >= timeout)
                 {
-                    throw new TimeoutException(
+                    _logger.Warn(
                         $"Can not start continuation '{continuationJobId}' for background job '{context.BackgroundJob.Id}': timeout expired while trying to fetch continuation state.");
+
+                    break;
                 }
 
-                Thread.Sleep(firstAttempt ? 0 : 1);
+                Thread.Sleep(firstAttempt ? 0 : 100);
                 firstAttempt = false;
             }
 
