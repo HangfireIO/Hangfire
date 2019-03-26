@@ -51,6 +51,7 @@
 • Ported – Merged updates from versions 1.6.18 – 1.6.20.
     
 1.7.0-beta1
+• Added – `Schema 6` with less indexes, better physical layout and `bigint` support.
 • Added – Callback method to allow to open the database with impersonation (by @BjoernHund).
 • Changed – Identity columns either converted to the `bigint` type, or entirely removed.
 • Changed – Clustered indexes were organized according to the access patterns of their tables.

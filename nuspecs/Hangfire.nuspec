@@ -194,7 +194,7 @@ Hangfire.Core
 
 Hangfire.SqlServer
 
-* Added – Migration for Schema 6 to use...
+• Added – `Schema 6` with less indexes, better physical layout and `bigint` support.
 • Added – Callback method to allow to open the database with impersonation (by @BjoernHund).
 • Changed – Identity columns either converted to the `bigint` type, or entirely removed.
 • Changed – Clustered indexes were organized according to the access patterns of their tables.
