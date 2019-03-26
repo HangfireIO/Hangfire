@@ -168,6 +168,7 @@ namespace Hangfire.Server
 
             stopwatch.Stop();
 
+            ServerJobCancellationToken.AddServer(context.ServerId);
             _logger.Info($"{GetServerTemplate(context.ServerId)} successfully announced in {stopwatch.Elapsed.TotalMilliseconds} ms");
         }
 
@@ -176,6 +177,7 @@ namespace Hangfire.Server
             try
             {
                 _logger.Trace($"{GetServerTemplate(context.ServerId)} is reporting itself as stopped...");
+                ServerJobCancellationToken.RemoveServer(context.ServerId);
 
                 var stopwatch = Stopwatch.StartNew();
 
