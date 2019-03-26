@@ -157,7 +157,7 @@ namespace Hangfire.Server
             var scheduledTask = Task.Factory.StartNew(
                 InvokeSynchronously,
                 tuple,
-                context.CancellationToken.ShutdownToken,
+                CancellationToken.None,
                 TaskCreationOptions.None,
                 _taskScheduler);
 
