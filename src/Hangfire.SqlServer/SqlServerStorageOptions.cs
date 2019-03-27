@@ -27,6 +27,7 @@ namespace Hangfire.SqlServer
     {
         private TimeSpan _queuePollInterval;
         private string _schemaName;
+        private TimeSpan _jobExpirationCheckInterval;
         private TimeSpan? _slidingInvisibilityTimeout;
 
         public SqlServerStorageOptions()
@@ -84,7 +85,18 @@ namespace Hangfire.SqlServer
 
         public bool PrepareSchemaIfNecessary { get; set; }
 
-        public TimeSpan JobExpirationCheckInterval { get; set; }
+        public TimeSpan JobExpirationCheckInterval 
+        {
+            get { return _jobExpirationCheckInterval; } 
+            set {
+                if (value.TotalMilliseconds > int.MaxValue)
+                {
+                    throw new ArgumentOutOfRangeException("Job expiration check interval cannot be greater than int.MaxValue");
+                }
+                _jobExpirationCheckInterval = value;
+            }
+        }
+
         public TimeSpan CountersAggregateInterval { get; set; }
 
         public int? DashboardJobListLimit { get; set; }
