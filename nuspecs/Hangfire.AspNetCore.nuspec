@@ -14,31 +14,12 @@
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
-1.7.0-rc2
-• Changed – Allow to use registered custom low-level classes like `IBackgroundJobFactory` again.
-• Fixed – `NullReferenceException` when application is stopped due to an exception during the start.
-
-1.7.0-rc1
-• Changed – Remove internal service registrations that are inconsistent with server options.
-• Ported – Merged updates from version 1.6.23.
-
-1.7.0-beta3
+1.7.0
 • Added – Full .NET Core 2.0 support by explicitly targeting .NET Standard 2.0.
 • Added – An overloaded AddHangfire method with `IServiceProvider` parameter (by @ericgreenmix and @denis-ivanov).
 • Added – `BackgroundJobServerHostedService` class based on `IHostedService` interface.
 • Added – `IServiceCollection.AddHangfireServer` method to register the server during configuration.
-
-1.7.0-beta2
-
-Merged updates from 1.6.18 – 1.6.20:
-      
-    1.6.20
-    • SECURITY – Use ASP.NET Core's built-in antiforgery validation to prevent CSRF attacks.
-          
-    1.6.18
-    • Added – More Hangfire-related services are now registered in an IoC container (by @pieceofsummer).
-    • Fixed – Queue parameter is ignored in .NET Core when creating a job (by @pieceofsummer).
-    • Fixed – Fix issue with configuration block not called on .NET Core (by @pieceofsummer).
+• Changed – Custom services for factory, performer and state changer interfaces will be picked up only when all of them registered.
 
     </releaseNotes>
     <dependencies>

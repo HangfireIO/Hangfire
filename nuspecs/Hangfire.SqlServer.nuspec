@@ -14,50 +14,32 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
-1.7.0-rc2
-• Fixed – Don't use clustered index on table variable in `CountersAggregator`, works only in MSSQL 2014.
-• Fixed – Don't use the `CONCAT` function in migration script, works only in MSSQL 2012.
-
-1.7.0-rc1
-• Added – `SqlServerStorageOptions.EnableHeavyMigrations` switch to automatically install even heavy migrations.
+1.7.0
+• Added – Full .NET Core 2.0 support by explicitly targeting .NET Standard 2.0.
 • Added – `Schema 7` migration to fix the `IX_HangFire_Set_Score` index to include the `Key` column.
+• Added – `Schema 6` migration with less indexes, better physical layout and `bigint` support (disabled by default).
+• Added – Blocking fetch support for sliding expiration-based fetch to avoid excessive polling.
+• Added – `SqlServerStorageOptions.EnableHeavyMigrations` switch to automatically install even heavy migrations.
 • Added – `SqlServerStorageOptions.DisableGlobalLocks` property to avoid custom locking scheme.
 • Added – `SqlServerStorageOptions.UsePageLocksOnDequeue` property to use less CPU consuming fetch.
-• Changed – `Schema 6` migration is disabled by default for existing installations, because it may take too long.
-• Changed – Don't throw an exception when using automatic migrations and current schema is newer than expected.
-• Changed – Store arguments in the corresponding column in SQL Server again.
-• Changed – Continue to use global locks by default in SQL Server storage.
-• Changed – Bring `ExpirationManager` and `CountersAggregator` to their previous state.
+• Added – Callback method to allow to open the database with impersonation (by @BjoernHund).
+• Changed – Identity columns either converted to the `bigint` type, or entirely removed.
+• Changed – Clustered indexes were organized according to the access patterns of their tables.
+• Changed – Most of secondary indexes were either removed or made filtered.
+• Changed – Optimize sliding-expiration-based fetching to use even less CPU time.
+• Changed – Use write reordering and fine-grained locking scheme to improve parallelism.
 • Changed – Monitoring API doesn't check state data to see state transition time.
-• Changed – Update `CountersAggregator` to use clustered key for temp table.
-• Fixed – Avoid unnecessary waits in state changer when job was already expired.
-• Fixed – Cannot resolve the collation conflict in `CountersAggregator`.
-• Ported – Merged updates from version 1.6.23.
-
-1.7.0-beta3
-• Changed – Short paths for the CreateExpiredJob method to avoid some round-trips.
 • Changed – Allow to use zero-based poll interval when sliding invisibility timeout.
+• Changed – Short paths for the `CreateExpiredJob` method to avoid some round-trips.
 • Changed – Set `SqlParameter` types explicitly to not to duplicate query plans.
 • Changed – Batch support for `AddToQueue` method when default provider is used.
 • Changed – Check `FetchedAt` has expected value to prevent prolonging others' work.
 • Changed – Use more recent Dapper 1.50.7 on all platforms except .NET Framework 4.5.
 • Changed – Dapper package is internalized now even on .NET Core to avoid possible conflicts.
-• Ported – Merged updates from version 1.6.21 and 1.6.22.
-      
-1.7.0-beta2
-• Added – Blocking fetch support for sliding expiration-based fetch to avoid excessive polling.
-• Changed – Optimize sliding-expiration-based fetching to use even less CPU time.
-• Changed – Use write reordering and fine-grained locking scheme to improve parallelism.
-• Ported – Merged updates from versions 1.6.18 – 1.6.20.
-    
-1.7.0-beta1
-• Added – `Schema 6` with less indexes, better physical layout and `bigint` support.
-• Added – Callback method to allow to open the database with impersonation (by @BjoernHund).
-• Changed – Identity columns either converted to the `bigint` type, or entirely removed.
-• Changed – Clustered indexes were organized according to the access patterns of their tables.
-• Changed – Most of secondary indexes were either removed or made filtered.
+• Fixed – Avoid unnecessary waits in state changer when job was already expired.
+• Fixed – Cannot resolve the collation conflict in `CountersAggregator`.
 • Fixed – Background processing stops when identity columns exceed the `Int32.MaxValue`.
-• Fixed – Slowdown of scheduled jobs due to the missing index on the [Set] table.
+• Fixed – Slowdown of scheduled jobs due to the missing index on the `[Set]` table.
     </releaseNotes>
     <dependencies>
       <group targetFramework="net45">
