@@ -43,7 +43,7 @@ namespace Hangfire.SqlServer
             log.Info("Start installing Hangfire SQL objects...");
 
             var script = GetStringResource(
-                typeof(SqlServerObjectsInstaller).GetTypeInfo().Assembly, 
+                typeof(SqlServerObjectsInstaller).GetTypeInfo().Assembly,
                 "Hangfire.SqlServer.Install.sql");
 
             script = script.Replace("SET @TARGET_SCHEMA_VERSION = 5;", "SET @TARGET_SCHEMA_VERSION = " + RequiredSchemaVersion + ";");
@@ -81,7 +81,7 @@ namespace Hangfire.SqlServer
         {
             using (var stream = assembly.GetManifestResourceStream(resourceName))
             {
-                if (stream == null) 
+                if (stream == null)
                 {
                     throw new InvalidOperationException(
                         $"Requested resource `{resourceName}` was not found in the assembly `{assembly}`.");

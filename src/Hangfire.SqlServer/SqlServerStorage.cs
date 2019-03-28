@@ -77,7 +77,17 @@ namespace Hangfire.SqlServer
         /// to query the data.
         /// </summary>
         public SqlServerStorage([NotNull] DbConnection existingConnection)
-            : this(existingConnection, new SqlServerStorageOptions())
+            : this(existingConnection, new SqlServerStorageOptions(), null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SqlServerStorage"/> class with
+        /// explicit instance of the <see cref="DbConnection"/> class that will be used
+        /// to query the data.
+        /// </summary>
+        public SqlServerStorage([NotNull] DbConnection existingConnection, DbTransaction transaction)
+            : this(existingConnection, new SqlServerStorageOptions(), transaction)
         {
         }
 
@@ -87,12 +97,23 @@ namespace Hangfire.SqlServer
         /// to query the data, with the given options.
         /// </summary>
         public SqlServerStorage([NotNull] DbConnection existingConnection, [NotNull] SqlServerStorageOptions options)
+            : this(existingConnection, options, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SqlServerStorage"/> class with
+        /// explicit instance of the <see cref="DbConnection"/> class that will be used
+        /// to query the data, with the given options.
+        /// </summary>
+        public SqlServerStorage([NotNull] DbConnection existingConnection, [NotNull] SqlServerStorageOptions options, DbTransaction transaction)
         {
             if (existingConnection == null) throw new ArgumentNullException(nameof(existingConnection));
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             _existingConnection = existingConnection;
             _options = options;
+            Transaction = transaction;
 
             Initialize();
         }
@@ -127,6 +148,8 @@ namespace Hangfire.SqlServer
 
         internal string SchemaName => _options.SchemaName;
         internal int? CommandTimeout => _options.CommandTimeout.HasValue ? (int)_options.CommandTimeout.Value.TotalSeconds : (int?)null;
+        internal DbTransaction Transaction { get; }
+
         internal int? CommandBatchMaxTimeout => _options.CommandBatchMaxTimeout.HasValue ? (int)_options.CommandBatchMaxTimeout.Value.TotalSeconds : (int?)null;
         internal TimeSpan? SlidingInvisibilityTimeout => _options.SlidingInvisibilityTimeout;
 
@@ -243,7 +266,7 @@ namespace Hangfire.SqlServer
             {
                 var result = UseConnection(dedicatedConnection, connection =>
                 {
-                    connection.EnlistTransaction(Transaction.Current);
+                    connection.EnlistTransaction(System.Transactions.Transaction.Current);
                     return func(connection, null);
                 });
 
@@ -254,13 +277,18 @@ namespace Hangfire.SqlServer
 #else
             return UseConnection(dedicatedConnection, connection =>
             {
-                using (var transaction = connection.BeginTransaction(isolationLevel ?? IsolationLevel.ReadCommitted))
+                if (Transaction == null)
                 {
-                    var result = func(connection, transaction);
-                    transaction.Commit();
+                    using (var transaction =
+                        connection.BeginTransaction(isolationLevel ?? IsolationLevel.ReadCommitted))
+                    {
+                        var result = func(connection, transaction);
+                        transaction.Commit();
 
-                    return result;
+                        return result;
+                    }
                 }
+                return func(connection, Transaction);
             });
 #endif
         }
@@ -293,7 +321,7 @@ namespace Hangfire.SqlServer
 
         private void Initialize()
         {
-            if (_options.PrepareSchemaIfNecessary)
+            if (_options.PrepareSchemaIfNecessary && Transaction == null)
             {
                 UseConnection(null, connection =>
                 {
