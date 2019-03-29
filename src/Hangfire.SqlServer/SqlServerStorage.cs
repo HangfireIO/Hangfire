@@ -243,7 +243,13 @@ namespace Hangfire.SqlServer
             IsolationLevel? isolationLevel)
         {
 #if FEATURE_TRANSACTIONSCOPE
-            using (var transaction = CreateTransaction(isolationLevel ?? _options.TransactionIsolationLevel))
+            isolationLevel = isolationLevel ?? (_options.UseRecommendedIsolationLevel
+                ? IsolationLevel.ReadCommitted
+#pragma warning disable 618
+                : _options.TransactionIsolationLevel);
+#pragma warning restore 618
+
+            using (var transaction = CreateTransaction(isolationLevel))
             {
                 var result = UseConnection(dedicatedConnection, connection =>
                 {

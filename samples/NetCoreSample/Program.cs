@@ -34,7 +34,7 @@ namespace NetCoreSample
                     {
                         CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
                         QueuePollInterval = TimeSpan.FromTicks(1),
-                        TransactionIsolationLevel = IsolationLevel.ReadCommitted,
+                        UseRecommendedIsolationLevel = true,
                         SlidingInvisibilityTimeout = TimeSpan.FromMinutes(1)
                     });
 

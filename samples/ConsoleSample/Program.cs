@@ -22,9 +22,9 @@ namespace ConsoleSample
                 {
                     CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
                     QueuePollInterval = TimeSpan.Zero,
-                    TransactionIsolationLevel = IsolationLevel.ReadCommitted,
                     SlidingInvisibilityTimeout = TimeSpan.FromMinutes(1),
                     PrepareSchemaIfNecessary = false,
+                    UseRecommendedIsolationLevel = true,
                     UsePageLocksOnDequeue = true,
                     DisableGlobalLocks = true,
                     EnableHeavyMigrations = true

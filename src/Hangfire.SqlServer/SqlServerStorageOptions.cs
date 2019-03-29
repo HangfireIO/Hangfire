@@ -32,7 +32,6 @@ namespace Hangfire.SqlServer
 
         public SqlServerStorageOptions()
         {
-            TransactionIsolationLevel = null;
             QueuePollInterval = TimeSpan.FromSeconds(15);
             SlidingInvisibilityTimeout = null;
 #pragma warning disable 618
@@ -48,6 +47,7 @@ namespace Hangfire.SqlServer
             UsePageLocksOnDequeue = false;
         }
 
+        [Obsolete("TransactionIsolationLevel option is deprecated, please set UseRecommendedIsolationLevel instead. Will be removed in 2.0.0.")]
         public IsolationLevel? TransactionIsolationLevel { get; set; }
 
         public TimeSpan QueuePollInterval
@@ -120,6 +120,7 @@ namespace Hangfire.SqlServer
         public Func<IDisposable> ImpersonationFunc { get; set; }
         public bool DisableGlobalLocks { get; set; }
         public bool UsePageLocksOnDequeue { get; set; }
+        public bool UseRecommendedIsolationLevel { get; set; }
         public bool EnableHeavyMigrations { get; set; }
     }
 }
