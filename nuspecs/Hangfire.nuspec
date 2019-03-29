@@ -109,6 +109,7 @@ Hangfire.SqlServer
 • Added – `SqlServerStorageOptions.DisableGlobalLocks` property to avoid custom locking scheme.
 • Added – `SqlServerStorageOptions.UsePageLocksOnDequeue` property to use less CPU consuming fetch.
 • Added – Callback method to allow to open the database with impersonation (by @BjoernHund).
+• Added – `SqlServerStorageOptions.UseRecommendedIsolationLevel` option to set the minimum possible level.
 • Changed – Identity columns either converted to the `bigint` type, or entirely removed.
 • Changed – Clustered indexes were organized according to the access patterns of their tables.
 • Changed – Most of secondary indexes were either removed or made filtered.
