@@ -22,6 +22,7 @@ using System.Reflection;
 using Hangfire.Annotations;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Hangfire.Server;
 
 namespace Hangfire.Common
 {
@@ -153,7 +154,7 @@ namespace Hangfire.Common
 
             Type = type;
             Method = method;
-            Args = args;
+            Args = PrepareArgs(method, args);
         }
 
         /// <summary>
@@ -449,6 +450,27 @@ namespace Hangfire.Common
             return constantExpression != null
                 ? constantExpression.Value
                 : CachedExpressionCompiler.Evaluate(expression);
+        }
+        
+        private static object[] PrepareArgs(MethodInfo method, object[] args)
+        {
+            var parameters = method.GetParameters();
+            
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                var parameter = parameters[i];
+
+                if (CoreBackgroundJobPerformer.
+                    Substitutions.ContainsKey(parameter.ParameterType))
+                {
+                    // This argument has a special type, so any values would be
+                    // overwritten by CoreBackgroundJobPerformer upon execution.
+                    // Discard them early on (while also saving some storage).
+                    args[i] = null;
+                }
+            }
+
+            return args;
         }
     }
 }
