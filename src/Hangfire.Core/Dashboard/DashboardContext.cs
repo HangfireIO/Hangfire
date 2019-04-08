@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 
@@ -42,7 +43,7 @@ namespace Hangfire.Dashboard
         public DashboardRequest Request { get; protected set; }
         public DashboardResponse Response { get; protected set; }
 
-        public bool IsReadOnly => _isReadOnlyLazy.Value;
+        public bool IsReadOnly => _isReadOnlyLazy.Value && !Options.Authorization.Any(t => t.Authorize(this));
 
         public string AntiforgeryHeader { get; set; }
         public string AntiforgeryToken { get; set; }
