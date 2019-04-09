@@ -22,13 +22,13 @@ using Hangfire.Storage;
 
 namespace Hangfire.Server
 {
-    internal class ServerJobCancellationToken : IJobCancellationToken
+    internal class ServerJobCancellationToken : IJobCancellationToken, IDisposable
     {
         private readonly string _jobId;
         private readonly string _serverId;
         private readonly string _workerId;
         private readonly IStorageConnection _connection;
-        private readonly CancellationToken _shutdownToken;
+        private readonly CancellationTokenSource _shutdownTokenSource;
 
         public ServerJobCancellationToken(
             [NotNull] IStorageConnection connection,
@@ -46,14 +46,19 @@ namespace Hangfire.Server
             _serverId = serverId;
             _workerId = workerId;
             _connection = connection;
-            _shutdownToken = shutdownToken;
+            _shutdownTokenSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownToken);
         }
 
-        public CancellationToken ShutdownToken => _shutdownToken;
+        public CancellationToken ShutdownToken => _shutdownTokenSource.Token;
+
+        public void Dispose()
+        {
+            _shutdownTokenSource.Dispose();
+        }
 
         public void ThrowIfCancellationRequested()
         {
-            _shutdownToken.ThrowIfCancellationRequested();
+            ShutdownToken.ThrowIfCancellationRequested();
 
             if (IsJobAborted())
             {
