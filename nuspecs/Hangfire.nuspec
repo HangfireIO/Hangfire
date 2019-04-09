@@ -19,6 +19,12 @@ https://www.hangfire.io/
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.6.25
+
+Hangfire.Core
+
+• Fixed – Buggy `CancellationToken` consumers now can't cause memory leaks related to token registrations.
+
 1.6.24
 
 Hangfire.Core
