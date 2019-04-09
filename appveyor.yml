@@ -31,13 +31,6 @@ services:
   - mssql2008r2sp2
   - msmq
 
-# branches to build
-branches:
-  # whitelist
-  only:
-    - master
-    - dev
-
 pull_requests:
   do_not_increment_build_number: true
 
