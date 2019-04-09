@@ -79,10 +79,13 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void ShutdownTokenProperty_PointsToShutdownTokenValue()
+        public void ShutdownTokenProperty_PointsToLinkedShutdownTokenValue()
         {
             var token = CreateToken();
-            Assert.Equal(_cts.Token, token.ShutdownToken);
+            Assert.False(token.ShutdownToken.IsCancellationRequested);
+
+            _cts.Cancel();
+            Assert.True(token.ShutdownToken.IsCancellationRequested);
         }
 
         [Fact]
