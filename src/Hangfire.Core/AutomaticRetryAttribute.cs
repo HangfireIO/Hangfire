@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
@@ -82,10 +83,19 @@ namespace Hangfire
         /// </remarks>
         public static readonly int DefaultRetryAttempts = 10;
 
-        private static readonly ILog Logger = LogProvider.For<AutomaticRetryAttribute>();
+        private static readonly Func<long, int> DefaultDelayInSecondsByAttemptFunc = attempt =>
+        {
+            var random = new Random();
+            return (int)Math.Round(
+                Math.Pow(attempt - 1, 4) + 15 + random.Next(30) * attempt);
+        };
+        
+        private readonly ILog _logger = LogProvider.For<AutomaticRetryAttribute>();
         
         private readonly object _lockObject = new object();
         private int _attempts;
+        private int[]  _delaysInSeconds;
+        private Func<long, int> _delayInSecondsByAttemptFunc;
         private AttemptsExceededAction _onAttemptsExceeded;
         private bool _logEvents;
 
@@ -96,6 +106,7 @@ namespace Hangfire
         public AutomaticRetryAttribute()
         {
             Attempts = DefaultRetryAttempts;
+            DelayInSecondsByAttemptFunc = DefaultDelayInSecondsByAttemptFunc;
             LogEvents = true;
             OnAttemptsExceeded = AttemptsExceededAction.Fail;
             Order = 20;
@@ -120,6 +131,38 @@ namespace Hangfire
                 {
                     _attempts = value;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the delays between attempts.
+        /// </summary>
+        /// <value>An array of non-negative numbers.</value>
+        /// <exception cref="ArgumentNullException">The value in a set operation is null.</exception>
+        /// <exception cref="ArgumentException">The value contain one or more negative numbers.</exception>
+        public int[] DelaysInSeconds
+        {
+            get { lock (_lockObject) { return _delaysInSeconds; } }
+            set
+            {
+                if (value == null || value.Length == 0) throw new ArgumentNullException(nameof(value));
+                if (value.Any(delay => delay < 0)) throw new ArgumentException($@"{nameof(DelaysInSeconds)} value must be an array of non-negative numbers.", nameof(value));
+
+                lock (_lockObject) { _delaysInSeconds = value; }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a function using to get a delay by an attempt number.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">The value in a set operation is null.</exception>
+        public Func<long, int> DelayInSecondsByAttemptFunc
+        {
+            get { lock (_lockObject) { return _delayInSecondsByAttemptFunc;} }
+            set
+            {
+                if (value == null) throw new ArgumentNullException(nameof(value));
+                lock (_lockObject) { _delayInSecondsByAttemptFunc = value; }
             }
         }
 
@@ -166,7 +209,7 @@ namespace Hangfire
             {
                 if (LogEvents)
                 {
-                    Logger.ErrorException(
+                    _logger.ErrorException(
                         $"Failed to process the job '{context.BackgroundJob.Id}': an exception occurred.",
                         failedState.Exception);
                 }
@@ -194,7 +237,7 @@ namespace Hangfire
         }
 
         /// <summary>
-        /// Schedules the job to run again later. See <see cref="SecondsToDelay"/>.
+        /// Schedules the job to run again later. See <see cref="DelayInSecondsByAttemptFunc"/>.
         /// </summary>
         /// <param name="context">The state context.</param>
         /// <param name="retryAttempt">The count of retry attempts made so far.</param>
@@ -203,7 +246,20 @@ namespace Hangfire
         {
             context.SetJobParameter("RetryCount", retryAttempt);
 
-            var delay = TimeSpan.FromSeconds(SecondsToDelay(retryAttempt));
+            int delayInSeconds;
+            
+            if (_delaysInSeconds != null)
+            {
+                delayInSeconds = retryAttempt <= _delaysInSeconds.Length
+                    ? _delaysInSeconds[retryAttempt - 1]
+                    : _delaysInSeconds.Last();
+            }
+            else
+            {
+                delayInSeconds = _delayInSecondsByAttemptFunc(retryAttempt);                
+            }
+
+            var delay = TimeSpan.FromSeconds(delayInSeconds);          
 
             const int maxMessageLength = 50;
             var exceptionMessage = failedState.Exception.Message.Length > maxMessageLength
@@ -212,14 +268,16 @@ namespace Hangfire
 
             // If attempt number is less than max attempts, we should
             // schedule the job to run again later.
-            context.CandidateState = new ScheduledState(delay)
-            {
-                Reason = $"Retry attempt {retryAttempt} of {Attempts}: {exceptionMessage}"
-            };
+            
+            var reason = $"Retry attempt {retryAttempt} of {Attempts}: {exceptionMessage}";
+
+            context.CandidateState = delay == TimeSpan.Zero
+                ? (IState)new EnqueuedState { Reason = reason }
+                : new ScheduledState(delay) { Reason = reason };
 
             if (LogEvents)
             {
-                Logger.WarnException(
+                _logger.WarnException(
                     $"Failed to process the job '{context.BackgroundJob.Id}': an exception occurred. Retry attempt {retryAttempt} of {Attempts} will be performed in {delay}.",
                     failedState.Exception);
             }
@@ -241,18 +299,10 @@ namespace Hangfire
 
             if (LogEvents)
             {
-                Logger.WarnException(
+                _logger.WarnException(
                     $"Failed to process the job '{context.BackgroundJob.Id}': an exception occured. Job was automatically deleted because the retry attempt count exceeded {Attempts}.",
                     failedState.Exception);
             }
-        }
-
-        // delayed_job uses the same basic formula
-        private static int SecondsToDelay(long retryCount)
-        {
-            var random = new Random();
-            return (int)Math.Round(
-                Math.Pow(retryCount - 1, 4) + 15 + random.Next(30) * retryCount);
         }
     }
 }

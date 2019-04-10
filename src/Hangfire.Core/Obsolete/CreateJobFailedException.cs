@@ -24,6 +24,9 @@ namespace Hangfire.Client
     /// could not create a job due to another exception was thrown.
     /// </summary>
     [Obsolete("Please use the `BackgroundJobClientException` instead. Will be removed in 2.0.0.")]
+#if !NETSTANDARD1_3
+    [Serializable]
+#endif
     public class CreateJobFailedException : Exception
     {
         /// <summary>

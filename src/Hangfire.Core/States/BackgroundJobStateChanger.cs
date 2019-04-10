@@ -25,10 +25,8 @@ namespace Hangfire.States
 {
     public class BackgroundJobStateChanger : IBackgroundJobStateChanger
     {
-        private const int MaxStateChangeAttempts = 10;
         private static readonly TimeSpan JobLockTimeout = TimeSpan.FromMinutes(15);
 
-        private readonly IStateMachine _coreStateMachine;
         private readonly IStateMachine _stateMachine;
 
         public BackgroundJobStateChanger()
@@ -45,7 +43,6 @@ namespace Hangfire.States
         {
             if (stateMachine == null) throw new ArgumentNullException(nameof(stateMachine));
 
-            _coreStateMachine = stateMachine;
             _stateMachine = new StateMachine(filterProvider, stateMachine);
         }
         
@@ -63,8 +60,6 @@ namespace Hangfire.States
 
                 if (jobData == null)
                 {
-                    // The job does not exist. This may happen, because not
-                    // all storage backends support foreign keys.
                     return null;
                 }
 
@@ -73,7 +68,7 @@ namespace Hangfire.States
                     return null;
                 }
                 
-                var appliedState = context.NewState;
+                var stateToApply = context.NewState;
 
                 try
                 {
@@ -81,91 +76,124 @@ namespace Hangfire.States
                 }
                 catch (JobLoadException ex)
                 {
-                    // If the job type could not be loaded, we are unable to
-                    // load corresponding filters, unable to process the job
-                    // and sometimes unable to change its state (the enqueued
-                    // state depends on the type of a job).
+                    // This happens when Hangfire couldn't find the target method,
+                    // serialized within a background job. There are many reasons
+                    // for this case, including refactored code, or a missing
+                    // assembly reference due to a mistake or erroneous deployment.
+                    // 
+                    // The problem is that in this case we can't get any filters,
+                    // applied at a method or a class level, and we can't proceed
+                    // with the state change without breaking a consistent behavior:
+                    // in some cases our filters will be applied, and in other ones
+                    // will not.
 
-                    if (!appliedState.IgnoreJobLoadException)
+                    // TODO 1.X/2.0:
+                    // There's a problem with filters related to handling the states
+                    // which ignore this exception, i.e. fitlers for the FailedState
+                    // and the DeletedState, such as AutomaticRetryAttrubute filter.
+                    // 
+                    // We should document that such a filters may not be fired, when
+                    // we can't find a target method, and these filters should be
+                    // applied only at the global level to get consistent results.
+                    // 
+                    // In 2.0 we should have a special state for all the errors, when
+                    // Hangfire doesn't know what to do, without any possibility to
+                    // add method or class-level filters for such a state to provide
+                    // the same behavior no matter what.
+
+                    if (!stateToApply.IgnoreJobLoadException)
                     {
-                        appliedState = new FailedState(ex.InnerException)
+                        stateToApply = new FailedState(ex.InnerException)
                         {
-                            Reason = $"Can not change the state to '{appliedState.Name}': target method was not found."
+                            Reason = $"Can not change the state to '{stateToApply.Name}': target method was not found."
                         };
                     }
                 }
 
-                var backgroundJob = new BackgroundJob(context.BackgroundJobId, jobData.Job, jobData.CreatedAt);
-                appliedState = ChangeState(context, backgroundJob, appliedState, jobData.State);
-
-                return appliedState;
-            }
-        }
-
-        private IState ChangeState(
-            StateChangeContext context, BackgroundJob backgroundJob, IState toState, string oldStateName)
-        {
-            Exception exception = null;
-
-            for (var i = 0; i < MaxStateChangeAttempts; i++)
-            {
-                try
+                using (var transaction = context.Connection.CreateWriteTransaction())
                 {
-                    using (var transaction = context.Connection.CreateWriteTransaction())
-                    {
-                        var applyContext = new ApplyStateContext(
-                            context.Storage,
-                            context.Connection,
-                            transaction,
-                            backgroundJob,
-                            toState,
-                            oldStateName);
+                    var applyContext = new ApplyStateContext(
+                        context.Storage,
+                        context.Connection,
+                        transaction,
+                        new BackgroundJob(context.BackgroundJobId, jobData.Job, jobData.CreatedAt),
+                        stateToApply,
+                        jobData.State,
+                        context.Profiler);
 
-                        var appliedState = _stateMachine.ApplyState(applyContext);
+                    var appliedState = _stateMachine.ApplyState(applyContext);
 
-                        transaction.Commit();
+                    transaction.Commit();
 
-                        return appliedState;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    exception = ex;
+                    return appliedState;
                 }
             }
-
-            var failedState = new FailedState(exception)
-            {
-                Reason = $"Failed to change state to a '{toState.Name}' one due to an exception after {MaxStateChangeAttempts} retry attempts"
-            };
-
-            using (var transaction = context.Connection.CreateWriteTransaction())
-            {
-                _coreStateMachine.ApplyState(new ApplyStateContext(
-                    context.Storage,
-                    context.Connection,
-                    transaction,
-                    backgroundJob,
-                    failedState,
-                    oldStateName));
-
-                transaction.Commit();
-            }
-
-            return failedState;
         }
 
         private static JobData GetJobData(StateChangeContext context)
         {
+            // This code was introduced as a fix for an issue, which appeared when an
+            // external queue implementation was used together with a non-linearizable
+            // storage. The problem was likely related to the SQL Azure + Azure ServiceBus
+            // (or RabbitMQ or so) bundle, because the READCOMMITTED_SNAPSHOT_ON setting
+            // is enabled by default there.
+            //
+            // Since external queueing doesn't share the linearization point with the
+            // storage, it is possible that a worker will pick up a background job before
+            // its transaction was committed. Non-linearizable read will simply return
+            // the NULL value instead of waiting for a transaction to be committed. With
+            // this code, we will make several retry attempts to handle this case to wait
+            // on the client side.
+            // 
+            // On the other hand, we need to give up after some retry attempt, because
+            // we should also handle the case, when our queue and job storage became
+            // unsynchronized with each other due to failures, manual intervention or so.
+            // Otherwise we will wait forever in this cases, since And there's no way to
+            // make a distinction between a non-linearizable read and the storages, non-
+            // synchronized with each other.
+            // 
+            // In recent versions, Hangfire.SqlServer uses query hints to make all the
+            // reads linearizable no matter what, but there may be other storages that
+            // still require this workaround.
+
+            // TODO 2.0:
+            // Eliminate the need of this timeout by placing an explicit requirement to
+            // storage implementations to either have a single linearization point for all
+            // the operations inside a transaction; or make all the reads linearizable and
+            // execute queueing operations after all the other ones in a transaction.
+
             var firstAttempt = true;
 
             while (true)
             {
                 var jobData = context.Connection.GetJobData(context.BackgroundJobId);
-                if (!String.IsNullOrEmpty(jobData?.State))
+
+                // Empty state means our job wasn't moved to any state after its creation.
+                // Such a jobs may be created by internal logic, and those jobs have very
+                // special meaning, thus we shouldn't allow state changer to alter them,
+                // using this class (which can be used by users), leaving this logic to
+                // low level API only, i.e. state machine.
+
+                // TODO 1.X:
+                // However, we shouldn't wait for the initial state change, because in some
+                // cases (like in batches) it may take days. We should throw an exception
+                // instead, clearly indicating that such a state change is prohibited. There
+                // may be some issues on GitHub, related to the hanging dashboard requests
+                // in this case.
+
+                if (!String.IsNullOrEmpty(jobData?.State) || context.Storage.LinearizableReads)
                 {
                     return jobData;
                 }
+
+                // State change can also be requested from user's request processing logic.
+                // There is always a chance it will be issued against a non-existing or an
+                // already expired background job, and a minute wait (or whatever timeout is
+                // used) is completely unnecessary in this case.
+                // 
+                // Since waiting is only required when a worker picks up a job, and 
+                // cancellation tokens are used only by the Worker class, we can avoid the
+                // unnecessary waiting logic when no cancellation token is passed.
 
                 if (context.CancellationToken.IsCancellationRequested ||
                     context.CancellationToken == CancellationToken.None)
@@ -173,7 +201,7 @@ namespace Hangfire.States
                     return null;
                 }
 
-                Thread.Sleep(firstAttempt ? 0 : 100);
+                context.CancellationToken.Wait(TimeSpan.FromMilliseconds(firstAttempt ? 0 : 100));
                 firstAttempt = false;
             }
         }

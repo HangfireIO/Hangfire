@@ -51,6 +51,11 @@ namespace Hangfire.Storage
         public abstract HashSet<string> GetAllItemsFromSet(string key);
         public abstract string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);
 
+        public virtual List<string> GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore, int count)
+        {
+            throw new NotSupportedException();
+        }
+
         public virtual long GetSetCount([NotNull] string key)
         {
             throw new NotSupportedException();

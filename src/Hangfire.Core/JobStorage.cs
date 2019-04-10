@@ -29,6 +29,8 @@ namespace Hangfire
         private static readonly object LockObject = new object();
         private static JobStorage _current;
 
+        private TimeSpan _jobExpirationTimeout = TimeSpan.FromDays(1);
+
         public static JobStorage Current
         {
             get
@@ -52,8 +54,27 @@ namespace Hangfire
             }
         }
 
+        public TimeSpan JobExpirationTimeout
+        {
+            get
+            {
+                return _jobExpirationTimeout;
+            }
+            set
+            {
+                if (value < TimeSpan.FromHours(1))
+                {
+                    throw new ArgumentException("JobStorage.JobExpirationTimeout value should be equal or greater than 1 hour.");
+                }
+
+                _jobExpirationTimeout = value;
+            }
+        }
+
+        public virtual bool LinearizableReads => false;
+
         public abstract IMonitoringApi GetMonitoringApi();
-        
+
         public abstract IStorageConnection GetConnection();
 
 #pragma warning disable 618

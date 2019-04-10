@@ -28,16 +28,14 @@ namespace Hangfire.Dashboard
             "bootstrap.min.js",
             "moment.min.js",
             "moment-with-locales.min.js",
-            "d3.min.js", 
-            "d3.layout.min.js", 
-            "rickshaw.min.js", 
+            "Chart.min.js",
+            "chartjs-plugin-streaming.min.js",
             "hangfire.js"
         };
 
         private static readonly string[] Stylesheets =
         {
-            "bootstrap.min.css", 
-            "rickshaw.min.css", 
+            "bootstrap.min.css",
             "hangfire.css"
         };
 

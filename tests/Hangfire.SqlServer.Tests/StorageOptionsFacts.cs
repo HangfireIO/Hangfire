@@ -19,11 +19,10 @@ namespace Hangfire.SqlServer.Tests
         }
 
         [Fact]
-        public void Set_QueuePollInterval_ShouldThrowAnException_WhenGivenIntervalIsEqualToZero()
+        public void Set_QueuePollInterval_DoesNotThrow_WhenGivenIntervalIsEqualToZero()
         {
             var options = new SqlServerStorageOptions();
-            Assert.Throws<ArgumentException>(
-                () => options.QueuePollInterval = TimeSpan.Zero);
+            options.QueuePollInterval = TimeSpan.Zero;
         }
 
         [Fact]

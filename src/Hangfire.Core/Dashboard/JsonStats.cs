@@ -27,7 +27,7 @@ namespace Hangfire.Dashboard
     {
         public async Task Dispatch(DashboardContext context)
         {
-            var requestedMetrics = await context.Request.GetFormValuesAsync("metrics[]");
+            var requestedMetrics = await context.Request.GetFormValuesAsync("metrics[]").ConfigureAwait(false);
             var page = new StubPage();
             page.Assign(context);
 
@@ -48,7 +48,7 @@ namespace Hangfire.Dashboard
             var serialized = JsonConvert.SerializeObject(result, settings);
 
             context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(serialized);
+            await context.Response.WriteAsync(serialized).ConfigureAwait(false);
         }
 
         private class StubPage : RazorPage

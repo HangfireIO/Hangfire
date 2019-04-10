@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Hangfire.Server;
@@ -14,7 +15,7 @@ namespace Hangfire.Core.Tests.Server
     public class DelayedJobSchedulerFacts
     {
         private const string JobId = "id";
-        private readonly Mock<IStorageConnection> _connection;
+        private readonly Mock<JobStorageConnection> _connection;
         private readonly Mock<IBackgroundJobStateChanger> _stateChanger;
         private readonly BackgroundProcessContextMock _context;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
@@ -23,9 +24,8 @@ namespace Hangfire.Core.Tests.Server
         public DelayedJobSchedulerFacts()
         {
             _context = new BackgroundProcessContextMock();
-            _context.CancellationTokenSource.Cancel();
 
-            _connection = new Mock<IStorageConnection>();
+            _connection = new Mock<JobStorageConnection>();
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
 
             _stateChanger = new Mock<IBackgroundJobStateChanger>();
@@ -37,8 +37,10 @@ namespace Hangfire.Core.Tests.Server
                 .Setup(x => x.AcquireDistributedLock("locks:schedulepoller", It.IsAny<TimeSpan>()))
                 .Returns(_distributedLock.Object);
 
-            _connection.Setup(x => x.GetFirstByLowestScoreFromSet(
-                "schedule", 0, It.Is<double>(time => time > 0))).Returns(JobId);
+            _connection
+                .SetupSequence(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0)))
+                .Returns(JobId)
+                .Throws(new OperationCanceledException("stopped"));
         }
 
         [Fact]
@@ -53,9 +55,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_MovesJobStateToEnqueued()
         {
-            var scheduler = CreateScheduler();
-
-			scheduler.Execute(_context.Object);
+            RunSchedulerAndWait();
 
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.BackgroundJobId == JobId &&
@@ -66,13 +66,65 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void Execute_MovesJobStateToEnqueued_UsingBatching_WhenAvailable()
+        {
+            // Arrange
+            _connection
+                .Setup(x => x.GetFirstByLowestScoreFromSet(null, It.IsAny<double>(), It.IsAny<double>(),It.IsAny<int>()))
+                .Throws(new ArgumentNullException("key"));
+
+            _connection
+                .SetupSequence(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0), It.IsAny<int>()))
+                .Returns(new List<string> { "job-1", "job-2" })
+                .Throws(new OperationCanceledException("stopped"));
+
+            // Act
+            RunSchedulerAndWait();
+
+            // Assert
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.BackgroundJobId == "job-1" &&
+                ctx.NewState is EnqueuedState)));
+
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.BackgroundJobId == "job-2" &&
+                ctx.NewState is EnqueuedState)));
+        }
+
+        [Fact]
+        public void Execute_DoesNotUseBatching_WhenConnectionMethod_ThrowsAnException()
+        {
+            // Arrange
+            _connection
+                .Setup(x => x.GetFirstByLowestScoreFromSet(It.IsAny<string>(), It.IsAny<double>(), It.IsAny<double>(),It.IsAny<int>()))
+                .Throws<NotImplementedException>();
+
+            _connection
+                .SetupSequence(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0)))
+                .Returns("job-1")
+                .Throws(new OperationCanceledException("stopped"));
+
+            // Act
+            RunSchedulerAndWait();
+
+            // Assert
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.BackgroundJobId == "job-1" &&
+                ctx.NewState is EnqueuedState)));
+        }
+
+        [Fact]
         public void Execute_DoesNotCallStateChanger_IfThereAreNoJobsToEnqueue()
         {
-            _connection.Setup(x => x.GetFirstByLowestScoreFromSet(
-                "schedule", 0, It.Is<double>(time => time > 0))).Returns((string)null);
+            _connection
+                .SetupSequence(x => x.GetFirstByLowestScoreFromSet(
+                "schedule", 0, It.Is<double>(time => time > 0)))
+                .Returns((string)null)
+                .Throws(new OperationCanceledException("stopped"));
+
             var scheduler = CreateScheduler();
 
-			scheduler.Execute(_context.Object);
+            scheduler.Execute(_context.Object);
 
             _stateChanger.Verify(
                 x => x.ChangeState(It.IsAny<StateChangeContext>()),
@@ -86,9 +138,7 @@ namespace Hangfire.Core.Tests.Server
                 .Setup(x => x.ChangeState(It.IsAny<StateChangeContext>()))
                 .Returns<IState>(null);
 
-            var scheduler = CreateScheduler();
-
-            scheduler.Execute(_context.Object);
+            RunSchedulerAndWait();
 
             _transaction.Verify(x => x.RemoveFromSet("schedule", JobId));
             _transaction.Verify(x => x.Commit());
@@ -97,9 +147,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_ActsWithinADistributedLock()
         {
-            var scheduler = CreateScheduler();
-
-            scheduler.Execute(_context.Object);
+            RunSchedulerAndWait();
 
             _connection.Verify(x => x.AcquireDistributedLock(It.IsAny<string>(), It.IsAny<TimeSpan>()));
             _distributedLock.Verify(x => x.Dispose());
@@ -117,9 +165,17 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
         }
 
+        private void RunSchedulerAndWait()
+        {
+            var scheduler = CreateScheduler();
+            var exception = Assert.Throws<OperationCanceledException>(() => scheduler.Execute(_context.Object));
+
+            Assert.Equal("stopped", exception.Message);
+        }
+
         private DelayedJobScheduler CreateScheduler()
         {
-            return new DelayedJobScheduler(Timeout.InfiniteTimeSpan, _stateChanger.Object);
+            return new DelayedJobScheduler(TimeSpan.Zero, _stateChanger.Object);
         }
     }
 }

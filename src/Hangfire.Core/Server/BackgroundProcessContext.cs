@@ -18,16 +18,30 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Hangfire.Annotations;
+using Hangfire.Common;
 
 namespace Hangfire.Server
 {
     public class BackgroundProcessContext
     {
+        [Obsolete("This constructor overload is deprecated and will be removed in 2.0.0.")]
+        public BackgroundProcessContext(
+            [NotNull] string serverId,
+            [NotNull] JobStorage storage,
+            [NotNull] IDictionary<string, object> properties,
+            CancellationToken cancellationToken)
+            : this(serverId, storage, properties, Guid.NewGuid(), cancellationToken, cancellationToken, cancellationToken)
+        {
+        }
+
         public BackgroundProcessContext(
             [NotNull] string serverId,
             [NotNull] JobStorage storage, 
             [NotNull] IDictionary<string, object> properties, 
-            CancellationToken cancellationToken)
+            Guid executionId,
+            CancellationToken stoppingToken,
+            CancellationToken stoppedToken,
+            CancellationToken shutdownToken)
         {
             if (serverId == null) throw new ArgumentNullException(nameof(serverId));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -35,8 +49,11 @@ namespace Hangfire.Server
 
             ServerId = serverId;
             Storage = storage;
+            ExecutionId = executionId;
             Properties = new Dictionary<string, object>(properties, StringComparer.OrdinalIgnoreCase);
-            CancellationToken = cancellationToken;
+            StoppingToken = stoppingToken;
+            StoppedToken = stoppedToken;
+            ShutdownToken = shutdownToken;
         }
         
         [NotNull]
@@ -48,13 +65,24 @@ namespace Hangfire.Server
         [NotNull]
         public JobStorage Storage { get; }
 
-        public CancellationToken CancellationToken { get; }
+        public Guid ExecutionId { get; }
 
-        public bool IsShutdownRequested => CancellationToken.IsCancellationRequested;
+        [Obsolete("Please use the StoppingToken property instead, will be removed in 2.0.0.")]
+        public CancellationToken CancellationToken => StoppingToken;
+
+        public CancellationToken StoppingToken { get; }
+        public CancellationToken StoppedToken { get; }
+        public CancellationToken ShutdownToken { get; }
+
+        public bool IsStopping => StoppingToken.IsCancellationRequested || StoppedToken.IsCancellationRequested || ShutdownToken.IsCancellationRequested;
+        public bool IsStopped => StoppedToken.IsCancellationRequested || ShutdownToken.IsCancellationRequested;
+
+        [Obsolete("Please use IsStopping or IsStopped properties instead. Will be removed in 2.0.0.")]
+        public bool IsShutdownRequested => StoppingToken.IsCancellationRequested;
 
         public void Wait(TimeSpan timeout)
         {
-            CancellationToken.WaitHandle.WaitOne(timeout);
+            StoppingToken.Wait(timeout);
         }
     }
 }

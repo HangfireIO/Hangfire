@@ -1,5 +1,5 @@
 // This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright Â© 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -21,8 +21,10 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
-#if NETFULL
+#if FEATURE_CONFIGURATIONMANAGER
 using System.Configuration;
+#endif
+#if FEATURE_TRANSACTIONSCOPE
 using System.Transactions;
 using IsolationLevel = System.Transactions.IsolationLevel;
 #endif
@@ -38,6 +40,7 @@ namespace Hangfire.SqlServer
     public class SqlServerStorage : JobStorage
     {
         private readonly DbConnection _existingConnection;
+        private readonly Func<DbConnection> _connectionFactory;
         private readonly SqlServerStorageOptions _options;
         private readonly string _connectionString;
 
@@ -64,6 +67,7 @@ namespace Hangfire.SqlServer
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             _connectionString = GetConnectionString(nameOrConnectionString);
+            _connectionFactory = () => new SqlConnection(_connectionString);
             _options = options;
 
             Initialize();
@@ -95,12 +99,41 @@ namespace Hangfire.SqlServer
             Initialize();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SqlServerStorage"/> class with
+        /// a connection factory <see cref="Func{DbConnection}"/> class that will be invoked
+        /// to create new database connections for querying the data.
+        /// </summary>
+        public SqlServerStorage([NotNull] Func<DbConnection> connectionFactory)
+            : this(connectionFactory, new SqlServerStorageOptions())
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SqlServerStorage"/> class with
+        /// a connection factory <see cref="Func{DbConnection}"/> class that will be invoked
+        /// to create new database connections for querying the data.
+        /// </summary>
+        public SqlServerStorage([NotNull] Func<DbConnection> connectionFactory, [NotNull] SqlServerStorageOptions options)
+        {
+            if (connectionFactory == null) throw new ArgumentNullException(nameof(connectionFactory));
+            if (options == null) throw new ArgumentNullException(nameof(options));
+
+            _connectionFactory = connectionFactory;
+            _options = options;
+
+            Initialize();
+        }
+
         public virtual PersistentJobQueueProviderCollection QueueProviders { get; private set; }
+
+        public override bool LinearizableReads => true;
 
         internal string SchemaName => _options.SchemaName;
         internal int? CommandTimeout => _options.CommandTimeout.HasValue ? (int)_options.CommandTimeout.Value.TotalSeconds : (int?)null;
         internal int? CommandBatchMaxTimeout => _options.CommandBatchMaxTimeout.HasValue ? (int)_options.CommandBatchMaxTimeout.Value.TotalSeconds : (int?)null;
         internal TimeSpan? SlidingInvisibilityTimeout => _options.SlidingInvisibilityTimeout;
+        internal SqlServerStorageOptions Options => _options;
 
         public override IMonitoringApi GetMonitoringApi()
         {
@@ -122,8 +155,7 @@ namespace Hangfire.SqlServer
 
         public override void WriteOptionsToLog(ILog logger)
         {
-            logger.Info("Using the following options for SQL Server job storage:");
-            logger.Info($"    Queue poll interval: {_options.QueuePollInterval}.");
+            logger.Info($"Using the following options for SQL Server job storage: Queue poll interval: {_options.QueuePollInterval}.");
         }
 
         public override string ToString()
@@ -210,8 +242,14 @@ namespace Hangfire.SqlServer
             [InstantHandle] Func<DbConnection, DbTransaction, T> func, 
             IsolationLevel? isolationLevel)
         {
-#if NETFULL
-            using (var transaction = CreateTransaction(isolationLevel ?? _options.TransactionIsolationLevel))
+#if FEATURE_TRANSACTIONSCOPE
+            isolationLevel = isolationLevel ?? (_options.UseRecommendedIsolationLevel
+                ? IsolationLevel.ReadCommitted
+#pragma warning disable 618
+                : _options.TransactionIsolationLevel);
+#pragma warning restore 618
+
+            using (var transaction = CreateTransaction(isolationLevel))
             {
                 var result = UseConnection(dedicatedConnection, connection =>
                 {
@@ -239,14 +277,17 @@ namespace Hangfire.SqlServer
 
         internal DbConnection CreateAndOpenConnection()
         {
-            var connection = _existingConnection ?? new SqlConnection(_connectionString);
-
-            if (connection.State == ConnectionState.Closed)
+            using (_options.ImpersonationFunc?.Invoke())
             {
-                connection.Open();
-            }
+                var connection = _existingConnection ?? _connectionFactory();
 
-            return connection;
+                if (connection.State == ConnectionState.Closed)
+                {
+                    connection.Open();
+                }
+
+                return connection;
+            }
         }
 
         internal bool IsExistingConnection(IDbConnection connection)
@@ -268,7 +309,7 @@ namespace Hangfire.SqlServer
             {
                 UseConnection(null, connection =>
                 {
-                    SqlServerObjectsInstaller.Install(connection, _options.SchemaName);
+                    SqlServerObjectsInstaller.Install(connection, _options.SchemaName, _options.EnableHeavyMigrations);
                 });
             }
 
@@ -283,7 +324,7 @@ namespace Hangfire.SqlServer
 
         private string GetConnectionString(string nameOrConnectionString)
         {
-#if NETFULL
+#if FEATURE_CONFIGURATIONMANAGER
             if (IsConnectionString(nameOrConnectionString))
             {
                 return nameOrConnectionString;
@@ -301,7 +342,7 @@ namespace Hangfire.SqlServer
 #endif
         }
 
-#if NETFULL
+#if FEATURE_CONFIGURATIONMANAGER
         private bool IsConnectionString(string nameOrConnectionString)
         {
             return nameOrConnectionString.Contains(";");
@@ -313,7 +354,9 @@ namespace Hangfire.SqlServer
 
             return connectionStringSetting != null;
         }
+#endif
 
+#if FEATURE_TRANSACTIONSCOPE
         private TransactionScope CreateTransaction(IsolationLevel? isolationLevel)
         {
             return isolationLevel != null

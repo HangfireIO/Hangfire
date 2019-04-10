@@ -20,7 +20,7 @@ using System.Collections.Generic;
 namespace Hangfire.Dashboard
 {
     public class LocalRequestsOnlyAuthorizationFilter : IDashboardAuthorizationFilter
-#if NETFULL
+#if FEATURE_OWIN
 #pragma warning disable 618
         , IAuthorizationFilter
 #pragma warning restore 618
@@ -43,7 +43,7 @@ namespace Hangfire.Dashboard
             return false;
         }
 
-#if NETFULL
+#if FEATURE_OWIN
         public bool Authorize(IDictionary<string, object> owinEnvironment)
         {
             var context = new Microsoft.Owin.OwinContext(owinEnvironment);

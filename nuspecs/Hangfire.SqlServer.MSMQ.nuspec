@@ -1,18 +1,18 @@
 <?xml version="1.0"?>
-<package >
+<package>
   <metadata>
     <id>Hangfire.SqlServer.MSMQ</id>
     <version>0.0.0</version>
     <title>Hangfire MSMQ Queues for SQL Server Storage</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
-    <projectUrl>http://hangfire.io/</projectUrl>
+    <projectUrl>https://www.hangfire.io/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>MSMQ queues support for SQL Server job storage implementation for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2014-2017 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2014 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer MSMQ</tags>
-    <releaseNotes>http://hangfire.io/blog/
+    <releaseNotes>https://www.hangfire.io/blog/
     
 1.6.3
 • Fixed – Prevent MSMQ transactions from timing out after 1 minute of processing.
@@ -43,5 +43,11 @@
     <file src="net45\Hangfire.SqlServer.Msmq.xml" target="lib\net45" />
     <file src="net45\Hangfire.SqlServer.Msmq.pdb" target="lib\net45" />
     <file src="..\src\Hangfire.SqlServer.Msmq\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
+    <file src="LICENSE.md" />
+    <file src="NOTICES" />
+    <file src="COPYING" />
+    <file src="COPYING.LESSER" />
+    <file src="LICENSE_STANDARD" />
+    <file src="LICENSE_ROYALTYFREE" />
   </files>
 </package>

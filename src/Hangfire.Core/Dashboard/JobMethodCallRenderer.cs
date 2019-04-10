@@ -29,7 +29,7 @@ namespace Hangfire.Dashboard
 {
     internal static class JobMethodCallRenderer
     {
-        private const int MaxArgumentToRenderSize = 4096;
+        private static readonly int MaxArgumentToRenderSize = 4096;
 
         public static NonEscapedString Render(Job job)
         {
@@ -94,12 +94,13 @@ namespace Hangfire.Dashboard
             for (var i = 0; i < parameters.Length; i++)
             {
                 var parameter = parameters[i];
-
 #pragma warning disable 618
-                if (i < job.Arguments.Length)
-                {
-                    var argument = job.Arguments[i];
+                var arguments = job.Arguments;
 #pragma warning restore 618
+
+                if (i < arguments.Length)
+                {
+                    var argument = arguments[i];
 
                     if (argument != null && argument.Length > MaxArgumentToRenderSize)
                     {
@@ -116,7 +117,7 @@ namespace Hangfire.Dashboard
 
                     try
                     {
-                        argumentValue = JobHelper.FromJson(argument, parameter.ParameterType);
+                        argumentValue = SerializationHelper.Deserialize(argument, parameter.ParameterType, SerializationOption.User);
                     }
                     catch (Exception)
                     {
@@ -140,7 +141,7 @@ namespace Hangfire.Dashboard
                         {
                             var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
                             renderedItems.Add(argumentRenderer.Render(isJson, item?.ToString(),
-                                JobHelper.ToJson(item)));
+                                SerializationHelper.Serialize(item, SerializationOption.User)));
                         }
 
                         // ReSharper disable once UseStringInterpolation

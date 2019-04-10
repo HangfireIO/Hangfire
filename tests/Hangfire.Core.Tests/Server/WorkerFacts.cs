@@ -6,9 +6,7 @@ using Hangfire.Server;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
-#if NETFULL
 using Moq.Sequences;
-#endif
 using Xunit;
 
 // ReSharper disable AssignNullToNotNullAttribute
@@ -99,7 +97,7 @@ namespace Hangfire.Core.Tests.Server
             worker.Execute(_context.Object);
 
             _connection.Verify(
-                x => x.FetchNextJob(_queues, _context.CancellationTokenSource.Token),
+                x => x.FetchNextJob(_queues, _context.StoppingTokenSource.Token),
                 Times.Once);
 
             _fetchedJob.Verify(x => x.RemoveFromQueue());
@@ -112,7 +110,7 @@ namespace Hangfire.Core.Tests.Server
                 .Setup(x => x.ChangeState(It.IsAny<StateChangeContext>()))
                 .Throws<InvalidOperationException>();
 
-            var worker = CreateWorker();
+            var worker = CreateWorker(1);
 
             Assert.Throws<InvalidOperationException>(
                 () => worker.Execute(_context.Object));
@@ -121,7 +119,23 @@ namespace Hangfire.Core.Tests.Server
             _fetchedJob.Verify(x => x.Requeue());
         }
 
-#if NETFULL
+        [Fact]
+        public void Execute_MovesAJobToTheFailedState_WhenStateChangerThrowsAnException()
+        {
+            _stateChanger
+                .Setup(x => x.ChangeState(It.Is<StateChangeContext>(y => y.NewState.Name != FailedState.StateName)))
+                .Throws<InvalidOperationException>();
+
+            var worker = CreateWorker(1);
+
+            worker.Execute(_context.Object);
+
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(y => y.NewState.Name == FailedState.StateName)));
+
+            _fetchedJob.Verify(x => x.RemoveFromQueue(), Times.Once);
+            _fetchedJob.Verify(x => x.Requeue(), Times.Never);
+        }
+
         [Fact, Sequence]
         public void Execute_ExecutesDefaultWorkflow_WhenJobIsCorrect()
         {
@@ -146,7 +160,6 @@ namespace Hangfire.Core.Tests.Server
 
             // Assert - see the `SequenceAttribute` class.
         }
-#endif
 
         [Fact]
         public void Execute_SetsCurrentServer_ToProcessingState()
@@ -204,7 +217,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             var cts = new CancellationTokenSource();
-            _context.CancellationTokenSource = cts;
+            _context.StoppedTokenSource = cts;
 
             _performer.Setup(x => x.Perform(It.IsAny<PerformContext>()))
                 .Callback(() => cts.Cancel())
@@ -330,9 +343,9 @@ namespace Hangfire.Core.Tests.Server
                 ctx.NewState is FailedState)));
         }
 
-        private Worker CreateWorker()
+        private Worker CreateWorker(int maxStateChangeAttempts = 10)
         {
-            return new Worker(_queues, _performer.Object, _stateChanger.Object);
+            return new Worker(_queues, _performer.Object, _stateChanger.Object, TimeSpan.FromSeconds(5), maxStateChangeAttempts);
         }
 
         public static void Method() { }

@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using Hangfire.Common;
 using Hangfire.Dashboard;
 
 namespace Hangfire
@@ -26,8 +27,10 @@ namespace Hangfire
         {
             AppPath = "/";
             Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
+            IsReadOnlyFunc = _ => false;
             StatsPollingInterval = 2000;
             DisplayStorageConnectionString = true;
+            DisplayNameFunc = null;
         }
 
         /// <summary>
@@ -35,18 +38,25 @@ namespace Hangfire
         /// </summary>
         public string AppPath { get; set; }
 
-#if NETFULL
+#if FEATURE_OWIN
         [Obsolete("Please use `Authorization` property instead. Will be removed in 2.0.0.")]
         public IEnumerable<IAuthorizationFilter> AuthorizationFilters { get; set; }
 #endif
 
         public IEnumerable<IDashboardAuthorizationFilter> Authorization { get; set; }
 
+        public Func<DashboardContext, bool> IsReadOnlyFunc { get; set; }
+        
         /// <summary>
         /// The interval the /stats endpoint should be polled with.
         /// </summary>
         public int StatsPollingInterval { get; set; }
 
         public bool DisplayStorageConnectionString { get; set; }
+
+        /// <summary>
+        /// Display name provider for jobs
+        /// </summary>
+        public Func<DashboardContext, Job, string> DisplayNameFunc { get; set; }
     }
 }

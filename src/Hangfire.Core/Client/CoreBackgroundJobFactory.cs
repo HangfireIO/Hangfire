@@ -32,9 +32,13 @@ namespace Hangfire.Client
             _stateMachine = stateMachine;
         }
 
+        public IStateMachine StateMachine => _stateMachine;
+
         public BackgroundJob Create(CreateContext context)
         {
-            var parameters = context.Parameters.ToDictionary(x => x.Key, x => JobHelper.ToJson(x.Value));
+            var parameters = context.Parameters.ToDictionary(
+                x => x.Key,
+                x => SerializationHelper.Serialize(x.Value, SerializationOption.User));
 
             var createdAt = DateTime.UtcNow;
             var jobId = context.Connection.CreateExpiredJob(
@@ -55,7 +59,8 @@ namespace Hangfire.Client
                         transaction,
                         backgroundJob,
                         context.InitialState,
-                        null);
+                        oldStateName: null,
+                        profiler: context.Profiler);
 
                     _stateMachine.ApplyState(applyContext);
 

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.Profiling;
 using Hangfire.Storage;
 
 namespace Hangfire.Server
@@ -29,26 +30,52 @@ namespace Hangfire.Server
     public class PerformContext
     {
         public PerformContext([NotNull] PerformContext context)
-            : this(context.Connection, context.BackgroundJob, context.CancellationToken)
+            : this(context.Storage, context.Connection, context.BackgroundJob, context.CancellationToken, context.Profiler)
         {
             Items = context.Items;
         }
 
+        [Obsolete("Please use PerformContext(JobStorage, IStorageConnection, BackgroundJob, IJobCancellationToken) overload instead. Will be removed in 2.0.0.")]
         public PerformContext(
+            [NotNull] IStorageConnection connection,
+            [NotNull] BackgroundJob backgroundJob,
+            [NotNull] IJobCancellationToken cancellationToken)
+            : this(null, connection, backgroundJob, cancellationToken)
+        {
+        }
+
+        public PerformContext(
+            [CanBeNull] JobStorage storage,
             [NotNull] IStorageConnection connection, 
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IJobCancellationToken cancellationToken)
+            : this(storage, connection, backgroundJob, cancellationToken, EmptyProfiler.Instance)
+        {
+        }
+
+        internal PerformContext(
+            [CanBeNull] JobStorage storage,
+            [NotNull] IStorageConnection connection, 
+            [NotNull] BackgroundJob backgroundJob,
+            [NotNull] IJobCancellationToken cancellationToken,
+            [NotNull] IProfiler profiler)
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
             if (backgroundJob == null) throw new ArgumentNullException(nameof(backgroundJob));
             if (cancellationToken == null) throw new ArgumentNullException(nameof(cancellationToken));
+            if (profiler == null) throw new ArgumentNullException(nameof(profiler));
 
+            Storage = storage;
             Connection = connection;
             BackgroundJob = backgroundJob;
             CancellationToken = cancellationToken;
+            Profiler = profiler;
 
             Items = new Dictionary<string, object>();
         }
+
+        [CanBeNull]
+        public JobStorage Storage { get; }
 
         /// <summary>
         /// Gets an instance of the key-value storage. You can use it
@@ -76,11 +103,14 @@ namespace Hangfire.Server
         [NotNull]
         public IStorageConnection Connection { get; }
         
+        [NotNull]
+        internal IProfiler Profiler { get; }
+
         public void SetJobParameter(string name, object value)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            Connection.SetJobParameter(BackgroundJob.Id, name, JobHelper.ToJson(value));
+            Connection.SetJobParameter(BackgroundJob.Id, name, SerializationHelper.Serialize(value, SerializationOption.User));
         }
 
         public T GetJobParameter<T>(string name)
@@ -89,7 +119,7 @@ namespace Hangfire.Server
 
             try
             {
-                return JobHelper.FromJson<T>(Connection.GetJobParameter(BackgroundJob.Id, name));
+                return SerializationHelper.Deserialize<T>(Connection.GetJobParameter(BackgroundJob.Id, name), SerializationOption.User);
             }
             catch (Exception ex)
             {

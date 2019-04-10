@@ -1,6 +1,6 @@
 ﻿using System;
 
-#if !NETFULL
+#if NETSTANDARD1_3
 namespace System.Diagnostics.CodeAnalysis
 {
     [Conditional("DEBUG")] // don't bloat release assemblies

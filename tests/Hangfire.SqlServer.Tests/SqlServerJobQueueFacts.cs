@@ -1,8 +1,10 @@
-﻿using System;
+﻿extern alias ReferencedDapper;
+
+using System;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
-using Dapper;
+using ReferencedDapper::Dapper;
 using Xunit;
 // ReSharper disable ArgumentsStyleLiteral
 
@@ -113,6 +115,33 @@ select scope_identity() as Id;";
                 // Assert
                 Assert.Equal("1", payload.JobId);
                 Assert.Equal("default", payload.Queue);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void Dequeue_FetchesAJob_WhenJobIdIsLongValue()
+        {
+            const string arrangeSql = @"
+insert into HangFire.JobQueue (JobId, Queue)
+values (@jobId, @queue);
+select scope_identity() as Id;";
+
+            // Arrange
+            UseConnection(connection =>
+            {
+                // ReSharper disable once UnusedVariable
+                var id = (int)connection.Query(
+                    arrangeSql,
+                    new { jobId = int.MaxValue + 1L, queue = "default" }).Single().Id;
+                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
+
+                // Act
+                var payload = (SqlServerTransactionJob)queue.Dequeue(
+                    DefaultQueues,
+                    CreateTimingOutCancellationToken());
+
+                // Assert
+                Assert.Equal((int.MaxValue + 1L).ToString(), payload.JobId);
             });
         }
 
@@ -529,7 +558,15 @@ values (scope_identity(), @queue)";
             {
                 var queue = CreateJobQueue(connection, invisibilityTimeout: null);
 
+#if NETCOREAPP
+                using (var transaction = connection.BeginTransaction())
+                {
+                    queue.Enqueue(connection, transaction, "default", "1");
+                    transaction.Commit();
+                }
+#else
                 queue.Enqueue(connection, "default", "1");
+#endif
 
                 var record = connection.Query("select * from HangFire.JobQueue").Single();
                 Assert.Equal("1", record.JobId.ToString());
@@ -538,9 +575,31 @@ values (scope_identity(), @queue)";
             });
         }
 
+        [Fact, CleanDatabase]
+        public void Enqueue_AddsAJob_WhenIdIsLongValue()
+        {
+            UseConnection(connection =>
+            {
+                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
+                
+#if NETCOREAPP
+                using (var transaction = connection.BeginTransaction())
+                {
+                    queue.Enqueue(connection, transaction, "default", (int.MaxValue + 1L).ToString());
+                    transaction.Commit();
+                }
+#else
+                queue.Enqueue(connection, "default", (int.MaxValue + 1L).ToString());
+#endif
+
+                var record = connection.Query("select * from HangFire.JobQueue").Single();
+                Assert.Equal((int.MaxValue + 1L).ToString(), record.JobId.ToString());
+            });
+        }
+
         private static CancellationToken CreateTimingOutCancellationToken()
         {
-            var source = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var source = new CancellationTokenSource(TimeSpan.FromSeconds(1));
             return source.Token;
         }
 

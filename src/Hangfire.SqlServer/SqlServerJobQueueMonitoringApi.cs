@@ -17,8 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
-#if NETFULL
+#if FEATURE_TRANSACTIONSCOPE
 using System.Transactions;
 #else
 using System.Data;
@@ -38,7 +39,7 @@ namespace Hangfire.SqlServer
         private readonly object _cacheLock = new object();
 
         private List<string> _queuesCache = new List<string>();
-        private DateTime _cacheUpdated;
+        private Stopwatch _cacheUpdated;
 
         public SqlServerJobQueueMonitoringApi([NotNull] SqlServerStorage storage)
         {
@@ -52,7 +53,7 @@ namespace Hangfire.SqlServer
 
             lock (_cacheLock)
             {
-                if (_queuesCache.Count == 0 || _cacheUpdated.Add(QueuesCacheTimeout) < DateTime.UtcNow)
+                if (_queuesCache.Count == 0 || _cacheUpdated.Elapsed > QueuesCacheTimeout)
                 {
                     var result = _storage.UseConnection(null, connection =>
                     {
@@ -60,14 +61,14 @@ namespace Hangfire.SqlServer
                     });
 
                     _queuesCache = result;
-                    _cacheUpdated = DateTime.UtcNow;
+                    _cacheUpdated = Stopwatch.StartNew();
                 }
 
                 return _queuesCache.ToList();
             }  
         }
 
-        public IEnumerable<int> GetEnqueuedJobIds(string queue, int @from, int perPage)
+        public IEnumerable<long> GetEnqueuedJobIds(string queue, int @from, int perPage)
         {
             var sqlQuery =
 $@"select r.JobId from (
@@ -79,18 +80,17 @@ where r.row_num between @start and @end";
 
             return _storage.UseConnection(null, connection =>
             {
-                // TODO: Remove cast to `int` to support `bigint`.
                 return connection.Query<JobIdDto>(
                     sqlQuery,
                     new { queue = queue, start = from + 1, end = @from + perPage },
                     commandTimeout: _storage.CommandTimeout)
                     .ToList()
-                    .Select(x => (int)x.JobId)
+                    .Select(x => x.JobId)
                     .ToList();
             });
         }
 
-        public IEnumerable<int> GetFetchedJobIds(string queue, int @from, int perPage)
+        public IEnumerable<long> GetFetchedJobIds(string queue, int @from, int perPage)
         {
             var fetchedJobsSql = $@"
 select r.JobId from (
@@ -102,12 +102,11 @@ where r.row_num between @start and @end";
 
             return _storage.UseConnection(null, connection =>
             {
-                // TODO: Remove cast to `int` to support `bigint`.
                 return connection.Query<JobIdDto>(
                         fetchedJobsSql,
                         new { queue = queue, start = from + 1, end = @from + perPage })
                     .ToList()
-                    .Select(x => (int)x.JobId)
+                    .Select(x => x.JobId)
                     .ToList();
             });
         }

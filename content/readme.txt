@@ -1,6 +1,7 @@
-Please see http://docs.hangfire.io for more information on using Hangfire. The
-`Hangfire` package is using SQL Server as a job storage and intended to run in
-any OWIN-based web application.
+Please see https://docs.hangfire.io for more information on using Hangfire. The
+`Hangfire` meta-package is using SQL Server as a job storage and intended to run
+in any OWIN-based web application when targeting full .NET Framework, or ASP.NET
+Core web application on .NET Core.
 
 +-----------------------------------------------------------------------------+
 |  !!! DASHBOARD REQUIRES AUTH CONFIGURATION !!!                              |
@@ -8,7 +9,7 @@ any OWIN-based web application.
 
 By default, ONLY LOCAL requests are allowed to access the Dashboard. Please
 see the `Configuring Dashboard authorization` section in Hangfire documentation:
-http://docs.hangfire.io/en/latest/configuration/using-dashboard.html#configuring-authorization
+https://docs.hangfire.io/en/latest/configuration/using-dashboard.html#configuring-authorization
 
 Sample ASP.NET Core Startup class
 ---------------------------------
@@ -24,11 +25,11 @@ namespace MyWebApplication
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddHangfire(x => x.UseSqlServerStorage("<connection string>"));
+            services.AddHangfireServer();
         }
         
         public void Configure(IApplicationBuilder app)
         {
-            app.UseHangfireServer();
             app.UseHangfireDashboard();
         }
     }
@@ -50,11 +51,11 @@ namespace MyWebApplication
     {
         public void Configuration(IAppBuilder app)
         {
-		    GlobalConfiguration.Configuration
-			    .UseSqlServerStorage("<name or connection string>");
+            GlobalConfiguration.Configuration
+                .UseSqlServerStorage("<name or connection string>");
 
-			app.UseHangfireDashboard();
-			app.UseHangfireServer();
+            app.UseHangfireDashboard();
+            app.UseHangfireServer();
         }
     }
 }

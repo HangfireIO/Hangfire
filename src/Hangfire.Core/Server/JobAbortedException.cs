@@ -18,6 +18,9 @@ using System;
 
 namespace Hangfire.Server
 {
+#if !NETSTANDARD1_3
+    [Serializable]
+#endif
     public class JobAbortedException : OperationCanceledException
     {
     }

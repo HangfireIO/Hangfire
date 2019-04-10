@@ -1,6 +1,4 @@
-﻿using System;
 using System.Diagnostics;
-using System.Threading;
 using Hangfire.Common;
 using Hangfire.States;
 using Xunit;
@@ -45,7 +43,6 @@ namespace Hangfire.Core.Tests.States
             Assert.False(data.ContainsKey("Result"));
         }
 
-#if NETFULL
         [Fact]
         public void SerializeData_CorrectlyHandlesResults_ThatCantBeSerialized()
         {
@@ -56,7 +53,6 @@ namespace Hangfire.Core.Tests.States
 
             Assert.Contains("Can not serialize", data["Result"]);
         }
-#endif
 
         [Fact]
         public void IsFinal_ReturnsTrue()
@@ -70,6 +66,30 @@ namespace Hangfire.Core.Tests.States
         {
             var state = CreateState();
             Assert.False(state.IgnoreJobLoadException);
+        }
+
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
+        public void JsonSerialize_ReturnsCorrectString_Before170()
+        {
+            var state = new SucceededState(null, 1, 2);
+
+            var serialized = SerializationHelper.Serialize<IState>(state, SerializationOption.TypedInternal);
+
+            Assert.Equal(
+                "{\"$type\":\"Hangfire.States.SucceededState, Hangfire.Core\",\"Result\":null,\"Latency\":1,\"PerformanceDuration\":2,\"Reason\":null}",
+                serialized);
+        }
+
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
+        public void JsonSerialize_ReturnsCorrectString_After170()
+        {
+            var state = new SucceededState(null, 1, 2);
+
+            var serialized = SerializationHelper.Serialize<IState>(state, SerializationOption.TypedInternal);
+
+            Assert.Equal(
+                "{\"$type\":\"Hangfire.States.SucceededState, Hangfire.Core\",\"Latency\":1,\"PerformanceDuration\":2}",
+                serialized);
         }
 
         private static SucceededState CreateState()

@@ -22,11 +22,10 @@ namespace Hangfire.SqlServer
     {
         IEnumerable<string> GetQueues();
 
-        // TODO: Change return type to `IEnumerable<long>` to support `bigint` type.
-        IEnumerable<int> GetEnqueuedJobIds(string queue, int from, int perPage);
+        IEnumerable<long> GetEnqueuedJobIds(string queue, int from, int perPage);
 
-        // TODO: Change return type to `IEnumerable<long>` to support `bigint` type.
-        IEnumerable<int> GetFetchedJobIds(string queue, int from, int perPage);
+        // TODO: Extend return type by including DateTime to allow getting the FetchedAt value in 2.0
+        IEnumerable<long> GetFetchedJobIds(string queue, int from, int perPage);
 
         EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue);
     }

@@ -23,6 +23,9 @@ namespace Hangfire.Common
     /// be loaded from the storage due to missing or incorrect 
     /// information about its type or method.
     /// </summary>
+#if !NETSTANDARD1_3
+    [Serializable]
+#endif
     public class JobLoadException : Exception
     {
         /// <summary>
