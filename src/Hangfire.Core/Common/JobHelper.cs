@@ -23,7 +23,7 @@ namespace Hangfire.Common
 {
     public static class JobHelper
     {
-        [Obsolete("Please use `GlobalConfiguration.UseSerializationSettings` instead. Will be removed in 2.0.0")]
+        [Obsolete("Please use `GlobalConfiguration.UseSerializerSettings` instead. Will be removed in 2.0.0")]
         public static void SetSerializerSettings(JsonSerializerSettings setting)
         {
             SerializationHelper.SetUserSerializerSettings(setting);
