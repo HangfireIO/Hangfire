@@ -730,17 +730,28 @@ WriteLiteral("                                    </td>\r\n                     
             
             #line default
             #line hidden
-WriteLiteral("                                            <em>");
+WriteLiteral("                                            <span class=\"label label-warning text" +
+"-uppercase\" title=\"");
 
 
             
             #line 166 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                           Write(Strings.Common_NotAvailable);
+                                                                                               Write(Strings.RecurringJobsPage_RecurringJobDisabled_Tooltip);
 
             
             #line default
             #line hidden
-WriteLiteral("</em>\r\n");
+WriteLiteral("\">");
+
+
+            
+            #line 166 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+                                                                                                                                                        Write(Strings.Common_Disabled);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</span>\r\n");
 
 
             
