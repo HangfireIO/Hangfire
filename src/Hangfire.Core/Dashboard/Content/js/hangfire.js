@@ -60,7 +60,7 @@
                         xAxes: [{
                             type: 'realtime',
                             realtime: { duration: 60 * 1000, delay: pollInterval },
-                            time: { unit: 'second', tooltipFormat: 'll HH:mm:ss' }
+                            time: { unit: 'second', tooltipFormat: 'LL LTS', displayFormats: { second: 'LTS', minute: 'LT' } }
                         }],
                         yAxes: [{ ticks: { beginAtZero: true, precision: 0, min: 0, maxTicksLimit: 6, suggestedMax: 10 }, stacked: true }]
                     },
@@ -97,6 +97,10 @@
 
     hangfire.HistoryGraph = (function() {
         function HistoryGraph(element, succeeded, failed, succeededStr, failedStr) {
+            var timeOptions = $(element).data('period') === 'week'
+                ? { unit: 'day', tooltipFormat: 'LL', displayFormats: { day: 'D MMM' } }
+                : { unit: 'hour', tooltipFormat: 'LLL', displayFormats: { hour: 'LT', day: 'D MMM' } };
+
             this._chart = new Chart(element, {
                 type: 'line',
                 data: {
@@ -107,7 +111,7 @@
                 },
                 options: {
                     scales: {
-                        xAxes: [{ type: 'time', time: { unit: 'hour', tooltipFormat: 'll HH:mm' } }],
+                        xAxes: [{ type: 'time', time: timeOptions }],
                         yAxes: [{ ticks: { beginAtZero: true, precision: 0, maxTicksLimit: 6 }, stacked: true }]
                     },
                     elements: { line: { tension: 0 }, point: { radius: 0 } },
