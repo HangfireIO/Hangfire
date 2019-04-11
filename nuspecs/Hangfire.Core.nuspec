@@ -19,6 +19,12 @@ https://www.hangfire.io/
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.7.1
+
+Hangfire.NetCore
+
+• Added – Worker Service host support for .NET Core without unnecessary dependencies to ASP.NET Core.
+
 1.7.0
 • Added – Full .NET Core 2.0 support by explicitly targeting .NET Standard 2.0.
 • Added – `IGlobalConfiguration.SetDataCompatibilityLevel` to enable rolling upgrades from version 1.6.

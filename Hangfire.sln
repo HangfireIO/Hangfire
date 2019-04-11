@@ -51,6 +51,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.AspNetCore", "src\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreSample", "samples\NetCoreSample\NetCoreSample.csproj", "{FA751692-20C8-4986-8164-D21F505B2172}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.NetCore", "src\Hangfire.NetCore\Hangfire.NetCore.csproj", "{AA8E3A67-8731-423A-9B69-EE44EC6B8E1A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -93,6 +95,10 @@ Global
 		{FA751692-20C8-4986-8164-D21F505B2172}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA751692-20C8-4986-8164-D21F505B2172}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FA751692-20C8-4986-8164-D21F505B2172}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA8E3A67-8731-423A-9B69-EE44EC6B8E1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA8E3A67-8731-423A-9B69-EE44EC6B8E1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA8E3A67-8731-423A-9B69-EE44EC6B8E1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA8E3A67-8731-423A-9B69-EE44EC6B8E1A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
