@@ -717,6 +717,30 @@ namespace Hangfire.Core.Tests.Server
             _factory.Verify(x => x.Create(It.IsAny<CreateContext>()));
         }
 
+        [Fact]
+        public void Execute_DoesNotFailOnInvalidCronExpression_AndSimplySetsNextExecutionToNull()
+        {
+            // Arrange
+            _context.StoppingTokenSource = new CancellationTokenSource();
+            SetupConnection(false);
+
+            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
+                .Returns(RecurringJobId)
+                .Returns((string)null);
+
+            _recurringJob["Cron"] = "some garbage";
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1));
+            _transaction.Verify(x => x.Commit());
+        }
+
         private void SetupConnection(bool useJobStorageConnection)
         {
             if (useJobStorageConnection) _context.Storage.Setup(x => x.GetConnection()).Returns(_storageConnection.Object);

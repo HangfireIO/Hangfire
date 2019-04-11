@@ -105,29 +105,16 @@ namespace Hangfire
 
         public DateTime? GetNextExecution()
         {
-            var parts = Cron.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-            var format = CronFormat.Standard;
-
             try
             {
-                if (parts.Length == 6)
-                {
-                    format |= CronFormat.IncludeSeconds;
-                }
-                else if (parts.Length != 5)
-                {
-                    throw new CronFormatException(
-                        $"Wrong number of parts in the `{Cron}` cron expression, you can only use 5 or 6 (with seconds) part-based expressions.");
-                }
-
-                return CronExpression.Parse(Cron, format).GetNextOccurrence(
+                return ParseCronExpression(Cron).GetNextOccurrence(
                     LastExecution ?? CreatedAt.AddSeconds(-1),
                     TimeZone,
                     inclusive: false);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw new ArgumentException("CRON expression is invalid. Please see the inner exception for details.", "cronExpression", ex);
+                return null;
             }
         }
 
@@ -198,6 +185,26 @@ namespace Hangfire
             }
 
             return result;
+        }
+
+        public static CronExpression ParseCronExpression([NotNull] string cronExpression)
+        {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
+
+            var parts = cronExpression.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+            var format = CronFormat.Standard;
+
+            if (parts.Length == 6)
+            {
+                format |= CronFormat.IncludeSeconds;
+            }
+            else if (parts.Length != 5)
+            {
+                throw new CronFormatException(
+                    $"Wrong number of parts in the `{cronExpression}` cron expression, you can only use 5 or 6 (with seconds) part-based expressions.");
+            }
+
+            return CronExpression.Parse(cronExpression, format);
         }
     }
 }

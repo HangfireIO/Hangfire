@@ -96,6 +96,8 @@ namespace Hangfire
             if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
             if (options == null) throw new ArgumentNullException(nameof(options));
 
+            ValidateCronExpression(cronExpression);
+
             using (var connection = _storage.GetConnection())
             using (connection.AcquireDistributedRecurringJobLock(recurringJobId, DefaultTimeout))
             {
@@ -114,6 +116,21 @@ namespace Hangfire
                         transaction.Commit();
                     }
                 }
+            }
+        }
+ 
+        private static void ValidateCronExpression(string cronExpression)
+        {
+            try
+            {
+                RecurringJobEntity.ParseCronExpression(cronExpression);
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(
+                    "CRON expression is invalid. Please see the inner exception for details.",
+                    nameof(cronExpression),
+                    ex);
             }
         }
 
