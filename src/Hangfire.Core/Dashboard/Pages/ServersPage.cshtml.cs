@@ -132,7 +132,7 @@ WriteLiteral("\r\n            </div>\r\n");
             #line hidden
 WriteLiteral(@"                <div class=""alert alert-info"">
                     <h4>Aborted servers will be removed automatically</h4>
-                    Some of the servers don't have heartbeat reported within the last minute and may be aborted. If they don't report heartbeat in the near future, they will be removed automatically after timeout is exceeded, no action is required.
+                    Some of the servers don't have heartbeat reported within the last minute and may be aborted. If they don't report heartbeat in the near future, they will be removed automatically after timeout is exceeded, no manual action is required.
                     Incomplete background jobs running on those servers will be re-queued automatically, but you can speed up the process by checking the <a href=""");
 
 
