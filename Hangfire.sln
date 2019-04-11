@@ -24,6 +24,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspecs", "nuspecs", "{5E68
 	ProjectSection(SolutionItems) = preProject
 		nuspecs\Hangfire.AspNetCore.nuspec = nuspecs\Hangfire.AspNetCore.nuspec
 		nuspecs\Hangfire.Core.nuspec = nuspecs\Hangfire.Core.nuspec
+		nuspecs\Hangfire.NetCore.nuspec = nuspecs\Hangfire.NetCore.nuspec
 		nuspecs\Hangfire.nuspec = nuspecs\Hangfire.nuspec
 		nuspecs\Hangfire.SqlServer.MSMQ.nuspec = nuspecs\Hangfire.SqlServer.MSMQ.nuspec
 		nuspecs\Hangfire.SqlServer.nuspec = nuspecs\Hangfire.SqlServer.nuspec
