@@ -60,7 +60,7 @@
                         xAxes: [{
                             type: 'realtime',
                             realtime: { duration: 60 * 1000, delay: pollInterval },
-                            time: { unit: 'second', tooltipFormat: 'LL LTS', displayFormats: { second: 'LTS', minute: 'LT' } },
+                            time: { unit: 'second', tooltipFormat: 'LL LTS', displayFormats: { second: 'LTS', minute: 'LTS' } },
                             ticks: { maxRotation: 0 }
                         }],
                         yAxes: [{ ticks: { beginAtZero: true, precision: 0, min: 0, maxTicksLimit: 6, suggestedMax: 10 }, stacked: true }]
