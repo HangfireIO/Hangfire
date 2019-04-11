@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Transactions;
 using Hangfire;
 using Hangfire.SqlServer;
 using Microsoft.Owin.Hosting;
@@ -23,7 +22,6 @@ namespace ConsoleSample
                     CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
                     QueuePollInterval = TimeSpan.Zero,
                     SlidingInvisibilityTimeout = TimeSpan.FromMinutes(1),
-                    PrepareSchemaIfNecessary = false,
                     UseRecommendedIsolationLevel = true,
                     UsePageLocksOnDequeue = true,
                     DisableGlobalLocks = true,

@@ -307,10 +307,40 @@ namespace Hangfire.SqlServer
         {
             if (_options.PrepareSchemaIfNecessary)
             {
-                UseConnection(null, connection =>
+                var log = LogProvider.GetLogger(typeof(SqlServerObjectsInstaller));
+                const int RetryAttempts = 3;
+
+                log.Info("Start installing Hangfire SQL objects...");
+
+                Exception lastException = null;
+
+                for (var i = 0; i < RetryAttempts; i++)
                 {
-                    SqlServerObjectsInstaller.Install(connection, _options.SchemaName, _options.EnableHeavyMigrations);
-                });
+                    try
+                    {
+                        UseConnection(null, connection =>
+                        {
+                            SqlServerObjectsInstaller.Install(connection, _options.SchemaName, _options.EnableHeavyMigrations);
+                        });
+
+                        lastException = null;
+                        break;
+                    }
+                    catch (DbException ex)
+                    {
+                        lastException = ex;
+                        log.WarnException("An exception occurred while trying to perform the migration." + (i < RetryAttempts - 1 ? " Retrying..." : ""), ex);
+                    }
+                }
+
+                if (lastException != null)
+                {
+                    log.WarnException("Was unable to perform the Hangfire schema migration due to an exception. Ignore this message unless you've just installed or upgraded Hangfire.", lastException);
+                }
+                else
+                {
+                    log.Info("Hangfire SQL objects installed.");
+                }
             }
 
             InitializeQueueProviders();
