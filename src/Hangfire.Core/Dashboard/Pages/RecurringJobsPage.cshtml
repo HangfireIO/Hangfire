@@ -195,7 +195,7 @@
                                         {
                                             if (!String.IsNullOrEmpty(job.LastJobId))
                                             {
-                                                <a href="@Url.JobDetails(job.LastJobId)">
+                                                <a href="@Url.JobDetails(job.LastJobId)" style="text-decoration: none">
                                                     <span class="label label-default label-hover" style="@($"background-color: {JobHistoryRenderer.GetForegroundStateColor(job.LastJobState ?? EnqueuedState.StateName)};")">
                                                         @Html.RelativeTime(job.LastExecution.Value)
                                                     </span>

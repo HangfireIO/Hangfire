@@ -825,8 +825,8 @@ WriteLiteral("                                                <a href=\"");
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                                                    <span class=\"label label-" +
-"default label-hover\" style=\"");
+WriteLiteral("\" style=\"text-decoration: none\">\r\n                                               " +
+"     <span class=\"label label-default label-hover\" style=\"");
 
 
             
