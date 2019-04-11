@@ -108,20 +108,44 @@
                                         @* ReSharper disable once EmptyGeneralCatchClause *@
                                         @{
                                             string cronDescription = null;
+                                            bool cronError = false;
+
+                                            if (!String.IsNullOrEmpty(job.Cron))
+                                            {
+                                                try
+                                                {
+                                                    RecurringJobEntity.ParseCronExpression(job.Cron);
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    cronDescription = ex.Message;
+                                                    cronError = true;
+                                                }
+
+                                                if (cronDescription == null)
+                                                {
 #if FEATURE_CRONDESCRIPTOR
-                                            try
-                                            {
-                                                cronDescription = string.IsNullOrEmpty(job.Cron) ? null : CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.Cron);
-                                            }
-                                            catch (FormatException)
-                                            {
-                                            }
+                                                    try
+                                                    {
+                                                        cronDescription = CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.Cron);
+                                                    }
+                                                    catch (FormatException)
+                                                    {
+                                                    }
 #endif
+                                                }
+                                            }
                                         }
 
                                         @if (cronDescription != null)
                                         {
-                                            <code title="@cronDescription">@job.Cron</code>
+                                        <code title="@cronDescription">
+                                            @if (cronError)
+                                            {
+                                                <span class="glyphicon glyphicon-exclamation-sign"></span>
+                                            }
+                                            @job.Cron
+                                        </code>
                                         }
                                         else
                                         {
