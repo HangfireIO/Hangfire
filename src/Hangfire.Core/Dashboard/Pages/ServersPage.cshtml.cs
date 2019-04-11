@@ -76,6 +76,9 @@ WriteLiteral("\r\n");
     
     var monitor = Storage.GetMonitoringApi();
     var servers = monitor.Servers();
+    var now = DateTime.UtcNow;
+    var inconclusiveThreshold = TimeSpan.FromMinutes(1);
+    var possiblyAbortedThreshold = TimeSpan.FromMinutes(5);
 
 
             
@@ -86,7 +89,7 @@ WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-12\">\r\n      
 
 
             
-            #line 18 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 21 "..\..\Dashboard\Pages\ServersPage.cshtml"
                            Write(Strings.ServersPage_Title);
 
             
@@ -96,7 +99,7 @@ WriteLiteral("</h1>\r\n\r\n");
 
 
             
-            #line 20 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 23 "..\..\Dashboard\Pages\ServersPage.cshtml"
          if (servers.Count == 0)
         {
 
@@ -107,7 +110,7 @@ WriteLiteral("            <div class=\"alert alert-warning\">\r\n               
 
 
             
-            #line 23 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 26 "..\..\Dashboard\Pages\ServersPage.cshtml"
            Write(Strings.ServersPage_NoServers);
 
             
@@ -117,10 +120,36 @@ WriteLiteral("\r\n            </div>\r\n");
 
 
             
-            #line 25 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 28 "..\..\Dashboard\Pages\ServersPage.cshtml"
         }
         else
         {
+            if (servers.Any(x => x.Heartbeat.HasValue && x.Heartbeat.Value < now.Add(-inconclusiveThreshold)))
+            {
+
+            
+            #line default
+            #line hidden
+WriteLiteral(@"                <div class=""alert alert-info"">
+                    <h4>Aborted servers will be removed automatically</h4>
+                    Some of the servers don't have heartbeat reported within the last minute and may be aborted. If they don't report heartbeat in the near future, they will be removed automatically after timeout is exceeded, no action is required.
+                    Incomplete background jobs running on those servers will be re-queued automatically, but you can speed up the process by checking the <a href=""");
+
+
+            
+            #line 36 "..\..\Dashboard\Pages\ServersPage.cshtml"
+                                                                                                                                                              Write(Url.To("/jobs/processing"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">Processing Jobs</a> page.\r\n                </div>\r\n");
+
+
+            
+            #line 38 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            }
+
 
             
             #line default
@@ -131,7 +160,7 @@ WriteLiteral("            <div class=\"table-responsive\">\r\n                <t
 
 
             
-            #line 32 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 44 "..\..\Dashboard\Pages\ServersPage.cshtml"
                            Write(Strings.ServersPage_Table_Name);
 
             
@@ -141,7 +170,7 @@ WriteLiteral("</th>\r\n                            <th>");
 
 
             
-            #line 33 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 45 "..\..\Dashboard\Pages\ServersPage.cshtml"
                            Write(Strings.ServersPage_Table_Workers);
 
             
@@ -151,7 +180,7 @@ WriteLiteral("</th>\r\n                            <th>");
 
 
             
-            #line 34 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 46 "..\..\Dashboard\Pages\ServersPage.cshtml"
                            Write(Strings.ServersPage_Table_Queues);
 
             
@@ -161,7 +190,7 @@ WriteLiteral("</th>\r\n                            <th>");
 
 
             
-            #line 35 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 47 "..\..\Dashboard\Pages\ServersPage.cshtml"
                            Write(Strings.ServersPage_Table_Started);
 
             
@@ -171,7 +200,7 @@ WriteLiteral("</th>\r\n                            <th>");
 
 
             
-            #line 36 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 48 "..\..\Dashboard\Pages\ServersPage.cshtml"
                            Write(Strings.ServersPage_Table_Heartbeat);
 
             
@@ -182,28 +211,76 @@ WriteLiteral("</th>\r\n                        </tr>\r\n                    </th
 
 
             
-            #line 40 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 52 "..\..\Dashboard\Pages\ServersPage.cshtml"
                          foreach (var server in servers)
                         {
 
             
             #line default
             #line hidden
-WriteLiteral("                            <tr>\r\n                                <td>");
+WriteLiteral("                            <tr>\r\n                                <td>\r\n");
 
 
             
-            #line 43 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 56 "..\..\Dashboard\Pages\ServersPage.cshtml"
+                                     if (server.Heartbeat < now.Add(-possiblyAbortedThreshold))
+                                    {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                        <span class=\"glyphicon glyphicon-alert te" +
+"xt-danger\" title=\"Possibly aborted\"></span>\r\n");
+
+
+            
+            #line 59 "..\..\Dashboard\Pages\ServersPage.cshtml"
+                                    }
+                                    else if (server.Heartbeat < now.Add(-inconclusiveThreshold))
+                                    {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                        <span class=\"glyphicon\" style=\"margin-rig" +
+"ht: 14px;\"></span>\r\n");
+
+
+            
+            #line 63 "..\..\Dashboard\Pages\ServersPage.cshtml"
+                                    }
+                                    else
+                                    {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                        <span class=\"glyphicon glyphicon-ok text-" +
+"success\" title=\"Active\"></span>\r\n");
+
+
+            
+            #line 67 "..\..\Dashboard\Pages\ServersPage.cshtml"
+                                    }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                    ");
+
+
+            
+            #line 68 "..\..\Dashboard\Pages\ServersPage.cshtml"
                                Write(Html.ServerId(server.Name));
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                                <td>");
+WriteLiteral("\r\n                                </td>\r\n                                <td>");
 
 
             
-            #line 44 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 70 "..\..\Dashboard\Pages\ServersPage.cshtml"
                                Write(server.WorkersCount);
 
             
@@ -213,7 +290,7 @@ WriteLiteral("</td>\r\n                                <td>");
 
 
             
-            #line 45 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 71 "..\..\Dashboard\Pages\ServersPage.cshtml"
                                Write(Html.Raw(String.Join(", ", server.Queues.Select(Html.QueueLabel))));
 
             
@@ -223,7 +300,7 @@ WriteLiteral("</td>\r\n                                <td>");
 
 
             
-            #line 46 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 72 "..\..\Dashboard\Pages\ServersPage.cshtml"
                                Write(Html.RelativeTime(server.StartedAt));
 
             
@@ -233,7 +310,7 @@ WriteLiteral("</td>\r\n                                <td>\r\n");
 
 
             
-            #line 48 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 74 "..\..\Dashboard\Pages\ServersPage.cshtml"
                                      if (server.Heartbeat.HasValue)
                                     {
                                         
@@ -241,14 +318,14 @@ WriteLiteral("</td>\r\n                                <td>\r\n");
             #line default
             #line hidden
             
-            #line 50 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 76 "..\..\Dashboard\Pages\ServersPage.cshtml"
                                    Write(Html.RelativeTime(server.Heartbeat.Value));
 
             
             #line default
             #line hidden
             
-            #line 50 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 76 "..\..\Dashboard\Pages\ServersPage.cshtml"
                                                                                   
                                     }
 
@@ -259,7 +336,7 @@ WriteLiteral("                                </td>\r\n                         
 
 
             
-            #line 54 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 80 "..\..\Dashboard\Pages\ServersPage.cshtml"
                         }
 
             
@@ -269,7 +346,7 @@ WriteLiteral("                    </tbody>\r\n                </table>\r\n      
 
 
             
-            #line 58 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 84 "..\..\Dashboard\Pages\ServersPage.cshtml"
         }
 
             
