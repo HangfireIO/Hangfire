@@ -114,7 +114,7 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                             {
                                 cancellationToken.ThrowIfCancellationRequested();
                                 var fetchedJob = reader.Read<FetchedJob>().SingleOrDefault(x => x != null);
-                                if (fetchedJob != null)
+                                if (fetchedJob != null && !(fetchedJob.Id == 0 && fetchedJob.JobId == 0 && fetchedJob.Queue == null))
                                 {
                                     return new SqlServerTimeoutJob(_storage, fetchedJob.Id, fetchedJob.JobId.ToString(CultureInfo.InvariantCulture), fetchedJob.Queue, fetchedJob.FetchedAt);
                                 }
@@ -192,7 +192,7 @@ BEGIN
     EXEC sp_releaseapplock @Resource = @lockResource, @LockOwner = 'Session';
 END
 
-SELECT TOP (0) [Id], [JobId], [Queue], [FetchedAt] FROM [{_storage.SchemaName}].JobQueue;";
+SELECT 0 as [Id], 0 as [JobId], null as [Queue], null as [FetchedAt];";
         }
 
         private string GetSlidingFetchTableHints()
