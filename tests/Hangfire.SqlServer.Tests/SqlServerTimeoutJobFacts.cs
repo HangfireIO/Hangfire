@@ -137,6 +137,7 @@ namespace Hangfire.SqlServer.Tests
 
                     var record = sql.Query("select * from HangFire.JobQueue").Single();
 
+                    Assert.NotNull(processingJob.FetchedAt);
                     Assert.Equal<DateTime?>(processingJob.FetchedAt, record.FetchedAt);
                     var now = DateTime.UtcNow;
                     Assert.True(now.AddSeconds(-5) < record.FetchedAt, (now - record.FetchedAt).ToString());
