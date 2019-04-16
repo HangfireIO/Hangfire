@@ -216,6 +216,10 @@ output DELETED.Id, DELETED.JobId, DELETED.Queue
 from [{_storage.SchemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
 where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))";
 
+            var pollInterval = _options.QueuePollInterval > TimeSpan.Zero
+                ? _options.QueuePollInterval
+                : TimeSpan.FromSeconds(1);
+
             using (var cancellationEvent = cancellationToken.GetCancellationEvent())
             {
                 do
@@ -255,10 +259,6 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
                             _storage.ReleaseConnection(connection);
                         }
                     }
-
-                    var pollInterval = _options.QueuePollInterval > TimeSpan.Zero
-                        ? _options.QueuePollInterval
-                        : TimeSpan.FromSeconds(1);
 
                     WaitHandle.WaitAny(new WaitHandle[] { cancellationEvent.WaitHandle, NewItemInQueueEvent }, pollInterval);
                     cancellationToken.ThrowIfCancellationRequested();
