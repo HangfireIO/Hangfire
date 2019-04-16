@@ -36,6 +36,9 @@ namespace Hangfire.SqlServer
         // without this event, but it helps to reduce the delays in processing.
         internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(true);
 
+        private static readonly TimeSpan PollingQuantum = TimeSpan.FromMilliseconds(1000);
+        private static readonly TimeSpan MinPollingDelay = TimeSpan.FromMilliseconds(50);
+
         private readonly SqlServerStorage _storage;
         private readonly SqlServerStorageOptions _options;
 
@@ -87,6 +90,12 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
 
             var lockResource = $"{_storage.SchemaName}_FetchLockLock_{String.Join("_", queues.OrderBy(x => x))}";
             var isBlocking = false;
+
+            var pollingInterval = _options.QueuePollInterval;
+            var pollingDelay = pollingInterval > MinPollingDelay && pollingInterval <= PollingQuantum
+                ? pollingInterval
+                : MinPollingDelay;
+
             SqlServerTimeoutJob fetched;
 
             using (var cancellationEvent = cancellationToken.GetCancellationEvent())
@@ -102,8 +111,8 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                             queues = queues,
                             timeout = _options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds,
                             lockResource = lockResource,
-                            precision = 50,
-                            quantum = 2000
+                            pollingDelayMs = (int)pollingDelay.TotalMilliseconds,
+                            pollingQuantumMs = (int)PollingQuantum.TotalMilliseconds
                         };
 
                         var query = isBlocking ? GetBlockingFetchSql() : GetNonBlockingFetchSql();
@@ -129,10 +138,15 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                         break;
                     }
 
-                    isBlocking = true;
-
-                    cancellationEvent.WaitHandle.WaitOne(_options.QueuePollInterval);
-                    cancellationToken.ThrowIfCancellationRequested();
+                    if (pollingInterval <= PollingQuantum)
+                    {
+                        isBlocking = true;
+                    }
+                    else
+                    {
+                        cancellationEvent.WaitHandle.WaitOne(pollingInterval);
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
                 } while (true);
             }
 
@@ -162,16 +176,22 @@ set xact_abort on;
 set transaction isolation level read committed;
 
 declare @result int;
-declare @delay datetime = dateadd(ms, @precision, convert(DATETIME, 0));
+declare @now DATETIME2 = SYSUTCDATETIME();
+declare @pollingDelay datetime = dateadd(ms, @pollingDelayMs, convert(DATETIME, 0));
+declare @quantumEnd datetime2 = DATEADD(ms, @pollingQuantumMs, @now);
 
-exec @result = sp_getapplock @Resource = @lockResource, @LockMode = 'Exclusive', @LockTimeout = @quantum, @LockOwner = 'Session';
+WHILE (@now < @quantumEnd)
+BEGIN
+    EXEC @result = sp_getapplock @Resource = @lockResource, @LockMode = 'Exclusive', @LockTimeout = 0, @LockOwner = 'Session';
+    IF @result >= 0 BREAK;
+    
+    WAITFOR DELAY @pollingDelay;
+    SET @now = SYSUTCDATETIME();
+END
 
 IF (@result >= 0)
 BEGIN
-    DECLARE @now DATETIME2 = SYSUTCDATETIME();
-    DECLARE @endTime datetime2 = DATEADD(ms, @quantum, @now);
-
-    WHILE (@now < @endTime)
+    WHILE (@now < @quantumEnd)
     BEGIN
         update top (1) JQ
         set FetchedAt = GETUTCDATE()
@@ -186,7 +206,7 @@ BEGIN
             RETURN;
         END;
 
-        WAITFOR DELAY @delay;
+        WAITFOR DELAY @pollingDelay;
         SET @now = SYSUTCDATETIME();
     END
     EXEC sp_releaseapplock @Resource = @lockResource, @LockOwner = 'Session';
