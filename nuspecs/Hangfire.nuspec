@@ -19,7 +19,31 @@ https://www.hangfire.io/
     <tags>Hangfire AspNet MVC AspNetCore SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
-https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html
+Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade.
+
+1.7.1
+
+Hangfire.Core
+
+• Added – `DashboardOptions.IgnoreAntiforgeryToken` property to disable token validation in Dashboard UI.
+• Added – Display hints regarding server status on Servers page in Dashboard UI.
+• Added – Highlight recurring jobs with no next execution in Dashboard UI.
+• Added – Show actual error in Dashboard UI when recurring job has an invalid Cron expression.
+• Fixed – `InvalidOperationException` when `AllowSynchronousIO` option isn't set in ASP.NET Core 3.0.
+• Fixed – Set `NextExecution` value to `null` when existing recurring job has an invalid Cron expression.
+• Fixed – Make dashboard charts to be more culture-specific to use correct time format.
+• Fixed – Obsolete `UseSerializationSettings` comment now contains correct method name (by @PaitoAnderson).
+• Project – `resx` files now re-generated automatically when building a project.
+
+Hangfire.NetCore
+
+• Added – Worker Service host support for .NET Core without unnecessary dependencies to ASP.NET Core.
+
+Hangfire.SqlServer
+
+• Changed – Use blocking fetch implementation only for sub-second polling intervals.
+• Fixed – Don't fail with an exception when can't connect to MSSQL instance during start-up.
+• Fixed – Don't access the `JobQueue` table when using blocking query and don't have results.
 
 1.7.0
 
