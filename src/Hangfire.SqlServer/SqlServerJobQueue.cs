@@ -37,7 +37,7 @@ namespace Hangfire.SqlServer
         internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(true);
 
         private static readonly TimeSpan LongPollingThreshold = TimeSpan.FromMilliseconds(1000);
-        private static readonly TimeSpan PollingQuantum = TimeSpan.FromMilliseconds(2000);
+        private static readonly TimeSpan PollingQuantum = TimeSpan.FromMilliseconds(1000);
         private static readonly TimeSpan MinPollingDelay = TimeSpan.FromMilliseconds(50);
 
         private readonly SqlServerStorage _storage;

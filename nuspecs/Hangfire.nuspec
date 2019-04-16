@@ -19,6 +19,8 @@ https://www.hangfire.io/
     <tags>Hangfire AspNet MVC AspNetCore SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html
+
 1.7.0
 
 Hangfire.Core
