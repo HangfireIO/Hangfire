@@ -58,5 +58,7 @@ namespace Hangfire
         /// Display name provider for jobs
         /// </summary>
         public Func<DashboardContext, Job, string> DisplayNameFunc { get; set; }
+
+        public bool IgnoreAntiforgeryToken { get; set; }
     }
 }
