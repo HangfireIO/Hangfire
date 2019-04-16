@@ -36,7 +36,8 @@ namespace Hangfire.SqlServer
         // without this event, but it helps to reduce the delays in processing.
         internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(true);
 
-        private static readonly TimeSpan PollingQuantum = TimeSpan.FromMilliseconds(1000);
+        private static readonly TimeSpan LongPollingThreshold = TimeSpan.FromMilliseconds(1000);
+        private static readonly TimeSpan PollingQuantum = TimeSpan.FromMilliseconds(2000);
         private static readonly TimeSpan MinPollingDelay = TimeSpan.FromMilliseconds(50);
 
         private readonly SqlServerStorage _storage;
@@ -138,13 +139,13 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                         break;
                     }
 
-                    if (pollingInterval <= PollingQuantum)
+                    if (pollingInterval < LongPollingThreshold)
                     {
                         isBlocking = true;
                     }
                     else
                     {
-                        cancellationEvent.WaitHandle.WaitOne(pollingInterval);
+                        WaitHandle.WaitAny(new WaitHandle[] { cancellationEvent.WaitHandle, NewItemInQueueEvent }, pollingInterval);
                         cancellationToken.ThrowIfCancellationRequested();
                     }
                 } while (true);
@@ -176,29 +177,23 @@ set xact_abort on;
 set transaction isolation level read committed;
 
 declare @result int;
-declare @now DATETIME2 = SYSUTCDATETIME();
-declare @pollingDelay datetime = dateadd(ms, @pollingDelayMs, convert(DATETIME, 0));
-declare @quantumEnd datetime2 = DATEADD(ms, @pollingQuantumMs, @now);
 
-WHILE (@now < @quantumEnd)
-BEGIN
-    EXEC @result = sp_getapplock @Resource = @lockResource, @LockMode = 'Exclusive', @LockTimeout = 0, @LockOwner = 'Session';
-    IF @result >= 0 BREAK;
-    
-    WAITFOR DELAY @pollingDelay;
-    SET @now = SYSUTCDATETIME();
-END
+EXEC @result = sp_getapplock @Resource = @lockResource, @LockMode = 'Exclusive', @LockTimeout = @pollingQuantumMs, @LockOwner = 'Session';
 
 IF (@result >= 0)
 BEGIN
+    declare @now DATETIME2 = SYSUTCDATETIME();
+    declare @pollingDelay datetime = dateadd(ms, @pollingDelayMs, convert(DATETIME, 0));
+    declare @quantumEnd datetime2 = DATEADD(ms, @pollingQuantumMs, @now);
+
     WHILE (@now < @quantumEnd)
     BEGIN
         update top (1) JQ
-        set FetchedAt = GETUTCDATE()
+        set FetchedAt = @now
         output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
         from [{_storage.SchemaName}].JobQueue JQ with ({GetSlidingFetchTableHints()})
         where Queue in @queues and
-        (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()));
+        (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, @now));
 
         IF @@ROWCOUNT > 0
         BEGIN
