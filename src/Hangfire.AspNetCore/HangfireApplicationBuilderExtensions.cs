@@ -44,6 +44,8 @@ namespace Hangfire
 
             storage = storage ?? services.GetRequiredService<JobStorage>();
             options = options ?? services.GetService<DashboardOptions>() ?? new DashboardOptions();
+            options.TimeZoneResolver = options.TimeZoneResolver ?? services.GetService<ITimeZoneResolver>();
+
             var routes = app.ApplicationServices.GetRequiredService<RouteCollection>();
 
             app.Map(new PathString(pathMatch), x => x.UseMiddleware<AspNetCoreDashboardMiddleware>(storage, options, routes));
