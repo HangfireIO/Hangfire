@@ -60,5 +60,7 @@ namespace Hangfire
         public Func<DashboardContext, Job, string> DisplayNameFunc { get; set; }
 
         public bool IgnoreAntiforgeryToken { get; set; }
+
+        public ITimeZoneResolver TimeZoneResolver { get; set; }
     }
 }

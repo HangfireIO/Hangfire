@@ -159,7 +159,8 @@
 
                                             try
                                             {
-                                                displayName = TimeZoneInfo.FindSystemTimeZoneById(job.TimeZoneId).DisplayName;
+                                                var resolver = DashboardOptions.TimeZoneResolver ?? new DefaultTimeZoneResolver();
+                                                displayName = resolver.GetTimeZoneById(job.TimeZoneId).DisplayName;
                                             }
                                             catch
                                             {
