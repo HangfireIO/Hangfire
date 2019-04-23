@@ -155,7 +155,18 @@
                                     <td class="min-width">
                                         @if (!String.IsNullOrWhiteSpace(job.TimeZoneId))
                                         {
-                                            <span title="@TimeZoneInfo.FindSystemTimeZoneById(job.TimeZoneId).DisplayName" data-container="body">@job.TimeZoneId</span>
+                                            string displayName;
+
+                                            try
+                                            {
+                                                displayName = TimeZoneInfo.FindSystemTimeZoneById(job.TimeZoneId).DisplayName;
+                                            }
+                                            catch
+                                            {
+                                                displayName = null;
+                                            }
+
+                                            <span title="@displayName" data-container="body">@job.TimeZoneId</span>
                                         }
                                         else
                                         {
