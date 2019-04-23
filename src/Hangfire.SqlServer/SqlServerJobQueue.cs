@@ -207,7 +207,7 @@ BEGIN
     EXEC sp_releaseapplock @Resource = @lockResource, @LockOwner = 'Session';
 END
 
-SELECT 0 as [Id], 0 as [JobId], null as [Queue], null as [FetchedAt];";
+SELECT 0 AS [Id], CAST(0 AS BIGINT) AS [JobId], CAST(NULL AS NVARCHAR) as [Queue], CAST(NULL AS DATETIME) as [FetchedAt];";
         }
 
         private string GetSlidingFetchTableHints()
