@@ -4,7 +4,7 @@
     <TargetFrameworks>net452;net461;netcoreapp1.0;netcoreapp2.1</TargetFrameworks>
     <NoWarn>0618</NoWarn>
   </PropertyGroup>
-  
+
   <PropertyGroup Condition="'$(TargetFramework)'=='netcoreapp1.0'">
     <NoWarn>$(NoWarn);1701</NoWarn>
   </PropertyGroup>
@@ -20,6 +20,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Hangfire.Core\Hangfire.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Hangfire.MemoryStorage" Version="1.*" />
   </ItemGroup>
 
   <ItemGroup>

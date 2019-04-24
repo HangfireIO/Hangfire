@@ -87,7 +87,7 @@ namespace Hangfire.Core.Tests.Server
 
             _factory = new Mock<IBackgroundJobFactory>();
             _factory.Setup(x => x.Create(It.IsAny<CreateContext>())).Returns(_backgroundJobMock.Object);
-            
+
             _stateMachine = new Mock<IStateMachine>();
             _factory.SetupGet(x => x.StateMachine).Returns(_stateMachine.Object);
         }
@@ -96,7 +96,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenJobFactoryIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-// ReSharper disable once AssignNullToNotNullAttribute
+                // ReSharper disable once AssignNullToNotNullAttribute
                 () => new RecurringJobScheduler(null, _delay, _timeZoneResolver.Object, _nowInstantFactory));
 
             Assert.Equal("factory", exception.ParamName);
@@ -209,7 +209,7 @@ namespace Hangfire.Core.Tests.Server
                 It.Is<Dictionary<string, string>>(rj =>
                     rj.ContainsKey("NextExecution") && rj["NextExecution"]
                         == JobHelper.SerializeDateTime(_nextInstant))));
-            
+
             _transaction.Verify(x => x.Commit());
         }
 
@@ -235,7 +235,7 @@ namespace Hangfire.Core.Tests.Server
                 It.Is<Dictionary<string, string>>(rj =>
                     rj.ContainsKey("NextExecution") && rj["NextExecution"]
                         == JobHelper.SerializeDateTime(_nextInstant))));
-            
+
             _transaction.Verify(x => x.Commit());
         }
 
@@ -276,7 +276,7 @@ namespace Hangfire.Core.Tests.Server
                 _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, JobHelper.ToTimestamp(_nowInstant)))
                     .Returns("non-existing-job")
                     .Returns((string)null);
-                }
+            }
 
             var scheduler = CreateScheduler();
 
@@ -367,7 +367,7 @@ namespace Hangfire.Core.Tests.Server
 
             // Act
             scheduler.Execute(_context.Object);
-            
+
             // Assert
             _connection.Verify(
                 x => x.SetRangeInHash(
@@ -395,7 +395,7 @@ namespace Hangfire.Core.Tests.Server
                     $"recurring-job:{RecurringJobId}",
                     It.Is<Dictionary<string, string>>(rj => rj.ContainsKey("CreatedAt"))),
                 Times.Once);
-            
+
             _transaction.Verify(x => x.Commit());
         }
 
@@ -422,7 +422,7 @@ namespace Hangfire.Core.Tests.Server
                 It.Is<Dictionary<string, string>>(rj =>
                     rj.ContainsKey("LastExecution") && rj["LastExecution"]
                     == JobHelper.SerializeDateTime(_nowInstant))));
-            
+
             _transaction.Verify(x => x.Commit());
         }
 
@@ -469,7 +469,7 @@ namespace Hangfire.Core.Tests.Server
 
             // Act
             scheduler.Execute(_context.Object);
-            
+
             // Assert
             _stateMachine.Verify(x => x.ApplyState(It.IsAny<ApplyStateContext>()), Times.Never);
         }
@@ -511,12 +511,12 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.SetRangeInHash(
                 $"recurring-job:{RecurringJobId}",
                 It.Is<Dictionary<string, string>>(rj =>
-                    rj.ContainsKey("NextExecution") && 
+                    rj.ContainsKey("NextExecution") &&
                     rj["NextExecution"] == JobHelper.SerializeDateTime(_nowInstant.AddMinutes(1)))));
 
             _transaction.Verify(x => x.AddToSet(
-                "recurring-jobs", 
-                "recurring-job-id", 
+                "recurring-jobs",
+                "recurring-job-id",
                 JobHelper.ToTimestamp(_nowInstant.AddMinutes(1))));
 
             _transaction.Verify(x => x.Commit());
