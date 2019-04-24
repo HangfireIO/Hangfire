@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 using Xunit;
 
 namespace Hangfire.Core.Tests
@@ -16,6 +17,7 @@ namespace Hangfire.Core.Tests
         {
             RecurringJob.AddOrUpdate(RecurringJobId, () => Invoke(), () => "* * * * *");
             RecurringJob.Trigger(RecurringJobId);
+            Thread.Sleep(1000);
             RecurringJob.RemoveIfExists(RecurringJobId);
         }
 
@@ -37,6 +39,7 @@ namespace Hangfire.Core.Tests
             s_jobId2WrapperMappings[RecurringJobId] = this;
             RecurringJob.AddOrUpdate(RecurringJobId, () => Invoke(RecurringJobId), () => "* * * * *");
             RecurringJob.Trigger(RecurringJobId);
+            Thread.Sleep(1000);
             RecurringJob.RemoveIfExists(RecurringJobId);
         }
 
@@ -49,12 +52,17 @@ namespace Hangfire.Core.Tests
 
     public class RecurringJobWithClassFacts
     {
-        [Fact]
-        public void CallbackShouldTrigger_NotWorking()
+        static RecurringJobWithClassFacts()
         {
             GlobalConfiguration.Configuration
                 .UseMemoryStorage();
 
+            _ = new BackgroundJobServer();
+        }
+
+        [Fact]
+        public void CallbackShouldTrigger_NotWorking()
+        {
             var job = new JobWrapperNotWorking();
             bool triggered = false;
             job.Callback = () => { triggered = true; };
@@ -67,9 +75,6 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void CallbackShouldTrigger_Working()
         {
-            GlobalConfiguration.Configuration
-                .UseMemoryStorage();
-
             var job = new JobWrapperWorking();
             bool triggered = false;
             job.Callback = () => { triggered = true; };
