@@ -76,7 +76,7 @@ namespace Hangfire.Core.Tests
 
             job.ScheduleAndTrigger();
 
-            Assert.Equal(triggered, triggered);
+            Assert.Equal(true, triggered);
         }
     }
 }
