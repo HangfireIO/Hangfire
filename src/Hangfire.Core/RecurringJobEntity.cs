@@ -118,19 +118,19 @@ namespace Hangfire
         public string LastJobId { get; set; }
         public int? Version { get; set; }
 
-        public DateTime? GetNextExecution()
+        public bool TrySchedule(out DateTime? nextExecution, out Exception error)
         {
-            try
+            nextExecution = null;
+            error = null;
+
+            if (_errors.Count > 0)
             {
-                return ParseCronExpression(Cron).GetNextOccurrence(
-                    LastExecution ?? CreatedAt.AddSeconds(-1),
-                    TimeZone,
-                    inclusive: false);
+                error = _errors.Count == 1 ? _errors[0] : new AggregateException(_errors);
+                return false;
             }
-            catch (Exception)
-            {
-                return null;
-            }
+
+            nextExecution = GetNextExecution();
+            return true;
         }
 
         public bool IsChanged(out IReadOnlyDictionary<string, string> changedFields, out DateTime? nextExecution)
@@ -220,6 +220,21 @@ namespace Hangfire
             }
 
             return CronExpression.Parse(cronExpression, format);
+        }
+
+        private DateTime? GetNextExecution()
+        {
+            try
+            {
+                return ParseCronExpression(Cron).GetNextOccurrence(
+                    LastExecution ?? CreatedAt.AddSeconds(-1),
+                    TimeZone,
+                    inclusive: false);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }
