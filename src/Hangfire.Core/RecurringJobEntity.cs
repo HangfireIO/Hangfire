@@ -26,6 +26,7 @@ namespace Hangfire
 {
     internal class RecurringJobEntity
     {
+        private readonly IList<Exception> _errors = new List<Exception>();
         private readonly IDictionary<string, string> _recurringJob;
 
         public RecurringJobEntity(
@@ -45,9 +46,16 @@ namespace Hangfire
                 Queue = recurringJob["Queue"];
             }
 
-            TimeZone = recurringJob.ContainsKey("TimeZoneId") && !String.IsNullOrWhiteSpace(recurringJob["TimeZoneId"])
-                ? timeZoneResolver.GetTimeZoneById(recurringJob["TimeZoneId"])
-                : TimeZoneInfo.Utc;
+            try
+            {
+                TimeZone = recurringJob.ContainsKey("TimeZoneId") && !String.IsNullOrWhiteSpace(recurringJob["TimeZoneId"])
+                    ? timeZoneResolver.GetTimeZoneById(recurringJob["TimeZoneId"])
+                    : TimeZoneInfo.Utc;
+            }
+            catch (Exception ex)
+            {
+                _errors.Add(ex);
+            }
 
             if (recurringJob.ContainsKey("Cron") && !String.IsNullOrWhiteSpace(recurringJob["Cron"]))
             {
@@ -56,7 +64,14 @@ namespace Hangfire
 
             if (recurringJob.ContainsKey("Job") && !String.IsNullOrWhiteSpace(recurringJob["Job"]))
             {
-                Job = InvocationData.DeserializePayload(recurringJob["Job"]).DeserializeJob();
+                try
+                {
+                    Job = InvocationData.DeserializePayload(recurringJob["Job"]).DeserializeJob();
+                }
+                catch (Exception ex)
+                {
+                    _errors.Add(ex);
+                }
             }
 
             if (recurringJob.ContainsKey("LastJobId") && !String.IsNullOrWhiteSpace(recurringJob["LastJobId"]))
