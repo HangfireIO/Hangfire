@@ -29,6 +29,7 @@ namespace Hangfire.Core.Tests.Common
         private readonly string[] _arguments;
         private readonly Mock<JobActivator> _activator;
         private readonly Mock<IJobCancellationToken> _token;
+        private readonly PerformContextMock _performContext;
         
         public JobFacts()
         {
@@ -38,6 +39,7 @@ namespace Hangfire.Core.Tests.Common
 
             _activator = new Mock<JobActivator> { CallBase = true };
             _token = new Mock<IJobCancellationToken>();
+            _performContext = new PerformContextMock();
         }
 
         [Fact]
@@ -341,6 +343,39 @@ namespace Hangfire.Core.Tests.Common
                 () => Job.FromExpression(() => ExpressionMethod(() => Console.WriteLine("Hey expression!"))));
         }
 
+        public interface ISpecialArgs
+        {
+            void Method1(PerformContext context);
+
+            void Method2(IJobCancellationToken cancellationToken, int number);
+
+            Task Method3(string str, CancellationToken cancellationToken);
+        }
+
+        [Fact]
+        public void Ctor_IgnoresValue_ForSpecialType_PerformContext()
+        {
+            var job = Job.FromExpression<ISpecialArgs>(x => x.Method1(_performContext.Object));
+
+            Assert.Equal(new object[] { null }, job.Args);
+        }
+        
+        [Fact]
+        public void Ctor_IgnoresValue_ForSpecialType_IJobCancellationToken()
+        {
+            var job = Job.FromExpression<ISpecialArgs>(x => x.Method2(_token.Object, 123));
+
+            Assert.Equal(new object[] { null, 123 }, job.Args);
+        }
+
+        [Fact]
+        public void Ctor_IgnoresValue_ForSpecialType_CancellationToken()
+        {
+            var job = Job.FromExpression<ISpecialArgs>(x => x.Method3("123", CancellationToken.None));
+
+            Assert.Equal(new object[] { "123", null }, job.Args);
+        }
+        
         [Fact]
         public void Perform_ThrowsAnException_WhenActivatorIsNull()
         {

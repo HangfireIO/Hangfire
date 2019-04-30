@@ -24,6 +24,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using Hangfire.Common;
+using Hangfire.Server;
 
 namespace Hangfire.Dashboard
 {
@@ -31,6 +32,14 @@ namespace Hangfire.Dashboard
     {
         private static readonly int MaxArgumentToRenderSize = 4096;
 
+        private static readonly Dictionary<Type, string> Substitutions
+            = new Dictionary<Type, string>
+            {
+                { typeof (IJobCancellationToken), $"{WrapType(nameof(JobCancellationToken))}.Null" },
+                { typeof (CancellationToken),     $"{WrapType(nameof(CancellationToken))}.None" },
+                { typeof (PerformContext),        WrapKeyword("null") }
+            };
+        
         public static NonEscapedString Render(Job job)
         {
             if (job == null) { return new NonEscapedString("<em>Can not find the target method.</em>"); }
@@ -94,6 +103,13 @@ namespace Hangfire.Dashboard
             for (var i = 0; i < parameters.Length; i++)
             {
                 var parameter = parameters[i];
+
+                if (Substitutions.TryGetValue(parameter.ParameterType, out var substitution))
+                {
+                    renderedArguments.Add(substitution);
+                    continue;
+                }
+                
 #pragma warning disable 618
                 var arguments = job.Arguments;
 #pragma warning restore 618
