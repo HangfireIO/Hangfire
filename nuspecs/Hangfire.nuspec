@@ -21,24 +21,6 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade.
 
-1.7.2
-
-Hangfire.Core
-
-• Added – `DashboardOptions.TimeZoneResolver` property to handle custom time zone resolvers in Dashboard UI.
-• Fixed – `RecurringJob.AddOrUpdate` method is now able to update a broken recurring job.
-• Fixed – Recurring job scheduler now properly handles recurring jobs whose job method or time zone is wrong.
-• Fixed – Don't throw an exception on Recurring Jobs page when time zone can't be resolved.
-
-Hangfire.AspNetCore &amp; Hangfire.NetCore
-
-• Added – Automatically resolve `ITimeZoneResolver` service for the `DashboardOptions.TimeZoneResolver` property.
-• Fixed – Allow to resolve `IJobFilterProvider` service from the `AddHangfire` method.
-
-Hangfire.SqlServer
-
-• Fixed – Occasional "DataException: Error parsing column" error when using blocking fetch.
-
 1.7.1
 
 Hangfire.Core
