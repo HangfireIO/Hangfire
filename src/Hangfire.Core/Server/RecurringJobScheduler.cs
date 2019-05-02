@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
@@ -285,26 +284,20 @@ namespace Hangfire.Server
                     }
 
                     BackgroundJob backgroundJob = null;
-                    IReadOnlyDictionary<string, string> changedFields = null;
 
-                    if (recurringJob.TrySchedule(out var nextExecution, out var schedulingError))
+                    var nextExecution = recurringJob.GetNextExecution();
+
+                    if (nextExecution.HasValue && nextExecution <= now)
                     {
-                        if (nextExecution.HasValue && nextExecution <= now)
+                        backgroundJob = _factory.TriggerRecurringJob(context.Storage, connection, _profiler, recurringJob, now);
+
+                        if (String.IsNullOrEmpty(backgroundJob?.Id))
                         {
-                            backgroundJob = _factory.TriggerRecurringJob(context.Storage, connection, _profiler, recurringJob, now);
-
-                            if (String.IsNullOrEmpty(backgroundJob?.Id))
-                            {
-                                _logger.Debug($"Recurring job '{recurringJobId}' execution at '{nextExecution}' has been canceled.");
-                            }
+                            _logger.Debug($"Recurring job '{recurringJobId}' execution at '{nextExecution}' has been canceled.");
                         }
+                    }
 
-                        recurringJob.IsChanged(out changedFields, out nextExecution);
-                    }
-                    else
-                    {
-                        _logger.ErrorException($"Recurring job '{recurringJobId}' can't be scheduled due to an error.", schedulingError);
-                    }
+                    recurringJob.IsChanged(out var changedFields, out nextExecution);
 
                     // We always start a transaction, regardless our recurring job was updated or not,
                     // to prevent from infinite loop, when there's an old processing server (pre-1.7.0)

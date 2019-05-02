@@ -23,7 +23,8 @@ namespace Hangfire.Core.Tests
                     Storage.Object,
                     Connection.Object,
                     Job,
-                    InitialState.Object));
+                    InitialState.Object,
+                    null));
         }
 
         public Mock<JobStorage> Storage { get; set; }

@@ -73,13 +73,14 @@ namespace Hangfire
         public static void UpdateRecurringJob(
             [NotNull] this IWriteOnlyTransaction transaction,
             [NotNull] string recurringJobId,
-            [CanBeNull] IReadOnlyDictionary<string, string> changedFields,
+            [NotNull] IReadOnlyDictionary<string, string> changedFields,
             [CanBeNull] DateTime? nextExecution)
         {
             if (transaction == null) throw new ArgumentNullException(nameof(transaction));
             if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
+            if (changedFields == null) throw new ArgumentNullException(nameof(changedFields));
 
-            if (changedFields != null && changedFields.Count > 0)
+            if (changedFields.Count > 0)
             {
                 transaction.SetRangeInHash($"recurring-job:{recurringJobId}", changedFields);
             }
@@ -103,8 +104,10 @@ namespace Hangfire
             if (connection == null) throw new ArgumentNullException(nameof(connection));
             if (profiler == null) throw new ArgumentNullException(nameof(profiler));
             if (recurringJob == null) throw new ArgumentNullException(nameof(recurringJob));
-
-            var context = new CreateContext(storage, connection, recurringJob.Job, null, profiler);
+            
+            var initialParams = SerializationHelper.Deserialize<IDictionary<string, object>>(recurringJob.InitialParams);
+            
+            var context = new CreateContext(storage, connection, recurringJob.Job, null, profiler, initialParams);
             context.Parameters["RecurringJobId"] = recurringJob.RecurringJobId;
             context.Parameters["Time"] = JobHelper.ToTimestamp(now);
 

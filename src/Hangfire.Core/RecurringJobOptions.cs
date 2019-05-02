@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.States;
 
@@ -53,5 +54,8 @@ namespace Hangfire
                 _queueName = value;
             }
         }
+
+        [CanBeNull]
+        public IDictionary<string, object> InitialParams { get; internal set; }
     }
 }
