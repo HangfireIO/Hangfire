@@ -90,7 +90,31 @@ namespace Hangfire
         {
             var client = ClientFactory();
             return client.Enqueue(methodCall, @params);
+<<<<<<< HEAD
+=======
         }
+
+        /// <summary>
+        /// Creates a new fire-and-forget job based on a given method call expression.
+        /// </summary>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="params">initial parameters passed by default in creationcontext</param>
+        /// <returns>Unique identifier of a background job.</returns>
+        /// 
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="methodCall"/> is <see langword="null"/>.
+        /// </exception>
+        /// 
+        /// <seealso cref="EnqueuedState"/>
+        /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
+        public static string Enqueue([NotNull, InstantHandle] Expression<Func<Task>> methodCall,
+            IDictionary<string, object> @params = null)
+        {
+            var client = ClientFactory();
+            return client.Enqueue(methodCall, @params);
+>>>>>>> f904bd228439590cad35f3d297c7259e2ab0c972
+        }
+
 
         /// <summary>
         /// Creates a new fire-and-forget job based on a given method call expression.
@@ -116,6 +140,7 @@ namespace Hangfire
         /// Creates a new fire-and-forget job based on a given method call expression.
         /// </summary>
         /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="params">initial parameters passed by default in creationcontext</param>
         /// <returns>Unique identifier of a background job.</returns>
         /// 
         /// <exception cref="ArgumentNullException">
@@ -124,10 +149,11 @@ namespace Hangfire
         /// 
         /// <seealso cref="EnqueuedState"/>
         /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
-        public static string Enqueue<T>([NotNull, InstantHandle] Expression<Func<T, Task>> methodCall)
+        public static string Enqueue<T>([NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
+            IDictionary<string, object> @params = null)
         {
             var client = ClientFactory();
-            return client.Enqueue(methodCall);
+            return client.Enqueue(methodCall, @params);
         }
 
         /// <summary>

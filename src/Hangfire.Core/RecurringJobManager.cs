@@ -106,8 +106,16 @@ namespace Hangfire
 
                 var job = JobHelper.FromJson<InvocationData>(hash["Job"]).Deserialize();
                 IDictionary<string, object> initialParams = null;
+<<<<<<< HEAD
                 if (hash.ContainsKey("") && !string.IsNullOrEmpty(hash["InitialParams"]))
                     initialParams = JobHelper.FromJson<IDictionary<string, object>>(hash["InitialParams"]);
+=======
+                if (hash.ContainsKey("InitialParams") && !string.IsNullOrEmpty(hash["InitialParams"]))
+                {
+                    initialParams = JobHelper.FromJson<IDictionary<string, object>>(hash["InitialParams"]);
+                }
+
+>>>>>>> f904bd228439590cad35f3d297c7259e2ab0c972
                 var state = new EnqueuedState { Reason = "Triggered using recurring job manager" };
 
                 if (hash.ContainsKey("Queue"))
@@ -115,7 +123,13 @@ namespace Hangfire
                     state.Queue = hash["Queue"];
                 }
 
+<<<<<<< HEAD
                 _factory.Create(new CreateContext(_storage, connection, job, state, initialParams));
+=======
+                var context = new CreateContext(_storage, connection, job, state, initialParams);
+                context.Parameters["RecurringJobId"] = recurringJobId;
+                _factory.Create(context);
+>>>>>>> f904bd228439590cad35f3d297c7259e2ab0c972
             }
         }
 

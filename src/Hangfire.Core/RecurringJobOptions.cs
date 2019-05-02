@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire.
+// This file is part of Hangfire.
 // Copyright © 2016 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify

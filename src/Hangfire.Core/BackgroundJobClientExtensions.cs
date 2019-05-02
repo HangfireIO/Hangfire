@@ -492,6 +492,7 @@ namespace Hangfire
             [NotNull] string parentId,
             [NotNull, InstantHandle] Expression<Action> methodCall,
             IDictionary<string, object> items = null)
+<<<<<<< HEAD
         {
             return ContinueWith(client, parentId, methodCall, new EnqueuedState(), items);
         }
@@ -511,6 +512,10 @@ namespace Hangfire
             [NotNull, InstantHandle] Expression<Action> methodCall)
         {
             return ContinueJobWith(client, parentId, methodCall, new EnqueuedState());
+=======
+        {
+            return ContinueWith(client, parentId, methodCall, new EnqueuedState(), items);
+>>>>>>> f904bd228439590cad35f3d297c7259e2ab0c972
         }
 
         /// <summary>
@@ -520,6 +525,7 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="parentId">Identifier of a background job to wait completion for.</param>
         /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="items">initial parameters passed by default in creation context</param>
         /// <returns>Unique identifier of a created job.</returns>
         [Obsolete("Deprecated for clarity, please use ContinueJobWith method with the same arguments. Will be removed in 2.0.0.")]
         public static string ContinueWith<T>(
@@ -635,6 +641,7 @@ namespace Hangfire
             [NotNull] IState nextState,
             JobContinuationOptions options,
             IDictionary<string, object> items = null)
+<<<<<<< HEAD
         {
             return ContinueJobWith(client, parentId, methodCall, nextState, options);
         }
@@ -654,6 +661,8 @@ namespace Hangfire
             [InstantHandle] Expression<Action> methodCall,
             [NotNull] IState nextState,
             JobContinuationOptions options)
+=======
+>>>>>>> f904bd228439590cad35f3d297c7259e2ab0c972
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
@@ -681,6 +690,7 @@ namespace Hangfire
             [CanBeNull] IState nextState = null,
             JobContinuationOptions options = JobContinuationOptions.OnlyOnSucceededState,
             IDictionary<string, object> items = null)
+<<<<<<< HEAD
         {
             return ContinueJobWith(client, parentId, methodCall, nextState, options);
         }
@@ -702,6 +712,8 @@ namespace Hangfire
             [InstantHandle] Expression<Func<Task>> methodCall,
             [CanBeNull] IState nextState = null,
             JobContinuationOptions options = JobContinuationOptions.OnlyOnSucceededState)
+=======
+>>>>>>> f904bd228439590cad35f3d297c7259e2ab0c972
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
@@ -727,6 +739,7 @@ namespace Hangfire
             [NotNull] IState nextState,
             JobContinuationOptions options,
             IDictionary<string, object> items = null)
+<<<<<<< HEAD
         {
             return ContinueJobWith(client, parentId, methodCall, nextState, options);
         }
@@ -746,6 +759,8 @@ namespace Hangfire
             [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             [NotNull] IState nextState,
             JobContinuationOptions options)
+=======
+>>>>>>> f904bd228439590cad35f3d297c7259e2ab0c972
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
@@ -773,6 +788,7 @@ namespace Hangfire
             [CanBeNull] IState nextState = null,
             JobContinuationOptions options = JobContinuationOptions.OnlyOnSucceededState,
             IDictionary<string, object> items = null)
+<<<<<<< HEAD
         {
             return ContinueJobWith(client, parentId, methodCall, nextState, options);
         }
@@ -794,6 +810,8 @@ namespace Hangfire
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             [CanBeNull] IState nextState = null,
             JobContinuationOptions options = JobContinuationOptions.OnlyOnSucceededState)
+=======
+>>>>>>> f904bd228439590cad35f3d297c7259e2ab0c972
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 

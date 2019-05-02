@@ -64,7 +64,11 @@ namespace Hangfire.Server
     public class RecurringJobScheduler : IBackgroundProcess
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
+<<<<<<< HEAD
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+=======
+        private static readonly ILog Logger = LogProvider.For<RecurringJobScheduler>();
+>>>>>>> f904bd228439590cad35f3d297c7259e2ab0c972
 
         private readonly IBackgroundJobFactory _factory;
         private readonly Func<DateTime> _nowFactory;
@@ -189,7 +193,11 @@ namespace Hangfire.Server
         {
             var serializedJob = JobHelper.FromJson<InvocationData>(recurringJob["Job"]);
             IDictionary<string, object> initialParams = null;
+<<<<<<< HEAD
             if (recurringJob.ContainsKey("") && !string.IsNullOrEmpty(recurringJob["InitialParams"]))
+=======
+            if (recurringJob.ContainsKey("InitialParams") && !string.IsNullOrEmpty(recurringJob["InitialParams"]))
+>>>>>>> f904bd228439590cad35f3d297c7259e2ab0c972
                 initialParams = JobHelper.FromJson<IDictionary<string, object>>(recurringJob["InitialParams"]);
             var job = serializedJob.Deserialize();
             var cron = recurringJob["Cron"];
@@ -246,6 +254,7 @@ namespace Hangfire.Server
                         return false;
                     }
 
+<<<<<<< HEAD
                     // If a recurring job has the "V" field, then it was created by a newer
                     // version. Despite we can handle 1.7.0-based recurring jobs just fine,
                     // future versions may introduce new features anyway, so it's safer to
@@ -256,6 +265,12 @@ namespace Hangfire.Server
                     }
 
                     var backgroundJob = _factory.Create(new CreateContext(storage, connection, job, state, initialParams));
+=======
+                    var context = new CreateContext(storage, connection, job, state, initialParams);
+                    context.Parameters["RecurringJobId"] = recurringJobId;
+                    var backgroundJob = _factory.Create(context);
+
+>>>>>>> f904bd228439590cad35f3d297c7259e2ab0c972
                     var jobId = backgroundJob?.Id;
 
                     if (nextExecution.HasValue && nextExecution <= now)
@@ -298,6 +313,21 @@ namespace Hangfire.Server
                 // Fixing old recurring jobs that doesn't have the CreatedAt field
                 if (!recurringJob.ContainsKey("CreatedAt"))
                 {
+<<<<<<< HEAD
+=======
+                    changedFields.Add("CreatedAt", JobHelper.SerializeDateTime(nowInstant.NowInstant));
+                }
+
+                changedFields.Add("NextExecution", nowInstant.NextInstant.HasValue ? JobHelper.SerializeDateTime(nowInstant.NextInstant.Value) : null);
+
+                connection.SetRangeInHash(
+                    $"recurring-job:{recurringJobId}",
+                    changedFields);
+            }
+#if NETFULL
+            catch (TimeZoneNotFoundException ex)
+            {
+>>>>>>> f904bd228439590cad35f3d297c7259e2ab0c972
 #else
                 catch (Exception ex)
                 {

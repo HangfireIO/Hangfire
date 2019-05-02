@@ -29,7 +29,11 @@ namespace Hangfire.Client
     /// </summary>
     public class CreateContext
     {
+<<<<<<< HEAD
         internal CreateContext([NotNull] CreateContext context)
+=======
+        public CreateContext([NotNull] CreateContext context)
+>>>>>>> f904bd228439590cad35f3d297c7259e2ab0c972
             : this(context.Storage, context.Connection, context.Job, context.InitialState, context.Parameters)
         {
             Items = context.Items;
