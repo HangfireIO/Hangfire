@@ -14,9 +14,6 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
-1.7.2
-• Fixed – Occasional "DataException: Error parsing column" error when using blocking fetch.
-
 1.7.1
 • Changed – Use blocking fetch implementation only for sub-second polling intervals.
 • Fixed – Don't fail with an exception when can't connect to MSSQL instance during start-up.

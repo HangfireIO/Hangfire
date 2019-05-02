@@ -14,10 +14,6 @@
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
-1.7.2
-• Added – Automatically resolve `ITimeZoneResolver` service for the `DashboardOptions.TimeZoneResolver` property.
-• Fixed – Allow to resolve `IJobFilterProvider` service from the `AddHangfire` method.
-
 1.7.0
 • Added – Full .NET Core 2.0 support by explicitly targeting .NET Standard 2.0.
 • Added – An overloaded AddHangfire method with `IServiceProvider` parameter (by @ericgreenmix and @denis-ivanov).
