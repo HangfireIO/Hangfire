@@ -15,7 +15,6 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.States;
@@ -28,10 +27,19 @@ namespace Hangfire
             [NotNull] this IRecurringJobManager manager,
             [NotNull] string recurringJobId,
             [NotNull] Job job,
-            [NotNull] string cronExpression,
-            IDictionary<string, object> initialParams)
+            [NotNull] string cronExpression)
         {
-            AddOrUpdate(manager, recurringJobId, job, cronExpression, TimeZoneInfo.Utc, initialParams);
+            AddOrUpdate(manager, recurringJobId, job, cronExpression, TimeZoneInfo.Utc);
+        }
+
+        public static void AddOrUpdate(
+            [NotNull] this IRecurringJobManager manager,
+            [NotNull] string recurringJobId,
+            [NotNull] Job job,
+            [NotNull] string cronExpression,
+            [NotNull] TimeZoneInfo timeZone)
+        {
+            AddOrUpdate(manager, recurringJobId, job, cronExpression, timeZone, EnqueuedState.DefaultQueue);
         }
 
         public static void AddOrUpdate(
@@ -40,19 +48,7 @@ namespace Hangfire
             [NotNull] Job job,
             [NotNull] string cronExpression,
             [NotNull] TimeZoneInfo timeZone,
-            IDictionary<string, object> initialParams)
-        {
-            AddOrUpdate(manager, recurringJobId, job, cronExpression, timeZone, EnqueuedState.DefaultQueue, initialParams);
-        }
-
-        public static void AddOrUpdate(
-            [NotNull] this IRecurringJobManager manager,
-            [NotNull] string recurringJobId,
-            [NotNull] Job job,
-            [NotNull] string cronExpression,
-            [NotNull] TimeZoneInfo timeZone,
-            [NotNull] string queue,
-            IDictionary<string, object> initialParams)
+            [NotNull] string queue)
         {
             if (manager == null) throw new ArgumentNullException(nameof(manager));
             if (timeZone == null) throw new ArgumentNullException(nameof(timeZone));
@@ -62,7 +58,7 @@ namespace Hangfire
                 recurringJobId,
                 job,
                 cronExpression,
-                new RecurringJobOptions { QueueName = queue, TimeZone = timeZone, InitialParams = initialParams });
+                new RecurringJobOptions { QueueName = queue, TimeZone = timeZone });
         }
     }
 }

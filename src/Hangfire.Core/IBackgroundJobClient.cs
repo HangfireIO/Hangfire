@@ -15,7 +15,6 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
@@ -40,7 +39,6 @@ namespace Hangfire
         /// 
         /// <param name="job">Job that should be processed in background.</param>
         /// <param name="state">Initial state for a background job.</param>
-        /// <param name="params">initial parameters passed by default in creationcontext</param>
         /// <returns>Unique identifier of a created background job <i>-or-</i> 
         ///  <see langword="null"/>, if it was not created.</returns>
         /// 
@@ -65,8 +63,7 @@ namespace Hangfire
         /// election filters.</para>
         /// </remarks>
         [CanBeNull]
-        string Create([NotNull] Job job, [NotNull] IState state,
-            IDictionary<string, object> @params);
+        string Create([NotNull] Job job, [NotNull] IState state);
 
         /// <summary>
         /// Attempts to change a state of a background job with a given

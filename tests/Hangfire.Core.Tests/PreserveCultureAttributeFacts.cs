@@ -26,7 +26,7 @@ namespace Hangfire.Core.Tests
             var state = new Mock<IState>();
 
             var createContext = new CreateContext(
-                storage.Object, _connection.Object, backgroundJob.Job, state.Object, null);
+                storage.Object, _connection.Object, backgroundJob.Job, state.Object);
             _creatingContext = new CreatingContext(createContext);
 
             var performContext = new PerformContext(

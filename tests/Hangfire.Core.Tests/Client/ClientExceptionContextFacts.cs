@@ -20,7 +20,7 @@ namespace Hangfire.Core.Tests.Client
             var state = new Mock<IState>();
 
             _createContext = new CreateContext(
-                storage.Object, connection.Object, job, state.Object, null);
+                storage.Object, connection.Object, job, state.Object);
         }
 
         [Fact]

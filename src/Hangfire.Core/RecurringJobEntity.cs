@@ -26,6 +26,7 @@ namespace Hangfire
 {
     internal class RecurringJobEntity
     {
+        private readonly IList<Exception> _errors = new List<Exception>();
         private readonly IDictionary<string, string> _recurringJob;
 
         public RecurringJobEntity(
@@ -45,9 +46,16 @@ namespace Hangfire
                 Queue = recurringJob["Queue"];
             }
 
-            TimeZone = recurringJob.ContainsKey("TimeZoneId") && !String.IsNullOrWhiteSpace(recurringJob["TimeZoneId"])
-                ? timeZoneResolver.GetTimeZoneById(recurringJob["TimeZoneId"])
-                : TimeZoneInfo.Utc;
+            try
+            {
+                TimeZone = recurringJob.ContainsKey("TimeZoneId") && !String.IsNullOrWhiteSpace(recurringJob["TimeZoneId"])
+                    ? timeZoneResolver.GetTimeZoneById(recurringJob["TimeZoneId"])
+                    : TimeZoneInfo.Utc;
+            }
+            catch (Exception ex)
+            {
+                _errors.Add(ex);
+            }
 
             if (recurringJob.ContainsKey("Cron") && !String.IsNullOrWhiteSpace(recurringJob["Cron"]))
             {
@@ -56,7 +64,14 @@ namespace Hangfire
 
             if (recurringJob.ContainsKey("Job") && !String.IsNullOrWhiteSpace(recurringJob["Job"]))
             {
-                Job = InvocationData.DeserializePayload(recurringJob["Job"]).DeserializeJob();
+                try
+                {
+                    Job = InvocationData.DeserializePayload(recurringJob["Job"]).DeserializeJob();
+                }
+                catch (Exception ex)
+                {
+                    _errors.Add(ex);
+                }
             }
 
             if (recurringJob.ContainsKey("LastJobId") && !String.IsNullOrWhiteSpace(recurringJob["LastJobId"]))
@@ -103,19 +118,19 @@ namespace Hangfire
         public string LastJobId { get; set; }
         public int? Version { get; set; }
 
-        public DateTime? GetNextExecution()
+        public bool TrySchedule(out DateTime? nextExecution, out Exception error)
         {
-            try
+            nextExecution = null;
+            error = null;
+
+            if (_errors.Count > 0)
             {
-                return ParseCronExpression(Cron).GetNextOccurrence(
-                    LastExecution ?? CreatedAt.AddSeconds(-1),
-                    TimeZone,
-                    inclusive: false);
+                error = _errors.Count == 1 ? _errors[0] : new AggregateException(_errors);
+                return false;
             }
-            catch (Exception)
-            {
-                return null;
-            }
+
+            nextExecution = GetNextExecution();
+            return true;
         }
 
         public bool IsChanged(out IReadOnlyDictionary<string, string> changedFields, out DateTime? nextExecution)
@@ -205,6 +220,21 @@ namespace Hangfire
             }
 
             return CronExpression.Parse(cronExpression, format);
+        }
+
+        private DateTime? GetNextExecution()
+        {
+            try
+            {
+                return ParseCronExpression(Cron).GetNextOccurrence(
+                    LastExecution ?? CreatedAt.AddSeconds(-1),
+                    TimeZone,
+                    inclusive: false);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }

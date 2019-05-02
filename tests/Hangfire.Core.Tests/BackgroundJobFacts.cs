@@ -24,7 +24,7 @@ namespace Hangfire.Core.Tests
 
             BackgroundJob.Enqueue(() => Method());
 
-            _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>(), null));
+            _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>()));
         }
 
         [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
@@ -34,7 +34,7 @@ namespace Hangfire.Core.Tests
 
             BackgroundJob.Enqueue<BackgroundJobFacts>(x => x.Method());
 
-            _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>(), null));
+            _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>()));
         }
 
         [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
@@ -46,7 +46,7 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow), null));
+                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow)));
         }
 
         [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
@@ -58,7 +58,7 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.IsNotNull<ScheduledState>(), null));
+                It.IsNotNull<ScheduledState>()));
         }
 
         [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
@@ -70,7 +70,7 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow), null));
+                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow)));
         }
 
         [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
@@ -82,7 +82,7 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.IsNotNull<ScheduledState>(), null));
+                It.IsNotNull<ScheduledState>()));
         }
 
         [Fact, GlobalLock]

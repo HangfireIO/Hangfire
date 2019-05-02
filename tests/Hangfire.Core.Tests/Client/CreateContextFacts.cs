@@ -30,7 +30,7 @@ namespace Hangfire.Core.Tests.Client
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new CreateContext(null, _connection.Object, _job, _state.Object, null));
+                () => new CreateContext(null, _connection.Object, _job, _state.Object));
 
             Assert.Equal("storage", exception.ParamName);
         }
@@ -39,7 +39,7 @@ namespace Hangfire.Core.Tests.Client
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new CreateContext(_storage.Object, null, _job, _state.Object, null));
+                () => new CreateContext(_storage.Object, null, _job, _state.Object));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -48,7 +48,7 @@ namespace Hangfire.Core.Tests.Client
         public void Ctor_ThrowsAnException_WhenJobIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new CreateContext(_storage.Object, _connection.Object, null, _state.Object, null));
+                () => new CreateContext(_storage.Object, _connection.Object, null, _state.Object));
 
             Assert.Equal("job", exception.ParamName);
         }
@@ -56,12 +56,8 @@ namespace Hangfire.Core.Tests.Client
         [Fact]
         public void Ctor_DoesNotThrowAnException_WhenStateIsNull()
         {
-<<<<<<< HEAD
-            Assert.DoesNotThrow(() => new CreateContext(_storage.Object, _connection.Object, _job, null, null));
-=======
             // Does not throw
-            new CreateContext(_storage.Object, _connection.Object, _job, null, null);
->>>>>>> f904bd228439590cad35f3d297c7259e2ab0c972
+            new CreateContext(_storage.Object, _connection.Object, _job, null);
         }
 
         [Fact]
@@ -94,7 +90,7 @@ namespace Hangfire.Core.Tests.Client
 
         private CreateContext CreateContext()
         {
-            return new CreateContext(_storage.Object, _connection.Object, _job, _state.Object, null);
+            return new CreateContext(_storage.Object, _connection.Object, _job, _state.Object);
         }
     }
 }

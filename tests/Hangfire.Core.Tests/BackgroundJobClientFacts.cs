@@ -27,7 +27,7 @@ namespace Hangfire.Core.Tests
             _storage.Setup(x => x.GetConnection()).Returns(connection.Object);
 
             _stateChanger = new Mock<IBackgroundJobStateChanger>();
-
+            
             _state = new Mock<IState>();
             _state.Setup(x => x.Name).Returns("Mock");
             _job = Job.FromExpression(() => Method());
@@ -79,7 +79,7 @@ namespace Hangfire.Core.Tests
             var client = CreateClient();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => client.Create((Job)null, _state.Object, null));
+                () => client.Create(null, _state.Object));
 
             Assert.Equal("job", exception.ParamName);
         }
@@ -90,7 +90,7 @@ namespace Hangfire.Core.Tests
             var client = CreateClient();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => client.Create(_job, null, null));
+                () => client.Create(_job, null));
 
             Assert.Equal("state", exception.ParamName);
         }
@@ -100,7 +100,7 @@ namespace Hangfire.Core.Tests
         {
             var client = CreateClient();
 
-            client.Create(_job, _state.Object, null);
+            client.Create(_job, _state.Object);
 
             _factory.Verify(x => x.Create(It.IsNotNull<CreateContext>()));
         }
@@ -110,7 +110,7 @@ namespace Hangfire.Core.Tests
         {
             var client = CreateClient();
 
-            var id = client.Create(_job, _state.Object, null);
+            var id = client.Create(_job, _state.Object);
 
             Assert.Equal("some-job", id);
         }
@@ -123,7 +123,7 @@ namespace Hangfire.Core.Tests
                 .Throws<InvalidOperationException>();
 
             var exception = Assert.Throws<BackgroundJobClientException>(
-                () => client.Create(_job, _state.Object, null));
+                () => client.Create(_job, _state.Object));
 
             Assert.NotNull(exception.InnerException);
             Assert.IsType<InvalidOperationException>(exception.InnerException);

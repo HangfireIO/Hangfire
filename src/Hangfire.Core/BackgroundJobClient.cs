@@ -15,7 +15,6 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
@@ -118,8 +117,7 @@ namespace Hangfire
         }
 
         /// <inheritdoc />
-        public string Create(Job job, IState state,
-            IDictionary<string, object> items)
+        public string Create(Job job, IState state)
         {
             if (job == null) throw new ArgumentNullException(nameof(job));
             if (state == null) throw new ArgumentNullException(nameof(state));
@@ -128,7 +126,7 @@ namespace Hangfire
             {
                 using (var connection = _storage.GetConnection())
                 {
-                    var context = new CreateContext(_storage, connection, job, state, items);
+                    var context = new CreateContext(_storage, connection, job, state);
                     var backroundJob = _factory.Create(context);
 
                     return backroundJob?.Id;

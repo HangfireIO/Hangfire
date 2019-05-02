@@ -71,7 +71,7 @@ namespace Hangfire.Core.Tests.Client
             var job = Job.FromExpression(() => TestMethod());
             var state = new Mock<IState>();
             
-            var createContext = new CreateContext(storage.Object, connection.Object, job, state.Object, null);
+            var createContext = new CreateContext(storage.Object, connection.Object, job, state.Object);
             return new CreatedContext(createContext, _backgroundJob.Object, true, _exception);
         }
     }

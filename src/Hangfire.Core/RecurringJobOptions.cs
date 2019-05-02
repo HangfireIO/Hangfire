@@ -1,4 +1,4 @@
-// This file is part of Hangfire.
+﻿// This file is part of Hangfire.
 // Copyright © 2016 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
@@ -15,7 +15,6 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.States;
 
@@ -50,12 +49,9 @@ namespace Hangfire
             get { return _queueName; }
             set
             {
-                if (value == null) throw new ArgumentNullException(nameof(value));
-
+                EnqueuedState.ValidateQueueName(nameof(value), value);
                 _queueName = value;
             }
         }
-
-        public IDictionary<string, object> InitialParams { get; internal set; }
     }
 }
