@@ -48,23 +48,23 @@ namespace Hangfire
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
             // ===== Configurable services =====
+
             services.TryAddSingletonChecked(_ => JobStorage.Current);
             services.TryAddSingletonChecked(_ => JobActivator.Current);
             services.TryAddSingletonChecked(_ => DashboardRoutes.Routes);
             services.TryAddSingletonChecked<IJobFilterProvider>(_ => JobFilterProviders.Providers);
 
 
-            // ===== Internal services =====		
+            // ===== Internal services =====
 
-            // NOTE: these are not required to be checked, because they only depend on already checked configurables,		
-            //       are not accessed directly, and can't be affected by customizations made from configuration block.		
+            // NOTE: these are not required to be checked, because they only depend on already checked configurables,
+            //       are not accessed directly, and can't be affected by customizations made from configuration block.
 
             services.TryAddSingleton<ITimeZoneResolver>(x => new DefaultTimeZoneResolver());
 
-            // ===== Client services =====		
+            // ===== Client services =====
 
-
-            // NOTE: these, on the other hand, need to be double-checked to be sure configuration block was executed, 		            services.TryAddSingleton(_ => DashboardRoutes.Routes);
+            // NOTE: these, on the other hand, need to be double-checked to be sure configuration block was executed,
             //       in case of a client-only scenario with all configurables above replaced with custom implementations.
 
 
