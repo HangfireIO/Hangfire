@@ -107,7 +107,7 @@ namespace Hangfire
                 recurringJob.Cron = cronExpression;
                 recurringJob.TimeZone = options.TimeZone;
                 recurringJob.Queue = options.QueueName;
-                recurringJob.InitialParams = SerializationHelper.Serialize(options.InitialParams);
+                recurringJob.InitialParams = SerializationHelper.Serialize(options.InitialParams, SerializationOption.User);
 
                 if (recurringJob.IsChanged(out var changedFields, out var nextExecution))
                 {
