@@ -64,9 +64,8 @@ namespace Hangfire
 
             // ===== Client services =====
 
-            // NOTE: these, on the other hand, need to be double-checked to be sure configuration block was executed,
+            // NOTE: these, on the other hand, need to be double-checked to be sure configuration block was executed, 
             //       in case of a client-only scenario with all configurables above replaced with custom implementations.
-
 
             services.TryAddSingletonChecked<IBackgroundJobClient>(x =>
             {
