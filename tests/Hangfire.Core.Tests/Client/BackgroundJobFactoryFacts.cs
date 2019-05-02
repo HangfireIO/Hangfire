@@ -29,7 +29,7 @@ namespace Hangfire.Core.Tests.Client
             var state = new Mock<IState>();
             _backgroundJob = new BackgroundJobMock();
 
-            _context = new Mock<CreateContext>(storage.Object, connection.Object, _backgroundJob.Job, state.Object)
+            _context = new Mock<CreateContext>(storage.Object, connection.Object, _backgroundJob.Job, state.Object, null)
             {
                 CallBase = true
             };

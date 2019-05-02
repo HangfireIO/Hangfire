@@ -119,7 +119,7 @@ namespace Hangfire.Core.Tests
             var manager = CreateManager();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => manager.AddOrUpdate(_id, _job, Cron.Daily(), TimeZoneInfo.Local, null));
+                () => manager.AddOrUpdate(_id, _job, Cron.Daily(), TimeZoneInfo.Local, null, null));
 
             Assert.Equal("queue", exception.ParamName);
         }
@@ -185,7 +185,7 @@ namespace Hangfire.Core.Tests
             var manager = CreateManager();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => manager.AddOrUpdate(_id, _job, _cronExpression, TimeZoneInfo.Utc, null));
+                () => manager.AddOrUpdate(_id, _job, _cronExpression, TimeZoneInfo.Utc, null, null));
 
             Assert.Equal("queue", exception.ParamName);
         }
