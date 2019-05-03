@@ -146,7 +146,6 @@ namespace Hangfire.Common
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
             if (value == null) return null;
-            if (string.Equals(value, "default", StringComparison.OrdinalIgnoreCase)) return null;
 
             Exception exception = null;
 
@@ -193,7 +192,6 @@ namespace Hangfire.Common
         public static T Deserialize<T>([CanBeNull] string value)
         {
             if (value == null) return default(T);
-            if (string.Equals(value, "default", StringComparison.OrdinalIgnoreCase)) return default(T);
             return Deserialize<T>(value, SerializationOption.Internal);
         }
 
@@ -207,7 +205,6 @@ namespace Hangfire.Common
         public static T Deserialize<T>([CanBeNull] string value, SerializationOption option)
         {
             if (value == null) return default(T);
-            if (string.Equals(value, "default", StringComparison.OrdinalIgnoreCase)) return default(T);
             return (T) Deserialize(value, typeof(T), option);
         }
 
