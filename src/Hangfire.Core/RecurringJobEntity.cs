@@ -141,7 +141,7 @@ namespace Hangfire
 
             if ((_recurringJob.ContainsKey("InitialParams") ? _recurringJob["InitialParams"] : null) != InitialParams)
             {
-                result.Add("InitialParams", Queue);
+                result.Add("InitialParams", InitialParams);
             }
 
             if ((_recurringJob.ContainsKey("Cron") ? _recurringJob["Cron"] : null) != Cron)
