@@ -363,6 +363,33 @@ namespace Hangfire.Common
                 GetExpressionValues(callExpression.Arguments));
         }
 
+        /// <summary>
+        ///     Gets a new instance of the <see cref="Job" /> class using Reflection-based types
+        ///     given the <paramref name="methodCall" /> with explicit
+        ///     type specification.
+        /// </summary>
+        /// <param name="methodCall"><see cref="MethodInfo" /> to invoke</param>
+        /// <param name="explicitType"><see cref="Type" /> to instantiate prior to invocation</param>
+        /// <param name="parameters">Parameters to pass into <paramref name="methodCall" /> when invoking it. If no parameters, must be an empty array.</param>
+        /// <returns>The <see cref="Job" /> instance built from the parameters</returns>
+        public static Job FromReflection(
+            [NotNull, InstantHandle] MethodInfo methodCall,
+            [CanBeNull] Type explicitType,
+            [NotNull] Object[] parameters)
+        {
+            if (methodCall == null)
+                throw new ArgumentNullException(nameof(methodCall));
+
+            var type = explicitType ?? methodCall.DeclaringType;
+            var method = methodCall;
+
+            return new Job(
+                // ReSharper disable once AssignNullToNotNullAttribute
+                type,
+                method,
+                parameters);
+        }
+
         private static void Validate(
             Type type, 
             [InvokerParameterName] string typeParameterName,

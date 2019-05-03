@@ -16,6 +16,7 @@
 
 using System;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.States;
@@ -107,6 +108,28 @@ namespace Hangfire
             return client.Enqueue(methodCall);
         }
 
+        /// <summary>Creates a new fire-and-forget job based on a given method call expression.</summary>
+        /// <param name="methodCall"><see cref="MethodInfo" /> that will be marshalled to the Server.</param>
+        /// <param name="explicitType"><see cref="Type" /> to instantiate prior to invocation</param>
+        /// <param name="parameters">Parameters to pass into <paramref name="methodCall" /> when invoking it. If no parameters, must be an empty array.</param>
+        /// <returns>Unique identifier of a background job.</returns>
+        /// 
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="methodCall" /> is <see langword="null"/>.
+        /// <paramref name="parameters" /> is <see langword="null"/>.
+        /// </exception>
+        /// 
+        /// <seealso cref="EnqueuedState"/>
+        /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
+        public static string Enqueue(
+            [NotNull, InstantHandle] MethodInfo methodCall,
+            [CanBeNull, InstantHandle] Type explicitType,
+            [NotNull, InstantHandle] Object[] parameters)
+        {
+            var client = ClientFactory();
+            return client.Enqueue(methodCall, explicitType, parameters);
+        }
+
         /// <summary>
         /// Creates a new fire-and-forget job based on a given method call expression.
         /// </summary>
@@ -176,6 +199,26 @@ namespace Hangfire
         }
 
         /// <summary>
+        /// Creates a new background job based on a specified method
+        /// call expression and schedules it to be enqueued after a given delay.
+        /// </summary>
+        /// 
+        /// <param name="methodCall"><see cref="MethodInfo" /> that will be marshalled to the Server.</param>
+        /// <param name="explicitType"><see cref="Type" /> to instantiate prior to invocation</param>
+        /// <param name="parameters">Parameters to pass into <paramref name="methodCall" /> when invoking it. If no parameters, must be an empty array.</param>
+        /// <param name="delay">Delay, after which the job will be enqueued.</param>
+        /// <returns>Unique identifier of the created job.</returns>
+        public static string Schedule(
+            [NotNull, InstantHandle] MethodInfo methodCall,
+            [CanBeNull, InstantHandle] Type explicitType,
+            [NotNull, InstantHandle] Object[] parameters,
+            TimeSpan delay)
+        {
+            var client = ClientFactory();
+            return client.Schedule(methodCall, explicitType, parameters, delay);
+        }
+
+        /// <summary>
         /// Creates a new background job based on a specified method call expression
         /// and schedules it to be enqueued at the given moment of time.
         /// </summary>
@@ -205,6 +248,26 @@ namespace Hangfire
         {
             var client = ClientFactory();
             return client.Schedule(methodCall, enqueueAt);
+        }
+
+        /// <summary>
+        /// Creates a new background job based on a specified method call expression
+        /// and schedules it to be enqueued at the given moment of time.
+        /// </summary>
+        /// 
+        /// <param name="methodCall"><see cref="MethodInfo" /> that will be marshalled to the Server.</param>
+        /// <param name="explicitType"><see cref="Type" /> to instantiate prior to invocation</param>
+        /// <param name="parameters">Parameters to pass into <paramref name="methodCall" /> when invoking it. If no parameters, must be an empty array.</param>
+        /// <param name="enqueueAt">The moment of time at which the job will be enqueued.</param>
+        /// <returns>Unique identifier of a created job.</returns>
+        public static string Schedule(
+            [NotNull, InstantHandle] MethodInfo methodCall,
+            [CanBeNull, InstantHandle] Type explicitType,
+            [NotNull, InstantHandle] Object[] parameters,
+            DateTimeOffset enqueueAt)
+        {
+            var client = ClientFactory();
+            return client.Schedule(methodCall, explicitType, parameters, enqueueAt);
         }
 
         /// <summary>
@@ -369,6 +432,25 @@ namespace Hangfire
         /// of another background job to be enqueued.
         /// </summary>
         /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall"><see cref="MethodInfo" /> that will be marshalled to the Server.</param>
+        /// <param name="explicitType"><see cref="Type" /> to instantiate prior to invocation</param>
+        /// <param name="parameters">Parameters to pass into <paramref name="methodCall" /> when invoking it. If no parameters, must be an empty array.</param>
+        /// <returns>Unique identifier of a created job.</returns>
+        public static string ContinueWith(
+            [NotNull] string parentId,
+            [NotNull, InstantHandle] MethodInfo methodCall,
+            [CanBeNull, InstantHandle] Type explicitType,
+            [NotNull, InstantHandle] Object[] parameters)
+        {
+            var client = ClientFactory();
+            return client.ContinueWith(parentId, methodCall, explicitType, parameters);
+        }
+
+        /// <summary>
+        /// Creates a new background job that will wait for a successful completion 
+        /// of another background job to be enqueued.
+        /// </summary>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
         /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
         /// <returns>Unique identifier of a created job.</returns>
         [Obsolete("Deprecated for clarity, please use ContinueJobWith method with the same arguments. Will be removed in 2.0.0.")]
@@ -424,6 +506,26 @@ namespace Hangfire
         {
             var client = ClientFactory();
             return client.ContinueJobWith(parentId, methodCall, options);
+        }
+
+        /// <summary>
+        /// Creates a new background job that will wait for another background job to be enqueued.
+        /// </summary>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall"><see cref="MethodInfo" /> that will be marshalled to the Server.</param>
+        /// <param name="explicitType"><see cref="Type" /> to instantiate prior to invocation</param>
+        /// <param name="parameters">Parameters to pass into <paramref name="methodCall" /> when invoking it. If no parameters, must be an empty array.</param>
+        /// <param name="options">Continuation options.</param>
+        /// <returns>Unique identifier of a created job.</returns>
+        public static string ContinueWith(
+            [NotNull] string parentId,
+            [NotNull, InstantHandle] MethodInfo methodCall,
+            [CanBeNull, InstantHandle] Type explicitType,
+            [NotNull, InstantHandle] Object[] parameters,
+            JobContinuationOptions options)
+        {
+            var client = ClientFactory();
+            return client.ContinueWith(parentId, methodCall, explicitType, parameters, options);
         }
 
         /// <summary>
