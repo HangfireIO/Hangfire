@@ -35,8 +35,8 @@ namespace Hangfire.Core.Tests
         public void StaticCreate_ShouldCreateAJobInTheGivenState()
         {
             _client.Object.Create(() => StaticMethod(), _state.Object);
-            
-            _client.Verify(x => x.Create(It.IsNotNull<Job>(), _state.Object));
+
+            _client.Verify(x => x.Create(It.IsNotNull<Job>(), _state.Object, null));
         }
 
         [Fact]
@@ -44,7 +44,7 @@ namespace Hangfire.Core.Tests
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => BackgroundJobClientExtensions.Create<BackgroundJobClientExtensionsFacts>(
-                    null, x => x.InstanceMethod(), _state.Object));
+                    null, x => x.InstanceMethod(), _state.Object, null));
 
             Assert.Equal("client", exception.ParamName);
         }
@@ -52,9 +52,9 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void InstanceCreate_ShouldCreateAJobInTheGivenState()
         {
-            _client.Object.Create<BackgroundJobClientExtensionsFacts>(x => x.InstanceMethod(), _state.Object);
+            _client.Object.Create<BackgroundJobClientExtensionsFacts>(x => x.InstanceMethod(), _state.Object, null);
 
-            _client.Verify(x => x.Create(It.IsNotNull<Job>(), _state.Object));
+            _client.Verify(x => x.Create(It.IsNotNull<Job>(), _state.Object, null));
         }
 
         [Fact]
@@ -72,7 +72,7 @@ namespace Hangfire.Core.Tests
         {
             _client.Object.Enqueue(() => StaticMethod());
 
-            _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>()));
+            _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>(), null));
         }
 
         [Fact]
@@ -90,7 +90,7 @@ namespace Hangfire.Core.Tests
         {
             _client.Object.Enqueue<BackgroundJobClientExtensionsFacts>(x => x.InstanceMethod());
 
-            _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>()));
+            _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>(), null));
         }
 
         [Fact]
@@ -110,7 +110,8 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow)));
+                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow),
+                null));
         }
 
         [Fact]
@@ -132,7 +133,8 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.Is<ScheduledState>(state => state.EnqueueAt == now.UtcDateTime)));
+                It.Is<ScheduledState>(state => state.EnqueueAt == now.UtcDateTime),
+                null));
         }
 
         [Fact]
@@ -153,7 +155,8 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow)));
+                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow),
+                null));
         }
 
         [Fact]
@@ -177,7 +180,8 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.Is<ScheduledState>(state => state.EnqueueAt == now.UtcDateTime)));
+                It.Is<ScheduledState>(state => state.EnqueueAt == now.UtcDateTime),
+                null));
         }
 
         [Fact]

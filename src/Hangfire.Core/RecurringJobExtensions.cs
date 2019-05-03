@@ -105,7 +105,9 @@ namespace Hangfire
             if (profiler == null) throw new ArgumentNullException(nameof(profiler));
             if (recurringJob == null) throw new ArgumentNullException(nameof(recurringJob));
 
-            var context = new CreateContext(storage, connection, recurringJob.Job, null, profiler);
+            var initialParams = SerializationHelper.Deserialize<IDictionary<string, object>>(recurringJob.InitialParams, SerializationOption.User);
+            
+            var context = new CreateContext(storage, connection, recurringJob.Job, null, profiler, initialParams);
             context.Parameters["RecurringJobId"] = recurringJob.RecurringJobId;
             context.Parameters["Time"] = JobHelper.ToTimestamp(now);
 

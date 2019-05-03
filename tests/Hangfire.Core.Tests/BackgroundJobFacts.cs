@@ -24,7 +24,7 @@ namespace Hangfire.Core.Tests
 
             BackgroundJob.Enqueue(() => Method());
 
-            _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>()));
+            _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>(), null));
         }
 
         [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
@@ -34,7 +34,7 @@ namespace Hangfire.Core.Tests
 
             BackgroundJob.Enqueue<BackgroundJobFacts>(x => x.Method());
 
-            _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>()));
+            _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>(), null));
         }
 
         [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
@@ -46,7 +46,8 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow)));
+                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow),
+                null));
         }
 
         [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
@@ -58,7 +59,8 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.IsNotNull<ScheduledState>()));
+                It.IsNotNull<ScheduledState>(),
+                null));
         }
 
         [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
@@ -70,7 +72,8 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow)));
+                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow),
+                null));
         }
 
         [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
@@ -82,7 +85,8 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.IsNotNull<ScheduledState>()));
+                It.IsNotNull<ScheduledState>(),
+                null));
         }
 
         [Fact, GlobalLock]

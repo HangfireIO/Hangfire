@@ -45,6 +45,11 @@ namespace Hangfire
                 Queue = recurringJob["Queue"];
             }
 
+            if (recurringJob.ContainsKey("InitialParams") && !String.IsNullOrWhiteSpace(recurringJob["InitialParams"]))
+            {
+                InitialParams = recurringJob["InitialParams"];
+            }
+
             TimeZone = recurringJob.ContainsKey("TimeZoneId") && !String.IsNullOrWhiteSpace(recurringJob["TimeZoneId"])
                 ? timeZoneResolver.GetTimeZoneById(recurringJob["TimeZoneId"])
                 : TimeZoneInfo.Utc;
@@ -92,6 +97,7 @@ namespace Hangfire
         public string RecurringJobId { get; }
 
         public string Queue { get; set; }
+        public string InitialParams { get; set; }
         public string Cron { get; set; }
         public TimeZoneInfo TimeZone { get; set; }
         public Job Job { get; set; }
@@ -131,6 +137,11 @@ namespace Hangfire
             if ((_recurringJob.ContainsKey("Queue") ? _recurringJob["Queue"] : null) != Queue)
             {
                 result.Add("Queue", Queue);
+            }
+
+            if ((_recurringJob.ContainsKey("InitialParams") ? _recurringJob["InitialParams"] : null) != InitialParams)
+            {
+                result.Add("InitialParams", InitialParams);
             }
 
             if ((_recurringJob.ContainsKey("Cron") ? _recurringJob["Cron"] : null) != Cron)

@@ -97,7 +97,7 @@ namespace Hangfire.Core.Tests
             var manager = CreateManager();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => manager.AddOrUpdate(null, _job, Cron.Daily()));
+                () => manager.AddOrUpdate(null, _job, Cron.Daily(), (IDictionary<string, object>)null));
 
             Assert.Equal("recurringJobId", exception.ParamName);
         }
@@ -108,7 +108,7 @@ namespace Hangfire.Core.Tests
             var manager = CreateManager();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => manager.AddOrUpdate(_id, null, Cron.Daily()));
+                () => manager.AddOrUpdate(_id, null, Cron.Daily(), (IDictionary<string, object>)null));
 
             Assert.Equal("job", exception.ParamName);
         }
@@ -119,7 +119,7 @@ namespace Hangfire.Core.Tests
             var manager = CreateManager();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => manager.AddOrUpdate(_id, _job, Cron.Daily(), TimeZoneInfo.Local, null));
+                () => manager.AddOrUpdate(_id, _job, Cron.Daily(), TimeZoneInfo.Local, null, null));
 
             Assert.Equal("queue", exception.ParamName);
         }
@@ -130,7 +130,7 @@ namespace Hangfire.Core.Tests
             var manager = CreateManager();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => manager.AddOrUpdate(_id, _job, null));
+                () => manager.AddOrUpdate(_id, _job, null, (IDictionary<string, object>)null));
 
             Assert.Equal("cronExpression", exception.ParamName);
         }
@@ -141,7 +141,7 @@ namespace Hangfire.Core.Tests
             var manager = CreateManager();
 
             var exception = Assert.Throws<ArgumentException>(
-                () => manager.AddOrUpdate(_id, _job, "* * *"));
+                () => manager.AddOrUpdate(_id, _job, "* * *", (IDictionary<string, object>)null));
 
             Assert.Equal("cronExpression", exception.ParamName);
         }
@@ -152,7 +152,7 @@ namespace Hangfire.Core.Tests
             var manager = CreateManager();
 
             var exception = Assert.Throws<ArgumentException>(
-                () => manager.AddOrUpdate(_id, _job, "* * * * 9999"));
+                () => manager.AddOrUpdate(_id, _job, "* * * * 9999", (IDictionary<string, object>)null));
 
             Assert.Equal("cronExpression", exception.ParamName);
         }
@@ -163,7 +163,7 @@ namespace Hangfire.Core.Tests
             var manager = CreateManager();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => manager.AddOrUpdate(_id, _job, _cronExpression, (TimeZoneInfo) null));
+                () => manager.AddOrUpdate(_id, _job, _cronExpression, (TimeZoneInfo) null, (IDictionary<string, object>)null));
 
             Assert.Equal("timeZone", exception.ParamName);
         }
@@ -185,7 +185,7 @@ namespace Hangfire.Core.Tests
             var manager = CreateManager();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => manager.AddOrUpdate(_id, _job, _cronExpression, TimeZoneInfo.Utc, null));
+                () => manager.AddOrUpdate(_id, _job, _cronExpression, TimeZoneInfo.Utc, null, null));
 
             Assert.Equal("queue", exception.ParamName);
         }
@@ -195,7 +195,7 @@ namespace Hangfire.Core.Tests
         {
             var manager = CreateManager();
 
-            manager.AddOrUpdate(_id, _job, _cronExpression);
+            manager.AddOrUpdate(_id, _job, _cronExpression, (IDictionary<string, object>)null);
 
             _transaction.Verify(x => x.AddToSet("recurring-jobs", _id, JobHelper.ToTimestamp(_now)));
         }
@@ -205,7 +205,7 @@ namespace Hangfire.Core.Tests
         {
             var manager = CreateManager();
 
-            manager.AddOrUpdate(_id, _job, _cronExpression);
+            manager.AddOrUpdate(_id, _job, _cronExpression, (IDictionary<string, object>)null);
 
             _transaction.Verify(x => x.SetRangeInHash(
                 $"recurring-job:{_id}",
@@ -220,7 +220,7 @@ namespace Hangfire.Core.Tests
         {
             var manager = CreateManager();
 
-            manager.AddOrUpdate(_id, _job, _cronExpression);
+            manager.AddOrUpdate(_id, _job, _cronExpression, (IDictionary<string, object>)null);
 
             _transaction.Verify(x => x.Commit());
         }
@@ -235,7 +235,7 @@ namespace Hangfire.Core.Tests
             var manager = CreateManager();
 
             // Act
-            manager.AddOrUpdate(_id, _job, _cronExpression);
+            manager.AddOrUpdate(_id, _job, _cronExpression, (IDictionary<string, object>)null);
 
             // Assert
             _transaction.Verify(
@@ -250,7 +250,7 @@ namespace Hangfire.Core.Tests
         {
             var manager = CreateManager();
 
-            manager.AddOrUpdate(_id, _job, "15 * * * * *");
+            manager.AddOrUpdate(_id, _job, "15 * * * * *", (IDictionary<string, object>)null);
 
             _transaction.Verify(x => x.AddToSet("recurring-jobs", _id, JobHelper.ToTimestamp(_now.AddSeconds(15))));
         }
@@ -273,7 +273,7 @@ namespace Hangfire.Core.Tests
             var manager = CreateManager();
 
             // Act
-            manager.AddOrUpdate(_id, _job, _cronExpression);
+            manager.AddOrUpdate(_id, _job, _cronExpression, (IDictionary<string, object>)null);
 
             // Assert
             _transaction.Verify(x => x.SetRangeInHash(
@@ -291,7 +291,7 @@ namespace Hangfire.Core.Tests
             var manager = CreateManager();
 
             // Act
-            manager.AddOrUpdate(_id, _job, "0 0 31 2 *");
+            manager.AddOrUpdate(_id, _job, "0 0 31 2 *", (IDictionary<string, object>)null);
 
             // Assert
             _transaction.Verify(x => x.SetRangeInHash(
@@ -332,7 +332,7 @@ namespace Hangfire.Core.Tests
             var manager = CreateManager();
 
             // Act
-            manager.AddOrUpdate(_id, _job, "0 0 * * *", timeZone, "default");
+            manager.AddOrUpdate(_id, _job, "0 0 * * *", timeZone, "default", (IDictionary<string, object>)null);
 
             // Assert
             _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{_id}", It.Is<Dictionary<string, string>>(dict =>
@@ -357,7 +357,7 @@ namespace Hangfire.Core.Tests
             var manager = CreateManager();
 
             // Act
-            manager.AddOrUpdate(_id, _job, "* * * * *");
+            manager.AddOrUpdate(_id, _job, "* * * * *", (IDictionary<string, object>)null);
 
             // Assert
             _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{_id}", It.Is<Dictionary<string, string>>(dict =>
