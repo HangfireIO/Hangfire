@@ -41,7 +41,7 @@ namespace Hangfire.SqlServer
     {
         private readonly DbConnection _existingConnection;
         private readonly Func<DbConnection> _connectionFactory;
-        private readonly SqlServerStorageOptions _options;
+        protected readonly SqlServerStorageOptions _options;
         private readonly string _connectionString;
 
         public SqlServerStorage(string nameOrConnectionString)
@@ -129,8 +129,8 @@ namespace Hangfire.SqlServer
 
         public override bool LinearizableReads => true;
 
-        internal string SchemaName => _options.SchemaName;
-        internal int? CommandTimeout => _options.CommandTimeout.HasValue ? (int)_options.CommandTimeout.Value.TotalSeconds : (int?)null;
+        public string SchemaName => _options.SchemaName;
+        public int? CommandTimeout => _options.CommandTimeout.HasValue ? (int)_options.CommandTimeout.Value.TotalSeconds : (int?)null;
         internal int? CommandBatchMaxTimeout => _options.CommandBatchMaxTimeout.HasValue ? (int)_options.CommandBatchMaxTimeout.Value.TotalSeconds : (int?)null;
         internal TimeSpan? SlidingInvisibilityTimeout => _options.SlidingInvisibilityTimeout;
         internal SqlServerStorageOptions Options => _options;

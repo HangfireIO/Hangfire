@@ -30,9 +30,9 @@ using Hangfire.Storage.Monitoring;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlServerMonitoringApi : IMonitoringApi
+    public class SqlServerMonitoringApi : IMonitoringApi
     {
-        private readonly SqlServerStorage _storage;
+        protected readonly SqlServerStorage _storage;
         private readonly int? _jobListLimit;
 
         public SqlServerMonitoringApi([NotNull] SqlServerStorage storage, int? jobListLimit)
@@ -312,7 +312,7 @@ select * from [{_storage.SchemaName}].State with (nolock, forceseek) where JobId
                 GetNumberOfJobsByStateName(connection, DeletedState.StateName));
         }
 
-        public StatisticsDto GetStatistics()
+        public virtual StatisticsDto GetStatistics()
         {
             string sql = String.Format(@"
 set transaction isolation level read committed;
@@ -377,7 +377,7 @@ select count(*) from [{0}].[Set] with (nolock, forceseek) where [Key] = N'recurr
             return GetTimelineStats(connection, keyMaps);
         }
 
-        private Dictionary<DateTime, long> GetTimelineStats(DbConnection connection, string type)
+        protected Dictionary<DateTime, long> GetTimelineStats(DbConnection connection, string type)
         {
             var endDate = DateTime.UtcNow.Date;
             var dates = new List<DateTime>();
@@ -429,7 +429,7 @@ where [Key] in @keys";
             return monitoringApi;
         }
 
-        private T UseConnection<T>(Func<DbConnection, T> action)
+        protected T UseConnection<T>(Func<DbConnection, T> action)
         {
             return _storage.UseConnection(null, action);
         }
@@ -465,7 +465,7 @@ where j.Id in @jobIds";
                 });
         }
 
-        private long GetNumberOfJobsByStateName(DbConnection connection, string stateName)
+        protected long GetNumberOfJobsByStateName(DbConnection connection, string stateName)
         {
             var sqlQuery = _jobListLimit.HasValue
                 ? $@"select count(j.Id) from (select top (@limit) Id from [{_storage.SchemaName}].Job with (nolock, forceseek) where StateName = @state) as j"
@@ -498,7 +498,7 @@ where j.Id in @jobIds";
             }
         }
 
-        private JobList<TDto> GetJobs<TDto>(
+        protected JobList<TDto> GetJobs<TDto>(
             DbConnection connection,
             int from,
             int count,
@@ -591,7 +591,7 @@ where j.Id in @jobIds";
         /// Overloaded dictionary that doesn't throw if given an invalid key
         /// Fixes issues such as https://github.com/HangfireIO/Hangfire/issues/871
         /// </summary>
-        private class SafeDictionary<TKey, TValue> : Dictionary<TKey, TValue>
+        protected class SafeDictionary<TKey, TValue> : Dictionary<TKey, TValue>
         {
             public SafeDictionary(IDictionary<TKey, TValue> dictionary, IEqualityComparer<TKey> comparer) 
                 : base(dictionary, comparer)
