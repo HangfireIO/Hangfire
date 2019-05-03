@@ -45,8 +45,8 @@ namespace Hangfire
     /// <threadsafety static="true" instance="false" />
     public partial class BackgroundJob
     {
-        private static readonly Lazy<IBackgroundJobClient> CachedClient
-            = new Lazy<IBackgroundJobClient>(() => new BackgroundJobClient());
+        private static readonly Lazy<IBackgroundJobClient> CachedClient 
+            = new Lazy<IBackgroundJobClient>(() => new BackgroundJobClient()); 
 
         private static readonly Func<IBackgroundJobClient> DefaultFactory
             = () => CachedClient.Value;
@@ -333,7 +333,7 @@ namespace Hangfire
             var client = ClientFactory();
             return client.Delete(jobId, fromState);
         }
-
+        
         /// <summary>
         /// Changes state of a job with the specified <paramref name="jobId"/>
         /// to the <see cref="EnqueuedState"/>.
@@ -372,7 +372,7 @@ namespace Hangfire
         /// <returns>Unique identifier of a created job.</returns>
         [Obsolete("Deprecated for clarity, please use ContinueJobWith method with the same arguments. Will be removed in 2.0.0.")]
         public static string ContinueWith(
-            [NotNull] string parentId,
+            [NotNull] string parentId, 
             [NotNull, InstantHandle] Expression<Action> methodCall)
         {
             return ContinueJobWith(parentId, methodCall);
@@ -404,7 +404,7 @@ namespace Hangfire
         /// <returns>Unique identifier of a created job.</returns>
         [Obsolete("Deprecated for clarity, please use ContinueJobWith method with the same arguments. Will be removed in 2.0.0.")]
         public static string ContinueWith<T>(
-            [NotNull] string parentId,
+            [NotNull] string parentId, 
             [NotNull, InstantHandle] Expression<Action<T>> methodCall)
         {
             return ContinueJobWith(parentId, methodCall);
@@ -436,8 +436,8 @@ namespace Hangfire
         /// <returns>Unique identifier of a created job.</returns>
         [Obsolete("Deprecated for clarity, please use ContinueJobWith method with the same arguments. Will be removed in 2.0.0.")]
         public static string ContinueWith(
-            [NotNull] string parentId,
-            [NotNull, InstantHandle] Expression<Action> methodCall,
+            [NotNull] string parentId, 
+            [NotNull, InstantHandle] Expression<Action> methodCall, 
             JobContinuationOptions options)
         {
             return ContinueJobWith(parentId, methodCall, options);
@@ -506,8 +506,8 @@ namespace Hangfire
         /// <returns>Unique identifier of a created job.</returns>
         [Obsolete("Deprecated for clarity, please use ContinueJobWith method with the same arguments. Will be removed in 2.0.0.")]
         public static string ContinueWith<T>(
-            [NotNull] string parentId,
-            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
+            [NotNull] string parentId, 
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
             JobContinuationOptions options)
         {
             return ContinueJobWith(parentId, methodCall, options);
