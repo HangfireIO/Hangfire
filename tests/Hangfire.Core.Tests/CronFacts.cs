@@ -178,5 +178,13 @@ namespace Hangfire.Core.Tests
             string actual = Cron.Yearly(month, day, hour, minute);
             Assert.Equal(expected, actual);
         }
+
+		[Fact]
+		public void Never_ReturnsFormattedString()
+		{
+			string expected = "0 0 31 2 *";
+			string actual = Cron.Yearly(2, 31);
+			Assert.Equal(expected, actual);
+		}
     }
 }
