@@ -15,6 +15,8 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
@@ -141,6 +143,82 @@ namespace Hangfire
         {
             var client = ClientFactory();
             return client.Enqueue(methodCall);
+        }
+
+        /// <summary>
+        /// Creates a new fire-and-forget job based on a given method call expression.
+        /// </summary>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="comparer">Comparer to use</param>
+        /// <returns>Unique identifier of a background job.</returns>
+        /// 
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="methodCall"/> is <see langword="null"/>.
+        /// </exception>
+        /// 
+        /// <seealso cref="EnqueuedState"/>
+        /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
+        public static string UniqueEnqueue<T>([NotNull, InstantHandle] Expression<Action<T>> methodCall, Func<IReadOnlyList<object>, bool> comparer)
+        {
+            FilterExistingJobs<T>(comparer);
+            return Enqueue<T>(methodCall);
+        }
+
+        /// <summary>
+        /// Creates a new fire-and-forget job based on a given method call expression.
+        /// </summary>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="comparer">The comparer to use</param>
+        /// <returns>Unique identifier of a background job.</returns>
+        /// 
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="methodCall"/> is <see langword="null"/>.
+        /// </exception>
+        /// 
+        /// <seealso cref="EnqueuedState"/>
+        /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
+        public static string UniqueEnqueue<T>([NotNull, InstantHandle] Expression<Func<T, Task>> methodCall, Func<IReadOnlyList<object>, bool> comparer)
+        {
+            FilterExistingJobs<T>(comparer);
+            return Enqueue<T>(methodCall);
+        }
+
+        private static void FilterExistingJobs<T>(Func<IReadOnlyList<object>, bool> comparer)
+        {
+            var monitoringApi = JobStorage.Current.GetMonitoringApi();
+
+            var queues = monitoringApi.Queues().ToList();
+
+            var enqueuedJobs = queues.SelectMany(q =>
+            {
+                return monitoringApi
+                    .EnqueuedJobs(q.Name, 0, int.MaxValue)
+                    .Select(j => new { Id = j.Key, Job = j.Value.Job });
+            });
+
+            var scheduledJobs = monitoringApi
+                .ScheduledJobs(0, int.MaxValue)
+                .Select(j => new { Id = j.Key, Job = j.Value.Job });
+
+            var matchingJobTasks = enqueuedJobs.Concat(scheduledJobs)
+                .Where(task =>
+                {
+                    return task.Job.Type == typeof(T);
+                })
+                .ToList();
+
+            if (matchingJobTasks.Any())
+            {
+                var jobsToDelete = matchingJobTasks.Where(jobTask =>
+                {
+                    return comparer.Invoke(jobTask.Job.Args) == true;
+                }).ToList();
+
+                foreach (var job in jobsToDelete)
+                {
+                    Delete(job.Id);
+                }
+            }
         }
 
         /// <summary>
