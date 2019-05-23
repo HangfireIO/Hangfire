@@ -19,6 +19,12 @@ https://www.hangfire.io/
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.6.26
+
+Hangfire.Core
+
+• SECURITY – Use `HtmlEncode` in all remaining places in Dashboard UI to prevent XSS attacks.
+
 1.6.25
 
 Hangfire.Core
