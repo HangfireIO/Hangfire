@@ -24,6 +24,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using Hangfire.Common;
+using Hangfire.Dashboard.Resources;
 
 namespace Hangfire.Dashboard
 {
@@ -33,7 +34,7 @@ namespace Hangfire.Dashboard
 
         public static NonEscapedString Render(Job job)
         {
-            if (job == null) { return new NonEscapedString("<em>Can not find the target method.</em>"); }
+            if (job == null) { return new NonEscapedString($"<em>{Encode(Strings.Common_CannotFindTargetMethod)}</em>"); }
 
             var builder = new StringBuilder();
 
