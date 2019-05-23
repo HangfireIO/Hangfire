@@ -19,7 +19,16 @@ https://www.hangfire.io/
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
-Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade.
+Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
+
+1.7.3
+
+• SECURITY – Use `HtmlEncode` in all remaining places in Dashboard UI to prevent XSS attacks.
+
+• Added – Added Dutch language, and updated missing translation on "Servers" page (by @r-win).
+• Added – `Cron.Never` method for adding manual recurring jobs that never fire (by @michaltalaga).
+• Fixed – Add missing `AddOrUpdate` extension methods for the `IRecurringJobManager` interface.
+• Deprecated – Unused `HtmlHelper.FormatProperties` method is now obsolete.
 
 1.7.2
 • Added – `DashboardOptions.TimeZoneResolver` property to handle custom time zone resolvers in Dashboard UI.

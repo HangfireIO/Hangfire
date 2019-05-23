@@ -14,6 +14,11 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
+
+1.7.3
+• Fixed – Wrong error message in migration script, when @CurrentSchemaVersion has a NULL value (by @penenkel).
+
 1.7.2
 • Fixed – Occasional "DataException: Error parsing column" error when using blocking fetch.
 
