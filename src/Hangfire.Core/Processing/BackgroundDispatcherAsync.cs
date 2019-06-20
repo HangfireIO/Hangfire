@@ -114,7 +114,7 @@ namespace Hangfire.Processing
                     catch
                     {
 #if !NETSTANDARD1_3
-                        Trace.WriteLine($"Dispatcher is stopped due to an exception, you need to restart the server manually. Please report it to Hangfire developers: {ex}");
+                        Debug.WriteLine($"Dispatcher is stopped due to an exception, you need to restart the server manually. Please report it to Hangfire developers: {ex}");
 #endif
                     }
                 }
@@ -127,6 +127,9 @@ namespace Hangfire.Processing
                 }
                 catch (ObjectDisposedException)
                 {
+#if !NETSTANDARD1_3
+                    Debug.WriteLine("Unable to signal the stopped event for BackgroundDispatcher: it was already disposed");
+#endif
                 }
             }
         }
