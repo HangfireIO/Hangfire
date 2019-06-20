@@ -45,23 +45,6 @@ namespace Hangfire.Processing
             return await tcs.Task.ConfigureAwait(false);
         }
 
-        public static async Task AsTask(this CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var tcs = CreateCompletionSource<object>();
-
-            if (cancellationToken.CanBeCanceled)
-            {
-                cancellationToken.Register(
-                    Action,
-                    Tuple.Create(tcs, cancellationToken),
-                    useSynchronizationContext: false);
-            }
-
-            await tcs.Task.ConfigureAwait(false);
-        }
-
         public static bool IsTaskLike(this Type type, out Func<object, Task> getTaskFunc)
         {
             var typeInfo = type.GetTypeInfo();
@@ -151,12 +134,6 @@ namespace Hangfire.Processing
 
             ctx.Item1.Unregister(InvalidWaitHandleInstance);
             TrySetCanceled(ctx.Item2, ctx.Item3);
-        }
-
-        private static void Action(object state)
-        {
-            var ctx = (Tuple<TaskCompletionSource<object>, CancellationToken>)state;
-            TrySetCanceled(ctx.Item1, ctx.Item2);
         }
 
         private static TaskCompletionSource<T> CreateCompletionSource<T>()

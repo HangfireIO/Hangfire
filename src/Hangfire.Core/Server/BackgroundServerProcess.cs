@@ -232,15 +232,20 @@ namespace Hangfire.Server
                 waitTasks[i] = dispatchers[i].WaitAsync(Timeout.InfiniteTimeSpan, CancellationToken.None);
             }
 
-            Task.WaitAny(Task.WhenAll(waitTasks), context.ShutdownToken.AsTask());
-
             var nonStopped = new List<IBackgroundDispatcher>();
 
-            for (var i = 0; i < dispatchers.Count; i++)
+            try
             {
-                if (waitTasks[i].Status != TaskStatus.RanToCompletion)
+                Task.WaitAll(waitTasks, context.ShutdownToken);
+            }
+            catch (OperationCanceledException)
+            {
+                for (var i = 0; i < dispatchers.Count; i++)
                 {
-                    nonStopped.Add(dispatchers[i]);
+                    if (waitTasks[i].Status != TaskStatus.RanToCompletion)
+                    {
+                        nonStopped.Add(dispatchers[i]);
+                    }
                 }
             }
 
