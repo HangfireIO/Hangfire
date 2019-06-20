@@ -76,7 +76,7 @@ namespace Hangfire.Processing
 
         public async Task WaitAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
-            await _stopped.WaitHandle.AsTask(cancellationToken, timeout).ConfigureAwait(false);
+            await _stopped.WaitHandle.WaitOneAsync(timeout, cancellationToken).ConfigureAwait(false);
         }
 
         public void Dispose()

@@ -19,6 +19,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
+using Hangfire.Common;
 
 namespace Hangfire.Processing
 {
@@ -27,12 +28,39 @@ namespace Hangfire.Processing
         private static readonly Type[] EmptyTypes = new Type[0];
         private static readonly WaitHandle InvalidWaitHandleInstance = new InvalidWaitHandle();
 
-        public static async Task<bool> AsTask([NotNull] this WaitHandle waitHandle, CancellationToken token, TimeSpan timeout)
+        public static bool WaitOne([NotNull] this WaitHandle waitHandle, TimeSpan timeout, CancellationToken token)
         {
             if (waitHandle == null) throw new ArgumentNullException(nameof(waitHandle));
             if (timeout < Timeout.InfiniteTimeSpan) throw new ArgumentOutOfRangeException(nameof(timeout));
 
             token.ThrowIfCancellationRequested();
+
+            using (var ev = token.GetCancellationEvent())
+            {
+                var waitHandles = new[] { waitHandle, ev.WaitHandle };
+                var waitResult = WaitHandle.WaitAny(waitHandles, timeout);
+
+                if (waitResult == 0)
+                {
+                    return true;
+                }
+
+                token.ThrowIfCancellationRequested();
+                return false;
+            }
+        }
+
+        public static async Task<bool> WaitOneAsync([NotNull] this WaitHandle waitHandle, TimeSpan timeout, CancellationToken token)
+        {
+            if (waitHandle == null) throw new ArgumentNullException(nameof(waitHandle));
+            if (timeout < Timeout.InfiniteTimeSpan) throw new ArgumentOutOfRangeException(nameof(timeout));
+
+            token.ThrowIfCancellationRequested();
+
+            if (waitHandle.WaitOne(TimeSpan.Zero))
+            {
+                return true;
+            }
 
             var tcs = CreateCompletionSource<bool>();
             var registration = ThreadPool.RegisterWaitForSingleObject(waitHandle, CallBack, tcs, timeout, executeOnlyOnce: true);
