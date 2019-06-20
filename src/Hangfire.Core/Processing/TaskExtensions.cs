@@ -27,11 +27,6 @@ namespace Hangfire.Processing
         private static readonly Type[] EmptyTypes = new Type[0];
         private static readonly WaitHandle InvalidWaitHandleInstance = new InvalidWaitHandle();
 
-        public static Task<bool> AsTask([NotNull] this WaitHandle waitHandle, CancellationToken token)
-        {
-            return AsTask(waitHandle, token, Timeout.InfiniteTimeSpan);
-        }
-
         public static async Task<bool> AsTask([NotNull] this WaitHandle waitHandle, CancellationToken token, TimeSpan timeout)
         {
             if (waitHandle == null) throw new ArgumentNullException(nameof(waitHandle));

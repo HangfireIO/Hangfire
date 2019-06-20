@@ -293,8 +293,7 @@ namespace Hangfire.Processing
         private async Task HandleDelayAsync(Guid executionId, TimeSpan delay)
         {
             LogRetry(executionId, delay);
-
-            await await Task.WhenAny(_running.AsTask(_stopToken), Task.Delay(delay, _stopToken)).ConfigureAwait(true);
+            await _running.AsTask(_stopToken, delay).ConfigureAwait(true);
         }
 
         private void LogRetry(Guid executionId, TimeSpan delay)
