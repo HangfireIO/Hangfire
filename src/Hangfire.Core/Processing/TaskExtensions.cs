@@ -94,7 +94,8 @@ namespace Hangfire.Processing
                 // This method can be replaced with wrapping in a custom awaiter like
                 // in ASP.NET Core, but this step requires using the `await` keyword
                 // to get the result, so can be implemented only in future.
-                if (typeInfo.FullName.StartsWith("System.Threading.Tasks.ValueTask", StringComparison.Ordinal))
+                if (typeInfo.FullName != null &&
+                    typeInfo.FullName.StartsWith("System.Threading.Tasks.ValueTask", StringComparison.Ordinal))
                 {
                     var asTask = type.GetRuntimeMethod("AsTask", EmptyTypes);
 

@@ -25,6 +25,7 @@ using System.Text;
 using System.Threading;
 using Hangfire.Common;
 using Hangfire.Dashboard.Resources;
+using Hangfire.Processing;
 
 namespace Hangfire.Dashboard
 {
@@ -65,7 +66,8 @@ namespace Hangfire.Dashboard
                 builder.AppendLine();
             }
 
-            if (job.Method.GetCustomAttribute<AsyncStateMachineAttribute>() != null)
+            if (job.Method.GetCustomAttribute<AsyncStateMachineAttribute>() != null ||
+                job.Method.ReturnType.IsTaskLike(out _))
             {
                 builder.Append($"{WrapKeyword("await")} ");
             }
