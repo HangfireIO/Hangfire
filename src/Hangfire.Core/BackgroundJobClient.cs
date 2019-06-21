@@ -116,6 +116,26 @@ namespace Hangfire
             _factory = factory;
         }
 
+        public int RetryAttempts
+        {
+            get
+            {
+                if (_factory is BackgroundJobFactory factory)
+                {
+                    return factory.RetryAttempts;
+                }
+
+                return 0;
+            }
+            set
+            {
+                if (_factory is BackgroundJobFactory factory)
+                {
+                    factory.RetryAttempts = value;
+                }
+            }
+        }
+
         /// <inheritdoc />
         public string Create(Job job, IState state)
         {
