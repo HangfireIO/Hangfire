@@ -84,7 +84,7 @@ namespace Hangfire.SqlServer
             return 
 $@"DECLARE @RecordsToAggregate TABLE
 (
-	[Key] NVARCHAR(100) NOT NULL,
+	[Key] NVARCHAR(100) COLLATE DATABASE_DEFAULT NOT NULL,
 	[Value] SMALLINT NOT NULL,
 	[ExpireAt] DATETIME NULL
 )
@@ -103,7 +103,7 @@ SET NOCOUNT ON
 USING (
 	SELECT [Key], SUM([Value]) as [Value], MAX([ExpireAt]) AS [ExpireAt] FROM @RecordsToAggregate
 	GROUP BY [Key]) AS [Source] ([Key], [Value], [ExpireAt])
-ON [Target].[Key] = [Source].[Key]
+ON [Target].[Key] COLLATE DATABASE_DEFAULT = [Source].[Key] COLLATE DATABASE_DEFAULT
 WHEN MATCHED THEN UPDATE SET 
 	[Target].[Value] = [Target].[Value] + [Source].[Value],
 	[Target].[ExpireAt] = (SELECT MAX([ExpireAt]) FROM (VALUES ([Source].ExpireAt), ([Target].[ExpireAt])) AS MaxExpireAt([ExpireAt]))
