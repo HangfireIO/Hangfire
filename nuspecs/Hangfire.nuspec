@@ -19,6 +19,14 @@ https://www.hangfire.io/
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.6.27
+
+Hangfire.SqlServer
+
+Backported from 1.7:
+• Fixed – Cannot resolve the collation conflict in `CountersAggregator`.
+• Fixed – Set `SqlParameter` types explicitly to not to duplicate query plans and and avoid conversion issues.
+
 1.6.26
 
 Hangfire.Core
