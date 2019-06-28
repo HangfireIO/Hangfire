@@ -247,7 +247,7 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
                 addSql,
                 new SqlParameter("@key", SqlDbType.NVarChar, 100) { Value = key },
                 new SqlParameter("@value", SqlDbType.NVarChar, 256) { Value = value },
-                new SqlParameter("@score", SqlDbType.Float) { Value = score });
+                new SqlParameter("@score", SqlDbType.Float, 53) { Value = score });
         }
 
         public override void RemoveFromSet(string key, string value)
