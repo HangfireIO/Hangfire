@@ -16,6 +16,11 @@
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.4
+• Fixed – Potential deadlocks cause by suboptimal queries when using `SlidingInvisibilityTimeout` fetching.
+• Fixed – Prevent zero delays between fetch retry attempts when lock acquisition failed without blocking.
+• Fixed – Specify float precision explicitly for the `Score` column in the `AddToSet` method.
+
 1.7.3
 • Fixed – Wrong error message in migration script, when @CurrentSchemaVersion has a NULL value (by @penenkel).
 

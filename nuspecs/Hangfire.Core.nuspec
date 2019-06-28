@@ -21,6 +21,16 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.4
+• Added – `BackgroundJobClient.RetryAttempts` property to make job creation resilient to transient exceptions.
+• Added – Dashboard localization support in `pt-BR` (by @candidodmv).
+• Changed – Protect background dispatchers from moving from stopped state to non-stopped one.
+• Changed – Unify `WaitOne` and `WaitOneAsync` methods with timeout and cancellation token for `WaitHandle` class.
+• Fixed – Don't hide an original fatal exception occurred in dispatchers in some cases.
+• Fixed – Dashboard UI to display "await" keyword on all task-like methods.
+• Fixed – Display links properly in an informational message on the Servers page in Dashboard UI.
+• Fixed – Wait for the heartbeat process before shutting down a server.
+
 1.7.3
 
 • SECURITY – Use `HtmlEncode` in all remaining places in Dashboard UI to prevent XSS attacks.
