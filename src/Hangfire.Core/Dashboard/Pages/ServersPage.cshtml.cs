@@ -145,7 +145,7 @@ WriteLiteral("</h4>\r\n                    ");
 
             
             #line 35 "..\..\Dashboard\Pages\ServersPage.cshtml"
-               Write(string.Format(Strings.ServersPage_Note_Text, Url.To("/jobs/processing")));
+               Write(Html.Raw(string.Format(Strings.ServersPage_Note_Text, Url.To("/jobs/processing"))));
 
             
             #line default

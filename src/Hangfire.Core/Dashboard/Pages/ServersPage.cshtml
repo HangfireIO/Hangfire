@@ -32,7 +32,7 @@
             {
                 <div class="alert alert-info">
                     <h4>@Strings.ServersPage_Note_Title</h4>
-                    @string.Format(Strings.ServersPage_Note_Text, Url.To("/jobs/processing"))
+                    @Html.Raw(string.Format(Strings.ServersPage_Note_Text, Url.To("/jobs/processing")))
                 </div>
             }
 
