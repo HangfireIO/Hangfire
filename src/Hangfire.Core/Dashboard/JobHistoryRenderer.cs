@@ -16,10 +16,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using Hangfire.Common;
 using Hangfire.States;
-using Newtonsoft.Json;
 
 namespace Hangfire.Dashboard
 {
@@ -133,8 +133,8 @@ namespace Hangfire.Dashboard
 
             foreach (var item in stateData)
             {
-                builder.Append($"<dt>{item.Key}</dt>");
-                builder.Append($"<dd>{item.Value}</dd>");
+                builder.Append($"<dt>{helper.HtmlEncode(item.Key)}</dt>");
+                builder.Append($"<dd>{helper.HtmlEncode(item.Value)}</dd>");
             }
 
             builder.Append("</dl>");
@@ -153,7 +153,7 @@ namespace Hangfire.Dashboard
             {
                 var latency = TimeSpan.FromMilliseconds(long.Parse(stateData["Latency"]));
 
-                builder.Append($"<dt>Latency:</dt><dd>{html.ToHumanDuration(latency, false)}</dd>");
+                builder.Append($"<dt>Latency:</dt><dd>{html.HtmlEncode(html.ToHumanDuration(latency, false))}</dd>");
 
                 itemsAdded = true;
             }
@@ -161,7 +161,7 @@ namespace Hangfire.Dashboard
             if (stateData.ContainsKey("PerformanceDuration"))
             {
                 var duration = TimeSpan.FromMilliseconds(long.Parse(stateData["PerformanceDuration"]));
-                builder.Append($"<dt>Duration:</dt><dd>{html.ToHumanDuration(duration, false)}</dd>");
+                builder.Append($"<dt>Duration:</dt><dd>{html.HtmlEncode(html.ToHumanDuration(duration, false))}</dd>");
 
                 itemsAdded = true;
             }
@@ -170,7 +170,7 @@ namespace Hangfire.Dashboard
             if (stateData.ContainsKey("Result") && !String.IsNullOrWhiteSpace(stateData["Result"]))
             {
                 var result = stateData["Result"];
-                builder.Append($"<dt>Result:</dt><dd>{System.Net.WebUtility.HtmlEncode(result)}</dd>");
+                builder.Append($"<dt>Result:</dt><dd>{html.HtmlEncode(result)}</dd>");
 
                 itemsAdded = true;
             }
@@ -186,7 +186,7 @@ namespace Hangfire.Dashboard
         {
             var stackTrace = html.StackTrace(stateData["ExceptionDetails"]).ToString();
             return new NonEscapedString(
-                $"<h4 class=\"exception-type\">{stateData["ExceptionType"]}</h4><p class=\"text-muted\">{stateData["ExceptionMessage"]}</p>{"<pre class=\"stack-trace\">" + stackTrace + "</pre>"}");
+                $"<h4 class=\"exception-type\">{html.HtmlEncode(stateData["ExceptionType"])}</h4><p class=\"text-muted\">{html.HtmlEncode(stateData["ExceptionMessage"])}</p><pre class=\"stack-trace\">{stackTrace}</pre>");
         }
 
         private static NonEscapedString ProcessingRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
@@ -214,12 +214,12 @@ namespace Hangfire.Dashboard
             if (stateData.ContainsKey("WorkerId"))
             {
                 builder.Append("<dt>Worker:</dt>");
-                builder.Append($"<dd>{stateData["WorkerId"].Substring(0, 8)}</dd>");
+                builder.Append($"<dd>{helper.HtmlEncode(stateData["WorkerId"].Substring(0, 8))}</dd>");
             }
             else if (stateData.ContainsKey("WorkerNumber"))
             {
                 builder.Append("<dt>Worker:</dt>");
-                builder.Append($"<dd>#{stateData["WorkerNumber"]}</dd>");
+                builder.Append($"<dd>#{helper.HtmlEncode(stateData["WorkerNumber"])}</dd>");
             }
 
             builder.Append("</dl>");
@@ -238,7 +238,7 @@ namespace Hangfire.Dashboard
             var enqueueAt = JobHelper.DeserializeDateTime(stateData["EnqueueAt"]);
 
             return new NonEscapedString(
-                $"<dl class=\"dl-horizontal\"><dt>Enqueue at:</dt><dd data-moment=\"{JobHelper.ToTimestamp(enqueueAt)}\">{enqueueAt}</dd></dl>");
+                $"<dl class=\"dl-horizontal\"><dt>Enqueue at:</dt><dd data-moment=\"{helper.HtmlEncode(JobHelper.ToTimestamp(enqueueAt).ToString(CultureInfo.InvariantCulture))}\">{helper.HtmlEncode(enqueueAt.ToString(CultureInfo.CurrentUICulture))}</dd></dl>");
         }
 
         private static NonEscapedString AwaitingRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
@@ -254,16 +254,20 @@ namespace Hangfire.Dashboard
 
             if (stateData.ContainsKey("NextState"))
             {
-                var nextState = JsonConvert.DeserializeObject<IState>(
-                    stateData["NextState"],
-                    new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
+                var nextState = SerializationHelper.Deserialize<IState>(stateData["NextState"], SerializationOption.TypedInternal);
 
                 builder.Append($"<dt>Next State</dt><dd>{helper.StateLabel(nextState.Name)}</dd>");
             }
 
             if (stateData.ContainsKey("Options"))
             {
-                builder.Append($"<dt>Options</dt><dd><code>{helper.HtmlEncode(stateData["Options"])}</code></dd>");
+                var optionsDescription = stateData["Options"];
+                if (Enum.TryParse(optionsDescription, out JobContinuationOptions options))
+                {
+                    optionsDescription = options.ToString("G");
+                }
+
+                builder.Append($"<dt>Options</dt><dd><code>{helper.HtmlEncode(optionsDescription)}</code></dd>");
             }
 
             builder.Append("</dl>");

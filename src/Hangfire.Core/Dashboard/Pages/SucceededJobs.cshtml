@@ -1,5 +1,6 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
 @using System
+@using Hangfire
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @using Hangfire.Dashboard.Resources
@@ -34,14 +35,16 @@
         {
             <div class="js-jobs-list">
                 <div class="btn-toolbar btn-toolbar-top">
-                    <button class="js-jobs-list-command btn btn-sm btn-primary"
-                            data-url="@Url.To("/jobs/succeeded/requeue")"
-                            data-loading-text="@Strings.Common_Enqueueing"
-                            disabled="disabled">
-                        <span class="glyphicon glyphicon-repeat"></span>
-                        @Strings.Common_RequeueJobs
-                    </button>
-
+                    @if (!IsReadOnly)
+                    {
+                        <button class="js-jobs-list-command btn btn-sm btn-primary"
+                                data-url="@Url.To("/jobs/succeeded/requeue")"
+                                data-loading-text="@Strings.Common_Enqueueing"
+                                disabled="disabled">
+                            <span class="glyphicon glyphicon-repeat"></span>
+                            @Strings.Common_RequeueJobs
+                        </button>
+                    }
                     @Html.PerPageSelector(pager)
                 </div>
 
@@ -49,9 +52,12 @@
                     <table class="table">
                         <thead>
                             <tr>
-                                <th class="min-width">
-                                    <input type="checkbox" class="js-jobs-list-select-all" />
-                                </th>
+                                @if (!IsReadOnly)
+                                {
+                                    <th class="min-width">
+                                        <input type="checkbox" class="js-jobs-list-select-all"/>
+                                    </th>
+                                }
                                 <th class="min-width">@Strings.Common_Id</th>
                                 <th>@Strings.Common_Job</th>
                                 <th class="min-width">@Strings.SucceededJobsPage_Table_TotalDuration</th>
@@ -62,12 +68,15 @@
                             @foreach (var job in succeededJobs)
                             {
                                 <tr class="js-jobs-list-row @(job.Value == null || !job.Value.InSucceededState ? "obsolete-data" : null) @(job.Value != null && job.Value.InSucceededState ? "hover" : null)">
-                                    <td>
-                                        @if (job.Value == null || job.Value.InSucceededState)
-                                        {
-                                            <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
-                                        }
-                                    </td>
+                                    @if (!IsReadOnly)
+                                    {
+                                        <td>
+                                            @if (job.Value == null || job.Value.InSucceededState)
+                                            {
+                                                <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
+                                            }
+                                        </td>
+                                    }
                                     <td class="min-width">
                                         @Html.JobIdLink(job.Key)
                                         @if (job.Value != null && !job.Value.InSucceededState)

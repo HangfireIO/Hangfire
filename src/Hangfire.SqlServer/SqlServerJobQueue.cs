@@ -1,5 +1,5 @@
 // This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright Â© 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -34,7 +34,11 @@ namespace Hangfire.SqlServer
         // This is an optimization that helps to overcome the polling delay, when
         // both client and server reside in the same process. Everything is working
         // without this event, but it helps to reduce the delays in processing.
-        internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(true);
+        internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(false);
+
+        private static readonly TimeSpan LongPollingThreshold = TimeSpan.FromSeconds(1);
+        private static readonly int PollingQuantumMs = 1000;
+        private static readonly int MinPollingDelayMs = 50;
 
         private readonly SqlServerStorage _storage;
         private readonly SqlServerStorageOptions _options;
@@ -62,7 +66,7 @@ namespace Hangfire.SqlServer
             return DequeueUsingTransaction(queues, cancellationToken);
         }
 
-#if NETFULL
+#if FEATURE_TRANSACTIONSCOPE
         public void Enqueue(IDbConnection connection, string queue, string jobId)
 #else
         public void Enqueue(DbConnection connection, DbTransaction transaction, string queue, string jobId)
@@ -74,7 +78,7 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
             connection.Execute(
                 enqueueJobSql, 
                 new { jobId = long.Parse(jobId), queue = queue }
-#if !NETFULL
+#if !FEATURE_TRANSACTIONSCOPE
                 , transaction
 #endif
                 , commandTimeout: _storage.CommandTimeout);
@@ -85,45 +89,138 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
             if (queues == null) throw new ArgumentNullException(nameof(queues));
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", nameof(queues));
 
-            FetchedJob fetchedJob = null;
+            var lockResource = $"{_storage.SchemaName}_FetchLockLock_{String.Join("_", queues.OrderBy(x => x))}";
+            var isBlocking = false;
 
-            var fetchJobSqlTemplate = $@"
-set transaction isolation level read committed
-update top (1) JQ
-set FetchedAt = GETUTCDATE()
-output INSERTED.Id, INSERTED.JobId, INSERTED.Queue
-from [{_storage.SchemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
-where Queue in @queues and
-(FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))";
+            var pollingDelayMs = Math.Min(
+                Math.Max((int)_options.QueuePollInterval.TotalMilliseconds, MinPollingDelayMs),
+                PollingQuantumMs);
+
+            SqlServerTimeoutJob fetched;
 
             using (var cancellationEvent = cancellationToken.GetCancellationEvent())
             {
                 do
                 {
                     cancellationToken.ThrowIfCancellationRequested();
+                    int? lockResult = null;
 
-                    _storage.UseConnection(null, connection =>
+                    fetched = _storage.UseConnection(null, connection =>
                     {
-                        fetchedJob = connection
-                            .Query<FetchedJob>(
-                                fetchJobSqlTemplate,
-                                new { queues = queues, timeout = _options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds })
-                            .SingleOrDefault();
+                        var parameters = new DynamicParameters();
+                        parameters.Add("@queues", queues);
+                        parameters.Add("@timeout", (int)_options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds);
+                        parameters.Add("@lockResource", lockResource);
+                        parameters.Add("@pollingDelayMs", pollingDelayMs);
+                        parameters.Add("@pollingQuantumMs", PollingQuantumMs);
+                        parameters.Add("@result", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+                        var query = isBlocking ? GetBlockingFetchSql() : GetNonBlockingFetchSql();
+
+                        using (var reader = connection.QueryMultiple(query, parameters, commandTimeout: _storage.CommandTimeout))
+                        {
+                            while (!reader.IsConsumed)
+                            {
+                                cancellationToken.ThrowIfCancellationRequested();
+                                var fetchedJob = reader.Read<FetchedJob>().SingleOrDefault(x => x != null);
+                                if (fetchedJob != null && !(fetchedJob.Id == 0 && fetchedJob.JobId == 0 && fetchedJob.Queue == null))
+                                {
+                                    return new SqlServerTimeoutJob(_storage, fetchedJob.Id, fetchedJob.JobId.ToString(CultureInfo.InvariantCulture), fetchedJob.Queue, fetchedJob.FetchedAt.Value);
+                                }
+                            }
+                        }
+
+                        lockResult = parameters.Get<int?>("@result");
+                        return null;
                     });
 
-                    if (fetchedJob != null)
+                    if (fetched != null)
                     {
-                        return new SqlServerTimeoutJob(
-                            _storage,
-                            fetchedJob.Id,
-                            fetchedJob.JobId.ToString(CultureInfo.InvariantCulture),
-                            fetchedJob.Queue);
+                        break;
                     }
 
-                    WaitHandle.WaitAny(new WaitHandle[] { cancellationEvent.WaitHandle, NewItemInQueueEvent }, _options.QueuePollInterval);
-                    cancellationToken.ThrowIfCancellationRequested();
+                    if (lockResult.HasValue && lockResult.Value < -1)
+                    {
+                        throw new InvalidOperationException($"A call to sp_getapplock returned unexpected result '{lockResult.Value}' while fetching a job. Please report this problem to Hangfire developers and don't use sub-second values for the QueuePollInterval option.");
+                    }
+
+                    if (_options.QueuePollInterval < LongPollingThreshold)
+                    {
+                        isBlocking = true;
+                    }
+                    else
+                    {
+                        WaitHandle.WaitAny(new WaitHandle[] { cancellationEvent.WaitHandle, NewItemInQueueEvent }, _options.QueuePollInterval);
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
                 } while (true);
             }
+
+            return fetched;
+        }
+
+        private string GetNonBlockingFetchSql()
+        {
+            return $@"
+set nocount on;
+set xact_abort on;
+set transaction isolation level read committed;
+
+update top (1) JQ
+set FetchedAt = GETUTCDATE()
+output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
+from [{_storage.SchemaName}].JobQueue JQ with ({GetSlidingFetchTableHints()})
+where Queue in @queues and
+(FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()));";
+        }
+
+        private string GetBlockingFetchSql()
+        {
+            return $@"
+set nocount on;
+set xact_abort on;
+set transaction isolation level read committed;
+
+EXEC @result = sp_getapplock @Resource = @lockResource, @LockMode = 'Exclusive', @LockTimeout = @pollingQuantumMs, @LockOwner = 'Session';
+
+IF (@result >= 0)
+BEGIN
+    declare @now DATETIME2 = SYSUTCDATETIME();
+    declare @pollingDelay datetime = dateadd(ms, @pollingDelayMs, convert(DATETIME, 0));
+    declare @quantumEnd datetime2 = DATEADD(ms, @pollingQuantumMs, @now);
+
+    WHILE (@now < @quantumEnd)
+    BEGIN
+        update top (1) JQ
+        set FetchedAt = @now
+        output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
+        from [{_storage.SchemaName}].JobQueue JQ with ({GetSlidingFetchTableHints()})
+        where Queue in @queues and
+        (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, @now));
+
+        IF @@ROWCOUNT > 0
+        BEGIN
+            EXEC sp_releaseapplock @Resource = @lockResource, @LockOwner = 'Session';
+            RETURN;
+        END;
+
+        WAITFOR DELAY @pollingDelay;
+        SET @now = SYSUTCDATETIME();
+    END
+    EXEC sp_releaseapplock @Resource = @lockResource, @LockOwner = 'Session';
+END
+
+SELECT 0 AS [Id], CAST(0 AS BIGINT) AS [JobId], CAST(NULL AS NVARCHAR) as [Queue], CAST(NULL AS DATETIME) as [FetchedAt];";
+        }
+
+        private string GetSlidingFetchTableHints()
+        {
+            if (_storage.Options.UsePageLocksOnDequeue)
+            {
+                return "forceseek, paglock, xlock";
+            }
+
+            return "forceseek, readpast, updlock, rowlock";
         }
 
         private SqlServerTransactionJob DequeueUsingTransaction(string[] queues, CancellationToken cancellationToken)
@@ -136,6 +233,10 @@ where Queue in @queues and
 output DELETED.Id, DELETED.JobId, DELETED.Queue
 from [{_storage.SchemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
 where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))";
+
+            var pollInterval = _options.QueuePollInterval > TimeSpan.Zero
+                ? _options.QueuePollInterval
+                : TimeSpan.FromSeconds(1);
 
             using (var cancellationEvent = cancellationToken.GetCancellationEvent())
             {
@@ -177,7 +278,7 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
                         }
                     }
 
-                    WaitHandle.WaitAny(new WaitHandle[] { cancellationEvent.WaitHandle, NewItemInQueueEvent }, _options.QueuePollInterval);
+                    WaitHandle.WaitAny(new WaitHandle[] { cancellationEvent.WaitHandle, NewItemInQueueEvent }, pollInterval);
                     cancellationToken.ThrowIfCancellationRequested();
                 } while (true);
             }
@@ -189,6 +290,7 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
             public long Id { get; set; }
             public long JobId { get; set; }
             public string Queue { get; set; }
+            public DateTime? FetchedAt { get; set; }
         }
     }
 }

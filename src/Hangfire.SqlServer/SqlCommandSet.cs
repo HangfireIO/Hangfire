@@ -25,18 +25,19 @@ namespace Hangfire.SqlServer
     {
         public  static readonly bool IsAvailable;
 
-        private static readonly Type SqlCommandSetType;
+        private static readonly Type SqlCommandSetType = null;
         private readonly object _instance;
 
-        private static readonly Action<object, SqlConnection> SetConnection;
-        private static readonly Action<object, SqlTransaction> SetTransaction;
-        private static readonly Func<object, SqlCommand> GetBatchCommand;
-        private static readonly Action<object, SqlCommand> AppendMethod;
-        private static readonly Func<object, int> ExecuteNonQueryMethod;
-        private static readonly Action<object> DisposeMethod;
+        private static readonly Action<object, SqlConnection> SetConnection = null;
+        private static readonly Action<object, SqlTransaction> SetTransaction = null;
+        private static readonly Func<object, SqlCommand> GetBatchCommand = null;
+        private static readonly Action<object, SqlCommand> AppendMethod = null;
+        private static readonly Func<object, int> ExecuteNonQueryMethod = null;
+        private static readonly Action<object> DisposeMethod = null;
 
         static SqlCommandSet()
         {
+#if FEATURE_COMMANDSET
             try
             {
                 var typeAssembly = typeof(SqlCommand).GetTypeInfo().Assembly;
@@ -64,6 +65,9 @@ namespace Hangfire.SqlServer
             {
                 IsAvailable = false;
             }
+#else
+            IsAvailable = false;
+#endif
         }
 
         public SqlCommandSet()

@@ -94,6 +94,7 @@ namespace Hangfire.States
         /// <summary>
         /// Gets a date/time when the current state instance was created.
         /// </summary>
+        [JsonIgnore]
         public DateTime ScheduledAt { get; }
 
         /// <inheritdoc />
@@ -102,6 +103,7 @@ namespace Hangfire.States
         /// Please see the remarks section of the <see cref="IState.Name">IState.Name</see>
         /// article for the details.
         /// </remarks>
+        [JsonIgnore]
         public string Name => StateName;
 
         /// <inheritdoc />
@@ -113,6 +115,7 @@ namespace Hangfire.States
         /// Please refer to the <see cref="IState.IsFinal">IState.IsFinal</see> documentation
         /// for the details.
         /// </remarks>
+        [JsonIgnore]
         public bool IsFinal => false;
 
         /// <inheritdoc />
@@ -122,6 +125,7 @@ namespace Hangfire.States
         /// <see cref="IState.IgnoreJobLoadException">IState.IgnoreJobLoadException</see>
         /// article.
         /// </remarks>
+        [JsonIgnore]
         public bool IgnoreJobLoadException => false;
 
         /// <inheritdoc />

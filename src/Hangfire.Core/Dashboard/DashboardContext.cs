@@ -22,6 +22,8 @@ namespace Hangfire.Dashboard
 {
     public abstract class DashboardContext
     {
+        private readonly Lazy<bool> _isReadOnlyLazy;
+
         protected DashboardContext([NotNull] JobStorage storage, [NotNull] DashboardOptions options)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -29,6 +31,7 @@ namespace Hangfire.Dashboard
 
             Storage = storage;
             Options = options;
+            _isReadOnlyLazy = new Lazy<bool>(() => options.IsReadOnlyFunc(this));
         }
 
         public JobStorage Storage { get; }
@@ -38,6 +41,11 @@ namespace Hangfire.Dashboard
         
         public DashboardRequest Request { get; protected set; }
         public DashboardResponse Response { get; protected set; }
+
+        public bool IsReadOnly => _isReadOnlyLazy.Value;
+
+        public string AntiforgeryHeader { get; set; }
+        public string AntiforgeryToken { get; set; }
 
         public virtual IBackgroundJobClient GetBackgroundJobClient()
         {

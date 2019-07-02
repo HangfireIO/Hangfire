@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Hangfire.Annotations;
+using Hangfire.Profiling;
 using Hangfire.Storage;
 
 namespace Hangfire.States
@@ -44,17 +45,30 @@ namespace Hangfire.States
         }
 
         public StateChangeContext(
+            [NotNull] JobStorage storage,
+            [NotNull] IStorageConnection connection,
+            [NotNull] string backgroundJobId,
+            [NotNull] IState newState,
+            [CanBeNull] IEnumerable<string> expectedStates,
+            CancellationToken cancellationToken)
+        : this(storage, connection, backgroundJobId, newState, expectedStates, cancellationToken, EmptyProfiler.Instance)
+        {
+        }
+
+        internal StateChangeContext(
             [NotNull] JobStorage storage, 
             [NotNull] IStorageConnection connection,
             [NotNull] string backgroundJobId, 
             [NotNull] IState newState, 
             [CanBeNull] IEnumerable<string> expectedStates, 
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            [NotNull] IProfiler profiler)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (connection == null) throw new ArgumentNullException(nameof(connection));
             if (backgroundJobId == null) throw new ArgumentNullException(nameof(backgroundJobId));
             if (newState == null) throw new ArgumentNullException(nameof(newState));
+            if (profiler == null) throw new ArgumentNullException(nameof(profiler));
 
             Storage = storage;
             Connection = connection;
@@ -62,6 +76,7 @@ namespace Hangfire.States
             NewState = newState;
             ExpectedStates = expectedStates;
             CancellationToken = cancellationToken;
+            Profiler = profiler;
         }
 
         public JobStorage Storage { get; }
@@ -70,5 +85,6 @@ namespace Hangfire.States
         public IState NewState { get; }
         public IEnumerable<string> ExpectedStates { get; }
         public CancellationToken CancellationToken { get; }
+        internal IProfiler Profiler { get; }
     }
 }

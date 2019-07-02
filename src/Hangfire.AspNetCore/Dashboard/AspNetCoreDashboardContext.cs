@@ -16,6 +16,7 @@
 
 using System;
 using Hangfire.Annotations;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -34,6 +35,18 @@ namespace Hangfire.Dashboard
             HttpContext = httpContext;
             Request = new AspNetCoreDashboardRequest(httpContext);
             Response = new AspNetCoreDashboardResponse(httpContext);
+
+            if (!options.IgnoreAntiforgeryToken)
+            {
+                var antiforgery = HttpContext.RequestServices.GetService<IAntiforgery>();
+                var tokenSet = antiforgery?.GetAndStoreTokens(HttpContext);
+
+                if (tokenSet != null)
+                {
+                    AntiforgeryHeader = tokenSet.HeaderName;
+                    AntiforgeryToken = tokenSet.RequestToken;
+                }
+            }
         }
 
         public HttpContext HttpContext { get; }

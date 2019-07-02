@@ -21,6 +21,7 @@ using System.Net;
 using System.Text;
 using Hangfire.Common;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -41,7 +42,7 @@ namespace Hangfire.Dashboard
         {
             try
             {
-#if NETFULL
+#if !NETSTANDARD1_3
                 DisplayNameType = typeof(DisplayNameAttribute);
 #else
                 DisplayNameType = Type.GetType("System.ComponentModel.DisplayNameAttribute, System.ComponentModel.Primitives");
@@ -120,9 +121,9 @@ namespace Hangfire.Dashboard
         public NonEscapedString JobId(string jobId, bool shorten = true)
         {
             Guid guid;
-            return new NonEscapedString(Guid.TryParse(jobId, out guid)
+            return new NonEscapedString(HtmlEncode(Guid.TryParse(jobId, out guid)
                 ? (shorten ? jobId.Substring(0, 8) + "…" : jobId)
-                : $"#{jobId}");
+                : $"#{jobId}"));
         }
 
         public string JobName(Job job)
@@ -132,6 +133,18 @@ namespace Hangfire.Dashboard
                 return Strings.Common_CannotFindTargetMethod;
             }
 
+            var jobDisplayNameAttribute = job.Method.GetCustomAttribute<JobDisplayNameAttribute>();
+            if (jobDisplayNameAttribute != null)
+            {
+                try
+                {
+                    return jobDisplayNameAttribute.Format(_page.Context, job);
+                }
+                catch (Exception)
+                {
+                    return jobDisplayNameAttribute.DisplayName;
+                }
+            }
 
             if (DisplayNameType != null && GetDisplayName != null)
             {
@@ -149,6 +162,19 @@ namespace Hangfire.Dashboard
                 }
             }
 
+            var displayNameProvider = _page.DashboardOptions.DisplayNameFunc;
+            if (displayNameProvider != null)
+            {
+                try
+                {
+                    return displayNameProvider(_page.Context, job);
+                }
+                catch
+                {
+                    // Ignoring exceptions
+                }
+            }
+
             return job.ToString();
         }
 
@@ -156,35 +182,36 @@ namespace Hangfire.Dashboard
         {
             if (String.IsNullOrWhiteSpace(stateName))
             {
-                return Raw($"<em>{Strings.Common_NoState}</em>");
+                return Raw($"<em>{HtmlEncode(Strings.Common_NoState)}</em>");
             }
 
-            return Raw($"<span class=\"label label-default\" style=\"background-color: {JobHistoryRenderer.GetForegroundStateColor(stateName)};\">{stateName}</span>");
+            var style = $"background-color: {JobHistoryRenderer.GetForegroundStateColor(stateName)};";
+            return Raw($"<span class=\"label label-default\" style=\"{HtmlEncode(style)}\">{HtmlEncode(stateName)}</span>");
         }
 
         public NonEscapedString JobIdLink(string jobId)
         {
-            return Raw($"<a href=\"{_page.Url.JobDetails(jobId)}\">{JobId(jobId)}</a>");
+            return Raw($"<a href=\"{HtmlEncode(_page.Url.JobDetails(jobId))}\">{JobId(jobId)}</a>");
         }
 
         public NonEscapedString JobNameLink(string jobId, Job job)
         {
-            return Raw($"<a class=\"job-method\" href=\"{_page.Url.JobDetails(jobId)}\">{HtmlEncode(JobName(job))}</a>");
+            return Raw($"<a class=\"job-method\" href=\"{HtmlEncode(_page.Url.JobDetails(jobId))}\">{HtmlEncode(JobName(job))}</a>");
         }
 
         public NonEscapedString RelativeTime(DateTime value)
         {
-            return Raw($"<span data-moment=\"{JobHelper.ToTimestamp(value)}\">{value}</span>");
+            return Raw($"<span data-moment=\"{HtmlEncode(JobHelper.ToTimestamp(value).ToString(CultureInfo.InvariantCulture))}\">{HtmlEncode(value.ToString(CultureInfo.CurrentUICulture))}</span>");
         }
 
         public NonEscapedString MomentTitle(DateTime time, string value)
         {
-            return Raw($"<span data-moment-title=\"{JobHelper.ToTimestamp(time)}\">{value}</span>");
+            return Raw($"<span data-moment-title=\"{HtmlEncode(JobHelper.ToTimestamp(time).ToString(CultureInfo.InvariantCulture))}\">{HtmlEncode(value)}</span>");
         }
 
         public NonEscapedString LocalTime(DateTime value)
         {
-            return Raw($"<span data-moment-local=\"{JobHelper.ToTimestamp(value)}\">{value}</span>");
+            return Raw($"<span data-moment-local=\"{HtmlEncode(JobHelper.ToTimestamp(value).ToString(CultureInfo.InvariantCulture))}\">{HtmlEncode(value.ToString(CultureInfo.CurrentUICulture))}</span>");
         }
 
         public string ToHumanDuration(TimeSpan? duration, bool displaySign = true)
@@ -245,6 +272,7 @@ namespace Hangfire.Dashboard
             return builder.ToString();
         }
 
+        [Obsolete("This method is unused and will be removed in 2.0.0.")]
         public string FormatProperties(IDictionary<string, string> properties)
         {
             return String.Join(", ", properties.Select(x => $"{x.Key}: \"{x.Value}\""));
@@ -253,8 +281,8 @@ namespace Hangfire.Dashboard
         public NonEscapedString QueueLabel(string queue)
         {
             var label = queue != null 
-                ? $"<a class=\"text-uppercase\" href=\"{_page.Url.Queue(queue)}\">{queue}</a>" 
-                : $"<span class=\"label label-danger\"><i>{Strings.Common_Unknown}</i></span>";
+                ? $"<a class=\"text-uppercase\" href=\"{HtmlEncode(_page.Url.Queue(queue))}\">{HtmlEncode(queue)}</a>" 
+                : $"<span class=\"label label-danger\"><i>{HtmlEncode(Strings.Common_Unknown)}</i></span>";
 
             return new NonEscapedString(label);
         }
@@ -267,7 +295,7 @@ namespace Hangfire.Dashboard
                 : serverId;
 
             return new NonEscapedString(
-                $"<span class=\"labe label-defult text-uppercase\" title=\"{serverId}\">{shortenedId}</span>");
+                $"<span class=\"labe label-defult text-uppercase\" title=\"{HtmlEncode(serverId)}\">{HtmlEncode(shortenedId)}</span>");
         }
 
         private static readonly StackTraceHtmlFragments StackTraceHtmlFragments = new StackTraceHtmlFragments

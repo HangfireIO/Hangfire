@@ -92,10 +92,28 @@ namespace Hangfire.Common
 
                 if (parameterTypesMatched)
                 {
-                    // Return first found method candidate with matching parameters.
-                    return genericArguments != null
-                        ? methodCandidate.MakeGenericMethod(genericArguments)
-                        : methodCandidate;
+                    if (genericArguments != null)
+                    {
+                        var genericArgumentsResolved = true;
+
+                        foreach (var genericArgument in genericArguments)
+                        {
+                            if (genericArgument == null)
+                            {
+                                genericArgumentsResolved = false;
+                            }
+                        }
+
+                        if (genericArgumentsResolved)
+                        {
+                            return methodCandidate.MakeGenericMethod(genericArguments);
+                        }
+                    }
+                    else
+                    {
+                        // Return first found method candidate with matching parameters.
+                        return methodCandidate;
+                    }
                 }
             }
 

@@ -17,8 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.Profiling;
 
 namespace Hangfire.Server
 {
@@ -40,7 +42,15 @@ namespace Hangfire.Server
         public BackgroundJobPerformer(
             [NotNull] IJobFilterProvider filterProvider,
             [NotNull] JobActivator activator)
-            : this(filterProvider, new CoreBackgroundJobPerformer(activator))
+            : this(filterProvider, activator, TaskScheduler.Default)
+        {
+        }
+
+        public BackgroundJobPerformer(
+            [NotNull] IJobFilterProvider filterProvider,
+            [NotNull] JobActivator activator,
+            [CanBeNull] TaskScheduler taskScheduler)
+            : this(filterProvider, new CoreBackgroundJobPerformer(activator, taskScheduler))
         {
         }
 
@@ -121,13 +131,16 @@ namespace Hangfire.Server
         {
             try
             {
-                filter.OnPerforming(preContext);
+                preContext.Profiler.InvokeMeasured(
+                    filter,
+                    x => x.OnPerforming(preContext),
+                    $"OnPerforming for {preContext.BackgroundJob.Id}");
             }
             catch (Exception filterException)
             {
                 CoreBackgroundJobPerformer.HandleJobPerformanceException(
                     filterException,
-                    preContext.CancellationToken.ShutdownToken);
+                    preContext.CancellationToken);
                 throw;
             }
             
@@ -151,13 +164,16 @@ namespace Hangfire.Server
 
                 try
                 {
-                    filter.OnPerformed(postContext);
+                    postContext.Profiler.InvokeMeasured(
+                        filter,
+                        x => x.OnPerformed(postContext),
+                        $"OnPerformed for {postContext.BackgroundJob.Id}");
                 }
                 catch (Exception filterException)
                 {
                     CoreBackgroundJobPerformer.HandleJobPerformanceException(
                         filterException,
-                        postContext.CancellationToken.ShutdownToken);
+                        postContext.CancellationToken);
 
                     throw;
                 }
@@ -172,13 +188,16 @@ namespace Hangfire.Server
             {
                 try
                 {
-                    filter.OnPerformed(postContext);
+                    postContext.Profiler.InvokeMeasured(
+                        filter,
+                        x => x.OnPerformed(postContext),
+                        $"OnPerformed for {postContext.BackgroundJob.Id}");
                 }
                 catch (Exception filterException)
                 {
                     CoreBackgroundJobPerformer.HandleJobPerformanceException(
                         filterException,
-                        postContext.CancellationToken.ShutdownToken);
+                        postContext.CancellationToken);
 
                     throw;
                 }

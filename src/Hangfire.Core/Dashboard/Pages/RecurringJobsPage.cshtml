@@ -1,6 +1,7 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: true *@
 @using System
 @using System.Collections.Generic
+@using Hangfire
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @using Hangfire.Dashboard.Resources
@@ -36,7 +37,6 @@
 <div class="row">
     <div class="col-md-12">
         <h1 class="page-header">@Strings.RecurringJobsPage_Title</h1>
-
         @if (recurringJobs.Count == 0)
         {
             <div class="alert alert-info">
@@ -47,23 +47,27 @@
         {
             <div class="js-jobs-list">
                 <div class="btn-toolbar btn-toolbar-top">
-                    <button class="js-jobs-list-command btn btn-sm btn-primary"
-                            data-url="@Url.To("/recurring/trigger")"
-                            data-loading-text="@Strings.RecurringJobsPage_Triggering"
-                            disabled="disabled">
-                        <span class="glyphicon glyphicon-play-circle"></span>
-                        @Strings.RecurringJobsPage_TriggerNow
-                    </button>
-
-                    <button class="js-jobs-list-command btn btn-sm btn-default"
-                            data-url="@Url.To("/recurring/remove")"
-                            data-loading-text="@Strings.Common_Deleting"
-                            data-confirm="@Strings.Common_DeleteConfirm"
-                            disabled="disabled">
-                        <span class="glyphicon glyphicon-remove"></span>
-                        @Strings.Common_Delete
-                    </button>
-
+                    @if (!IsReadOnly)
+                    {
+                        <button class="js-jobs-list-command btn btn-sm btn-primary"
+                                data-url="@Url.To("/recurring/trigger")"
+                                data-loading-text="@Strings.RecurringJobsPage_Triggering"
+                                disabled="disabled">
+                            <span class="glyphicon glyphicon-play-circle"></span>
+                            @Strings.RecurringJobsPage_TriggerNow
+                        </button>
+                    }
+                    @if (!IsReadOnly)
+                    {
+                        <button class="js-jobs-list-command btn btn-sm btn-default"
+                                data-url="@Url.To("/recurring/remove")"
+                                data-loading-text="@Strings.Common_Deleting"
+                                data-confirm="@Strings.Common_DeleteConfirm"
+                                disabled="disabled">
+                            <span class="glyphicon glyphicon-remove"></span>
+                            @Strings.Common_Delete
+                        </button>
+                    }
                     @if (pager != null)
                     {
                         @: @Html.PerPageSelector(pager)
@@ -74,9 +78,12 @@
                     <table class="table">
                         <thead>
                             <tr>
-                                <th class="min-width">
-                                    <input type="checkbox" class="js-jobs-list-select-all" />
-                                </th>
+                                @if (!IsReadOnly)
+                                {
+                                    <th class="min-width">
+                                        <input type="checkbox" class="js-jobs-list-select-all"/>
+                                    </th>
+                                }
                                 <th class="min-width">@Strings.Common_Id</th>
                                 <th class="min-width">@Strings.RecurringJobsPage_Table_Cron</th>
                                 <th class="min-width">@Strings.RecurringJobsPage_Table_TimeZone</th>
@@ -90,28 +97,55 @@
                             @foreach (var job in recurringJobs)
                             {
                                 <tr class="js-jobs-list-row hover">
-                                    <td>
-                                        <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Id" />
-                                    </td>
+                                    @if (!IsReadOnly)
+                                    {
+                                        <td>
+                                            <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Id"/>
+                                        </td>
+                                    }
                                     <td class="min-width">@job.Id</td>
                                     <td class="min-width">
                                         @* ReSharper disable once EmptyGeneralCatchClause *@
                                         @{
                                             string cronDescription = null;
-#if NETFULL
-                                            try
+                                            bool cronError = false;
+
+                                            if (!String.IsNullOrEmpty(job.Cron))
                                             {
-                                                cronDescription = string.IsNullOrEmpty(job.Cron) ? null : CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.Cron);
-                                            }
-                                            catch (FormatException)
-                                            {
-                                            }
+                                                try
+                                                {
+                                                    RecurringJobEntity.ParseCronExpression(job.Cron);
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    cronDescription = ex.Message;
+                                                    cronError = true;
+                                                }
+
+                                                if (cronDescription == null)
+                                                {
+#if FEATURE_CRONDESCRIPTOR
+                                                    try
+                                                    {
+                                                        cronDescription = CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.Cron);
+                                                    }
+                                                    catch (FormatException)
+                                                    {
+                                                    }
 #endif
+                                                }
+                                            }
                                         }
 
                                         @if (cronDescription != null)
                                         {
-                                            <code title="@cronDescription">@job.Cron</code>
+                                        <code title="@cronDescription">
+                                            @if (cronError)
+                                            {
+                                                <span class="glyphicon glyphicon-exclamation-sign"></span>
+                                            }
+                                            @job.Cron
+                                        </code>
                                         }
                                         else
                                         {
@@ -121,21 +155,41 @@
                                     <td class="min-width">
                                         @if (!String.IsNullOrWhiteSpace(job.TimeZoneId))
                                         {
-                                            <span title="@TimeZoneInfo.FindSystemTimeZoneById(job.TimeZoneId).DisplayName" data-container="body">@job.TimeZoneId</span>
+                                            string displayName;
+
+                                            try
+                                            {
+                                                var resolver = DashboardOptions.TimeZoneResolver ?? new DefaultTimeZoneResolver();
+                                                displayName = resolver.GetTimeZoneById(job.TimeZoneId).DisplayName;
+                                            }
+                                            catch
+                                            {
+                                                displayName = null;
+                                            }
+
+                                            <span title="@displayName" data-container="body">@job.TimeZoneId</span>
                                         }
                                         else
                                         {
                                             @: UTC
-                                    }
+                                        }
                                     </td>
                                     <td class="word-break">
                                         @if (job.Job != null)
                                         {
                                             @: @Html.JobName(job.Job)
                                         }
-                                        else
+                                        else if (job.LoadException != null && job.LoadException.InnerException != null)
                                         {
                                             <em>@job.LoadException.InnerException.Message</em>
+                                        }
+                                        else if (job.LoadException != null)
+                                        {
+                                            <em>@job.LoadException.Message</em>
+                                        }
+                                        else
+                                        {
+                                            <em>@Strings.Common_NotAvailable</em>
                                         }
                                     </td>
                                     <td class="align-right min-width">
@@ -145,7 +199,7 @@
                                         }
                                         else
                                         {
-                                            <em>@Strings.Common_NotAvailable</em>
+                                            <span class="label label-warning text-uppercase" title="@Strings.RecurringJobsPage_RecurringJobDisabled_Tooltip">@Strings.Common_Disabled</span>
                                         }
                                     </td>
                                     <td class="align-right min-width">
@@ -153,7 +207,7 @@
                                         {
                                             if (!String.IsNullOrEmpty(job.LastJobId))
                                             {
-                                                <a href="@Url.JobDetails(job.LastJobId)">
+                                                <a href="@Url.JobDetails(job.LastJobId)" style="text-decoration: none">
                                                     <span class="label label-default label-hover" style="@($"background-color: {JobHistoryRenderer.GetForegroundStateColor(job.LastJobState ?? EnqueuedState.StateName)};")">
                                                         @Html.RelativeTime(job.LastExecution.Value)
                                                     </span>

@@ -214,10 +214,20 @@ namespace Hangfire
             return $"{minute} {hour} {day} {month} *";
         }
 
+		/// <summary>
+		/// Returns cron expression that never fires. Specifically 31st of February
+		/// </summary>
+		/// <returns></returns>
+		public static string Never()
+		{
+			return Yearly(2, 31);
+		}
+
         /// <summary>
         /// Returns cron expression that fires every &lt;<paramref name="interval"></paramref>&gt; minutes.
         /// </summary>
         /// <param name="interval">The number of minutes to wait between every activation.</param>
+        [Obsolete("Please use Cron expressions instead. Will be removed in 2.0.0")]
         public static string MinuteInterval(int interval)
         {
             return $"*/{interval} * * * *";
@@ -227,6 +237,7 @@ namespace Hangfire
         /// Returns cron expression that fires every &lt;<paramref name="interval"></paramref>&gt; hours.
         /// </summary>
         /// <param name="interval">The number of hours to wait between every activation.</param>
+        [Obsolete("Please use Cron expressions instead. Will be removed in 2.0.0")]
         public static string HourInterval(int interval)
         {
             return $"0 */{interval} * * *";
@@ -236,6 +247,7 @@ namespace Hangfire
         /// Returns cron expression that fires every &lt;<paramref name="interval"></paramref>&gt; days.
         /// </summary>
         /// <param name="interval">The number of days to wait between every activation.</param>
+        [Obsolete("Please use Cron expressions instead. Will be removed in 2.0.0")]
         public static string DayInterval(int interval)
         {
             return $"0 0 */{interval} * *";
@@ -245,12 +257,13 @@ namespace Hangfire
         /// Returns cron expression that fires every &lt;<paramref name="interval"></paramref>&gt; months.
         /// </summary>
         /// <param name="interval">The number of months to wait between every activation.</param>
+        [Obsolete("Please use Cron expressions instead. Will be removed in 2.0.0")]
         public static string MonthInterval(int interval)
         {
             return $"0 0 1 */{interval} *";
         }
 
-#if NETFULL
+#if FEATURE_CRONDESCRIPTOR
         /// <summary>
         /// Converts a Cron expression string into a description.
         /// </summary>

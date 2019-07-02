@@ -294,6 +294,25 @@ namespace Hangfire.Core.Tests.Common
 
             Assert.Null(method);
         }
+
+        [Fact]
+        public void GetNonOpenMatchingMethod_HandlesMethodHasNoParametersOrTypes()
+        {
+            var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "GenericMethod",
+                new Type[0]);
+
+            Assert.Null(method);
+        }
+
+        [Fact]
+        public void GetNonOpenMatchingMethod_HandlesMethodHasNoParametersOrTypes2()
+        {
+            // public void GenericMethod<T0, T1>(T0 arg) { }
+            var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "GenericMethod",
+                new [] { typeof(string) });
+
+            Assert.Null(method);
+        }
     }
 
     public class GenericClass<T1>
@@ -337,6 +356,8 @@ namespace Hangfire.Core.Tests.Common
         public void OneMoreGenericMethod<T0, T1, T2>(Tuple<T2, T0, T1> arg0) { }
 
         public void GenericMethod<T0>() { }
+
+        public void GenericMethod<T0, T1>(T0 arg) { }
 
         public void GenericMethod<T>(T arg0, T arg1) { }
 

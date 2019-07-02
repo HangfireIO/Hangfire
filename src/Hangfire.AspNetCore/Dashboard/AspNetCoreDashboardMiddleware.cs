@@ -18,7 +18,9 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hangfire.Dashboard
 {
@@ -46,14 +48,15 @@ namespace Hangfire.Dashboard
             _routes = routes;
         }
 
-        public Task Invoke(HttpContext httpContext)
+        public async Task Invoke(HttpContext httpContext)
         {
             var context = new AspNetCoreDashboardContext(_storage, _options, httpContext);
             var findResult = _routes.FindDispatcher(httpContext.Request.Path.Value);
             
             if (findResult == null)
             {
-                return _next.Invoke(httpContext);
+                await _next.Invoke(httpContext);
+                return;
             }
 
             // ReSharper disable once LoopCanBeConvertedToQuery
@@ -67,13 +70,30 @@ namespace Hangfire.Dashboard
                         ? (int) HttpStatusCode.Forbidden
                         : (int) HttpStatusCode.Unauthorized;
 
-                    return Task.FromResult(0);
+                    return;
+                }
+            }
+
+            if (!_options.IgnoreAntiforgeryToken)
+            {
+                var antiforgery = httpContext.RequestServices.GetService<IAntiforgery>();
+
+                if (antiforgery != null)
+                {
+                    var requestValid = await antiforgery.IsRequestValidAsync(httpContext);
+
+                    if (!requestValid)
+                    {
+                        // Invalid or missing CSRF token
+                        httpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
+                        return;
+                    }
                 }
             }
 
             context.UriMatch = findResult.Item2;
 
-            return findResult.Item1.Dispatch(context);
+            await findResult.Item1.Dispatch(context);
         }
     }
 }

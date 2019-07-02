@@ -35,7 +35,7 @@ namespace Hangfire.Dashboard
             routes.Add(pathTemplate, new RazorPageDispatcher(pageFunc));
         }
 
-#if NETFULL
+#if FEATURE_OWIN
         [Obsolete("Use the AddCommand(RouteCollection, string, Func<DashboardContext, bool>) overload instead. Will be removed in 2.0.0.")]
         public static void AddCommand(
             [NotNull] this RouteCollection routes, 
@@ -62,7 +62,7 @@ namespace Hangfire.Dashboard
             routes.Add(pathTemplate, new CommandDispatcher(command));
         }
 
-#if NETFULL
+#if FEATURE_OWIN
         [Obsolete("Use the AddBatchCommand(RouteCollection, string, Func<DashboardContext, bool>) overload instead. Will be removed in 2.0.0.")]
         public static void AddBatchCommand(
             [NotNull] this RouteCollection routes, 

@@ -23,13 +23,41 @@ namespace Hangfire.Server
     [Obsolete("Please use `BackgroundJobServerOptions` properties instead. Will be removed in 2.0.0.")]
     public class ServerWatchdogOptions
     {
+        private TimeSpan _serverTimeout;
+        private TimeSpan _checkInterval;
+
         public ServerWatchdogOptions()
         {
             ServerTimeout = ServerWatchdog.DefaultServerTimeout;
             CheckInterval = ServerWatchdog.DefaultCheckInterval;
         }
 
-        public TimeSpan ServerTimeout { get; set; }
-        public TimeSpan CheckInterval { get; set; }
+        public TimeSpan ServerTimeout
+        {
+            get { return _serverTimeout; }
+            set
+            {
+                if (value < TimeSpan.Zero || value > ServerWatchdog.MaxServerTimeout)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), $"ServerTimeout must be either non-negative and equal to or less than {ServerWatchdog.MaxServerTimeout.Hours} hours");
+                }
+
+                _serverTimeout = value;
+            }
+        }
+
+        public TimeSpan CheckInterval
+        {
+            get { return _checkInterval; }
+            set
+            {
+                if (value < TimeSpan.Zero || value > ServerWatchdog.MaxServerCheckInterval)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), $"CheckInterval must be either non-negative and equal to or less than {ServerWatchdog.MaxServerCheckInterval.Hours} hours");
+
+                };
+                _checkInterval = value;
+            }
+        }
     }
 }

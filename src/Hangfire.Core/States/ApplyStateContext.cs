@@ -16,6 +16,7 @@
 
 using System;
 using Hangfire.Annotations;
+using Hangfire.Profiling;
 using Hangfire.Storage;
 
 namespace Hangfire.States
@@ -27,7 +28,7 @@ namespace Hangfire.States
         public ApplyStateContext(
             [NotNull] IWriteOnlyTransaction transaction, 
             [NotNull] ElectStateContext context)
-            : this(context.Storage, context.Connection, transaction, context.BackgroundJob, context.CandidateState, context.CurrentState)
+            : this(context.Storage, context.Connection, transaction, context.BackgroundJob, context.CandidateState, context.CurrentState, context.Profiler)
         {
         }
 
@@ -36,8 +37,20 @@ namespace Hangfire.States
             [NotNull] IStorageConnection connection,
             [NotNull] IWriteOnlyTransaction transaction,
             [NotNull] BackgroundJob backgroundJob,
-            [NotNull] IState newState, 
+            [NotNull] IState newState,
             [CanBeNull] string oldStateName)
+            : this(storage, connection, transaction, backgroundJob, newState, oldStateName, EmptyProfiler.Instance)
+        {
+        }
+
+        internal ApplyStateContext(
+            [NotNull] JobStorage storage,
+            [NotNull] IStorageConnection connection,
+            [NotNull] IWriteOnlyTransaction transaction,
+            [NotNull] BackgroundJob backgroundJob,
+            [NotNull] IState newState, 
+            [CanBeNull] string oldStateName,
+            [NotNull] IProfiler profiler)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (connection == null) throw new ArgumentNullException(nameof(connection));
@@ -52,7 +65,8 @@ namespace Hangfire.States
             Transaction = transaction;
             OldStateName = oldStateName;
             NewState = newState;
-            JobExpirationTimeout = TimeSpan.FromDays(1);
+            JobExpirationTimeout = storage.JobExpirationTimeout;
+            Profiler = profiler;
         }
 
         [NotNull]
@@ -73,5 +87,8 @@ namespace Hangfire.States
         public IState NewState { get; }
         
         public TimeSpan JobExpirationTimeout { get; set; }
+
+        [NotNull]
+        internal IProfiler Profiler { get; }
     }
 }
