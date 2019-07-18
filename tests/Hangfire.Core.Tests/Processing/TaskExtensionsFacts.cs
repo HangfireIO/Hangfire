@@ -87,7 +87,9 @@ namespace Hangfire.Core.Tests.Processing
             var result = await TaskExtensions.WaitOneAsync(_mre, TimeSpan.FromMilliseconds(100), _cts.Token);
             sw.Stop();
 
-            Assert.False(result);
+            Assert.False(result, "result != false");
+            Assert.False(_cts.Token.IsCancellationRequested, "IsCancellationRequested != false");
+            Assert.False(_mre.WaitOne(TimeSpan.Zero), "_mre is signaled");
             Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(95), sw.Elapsed.ToString());
         }
 
