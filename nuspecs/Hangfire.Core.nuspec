@@ -21,6 +21,12 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.5
+• Fixed – Show error message when there's an error loading the statistics in Dashboard UI (by @prochnowc).
+• Fixed – Properly handle recurring jobs with null or empty 'Job' field.
+• Fixed – Disable recurring job when we can't schedule it due to an error.
+• Fixed – Use `LazyThreadSafetyMode.PublicationOnly` to avoid caching "JobStorage.Current is null" exceptions.
+
 1.7.4
 • Added – `BackgroundJobClient.RetryAttempts` property to make job creation resilient to transient exceptions.
 • Added – Dashboard localization support in `pt-BR` (by @candidodmv).
