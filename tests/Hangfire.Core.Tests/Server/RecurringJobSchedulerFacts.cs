@@ -761,7 +761,10 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
 
             // Assert
-            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>()), Times.Never);
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict => 
+                dict.Count == 2 &&
+                dict["NextExecution"] == String.Empty &&
+                dict["V"] == "2")));
             _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1));
             _transaction.Verify(x => x.Commit());
         }
@@ -785,7 +788,10 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
 
             // Assert
-            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>()), Times.Never);
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict => 
+                dict.Count == 2 &&
+                dict["NextExecution"] == String.Empty &&
+                dict["V"] == "2")));
             _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1));
             _transaction.Verify(x => x.Commit());
         }
@@ -809,7 +815,10 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
 
             // Assert
-            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>()), Times.Never);
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict => 
+                dict.Count == 2 &&
+                dict["NextExecution"] == String.Empty &&
+                dict["V"] == "2")));
             _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1));
             _transaction.Verify(x => x.Commit());
         }

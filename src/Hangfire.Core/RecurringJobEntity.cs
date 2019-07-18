@@ -121,7 +121,6 @@ namespace Hangfire
         public bool TrySchedule(out DateTime? nextExecution, out Exception error)
         {
             nextExecution = null;
-            error = null;
 
             if (_errors.Count > 0)
             {
@@ -129,14 +128,30 @@ namespace Hangfire
                 return false;
             }
 
-            nextExecution = GetNextExecution();
-            return true;
+            return TryGetNextExecution(out nextExecution, out error);
         }
 
         public bool IsChanged(out IReadOnlyDictionary<string, string> changedFields, out DateTime? nextExecution)
         {
             changedFields = GetChangedFields(out nextExecution);
             return changedFields.Count > 0 || nextExecution != NextExecution;
+        }
+
+        public void Disable(out IReadOnlyDictionary<string, string> changedFields, out DateTime? nextExecution)
+        {
+            nextExecution = null;
+
+            var result = new Dictionary<string, string>
+            {
+                { "NextExecution", String.Empty },
+            };
+
+            if (!_recurringJob.ContainsKey("V"))
+            {
+                result.Add("V", "2");
+            }
+
+            changedFields = result;
         }
 
         public IReadOnlyDictionary<string, string> GetChangedFields(out DateTime? nextExecution)
@@ -180,7 +195,7 @@ namespace Hangfire
                 result.Add("LastExecution", serializedLastExecution ?? String.Empty);
             }
 
-            nextExecution = GetNextExecution();
+            TryGetNextExecution(out nextExecution, out _);
             var serializedNextExecution = nextExecution.HasValue ? JobHelper.SerializeDateTime(nextExecution.Value) : null;
 
             if ((_recurringJob.ContainsKey("NextExecution") ? _recurringJob["NextExecution"] : null) !=
@@ -222,18 +237,23 @@ namespace Hangfire
             return CronExpression.Parse(cronExpression, format);
         }
 
-        private DateTime? GetNextExecution()
+        private bool TryGetNextExecution(out DateTime? nextExecution, out Exception exception)
         {
             try
             {
-                return ParseCronExpression(Cron).GetNextOccurrence(
+                nextExecution = ParseCronExpression(Cron).GetNextOccurrence(
                     LastExecution ?? CreatedAt.AddSeconds(-1),
                     TimeZone,
                     inclusive: false);
+
+                exception = null;
+                return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return null;
+                exception = ex;
+                nextExecution = null;
+                return false;
             }
         }
     }

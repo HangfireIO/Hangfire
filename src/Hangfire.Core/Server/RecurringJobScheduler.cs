@@ -285,7 +285,7 @@ namespace Hangfire.Server
                     }
 
                     BackgroundJob backgroundJob = null;
-                    IReadOnlyDictionary<string, string> changedFields = null;
+                    IReadOnlyDictionary<string, string> changedFields;
 
                     if (recurringJob.TrySchedule(out var nextExecution, out var schedulingError))
                     {
@@ -303,7 +303,8 @@ namespace Hangfire.Server
                     }
                     else
                     {
-                        _logger.ErrorException($"Recurring job '{recurringJobId}' can't be scheduled due to an error.", schedulingError);
+                        _logger.ErrorException($"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be disabled.", schedulingError);
+                        recurringJob.Disable(out changedFields, out nextExecution);
                     }
 
                     // We always start a transaction, regardless our recurring job was updated or not,
