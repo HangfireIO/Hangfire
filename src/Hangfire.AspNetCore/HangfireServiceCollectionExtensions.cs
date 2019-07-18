@@ -122,28 +122,32 @@ namespace Hangfire
         }
 
 #if NETSTANDARD2_0
+        public static IServiceCollection AddHangfireServer(
+            [NotNull] this IServiceCollection services,
+            [NotNull] Action<BackgroundJobServerOptions> optionsAction)
+        {
+            if (services == null) throw new ArgumentNullException(nameof(services));
+            if (optionsAction == null) throw new ArgumentNullException(nameof(optionsAction));
+
+            services.AddTransient<IHostedService, BackgroundJobServerHostedService>(provider =>
+            {
+                var options = new BackgroundJobServerOptions();
+                optionsAction(options);
+
+                return CreateBackgroundJobServerHostedService(provider, options);
+            });
+
+            return services;
+        }
+
         public static IServiceCollection AddHangfireServer([NotNull] this IServiceCollection services)
         {
             if (services == null) throw new ArgumentNullException(nameof(services));
 
             services.AddTransient<IHostedService, BackgroundJobServerHostedService>(provider =>
             {
-                ThrowIfNotConfigured(provider);
-
                 var options = provider.GetService<BackgroundJobServerOptions>() ?? new BackgroundJobServerOptions();
-                var storage = provider.GetService<JobStorage>() ?? JobStorage.Current;
-                var additionalProcesses = provider.GetServices<IBackgroundProcess>();
-
-                options.Activator = options.Activator ?? provider.GetService<JobActivator>();
-                options.FilterProvider = options.FilterProvider ?? provider.GetService<IJobFilterProvider>();
-                options.TimeZoneResolver = options.TimeZoneResolver ?? provider.GetService<ITimeZoneResolver>();
-
-                GetInternalServices(provider, out var factory, out var stateChanger, out var performer);
-
-#pragma warning disable 618
-                return new BackgroundJobServerHostedService(
-#pragma warning restore 618
-                    storage, options, additionalProcesses, factory, performer, stateChanger);
+                return CreateBackgroundJobServerHostedService(provider, options);
             });
 
             return services;
@@ -170,6 +174,27 @@ namespace Hangfire
             stateChanger = null;
 
             return false;
+        }
+
+        private static BackgroundJobServerHostedService CreateBackgroundJobServerHostedService(
+            IServiceProvider provider,
+            BackgroundJobServerOptions options)
+        {
+            ThrowIfNotConfigured(provider);
+
+            var storage = provider.GetService<JobStorage>() ?? JobStorage.Current;
+            var additionalProcesses = provider.GetServices<IBackgroundProcess>();
+
+            options.Activator = options.Activator ?? provider.GetService<JobActivator>();
+            options.FilterProvider = options.FilterProvider ?? provider.GetService<IJobFilterProvider>();
+            options.TimeZoneResolver = options.TimeZoneResolver ?? provider.GetService<ITimeZoneResolver>();
+
+            GetInternalServices(provider, out var factory, out var stateChanger, out var performer);
+
+#pragma warning disable 618
+            return new BackgroundJobServerHostedService(
+#pragma warning restore 618
+                storage, options, additionalProcesses, factory, performer, stateChanger);
         }
 
         private static void TryAddSingletonChecked<T>(

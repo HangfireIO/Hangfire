@@ -38,12 +38,6 @@ namespace NetCoreSample
                         SlidingInvisibilityTimeout = TimeSpan.FromMinutes(1)
                     });
 
-                    services.TryAddSingleton<BackgroundJobServerOptions>(new BackgroundJobServerOptions
-                    {
-                        StopTimeout = TimeSpan.FromSeconds(15),
-                        ShutdownTimeout = TimeSpan.FromSeconds(30)
-                    });
-
                     services.TryAddSingleton<IBackgroundJobFactory>(x => new CustomBackgroundJobFactory(
                         new BackgroundJobFactory(x.GetRequiredService<IJobFilterProvider>())));
 
@@ -64,7 +58,11 @@ namespace NetCoreSample
                             provider.GetRequiredService<SqlServerStorageOptions>()));
 
                     services.AddHostedService<RecurringJobsService>();
-                    services.AddHangfireServer();
+                    services.AddHangfireServer(options =>
+                    {
+                        options.StopTimeout = TimeSpan.FromSeconds(15);
+                        options.ShutdownTimeout = TimeSpan.FromSeconds(30);
+                    });
                 })
                 .Build();
 
