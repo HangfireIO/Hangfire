@@ -5,6 +5,24 @@
         locale: document.documentElement.lang
     };
 
+    hangfire.ErrorAlert = (function () {
+        function ErrorAlert(title, message) {
+            this._errorAlert = $('#errorAlert');
+            this._errorAlertTitle = $('#errorAlertTitle');
+            this._errorAlertMessage = $('#errorAlertMessage');
+            this._title = title;
+            this._message = message;
+        }
+
+        ErrorAlert.prototype.show = function() {
+            this._errorAlertTitle.html(this._title);
+            this._errorAlertMessage.html(this._message);
+            $('#errorAlert').slideDown('fast');
+        };
+
+        return ErrorAlert;
+    })();
+
     hangfire.Metrics = (function() {
         function Metrics() {
             this._metrics = {};
@@ -131,7 +149,7 @@
             this._listeners = [];
             this._statisticsUrl = statisticsUrl;
             this._pollInterval = pollInterval;
-            this._intervalId = null;
+            this._timeoutId = null;
         }
 
         StatisticsPoller.prototype.start = function () {
@@ -139,21 +157,35 @@
 
             var intervalFunc = function() {
                 try {
-                    $.post(self._statisticsUrl, { metrics: self._metricsCallback() }, function(data) {
-                        self._notifyListeners(data);
-                    });
+                    $.post(self._statisticsUrl, { metrics: self._metricsCallback() })
+                        .done(function (data) {
+                            self._notifyListeners(data);
+                            if (self._timeoutId !== null) {
+                                self._timeoutId = setTimeout(intervalFunc, self._pollInterval);
+                            }
+                        })
+                        .fail(function (xhr) {
+                            var errorAlert = new Hangfire.ErrorAlert(
+                                'Unable to refresh the statistics:',
+                                'the server responded with ' + xhr.status + ' (' + xhr.statusText
+                                + '). Try reloading the page manually, or wait for automatic reload that will happen in a minute.');
+
+                            errorAlert.show();
+                            self._timeoutId = null;
+                            setTimeout(function() { window.location.reload(); }, 60*1000);
+                        });
                 } catch (e) {
                     console.log(e);
                 }
             };
 
-            this._intervalId = setInterval(intervalFunc, this._pollInterval);
+            this._timeoutId = setTimeout(intervalFunc, this._pollInterval);
         };
 
         StatisticsPoller.prototype.stop = function() {
-            if (this._intervalId !== null) {
-                clearInterval(this._intervalId);
-                this._intervalId = null;
+            if (this._timeoutId !== null) {
+                clearTimeout(this._timeoutId);
+                this._timeoutId = null;
             }
         };
 

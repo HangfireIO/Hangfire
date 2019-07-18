@@ -110,6 +110,9 @@
     <Compile Update="Dashboard\Pages\_Breadcrumbs.cs">
       <DependentUpon>_Breadcrumbs.cshtml</DependentUpon>
     </Compile>
+    <Compile Update="Dashboard\Pages\_ErrorAlert.cshtml.cs">
+      <DependentUpon>_ErrorAlert.cshtml</DependentUpon>
+    </Compile>
     <Compile Update="Dashboard\Pages\_InlineMetric.cshtml.cs">
       <DependentUpon>_InlineMetric.cshtml</DependentUpon>
     </Compile>

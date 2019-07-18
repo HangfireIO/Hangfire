@@ -62,6 +62,9 @@
 
             <!-- Begin page content -->
             <div class="container" style="margin-bottom: 20px;">
+                <!-- Error alert when polling fails -->
+                @Html.RenderPartial(new ErrorAlert())
+
                 @RenderBody()
             </div>
         </div>
