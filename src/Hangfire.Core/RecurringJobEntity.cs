@@ -62,16 +62,18 @@ namespace Hangfire
                 Cron = recurringJob["Cron"];
             }
 
-            if (recurringJob.ContainsKey("Job") && !String.IsNullOrWhiteSpace(recurringJob["Job"]))
+            try
             {
-                try
+                if (!recurringJob.ContainsKey("Job") || String.IsNullOrWhiteSpace(recurringJob["Job"]))
                 {
-                    Job = InvocationData.DeserializePayload(recurringJob["Job"]).DeserializeJob();
+                    throw new InvalidOperationException("The 'Job' field has a null or empty value");
                 }
-                catch (Exception ex)
-                {
-                    _errors.Add(ex);
-                }
+
+                Job = InvocationData.DeserializePayload(recurringJob["Job"]).DeserializeJob();
+            }
+            catch (Exception ex)
+            {
+                _errors.Add(ex);
             }
 
             if (recurringJob.ContainsKey("LastJobId") && !String.IsNullOrWhiteSpace(recurringJob["LastJobId"]))

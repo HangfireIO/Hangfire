@@ -797,6 +797,33 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void Execute_HidesRecurringJob_FromScheduler_WhenJobIsNull()
+        {
+            // Arrange
+            _context.StoppingTokenSource = new CancellationTokenSource();
+            SetupConnection(false);
+
+            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
+                .Returns(RecurringJobId)
+                .Returns((string)null);
+
+            _recurringJob["Job"] = null;
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict => 
+                dict.Count == 2 &&
+                dict["NextExecution"] == String.Empty &&
+                dict["V"] == "2")));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
         public void Execute_HidesRecurringJob_FromScheduler_WhenTimeZoneCanNotBeResolved()
         {
             // Arrange
