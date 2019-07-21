@@ -231,10 +231,10 @@ namespace Hangfire.States
                 throw new ArgumentNullException(parameterName);
             }
 
-            if (!Regex.IsMatch(value, @"^[a-z0-9_]+$"))
+            if (!Regex.IsMatch(value, @"^[a-z0-9_-]+$"))
             {
                 throw new ArgumentException(
-                    $"The queue name must consist of lowercase letters, digits and underscore characters only. Given: '{value}'.",
+                    $"The queue name must consist of lowercase letters, digits, underscore, and dash characters only. Given: '{value}'.",
                     parameterName);
             }
         }
