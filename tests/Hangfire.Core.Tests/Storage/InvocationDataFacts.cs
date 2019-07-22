@@ -9,6 +9,8 @@ using Xunit;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using Newtonsoft.Json.Serialization;
+
 #pragma warning disable 618
 
 namespace Hangfire.Core.Tests.Storage
@@ -839,6 +841,34 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal("System.Console", job.Type.FullName);
             Assert.Equal("WriteLine", job.Method.Name);
             Assert.Equal("Hello ", job.Args[0]);
+        }
+
+        // https://github.com/HangfireIO/Hangfire/issues/1470
+        [DataCompatibilityRangeFact, CleanSerializerSettings]
+        public void DeserializePayload_CanHandleFieldBasedSerialization_OfInvocationDataClass()
+        {
+#pragma warning disable 618
+            JobHelper.SetSerializerSettings(new JsonSerializerSettings { ContractResolver = new FieldsOnlyContractResolver() });
+#pragma warning restore 618
+            var payload = "{\"<Type>k__BackingField\":\"System.Console, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089\",\"<Method>k__BackingField\":\"WriteLine\",\"<ParameterTypes>k__BackingField\":\"[]\",\"<Arguments>k__BackingField\":\"[]\"}";
+
+            var data = InvocationData.DeserializePayload(payload);
+
+            Assert.StartsWith("System.Console", data.Type);
+            Assert.Equal("WriteLine", data.Method);
+            Assert.Equal("[]", data.ParameterTypes);
+            Assert.Equal("[]", data.Arguments);
+        }
+
+        private class FieldsOnlyContractResolver: DefaultContractResolver 
+        {
+            protected override List<MemberInfo> GetSerializableMembers(Type objectType)
+                => objectType.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                    .Cast<MemberInfo>()
+                    .ToList();
+
+            protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization) 
+                => base.CreateProperties(type, MemberSerialization.Fields);
         }
 
         public static void Empty()

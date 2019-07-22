@@ -360,8 +360,8 @@ WriteLiteral("            </div>\r\n");
 
                 using (var connection = Storage.GetConnection())
                 {
-                    continuations = SerializationHelper.Deserialize<List<ContinuationsSupportAttribute.Continuation>>(connection.GetJobParameter(
-                        JobId, "Continuations")) ?? new List<ContinuationsSupportAttribute.Continuation>();
+                    continuations = ContinuationsSupportAttribute.DeserializeContinuations(connection.GetJobParameter(
+                        JobId, "Continuations"));
                 }
 
                 if (continuations.Count > 0)
