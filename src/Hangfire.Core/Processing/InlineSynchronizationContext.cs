@@ -25,6 +25,8 @@ namespace Hangfire.Processing
         private readonly ConcurrentQueue<Tuple<SendOrPostCallback, object>> _queue = new ConcurrentQueue<Tuple<SendOrPostCallback, object>>();
         private readonly Semaphore _semaphore = new Semaphore(0, Int32.MaxValue);
 
+        private bool _disposed;
+
         public WaitHandle WaitHandle => _semaphore;
 
         public Tuple<SendOrPostCallback, object> Dequeue()
@@ -35,13 +37,29 @@ namespace Hangfire.Processing
 
         public void Dispose()
         {
-            _semaphore.Dispose();
+            lock (_queue)
+            {
+                if (_disposed) return;
+
+                _disposed = true;
+                _semaphore.Dispose();
+            }
         }
 
         public override void Post(SendOrPostCallback callback, object state)
         {
-            _queue.Enqueue(Tuple.Create(callback, state));
-            _semaphore.Release();
+            lock (_queue)
+            {
+                if (!_disposed)
+                {
+                    _queue.Enqueue(Tuple.Create(callback, state));
+                    _semaphore.Release();
+                }
+                else
+                {
+                    base.Post(callback, state);
+                }
+            }
         }
     }
 }
