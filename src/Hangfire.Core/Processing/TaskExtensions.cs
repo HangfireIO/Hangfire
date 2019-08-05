@@ -26,7 +26,6 @@ namespace Hangfire.Processing
     internal static class TaskExtensions
     {
         private static readonly Type[] EmptyTypes = new Type[0];
-        private static readonly WaitHandle InvalidWaitHandleInstance = new InvalidWaitHandle();
 
         public static bool WaitOne([NotNull] this WaitHandle waitHandle, TimeSpan timeout, CancellationToken token)
         {
@@ -63,14 +62,28 @@ namespace Hangfire.Processing
             }
 
             var tcs = CreateCompletionSource<bool>();
-            var registration = ThreadPool.RegisterWaitForSingleObject(waitHandle, CallBack, tcs, timeout, executeOnlyOnce: true);
 
-            if (token.CanBeCanceled)
+            // We don't rely on RegisterWait's own timeout handling logic and passing
+            // an infinite value, because I've seen a lot of evidences of unpredictable
+            // behavior. In these cases WaitHandle wasn't signaled, but callback was
+            // triggered too early without respecting the configured Timeout value. So
+            // we are using Task.Delay instead to handle timeouts.
+            var registration = ThreadPool.RegisterWaitForSingleObject(waitHandle, CallBack, tcs, Timeout.Infinite, executeOnlyOnce: true);
+
+            using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
             {
-                token.Register(Callback, Tuple.Create(registration, tcs, token), useSynchronizationContext: false);
-            }
+                var result = await Task.WhenAny(tcs.Task, Task.Delay(timeout, cts.Token)).ConfigureAwait(false);
+                registration.Unregister(null);
 
-            return await tcs.Task.ConfigureAwait(false);
+                if (result == tcs.Task)
+                {
+                    cts.Cancel();
+                    return await tcs.Task.ConfigureAwait(false);
+                }
+
+                token.ThrowIfCancellationRequested();
+                return false;
+            }
         }
 
         public static bool IsTaskLike(this Type type, out Func<object, Task> getTaskFunc)
@@ -148,21 +161,7 @@ namespace Hangfire.Processing
 
         private static void CallBack(object state, bool timedOut)
         {
-            // We do call the Unregister method to prevent race condition between
-            // registered wait and cancellation token registration, so can use the
-            // SetResult safely.
             ((TaskCompletionSource<bool>)state).SetResult(!timedOut);
-        }
-
-        private static void Callback(object state)
-        {
-            // We need to ensure there's no race condition, where wait handle was
-            // set, but callback wasn't fully completed. In this case handle is
-            // acquired, but task is cancelled.
-            var ctx = (Tuple<RegisteredWaitHandle, TaskCompletionSource<bool>, CancellationToken>)state;
-
-            ctx.Item1.Unregister(InvalidWaitHandleInstance);
-            TrySetCanceled(ctx.Item2, ctx.Item3);
         }
 
         private static TaskCompletionSource<T> CreateCompletionSource<T>()
@@ -172,27 +171,6 @@ namespace Hangfire.Processing
                 TaskCreationOptions.RunContinuationsAsynchronously
 #endif
             );
-        }
-
-        private static void TrySetCanceled<T>(TaskCompletionSource<T> source, CancellationToken token)
-        {
-            source.TrySetCanceled(
-#if !NET45
-                token
-#endif
-                );
-        }
-
-        private sealed class InvalidWaitHandle : WaitHandle
-        {
-#if !NETSTANDARD1_3
-            [Obsolete("Use the SafeWaitHandle property instead.")]
-            public override IntPtr Handle
-            {
-                get { return InvalidHandle; }
-                set { throw new InvalidOperationException(); }
-            }
-#endif
         }
     }
 }
