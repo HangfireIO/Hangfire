@@ -542,4 +542,7 @@
   <data name="ServersPage_Possibly_Aborted" xml:space="preserve">
     <value>Possibly aborted</value>
   </data>
+  <data name="Common_Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
 </root>

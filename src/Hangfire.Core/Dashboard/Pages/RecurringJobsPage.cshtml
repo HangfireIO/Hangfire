@@ -156,18 +156,25 @@
                                         @if (!String.IsNullOrWhiteSpace(job.TimeZoneId))
                                         {
                                             string displayName;
+                                            Exception exception = null;
 
                                             try
                                             {
                                                 var resolver = DashboardOptions.TimeZoneResolver ?? new DefaultTimeZoneResolver();
                                                 displayName = resolver.GetTimeZoneById(job.TimeZoneId).DisplayName;
                                             }
-                                            catch
+                                            catch (Exception ex)
                                             {
                                                 displayName = null;
+                                                exception = ex;
                                             }
 
-                                            <span title="@displayName" data-container="body">@job.TimeZoneId</span>
+                                            <span title="@displayName" data-container="body">@job.TimeZoneId
+                                                @if (exception != null)
+                                                {
+                                                    <span class="glyphicon glyphicon-exclamation-sign" title="@exception.Message"></span>
+                                                }
+                                            </span>
                                         }
                                         else
                                         {
@@ -199,7 +206,14 @@
                                         }
                                         else
                                         {
-                                            <span class="label label-warning text-uppercase" title="@Strings.RecurringJobsPage_RecurringJobDisabled_Tooltip">@Strings.Common_Disabled</span>
+                                            if (!String.IsNullOrEmpty(job.Error))
+                                            {
+                                                <span class="label label-danger text-uppercase" title="@job.Error">@Strings.Common_Error</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="label label-warning text-uppercase" title="@Strings.RecurringJobsPage_RecurringJobDisabled_Tooltip">@Strings.Common_Disabled</span>
+                                            }
                                         }
                                     </td>
                                     <td class="align-right min-width">

@@ -129,6 +129,11 @@ namespace Hangfire.Storage
                     dto.CreatedAt = JobHelper.DeserializeNullableDateTime(hash["CreatedAt"]);
                 }
 
+                if (hash.TryGetValue("Error", out var error))
+                {
+                    dto.Error = error;
+                }
+
                 result.Add(dto);
             }
             

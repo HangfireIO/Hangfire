@@ -742,6 +742,30 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void Execute_ClearsLastError_AfterSuccessfulScheduling()
+        {
+            // Arrange
+            SetupConnection(false);
+
+            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
+                .Returns(RecurringJobId)
+                .Returns((string)null);
+
+            var scheduler = CreateScheduler();
+
+            _recurringJob["Error"] = "Some error that previously happened";
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _factory.Verify(x => x.Create(It.IsNotNull<CreateContext>()));
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict =>
+                dict["Error"] == String.Empty)));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
         public void Execute_HidesRecurringJob_FromScheduler_WhenJobCanNotBeLoaded()
         {
             // Arrange
@@ -762,8 +786,9 @@ namespace Hangfire.Core.Tests.Server
 
             // Assert
             _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict => 
-                dict.Count == 2 &&
+                dict.Count == 3 &&
                 dict["NextExecution"] == String.Empty &&
+                dict["Error"].StartsWith("Could not load the job") &&
                 dict["V"] == "2")));
             _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1));
             _transaction.Verify(x => x.Commit());
@@ -789,8 +814,9 @@ namespace Hangfire.Core.Tests.Server
 
             // Assert
             _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict => 
-                dict.Count == 2 &&
+                dict.Count == 3 &&
                 dict["NextExecution"] == String.Empty &&
+                dict["Error"].StartsWith("Unexpected character") &&
                 dict["V"] == "2")));
             _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1));
             _transaction.Verify(x => x.Commit());
@@ -816,8 +842,9 @@ namespace Hangfire.Core.Tests.Server
 
             // Assert
             _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict => 
-                dict.Count == 2 &&
+                dict.Count == 3 &&
                 dict["NextExecution"] == String.Empty &&
+                dict["Error"].StartsWith("The 'Job' field has a null") &&
                 dict["V"] == "2")));
             _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1));
             _transaction.Verify(x => x.Commit());
@@ -843,8 +870,9 @@ namespace Hangfire.Core.Tests.Server
 
             // Assert
             _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict => 
-                dict.Count == 2 &&
+                dict.Count == 3 &&
                 dict["NextExecution"] == String.Empty &&
+                dict["Error"].StartsWith("Exception of type 'System.InvalidTimeZoneException'") &&
                 dict["V"] == "2")));
             _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1));
             _transaction.Verify(x => x.Commit());

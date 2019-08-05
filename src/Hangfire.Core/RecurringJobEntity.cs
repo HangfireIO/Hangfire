@@ -139,13 +139,15 @@ namespace Hangfire
             return changedFields.Count > 0 || nextExecution != NextExecution;
         }
 
-        public void Disable(out IReadOnlyDictionary<string, string> changedFields, out DateTime? nextExecution)
+        public void Disable([NotNull] Exception error, out IReadOnlyDictionary<string, string> changedFields, out DateTime? nextExecution)
         {
+            if (error == null) throw new ArgumentNullException(nameof(error));
             nextExecution = null;
 
             var result = new Dictionary<string, string>
             {
                 { "NextExecution", String.Empty },
+                { "Error", error.Message.Substring(0, Math.Min(100, error.Message.Length)) }
             };
 
             if (!_recurringJob.ContainsKey("V"))
@@ -214,6 +216,11 @@ namespace Hangfire
             if (!_recurringJob.ContainsKey("V"))
             {
                 result.Add("V", "2");
+            }
+
+            if (_recurringJob.ContainsKey("Error") && !String.IsNullOrEmpty(_recurringJob["Error"]))
+            {
+                result.Add("Error", String.Empty);
             }
 
             return result;
