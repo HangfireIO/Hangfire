@@ -21,6 +21,16 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.6
+
+Hangfire.Core
+
+• Changed – Add support for dash characters (`-`) in queue names.
+• Fixed – Show actual error in Dashboard UI when recurring job can't be scheduled.
+• Fixed – Ensure backward compatibility when JSON payloads are serialized with field names only.
+• Fixed – Non-awaited continuations can bring down the whole app when `TaskScheduler` is set to `null`.
+• Fixed – Timeout value is not respected in some cases in the `WaitOneAsync` method.
+
 1.7.5
 
 Hangfire.Core
