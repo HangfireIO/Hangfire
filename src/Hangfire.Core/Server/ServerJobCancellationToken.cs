@@ -1,5 +1,5 @@
 // This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright Â© 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -194,7 +194,9 @@ namespace Hangfire.Server
         {
             var state = connection.GetStateData(_jobId);
 
-            if (state == null || !state.Name.Equals(ProcessingState.StateName, StringComparison.OrdinalIgnoreCase))
+            if (state == null || 
+                (!state.Name.Equals(EnqueuedState.StateName, StringComparison.OrdinalIgnoreCase) && 
+                !state.Name.Equals(ProcessingState.StateName, StringComparison.OrdinalIgnoreCase)))
             {
                 return true;
             }
