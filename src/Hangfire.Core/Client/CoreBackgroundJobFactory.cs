@@ -74,7 +74,7 @@ namespace Hangfire.Client
                 context.Job,
                 parameters,
                 createdAt,
-                JobStorage.Current.JobExpirationTimeout));
+                JobStorage.Current?.JobExpirationTimeout ?? TimeSpan.FromDays(30)));
 
             var backgroundJob = new BackgroundJob(jobId, context.Job, createdAt);
 
