@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD2_0
+﻿#if ASPNETCORE2_AVAILABLE
 using System;
 using System.Collections.Generic;
 using System.Threading;
