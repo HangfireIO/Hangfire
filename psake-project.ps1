@@ -51,6 +51,8 @@ Task Collect -Depends Test -Description "Copy all artifacts to the build folder.
     Collect-Assembly "Hangfire.SqlServer" "netstandard2.0"
     Collect-Assembly "Hangfire.AspNetCore" "netstandard2.0"
     Collect-Assembly "Hangfire.NetCore" "netstandard2.0"
+	
+	Collect-Assembly "Hangfire.AspNetCore" "net461"
     
     Collect-Content "content\readme.txt"
     Collect-Tool "src\Hangfire.SqlServer\DefaultInstall.sql"
