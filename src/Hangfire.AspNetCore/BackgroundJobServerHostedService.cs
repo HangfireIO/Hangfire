@@ -1,4 +1,4 @@
-﻿#if ASPNETCORE2_AVAILABLE
+﻿#if NETSTANDARD2_0 || NET461
 using System;
 using System.Collections.Generic;
 using System.Threading;
