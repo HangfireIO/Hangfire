@@ -134,7 +134,8 @@ namespace Hangfire
             }
         }
 
-        public void Trigger(string recurringJobId)
+        /// <returns>Unique identifier of a background job.</returns>
+        public string Trigger(string recurringJobId)
         {
             if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
 
@@ -144,7 +145,7 @@ namespace Hangfire
                 var now = _nowFactory();
 
                 var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
-                if (recurringJob == null) return;
+                if (recurringJob == null) return null;
 
                 var backgroundJob = _factory.TriggerRecurringJob(_storage, connection, EmptyProfiler.Instance, recurringJob, now);
 
@@ -169,6 +170,8 @@ namespace Hangfire
                         transaction.Commit();
                     }
                 }
+
+                return backgroundJob?.Id;
             }
         }
 
