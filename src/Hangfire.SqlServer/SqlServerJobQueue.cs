@@ -144,7 +144,7 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                         throw new InvalidOperationException($"A call to sp_getapplock returned unexpected result '{lockResult.Value}' while fetching a job. Please report this problem to Hangfire developers and don't use sub-second values for the QueuePollInterval option.");
                     }
 
-                    if (_options.QueuePollInterval < LongPollingThreshold)
+                    if (_options.QueuePollInterval < LongPollingThreshold  && !_options.NonBlockingFetchSql)
                     {
                         isBlocking = true;
                     }
