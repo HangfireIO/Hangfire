@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AwaitingJobsPage_ContinuationsWarning_Text" xml:space="preserve">
-    <value>Don't worry, continuations are working as expected. But your current job storage does not support some queries required to show this page. Please try to update your storage or wait until the full command set is implemented.</value>
+    <value>别担心，系统正在按照预定指令执行当前的工作任务。但是，当前的作业存储不支持显示此页所需的一些查询。请尝试更新您的存储，或者等到完整命令集实现为止。</value>
   </data>
   <data name="AwaitingJobsPage_ContinuationsWarning_Title" xml:space="preserve">
     <value>作业继续执行中，但是无法显示该页面</value>
@@ -220,9 +220,7 @@
     <value>队列作业</value>
   </data>
   <data name="FailedJobsPage_FailedJobsNotExpire_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;Failed jobs do not become expired&lt;/strong&gt; to allow you to re-queue them without any
-                time pressure. You should re-queue or delete them manually, or apply &lt;code&gt;AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)&lt;/code&gt;
-                attribute to delete them automatically.</value>
+    <value>&lt;strong&gt;失败的作业不会过期。&lt;/strong&gt; 允许您在没有任何时间压力的情况下重新排队。你应该重新排队或手动删除它们， 或者添加 &lt;code&gt;AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)&lt;/code&gt; 属性，系统将会自动删除作业。</value>
   </data>
   <data name="FailedJobsPage_NoJobs" xml:space="preserve">
     <value>没有失败的作业</value>
@@ -237,7 +235,7 @@
     <value>没有任何作业</value>
   </data>
   <data name="FetchedJobsPage_Title" xml:space="preserve">
-    <value>Fetched jobs</value>
+    <value>任务列队</value>
   </data>
   <data name="HomePage_HistoryGraph" xml:space="preserve">
     <value>历史图表走势</value>
@@ -258,11 +256,7 @@
     <value>状态</value>
   </data>
   <data name="JobDetailsPage_JobAbortedNotActive_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;The job was aborted&lt;/strong&gt; – it is processed by server
-                        &lt;code&gt;{0}&lt;/code&gt; which is not in the 
-                        &lt;a href="{1}"&gt;active servers&lt;/a&gt; list for now.
-                        It will be retried automatically after invisibility timeout, but you can
-                        also re-queue or delete it manually.</value>
+    <value>&lt;strong&gt;工作被中止&lt;/strong&gt; – 它现在正在由非&lt;a href=\"{1}\"&gt;活动状态的服务器&lt;/a&gt; &lt;code&gt;{0}&lt;/code&gt;处理任务。 系统将在任务重试超时后自动结束，你也可以手动重新执行或将其删除。</value>
   </data>
   <data name="JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html" xml:space="preserve">
     <value>&lt;strong&gt;作业疑似终止&lt;/strong&gt; – 服务器代码
@@ -272,11 +266,10 @@
     <value>Background job '{0}' has expired or could not be found on the server.</value>
   </data>
   <data name="JobDetailsPage_JobFinished_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;The job is finished&lt;/strong&gt;.
-                    It will be removed automatically &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;.</value>
+    <value>&lt;strong&gt;任务完成&lt;/strong&gt;.系统将在&lt;em&gt;&lt;abbr data-moment=\"{0}\"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;被自动删除这个任务记录.</value>
   </data>
   <data name="JobDetailsPage_JobId" xml:space="preserve">
-    <value>Job Id</value>
+    <value>任务编号</value>
   </data>
   <data name="JobDetailsPage_Requeue" xml:space="preserve">
     <value>重试</value>
@@ -285,7 +278,7 @@
     <value>返回应用</value>
   </data>
   <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
-    <value>耗时: {0}ms</value>
+    <value>耗时: {0}毫秒</value>
   </data>
   <data name="LayoutPage_Footer_Time" xml:space="preserve">
     <value>时间:</value>
@@ -366,16 +359,7 @@
     <value>重试</value>
   </data>
   <data name="RetriesPage_Warning_Html" xml:space="preserve">
-    <value>&lt;h4&gt;Retries are working, but this page can't be displayed&lt;/h4&gt;
-        &lt;p&gt;
-            Don't worry, retries are working as expected. Your current job storage does not support
-            some queries required to show this page. Please try to update your storage or wait until
-            the full command set is implemented.
-        &lt;/p&gt;
-        &lt;p&gt;
-            Please go to the &lt;a href="{0}"&gt;Scheduled jobs&lt;/a&gt; page to see all the
-            scheduled jobs including retries.
-        &lt;/p&gt;</value>
+    <value>&lt;h4&gt;重试的工作，但是这个页面无法显示&lt;/h4&gt;&lt;p&gt;别担心，重试执行工作是正常的情况。您当前的作业存储不支持显示此页所需的一些查询。请更新您的存储或完善相关指令集。&lt;/p&gt;&lt;p&gt;请前往&lt; a href =\"{0}\"&gt;计划作业&lt;/a&gt;页面查看所有预定的工作及重试任务。&lt;/p&gt;</value>
   </data>
   <data name="ScheduledJobsPage_EnqueueNow" xml:space="preserve">
     <value>加入队列</value>
@@ -420,7 +404,7 @@
     <value>完成</value>
   </data>
   <data name="SucceededJobsPage_Table_TotalDuration" xml:space="preserve">
-    <value>Total Duration</value>
+    <value>消耗时间</value>
   </data>
   <data name="SucceededJobsPage_Title" xml:space="preserve">
     <value>完成的作业</value>
@@ -456,19 +440,19 @@
     <value>服务器</value>
   </data>
   <data name="Common_CannotFindTargetMethod" xml:space="preserve">
-    <value>Can not find the target method.</value>
+    <value>找不到目标方法。</value>
   </data>
   <data name="Common_Enqueued" xml:space="preserve">
     <value>队列</value>
   </data>
   <data name="Common_NoState" xml:space="preserve">
-    <value>No state</value>
+    <value>无状态</value>
   </data>
   <data name="JobsSidebarMenu_Enqueued" xml:space="preserve">
-    <value>Enqueued</value>
+    <value>队列</value>
   </data>
   <data name="Metrics_ActiveConnections" xml:space="preserve">
-    <value>Active Connections</value>
+    <value>活动连接</value>
   </data>
   <data name="Metrics_DeletedJobs" xml:space="preserve">
     <value>删除</value>
@@ -513,7 +497,7 @@
     <value>队列</value>
   </data>
   <data name="Metrics_FailedCountOrNull" xml:space="preserve">
-    <value>{0} failed job(s) found. Retry or delete them manually.</value>
+    <value>{0} 没有发现工作任务。请手动重试或删除它们。</value>
   </data>
   <data name="HomePage_GraphHover_Failed" xml:space="preserve">
     <value>失败</value>
