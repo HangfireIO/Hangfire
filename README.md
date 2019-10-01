@@ -149,7 +149,7 @@ To build NuGet packages as well as an archive file, use the `pack` command as sh
 build pack
 ```
 
-To see the full list of avalable commands, pass the `-docs` switch:
+To see the full list of available commands, pass the `-docs` switch:
 
 ```
 build -docs
