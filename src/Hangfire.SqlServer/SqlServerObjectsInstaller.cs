@@ -42,8 +42,15 @@ namespace Hangfire.SqlServer
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
 
+            var script = GetInstallScript(schema, enableHeavyMigrations);
+
+            connection.Execute(script, commandTimeout: 0);
+        }
+
+        public static string GetInstallScript(string schema, bool enableHeavyMigrations)
+        {
             var script = GetStringResource(
-                typeof(SqlServerObjectsInstaller).GetTypeInfo().Assembly, 
+                typeof(SqlServerObjectsInstaller).GetTypeInfo().Assembly,
                 "Hangfire.SqlServer.Install.sql");
 
             script = script.Replace("$(HangFireSchema)", !string.IsNullOrWhiteSpace(schema) ? schema : Constants.DefaultSchema);
@@ -53,7 +60,7 @@ namespace Hangfire.SqlServer
                 script = script.Replace("--SET @DISABLE_HEAVY_MIGRATIONS = 1;", "SET @DISABLE_HEAVY_MIGRATIONS = 1;");
             }
 
-            connection.Execute(script, commandTimeout: 0);
+            return script;
         }
 
         private static string GetStringResource(Assembly assembly, string resourceName)
