@@ -29,7 +29,7 @@ namespace Hangfire.Dashboard
             _command = command;
         }
 
-#if NETFULL
+#if FEATURE_OWIN
         [Obsolete("Use the `BatchCommandDispatcher(Action<DashboardContext>, string)` instead. Will be removed in 2.0.0.")]
         public BatchCommandDispatcher(Action<RequestDispatcherContext, string> command)
         {
@@ -45,7 +45,7 @@ namespace Hangfire.Dashboard
                 return;
             }
 
-            var jobIds = await context.Request.GetFormValuesAsync("jobs[]");
+            var jobIds = await context.Request.GetFormValuesAsync("jobs[]").ConfigureAwait(false);
             if (jobIds.Count == 0)
             {
                 context.Response.StatusCode = 422;

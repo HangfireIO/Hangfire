@@ -72,7 +72,10 @@ namespace Hangfire.Dashboard
 
                     return;
                 }
+            }
 
+            if (!_options.IgnoreAntiforgeryToken)
+            {
                 var antiforgery = httpContext.RequestServices.GetService<IAntiforgery>();
 
                 if (antiforgery != null)

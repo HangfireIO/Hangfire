@@ -111,6 +111,7 @@ namespace Hangfire.States
         /// <summary>
         /// Gets a date/time when the current state instance was created.
         /// </summary>
+        [JsonIgnore]
         public DateTime ScheduledAt { get; }
 
         /// <inheritdoc />

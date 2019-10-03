@@ -82,8 +82,8 @@ namespace Hangfire.Storage
 
                 try
                 {
-                    var invocationData = InvocationData.Deserialize(hash["Job"]);
-                    dto.Job = invocationData.Deserialize();
+                    var invocationData = InvocationData.DeserializePayload(hash["Job"]);
+                    dto.Job = invocationData.DeserializeJob();
                 }
                 catch (JobLoadException ex)
                 {

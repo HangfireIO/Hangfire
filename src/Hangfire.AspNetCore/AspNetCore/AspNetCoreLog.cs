@@ -18,7 +18,6 @@ using System;
 using Hangfire.Annotations;
 using Hangfire.Logging;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Internal;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Hangfire.AspNetCore
@@ -26,7 +25,6 @@ namespace Hangfire.AspNetCore
     internal class AspNetCoreLog : ILog
     {
         private static readonly Func<object, Exception, string> MessageFormatterFunc = MessageFormatter;
-        private static readonly object[] EmptyArgs = new object[0];
 
         private readonly ILogger _targetLogger;
 
@@ -47,7 +45,7 @@ namespace Hangfire.AspNetCore
                 return _targetLogger.IsEnabled(targetLogLevel);
             }
 
-            _targetLogger.Log(targetLogLevel, 0, CreateStateObject(messageFunc()), exception, MessageFormatterFunc);
+            _targetLogger.Log(targetLogLevel, 0, messageFunc(), exception, MessageFormatterFunc);
             return true;
         }
 
@@ -70,11 +68,6 @@ namespace Hangfire.AspNetCore
             }
 
             return LogLevel.None;
-        }
-
-        private static object CreateStateObject(string message)
-        {
-            return new FormattedLogValues(message, EmptyArgs);
         }
 
         private static string MessageFormatter(object state, Exception exception)

@@ -45,7 +45,7 @@ namespace Hangfire.Server
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             return new BackgroundDispatcher(
-                new BackgroundExecution(context.StopToken, context.AbortToken, new BackgroundExecutionOptions
+                new BackgroundExecution(context.StoppingToken, new BackgroundExecutionOptions
                 {
                     Name = _component.GetType().Name,
                     RetryDelay = options.RetryDelay
@@ -63,7 +63,7 @@ namespace Hangfire.Server
         private static void ExecuteComponent(Guid executionId, object state)
         {
             var tuple = (Tuple<IServerComponent, BackgroundServerContext>)state;
-            tuple.Item1.Execute(tuple.Item2.StopToken);
+            tuple.Item1.Execute(tuple.Item2.StoppingToken);
         }
     }
 }

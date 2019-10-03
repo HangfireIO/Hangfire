@@ -91,49 +91,83 @@ namespace Hangfire.SqlServer
             if (job == null) throw new ArgumentNullException(nameof(job));
             if (parameters == null) throw new ArgumentNullException(nameof(parameters));
 
-            string createJobSql =
+            var queryString =
 $@"insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt)
 output inserted.Id
-values (@invocationData, N'', @createdAt, @expireAt)";
+values (@invocationData, @arguments, @createdAt, @expireAt)";
 
-            var invocationData = InvocationData.Serialize(job);
+            var invocationData = InvocationData.SerializeJob(job);
+            var payload = invocationData.SerializePayload(excludeArguments: true);
+
+            var queryParameters = new DynamicParameters();
+            queryParameters.Add("@invocationData", payload, DbType.String, size: -1);
+            queryParameters.Add("@arguments", invocationData.Arguments, DbType.String, size: -1);
+            queryParameters.Add("@createdAt", createdAt, DbType.DateTime);
+            queryParameters.Add("@expireAt", createdAt.Add(expireIn), DbType.DateTime);
+
+            var parametersArray = parameters.ToArray();
+
+            if (parametersArray.Length <= 2)
+            {
+                if (parametersArray.Length == 1)
+                {
+                    queryString = $@"
+set xact_abort on; set nocount on; declare @jobId bigint;
+begin tran;
+insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) values (@invocationData, @arguments, @createdAt, @expireAt);
+select @jobId = scope_identity(); select @jobId;
+insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value);
+commit tran;";
+                    queryParameters.Add("@name", parametersArray[0].Key, DbType.String, size: 40);
+                    queryParameters.Add("@value", parametersArray[0].Value, DbType.String, size: -1);
+                }
+                else if (parametersArray.Length == 2)
+                {
+                    queryString = $@"
+set xact_abort on; set nocount on; declare @jobId bigint;
+begin tran;
+insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) values (@invocationData, @arguments, @createdAt, @expireAt);
+select @jobId = scope_identity(); select @jobId;
+insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name1, @value1), (@jobId, @name2, @value2);
+commit tran;";
+                    queryParameters.Add("@name1", parametersArray[0].Key, DbType.String, size: 40);
+                    queryParameters.Add("@value1", parametersArray[0].Value, DbType.String, size: -1);
+                    queryParameters.Add("@name2", parametersArray[1].Key, DbType.String, size: 40);
+                    queryParameters.Add("@value2", parametersArray[1].Value, DbType.String, size: -1);
+                }
+
+                return _storage.UseConnection(_dedicatedConnection, connection => connection
+                    .ExecuteScalar<long>(queryString, queryParameters, commandTimeout: _storage.CommandTimeout)
+                    .ToString());
+            }
 
             return _storage.UseTransaction(_dedicatedConnection, (connection, transaction) =>
             {
                 var jobId = connection.ExecuteScalar<long>(
-                    createJobSql,
-                    new
-                    {
-                        invocationData = invocationData.Serialize(),
-                        createdAt = createdAt,
-                        expireAt = createdAt.Add(expireIn)
-                    },
+                    queryString,
+                    queryParameters,
                     transaction,
                     commandTimeout: _storage.CommandTimeout).ToString();
 
-                if (parameters.Count > 0)
+                var insertParameterSql =
+$@"insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value)";
+
+                using (var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
                 {
-                    string insertParameterSql =
-$@"insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value)
-values (@jobId, @name, @value)";
+                    commandBatch.Connection = connection;
+                    commandBatch.Transaction = transaction;
+                    commandBatch.CommandTimeout = _storage.CommandTimeout;
+                    commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
 
-                    using (var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
+                    foreach (var parameter in parametersArray)
                     {
-                        commandBatch.Connection = connection;
-                        commandBatch.Transaction = transaction;
-                        commandBatch.CommandTimeout = _storage.CommandTimeout;
-                        commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
-
-                        foreach (var parameter in parameters)
-                        {
-                            commandBatch.Append(insertParameterSql,
-                                new SqlParameter("@jobId", long.Parse(jobId)),
-                                new SqlParameter("@name", parameter.Key),
-                                new SqlParameter("@value", (object)parameter.Value ?? DBNull.Value));
-                        }
-
-                        commandBatch.ExecuteNonQuery();
+                        commandBatch.Append(insertParameterSql,
+                            new SqlParameter("@jobId", SqlDbType.BigInt) { Value = long.Parse(jobId) },
+                            new SqlParameter("@name", SqlDbType.NVarChar, 40) { Value = parameter.Key },
+                            new SqlParameter("@value", SqlDbType.NVarChar, -1) { Value = (object)parameter.Value ?? DBNull.Value });
                     }
+
+                    commandBatch.ExecuteNonQuery();
                 }
 
                 return jobId;
@@ -155,7 +189,7 @@ $@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.Schema
                 if (jobData == null) return null;
 
                 // TODO: conversion exception could be thrown.
-                var invocationData = InvocationData.Deserialize(jobData.InvocationData);
+                var invocationData = InvocationData.DeserializePayload(jobData.InvocationData);
 
                 if (!String.IsNullOrEmpty(jobData.Arguments))
                 {
@@ -167,7 +201,7 @@ $@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.Schema
 
                 try
                 {
-                    job = invocationData.Deserialize();
+                    job = invocationData.DeserializeJob();
                 }
                 catch (JobLoadException ex)
                 {
@@ -203,7 +237,7 @@ where j.Id = @jobId";
                 }
 
                 var data = new Dictionary<string, string>(
-                    JobHelper.FromJson<Dictionary<string, string>>(sqlState.Data),
+                    SerializationHelper.Deserialize<Dictionary<string, string>>(sqlState.Data),
                     StringComparer.OrdinalIgnoreCase);
 
                 return new StateData
@@ -261,13 +295,24 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
 
         public override string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
-            if (toScore < fromScore) throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.");
+            return GetFirstByLowestScoreFromSet(key, fromScore, toScore, 1).FirstOrDefault();
+        }
 
-            return _storage.UseConnection(_dedicatedConnection, connection => connection.ExecuteScalar<string>(
-                $@"select top 1 Value from [{_storage.SchemaName}].[Set] with (readcommittedlock, forceseek) where [Key] = @key and Score between @from and @to order by Score",
-                new { key, from = fromScore, to = toScore },
-                commandTimeout: _storage.CommandTimeout));
+        public override List<string> GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore, int count)
+        {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (count <= 0) throw new ArgumentException("The value must be a positive number", nameof(count));
+            if (toScore < fromScore) throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.", nameof(toScore));
+
+            return _storage.UseConnection(_dedicatedConnection, connection =>
+            {
+                var result = connection.Query<string>(
+                    $@"select top (@count) Value from [{_storage.SchemaName}].[Set] with (readcommittedlock, forceseek) where [Key] = @key and Score between @from and @to order by Score",
+                    new { count = count, key, from = fromScore, to = toScore },
+                    commandTimeout: _storage.CommandTimeout);
+
+                return result.ToList();
+            });
         }
 
         public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
@@ -275,28 +320,39 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
 
-            string sql =
-$@"
-exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive', @LockOwner=N'Session', @LockTimeout=-1;
-;merge [{_storage.SchemaName}].Hash with (holdlock, forceseek) as Target
+            var sql =
+$@";merge [{_storage.SchemaName}].Hash with (holdlock, forceseek) as Target
 using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
 on Target.[Key] = Source.[Key] and Target.Field = Source.Field
 when matched then update set Value = Source.Value
-when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);
-exec sp_releaseapplock @Resource=@resource, @LockOwner=N'Session';";
+when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
+
+            var lockResourceKey = $"{_storage.SchemaName}:Hash:Lock";
 
             _storage.UseTransaction(_dedicatedConnection, (connection, transaction) =>
             {
                 using (var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
                 {
+                    if (!_storage.Options.DisableGlobalLocks)
+                    {
+                        commandBatch.Append(
+                            "SET XACT_ABORT ON;exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive', @LockOwner=N'Transaction', @LockTimeout=-1;",
+                            new SqlParameter("@resource", lockResourceKey));
+                    }
 
                     foreach (var keyValuePair in keyValuePairs)
                     {
                         commandBatch.Append(sql,
                             new SqlParameter("@key", key),
                             new SqlParameter("@field", keyValuePair.Key),
-                            new SqlParameter("@value", (object) keyValuePair.Value ?? DBNull.Value),
-                            new SqlParameter("@resource", $"{_storage.SchemaName}:Hash:Lock"));
+                            new SqlParameter("@value", (object) keyValuePair.Value ?? DBNull.Value));
+                    }
+
+                    if (!_storage.Options.DisableGlobalLocks)
+                    {
+                        commandBatch.Append(
+                            "exec sp_releaseapplock @Resource=@resource, @LockOwner=N'Transaction';",
+                            new SqlParameter("@resource", lockResourceKey));
                     }
 
                     commandBatch.Connection = connection;
@@ -345,7 +401,7 @@ using (VALUES (@id, @data, @heartbeat)) as Source (Id, Data, Heartbeat)
 on Target.Id = Source.Id
 when matched then update set Data = Source.Data, LastHeartbeat = Source.Heartbeat
 when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat);",
-                    new { id = serverId, data = JobHelper.ToJson(data), heartbeat = DateTime.UtcNow },
+                    new { id = serverId, data = SerializationHelper.Serialize(data), heartbeat = DateTime.UtcNow },
                     commandTimeout: _storage.CommandTimeout);
             });
         }

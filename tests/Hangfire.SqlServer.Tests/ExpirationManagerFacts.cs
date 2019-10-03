@@ -1,8 +1,10 @@
-﻿using System;
+﻿extern alias ReferencedDapper;
+
+using System;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
-using Dapper;
+using ReferencedDapper::Dapper;
 using Xunit;
 
 namespace Hangfire.SqlServer.Tests
@@ -92,7 +94,7 @@ values ('', '', getutcdate(), @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
                 var manager = CreateManager(connection);
-                _cts.CancelAfter(TimeSpan.FromSeconds(10));
+
                 // Act
                 manager.Execute(_cts.Token);
 

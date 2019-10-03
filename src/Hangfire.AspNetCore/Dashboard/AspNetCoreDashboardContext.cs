@@ -36,14 +36,16 @@ namespace Hangfire.Dashboard
             Request = new AspNetCoreDashboardRequest(httpContext);
             Response = new AspNetCoreDashboardResponse(httpContext);
 
-            var antiforgery = HttpContext.RequestServices.GetService<IAntiforgery>();
-
-            if (antiforgery != null)
+            if (!options.IgnoreAntiforgeryToken)
             {
-                var tokenSet = antiforgery.GetAndStoreTokens(HttpContext);
+                var antiforgery = HttpContext.RequestServices.GetService<IAntiforgery>();
+                var tokenSet = antiforgery?.GetAndStoreTokens(HttpContext);
 
-                AntiforgeryHeader = tokenSet.HeaderName;
-                AntiforgeryToken = tokenSet.RequestToken;
+                if (tokenSet != null)
+                {
+                    AntiforgeryHeader = tokenSet.HeaderName;
+                    AntiforgeryToken = tokenSet.RequestToken;
+                }
             }
         }
 

@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
@@ -23,8 +24,8 @@ namespace Hangfire.Processing
 {
     internal static class TaskExtensions
     {
-#if NETFULL
-        internal static readonly WaitHandle InvalidWaitHandleInstance = new InvalidWaitHandle();
+        private static readonly Type[] EmptyTypes = new Type[0];
+        private static readonly WaitHandle InvalidWaitHandleInstance = new InvalidWaitHandle();
 
         public static Task<bool> AsTask([NotNull] this WaitHandle waitHandle, CancellationToken token)
         {
@@ -38,7 +39,7 @@ namespace Hangfire.Processing
 
             token.ThrowIfCancellationRequested();
 
-            var tcs = new TaskCompletionSource<bool>(/*TaskCreationOptions.RunContinuationsAsynchronously*/);
+            var tcs = CreateCompletionSource<bool>();
             var registration = ThreadPool.RegisterWaitForSingleObject(waitHandle, CallBack, tcs, timeout, executeOnlyOnce: true);
 
             if (token.CanBeCanceled)
@@ -46,15 +47,14 @@ namespace Hangfire.Processing
                 token.Register(Callback, Tuple.Create(registration, tcs, token), useSynchronizationContext: false);
             }
 
-            return await tcs.Task;
+            return await tcs.Task.ConfigureAwait(false);
         }
-#endif
 
         public static async Task AsTask(this CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var tcs = new TaskCompletionSource<object>(/*TaskCreationOptions.RunContinuationsAsynchronously*/);
+            var tcs = CreateCompletionSource<object>();
 
             if (cancellationToken.CanBeCanceled)
             {
@@ -67,7 +67,78 @@ namespace Hangfire.Processing
             await tcs.Task.ConfigureAwait(false);
         }
 
-#if NETFULL
+        public static bool IsTaskLike(this Type type, out Func<object, Task> getTaskFunc)
+        {
+            var typeInfo = type.GetTypeInfo();
+
+            // There are no primitive types that behave as Task
+            if (!typeInfo.IsPrimitive)
+            {
+                if (typeof(Task).GetTypeInfo().IsAssignableFrom(typeInfo))
+                {
+                    getTaskFunc = obj => (Task)obj;
+                    return true;
+                }
+
+                // We are don't relying on GetAwaiter/GetResult methods for ValueTask,
+                // because it's not a valid pattern to use them as written here:
+                // https://devblogs.microsoft.com/dotnet/understanding-the-whys-whats-and-whens-of-valuetask/#user-content-valid-consumption-patterns-for-valuetasks
+                // So we're using their `AsTask` method to create a task first, and then
+                // waiting on it.
+                // This method can be replaced with wrapping in a custom awaiter like
+                // in ASP.NET Core, but this step requires using the `await` keyword
+                // to get the result, so can be implemented only in future.
+                if (typeInfo.FullName.StartsWith("System.Threading.Tasks.ValueTask", StringComparison.Ordinal))
+                {
+                    var asTask = type.GetRuntimeMethod("AsTask", EmptyTypes);
+
+                    if (asTask != null && asTask.IsPublic && !asTask.IsStatic &&
+                        typeof(Task).GetTypeInfo().IsAssignableFrom(asTask.ReturnType.GetTypeInfo()))
+                    {
+                        getTaskFunc = obj => (Task) asTask.Invoke(obj, null);
+                        return true;
+                    }
+                }
+            }
+
+            getTaskFunc = null;
+            return false;
+        }
+
+        public static object GetTaskLikeResult([NotNull] this Task task, object obj, Type returnType)
+        {
+            if (task == null) throw new ArgumentNullException(nameof(task));
+
+            if (task != obj)
+            {
+                // We shouldn't call GetAwaiter/GetResult on ValueTask directly, because
+                // there may be a race condition as tells us this article:
+                // https://devblogs.microsoft.com/dotnet/understanding-the-whys-whats-and-whens-of-valuetask/#user-content-valid-consumption-patterns-for-valuetasks
+                // So we are waiting on task, returned by the AsTask method to ensure it's
+                // completed, before querying for the result.
+                task.GetAwaiter().GetResult();
+            }
+
+            // ReturnType is used instead of task.GetType, because we should return `null` result,
+            // when method is returning non-generic Task. However async state machines may use
+            // Task<VoidTaskResult> or Task<VoidResult> for these cases, and the number of such
+            // void types is pretty high. So it's much safer to call GetAwaiter/GetResult on an
+            // original result object.
+
+            // Awaitable type must have a public parameterless GetAwaiter instance method, ...
+            var getAwaiter = returnType.GetRuntimeMethod("GetAwaiter", EmptyTypes);
+            if (getAwaiter == null || getAwaiter.IsStatic || !getAwaiter.IsPublic) return null;
+
+            var awaiterType = getAwaiter.ReturnType;
+
+            // ... and also have a public parameterless GetResult instance method
+            var getResult = awaiterType.GetRuntimeMethod("GetResult", EmptyTypes);
+            if (getResult == null || getResult.IsStatic || !getResult.IsPublic) return null;
+
+            var awaiter = getAwaiter.Invoke(obj, null);
+            return getResult.Invoke(awaiter, null);
+        }
+
         private static void CallBack(object state, bool timedOut)
         {
             // We do call the Unregister method to prevent race condition between
@@ -84,26 +155,43 @@ namespace Hangfire.Processing
             var ctx = (Tuple<RegisteredWaitHandle, TaskCompletionSource<bool>, CancellationToken>)state;
 
             ctx.Item1.Unregister(InvalidWaitHandleInstance);
-            ctx.Item2.TrySetCanceled(/*ctx.Item3*/);
+            TrySetCanceled(ctx.Item2, ctx.Item3);
         }
-#endif
 
         private static void Action(object state)
         {
             var ctx = (Tuple<TaskCompletionSource<object>, CancellationToken>)state;
-            ctx.Item1.TrySetCanceled(/*ctx.Item2*/);
+            TrySetCanceled(ctx.Item1, ctx.Item2);
         }
 
-#if NETFULL
+        private static TaskCompletionSource<T> CreateCompletionSource<T>()
+        {
+            return new TaskCompletionSource<T>(
+#if !NET45
+                TaskCreationOptions.RunContinuationsAsynchronously
+#endif
+            );
+        }
+
+        private static void TrySetCanceled<T>(TaskCompletionSource<T> source, CancellationToken token)
+        {
+            source.TrySetCanceled(
+#if !NET45
+                token
+#endif
+                );
+        }
+
         private sealed class InvalidWaitHandle : WaitHandle
         {
+#if !NETSTANDARD1_3
             [Obsolete("Use the SafeWaitHandle property instead.")]
             public override IntPtr Handle
             {
                 get { return InvalidHandle; }
                 set { throw new InvalidOperationException(); }
             }
-        }
 #endif
+        }
     }
 }

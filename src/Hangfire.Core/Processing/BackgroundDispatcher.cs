@@ -45,14 +45,12 @@ namespace Hangfire.Processing
             [NotNull] Func<ThreadStart, IEnumerable<Thread>> threadFactory)
         {
             if (threadFactory == null) throw new ArgumentNullException(nameof(threadFactory));
-            if (execution == null) throw new ArgumentNullException(nameof(execution));
-            if (action == null) throw new ArgumentNullException(nameof(action));
 
-            _execution = execution;
-            _action = action;
+            _execution = execution ?? throw new ArgumentNullException(nameof(execution));
+            _action = action ?? throw new ArgumentNullException(nameof(action));
             _state = state;
 
-#if NETFULL
+#if !NETSTANDARD1_3
             AppDomainUnloadMonitor.EnsureInitialized();
 #endif
 
@@ -79,10 +77,10 @@ namespace Hangfire.Processing
             return _stopped.WaitOne(timeout);
         }
 
-        public async Task WaitAsync(CancellationToken cancellationToken)
+        public async Task WaitAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await await Task.WhenAny(_stoppedTcs.Task, cancellationToken.AsTask());
+            await await Task.WhenAny(_stoppedTcs.Task, Task.Delay(timeout, cancellationToken)).ConfigureAwait(false);
         }
 
         public void Dispose()
@@ -113,20 +111,18 @@ namespace Hangfire.Processing
             }
             catch (Exception ex)
             {
-#if NETFULL
+#if !NETSTANDARD1_3
                 if (!(ex is ThreadAbortException) || !AppDomainUnloadMonitor.IsUnloading)
 #endif
                 {
                     try
                     {
-                        // todo explain dispatcher is stopped
-                        _logger.FatalException("Unexpected exception occurred in BackgroundDispatcher. Please report it to developers.", ex);
+                        _logger.FatalException("Dispatcher is stopped due to an exception, you need to restart the server manually. Please report it to Hangfire developers.", ex);
                     }
                     catch
                     {
-#if NETFULL
-                        // todo add original and current exceptions
-                        Trace.WriteLine("Unexpected exception occurred while logging an exception: ");
+#if !NETSTANDARD1_3
+                        Trace.WriteLine($"Dispatcher is stopped due to an exception, you need to restart the server manually. Please report it to Hangfire developers: {ex}");
 #endif
                     }
                 }

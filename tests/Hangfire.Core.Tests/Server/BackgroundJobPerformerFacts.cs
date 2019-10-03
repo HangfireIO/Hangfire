@@ -5,9 +5,7 @@ using System.Threading;
 using Hangfire.Common;
 using Hangfire.Server;
 using Moq;
-#if NETFULL
 using Moq.Sequences;
-#endif
 using Xunit;
 
 // ReSharper disable AssignNullToNotNullAttribute
@@ -142,7 +140,6 @@ namespace Hangfire.Core.Tests.Server
                 context.Exception is InvalidOperationException)));
         }
 
-#if NETFULL
         [Fact, Sequence]
         public void Run_CallsExceptionFilters_InReverseOrder()
         {
@@ -164,7 +161,6 @@ namespace Hangfire.Core.Tests.Server
 
             // Assert - see the `SequenceAttribute` class.
         }
-#endif
 
         [Fact]
         public void Run_EatsException_WhenItWasHandlerByFilter()
@@ -184,7 +180,6 @@ namespace Hangfire.Core.Tests.Server
             performer.Perform(_context.Object);
         }
 
-#if NETFULL
         [Fact, Sequence]
         public void Run_CallsServerFilters_BeforeAndAfterTheCreationOfAJob()
         {
@@ -228,7 +223,6 @@ namespace Hangfire.Core.Tests.Server
 
             // Assert - see the `SequenceAttribute` class.
         }
-#endif
 
         [Fact]
         public void Run_DoesNotCallBoth_Perform_And_OnPerforming_WhenFilterCancelsThis()

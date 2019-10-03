@@ -18,7 +18,9 @@
 SET NOCOUNT ON
 SET XACT_ABORT ON
 DECLARE @TARGET_SCHEMA_VERSION INT;
-SET @TARGET_SCHEMA_VERSION = 6;
+DECLARE @DISABLE_HEAVY_MIGRATIONS BIT;
+SET @TARGET_SCHEMA_VERSION = 7;
+--SET @DISABLE_HEAVY_MIGRATIONS = 1;
 
 PRINT 'Installing Hangfire SQL objects...';
 
@@ -61,13 +63,21 @@ PRINT 'Current Hangfire schema version: ' + CASE @CURRENT_SCHEMA_VERSION WHEN NU
 IF @CURRENT_SCHEMA_VERSION IS NOT NULL AND @CURRENT_SCHEMA_VERSION > @TARGET_SCHEMA_VERSION
 BEGIN
     ROLLBACK TRANSACTION;
-    RAISERROR(N'Hangfire current database schema version %d is newer than the configured SqlServerStorage schema version %d. Please update to the latest Hangfire.SqlServer NuGet package.', 11, 1,
-        @CURRENT_SCHEMA_VERSION, @TARGET_SCHEMA_VERSION);
+    PRINT 'Hangfire current database schema version ' + CAST(@CURRENT_SCHEMA_VERSION AS NVARCHAR) +
+          ' is newer than the configured SqlServerStorage schema version ' + CAST(@TARGET_SCHEMA_VERSION AS NVARCHAR) +
+          '. Will not apply any migrations.';
+    RETURN;
 END
 
 -- Install [HangFire] schema objects
 IF @CURRENT_SCHEMA_VERSION IS NULL
 BEGIN
+    IF @DISABLE_HEAVY_MIGRATIONS = 1
+    BEGIN
+        SET @DISABLE_HEAVY_MIGRATIONS = 0;
+        PRINT 'Enabling HEAVY_MIGRATIONS, because we are installing objects from scratch';
+    END
+
     PRINT 'Installing schema version 1';
         
     -- Create job tables
@@ -381,7 +391,13 @@ BEGIN
 	SET @CURRENT_SCHEMA_VERSION = 5;
 END
 
-IF @CURRENT_SCHEMA_VERSION = 5
+IF @CURRENT_SCHEMA_VERSION = 5 AND @DISABLE_HEAVY_MIGRATIONS = 1
+BEGIN
+    PRINT 'Migration process STOPPED at schema version ' + CAST(@CURRENT_SCHEMA_VERSION AS NVARCHAR) +
+          '. WILL NOT upgrade to schema version ' + CAST(@TARGET_SCHEMA_VERSION AS NVARCHAR) +
+          ', because @DISABLE_HEAVY_MIGRATIONS option is set.';
+END
+ELSE IF @CURRENT_SCHEMA_VERSION = 5
 BEGIN
 	PRINT 'Installing schema version 6';
 
@@ -640,15 +656,28 @@ BEGIN
 	PRINT 'Re-created constraint [FK_HangFire_JobParameter_Job]';
 
 	SET @CURRENT_SCHEMA_VERSION = 6;
-END	
+END
 
-/*IF @CURRENT_SCHEMA_VERSION = 6
+IF @CURRENT_SCHEMA_VERSION = 6
 BEGIN
 	PRINT 'Installing schema version 7';
 
-	 Insert migration here
+	DROP INDEX [IX_HangFire_Set_Score] ON [HangFire].[Set];
+	PRINT 'Dropped index [IX_HangFire_Set_Score]';
+
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Set_Score] ON [HangFire].[Set] ([Key], [Score]);
+	PRINT 'Created index [IX_HangFire_Set_Score] with the proper composite key';
 
 	SET @CURRENT_SCHEMA_VERSION = 7;
+END
+
+/*IF @CURRENT_SCHEMA_VERSION = 7
+BEGIN
+	PRINT 'Installing schema version 8';
+
+	 Insert migration here
+
+	SET @CURRENT_SCHEMA_VERSION = 8;
 END*/
 
 UPDATE [HangFire].[Schema] SET [Version] = @CURRENT_SCHEMA_VERSION

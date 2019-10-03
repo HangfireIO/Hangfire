@@ -128,7 +128,12 @@
                                         <td class="min-width">
                                             @if (stateData != null && stateData.Data.ContainsKey("Options") && !String.IsNullOrWhiteSpace(stateData.Data["Options"]))
                                             {
-                                                <code>@stateData.Data["Options"]</code>
+                                                var optionsDescription = stateData.Data["Options"];
+                                                if (Enum.TryParse(optionsDescription, out JobContinuationOptions options))
+                                                {
+                                                    optionsDescription = options.ToString("G");
+                                                }
+                                                <code>@optionsDescription</code>
                                             }
                                             else
                                             {

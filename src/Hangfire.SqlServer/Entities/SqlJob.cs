@@ -31,5 +31,6 @@ namespace Hangfire.SqlServer.Entities
         public string StateName { get; set; }
         public string StateReason { get; set; }
         public string StateData { get; set; }
+        public DateTime? StateChanged { get; set; }
     }
 }

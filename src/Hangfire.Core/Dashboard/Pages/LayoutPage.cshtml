@@ -14,10 +14,19 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="none">
-    <meta name="csrf-header" content="@Context.AntiforgeryHeader">
-    <meta name="csrf-token" content="@Context.AntiforgeryToken">
+    @if (!DashboardOptions.IgnoreAntiforgeryToken)
+    {
+        if (!String.IsNullOrWhiteSpace(Context.AntiforgeryHeader))
+        {
+            @: <meta name="csrf-header" content="@Context.AntiforgeryHeader">
+        }
+        if (!String.IsNullOrWhiteSpace(Context.AntiforgeryToken))
+        {
+            @: <meta name="csrf-token" content="@Context.AntiforgeryToken">
+        }
+    }
     @{ var version = GetType().GetTypeInfo().Assembly.GetName().Version; }
-    <link rel="stylesheet" href="@Url.To($"/css{version.Major}{version.Minor}{version.Build}")">
+    <link rel="stylesheet" href="@Url.To($"/css{version.Major}{version.Minor}{version.Build}0")">
 </head>
     <body>
         <!-- Wrap all page content here -->
@@ -78,6 +87,6 @@
              data-pollurl="@(Url.To("/stats"))">
         </div>
 
-        <script src="@Url.To($"/js{version.Major}{version.Minor}{version.Build}")"></script>
+        <script src="@Url.To($"/js{version.Major}{version.Minor}{version.Build}0")"></script>
     </body>
 </html>

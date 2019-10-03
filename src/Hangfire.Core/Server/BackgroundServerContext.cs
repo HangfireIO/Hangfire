@@ -27,24 +27,23 @@ namespace Hangfire.Server
             [NotNull] string serverId,
             [NotNull] JobStorage storage,
             [NotNull] IDictionary<string, object> properties, 
-            CancellationToken stopToken, 
-            CancellationToken abortToken)
+            CancellationToken stoppingToken, 
+            CancellationToken stoppedToken,
+            CancellationToken shutdownToken)
         {
-            if (serverId == null) throw new ArgumentNullException(nameof(serverId));
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
-            if (properties == null) throw new ArgumentNullException(nameof(properties));
-
-            ServerId = serverId;
-            Storage = storage;
-            Properties = properties;
-            StopToken = stopToken;
-            AbortToken = abortToken;
+            ServerId = serverId ?? throw new ArgumentNullException(nameof(serverId));
+            Storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            Properties = properties ?? throw new ArgumentNullException(nameof(properties));
+            StoppingToken = stoppingToken;
+            StoppedToken = stoppedToken;
+            ShutdownToken = shutdownToken;
         }
 
         public string ServerId { get; }
         public JobStorage Storage { get; }
         public IDictionary<string, object> Properties { get; }
-        public CancellationToken StopToken { get; }
-        public CancellationToken AbortToken { get; }
+        public CancellationToken StoppingToken { get; }
+        public CancellationToken StoppedToken { get; }
+        public CancellationToken ShutdownToken { get; }
     }
 }

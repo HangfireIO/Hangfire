@@ -339,7 +339,7 @@ namespace Hangfire.Logging
             return GetLogger(typeof(T));
         }
 
-#if NETFULL
+#if !NETSTANDARD1_3
         /// <summary>
         /// Gets a logger for the current class.
         /// </summary>
@@ -391,7 +391,7 @@ namespace Hangfire.Logging
             new Tuple<IsLoggerAvailable, CreateLogProvider>(SerilogLogProvider.IsLoggerAvailable, () => new SerilogLogProvider()),
             new Tuple<IsLoggerAvailable, CreateLogProvider>(NLogLogProvider.IsLoggerAvailable, () => new NLogLogProvider()),
             new Tuple<IsLoggerAvailable, CreateLogProvider>(Log4NetLogProvider.IsLoggerAvailable, () => new Log4NetLogProvider()),
-#if NETFULL
+#if !NETSTANDARD1_3
             new Tuple<IsLoggerAvailable, CreateLogProvider>(EntLibLogProvider.IsLoggerAvailable, () => new EntLibLogProvider()),
             new Tuple<IsLoggerAvailable, CreateLogProvider>(LoupeLogProvider.IsLoggerAvailable, () => new LoupeLogProvider()),
             new Tuple<IsLoggerAvailable, CreateLogProvider>(ElmahLogProvider.IsLoggerAvailable, () => new ElmahLogProvider()),
@@ -828,7 +828,7 @@ namespace Hangfire.Logging.LogProviders
         }
     }
 
-#if NETFULL
+#if !NETSTANDARD1_3
     public class EntLibLogProvider : ILogProvider
     {
         private const string TypeTemplate = "Microsoft.Practices.EnterpriseLibrary.Logging.{0}, Microsoft.Practices.EnterpriseLibrary.Logging";
@@ -1040,7 +1040,7 @@ namespace Hangfire.Logging.LogProviders
                 valueParam,
                 destructureObjectsParam
             }).Compile();
-            return name => func("Name", name, false);
+            return name => func("SourceContext", name, false);
         }
 
         internal class SerilogCallbacks
@@ -1241,7 +1241,7 @@ namespace Hangfire.Logging.LogProviders
         }
     }
 
-#if NETFULL
+#if !NETSTANDARD1_3
     public class LoupeLogProvider : ILogProvider
     {
         private static bool _providerIsAvailableOverride = true;
@@ -1371,6 +1371,8 @@ namespace Hangfire.Logging.LogProviders
 
     public class ColouredConsoleLogProvider : ILogProvider
     {
+        private readonly LogLevel _minLevel;
+
         static ColouredConsoleLogProvider()
         {
             MessageFormatter = DefaultMessageFormatter;
@@ -1384,9 +1386,19 @@ namespace Hangfire.Logging.LogProviders
                     };
         }
 
+        public ColouredConsoleLogProvider()
+            : this(LogLevel.Info)
+        {
+        }
+
+        public ColouredConsoleLogProvider(LogLevel minLevel)
+        {
+            _minLevel = minLevel;
+        }
+
         public ILog GetLogger(string name)
         {
-            return new ColouredConsoleLogger(name);
+            return new ColouredConsoleLogger(name, _minLevel);
         }
 
         /// <summary>
@@ -1438,14 +1450,21 @@ namespace Hangfire.Logging.LogProviders
         {
             private static readonly object Lock = new object();
             private readonly string _name;
+            private readonly LogLevel _minLevel;
 
-            public ColouredConsoleLogger(string name)
+            public ColouredConsoleLogger(string name, LogLevel minLevel)
             {
                 _name = name;
+                _minLevel = minLevel;
             }
 
             public bool Log(LogLevel logLevel, Func<string> messageFunc, Exception exception)
             {
+                if (logLevel < _minLevel)
+                {
+                    return false;
+                }
+
                 if (messageFunc == null)
                 {
                     return true;
@@ -1484,7 +1503,7 @@ namespace Hangfire.Logging.LogProviders
         }
     }
 
-#if NETFULL
+#if !NETSTANDARD1_3
     public class ElmahLogProvider : ILogProvider
     {
         private static bool _providerIsAvailableOverride = true;

@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization.Formatters;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Storage;
@@ -78,6 +77,7 @@ namespace Hangfire.States
         /// <param name="parentId">The identifier of a background job to wait for.</param>
         /// <param name="nextState">The next state for the continuation.</param>
         /// <param name="options">Options to configure a continuation.</param>
+        [JsonConstructor]
         public AwaitingState([NotNull] string parentId, [NotNull] IState nextState, JobContinuationOptions options)
             : this(parentId, nextState, options, DefaultExpiration)
         {
@@ -91,7 +91,6 @@ namespace Hangfire.States
         /// <param name="nextState">The next state for the continuation.</param>
         /// <param name="options">Options to configure the continuation.</param>
         /// <param name="expiration">The expiration time for the continuation.</param>
-        [JsonConstructor]
         public AwaitingState(
             [NotNull] string parentId,
             [NotNull] IState nextState,
@@ -184,8 +183,8 @@ namespace Hangfire.States
         ///         <term><c>NextState</c></term>
         ///         <term><see cref="IState"/></term>
         ///         <term>
-        ///             <see cref="JsonConvert.DeserializeObject(string, JsonSerializerSettings)"/> with 
-        ///             <see cref="TypeNameHandling.Objects"/>
+        ///             <see cref="SerializationHelper.Deserialize{T}(string, SerializationOption)"/> with 
+        ///             <see cref="SerializationOption.TypedInternal"/>
         ///         </term>
         ///         <description>Please see the <see cref="NextState"/> property.</description>
         ///     </item>
@@ -201,20 +200,23 @@ namespace Hangfire.States
         /// </remarks>
         public Dictionary<string, string> SerializeData()
         {
-            return new Dictionary<string, string>
+            var result = new Dictionary<string, string>
             {
                 { "ParentId", ParentId },
-                {
-                    "NextState", JsonConvert.SerializeObject(NextState, new JsonSerializerSettings
-                    {
-                        TypeNameHandling = TypeNameHandling.Objects,
-                        TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
-                        DefaultValueHandling = DefaultValueHandling.Ignore
-                    })
-                },
-                { "Options", Options.ToString("D") },
-                { "Expiration", Expiration.ToString() }
+                { "NextState", SerializationHelper.Serialize(NextState, SerializationOption.TypedInternal) }
             };
+
+            if (GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_170))
+            {
+                result.Add("Options", Options.ToString("D"));
+            }
+            else
+            {
+                result.Add("Options", Options.ToString("G"));
+                result.Add("Expiration", Expiration.ToString());
+            }
+
+            return result;
         }
 
         internal class Handler : IStateHandler

@@ -1,11 +1,12 @@
-﻿using System;
+﻿extern alias ReferencedDapper;
+
+using System;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Transactions;
-using Dapper;
+using ReferencedDapper::Dapper;
 using Hangfire.Storage;
 using Xunit;
 

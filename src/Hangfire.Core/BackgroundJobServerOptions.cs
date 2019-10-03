@@ -16,6 +16,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
@@ -33,6 +34,7 @@ namespace Hangfire
         private TimeSpan _serverTimeout;
         private TimeSpan _serverCheckInterval;
         private TimeSpan _heartbeatInterval;
+        private TimeSpan _stopTimeout;
         private TimeSpan _shutdownTimeout;
         private TimeSpan _schedulePollingInterval;
 
@@ -40,14 +42,18 @@ namespace Hangfire
         {
             WorkerCount = Math.Min(Environment.ProcessorCount * 5, MaxDefaultWorkerCount);
             Queues = new[] { EnqueuedState.DefaultQueue };
-            ShutdownTimeout = BackgroundProcessingServerOptions.DefaultShutdownTimeout;
+            StopTimeout = BackgroundProcessingServerOptions.DefaultStopTimeout;
+            ShutdownTimeout = BackgroundProcessingServer.DefaultShutdownTimeout;
             SchedulePollingInterval = DelayedJobScheduler.DefaultPollingDelay;
             HeartbeatInterval = BackgroundProcessingServerOptions.DefaultHeartbeatInterval;
             ServerTimeout = ServerWatchdog.DefaultServerTimeout;
             ServerCheckInterval = ServerWatchdog.DefaultCheckInterval;
+            CancellationCheckInterval = ServerJobCancellationWatcher.DefaultCheckInterval;
             
             FilterProvider = null;
             Activator = null;
+            TimeZoneResolver = null;
+            TaskScheduler = TaskScheduler.Default;
         }
         
         public string ServerName { get; set; }
@@ -72,6 +78,19 @@ namespace Hangfire
                 if (value.Length == 0) throw new ArgumentException("You should specify at least one queue to listen.", nameof(value));
 
                 _queues = value;
+            }
+        }
+
+        public TimeSpan StopTimeout
+        {
+            get => _stopTimeout;
+            set
+            {
+                if ((value < TimeSpan.Zero && value != Timeout.InfiniteTimeSpan) || value.TotalMilliseconds > Int32.MaxValue)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), $"StopTimeout must be either equal to or less than {Int32.MaxValue} milliseconds and non-negative or infinite");
+                }
+                _stopTimeout = value;
             }
         }
 
@@ -143,6 +162,8 @@ namespace Hangfire
             }
         }
 
+        public TimeSpan CancellationCheckInterval { get; set; }
+
         [Obsolete("Please use `ServerTimeout` or `ServerCheckInterval` options instead. Will be removed in 2.0.0.")]
         public ServerWatchdogOptions ServerWatchdogOptions { get; set; }
 
@@ -151,5 +172,11 @@ namespace Hangfire
 
         [CanBeNull]
         public JobActivator Activator { get; set; }
+
+        [CanBeNull]
+        public ITimeZoneResolver TimeZoneResolver { get; set; }
+
+        [CanBeNull]
+        public TaskScheduler TaskScheduler { get; set; }
     }
 }

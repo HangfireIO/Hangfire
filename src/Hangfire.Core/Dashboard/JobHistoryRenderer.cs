@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Text;
 using Hangfire.Common;
 using Hangfire.States;
-using Newtonsoft.Json;
 
 namespace Hangfire.Dashboard
 {
@@ -256,16 +255,20 @@ namespace Hangfire.Dashboard
 
             if (stateData.ContainsKey("NextState"))
             {
-                var nextState = JsonConvert.DeserializeObject<IState>(
-                    stateData["NextState"],
-                    new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
+                var nextState = SerializationHelper.Deserialize<IState>(stateData["NextState"], SerializationOption.TypedInternal);
 
                 builder.Append($"<dt>Next State</dt><dd>{helper.StateLabel(nextState.Name)}</dd>");
             }
 
             if (stateData.ContainsKey("Options"))
             {
-                builder.Append($"<dt>Options</dt><dd><code>{helper.HtmlEncode(stateData["Options"])}</code></dd>");
+                var optionsDescription = stateData["Options"];
+                if (Enum.TryParse(optionsDescription, out JobContinuationOptions options))
+                {
+                    optionsDescription = options.ToString("G");
+                }
+
+                builder.Append($"<dt>Options</dt><dd><code>{helper.HtmlEncode(optionsDescription)}</code></dd>");
             }
 
             builder.Append("</dl>");

@@ -18,14 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
-using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Processing;
-using Hangfire.Storage;
 
 namespace Hangfire.Server
 {
@@ -43,14 +40,11 @@ namespace Hangfire.Server
             [NotNull] BackgroundProcessingServerOptions options,
             [NotNull] IDictionary<string, object> properties)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (dispatcherBuilders == null) throw new ArgumentNullException(nameof(dispatcherBuilders));
-            if (options == null) throw new ArgumentNullException(nameof(options));
-            if (properties == null) throw new ArgumentNullException(nameof(properties));
 
-            _storage = storage;
-            _options = options;
-            _properties = properties;
+            _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+            _properties = properties ?? throw new ArgumentNullException(nameof(properties));
 
             var builders = new List<IBackgroundProcessDispatcherBuilder>();
             builders.AddRange(GetRequiredProcesses());
@@ -60,66 +54,80 @@ namespace Hangfire.Server
             _dispatcherBuilders = builders.ToArray();
         }
 
-        public void Execute(Guid executionId, BackgroundExecution execution, CancellationToken shutdownToken, CancellationToken abortShutdownToken)
+        public void Execute(Guid executionId, BackgroundExecution execution, CancellationToken stoppingToken,
+            CancellationToken stoppedToken, CancellationToken shutdownToken)
         {
             var serverId = GetServerId();
             Stopwatch stoppedAt = null;
 
+            void HandleStopRestartSignal() => Interlocked.CompareExchange(ref stoppedAt, Stopwatch.StartNew(), null);
+            void HandleStoppingSignal() => _logger.Info($"{GetServerTemplate(serverId)} caught stopping signal...");
+            void HandleStoppedSignal() => _logger.Info($"{GetServerTemplate(serverId)} caught stopped signal...");
+            void HandleShutdownSignal() => _logger.Warn($"{GetServerTemplate(serverId)} caught shutdown signal...");
+
+            void HandleRestartSignal()
+            {
+                if (!stoppingToken.IsCancellationRequested)
+                {
+                    _logger.Info($"{GetServerTemplate(serverId)} caught restart signal...");
+                }
+            }
+
             //using (LogProvider.OpenMappedContext("ServerId", serverId.ToString()))
-            using (var restartCts = CancellationTokenSource.CreateLinkedTokenSource(shutdownToken))
-            using (var forcedRestartCts = CancellationTokenSource.CreateLinkedTokenSource(abortShutdownToken))
-            using (restartCts.Token.Register(() => stoppedAt = Stopwatch.StartNew()))
+            using (var restartCts = new CancellationTokenSource())
+            using (var restartStoppingCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, restartCts.Token))
+            using (var restartStoppedCts = CancellationTokenSource.CreateLinkedTokenSource(stoppedToken, restartCts.Token))
+            using (var restartShutdownCts = CancellationTokenSource.CreateLinkedTokenSource(shutdownToken, restartCts.Token))
+            using (restartStoppingCts.Token.Register(HandleStopRestartSignal))
+            using (stoppingToken.Register(HandleStoppingSignal))
+            using (stoppedToken.Register(HandleStoppedSignal))
+            using (shutdownToken.Register(HandleShutdownSignal))
+            using (restartCts.Token.Register(HandleRestartSignal))
             {
                 var context = new BackgroundServerContext(
                     serverId,
                     _storage,
                     _properties,
-                    restartCts.Token,
-                    forcedRestartCts.Token);
+                    restartStoppingCts.Token,
+                    restartStoppedCts.Token,
+                    restartShutdownCts.Token);
 
                 var dispatchers = new List<IBackgroundDispatcher>();
 
                 CreateServer(context);
 
-                if (!shutdownToken.IsCancellationRequested)
-                {
-                    try
-                    {
-                        StartDispatchers(context, dispatchers);
-
-                        execution.NotifySucceeded();
-                        RunHeartbeatLoop(context);
-                    }
-                    catch (Exception ex)
-                    {
-                        HandleDispatcherException(context, ex);
-                    }
-                    finally
-                    {
-                        restartCts.Cancel();
-                        forcedRestartCts.CancelAfter(_options.RestartTimeout);
-                    }
-                }
-
                 try
                 {
-                    WaitForDispatchers(context, dispatchers);
-                    ServerDelete(context, stoppedAt);
-                }
-                catch (Exception ex)
-                {
-                    _logger.WarnException($"{GetServerTemplate(serverId)} there was an exception, server may not be removed", ex);
+                    // ReSharper disable once AccessToDisposedClosure
+                    using (CreateHeartbeatProcess(context, () => restartCts.Cancel()))
+                    {
+                        StartDispatchers(context, dispatchers);
+                        execution.NotifySucceeded();
+
+                        WaitForDispatchers(context, dispatchers);
+
+                        restartCts.Cancel();
+                    }
                 }
                 finally
                 {
                     DisposeDispatchers(dispatchers);
+                    ServerDelete(context, stoppedAt);
                 }
             }
         }
 
+        private IBackgroundDispatcher CreateHeartbeatProcess(BackgroundServerContext context, Action requestRestart)
+        {
+            return new ServerHeartbeatProcess(_options.HeartbeatInterval, _options.ServerTimeout, requestRestart)
+                .UseBackgroundPool(threadCount: 1)
+                .Create(context, _options);
+        }
+
         private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses()
         {
-            yield return new ServerWatchdog(_options.ServerCheckInterval, _options.ServerTimeout).UseBackgroundPool(1);
+            yield return new ServerWatchdog(_options.ServerCheckInterval, _options.ServerTimeout).UseBackgroundPool(threadCount: 1);
+            yield return new ServerJobCancellationWatcher(_options.CancellationCheckInterval).UseBackgroundPool(threadCount: 1);
         }
 
         private IEnumerable<IBackgroundProcessDispatcherBuilder> GetStorageComponents()
@@ -132,77 +140,68 @@ namespace Hangfire.Server
         private string GetServerId()
         {
             var serverName = _options.ServerName
-                             ?? Environment.GetEnvironmentVariable("COMPUTERNAME")
-                             ?? Environment.GetEnvironmentVariable("HOSTNAME");
+                 ?? Environment.GetEnvironmentVariable("COMPUTERNAME")
+                 ?? Environment.GetEnvironmentVariable("HOSTNAME");
 
             var guid = Guid.NewGuid().ToString();
 
-#if NETFULL
+#if !NETSTANDARD1_3
             if (!String.IsNullOrWhiteSpace(serverName))
             {
                 serverName += ":" + Process.GetCurrentProcess().Id;
             }
 #endif
 
-            return !String.IsNullOrWhiteSpace(serverName)
-                ? $"{serverName.ToLowerInvariant()}:{guid}"
-                : guid;
+            return !String.IsNullOrWhiteSpace(serverName) ? $"{serverName.ToLowerInvariant()}:{guid}" : guid;
         }
 
         private void CreateServer(BackgroundServerContext context)
         {
+            _logger.Trace($"{GetServerTemplate(context.ServerId)} is announcing itself...");
+
             var stopwatch = Stopwatch.StartNew();
-            _logger.Trace($"{GetServerTemplate(context.ServerId)} is announcing itself");
 
             using (var connection = _storage.GetConnection())
             {
                 connection.AnnounceServer(context.ServerId, GetServerContext(_properties));
             }
 
+            stopwatch.Stop();
+
+            ServerJobCancellationToken.AddServer(context.ServerId);
             _logger.Info($"{GetServerTemplate(context.ServerId)} successfully announced in {stopwatch.Elapsed.TotalMilliseconds} ms");
-        }
-
-        private static ServerContext GetServerContext(IDictionary<string, object> properties)
-        {
-            var serverContext = new ServerContext();
-
-            if (properties.ContainsKey("Queues"))
-            {
-                var array = properties["Queues"] as string[];
-                if (array != null)
-                {
-                    serverContext.Queues = array;
-                }
-            }
-
-            if (properties.ContainsKey("WorkerCount"))
-            {
-                serverContext.WorkerCount = (int)properties["WorkerCount"];
-            }
-            return serverContext;
         }
 
         private void ServerDelete(BackgroundServerContext context, Stopwatch stoppedAt)
         {
-            var stopwatch = Stopwatch.StartNew();
-            _logger.Trace($"{GetServerTemplate(context.ServerId)} is reporting itself as stopped...");
-
-            using (var connection = _storage.GetConnection())
+            try
             {
-                // todo check for CT
-                connection.RemoveServer(context.ServerId);
-            }
+                _logger.Trace($"{GetServerTemplate(context.ServerId)} is reporting itself as stopped...");
+                ServerJobCancellationToken.RemoveServer(context.ServerId);
 
-            _logger.Info($"{GetServerTemplate(context.ServerId)} successfully reported itself as stopped in {stopwatch.Elapsed.TotalMilliseconds} ms");
-            _logger.Info($"{GetServerTemplate(context.ServerId)} has been stopped in total {stoppedAt?.Elapsed.TotalMilliseconds ?? 0} ms");
+                var stopwatch = Stopwatch.StartNew();
+
+                using (var connection = _storage.GetConnection())
+                {
+                    connection.RemoveServer(context.ServerId);
+                }
+
+                stopwatch.Stop();
+
+                _logger.Info($"{GetServerTemplate(context.ServerId)} successfully reported itself as stopped in {stopwatch.Elapsed.TotalMilliseconds} ms");
+                _logger.Info($"{GetServerTemplate(context.ServerId)} has been stopped in total {stoppedAt?.Elapsed.TotalMilliseconds ?? 0} ms");
+            }
+            catch (Exception ex)
+            {
+                _logger.WarnException($"{GetServerTemplate(context.ServerId)} there was an exception, server may not be removed", ex);
+            }
         }
 
         private void StartDispatchers(BackgroundServerContext context, ICollection<IBackgroundDispatcher> dispatchers)
         {
             if (_dispatcherBuilders.Length == 0)
             {
-                _logger.Warn($"{GetServerTemplate(context.ServerId)} no dispatcher builders registered, just sending heartbeats");
-                return;
+                throw new InvalidOperationException("No dispatchers registered for the processing server.");
             }
 
             _logger.Info($"{GetServerTemplate(context.ServerId)} is starting the registered dispatchers: {String.Join(", ", _dispatcherBuilders.Select(builder => $"{builder}"))}...");
@@ -215,12 +214,6 @@ namespace Hangfire.Server
             _logger.Info($"{GetServerTemplate(context.ServerId)} all the dispatchers started");
         }
 
-        private void HandleDispatcherException(BackgroundServerContext context, Exception ex)
-        {
-            _logger.ErrorException($"{GetServerTemplate(context.ServerId)} caught an exception while creating dispatcher, will restart...", ex);
-            ExceptionDispatchInfo.Capture(ex).Throw();
-        }
-
         private void WaitForDispatchers(
             BackgroundServerContext context,
             IReadOnlyList<IBackgroundDispatcher> dispatchers)
@@ -229,14 +222,12 @@ namespace Hangfire.Server
 
             var waitTasks = new Task[dispatchers.Count];
 
-            _logger.Info($"{GetServerTemplate(context.ServerId)} waiting for dispatchers to stop...");
-
             for (var i = 0; i < dispatchers.Count; i++)
             {
-                waitTasks[i] = dispatchers[i].WaitAsync(context.AbortToken);
+                waitTasks[i] = dispatchers[i].WaitAsync(Timeout.InfiniteTimeSpan, CancellationToken.None);
             }
 
-            Task.WaitAny(Task.WhenAll(waitTasks), context.AbortToken.AsTask());
+            Task.WaitAny(Task.WhenAll(waitTasks), context.ShutdownToken.AsTask());
 
             var nonStopped = new List<IBackgroundDispatcher>();
 
@@ -267,71 +258,33 @@ namespace Hangfire.Server
             }
         }
 
-        private void RunHeartbeatLoop(BackgroundServerContext context)
+        private static ServerContext GetServerContext(IDictionary<string, object> properties)
         {
-            var faultedSince = (Stopwatch)null;
+            var serverContext = new ServerContext();
 
-            while (!context.StopToken.IsCancellationRequested)
+            if (properties.ContainsKey("Queues") && properties["Queues"] is string[] array)
             {
-                try
-                {
-                    context.StopToken.ThrowIfCancellationRequested();
-
-                    _logger.Trace($"{GetServerTemplate(context.ServerId)} waiting for {_options.HeartbeatInterval} delay before sending a heartbeat");
-
-                    context.StopToken.Wait(_options.HeartbeatInterval);
-                    context.StopToken.ThrowIfCancellationRequested();
-
-                    try
-                    {
-                        using (var connection = _storage.GetConnection())
-                        {
-                            connection.Heartbeat(context.ServerId);
-                        }
-
-                        _logger.Debug($"{GetServerTemplate(context.ServerId)} heartbeat successfully sent");
-                    }
-                    catch (BackgroundServerGoneException)
-                    {
-                        _logger.Warn($"{GetServerTemplate(context.ServerId)} was considered dead by other servers, restarting...");
-                        return;
-                    }
-
-                    if (faultedSince != null)
-                    {
-                        _logger.Info($"{GetServerTemplate(context.ServerId)} is now able to continue sending heartbeats");
-                        faultedSince = null;
-                    }
-                }
-                catch (OperationCanceledException) when (context.StopToken.IsCancellationRequested)
-                {
-                    _logger.Info($"{GetServerTemplate(context.ServerId)} caught the stop signal, stopping the server...");
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    _logger.WarnException($"{GetServerTemplate(context.ServerId)} encountered an exception while sending heartbeat", ex);
-
-                    if (faultedSince == null) faultedSince = Stopwatch.StartNew();
-                    if (faultedSince.Elapsed >= _options.ServerTimeout)
-                    {
-                        _logger.Error($"{GetServerTemplate(context.ServerId)} will be restarted due to server time out");
-                        return;
-                    }
-                }
+                serverContext.Queues = array;
             }
+
+            if (properties.ContainsKey("WorkerCount"))
+            {
+                serverContext.WorkerCount = (int)properties["WorkerCount"];
+            }
+
+            return serverContext;
         }
 
-        private static string GetServerTemplate(string serverId)
+        internal static string GetServerTemplate(string serverId)
         {
             string name = serverId;
 
             try
             {
-                var splitted = serverId.Split(new [] { ':' }, StringSplitOptions.RemoveEmptyEntries);
-                if (splitted.Length == 3 && splitted[2].Length > 8)
+                var split = serverId.Split(new [] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+                if (split.Length == 3 && split[2].Length > 8)
                 {
-                    name = $"{splitted[0]}:{splitted[1]}:{splitted[2].Substring(0, 8)}";
+                    name = $"{split[0]}:{split[1]}:{split[2].Substring(0, 8)}";
                 }
             }
             catch

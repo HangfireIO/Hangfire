@@ -30,7 +30,7 @@ namespace Hangfire.Server
             [NotNull] JobStorage storage,
             [NotNull] IDictionary<string, object> properties,
             CancellationToken cancellationToken)
-            : this(serverId, storage, properties, Guid.NewGuid(), cancellationToken, CancellationToken.None)
+            : this(serverId, storage, properties, Guid.NewGuid(), cancellationToken, cancellationToken, cancellationToken)
         {
         }
 
@@ -39,8 +39,9 @@ namespace Hangfire.Server
             [NotNull] JobStorage storage, 
             [NotNull] IDictionary<string, object> properties, 
             Guid executionId,
-            CancellationToken cancellationToken,
-            CancellationToken abortToken)
+            CancellationToken stoppingToken,
+            CancellationToken stoppedToken,
+            CancellationToken shutdownToken)
         {
             if (serverId == null) throw new ArgumentNullException(nameof(serverId));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -50,8 +51,9 @@ namespace Hangfire.Server
             Storage = storage;
             ExecutionId = executionId;
             Properties = new Dictionary<string, object>(properties, StringComparer.OrdinalIgnoreCase);
-            CancellationToken = cancellationToken;
-            AbortToken = abortToken;
+            StoppingToken = stoppingToken;
+            StoppedToken = stoppedToken;
+            ShutdownToken = shutdownToken;
         }
         
         [NotNull]
@@ -65,14 +67,22 @@ namespace Hangfire.Server
 
         public Guid ExecutionId { get; }
 
-        public CancellationToken CancellationToken { get; }
-        public CancellationToken AbortToken { get; }
+        [Obsolete("Please use the StoppingToken property instead, will be removed in 2.0.0.")]
+        public CancellationToken CancellationToken => StoppingToken;
 
-        public bool IsShutdownRequested => CancellationToken.IsCancellationRequested;
+        public CancellationToken StoppingToken { get; }
+        public CancellationToken StoppedToken { get; }
+        public CancellationToken ShutdownToken { get; }
+
+        public bool IsStopping => StoppingToken.IsCancellationRequested || StoppedToken.IsCancellationRequested || ShutdownToken.IsCancellationRequested;
+        public bool IsStopped => StoppedToken.IsCancellationRequested || ShutdownToken.IsCancellationRequested;
+
+        [Obsolete("Please use IsStopping or IsStopped properties instead. Will be removed in 2.0.0.")]
+        public bool IsShutdownRequested => StoppingToken.IsCancellationRequested;
 
         public void Wait(TimeSpan timeout)
         {
-            CancellationToken.Wait(timeout);
+            StoppingToken.Wait(timeout);
         }
     }
 }

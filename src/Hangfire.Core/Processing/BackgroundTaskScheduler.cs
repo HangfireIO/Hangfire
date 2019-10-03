@@ -57,9 +57,12 @@ namespace Hangfire.Processing
         // enqueue continuations to local queues (comparing to ContinueWith-based continuations).
         private readonly ConcurrentQueue<Task> _queue = new ConcurrentQueue<Task>();
 
+        private readonly Thread[] _threads;
+        private readonly HashSet<int> _ourThreadIds;
+
         // Regular semaphore is used to perform waits, when there are no tasks to be
         // processed. It doesn't use any kind of busy waiting to allow "foreground"
-        // schedulers to perform useful work, instead of cunsuming CPU time by spinning
+        // schedulers to perform useful work, instead of consuming CPU time by spinning
         // with the hope of a task arrival. It is used with care with no unnecessary
         // operations involved.
         private readonly Semaphore _semaphore;
@@ -68,16 +71,23 @@ namespace Hangfire.Processing
         private readonly WaitHandle[] _waitHandles;
         private readonly Action<Exception> _exceptionHandler;
 
-        [ThreadStatic]
-        private static int _threadOwnerId;
         private int _disposed;
 
+        /// <summary>Initializes a new instance of the <see cref="BackgroundTaskScheduler"/> with
+        /// the number of threads based on the <see cref="Environment.ProcessorCount"/> property.
+        /// All the created threads will be started to dispatch <see cref="Task"/>
+        /// instances scheduled to run on this scheduler.</summary>
         public BackgroundTaskScheduler()
             : this(Environment.ProcessorCount)
         {
         }
 
-        // todo document
+        /// <summary>Initializes a new instance of the <see cref="BackgroundTaskScheduler"/> with
+        /// the given number of dedicated threads that will be creating using the default thread
+        /// factory. All the created threads will be started to dispatch <see cref="Task"/>
+        /// instances scheduled to run on this scheduler.</summary>
+        /// <param name="threadCount">The number of dedicated threads will be created.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="threadCount"/> is less or equal to zero.</exception>
         public BackgroundTaskScheduler(int threadCount)
             : this(threadStart => DefaultThreadFactory(threadStart, threadCount), DefaultExceptionHandler)
         {
@@ -105,27 +115,32 @@ namespace Hangfire.Processing
             // Stopped event should always be the first in this array, see the DispatchLoop method.
             _waitHandles = new WaitHandle[] { _stopped, _semaphore };
 
-#if NETFULL
+#if !NETSTANDARD1_3
             AppDomainUnloadMonitor.EnsureInitialized();
 #endif
 
-            var threads = threadFactory(DispatchLoop)?.ToArray();
+            _threads = threadFactory(DispatchLoop)?.ToArray();
 
-            if (threads == null || threads.Length == 0)
+            if (_threads == null || _threads.Length == 0)
             {
-                throw new ArgumentException("At least one unstarted thread should be created.", nameof(threadFactory));
+                throw new ArgumentException("At least one non-started thread should be created.", nameof(threadFactory));
             }
 
-            if (threads.Any(thread => thread == null || (thread.ThreadState & ThreadState.Unstarted) == 0))
+            if (_threads.Any(thread => thread == null || (thread.ThreadState & ThreadState.Unstarted) == 0))
             {
                 throw new ArgumentException("All the threads should be non-null and in the ThreadState.Unstarted state.", nameof(threadFactory));
             }
 
-            foreach (var thread in threads)
+            foreach (var thread in _threads)
             {
                 thread.Start();
             }
+
+            _ourThreadIds = new HashSet<int>(_threads.Select(x => x.ManagedThreadId));
         }
+
+        /// <inheritdoc />
+        public override int MaximumConcurrencyLevel => _threads.Length;
 
         /// <summary>Signals all the threads to be stopped and releases all the unmanaged resources.
         /// This method should be called only when you are uninterested on the corresponding tasks,
@@ -158,7 +173,12 @@ namespace Hangfire.Processing
         /// <inheritdoc />
         protected override void QueueTask(Task task)
         {
-            // todo ThreadInterruptedException may be there
+            // Both ConcurrentQueue and Semaphore may cause a thread to be blocked. During that
+            // transition, CLR is checking whether there are any Thread Interrupts pending and
+            // throws if any. Any exception thrown from this method will lead to an unobserved
+            // exception posted to ThreadPool due to the internal implementation of TaskScheduler,
+            // and this may bring the whole process down.
+            // To prevent this, WaitHandle.WaitAny is required in the work loop.
 
             _queue.Enqueue(task);
             _semaphore.Release();
@@ -167,19 +187,18 @@ namespace Hangfire.Processing
         /// <inheritdoc />
         protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued)
         {
-            // There's no efficient way to dequeue an arbitary element from concurrent queue.
+            // There's no efficient way to dequeue an arbitrary element from concurrent queue.
             if (taskWasPreviouslyQueued) return false;
+
             // This method can be called from other schedulers that want to get some advice
             // whether or not inline execution of tasks that belongs to the current scheduler.
             // Since we want to execute as much tasks as possible on our dedicated threads,
             // we allow to inline only requests from the current scheduler, i.e. just to save
             // some time, since no queueing will be involved.
 
-            // This method can be called before _threadOwnerId is initialized, but this race
-            // is benign, since the "false" value will be returned, and inlining will be
-            // disallowed.
+            if (!_ourThreadIds.Contains(Thread.CurrentThread.ManagedThreadId)) return false;
 
-            return Id == _threadOwnerId && TryExecuteTask(task);
+            return TryExecuteTask(task);
         }
 
         /// <inheritdoc />
@@ -199,9 +218,6 @@ namespace Hangfire.Processing
                 threads[i] = new Thread(threadStart)
                 {
                     Name = $"BackgroundThread #{i + 1}",
-#if NETFULL
-                    Priority = ThreadPriority.BelowNormal,
-#endif
                     IsBackground = true,
                 };
             }
@@ -211,7 +227,7 @@ namespace Hangfire.Processing
 
         private static void DefaultExceptionHandler(Exception exception)
         {
-#if NETFULL
+#if !NETSTANDARD1_3
             Trace.WriteLine("An unhandled exception occurred: " + exception);
 #endif
         }
@@ -220,25 +236,29 @@ namespace Hangfire.Processing
         {
             try
             {
-                _threadOwnerId = Id;
+                // The outer loop is needed to keep threads under our control by catching
+                // TIE and TAE exceptions to prevent their destructive behavior of killing
+                // our threads without need to re-create them as implemented in ThreadPool.
+                // Unfortunately we don't have the same reset mechanisms available, because
+                // they are native and aren't exposed to public, so we'll do this on a best
+                // effort basis.
 
-                // The outer loop is needed todo. To keep threads under our control by
-                // catching TIE and TAE exceptions to prevent their destructive behavior
-                // as in ThreadPool threads without need to re-create threads.
-                // Of course, we have no the same resetting mechanisms, because they are
-                // native and aren't exposed to public, but anyway.
-                // todo reset: name, culture, priority?
-                // !pThread->IsBackground() ||
-                // pThread->HasCriticalRegion() ||
-                // pThread->HasThreadAffinity();
+                // TODO: Reset Thread.Name, Thread.CurrentCulture and Thread.Priority?
+                // What about ExecutionContext and SynchronizationContext? But we don't have
+                // public APIs to handle this.
 
-                while (_disposed == 0)
+                while (Volatile.Read(ref _disposed) == 0)
                 {
                     Task task = null;
 
                     try
                     {
-                        // True kernel wait is required here for ThreadInterruptedException
+                        // Kernel wait is required here, because otherwise any pending thread
+                        // interrupt may kill the whole process, because of internal TaskScheduler
+                        // implementation. By calling WaitHandle.WaitAny here, we are causing
+                        // CLR to check if there are pending interrupts earlier, and in the
+                        // place where we can safely handle it.
+                        
                         while (WaitHandle.WaitAny(_waitHandles) != 0)
                         {
                             if (_queue.TryDequeue(out task))
@@ -253,40 +273,43 @@ namespace Hangfire.Processing
                         // before the call to WaitAny. Other methods don't throw exceptions
                         // of this type. Since this is an ordinal shutdown, we can skip
                         // the reporting logic.
-                        // todo will exit on disposed
-                        //Console.WriteLine("ObjectDisposedException");
                     }
-#if NETFULL
+#if !NETSTANDARD1_3
                     catch (Exception ex) when (ex is ThreadAbortException || ex is ThreadInterruptedException)
                     {
+                        // We don't have methods like IThreadPoolWorkItem.MarkAborted in public
+                        // API, but we should handle non-completed task in case of TIE or TAE,
+                        // because there's a high probability to lose continuations. So we're
+                        // simply re-queueing it.
                         if (task != null && !task.IsCompleted)
                         {
                             QueueTask(task);
                         }
-
-                        if ((Thread.CurrentThread.ThreadState & ThreadState.AbortRequested) != 0 &&
-                            AppDomainUnloadMonitor.IsUnloading)
+                        
+                        // Normally, there should be no check for AppDomain unload condition, because we can't
+                        // get here on appdomain unloads. But Mono < 5.4 has an issue with Thread.ResetAbort, and
+                        // it can prevent appdomain to be unloaded: https://bugzilla.xamarin.com/show_bug.cgi?id=5804.
+                        // It's better to reassure this can't happen under all circumstances.
+                        if ((Thread.CurrentThread.ThreadState & ThreadState.AbortRequested) != 0 && 
+                            !AppDomainUnloadMonitor.IsUnloading)
                         {
-                            // todo don't threadabort on Mono < 5.4 when appdomain is unloaded
-                            // may throw PlatformNotSupportedException on .NET Core on non-Windows
-                            // platforms.
                             try
                             {
                                 Thread.ResetAbort();
                             }
                             catch (PlatformNotSupportedException)
                             {
-                                // todo log this?
                             }
                         }
                     }
 #endif
                 }
             }
-#if NETFULL
+#if !NETSTANDARD1_3
             catch (ThreadAbortException ex)
             {
-                // todo catch only when appdomain isn't unloaded, otherwise it's expected
+                // ThreadAbortException is expected during AppDomain unloads, so we
+                // don't call the exception handler in this case.
                 if (!AppDomainUnloadMonitor.IsUnloading)
                 {
                     InvokeUnhandledExceptionHandler(ex);
@@ -306,7 +329,7 @@ namespace Hangfire.Processing
                 var handler = _exceptionHandler;
                 handler?.Invoke(exception);
             }
-#if NETFULL
+#if !NETSTANDARD1_3
             catch (Exception ex)
             {
                 Trace.WriteLine("Unexpected exception caught in exception handler itself." + Environment.NewLine + ex);

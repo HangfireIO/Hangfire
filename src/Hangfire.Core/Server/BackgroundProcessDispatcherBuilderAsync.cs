@@ -22,7 +22,7 @@ using Hangfire.Processing;
 
 namespace Hangfire.Server
 {
-    public sealed class BackgroundProcessDispatcherBuilderAsync : IBackgroundProcessDispatcherBuilder
+    internal sealed class BackgroundProcessDispatcherBuilderAsync : IBackgroundProcessDispatcherBuilder
     {
         private readonly int _maxConcurrency;
         private readonly bool _ownsScheduler;
@@ -51,8 +51,7 @@ namespace Hangfire.Server
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             var execution = new BackgroundExecution(
-                context.StopToken, 
-                context.AbortToken,
+                context.StoppingToken,
                 new BackgroundExecutionOptions
                 {
                     Name = _process.GetType().Name,
@@ -83,12 +82,13 @@ namespace Hangfire.Server
                 serverContext.Storage,
                 serverContext.Properties.ToDictionary(x => x.Key, x => x.Value), 
                 executionId, 
-                serverContext.StopToken, 
-                serverContext.AbortToken);
+                serverContext.StoppingToken, 
+                serverContext.StoppedToken,
+                serverContext.ShutdownToken);
 
-            while (!context.IsShutdownRequested)
+            while (!context.IsStopping)
             {
-                await tuple.Item1.ExecuteAsync(context);
+                await tuple.Item1.ExecuteAsync(context).ConfigureAwait(true);
                 tuple.Item3.NotifySucceeded();
             }
         }

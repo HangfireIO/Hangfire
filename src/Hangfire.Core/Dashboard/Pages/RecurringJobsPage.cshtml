@@ -108,20 +108,44 @@
                                         @* ReSharper disable once EmptyGeneralCatchClause *@
                                         @{
                                             string cronDescription = null;
-#if NETFULL
-                                            try
+                                            bool cronError = false;
+
+                                            if (!String.IsNullOrEmpty(job.Cron))
                                             {
-                                                cronDescription = string.IsNullOrEmpty(job.Cron) ? null : CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.Cron);
-                                            }
-                                            catch (FormatException)
-                                            {
-                                            }
+                                                try
+                                                {
+                                                    RecurringJobEntity.ParseCronExpression(job.Cron);
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    cronDescription = ex.Message;
+                                                    cronError = true;
+                                                }
+
+                                                if (cronDescription == null)
+                                                {
+#if FEATURE_CRONDESCRIPTOR
+                                                    try
+                                                    {
+                                                        cronDescription = CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.Cron);
+                                                    }
+                                                    catch (FormatException)
+                                                    {
+                                                    }
 #endif
+                                                }
+                                            }
                                         }
 
                                         @if (cronDescription != null)
                                         {
-                                            <code title="@cronDescription">@job.Cron</code>
+                                        <code title="@cronDescription">
+                                            @if (cronError)
+                                            {
+                                                <span class="glyphicon glyphicon-exclamation-sign"></span>
+                                            }
+                                            @job.Cron
+                                        </code>
                                         }
                                         else
                                         {
@@ -131,7 +155,19 @@
                                     <td class="min-width">
                                         @if (!String.IsNullOrWhiteSpace(job.TimeZoneId))
                                         {
-                                            <span title="@TimeZoneInfo.FindSystemTimeZoneById(job.TimeZoneId).DisplayName" data-container="body">@job.TimeZoneId</span>
+                                            string displayName;
+
+                                            try
+                                            {
+                                                var resolver = DashboardOptions.TimeZoneResolver ?? new DefaultTimeZoneResolver();
+                                                displayName = resolver.GetTimeZoneById(job.TimeZoneId).DisplayName;
+                                            }
+                                            catch
+                                            {
+                                                displayName = null;
+                                            }
+
+                                            <span title="@displayName" data-container="body">@job.TimeZoneId</span>
                                         }
                                         else
                                         {
@@ -143,9 +179,17 @@
                                         {
                                             @: @Html.JobName(job.Job)
                                         }
-                                        else
+                                        else if (job.LoadException != null && job.LoadException.InnerException != null)
                                         {
                                             <em>@job.LoadException.InnerException.Message</em>
+                                        }
+                                        else if (job.LoadException != null)
+                                        {
+                                            <em>@job.LoadException.Message</em>
+                                        }
+                                        else
+                                        {
+                                            <em>@Strings.Common_NotAvailable</em>
                                         }
                                     </td>
                                     <td class="align-right min-width">
@@ -155,7 +199,7 @@
                                         }
                                         else
                                         {
-                                            <em>@Strings.Common_NotAvailable</em>
+                                            <span class="label label-warning text-uppercase" title="@Strings.RecurringJobsPage_RecurringJobDisabled_Tooltip">@Strings.Common_Disabled</span>
                                         }
                                     </td>
                                     <td class="align-right min-width">
@@ -163,7 +207,7 @@
                                         {
                                             if (!String.IsNullOrEmpty(job.LastJobId))
                                             {
-                                                <a href="@Url.JobDetails(job.LastJobId)">
+                                                <a href="@Url.JobDetails(job.LastJobId)" style="text-decoration: none">
                                                     <span class="label label-default label-hover" style="@($"background-color: {JobHistoryRenderer.GetForegroundStateColor(job.LastJobState ?? EnqueuedState.StateName)};")">
                                                         @Html.RelativeTime(job.LastExecution.Value)
                                                     </span>

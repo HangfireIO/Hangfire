@@ -22,16 +22,20 @@ namespace Hangfire.SqlServer
             [NotNull] SqlServerStorage storage,
             long id,
             [NotNull] string jobId,
-            [NotNull] string queue)
+            [NotNull] string queue,
+            [NotNull] DateTime? fetchedAt)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (jobId == null) throw new ArgumentNullException(nameof(jobId));
             if (queue == null) throw new ArgumentNullException(nameof(queue));
+            if (fetchedAt == null) throw new ArgumentNullException(nameof(fetchedAt));
+
             _storage = storage;
 
             Id = id;
             JobId = jobId;
             Queue = queue;
+            FetchedAt = fetchedAt.Value;
 
             if (storage.SlidingInvisibilityTimeout.HasValue)
             {
@@ -45,15 +49,19 @@ namespace Hangfire.SqlServer
         public string JobId { get; }
         public string Queue { get; }
 
+        internal DateTime? FetchedAt { get; private set; }
+
         public void RemoveFromQueue()
         {
             lock (_syncRoot)
             {
+                if (!FetchedAt.HasValue) return;
+
                 _storage.UseConnection(null, connection =>
                 {
                     connection.Execute(
-                        $"delete JQ from {_storage.SchemaName}.JobQueue JQ with (paglock, xlock) where Queue = @queue and Id = @id",
-                        new { queue = Queue, id = Id },
+                        $"delete JQ from {_storage.SchemaName}.JobQueue JQ with ({GetTableHints()}) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
+                        new { queue = Queue, id = Id, fetchedAt = FetchedAt },
                         commandTimeout: _storage.CommandTimeout);
                 });
 
@@ -65,11 +73,13 @@ namespace Hangfire.SqlServer
         {
             lock (_syncRoot)
             {
+                if (!FetchedAt.HasValue) return;
+
                 _storage.UseConnection(null, connection =>
                 {
                     connection.Execute(
-                        $"update {_storage.SchemaName}.JobQueue set FetchedAt = null where Id = @id",
-                        new { id = Id },
+                        $"update {_storage.SchemaName}.JobQueue set FetchedAt = null where Id = @id and FetchedAt = @fetchedAt",
+                        new { id = Id, fetchedAt = FetchedAt },
                         commandTimeout: _storage.CommandTimeout);
                 });
 
@@ -93,21 +103,38 @@ namespace Hangfire.SqlServer
             }
         }
 
+        private string GetTableHints()
+        {
+            if (_storage.Options.UsePageLocksOnDequeue)
+            {
+                return "forceseek, paglock, xlock";
+            }
+
+            return "forceseek, rowlock";
+        }
+
         private void ExecuteKeepAliveQuery(object obj)
         {
             lock (_syncRoot)
             {
+                if (!FetchedAt.HasValue) return;
+
                 if (_requeued || _removedFromQueue) return;
 
                 try
                 {
                     _storage.UseConnection(null, connection =>
                     {
-                        connection.Execute(
-                            $"update {_storage.SchemaName}.JobQueue set FetchedAt = getutcdate() where Id = @id",
-                            new { id = Id },
+                        FetchedAt = connection.ExecuteScalar<DateTime?>(
+                            $"update {_storage.SchemaName}.JobQueue set FetchedAt = getutcdate() output INSERTED.FetchedAt where Id = @id and FetchedAt = @fetchedAt ",
+                            new { id = Id, fetchedAt = FetchedAt },
                             commandTimeout: _storage.CommandTimeout);
                     });
+
+                    if (!FetchedAt.HasValue)
+                    {
+                        _logger.Warn($"Background job identifier '{JobId}' was fetched by another worker, will not execute keep alive.");
+                    }
 
                     _logger.Trace($"Keep-alive query for message {Id} sent");
                 }

@@ -11,6 +11,9 @@
     
     var monitor = Storage.GetMonitoringApi();
     var servers = monitor.Servers();
+    var now = DateTime.UtcNow;
+    var inconclusiveThreshold = TimeSpan.FromMinutes(1);
+    var possiblyAbortedThreshold = TimeSpan.FromMinutes(5);
 }
 
 <div class="row">
@@ -25,6 +28,15 @@
         }
         else
         {
+            if (servers.Any(x => x.Heartbeat.HasValue && x.Heartbeat.Value < now.Add(-inconclusiveThreshold)))
+            {
+                <div class="alert alert-info">
+                    <h4>Aborted servers will be removed automatically</h4>
+                    Some of the servers don't have heartbeat reported within the last minute and may be aborted. If they don't report heartbeat in the near future, they will be removed automatically after timeout is exceeded, no manual action is required.
+                    Incomplete background jobs running on those servers will be re-queued automatically, but you can speed up the process by checking the <a href="@Url.To("/jobs/processing")">Processing Jobs</a> page.
+                </div>
+            }
+
             <div class="table-responsive">
                 <table class="table">
                     <thead>
@@ -40,7 +52,21 @@
                         @foreach (var server in servers)
                         {
                             <tr>
-                                <td>@Html.ServerId(server.Name)</td>
+                                <td>
+                                    @if (server.Heartbeat < now.Add(-possiblyAbortedThreshold))
+                                    {
+                                        <span class="glyphicon glyphicon-alert text-danger" title="Possibly aborted"></span>
+                                    }
+                                    else if (server.Heartbeat < now.Add(-inconclusiveThreshold))
+                                    {
+                                        <span class="glyphicon" style="margin-right: 14px;"></span>
+                                    }
+                                    else
+                                    {
+                                        <span class="glyphicon glyphicon-ok text-success" title="Active"></span>
+                                    }
+                                    @Html.ServerId(server.Name)
+                                </td>
                                 <td>@server.WorkersCount</td>
                                 <td>@Html.Raw(String.Join(", ", server.Queues.Select(Html.QueueLabel)))</td>
                                 <td>@Html.RelativeTime(server.StartedAt)</td>

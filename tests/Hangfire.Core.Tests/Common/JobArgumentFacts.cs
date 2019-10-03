@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using Hangfire.Common;
+using Hangfire.Storage;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
@@ -116,7 +118,7 @@ namespace Hangfire.Core.Tests.Common
 			CreateAndPerform(Int64Value);
 		}
 
-#if NETFULL
+#if !NETCOREAPP1_0
         private const UInt64 UInt64Value = UInt64.MaxValue;
 		public void Method(UInt64 value) { Assert.Equal(UInt64Value, value); }
 
@@ -185,7 +187,7 @@ namespace Hangfire.Core.Tests.Common
 			}
 		}
 
-#if NETFULL
+#if !NETCOREAPP1_0
         private static readonly CultureInfo CultureInfoValue = new CultureInfo("ru-RU");
 		public void Method(CultureInfo value) { Assert.Equal(CultureInfoValue, value); }
 
@@ -287,12 +289,25 @@ namespace Hangfire.Core.Tests.Common
 			CreateAndPerform(CustomStructValue, true);
 		}
 
-		public class MyClass
+#pragma warning disable 659
+        public class MyClass : IEquatable<MyClass>
 		{
 			public DateTime CreatedAt { get; set; }
-		}
-		
-		private static readonly MyClass CustomClassValue = new MyClass { CreatedAt = DateTime.UtcNow };
+
+            public bool Equals(MyClass other)
+            {
+                if (other == null) return false;
+                return CreatedAt.Equals(other.CreatedAt);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return Equals(obj as MyClass);
+            }
+        }
+#pragma warning restore 659
+
+        private static readonly MyClass CustomClassValue = new MyClass { CreatedAt = DateTime.UtcNow };
 		public void Method(MyClass value) { Assert.Equal(CustomClassValue.CreatedAt, value.CreatedAt); }
 
 		[Fact]
@@ -308,7 +323,7 @@ namespace Hangfire.Core.Tests.Common
 
 			var serializationMethods = new List<Tuple<string, Func<string>>>();
 
-#if NETFULL
+#if !NETCOREAPP1_0
             if (!checkJsonOnly)
 			{
 				var converter = TypeDescriptor.GetConverter(typeof(T));
@@ -323,9 +338,16 @@ namespace Hangfire.Core.Tests.Common
 				() => JsonConvert.SerializeObject(argumentValue)));
 
 			foreach (var method in serializationMethods)
-			{
-				var job = new Job(type, methodInfo, new[] { method.Item2() });
-				job.Perform(_activator.Object, _token.Object);	
+            {
+                var data = new InvocationData(
+                    methodInfo?.DeclaringType?.AssemblyQualifiedName,
+                    methodInfo?.Name,
+                    JobHelper.ToJson(methodInfo?.GetParameters().Select(x => x.ParameterType).ToArray()),
+                    JobHelper.ToJson(new[] { method.Item2() }));
+
+                var job = data.DeserializeJob();
+
+                Assert.Equal(argumentValue, job.Args[0]);
 			}
 		}
 	}

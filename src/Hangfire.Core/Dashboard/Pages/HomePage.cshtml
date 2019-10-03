@@ -41,9 +41,9 @@
             </div>
         }
         <h3>@Strings.HomePage_RealtimeGraph</h3>
-        <div id="realtimeGraph" data-succeeded="@Statistics.Succeeded" data-failed="@Statistics.Failed"
+        <canvas width="1140" height="250" id="realtimeGraph" data-succeeded="@Statistics.Succeeded" data-failed="@Statistics.Failed"
              data-succeeded-string="@Strings.HomePage_GraphHover_Succeeded"
-             data-failed-string="@Strings.HomePage_GraphHover_Failed"></div>
+             data-failed-string="@Strings.HomePage_GraphHover_Failed"></canvas>
         <div style="display: none;">
             <span data-metric="succeeded:count"></span>
             <span data-metric="failed:count"></span>
@@ -59,12 +59,13 @@
 
         @if (succeeded != null && failed != null)
         {
-            <div id="historyGraph"
+            <canvas width="1140" height="250" id="historyGraph"
                  data-succeeded="@JsonConvert.SerializeObject(succeeded)"
                  data-failed="@JsonConvert.SerializeObject(failed)"
                  data-succeeded-string="@Strings.HomePage_GraphHover_Succeeded"
-                 data-failed-string="@Strings.HomePage_GraphHover_Failed">
-            </div>
+                 data-failed-string="@Strings.HomePage_GraphHover_Failed"
+                 data-period="@period">
+            </canvas>
         }
     </div>
 </div>

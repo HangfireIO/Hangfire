@@ -64,6 +64,30 @@ namespace Hangfire.Core.Tests.States
             Assert.True(JobHelper.DeserializeDateTime(data["DeletedAt"]) != default(DateTime));
         }
 
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
+        public void JsonSerialize_ReturnsCorrectString_Before170()
+        {
+            var state = new DeletedState();
+
+            var serialized = SerializationHelper.Serialize<IState>(state, SerializationOption.TypedInternal);
+
+            Assert.Equal(
+                "{\"$type\":\"Hangfire.States.DeletedState, Hangfire.Core\",\"Reason\":null}",
+                serialized);
+        }
+
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
+        public void JsonSerialize_ReturnsCorrectString_After170()
+        {
+            var state = new DeletedState();
+
+            var serialized = SerializationHelper.Serialize<IState>(state, SerializationOption.TypedInternal);
+
+            Assert.Equal(
+                "{\"$type\":\"Hangfire.States.DeletedState, Hangfire.Core\"}",
+                serialized);
+        }
+
         private static DeletedState CreateState()
         {
             return new DeletedState();

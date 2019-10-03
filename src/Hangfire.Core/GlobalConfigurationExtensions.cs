@@ -17,10 +17,12 @@
 using System;
 using System.ComponentModel;
 using Hangfire.Annotations;
+using Hangfire.Common;
 using Hangfire.Dashboard;
 using Hangfire.Dashboard.Pages;
 using Hangfire.Logging;
 using Hangfire.Logging.LogProviders;
+using Newtonsoft.Json;
 
 namespace Hangfire
 {
@@ -96,6 +98,15 @@ namespace Hangfire
             return configuration.UseLogProvider(new ColouredConsoleLogProvider());
         }
 
+        public static IGlobalConfiguration<ColouredConsoleLogProvider> UseColouredConsoleLogProvider(
+            [NotNull] this IGlobalConfiguration configuration,
+            LogLevel minLevel)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            return configuration.UseLogProvider(new ColouredConsoleLogProvider(minLevel));
+        }
+
         public static IGlobalConfiguration<Log4NetLogProvider> UseLog4NetLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
         {
@@ -104,7 +115,7 @@ namespace Hangfire
             return configuration.UseLogProvider(new Log4NetLogProvider());
         }
 
-#if NETFULL
+#if !NETSTANDARD1_3
         public static IGlobalConfiguration<ElmahLogProvider> UseElmahLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
         {
@@ -121,7 +132,9 @@ namespace Hangfire
 
             return configuration.UseLogProvider(new ElmahLogProvider(minLevel));
         }
+#endif
 
+#if !NETSTANDARD1_3
         public static IGlobalConfiguration<EntLibLogProvider> UseEntLibLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
         {
@@ -129,6 +142,7 @@ namespace Hangfire
 
             return configuration.UseLogProvider(new EntLibLogProvider());
         }
+#endif
 
         public static IGlobalConfiguration<SerilogLogProvider> UseSerilogLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
@@ -138,6 +152,7 @@ namespace Hangfire
             return configuration.UseLogProvider(new SerilogLogProvider());
         }
 
+#if !NETSTANDARD1_3
         public static IGlobalConfiguration<LoupeLogProvider> UseLoupeLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
         {
@@ -167,6 +182,78 @@ namespace Hangfire
             DashboardMetrics.AddMetric(metric);
             HomePage.Metrics.Add(metric);
 
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseTypeResolver(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] Func<string, Type> typeResolver)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            TypeHelper.CurrentTypeResolver = typeResolver;
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseTypeSerializer(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] Func<Type, string> typeSerializer)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            TypeHelper.CurrentTypeSerializer = typeSerializer;
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseDefaultTypeResolver(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseTypeResolver(null);
+        }
+
+        public static IGlobalConfiguration UseDefaultTypeSerializer(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseTypeSerializer(null);
+        }
+
+        public static IGlobalConfiguration UseSimpleAssemblyNameTypeSerializer(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseTypeSerializer(TypeHelper.SimpleAssemblyTypeSerializer);
+        }
+
+        public static IGlobalConfiguration UseIgnoredAssemblyVersionTypeResolver(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseTypeResolver(TypeHelper.IgnoredAssemblyVersionTypeResolver);
+        }
+
+        /// <summary>
+        /// These settings is used to serialize user data like arguments or parameters.
+        /// You can use <see cref="SerializationHelper.Serialize{T}(T, SerializationOption)"/> with <see cref="SerializationOption.User"/> option
+        /// to serialize with specified settings
+        /// </summary>
+        public static IGlobalConfiguration UseSerializerSettings(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] JsonSerializerSettings settings)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            SerializationHelper.SetUserSerializerSettings(settings);
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseRecommendedSerializerSettings(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            SerializationHelper.SetUserSerializerSettings(SerializationHelper.GetInternalSettings());
             return configuration;
         }
 

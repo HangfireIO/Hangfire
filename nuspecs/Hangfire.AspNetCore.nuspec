@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package >
+<package>
   <metadata>
     <id>Hangfire.AspNetCore</id>
     <version>0.0.0</version>
@@ -10,21 +10,16 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>ASP.NET Core support for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2017-2018 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2017-2019 Sergey Odinokov</copyright>
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
-1.7.0-beta2
-
-Merged updates from 1.6.18 – 1.6.20:
-      
-    1.6.20
-    • SECURITY – Use ASP.NET Core's built-in antiforgery validation to prevent CSRF attacks.
-          
-    1.6.18
-    • Added – More Hangfire-related services are now registered in an IoC container (by @pieceofsummer).
-    • Fixed – Queue parameter is ignored in .NET Core when creating a job (by @pieceofsummer).
-    • Fixed – Fix issue with configuration block not called on .NET Core (by @pieceofsummer).
+1.7.0
+• Added – Full .NET Core 2.0 support by explicitly targeting .NET Standard 2.0.
+• Added – An overloaded AddHangfire method with `IServiceProvider` parameter (by @ericgreenmix and @denis-ivanov).
+• Added – `BackgroundJobServerHostedService` class based on `IHostedService` interface.
+• Added – `IServiceCollection.AddHangfireServer` method to register the server during configuration.
+• Changed – Custom services for factory, performer and state changer interfaces will be picked up only when all of them registered.
 
     </releaseNotes>
     <dependencies>
@@ -37,7 +32,6 @@ Merged updates from 1.6.18 – 1.6.20:
         <dependency id="Hangfire.Core" version="[0.0.0]" />
       </group>
       <group targetFramework="netstandard1.3">
-        <dependency id="Microsoft.NETCore.Portable.Compatibility" version="1.0.1" />
         <dependency id="NETStandard.Library" version="1.6.0" />
         <dependency id="System.ComponentModel" version="4.0.1" />
         <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="1.0.0" />
@@ -45,6 +39,14 @@ Merged updates from 1.6.18 – 1.6.20:
         <dependency id="Microsoft.AspNetCore.Antiforgery" version="1.0.0" />
         <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="1.0.0" />
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="1.0.0" />
+        <dependency id="Hangfire.Core" version="[0.0.0]" />
+      </group>
+      <group targetFramework="netstandard2.0">
+        <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="2.0.0" />
+        <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="2.0.0" />
+        <dependency id="Microsoft.AspNetCore.Antiforgery" version="2.0.0" />
+        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="2.0.0" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="2.0.0" />
         <dependency id="Hangfire.Core" version="[0.0.0]" />
       </group>
     </dependencies>
@@ -57,6 +59,10 @@ Merged updates from 1.6.18 – 1.6.20:
     <file src="netstandard1.3\Hangfire.AspNetCore.dll" target="lib\netstandard1.3" />
     <file src="netstandard1.3\Hangfire.AspNetCore.xml" target="lib\netstandard1.3" />
     <file src="netstandard1.3\Hangfire.AspNetCore.pdb" target="lib\netstandard1.3" />
+
+    <file src="netstandard2.0\Hangfire.AspNetCore.dll" target="lib\netstandard2.0" />
+    <file src="netstandard2.0\Hangfire.AspNetCore.xml" target="lib\netstandard2.0" />
+    <file src="netstandard2.0\Hangfire.AspNetCore.pdb" target="lib\netstandard2.0" />
     
     <file src="..\src\Hangfire.AspNetCore\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
 

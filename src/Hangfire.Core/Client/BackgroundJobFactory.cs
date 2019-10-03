@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.Profiling;
 using Hangfire.States;
 
 namespace Hangfire.Client
@@ -48,6 +49,8 @@ namespace Hangfire.Client
             _filterProvider = filterProvider;
             _innerFactory = innerFactory;
         }
+
+        public IStateMachine StateMachine => _innerFactory.StateMachine;
 
         public BackgroundJob Create(CreateContext context)
         {
@@ -101,7 +104,11 @@ namespace Hangfire.Client
             CreatingContext preContext,
             Func<CreatedContext> continuation)
         {
-            filter.OnCreating(preContext);
+            preContext.Profiler.InvokeMeasured(
+                filter,
+                x => x.OnCreating(preContext),
+                $"OnCreating for {preContext.Job.Type.FullName}.{preContext.Job.Method.Name}");
+
             if (preContext.Canceled)
             {
                 return new CreatedContext(preContext, null, true, null);
@@ -118,7 +125,10 @@ namespace Hangfire.Client
                 wasError = true;
                 postContext = new CreatedContext(preContext, null, false, ex);
 
-                filter.OnCreated(postContext);
+                postContext.Profiler.InvokeMeasured(
+                    filter,
+                    x => x.OnCreated(postContext),
+                    $"OnCreated for {postContext.BackgroundJob?.Id ?? "(null)"}");
 
                 if (!postContext.ExceptionHandled)
                 {
@@ -128,7 +138,10 @@ namespace Hangfire.Client
 
             if (!wasError)
             {
-                filter.OnCreated(postContext);
+                postContext.Profiler.InvokeMeasured(
+                    filter,
+                    x => x.OnCreated(postContext),
+                    $"OnCreated for {postContext.BackgroundJob?.Id ?? "(null)"}");
             }
 
             return postContext;
@@ -139,7 +152,10 @@ namespace Hangfire.Client
         {
             foreach (var filter in filters.Reverse())
             {
-                filter.OnClientException(context);
+                context.Profiler.InvokeMeasured(
+                    filter,
+                    x => x.OnClientException(context),
+                    $"OnClientException for {context.Job.Type.FullName}.{context.Job.Method.Name}");
             }
         }
     }

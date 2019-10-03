@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 using Hangfire.Common;
@@ -107,8 +106,11 @@ namespace Hangfire.States
         /// <exception cref="ArgumentException">
         /// The <paramref name="queue"/> argument is not a valid queue name.
         /// </exception>
-        public EnqueuedState([NotNull] string queue)
+        [JsonConstructor]
+        public EnqueuedState([CanBeNull] string queue)
         {
+            queue = queue ?? DefaultQueue;
+
             ValidateQueueName(nameof(queue), queue);
 
             _queue = queue;
@@ -140,7 +142,6 @@ namespace Hangfire.States
         /// The value specified for a set operation is not a valid queue name.
         /// </exception>
         [NotNull]
-        [DefaultValue(DefaultQueue)]
         public string Queue
         {
             get { return _queue; }
@@ -154,6 +155,7 @@ namespace Hangfire.States
         /// <summary>
         /// Gets a date/time when the current state instance was created.
         /// </summary>
+        [JsonIgnore]
         public DateTime EnqueuedAt { get; }
 
         /// <inheritdoc />

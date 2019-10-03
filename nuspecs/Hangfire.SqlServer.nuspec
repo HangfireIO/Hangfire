@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package >
+<package>
   <metadata>
     <id>Hangfire.SqlServer</id>
     <version>0.0.0</version>
@@ -13,29 +13,39 @@
     <copyright>Copyright © 2013 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://www.hangfire.io/blog/
-      
-1.7.0-beta2
-      
-Merged updates from 1.6.18 – 1.6.20:
-      
-    1.6.20
-    • Fixed – Remove the synthetic limitation to support Azure SQL Management instance (by @TimSQL).
-          
-    1.6.19
-    • Fixed – "String or binary data would be truncated" exception when state reason is too long.
-    • Fixed – Command handling in batch mode now stops after the first error due to "XACT_ABORT ON".
-    • Fixed – Make SqlCommandBatch disposable to dispose all the commands.
-          
-    1.6.18
-    • Fixed – Rare deadlocks in SQL Server caused by the SetRangeInHash command.
-    
-1.7.0-beta1
+
+1.7.1
+• Changed – Use blocking fetch implementation only for sub-second polling intervals.
+• Fixed – Don't fail with an exception when can't connect to MSSQL instance during start-up.
+• Fixed – Don't access the `JobQueue` table when using blocking query and don't have results.
+
+1.7.0
+• Added – Full .NET Core 2.0 support by explicitly targeting .NET Standard 2.0.
+• Added – `Schema 7` migration to fix the `IX_HangFire_Set_Score` index to include the `Key` column.
+• Added – `Schema 6` migration with less indexes, better physical layout and `bigint` support (disabled by default).
+• Added – Blocking fetch support for sliding expiration-based fetch to avoid excessive polling.
+• Added – `SqlServerStorageOptions.EnableHeavyMigrations` switch to automatically install even heavy migrations.
+• Added – `SqlServerStorageOptions.DisableGlobalLocks` property to avoid custom locking scheme.
+• Added – `SqlServerStorageOptions.UsePageLocksOnDequeue` property to use less CPU consuming fetch.
 • Added – Callback method to allow to open the database with impersonation (by @BjoernHund).
+• Added – `SqlServerStorageOptions.UseRecommendedIsolationLevel` option to set the minimum possible level.
 • Changed – Identity columns either converted to the `bigint` type, or entirely removed.
 • Changed – Clustered indexes were organized according to the access patterns of their tables.
 • Changed – Most of secondary indexes were either removed or made filtered.
+• Changed – Optimize sliding-expiration-based fetching to use even less CPU time.
+• Changed – Use write reordering and fine-grained locking scheme to improve parallelism.
+• Changed – Monitoring API doesn't check state data to see state transition time.
+• Changed – Allow to use zero-based poll interval when sliding invisibility timeout.
+• Changed – Short paths for the `CreateExpiredJob` method to avoid some round-trips.
+• Changed – Set `SqlParameter` types explicitly to not to duplicate query plans.
+• Changed – Batch support for `AddToQueue` method when default provider is used.
+• Changed – Check `FetchedAt` has expected value to prevent prolonging others' work.
+• Changed – Use more recent Dapper 1.50.7 on all platforms except .NET Framework 4.5.
+• Changed – Dapper package is internalized now even on .NET Core to avoid possible conflicts.
+• Fixed – Avoid unnecessary waits in state changer when job was already expired.
+• Fixed – Cannot resolve the collation conflict in `CountersAggregator`.
 • Fixed – Background processing stops when identity columns exceed the `Int32.MaxValue`.
-• Fixed – Slowdown of scheduled jobs due to the missing index on the [Set] table.
+• Fixed – Slowdown of scheduled jobs due to the missing index on the `[Set]` table.
     </releaseNotes>
     <dependencies>
       <group targetFramework="net45">
@@ -43,12 +53,15 @@ Merged updates from 1.6.18 – 1.6.20:
       </group>
       
       <group targetFramework="netstandard1.3">
-        <dependency id="Microsoft.NETCore.Portable.Compatibility" version="1.0.1" />
         <dependency id="NETStandard.Library" version="1.6.0" />
         <dependency id="System.Data.Common" version="4.1.0" />
         <dependency id="System.Data.SqlClient" version="4.1.0" />
-        <dependency id="Dapper" version="1.50.1" />
         <dependency id="Hangfire.Core" version="[0.0.0]" />
+      </group>
+
+      <group targetFramework="netstandard2.0">
+        <dependency id="Hangfire.Core" version="[0.0.0]" />
+        <dependency id="System.Data.SqlClient" version="4.4.0" />
       </group>
     </dependencies>
   </metadata>
@@ -60,6 +73,10 @@ Merged updates from 1.6.18 – 1.6.20:
     <file src="netstandard1.3\Hangfire.SqlServer.dll" target="lib\netstandard1.3" />
     <file src="netstandard1.3\Hangfire.SqlServer.xml" target="lib\netstandard1.3" />
     <file src="netstandard1.3\Hangfire.SqlServer.pdb" target="lib\netstandard1.3" />
+
+    <file src="netstandard2.0\Hangfire.SqlServer.dll" target="lib\netstandard2.0" />
+    <file src="netstandard2.0\Hangfire.SqlServer.xml" target="lib\netstandard2.0" />
+    <file src="netstandard2.0\Hangfire.SqlServer.pdb" target="lib\netstandard2.0" />
     
     <file src="Tools\DefaultInstall.sql" target="tools\install.sql" />
     <file src="..\src\Hangfire.SqlServer\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />

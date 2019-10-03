@@ -26,11 +26,17 @@ namespace Hangfire.Processing
     internal sealed class BackgroundDispatcherAsync : IBackgroundDispatcher
     {
         private readonly ILog _logger = LogProvider.GetLogger(typeof(BackgroundDispatcherAsync));
+        private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
+        private readonly TaskCompletionSource<object> _stoppedTcs = new TaskCompletionSource<object>();
+
+        private readonly IBackgroundExecution _execution;
         private readonly Func<Guid, object, Task> _action;
         private readonly object _state;
-        private readonly IBackgroundExecution _execution;
+
         private readonly TaskScheduler _taskScheduler;
-        private readonly Task[] _tasks;
+        private readonly bool _ownsScheduler;
+
+        private int _running;
 
         public BackgroundDispatcherAsync(
             [NotNull] IBackgroundExecution execution,
@@ -40,91 +46,48 @@ namespace Hangfire.Processing
             int maxConcurrency,
             bool ownsScheduler)
         {
-            if (execution == null) throw new ArgumentNullException(nameof(execution));
-            if (action == null) throw new ArgumentNullException(nameof(action));
-            if (taskScheduler == null) throw new ArgumentNullException(nameof(taskScheduler));
             if (maxConcurrency <= 0) throw new ArgumentOutOfRangeException(nameof(maxConcurrency));
 
-            _action = action;
+            _execution = execution ?? throw new ArgumentNullException(nameof(execution));
+            _action = action ?? throw new ArgumentNullException(nameof(action));
             _state = state;
-            _execution = execution;
-            _taskScheduler = taskScheduler;
-            _tasks = new Task[maxConcurrency];
+            _taskScheduler = taskScheduler ?? throw new ArgumentNullException(nameof(taskScheduler));
+            _ownsScheduler = ownsScheduler;
 
-#if NETFULL
+#if !NETSTANDARD1_3
             AppDomainUnloadMonitor.EnsureInitialized();
 #endif
 
             for (var i = 0; i < maxConcurrency; i++)
             {
-                _tasks[i] = Task.Factory.StartNew(
+                Task.Factory.StartNew(
                     DispatchLoop,
                     CancellationToken.None,
                     TaskCreationOptions.None,
                     _taskScheduler).Unwrap();
             }
-
-            if (ownsScheduler)
-            {
-                // When we do own a disposable scheduler, i.e. it was created solely for the
-                // usage by this dispatcher, we are responsible for its disposal to stop all
-                // the threads and release their resources. We can only dispose it when there's
-                // no outstanding work, i.e. when dispatcher was stopped.
-                // todo: this will not fire when appdomain is unloaded
-
-                Task.WhenAll(_tasks).ContinueWith(
-                    DisposeScheduler,
-                    CancellationToken.None,
-                    TaskContinuationOptions.None,
-                    TaskScheduler.Default); // todo explain why default
-            }
         }
 
         public bool Wait(TimeSpan timeout)
         {
-            try
-            {
-                // todo we can't wait while async method
-                // todo better way to wait on task
-                //todo remove timeout
-                return Task.WaitAll(_tasks, timeout);
-            }
-            catch (AggregateException)
-            {
-                // Task.WaitAll throws AggregateException, when at least one of
-                // the given tasks was canceled or thrown an exception. We can't
-                // get TaskCancelledException, because our task can't be canceled,
-                // because no CancellationToken is specified. And can't throw any
-                // exception except ThreadAbortedException
-                // Aggregate todo
-                // We aren't interested in thread exceptions, all of them
-                // are logged by the dispatcher itself.
-            }
-
-            return true;
+            return _stopped.WaitOne(timeout);
         }
 
-        public async Task WaitAsync(CancellationToken cancellationToken)
+        public async Task WaitAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                // todo why double await
-                // OCE should be thrown outside
-                await await Task.WhenAny(Task.WhenAll(_tasks), cancellationToken.AsTask()).ConfigureAwait(false);
-            }
-            catch (AggregateException)
-            {
-                // todo check this
-                // We aren't interested in thread exceptions, all of them
-                // are logged by the dispatcher itself.
-            }
+            await await Task.WhenAny(_stoppedTcs.Task, Task.Delay(timeout, cancellationToken)).ConfigureAwait(false);
         }
 
         public void Dispose()
         {
             _execution.Dispose();
+            _stopped.Dispose();
+
+            if (_ownsScheduler && _taskScheduler is IDisposable disposableScheduler)
+            {
+                disposableScheduler.Dispose();
+            }
         }
 
         public override string ToString()
@@ -132,36 +95,51 @@ namespace Hangfire.Processing
             return _execution.ToString();
         }
 
-        private void DisposeScheduler(Task antecedent)
-        {
-            var disposableScheduler = _taskScheduler as IDisposable;
-            disposableScheduler?.Dispose();
-        }
-
         private async Task DispatchLoop()
         {
+            var incrementedRunning = false;
+
             try
             {
-                await _execution.RunAsync(_action, _state);
+                try { }
+                finally
+                {
+                    Interlocked.Increment(ref _running);
+                    incrementedRunning = true;
+                }
+
+                await _execution.RunAsync(_action, _state).ConfigureAwait(true);
             }
             catch (Exception ex)
             {
-#if NETFULL
+#if !NETSTANDARD1_3
                 if (!(ex is ThreadAbortException) || !AppDomainUnloadMonitor.IsUnloading)
 #endif
                 {
                     try
                     {
-                        // todo explain dispatcher is stopped
-                        _logger.FatalException("Unexpected exception occurred in BackgroundDispatcher. Please report it to developers.", ex);
+                        _logger.FatalException("Dispatcher is stopped due to an exception, you need to restart the server manually. Please report it to Hangfire developers.", ex);
                     }
                     catch
                     {
-#if NETFULL
-                        // todo add original and current exceptions
-                        Trace.WriteLine("Unexpected exception occurred while logging an exception: ");
+#if !NETSTANDARD1_3
+                        Trace.WriteLine($"Dispatcher is stopped due to an exception, you need to restart the server manually. Please report it to Hangfire developers: {ex}");
 #endif
                     }
+                }
+            }
+            finally
+            {
+                try
+                {
+                    if (incrementedRunning && Interlocked.Decrement(ref _running) == 0)
+                    {
+                        _stopped.Set();
+                        _stoppedTcs.SetResult(null);
+                    }
+                }
+                catch (ObjectDisposedException)
+                {
                 }
             }
         }

@@ -88,7 +88,7 @@ namespace Hangfire.SqlServer
                     Job = job,
                     InProcessingState = ProcessingState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
                     ServerId = stateData.ContainsKey("ServerId") ? stateData["ServerId"] : stateData["ServerName"],
-                    StartedAt = JobHelper.DeserializeNullableDateTime(stateData["StartedAt"]),
+                    StartedAt = sqlJob.StateChanged,
                 }));
         }
 
@@ -103,7 +103,7 @@ namespace Hangfire.SqlServer
                     Job = job,
                     InScheduledState = ScheduledState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
                     EnqueueAt = JobHelper.DeserializeNullableDateTime(stateData["EnqueueAt"]) ?? DateTime.MinValue,
-                    ScheduledAt = JobHelper.DeserializeNullableDateTime(stateData["ScheduledAt"])
+                    ScheduledAt = sqlJob.StateChanged
                 }));
         }
 
@@ -132,7 +132,7 @@ namespace Hangfire.SqlServer
                 // ReSharper disable once LoopCanBeConvertedToQuery
                 foreach (var server in servers)
                 {
-                    var data = JobHelper.FromJson<ServerData>(server.Data);
+                    var data = SerializationHelper.Deserialize<ServerData>(server.Data);
                     result.Add(new ServerDto
                     {
                         Name = server.Id,
@@ -162,7 +162,7 @@ namespace Hangfire.SqlServer
                     ExceptionDetails = stateData["ExceptionDetails"],
                     ExceptionMessage = stateData["ExceptionMessage"],
                     ExceptionType = stateData["ExceptionType"],
-                    FailedAt = JobHelper.DeserializeNullableDateTime(stateData["FailedAt"])
+                    FailedAt = sqlJob.StateChanged
                 }));
         }
 
@@ -181,7 +181,7 @@ namespace Hangfire.SqlServer
                     TotalDuration = stateData.ContainsKey("PerformanceDuration") && stateData.ContainsKey("Latency")
                         ? (long?)long.Parse(stateData["PerformanceDuration"]) + (long?)long.Parse(stateData["Latency"])
                         : null,
-                    SucceededAt = JobHelper.DeserializeNullableDateTime(stateData["SucceededAt"])
+                    SucceededAt = sqlJob.StateChanged
                 }));
         }
 
@@ -196,7 +196,7 @@ namespace Hangfire.SqlServer
                 {
                     Job = job,
                     InDeletedState = DeletedState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
-                    DeletedAt = JobHelper.DeserializeNullableDateTime(stateData["DeletedAt"])
+                    DeletedAt = sqlJob.StateChanged
                 }));
         }
 
@@ -231,13 +231,12 @@ namespace Hangfire.SqlServer
             return result;
         }
 
-        public JobList<EnqueuedJobDto> EnqueuedJobs(string queue, int @from, int perPage)
+        public JobList<EnqueuedJobDto> EnqueuedJobs(string queue, int from, int perPage)
         {
             var queueApi = GetQueueApi(queue);
             var enqueuedJobIds = queueApi.GetEnqueuedJobIds(queue, from, perPage);
 
-            // TODO: Remove the Select method call to support `bigint`.
-            return UseConnection(connection => EnqueuedJobs(connection, enqueuedJobIds.Select(x => (long)x).ToArray()));
+            return UseConnection(connection => EnqueuedJobs(connection, enqueuedJobIds.ToArray()));
         }
 
         public JobList<FetchedJobDto> FetchedJobs(string queue, int @from, int perPage)
@@ -284,7 +283,7 @@ select * from [{_storage.SchemaName}].State with (nolock, forceseek) where JobId
                                 CreatedAt = x.CreatedAt,
                                 Reason = x.Reason,
                                 Data = new SafeDictionary<string, string>(
-                                    JobHelper.FromJson<Dictionary<string, string>>(x.Data),
+                                    SerializationHelper.Deserialize<Dictionary<string, string>>(x.Data),
                                     StringComparer.OrdinalIgnoreCase),
                             })
                             .ToList();
@@ -438,7 +437,7 @@ where [Key] in @keys";
         private JobList<EnqueuedJobDto> EnqueuedJobs(DbConnection connection, long[] jobIds)
         {
             string enqueuedJobsSql = 
-$@"select j.*, s.Reason as StateReason, s.Data as StateData 
+$@"select j.*, s.Reason as StateReason, s.Data as StateData, s.CreatedAt as StateChanged
 from [{_storage.SchemaName}].Job j with (nolock, forceseek)
 left join [{_storage.SchemaName}].State s with (nolock, forceseek) on s.Id = j.StateId and s.JobId = j.Id
 where j.Id in @jobIds";
@@ -461,7 +460,7 @@ where j.Id in @jobIds";
                     State = sqlJob.StateName,
                     InEnqueuedState = EnqueuedState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
                     EnqueuedAt = EnqueuedState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase)
-                        ? JobHelper.DeserializeNullableDateTime(stateData["EnqueuedAt"])
+                        ? sqlJob.StateChanged
                         : null
                 });
         }
@@ -482,7 +481,7 @@ where j.Id in @jobIds";
 
         private static Job DeserializeJob(string invocationData, string arguments)
         {
-            var data = InvocationData.Deserialize(invocationData);
+            var data = InvocationData.DeserializePayload(invocationData);
 
             if (!String.IsNullOrEmpty(arguments))
             {
@@ -491,7 +490,7 @@ where j.Id in @jobIds";
 
             try
             {
-                return data.Deserialize();
+                return data.DeserializeJob();
             }
             catch (JobLoadException)
             {
@@ -513,9 +512,9 @@ $@";with cte as
   from [{_storage.SchemaName}].Job j with (nolock, forceseek)
   where j.StateName = @stateName
 )
-select j.*, s.Reason as StateReason, s.Data as StateData
+select j.*, s.Reason as StateReason, s.Data as StateData, s.CreatedAt as StateChanged
 from [{_storage.SchemaName}].Job j with (nolock, forceseek)
-inner join cte on cte.Id = j.Id 
+inner join cte on cte.Id = j.Id
 left join [{_storage.SchemaName}].State s with (nolock, forceseek) on j.StateId = s.Id and j.Id = s.JobId
 where cte.row_num between @start and @end
 order by j.Id desc";
@@ -542,7 +541,7 @@ order by j.Id desc";
                 
                 if (job.InvocationData != null)
                 {
-                    var deserializedData = JobHelper.FromJson<Dictionary<string, string>>(job.StateData);
+                    var deserializedData = SerializationHelper.Deserialize<Dictionary<string, string>>(job.StateData);
                     var stateData = deserializedData != null
                         ? new SafeDictionary<string, string>(deserializedData, StringComparer.OrdinalIgnoreCase)
                         : null;

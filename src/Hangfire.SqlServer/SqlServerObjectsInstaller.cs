@@ -17,7 +17,6 @@
 using System;
 using System.Data.Common;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using Dapper;
 using Hangfire.Logging;
@@ -26,8 +25,8 @@ namespace Hangfire.SqlServer
 {
     public static class SqlServerObjectsInstaller
     {
-        public static readonly int RequiredSchemaVersion = 6;
-        private const int RetryAttempts = 3;
+        [Obsolete("This field is unused and will be removed in 2.0.0.")]
+        public static readonly int RequiredSchemaVersion = 5;
 
         public static void Install(DbConnection connection)
         {
@@ -36,45 +35,25 @@ namespace Hangfire.SqlServer
 
         public static void Install(DbConnection connection, string schema)
         {
+            Install(connection, schema, false);
+        }
+
+        public static void Install(DbConnection connection, string schema, bool enableHeavyMigrations)
+        {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
-
-            var log = LogProvider.GetLogger(typeof(SqlServerObjectsInstaller));
-
-            log.Info("Start installing Hangfire SQL objects...");
 
             var script = GetStringResource(
                 typeof(SqlServerObjectsInstaller).GetTypeInfo().Assembly, 
                 "Hangfire.SqlServer.Install.sql");
 
-            script = script.Replace("SET @TARGET_SCHEMA_VERSION = 6;", "SET @TARGET_SCHEMA_VERSION = " + RequiredSchemaVersion + ";");
-
             script = script.Replace("$(HangFireSchema)", !string.IsNullOrWhiteSpace(schema) ? schema : Constants.DefaultSchema);
 
-#if NETFULL
-            for (var i = 0; i < RetryAttempts; i++)
+            if (!enableHeavyMigrations)
             {
-                try
-                {
-                    connection.Execute(script, commandTimeout: 0);
-                    break;
-                }
-                catch (DbException ex)
-                {
-                    if (ex.ErrorCode == 1205)
-                    {
-                        log.WarnException("Deadlock occurred during automatic migration execution. Retrying...", ex);
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                script = script.Replace("--SET @DISABLE_HEAVY_MIGRATIONS = 1;", "SET @DISABLE_HEAVY_MIGRATIONS = 1;");
             }
-#else
-            connection.Execute(script, commandTimeout: 0);
-#endif
 
-            log.Info("Hangfire SQL objects installed.");
+            connection.Execute(script, commandTimeout: 0);
         }
 
         private static string GetStringResource(Assembly assembly, string resourceName)

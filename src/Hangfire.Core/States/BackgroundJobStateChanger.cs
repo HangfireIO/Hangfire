@@ -118,7 +118,8 @@ namespace Hangfire.States
                         transaction,
                         new BackgroundJob(context.BackgroundJobId, jobData.Job, jobData.CreatedAt),
                         stateToApply,
-                        jobData.State);
+                        jobData.State,
+                        context.Profiler);
 
                     var appliedState = _stateMachine.ApplyState(applyContext);
 
@@ -180,7 +181,7 @@ namespace Hangfire.States
                 // may be some issues on GitHub, related to the hanging dashboard requests
                 // in this case.
 
-                if (!String.IsNullOrEmpty(jobData?.State))
+                if (!String.IsNullOrEmpty(jobData?.State) || context.Storage.LinearizableReads)
                 {
                     return jobData;
                 }

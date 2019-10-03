@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,7 +26,6 @@ using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
-using System.ComponentModel;
 
 namespace Hangfire
 {
@@ -80,20 +80,20 @@ namespace Hangfire
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses)
-            : this(options, storage, additionalProcesses, 
-                   options.FilterProvider ?? JobFilterProviders.Providers,
-                   options.Activator ?? JobActivator.Current, 
-                   null, null, null)
+#pragma warning disable 618
+            : this(options, storage, additionalProcesses, null, null, null, null, null)
+#pragma warning restore 618
         {
         }
 
+        [Obsolete("Create your own BackgroundJobServer-like type and pass custom services to it. This constructor will be removed in 2.0.0.")]
         [EditorBrowsable(EditorBrowsableState.Advanced)]
         public BackgroundJobServer(
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
-            [NotNull] IJobFilterProvider filterProvider,
-            [NotNull] JobActivator activator,
+            [CanBeNull] IJobFilterProvider filterProvider,
+            [CanBeNull] JobActivator activator,
             [CanBeNull] IBackgroundJobFactory factory,
             [CanBeNull] IBackgroundJobPerformer performer,
             [CanBeNull] IBackgroundJobStateChanger stateChanger)
@@ -101,8 +101,6 @@ namespace Hangfire
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (options == null) throw new ArgumentNullException(nameof(options));
             if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
-            if (filterProvider == null) throw new ArgumentNullException(nameof(filterProvider));
-            if (activator == null) throw new ArgumentNullException(nameof(activator));
 
             _options = options;
 
@@ -133,35 +131,73 @@ namespace Hangfire
                 GetProcessingServerOptions());
         }
 
-        [Obsolete("Use the Stop(bool) method instead, this one will be removed in 2.0.0.")]
         public void SendStop()
         {
             _logger.Debug("Hangfire Server is stopping...");
-            _processingServer.Stop(false);
+            _processingServer.SendStop();
         }
 
         public void Dispose()
         {
             _processingServer.Dispose();
-            _logger.Info("Hangfire Server stopped.");
+        }
+
+        [Obsolete("This method is a stub. There is no need to call the `Start` method. Will be removed in version 2.0.0.")]
+        public void Start()
+        {
+        }
+
+        [Obsolete("Please call the `Shutdown` method instead. Will be removed in version 2.0.0.")]
+        public void Stop()
+        {
+            SendStop();
+        }
+
+        [Obsolete("Please call the `Shutdown` method instead. Will be removed in version 2.0.0.")]
+        public void Stop(bool force)
+        {
+            SendStop();
+        }
+
+        public bool WaitForShutdown(TimeSpan timeout)
+        {
+            return _processingServer.WaitForShutdown(timeout);
+        }
+
+        public Task WaitForShutdownAsync(CancellationToken cancellationToken)
+        {
+            return _processingServer.WaitForShutdownAsync(cancellationToken);
         }
 
         private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses(
-            [NotNull] IJobFilterProvider filterProvider,
-            [NotNull] JobActivator activator,
+            [CanBeNull] IJobFilterProvider filterProvider,
+            [CanBeNull] JobActivator activator,
             [CanBeNull] IBackgroundJobFactory factory,
             [CanBeNull] IBackgroundJobPerformer performer,
             [CanBeNull] IBackgroundJobStateChanger stateChanger)
         {
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
+            var timeZoneResolver = _options.TimeZoneResolver ?? new DefaultTimeZoneResolver();
 
-            factory = factory ?? new BackgroundJobFactory(filterProvider);
-            performer = performer ?? new BackgroundJobPerformer(filterProvider, activator);
-            stateChanger = stateChanger ?? new BackgroundJobStateChanger(filterProvider);
+            if (factory == null && performer == null && stateChanger == null)
+            {
+                filterProvider = filterProvider ?? _options.FilterProvider ?? JobFilterProviders.Providers;
+                activator = activator ?? _options.Activator ?? JobActivator.Current;
+
+                factory = new BackgroundJobFactory(filterProvider);
+                performer = new BackgroundJobPerformer(filterProvider, activator, _options.TaskScheduler);
+                stateChanger = new BackgroundJobStateChanger(filterProvider);
+            }
+            else
+            {
+                if (factory == null) throw new ArgumentNullException(nameof(factory));
+                if (performer == null) throw new ArgumentNullException(nameof(performer));
+                if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
+            }
 
             processes.Add(new Worker(_options.Queues, performer, stateChanger).UseBackgroundPool(_options.WorkerCount));
             processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger).UseBackgroundPool(1));
-            processes.Add(new RecurringJobScheduler(factory).UseBackgroundPool(1));
+            processes.Add(new RecurringJobScheduler(factory, _options.SchedulePollingInterval, timeZoneResolver).UseBackgroundPool(1));
 
             return processes;
         }
@@ -170,39 +206,16 @@ namespace Hangfire
         {
             return new BackgroundProcessingServerOptions
             {
+                StopTimeout = _options.StopTimeout,
                 ShutdownTimeout = _options.ShutdownTimeout,
                 HeartbeatInterval = _options.HeartbeatInterval,
 #pragma warning disable 618
                 ServerCheckInterval = _options.ServerWatchdogOptions?.CheckInterval ?? _options.ServerCheckInterval,
                 ServerTimeout = _options.ServerWatchdogOptions?.ServerTimeout ?? _options.ServerTimeout,
-                ServerName = _options.ServerName
 #pragma warning restore 618
+                CancellationCheckInterval = _options.CancellationCheckInterval,
+                ServerName = _options.ServerName
             };
-        }
-
-        [Obsolete("This method is a stub. There is no need to call the `Start` method. Will be removed in version 2.0.0.")]
-        public void Start()
-        {
-        }
-
-        [Obsolete("This method is a stub. Please call the `Dispose` method instead. Will be removed in version 2.0.0.")]
-        public void Stop()
-        {
-        }
-
-        public bool Wait(TimeSpan timeout)
-        {
-            return _processingServer.Wait(timeout);
-        }
-
-        public Task WaitAsync(CancellationToken cancellationToken)
-        {
-            return _processingServer.WaitAsync(cancellationToken);
-        }
-
-        public void Stop(bool abort)
-        {
-            _processingServer.Stop(abort);
         }
     }
 }

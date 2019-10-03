@@ -21,7 +21,8 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
-using System.Runtime.CompilerServices;
+using Hangfire.Common;
+using Hangfire.Processing;
 
 namespace Hangfire.Server
 {
@@ -36,11 +37,12 @@ namespace Hangfire.Server
             };
 
         private readonly JobActivator _activator;
+        private readonly TaskScheduler _taskScheduler;
 
-        public CoreBackgroundJobPerformer([NotNull] JobActivator activator)
+        public CoreBackgroundJobPerformer([NotNull] JobActivator activator, [CanBeNull] TaskScheduler taskScheduler)
         {
-            if (activator == null) throw new ArgumentNullException(nameof(activator));
-            _activator = activator;
+            _activator = activator ?? throw new ArgumentNullException(nameof(activator));
+            _taskScheduler = taskScheduler;
         }
 
         public object Perform(PerformContext context)
@@ -72,7 +74,7 @@ namespace Hangfire.Server
             }
         }
 
-        internal static void HandleJobPerformanceException(Exception exception, CancellationToken shutdownToken)
+        internal static void HandleJobPerformanceException(Exception exception, IJobCancellationToken cancellationToken)
         {
             if (exception is JobAbortedException)
             {
@@ -81,8 +83,15 @@ namespace Hangfire.Server
                 // should NOT be re-queued.
                 ExceptionDispatchInfo.Capture(exception).Throw();
             }
+            
+            if (exception is OperationCanceledException && cancellationToken.IsAborted())
+            {
+                // OperationCanceledException exception is thrown because 
+                // ServerJobCancellationWatcher has detected the job was aborted.
+                throw new JobAbortedException();
+            }
 
-            if (exception is OperationCanceledException && shutdownToken.IsCancellationRequested)
+            if (exception is OperationCanceledException && cancellationToken.ShutdownToken.IsCancellationRequested)
             {
                 // OperationCanceledException exceptions are treated differently from
                 // others, when ShutdownToken's cancellation was requested, to notify
@@ -99,80 +108,112 @@ namespace Hangfire.Server
                 exception);
         }
 
-        private static readonly Type[] EmptyTypes = new Type[0];
-
-        private static bool CheckAwaitable(Type type, out MethodInfo getAwaiter, out MethodInfo getResult)
+        private object InvokeMethod(PerformContext context, object instance, object[] arguments)
         {
-            // Starting with C# 7, async methods can return any type that has an accessible GetAwaiter method. 
-            // The object returned by the GetAwaiter method must implement the ICriticalNotifyCompletion interface.
-            // Ref: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/async-return-types
-            // 
-            // Other sources state that ICriticalNotifyCompletion is optional though:
-            // Ref: https://blogs.msdn.microsoft.com/pfxteam/2012/04/12/asyncawait-faq/
-            // Ref: https://codeblog.jonskeet.uk/category/eduasync/
-            // Ref: http://putridparrot.com/blog/creating-awaitable-types/
-            // 
-            // Either way, INotifyCompletion is still required nevertheless.
+            if (context.BackgroundJob.Job == null) return null;
 
-            getAwaiter = null;
-            getResult = null;
-
-            // primitive types can't be awaitable
-            if (type.GetTypeInfo().IsPrimitive) return false;
-            
-            // awaitable type must have a public parameterless GetAwaiter instance method, ...
-            getAwaiter = type.GetRuntimeMethod("GetAwaiter", EmptyTypes);
-            if (getAwaiter == null || getAwaiter.IsStatic || !getAwaiter.IsPublic) return false;
-            
-            var awaiterType = getAwaiter.ReturnType;
-            
-            // ... its return type must implement INotifyCompletion, ...
-            if (!typeof(INotifyCompletion).GetTypeInfo().IsAssignableFrom(awaiterType.GetTypeInfo())) return false;
-
-            // ... have a boolean IsCompleted instance property with a public getter, ...
-            var isCompleted = awaiterType.GetRuntimeProperty("IsCompleted");
-            if (isCompleted == null || isCompleted.PropertyType != typeof(bool)) return false;
-            if (!isCompleted.CanRead || isCompleted.GetMethod.IsStatic || !isCompleted.GetMethod.IsPublic) return false;
-
-            // ... and also have a public parameterless GetResult instance method
-            getResult = awaiterType.GetRuntimeMethod("GetResult", EmptyTypes);
-            return getResult != null && !getResult.IsStatic && getResult.IsPublic;
-        }
-
-        private static object InvokeMethod(PerformContext context, object instance, object[] arguments)
-        {
             try
             {
                 var methodInfo = context.BackgroundJob.Job.Method;
-                var result = methodInfo.Invoke(instance, arguments);
-                
-                MethodInfo getAwaiter, getResult;
-                if (result != null && CheckAwaitable(methodInfo.ReturnType, out getAwaiter, out getResult))
+                var tuple = Tuple.Create(methodInfo, instance, arguments);
+                var returnType = methodInfo.ReturnType;
+
+                if (returnType.IsTaskLike(out var getTaskFunc))
                 {
-                    var awaiter = getAwaiter.Invoke(result, null);
-                    if (awaiter != null)
+                    if (_taskScheduler != null)
                     {
-                        result = getResult.Invoke(awaiter, null);
+                        return InvokeOnTaskScheduler(context, tuple, getTaskFunc);
                     }
+
+                    return InvokeOnTaskPump(context, tuple, getTaskFunc);
                 }
 
-                return result;
+                return InvokeSynchronously(tuple);
             }
             catch (ArgumentException ex)
             {
-                HandleJobPerformanceException(ex, context.CancellationToken.ShutdownToken);
+                HandleJobPerformanceException(ex, context.CancellationToken);
                 throw;
             }
             catch (AggregateException ex)
             {
-                HandleJobPerformanceException(ex.InnerException, context.CancellationToken.ShutdownToken);
+                HandleJobPerformanceException(ex.InnerException, context.CancellationToken);
                 throw;
             }
             catch (TargetInvocationException ex)
             {
-                HandleJobPerformanceException(ex.InnerException, context.CancellationToken.ShutdownToken);
+                HandleJobPerformanceException(ex.InnerException, context.CancellationToken);
                 throw;
             }
+            catch (Exception ex)
+            {
+                HandleJobPerformanceException(ex, context.CancellationToken);
+                throw;
+            }
+        }
+
+        private object InvokeOnTaskScheduler(PerformContext context, Tuple<MethodInfo, object, object[]> tuple, Func<object, Task> getTaskFunc)
+        {
+            var scheduledTask = Task.Factory.StartNew(
+                InvokeSynchronously,
+                tuple,
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                _taskScheduler);
+
+            var result = scheduledTask.GetAwaiter().GetResult();
+            if (result == null) return null;
+
+            return getTaskFunc(result).GetTaskLikeResult(result, tuple.Item1.ReturnType);
+        }
+
+        private static object InvokeOnTaskPump(PerformContext context, Tuple<MethodInfo, object, object[]> tuple, Func<object, Task> getTaskFunc)
+        {
+            // Using SynchronizationContext here is the best default option, where workers
+            // are still running on synchronous dispatchers, and where a single job performer
+            // may be used by multiple workers. We can't create a separate TaskScheduler
+            // instance of every background job invocation, because TaskScheduler.Id may
+            // overflow relatively fast, and can't use single scheduler for multiple performers
+            // for better isolation in the default case – non-default external scheduler should
+            // be used. It's also great to preserve backward compatibility for those who are
+            // using Parallel.For(Each), since we aren't changing the TaskScheduler.Current.
+
+            var oldSyncContext = SynchronizationContext.Current;
+
+            try
+            {
+                using (var syncContext = new InlineSynchronizationContext())
+                using (var cancellationEvent = context.CancellationToken.ShutdownToken.GetCancellationEvent())
+                {
+                    SynchronizationContext.SetSynchronizationContext(syncContext);
+
+                    var result = InvokeSynchronously(tuple);
+                    if (result == null) return null;
+
+                    var task = getTaskFunc(result);
+                    var asyncResult = (IAsyncResult)task;
+
+                    var waitHandles = new[] { syncContext.WaitHandle, asyncResult.AsyncWaitHandle, cancellationEvent.WaitHandle };
+
+                    while (!asyncResult.IsCompleted && WaitHandle.WaitAny(waitHandles) == 0)
+                    {
+                        var workItem = syncContext.Dequeue();
+                        workItem.Item1(workItem.Item2);
+                    }
+
+                    return task.GetTaskLikeResult(result, tuple.Item1.ReturnType);
+                }
+            }
+            finally
+            {
+                SynchronizationContext.SetSynchronizationContext(oldSyncContext);
+            }
+        }
+
+        private static object InvokeSynchronously(object state)
+        {
+            var data = (Tuple<MethodInfo, object, object[]>) state;
+            return data.Item1.Invoke(data.Item2, data.Item3);
         }
 
         private static object[] SubstituteArguments(PerformContext context)

@@ -22,6 +22,11 @@ namespace Hangfire.Server
 {
     internal interface IBackgroundServerProcess
     {
-        void Execute(Guid executionId, BackgroundExecution execution, CancellationToken stopToken, CancellationToken abortToken);
+        void Execute(
+            Guid executionId, 
+            BackgroundExecution execution, 
+            CancellationToken stoppingToken, 
+            CancellationToken stoppedToken,
+            CancellationToken shutdownToken);
     }
 }

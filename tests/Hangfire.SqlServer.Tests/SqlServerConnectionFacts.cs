@@ -1,9 +1,11 @@
-﻿using System;
+﻿extern alias ReferencedDapper;
+
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
-using Dapper;
+using ReferencedDapper::Dapper;
 using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.Storage;
@@ -219,7 +221,7 @@ namespace Hangfire.SqlServer.Tests
                 var createdAt = new DateTime(2012, 12, 12);
                 var jobId = connection.CreateExpiredJob(
                     Job.FromExpression(() => SampleMethod("Hello")),
-                    new Dictionary<string, string> { { "Key1", "Value1" }, { "Key2", "Value2" } },
+                    new Dictionary<string, string> { { "Key1", "Value1" }, { "Key2", "Value2" }, { "Key3", "Value3" } },
                     createdAt,
                     TimeSpan.FromDays(1));
 
@@ -232,7 +234,8 @@ namespace Hangfire.SqlServer.Tests
                 Assert.Equal(null, (int?) sqlJob.StateId);
                 Assert.Equal(null, (string) sqlJob.StateName);
 
-                var invocationData = InvocationData.Deserialize((string)sqlJob.InvocationData);
+                var invocationData = InvocationData.DeserializePayload((string)sqlJob.InvocationData);
+                invocationData.Arguments = sqlJob.Arguments;
 
                 var job = invocationData.Deserialize();
                 Assert.Equal(typeof(SqlServerConnectionFacts), job.Type);
@@ -249,6 +252,7 @@ namespace Hangfire.SqlServer.Tests
 
                 Assert.Equal("Value1", parameters["Key1"]);
                 Assert.Equal("Value2", parameters["Key2"]);
+                Assert.Equal("Value3", parameters["Key3"]);
             }, useBatching);
         }
 
@@ -266,12 +270,80 @@ namespace Hangfire.SqlServer.Tests
                     createdAt,
                     TimeSpan.FromDays(1));
 
-                var parameters = sql.Query(
-                        "select * from HangFire.JobParameter where JobId = @id",
-                        new { id = jobId })
+                var parameters = sql
+                    .Query("select * from HangFire.JobParameter where JobId = @id", new { id = jobId })
                     .ToDictionary(x => (string)x.Name, x => (string)x.Value);
 
                 Assert.Equal(null, parameters["Key1"]);
+            }, useBatching);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void CreateExpiredJob_CanCreateTwoParametersWithNullValues(bool useBatching)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string> { { "Key1", null }, { "Key2", null } },
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql
+                    .Query("select * from HangFire.JobParameter where JobId = @id", new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Equal(null, parameters["Key1"]);
+                Assert.Equal(null, parameters["Key2"]);
+            }, useBatching);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void CreateExpiredJob_CanCreateMultipleParametersWithNullValues(bool useBatching)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string> { { "Key1", null }, { "Key2", null }, { "Key3", null } },
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql
+                    .Query("select * from HangFire.JobParameter where JobId = @id", new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Equal(null, parameters["Key1"]);
+                Assert.Equal(null, parameters["Key2"]);
+                Assert.Equal(null, parameters["Key3"]);
+            }, useBatching);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void CreateExpiredJob_CanCreateJobWithoutParameters(bool useBatching)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string>(), 
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql
+                    .Query("select * from HangFire.JobParameter where JobId = @id", new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Empty(parameters);
             }, useBatching);
         }
 
@@ -608,8 +680,13 @@ select @id";
         [Fact, CleanDatabase]
         public void GetFirstByLowestScoreFromSet_ThrowsAnException_ToScoreIsLowerThanFromScore()
         {
-            UseConnection(connection => Assert.Throws<ArgumentException>(
-                () => connection.GetFirstByLowestScoreFromSet("key", 0, -1)));
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentException>(
+                    () => connection.GetFirstByLowestScoreFromSet("key", 0, -1));
+
+                Assert.Equal("toScore", exception.ParamName);
+            });
         }
 
         [Fact, CleanDatabase]
@@ -621,6 +698,73 @@ select @id";
                     "key", 0, 1);
 
                 Assert.Null(result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetFirstByLowestScoreFromSet_ThrowsArgException_WhenRequestingLessThanZero()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentException>(
+                    () => connection.GetFirstByLowestScoreFromSet("key", 0, 1, -1));
+
+                Assert.Equal("count", exception.ParamName);
+            });
+        }
+
+        [Fact]
+        public void GetFirstByLowestScoreFromSet_ReturnsEmpty_WhenNoneExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetFirstByLowestScoreFromSet("key", 0, 1, 10);
+                Assert.Empty(result);
+            });
+        }
+        
+        [Fact, CleanDatabase]
+        public void GetFirstByLowestScoreFromSet_ReturnsN_WhenMoreThanNExist()
+        {
+            const string arrangeSql = @"
+insert into HangFire.[Set] ([Key], Score, Value)
+values 
+('key', 1.0, '1234'),
+('key', -1.0, '567'),
+('key', -5.0, '890'),
+('another-key', -2.0, 'abcd')";
+            
+            UseConnections((sql, connection) =>
+            {
+                sql.Execute(arrangeSql);
+                
+                var result = connection.GetFirstByLowestScoreFromSet("key", -10.0, 10.0, 2);
+                
+                Assert.Equal(2, result.Count);
+                Assert.Equal("890", result.ElementAt(0));
+                Assert.Equal("567", result.ElementAt(1));
+            });
+        }
+        
+        [Fact, CleanDatabase]
+        public void GetFirstByLowestScoreFromSet_ReturnsN_WhenMoreThanNExist_And_RequestedCountIsGreaterThanN()
+        {
+            const string arrangeSql = @"
+insert into HangFire.[Set] ([Key], Score, Value)
+values 
+('key', 1.0, '1234'),
+('key', -1.0, '567'),
+('key', -5.0, '890'),
+('another-key', -2.0, 'abcd')";
+            
+            UseConnections((sql, connection) =>
+            {
+                sql.Execute(arrangeSql);
+                
+                var result = connection.GetFirstByLowestScoreFromSet("another-key", -10.0, 10.0, 5);
+                
+                Assert.Equal(1, result.Count);
+                Assert.Equal("abcd", result.First());
             });
         }
 
@@ -1616,6 +1760,44 @@ values (@jobId, @name, @value)";
 
                 Assert.Equal("value", value);
             });
+        }
+
+        [Fact, CleanSerializerSettings]
+        public void HandlesChangingProcessOfStateDataSerialization()
+        {
+            GlobalConfiguration.Configuration.UseSerializerSettings(SerializerSettingsHelper.DangerousSettings);
+            var stateData = new Dictionary<string, string>
+            {
+                { "key1", "value1" },
+                { "key2", null }
+            };
+            var serializedData = SerializationHelper.Serialize(stateData, SerializationOption.User);
+
+            var deserializedStateData = SerializationHelper.Deserialize<Dictionary<string, string>>(serializedData);
+
+            Assert.NotNull(deserializedStateData);
+            Assert.Equal(2, deserializedStateData.Count);
+
+            Assert.Equal("value1", deserializedStateData["key1"]);
+            Assert.Equal(null, deserializedStateData["key2"]);
+        }
+
+        [Fact, CleanSerializerSettings]
+        public void HandlesChangingProcessOfInvocationDataSerialization()
+        {
+            GlobalConfiguration.Configuration.UseSerializerSettings(SerializerSettingsHelper.DangerousSettings);
+
+            var initialJob = Job.FromExpression(() => Console.WriteLine());
+            var invocationData = InvocationData.Serialize(initialJob);
+
+            var serializedInvocationData = SerializationHelper.Serialize(invocationData, SerializationOption.User);
+
+            var deserializedStateData = SerializationHelper.Deserialize<InvocationData>(serializedInvocationData);
+            var deserializedJob = deserializedStateData.Deserialize();
+
+            Assert.Equal(initialJob.Args, deserializedJob.Args);
+            Assert.Equal(initialJob.Method, deserializedJob.Method);
+            Assert.Equal(initialJob.Type, deserializedJob.Type);
         }
 
         private void UseConnections(Action<SqlConnection, SqlServerConnection> action, bool useBatching = false)

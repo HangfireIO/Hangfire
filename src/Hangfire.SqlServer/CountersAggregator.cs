@@ -81,29 +81,34 @@ namespace Hangfire.SqlServer
 
         private static string GetAggregationQuery(SqlServerStorage storage)
         {
-            return 
+            // Starting from SQL Server 2014 it's possible to get a query with
+            // much lower cost by adding a clustered index on [Key] column.
+            // However extended support for SQL Server 2012 SP4 ends only on
+            // July 12, 2022.
+            return
 $@"DECLARE @RecordsToAggregate TABLE
 (
-	[Key] NVARCHAR(100) NOT NULL,
-	[Value] SMALLINT NOT NULL,
+	[Key] NVARCHAR(100) COLLATE DATABASE_DEFAULT NOT NULL,
+	[Value] INT NOT NULL,
 	[ExpireAt] DATETIME NULL
 )
 
 SET XACT_ABORT ON
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED
+SET DEADLOCK_PRIORITY LOW
 BEGIN TRAN
 
 DELETE TOP (@count) C
 OUTPUT DELETED.[Key], DELETED.[Value], DELETED.[ExpireAt] INTO @RecordsToAggregate
-FROM [{storage.SchemaName}].[Counter] C WITH (READPAST, INDEX(0))
+FROM [{storage.SchemaName}].[Counter] C WITH (READPAST, XLOCK, INDEX(0))
 
 SET NOCOUNT ON
 
-;MERGE [{storage.SchemaName}].[AggregatedCounter] WITH (HOLDLOCK) AS [Target]
+;MERGE [{storage.SchemaName}].[AggregatedCounter] WITH (FORCESEEK, HOLDLOCK) AS [Target]
 USING (
 	SELECT [Key], SUM([Value]) as [Value], MAX([ExpireAt]) AS [ExpireAt] FROM @RecordsToAggregate
 	GROUP BY [Key]) AS [Source] ([Key], [Value], [ExpireAt])
-ON [Target].[Key] = [Source].[Key]
+ON [Target].[Key] COLLATE DATABASE_DEFAULT = [Source].[Key] COLLATE DATABASE_DEFAULT
 WHEN MATCHED THEN UPDATE SET 
 	[Target].[Value] = [Target].[Value] + [Source].[Value],
 	[Target].[ExpireAt] = (SELECT MAX([ExpireAt]) FROM (VALUES ([Source].ExpireAt), ([Target].[ExpireAt])) AS MaxExpireAt([ExpireAt]))

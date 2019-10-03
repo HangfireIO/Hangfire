@@ -7,35 +7,28 @@ dist: trusty
 
 matrix:
   include:
-    - dotnet: 1.0.0-preview2-003121
+    - dotnet: 1.1.11
       mono: none
       os: linux
-    - dotnet: 1.0.0-preview2-003121
+    - dotnet: 1.1.11
       mono: none
       os: osx
     - mono: latest
       os: linux
     - mono: latest
       os: osx
-
-# Only watch the master branch.
-branches:
-  only:
-    - master
-    - dev
 
 # Run the build script
 script:
   - if hash mono 2>/dev/null; 
-    then 
-        chmod +x .nuget/NuGet.exe;
+    then
         travis_retry nuget install .nuget/packages.config -OutputDirectory packages;
-        travis_retry nuget restore Hangfire.Mono.sln;
-        xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln;
-        mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll -verbose;
+        travis_retry nuget restore Hangfire.sln;
+        msbuild /p:Configuration=Release /verbosity:minimal Hangfire.sln;
+        mono ./packages/xunit.runner.console.2.2.0/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/net452/Hangfire.Core.Tests.dll;
     else
-        travis_retry dotnet restore --disable-parallel; 
-        dotnet test tests/Hangfire.Core.Tests -verbose;
+        travis_retry dotnet restore --disable-parallel;
+        dotnet test -c Release -f netcoreapp1.0 tests/Hangfire.Core.Tests/Hangfire.Core.Tests.csproj;
     fi
 
 notifications:
