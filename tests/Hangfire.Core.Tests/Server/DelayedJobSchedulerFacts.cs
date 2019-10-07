@@ -44,7 +44,7 @@ namespace Hangfire.Core.Tests.Server
             _stateChanger = new Mock<IBackgroundJobStateChanger>();
             _transaction = new Mock<IWriteOnlyTransaction>();
             _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
-            _connection.Setup(x => x.GetStateData(JobId)).Returns(_stateData);
+            _connection.Setup(x => x.GetStateData(It.IsAny<string>())).Returns(_stateData);
 
             _distributedLock = new Mock<IDisposable>();
             _connection
