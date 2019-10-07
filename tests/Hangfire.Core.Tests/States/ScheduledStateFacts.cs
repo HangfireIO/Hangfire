@@ -82,7 +82,7 @@ namespace Hangfire.Core.Tests.States
             var serialized = SerializationHelper.Serialize<IState>(state, SerializationOption.TypedInternal);
 
             Assert.Equal(
-                "{\"$type\":\"Hangfire.States.ScheduledState, Hangfire.Core\",,\"CandidateQueue\":\"" + EnqueuedState.DefaultQueue + "\",\"EnqueueAt\":" + convertedDateTime + "}",
+                "{\"$type\":\"Hangfire.States.ScheduledState, Hangfire.Core\",\"EnqueueAt\":" + convertedDateTime + "}",
                 serialized);
         }
     }
