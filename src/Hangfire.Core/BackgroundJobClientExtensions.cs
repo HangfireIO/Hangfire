@@ -116,13 +116,29 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
-        /// <param name="queue">Queue name to enqueue job to (if not default)</param>
+        /// <returns>Unique identifier of the created job.</returns>
+        public static string Schedule(
+            [NotNull] this IBackgroundJobClient client, 
+            [NotNull, InstantHandle] Expression<Action> methodCall, 
+            TimeSpan delay)
+        {
+            return client.Schedule(methodCall, delay, EnqueuedState.DefaultQueue);
+        }
+        
+        /// <summary>
+        /// Creates a new background job based on a specified lambda expression 
+        /// and schedules it to be enqueued after a given delay to a specific queue.
+        /// </summary>
+        /// <param name="client">A job client instance.</param>
+        /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
+        /// <param name="delay">Delay, after which the job will be enqueued.</param>
+        /// <param name="queue">Queue name to enqueue job to</param>
         /// <returns>Unique identifier of the created job.</returns>
         public static string Schedule(
             [NotNull] this IBackgroundJobClient client, 
             [NotNull, InstantHandle] Expression<Action> methodCall, 
             TimeSpan delay,
-            string queue = EnqueuedState.DefaultQueue)
+            string queue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
@@ -136,13 +152,29 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
-        /// <param name="queue">Queue name to enqueue job to (if not default)</param>
+        /// <returns>Unique identifier of the created job.</returns>
+        public static string Schedule(
+            [NotNull] this IBackgroundJobClient client,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
+            TimeSpan delay)
+        {
+            return client.Schedule(methodCall, delay, EnqueuedState.DefaultQueue);
+        }
+        
+        /// <summary>
+        /// Creates a new background job based on a specified lambda expression 
+        /// and schedules it to be enqueued after a given delay to a specific queue.
+        /// </summary>
+        /// <param name="client">A job client instance.</param>
+        /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
+        /// <param name="delay">Delay, after which the job will be enqueued.</param>
+        /// <param name="queue">Queue name to enqueue job to</param>
         /// <returns>Unique identifier of the created job.</returns>
         public static string Schedule(
             [NotNull] this IBackgroundJobClient client,
             [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             TimeSpan delay,
-            string queue = EnqueuedState.DefaultQueue)
+            string queue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
@@ -156,13 +188,30 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">Moment of time at which the job will be enqueued.</param>
-        /// <param name="queue">Queue name to enqueue job to (if not default)</param>
+        /// <returns>Unique identifier or a created job.</returns>
+        public static string Schedule(
+            [NotNull] this IBackgroundJobClient client,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
+            DateTimeOffset enqueueAt)
+        {
+            return client.Schedule(methodCall, enqueueAt, EnqueuedState.DefaultQueue);
+        }
+        
+        /// <summary>
+        /// Creates a new background job based on a specified lambda expression
+        /// and schedules it to be enqueued at the specified moment of time
+        /// to a specific queue.
+        /// </summary>
+        /// <param name="client">A job client instance.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
+        /// <param name="enqueueAt">Moment of time at which the job will be enqueued.</param>
+        /// <param name="queue">Queue name to enqueue job to</param>
         /// <returns>Unique identifier or a created job.</returns>
         public static string Schedule(
             [NotNull] this IBackgroundJobClient client,
             [NotNull, InstantHandle] Expression<Action> methodCall,
             DateTimeOffset enqueueAt,
-            string queue = EnqueuedState.DefaultQueue)
+            string queue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
@@ -176,13 +225,30 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">Moment of time at which the job will be enqueued.</param>
-        /// <param name="queue">Queue name to enqueue job to (if not default)</param>
+        /// <returns>Unique identifier or a created job.</returns>
+        public static string Schedule(
+            [NotNull] this IBackgroundJobClient client,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
+            DateTimeOffset enqueueAt)
+        {
+            return client.Schedule(methodCall, enqueueAt, EnqueuedState.DefaultQueue);
+        }
+        
+        /// <summary>
+        /// Creates a new background job based on a specified lambda expression
+        /// and schedules it to be enqueued at the specified moment of time
+        /// to a specific queue.
+        /// </summary>
+        /// <param name="client">A job client instance.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
+        /// <param name="enqueueAt">Moment of time at which the job will be enqueued.</param>
+        /// <param name="queue">Queue name to enqueue job to</param>
         /// <returns>Unique identifier or a created job.</returns>
         public static string Schedule(
             [NotNull] this IBackgroundJobClient client,
             [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             DateTimeOffset enqueueAt,
-            string queue = EnqueuedState.DefaultQueue)
+            string queue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
@@ -203,8 +269,28 @@ namespace Hangfire
         public static string Schedule<T>(
             [NotNull] this IBackgroundJobClient client, 
             [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
+            TimeSpan delay)
+        {
+            return client.Schedule(methodCall, delay, EnqueuedState.DefaultQueue);
+        }
+        
+        /// <summary>
+        /// Creates a new background job based on a specified instance method
+        /// call expression and schedules it to be enqueued after a given delay
+        /// to a specific queue.
+        /// </summary>
+        /// 
+        /// <typeparam name="T">Type whose method will be invoked during job processing.</typeparam>
+        /// <param name="client">A job client instance.</param>
+        /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
+        /// <param name="delay">Delay, after which the job will be enqueued.</param>
+        /// <param name="queue">Queue name to enqueue job to</param>
+        /// <returns>Unique identifier of the created job.</returns>
+        public static string Schedule<T>(
+            [NotNull] this IBackgroundJobClient client, 
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
             TimeSpan delay,
-            string queue = EnqueuedState.DefaultQueue)
+            string queue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
@@ -220,13 +306,32 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
-        /// <param name="queue">Queue name to enqueue job to (if not default)</param>
+        /// <returns>Unique identifier of the created job.</returns>
+        public static string Schedule<T>(
+            [NotNull] this IBackgroundJobClient client,
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
+            TimeSpan delay)
+        {
+            return client.Schedule(methodCall, delay, EnqueuedState.DefaultQueue);
+        }
+        
+        /// <summary>
+        /// Creates a new background job based on a specified instance method
+        /// call expression and schedules it to be enqueued after a given delay
+        /// to a specific queue.
+        /// </summary>
+        /// 
+        /// <typeparam name="T">Type whose method will be invoked during job processing.</typeparam>
+        /// <param name="client">A job client instance.</param>
+        /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
+        /// <param name="delay">Delay, after which the job will be enqueued.</param>
+        /// <param name="queue">Queue name to enqueue job to</param>
         /// <returns>Unique identifier of the created job.</returns>
         public static string Schedule<T>(
             [NotNull] this IBackgroundJobClient client,
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             TimeSpan delay,
-            string queue = EnqueuedState.DefaultQueue)
+            string queue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
@@ -241,13 +346,30 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">Moment at which the job will be enqueued.</param>
-        /// <param name="queue">Queue name to enqueue job to (if not default)</param>
+        /// <returns>Unique identifier of a created job.</returns>
+        public static string Schedule<T>(
+            [NotNull] this IBackgroundJobClient client,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
+            DateTimeOffset enqueueAt)
+        {
+            return client.Schedule(methodCall, enqueueAt, EnqueuedState.DefaultQueue);
+        }
+        
+        /// <summary>
+        /// Creates a new background job based on a specified lambda expression and schedules
+        /// it to be enqueued at the specified moment to a specific queue.
+        /// </summary>
+        /// <typeparam name="T">Type whose method will be invoked during job processing.</typeparam>
+        /// <param name="client">A job client instance.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
+        /// <param name="enqueueAt">Moment at which the job will be enqueued.</param>
+        /// <param name="queue">Queue name to enqueue job to</param>
         /// <returns>Unique identifier of a created job.</returns>
         public static string Schedule<T>(
             [NotNull] this IBackgroundJobClient client,
             [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             DateTimeOffset enqueueAt,
-            string queue = EnqueuedState.DefaultQueue)
+            string queue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
@@ -262,13 +384,30 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">Moment at which the job will be enqueued.</param>
+        /// <returns>Unique identifier of a created job.</returns>
+        public static string Schedule<T>(
+            [NotNull] this IBackgroundJobClient client,
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
+            DateTimeOffset enqueueAt)
+        {
+            return client.Schedule(methodCall, enqueueAt, EnqueuedState.DefaultQueue);
+        }
+        
+        /// <summary>
+        /// Creates a new background job based on a specified lambda expression and schedules
+        /// it to be enqueued at the specified moment.
+        /// </summary>
+        /// <typeparam name="T">Type whose method will be invoked during job processing.</typeparam>
+        /// <param name="client">A job client instance.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
+        /// <param name="enqueueAt">Moment at which the job will be enqueued.</param>
         /// <param name="queue">Queue name to enqueue job to (if not default)</param>
         /// <returns>Unique identifier of a created job.</returns>
         public static string Schedule<T>(
             [NotNull] this IBackgroundJobClient client,
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             DateTimeOffset enqueueAt,
-            string queue = EnqueuedState.DefaultQueue)
+            string queue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
