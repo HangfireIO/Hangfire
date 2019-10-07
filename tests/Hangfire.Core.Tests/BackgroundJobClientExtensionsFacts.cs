@@ -110,7 +110,8 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow)));
+                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow && 
+                                               state.CandidateQueue == EnqueuedState.DefaultQueue)));
         }
         
         [Fact]
@@ -144,7 +145,8 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.Is<ScheduledState>(state => state.EnqueueAt == now.UtcDateTime)));
+                It.Is<ScheduledState>(state => state.EnqueueAt == now.UtcDateTime && 
+                                               state.CandidateQueue == EnqueuedState.DefaultQueue)));
         }
         
         [Fact]
@@ -179,7 +181,8 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow)));
+                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow && 
+                                               state.CandidateQueue == EnqueuedState.DefaultQueue)));
         }
         
         [Fact]
@@ -216,7 +219,8 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.Is<ScheduledState>(state => state.EnqueueAt == now.UtcDateTime)));
+                It.Is<ScheduledState>(state => state.EnqueueAt == now.UtcDateTime && 
+                                               state.CandidateQueue == EnqueuedState.DefaultQueue)));
         }
         
         [Fact]
