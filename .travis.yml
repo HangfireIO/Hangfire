@@ -7,10 +7,10 @@ dist: trusty
 
 matrix:
   include:
-    - dotnet: 3.0
+    - dotnet: 3.0.100
       mono: none
       os: linux
-    - dotnet: 3.0
+    - dotnet: 3.0.100
       mono: none
       os: osx
     - mono: latest
