@@ -3,7 +3,7 @@
 
 language: csharp
 sudo: required
-dist: trusty
+dist: xenial
 
 matrix:
   include:
