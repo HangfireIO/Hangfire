@@ -15,9 +15,8 @@ matrix:
       os: osx
     - mono: latest
       os: linux
-    - mono: latest
+    - mono: latest-beta
       os: osx
-      osx_image: xcode11
 
 # Run the build script
 script:
