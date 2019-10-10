@@ -67,8 +67,8 @@ namespace Hangfire.SqlServer.Tests
             using (var connection = CreateConnection())
             {
                 // Arrange
-                const string createSql = @"
-insert into HangFire.AggregatedCounter ([Key], [Value], ExpireAt) 
+                var createSql = $@"
+insert into [{Constants.DefaultSchema}].AggregatedCounter ([Key], [Value], ExpireAt) 
 values ('key', 1, @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
@@ -78,7 +78,7 @@ values ('key', 1, @expireAt)";
                 manager.Execute(_cts.Token);
 
                 // Assert
-                Assert.Equal(0, connection.Query<int>(@"select count(*) from HangFire.Counter").Single());
+                Assert.Equal(0, connection.Query<int>($"select count(*) from [{Constants.DefaultSchema}].Counter").Single());
             }
         }
 
@@ -88,8 +88,8 @@ values ('key', 1, @expireAt)";
             using (var connection = CreateConnection())
             {
                 // Arrange
-                const string createSql = @"
-insert into HangFire.Job (InvocationData, Arguments, CreatedAt, ExpireAt) 
+                var createSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) 
 values ('', '', getutcdate(), @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
@@ -99,7 +99,7 @@ values ('', '', getutcdate(), @expireAt)";
                 manager.Execute(_cts.Token);
 
                 // Assert
-                Assert.Equal(0, connection.Query<int>(@"select count(*) from HangFire.Job").Single());
+                Assert.Equal(0, connection.Query<int>($"select count(*) from [{Constants.DefaultSchema}].Job").Single());
             }
         }
 
@@ -109,8 +109,8 @@ values ('', '', getutcdate(), @expireAt)";
             using (var connection = CreateConnection())
             {
                 // Arrange
-                const string createSql = @"
-insert into HangFire.List ([Key], ExpireAt) 
+                var createSql = $@"
+insert into [{Constants.DefaultSchema}].List ([Key], ExpireAt) 
 values ('key', @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
@@ -120,7 +120,7 @@ values ('key', @expireAt)";
                 manager.Execute(_cts.Token);
 
                 // Assert
-                Assert.Equal(0, connection.Query<int>(@"select count(*) from HangFire.List").Single());
+                Assert.Equal(0, connection.Query<int>($"select count(*) from [{Constants.DefaultSchema}].List").Single());
             }
         }
 
@@ -130,8 +130,8 @@ values ('key', @expireAt)";
             using (var connection = CreateConnection())
             {
                 // Arrange
-                const string createSql = @"
-insert into HangFire.[Set] ([Key], [Score], [Value], ExpireAt) 
+                var createSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], [Score], [Value], ExpireAt) 
 values ('key', 0, '', @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
@@ -141,7 +141,7 @@ values ('key', 0, '', @expireAt)";
                 manager.Execute(_cts.Token);
 
                 // Assert
-                Assert.Equal(0, connection.Query<int>(@"select count(*) from HangFire.[Set]").Single());
+                Assert.Equal(0, connection.Query<int>($"select count(*) from [{Constants.DefaultSchema}].[Set]").Single());
             }
         }
 
@@ -151,8 +151,8 @@ values ('key', 0, '', @expireAt)";
             using (var connection = CreateConnection())
             {
                 // Arrange
-                const string createSql = @"
-insert into HangFire.Hash ([Key], [Field], [Value], ExpireAt) 
+                var createSql = $@"
+insert into [{Constants.DefaultSchema}].Hash ([Key], [Field], [Value], ExpireAt) 
 values ('key', 'field', '', @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
@@ -162,14 +162,14 @@ values ('key', 'field', '', @expireAt)";
                 manager.Execute(_cts.Token);
 
                 // Assert
-                Assert.Equal(0, connection.Query<int>(@"select count(*) from HangFire.Hash").Single());
+                Assert.Equal(0, connection.Query<int>($"select count(*) from [{Constants.DefaultSchema}].Hash").Single());
             }
         }
 
         private static void CreateExpirationEntry(SqlConnection connection, DateTime? expireAt)
         {
-            const string insertSql = @"
-insert into HangFire.AggregatedCounter ([Key], [Value], [ExpireAt])
+            var insertSql = $@"
+insert into [{Constants.DefaultSchema}].AggregatedCounter ([Key], [Value], [ExpireAt])
 values (N'key', 1, @expireAt)";
 
             connection.Execute(insertSql, new { expireAt });
@@ -178,7 +178,7 @@ values (N'key', 1, @expireAt)";
         private static bool IsEntryExpired(SqlConnection connection)
         {
             var count = connection.Query<int>(
-                    "select count(*) from HangFire.AggregatedCounter where [Key] = N'key'").Single();
+                    $"select count(*) from [{Constants.DefaultSchema}].AggregatedCounter where [Key] = N'key'").Single();
             return count == 0;
         }
 

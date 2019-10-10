@@ -93,8 +93,8 @@ namespace Hangfire.SqlServer.Tests
         [Fact, CleanDatabase]
         public void Dequeue_ShouldFetchAJob_FromTheSpecifiedQueue()
         {
-            const string arrangeSql = @"
-insert into HangFire.JobQueue (JobId, Queue)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].JobQueue (JobId, Queue)
 values (@jobId, @queue);
 select scope_identity() as Id;";
 
@@ -121,8 +121,8 @@ select scope_identity() as Id;";
         [Fact, CleanDatabase]
         public void Dequeue_FetchesAJob_WhenJobIdIsLongValue()
         {
-            const string arrangeSql = @"
-insert into HangFire.JobQueue (JobId, Queue)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].JobQueue (JobId, Queue)
 values (@jobId, @queue);
 select scope_identity() as Id;";
 
@@ -148,10 +148,10 @@ select scope_identity() as Id;";
         [Fact, CleanDatabase]
         public void Dequeue_ShouldDeleteAJob()
         {
-            const string arrangeSql = @"
-insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
 values (@invocationData, @arguments, getutcdate())
-insert into HangFire.JobQueue (JobId, Queue)
+insert into [{Constants.DefaultSchema}].JobQueue (JobId, Queue)
 values (scope_identity(), @queue)";
 
             // Arrange
@@ -170,7 +170,7 @@ values (scope_identity(), @queue)";
                 // Assert
                 Assert.NotNull(payload);
 
-                var jobInQueue = connection.Query("select * from HangFire.JobQueue").SingleOrDefault();
+                var jobInQueue = connection.Query($"select * from [{Constants.DefaultSchema}].JobQueue").SingleOrDefault();
                 Assert.Null(jobInQueue);
             });
         }
@@ -178,10 +178,10 @@ values (scope_identity(), @queue)";
         [Fact, CleanDatabase]
         public void Dequeue_ShouldFetchTimedOutJobs_FromTheSpecifiedQueue()
         {
-            const string arrangeSql = @"
-insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
 values (@invocationData, @arguments, dateadd(minute, -60, getutcdate()))
-insert into HangFire.JobQueue (JobId, Queue, FetchedAt)
+insert into [{Constants.DefaultSchema}].JobQueue (JobId, Queue, FetchedAt)
 values (scope_identity(), @queue, @fetchedAt)";
 
             // Arrange
@@ -211,10 +211,10 @@ values (scope_identity(), @queue, @fetchedAt)";
         [Fact, CleanDatabase]
         public void Dequeue_ShouldSetFetchedAt_OnlyForTheFetchedJob()
         {
-            const string arrangeSql = @"
-insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
 values (@invocationData, @arguments, getutcdate())
-insert into HangFire.JobQueue (JobId, Queue)
+insert into [{Constants.DefaultSchema}].JobQueue (JobId, Queue)
 values (scope_identity(), @queue)";
 
             // Arrange
@@ -236,7 +236,7 @@ values (scope_identity(), @queue)";
 
                 // Assert
                 var otherJobFetchedAt = connection.Query<DateTime?>(
-                    "select FetchedAt from HangFire.JobQueue where JobId != @id",
+                    $"select FetchedAt from [{Constants.DefaultSchema}].JobQueue where JobId != @id",
                     new { id = payload.JobId }).Single();
 
                 Assert.Null(otherJobFetchedAt);
@@ -246,10 +246,10 @@ values (scope_identity(), @queue)";
         [Fact, CleanDatabase]
         public void Dequeue_ShouldFetchJobs_OnlyFromSpecifiedQueues()
         {
-            const string arrangeSql = @"
-insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
 values (@invocationData, @arguments, getutcdate())
-insert into HangFire.JobQueue (JobId, Queue)
+insert into [{Constants.DefaultSchema}].JobQueue (JobId, Queue)
 values (scope_identity(), @queue)";
 
             UseConnection(connection =>
@@ -270,10 +270,10 @@ values (scope_identity(), @queue)";
         [Fact, CleanDatabase]
         public void Dequeue_ShouldFetchJobs_FromMultipleQueues()
         {
-            const string arrangeSql = @"
-insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
 values (@invocationData, @arguments, getutcdate())
-insert into HangFire.JobQueue (JobId, Queue)
+insert into [{Constants.DefaultSchema}].JobQueue (JobId, Queue)
 values (scope_identity(), @queue)";
 
             UseConnection(connection =>
@@ -363,8 +363,8 @@ values (scope_identity(), @queue)";
         [Fact, CleanDatabase]
         public void Dequeue_InvisibilityTimeout_ShouldFetchAJob_FromTheSpecifiedQueue()
         {
-            const string arrangeSql = @"
-insert into HangFire.JobQueue (JobId, Queue)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].JobQueue (JobId, Queue)
 values (@jobId, @queue);
 select scope_identity() as Id;";
 
@@ -391,10 +391,10 @@ select scope_identity() as Id;";
         [Fact, CleanDatabase]
         public void Dequeue_InvisibilityTimeout_ShouldLeaveJobInTheQueue_ButSetItsFetchedAtValue()
         {
-            const string arrangeSql = @"
-insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
 values (@invocationData, @arguments, getutcdate())
-insert into HangFire.JobQueue (JobId, Queue)
+insert into [{Constants.DefaultSchema}].JobQueue (JobId, Queue)
 values (scope_identity(), @queue)";
 
             // Arrange
@@ -414,7 +414,7 @@ values (scope_identity(), @queue)";
                 Assert.NotNull(payload);
 
                 var fetchedAt = connection.Query<DateTime?>(
-                    "select FetchedAt from HangFire.JobQueue where JobId = @id",
+                    $"select FetchedAt from [{Constants.DefaultSchema}].JobQueue where JobId = @id",
                     new { id = payload.JobId }).Single();
 
                 Assert.NotNull(fetchedAt);
@@ -425,10 +425,10 @@ values (scope_identity(), @queue)";
         [Fact, CleanDatabase]
         public void Dequeue_InvisibilityTimeout_ShouldFetchATimedOutJobs_FromTheSpecifiedQueue()
         {
-            const string arrangeSql = @"
-insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
 values (@invocationData, @arguments, getutcdate())
-insert into HangFire.JobQueue (JobId, Queue, FetchedAt)
+insert into [{Constants.DefaultSchema}].JobQueue (JobId, Queue, FetchedAt)
 values (scope_identity(), @queue, @fetchedAt)";
 
             // Arrange
@@ -458,10 +458,10 @@ values (scope_identity(), @queue, @fetchedAt)";
         [Fact, CleanDatabase]
         public void Dequeue_InvisibilityTimeout_ShouldSetFetchedAt_OnlyForTheFetchedJob()
         {
-            const string arrangeSql = @"
-insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
 values (@invocationData, @arguments, getutcdate())
-insert into HangFire.JobQueue (JobId, Queue)
+insert into [{Constants.DefaultSchema}].JobQueue (JobId, Queue)
 values (scope_identity(), @queue)";
 
             // Arrange
@@ -483,7 +483,7 @@ values (scope_identity(), @queue)";
 
                 // Assert
                 var otherJobFetchedAt = connection.Query<DateTime?>(
-                    "select FetchedAt from HangFire.JobQueue where JobId != @id",
+                    $"select FetchedAt from [{Constants.DefaultSchema}].JobQueue where JobId != @id",
                     new { id = payload.JobId }).Single();
 
                 Assert.Null(otherJobFetchedAt);
@@ -493,10 +493,10 @@ values (scope_identity(), @queue)";
         [Fact, CleanDatabase]
         public void Dequeue_InvisibilityTimeout_ShouldFetchJobs_OnlyFromSpecifiedQueues()
         {
-            const string arrangeSql = @"
-insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
 values (@invocationData, @arguments, getutcdate())
-insert into HangFire.JobQueue (JobId, Queue)
+insert into [{Constants.DefaultSchema}].JobQueue (JobId, Queue)
 values (scope_identity(), @queue)";
 
             UseConnection(connection =>
@@ -517,10 +517,10 @@ values (scope_identity(), @queue)";
         [Fact, CleanDatabase]
         public void Dequeue_InvisibilityTimeout_ShouldFetchJobs_FromMultipleQueues()
         {
-            const string arrangeSql = @"
-insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
 values (@invocationData, @arguments, getutcdate())
-insert into HangFire.JobQueue (JobId, Queue)
+insert into [{Constants.DefaultSchema}].JobQueue (JobId, Queue)
 values (scope_identity(), @queue)";
 
             UseConnection(connection =>
@@ -568,7 +568,7 @@ values (scope_identity(), @queue)";
                 queue.Enqueue(connection, "default", "1");
 #endif
 
-                var record = connection.Query("select * from HangFire.JobQueue").Single();
+                var record = connection.Query($"select * from [{Constants.DefaultSchema}].JobQueue").Single();
                 Assert.Equal("1", record.JobId.ToString());
                 Assert.Equal("default", record.Queue);
                 Assert.Null(record.FetchedAt);
@@ -592,7 +592,7 @@ values (scope_identity(), @queue)";
                 queue.Enqueue(connection, "default", (int.MaxValue + 1L).ToString());
 #endif
 
-                var record = connection.Query("select * from HangFire.JobQueue").Single();
+                var record = connection.Query($"select * from [{Constants.DefaultSchema}].JobQueue").Single();
                 Assert.Equal((int.MaxValue + 1L).ToString(), record.JobId.ToString());
             });
         }

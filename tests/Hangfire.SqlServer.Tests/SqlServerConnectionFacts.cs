@@ -110,7 +110,7 @@ namespace Hangfire.SqlServer.Tests
                 using (connection.AcquireDistributedLock("hello", TimeSpan.FromMinutes(5)))
                 {
                     var lockMode = sql.Query<string>(
-                        "select applock_mode('public', 'HangFire:hello', 'session')").Single();
+                        $"select applock_mode('public', '{Constants.DefaultSchema}:hello', 'session')").Single();
 
                     Assert.Equal("Exclusive", lockMode);
                 }
@@ -228,7 +228,7 @@ namespace Hangfire.SqlServer.Tests
                 Assert.NotNull(jobId);
                 Assert.NotEmpty(jobId);
 
-                var sqlJob = sql.Query("select * from HangFire.Job").Single();
+                var sqlJob = sql.Query($"select * from [{Constants.DefaultSchema}].Job").Single();
                 Assert.Equal(jobId, sqlJob.Id.ToString());
                 Assert.Equal(createdAt, sqlJob.CreatedAt);
                 Assert.Equal(null, (int?) sqlJob.StateId);
@@ -246,7 +246,7 @@ namespace Hangfire.SqlServer.Tests
                 Assert.True(sqlJob.ExpireAt < createdAt.AddDays(1).AddMinutes(1));
 
                 var parameters = sql.Query(
-                    "select * from HangFire.JobParameter where JobId = @id",
+                    $"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id",
                     new { id = jobId })
                     .ToDictionary(x => (string) x.Name, x => (string) x.Value);
 
@@ -271,7 +271,7 @@ namespace Hangfire.SqlServer.Tests
                     TimeSpan.FromDays(1));
 
                 var parameters = sql
-                    .Query("select * from HangFire.JobParameter where JobId = @id", new { id = jobId })
+                    .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
                     .ToDictionary(x => (string)x.Name, x => (string)x.Value);
 
                 Assert.Equal(null, parameters["Key1"]);
@@ -293,7 +293,7 @@ namespace Hangfire.SqlServer.Tests
                     TimeSpan.FromDays(1));
 
                 var parameters = sql
-                    .Query("select * from HangFire.JobParameter where JobId = @id", new { id = jobId })
+                    .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
                     .ToDictionary(x => (string)x.Name, x => (string)x.Value);
 
                 Assert.Equal(null, parameters["Key1"]);
@@ -316,7 +316,7 @@ namespace Hangfire.SqlServer.Tests
                     TimeSpan.FromDays(1));
 
                 var parameters = sql
-                    .Query("select * from HangFire.JobParameter where JobId = @id", new { id = jobId })
+                    .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
                     .ToDictionary(x => (string)x.Name, x => (string)x.Value);
 
                 Assert.Equal(null, parameters["Key1"]);
@@ -340,7 +340,7 @@ namespace Hangfire.SqlServer.Tests
                     TimeSpan.FromDays(1));
 
                 var parameters = sql
-                    .Query("select * from HangFire.JobParameter where JobId = @id", new { id = jobId })
+                    .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
                     .ToDictionary(x => (string)x.Name, x => (string)x.Value);
 
                 Assert.Empty(parameters);
@@ -367,8 +367,8 @@ namespace Hangfire.SqlServer.Tests
         [Fact, CleanDatabase]
         public void GetJobData_ReturnsResult_WhenJobExists()
         {
-            const string arrangeSql = @"
-insert into HangFire.Job (InvocationData, Arguments, StateName, CreatedAt)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, StateName, CreatedAt)
 values (@invocationData, @arguments, @stateName, getutcdate())
 select scope_identity() as Id";
 
@@ -418,18 +418,18 @@ select scope_identity() as Id";
         [Fact, CleanDatabase]
         public void GetStateData_ReturnsCorrectData()
         {
-            const string arrangeSql = @"
-insert into HangFire.Job (InvocationData, Arguments, StateName, CreatedAt)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, StateName, CreatedAt)
 values ('', '', '', getutcdate());
 declare @JobId bigint;
 set @JobId = scope_identity();
-insert into HangFire.State (JobId, Name, CreatedAt)
+insert into [{Constants.DefaultSchema}].State (JobId, Name, CreatedAt)
 values (@JobId, 'old-state', getutcdate());
-insert into HangFire.State (JobId, Name, Reason, Data, CreatedAt)
+insert into [{Constants.DefaultSchema}].State (JobId, Name, Reason, Data, CreatedAt)
 values (@JobId, @name, @reason, @data, getutcdate());
 declare @StateId bigint;
 set @StateId = scope_identity();
-update HangFire.Job set StateId = @StateId;
+update [{Constants.DefaultSchema}].Job set StateId = @StateId;
 select @JobId as Id;";
 
             UseConnections((sql, connection) =>
@@ -456,18 +456,18 @@ select @JobId as Id;";
         [Fact, CleanDatabase]
         public void GetStateData_ReturnsCorrectData_WhenPropertiesAreCamelcased()
         {
-            const string arrangeSql = @"
-insert into HangFire.Job (InvocationData, Arguments, StateName, CreatedAt)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, StateName, CreatedAt)
 values ('', '', '', getutcdate());
 declare @JobId bigint;
 set @JobId = scope_identity();
-insert into HangFire.State (JobId, Name, CreatedAt)
+insert into [{Constants.DefaultSchema}].State (JobId, Name, CreatedAt)
 values (@JobId, 'old-state', getutcdate());
-insert into HangFire.State (JobId, Name, Reason, Data, CreatedAt)
+insert into [{Constants.DefaultSchema}].State (JobId, Name, Reason, Data, CreatedAt)
 values (@JobId, @name, @reason, @data, getutcdate());
 declare @StateId bigint;
 set @StateId = scope_identity();
-update HangFire.Job set StateId = @StateId;
+update [{Constants.DefaultSchema}].Job set StateId = @StateId;
 select @JobId as Id;";
 
             UseConnections((sql, connection) =>
@@ -491,8 +491,8 @@ select @JobId as Id;";
         [Fact, CleanDatabase]
         public void GetJobData_ReturnsJobLoadException_IfThereWasADeserializationException()
         {
-            const string arrangeSql = @"
-insert into HangFire.Job (InvocationData, Arguments, StateName, CreatedAt)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, StateName, CreatedAt)
 values (@invocationData, @arguments, @stateName, getutcdate())
 select scope_identity() as Id";
 
@@ -540,8 +540,8 @@ select scope_identity() as Id";
         [Fact, CleanDatabase]
         public void SetParameters_CreatesNewParameter_WhenParameterWithTheGivenNameDoesNotExists()
         {
-            const string arrangeSql = @"
-insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
 values ('', '', getutcdate())
 select scope_identity() as Id";
 
@@ -553,7 +553,7 @@ select scope_identity() as Id";
                 connection.SetJobParameter(jobId, "Name", "Value");
 
                 var parameter = sql.Query(
-                    "select * from HangFire.JobParameter where JobId = @id and Name = @name",
+                    $"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id and Name = @name",
                     new { id = jobId, name = "Name" }).Single();
 
                 Assert.Equal("Value", parameter.Value);
@@ -563,8 +563,8 @@ select scope_identity() as Id";
         [Fact, CleanDatabase]
         public void SetParameter_UpdatesValue_WhenParameterWithTheGivenName_AlreadyExists()
         {
-            const string arrangeSql = @"
-insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
 values ('', '', getutcdate())
 select scope_identity() as Id";
 
@@ -577,7 +577,7 @@ select scope_identity() as Id";
                 connection.SetJobParameter(jobId, "Name", "AnotherValue");
 
                 var parameter = sql.Query(
-                    "select * from HangFire.JobParameter where JobId = @id and Name = @name",
+                    $"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id and Name = @name",
                     new { id = jobId, name = "Name" }).Single();
 
                 Assert.Equal("AnotherValue", parameter.Value);
@@ -587,8 +587,8 @@ select scope_identity() as Id";
         [Fact, CleanDatabase]
         public void SetParameter_CanAcceptNulls_AsValues()
         {
-            const string arrangeSql = @"
-insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
 values ('', '', getutcdate())
 select scope_identity() as Id";
 
@@ -600,7 +600,7 @@ select scope_identity() as Id";
                 connection.SetJobParameter(jobId, "Name", null);
 
                 var parameter = sql.Query(
-                    "select * from HangFire.JobParameter where JobId = @id and Name = @name",
+                    $"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id and Name = @name",
                     new { id = jobId, name = "Name" }).Single();
 
                 Assert.Equal((string) null, parameter.Value);
@@ -644,12 +644,12 @@ select scope_identity() as Id";
         [Fact, CleanDatabase]
         public void GetParameter_ReturnsParameterValue_WhenJobExists()
         {
-            const string arrangeSql = @"
+            var arrangeSql = $@"
 declare @id bigint
-insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
 values ('', '', getutcdate())
 set @id = scope_identity()
-insert into HangFire.JobParameter (JobId, Name, Value)
+insert into [{Constants.DefaultSchema}].JobParameter (JobId, Name, Value)
 values (@id, @name, @value)
 select @id";
 
@@ -726,8 +726,8 @@ select @id";
         [Fact, CleanDatabase]
         public void GetFirstByLowestScoreFromSet_ReturnsN_WhenMoreThanNExist()
         {
-            const string arrangeSql = @"
-insert into HangFire.[Set] ([Key], Score, Value)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], Score, Value)
 values 
 ('key', 1.0, '1234'),
 ('key', -1.0, '567'),
@@ -749,8 +749,8 @@ values
         [Fact, CleanDatabase]
         public void GetFirstByLowestScoreFromSet_ReturnsN_WhenMoreThanNExist_And_RequestedCountIsGreaterThanN()
         {
-            const string arrangeSql = @"
-insert into HangFire.[Set] ([Key], Score, Value)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], Score, Value)
 values 
 ('key', 1.0, '1234'),
 ('key', -1.0, '567'),
@@ -771,8 +771,8 @@ values
         [Fact, CleanDatabase]
         public void GetFirstByLowestScoreFromSet_ReturnsTheValueWithTheLowestScore()
         {
-            const string arrangeSql = @"
-insert into HangFire.[Set] ([Key], Score, Value)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], Score, Value)
 values 
 ('key', 1.0, '1.0'),
 ('key', -1.0, '-1.0'),
@@ -825,7 +825,7 @@ values
                 };
                 connection.AnnounceServer("server", context1);
 
-                var server = sql.Query("select * from HangFire.Server").Single();
+                var server = sql.Query($"select * from [{Constants.DefaultSchema}].Server").Single();
                 Assert.Equal("server", server.Id);
                 Assert.True(((string)server.Data).StartsWith(
                     "{\"WorkerCount\":4,\"Queues\":[\"critical\",\"default\"],\"StartedAt\":"),
@@ -838,7 +838,7 @@ values
                     WorkerCount = 1000 
                 };
                 connection.AnnounceServer("server", context2);
-                var sameServer = sql.Query("select * from HangFire.Server").Single();
+                var sameServer = sql.Query($"select * from [{Constants.DefaultSchema}].Server").Single();
                 Assert.Equal("server", sameServer.Id);
                 Assert.Contains("1000", sameServer.Data);
             });
@@ -854,8 +854,8 @@ values
         [Fact, CleanDatabase]
         public void RemoveServer_RemovesAServerRecord()
         {
-            const string arrangeSql = @"
-insert into HangFire.Server (Id, Data, LastHeartbeat)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Server (Id, Data, LastHeartbeat)
 values 
 ('Server1', '', getutcdate()),
 ('Server2', '', getutcdate())";
@@ -866,7 +866,7 @@ values
 
                 connection.RemoveServer("Server1");
 
-                var server = sql.Query("select * from HangFire.Server").Single();
+                var server = sql.Query($"select * from [{Constants.DefaultSchema}].Server").Single();
                 Assert.NotEqual("Server1", server.Id, StringComparer.OrdinalIgnoreCase);
             });
         }
@@ -881,8 +881,8 @@ values
         [Fact, CleanDatabase]
         public void Heartbeat_UpdatesLastHeartbeat_OfTheServerWithGivenId()
         {
-            const string arrangeSql = @"
-insert into HangFire.Server (Id, Data, LastHeartbeat)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Server (Id, Data, LastHeartbeat)
 values
 ('server1', '', '2012-12-12 12:12:12'),
 ('server2', '', '2012-12-12 12:12:12')";
@@ -893,7 +893,7 @@ values
 
                 connection.Heartbeat("server1");
 
-                var servers = sql.Query("select * from HangFire.Server")
+                var servers = sql.Query($"select * from [{Constants.DefaultSchema}].Server")
                     .ToDictionary(x => (string)x.Id, x => (DateTime)x.LastHeartbeat);
 
                 Assert.NotEqual(2012, servers["server1"].Year);
@@ -911,8 +911,8 @@ values
         [Fact, CleanDatabase]
         public void RemoveTimedOutServers_DoItsWorkPerfectly()
         {
-            const string arrangeSql = @"
-insert into HangFire.Server (Id, Data, LastHeartbeat)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Server (Id, Data, LastHeartbeat)
 values (@id, '', @heartbeat)";
 
             UseConnections((sql, connection) =>
@@ -927,7 +927,7 @@ values (@id, '', @heartbeat)";
 
                 connection.RemoveTimedOutServers(TimeSpan.FromHours(15));
 
-                var liveServer = sql.Query("select * from HangFire.Server").Single();
+                var liveServer = sql.Query($"select * from [{Constants.DefaultSchema}].Server").Single();
                 Assert.Equal("server2", liveServer.Id);
             });
         }
@@ -954,8 +954,8 @@ values (@id, '', @heartbeat)";
         [Fact, CleanDatabase]
         public void GetAllItemsFromSet_ReturnsAllItems()
         {
-            const string arrangeSql = @"
-insert into HangFire.[Set] ([Key], Score, Value)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], Score, Value)
 values (@key, 0.0, @value)";
 
             UseConnections((sql, connection) =>
@@ -1016,7 +1016,7 @@ values (@key, 0.0, @value)";
                 });
 
                 var result = sql.Query(
-                    "select * from HangFire.Hash where [Key] = @key",
+                    $"select * from [{Constants.DefaultSchema}].Hash where [Key] = @key",
                     new { key = "some-hash" })
                     .ToDictionary(x => (string)x.Field, x => (string)x.Value);
 
@@ -1038,7 +1038,7 @@ values (@key, 0.0, @value)";
                 });
 
                 var result = sql.Query(
-                        "select * from HangFire.Hash where [Key] = @key",
+                        $"select * from [{Constants.DefaultSchema}].Hash where [Key] = @key",
                         new { key = "some-hash" })
                     .ToDictionary(x => (string)x.Field, x => (string)x.Value);
 
@@ -1081,8 +1081,8 @@ values (@key, 0.0, @value)";
         [Fact, CleanDatabase]
         public void GetAllEntriesFromHash_ReturnsAllKeysAndTheirValues()
         {
-            const string arrangeSql = @"
-insert into HangFire.Hash ([Key], [Field], [Value])
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Hash ([Key], [Field], [Value])
 values (@key, @field, @value)";
 
             UseConnections((sql, connection) =>
@@ -1129,8 +1129,8 @@ values (@key, @field, @value)";
         [Fact, CleanDatabase]
         public void GetSetCount_ReturnsNumberOfElements_InASet()
         {
-            const string arrangeSql = @"
-insert into HangFire.[Set] ([Key], [Value], [Score])
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
 values (@key, @value, 0.0)";
 
             UseConnections((sql, connection) =>
@@ -1160,8 +1160,8 @@ values (@key, @value, 0.0)";
         [Fact, CleanDatabase]
         public void GetRangeFromSet_ReturnsPagedElements()
         {
-            const string arrangeSql = @"
-insert into HangFire.[Set] ([Key], [Value], [Score])
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
 values (@Key, @Value, 0.0)";
 
             UseConnections((sql, connection) =>
@@ -1205,8 +1205,8 @@ values (@Key, @Value, 0.0)";
         [Fact, CleanDatabase]
         public void GetCounter_ReturnsSumOfValues_InCounterTable()
         {
-            const string arrangeSql = @"
-insert into HangFire.Counter ([Key], [Value])
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Counter ([Key], [Value])
 values (@key, @value)";
 
             UseConnections((sql, connection) =>
@@ -1230,8 +1230,8 @@ values (@key, @value)";
         [Fact, CleanDatabase]
         public void GetCounter_IncludesValues_FromCounterAggregateTable()
         {
-            const string arrangeSql = @"
-insert into HangFire.AggregatedCounter ([Key], [Value])
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].AggregatedCounter ([Key], [Value])
 values (@key, @value)";
 
             UseConnections((sql, connection) =>
@@ -1272,8 +1272,8 @@ values (@key, @value)";
         [Fact, CleanDatabase]
         public void GetHashCount_ReturnsNumber_OfHashFields()
         {
-            const string arrangeSql = @"
-insert into HangFire.Hash ([Key], [Field])
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Hash ([Key], [Field])
 values (@key, @field)";
 
             UseConnections((sql, connection) =>
@@ -1317,8 +1317,8 @@ values (@key, @field)";
         [Fact, CleanDatabase]
         public void GetHashTtl_ReturnsExpirationTimeForHash()
         {
-            const string arrangeSql = @"
-insert into HangFire.Hash ([Key], [Field], [ExpireAt])
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Hash ([Key], [Field], [ExpireAt])
 values (@key, @field, @expireAt)";
 
             UseConnections((sql, connection) =>
@@ -1362,8 +1362,8 @@ values (@key, @field, @expireAt)";
         [Fact, CleanDatabase]
         public void GetListCount_ReturnsTheNumberOfListElements()
         {
-            const string arrangeSql = @"
-insert into HangFire.List ([Key])
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].List ([Key])
 values (@key)";
 
             UseConnections((sql, connection) =>
@@ -1407,8 +1407,8 @@ values (@key)";
         [Fact, CleanDatabase]
         public void GetListTtl_ReturnsExpirationTimeForList()
         {
-            const string arrangeSql = @"
-insert into HangFire.List ([Key], [ExpireAt])
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].List ([Key], [ExpireAt])
 values (@key, @expireAt)";
 
             UseConnections((sql, connection) =>
@@ -1466,8 +1466,8 @@ values (@key, @expireAt)";
         [Fact, CleanDatabase]
         public void GetValueFromHash_ReturnsValue_OfAGivenField()
         {
-            const string arrangeSql = @"
-insert into HangFire.Hash ([Key], [Field], [Value])
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Hash ([Key], [Field], [Value])
 values (@key, @field, @value)";
 
             UseConnections((sql, connection) =>
@@ -1513,8 +1513,8 @@ values (@key, @field, @value)";
         [Fact, CleanDatabase]
         public void GetRangeFromList_ReturnsAllEntries_WithinGivenBounds()
         {
-            const string arrangeSql = @"
-insert into HangFire.List ([Key], [Value])
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].List ([Key], [Value])
 values (@key, @value)";
 
             UseConnections((sql, connection) =>
@@ -1560,8 +1560,8 @@ values (@key, @value)";
         [Fact, CleanDatabase]
         public void GetAllItemsFromList_ReturnsAllItems_FromAGivenList()
         {
-            const string arrangeSql = @"
-insert into HangFire.List ([Key], Value)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].List ([Key], Value)
 values (@key, @value)";
 
             UseConnections((sql, connection) =>
@@ -1604,8 +1604,8 @@ values (@key, @value)";
         [Fact, CleanDatabase]
         public void GetSetTtl_ReturnsExpirationTime_OfAGivenSet()
         {
-            const string arrangeSql = @"
-insert into HangFire.[Set] ([Key], [Value], [ExpireAt], [Score])
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [ExpireAt], [Score])
 values (@key, @value, @expireAt, 0.0)";
 
             UseConnections((sql, connection) =>
@@ -1629,9 +1629,9 @@ values (@key, @value, @expireAt, 0.0)";
         [Fact, CleanDatabase]
         public void GetJobData_ReturnsResult_WhenJobIdIsLongValue()
         {
-            const string arrangeSql = @"
-SET IDENTITY_INSERT HangFire.Job ON;
-insert into HangFire.Job (Id, InvocationData, Arguments, StateName, CreatedAt)
+            var arrangeSql = $@"
+SET IDENTITY_INSERT [{Constants.DefaultSchema}].Job ON;
+insert into [{Constants.DefaultSchema}].Job (Id, InvocationData, Arguments, StateName, CreatedAt)
 values (@jobId, @invocationData, '[''Arguments'']', 'Succeeded', getutcdate());";
 
             UseConnections((sql, connection) =>
@@ -1656,17 +1656,17 @@ values (@jobId, @invocationData, '[''Arguments'']', 'Succeeded', getutcdate());"
         [Fact, CleanDatabase]
         public void GetStateData_ReturnsCorrectData_WhenJobIdAndStateIdAreLongValues()
         {
-            const string arrangeSql = @"
-SET IDENTITY_INSERT HangFire.Job ON
-insert into HangFire.Job (Id, InvocationData, Arguments, StateName, CreatedAt)
+            var arrangeSql = $@"
+SET IDENTITY_INSERT [{Constants.DefaultSchema}].Job ON
+insert into [{Constants.DefaultSchema}].Job (Id, InvocationData, Arguments, StateName, CreatedAt)
 values (@jobId, '', '', '', getutcdate());
-insert into HangFire.State (JobId, Name, CreatedAt)
+insert into [{Constants.DefaultSchema}].State (JobId, Name, CreatedAt)
 values (@jobId, 'old-state', getutcdate());
-SET IDENTITY_INSERT HangFire.Job OFF
-SET IDENTITY_INSERT HangFire.State ON
-insert into HangFire.State (Id, JobId, Name, Data, CreatedAt)
+SET IDENTITY_INSERT [{Constants.DefaultSchema}].Job OFF
+SET IDENTITY_INSERT [{Constants.DefaultSchema}].State ON
+insert into [{Constants.DefaultSchema}].State (Id, JobId, Name, Data, CreatedAt)
 values (@stateId, @jobId, 'Name', @data, getutcdate());
-update HangFire.Job set StateId = @stateId;";
+update [{Constants.DefaultSchema}].Job set StateId = @stateId;";
 
             UseConnections((sql, connection) =>
             {
@@ -1696,7 +1696,7 @@ update HangFire.Job set StateId = @stateId;";
             UseConnections((sql, connection) =>
             {
                 // Arrange
-                sql.Query($"DBCC CHECKIDENT('HangFire.Job', RESEED, {int.MaxValue + 1L});");
+                sql.Query($"DBCC CHECKIDENT('[{Constants.DefaultSchema}].Job', RESEED, {int.MaxValue + 1L});");
 
                 // Act
                 var createdAt = new DateTime(2012, 12, 12);
@@ -1714,9 +1714,9 @@ update HangFire.Job set StateId = @stateId;";
         [Fact, CleanDatabase]
         public void SetJobParameter_CreatesNewParameter_WhenJobIdIsLongValue()
         {
-            const string arrangeSql = @"
-SET IDENTITY_INSERT HangFire.Job ON
-insert into HangFire.Job (Id, InvocationData, Arguments, CreatedAt)
+            var arrangeSql = $@"
+SET IDENTITY_INSERT [{Constants.DefaultSchema}].Job ON
+insert into [{Constants.DefaultSchema}].Job (Id, InvocationData, Arguments, CreatedAt)
 values (@jobId, '', '', getutcdate())";
 
             UseConnections((sql, connection) =>
@@ -1728,7 +1728,7 @@ values (@jobId, '', '', getutcdate())";
                 connection.SetJobParameter((int.MaxValue + 1L).ToString(), "Name", "Value");
 
                 var parameter = sql.Query(
-                    "select * from HangFire.JobParameter where JobId = @id and Name = @name",
+                    $"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id and Name = @name",
                     new { id = int.MaxValue + 1L, name = "Name" }).Single();
 
                 Assert.NotNull(parameter);
@@ -1738,12 +1738,12 @@ values (@jobId, '', '', getutcdate())";
         [Fact, CleanDatabase]
         public void GetJobParameter_ReturnsParameterValue_WhenJobIdIsLong()
         {
-            const string arrangeSql = @"
-SET IDENTITY_INSERT HangFire.Job ON
-insert into HangFire.Job (Id, InvocationData, Arguments, CreatedAt)
+            var arrangeSql = $@"
+SET IDENTITY_INSERT [{Constants.DefaultSchema}].Job ON
+insert into [{Constants.DefaultSchema}].Job (Id, InvocationData, Arguments, CreatedAt)
 values (@jobId, '', '', getutcdate())
-SET IDENTITY_INSERT HangFire.Job OFF
-insert into HangFire.JobParameter (JobId, Name, Value)
+SET IDENTITY_INSERT [{Constants.DefaultSchema}].Job OFF
+insert into [{Constants.DefaultSchema}].JobParameter (JobId, Name, Value)
 values (@jobId, @name, @value)";
 
             UseConnections((sql, connection) =>
