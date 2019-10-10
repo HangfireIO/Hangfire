@@ -57,14 +57,16 @@
   
   <!-- Full MSBuild is required to generate Razor classes -->
   <PropertyGroup>
-    <MSBuildFullPath>$(MSBuildProgramFiles32)\MSBuild\14.0\bin\MSBuild.exe</MSBuildFullPath>
+    <MSBuild14FullPath>$(MSBuildProgramFiles32)\MSBuild\14.0\bin\MSBuild.exe</MSBuild14FullPath>
+    <MSBuild15FullPath>$(MSBuildProgramFiles32)\MSBuild\15.0\bin\MSBuild.exe</MSBuild15FullPath>
     <RazorProjectFile>Razor.build</RazorProjectFile>
     <InnerTargets>GenerateRazorClasses;Build</InnerTargets>
   </PropertyGroup>
 
   <Target Name="GenerateRazorClasses">
-    <Exec Command="&quot;$(MSBuildFullPath)&quot; $(RazorProjectFile) /v:quiet /nologo" Condition="Exists('$(MSBuildFullPath)')" />
-    <Warning Text="Classes for Razor files (*.cshtml) weren't re-generated: couldn't find the '$(MSBuildFullPath)' file" Condition="!Exists('$(MSBuildFullPath)')" />
+    <Exec Command="&quot;$(MSBuild15FullPath)&quot; $(RazorProjectFile) /v:quiet /nologo" Condition="Exists('$(MSBuild15FullPath)')" />
+    <Exec Command="&quot;$(MSBuild14FullPath)&quot; $(RazorProjectFile) /v:quiet /nologo" Condition="Exists('$(MSBuild14FullPath)') and !Exists('$(MSBuild15FullPath)')" />
+    <Warning Text="Classes for Razor files (*.cshtml) weren't re-generated: couldn't find the '$(MSBuild14FullPath)' or '$(MSBuild15FullPath)' file" Condition="!Exists('$(MSBuild14FullPath)') and !Exists('$(MSBuild15FullPath)')" />
   </Target>
   
   <ItemGroup>
