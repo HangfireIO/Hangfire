@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 
 namespace Hangfire.Processing
 {
+    // TODO Replace these methods with WaitHandle property in 2.0.
     public interface IBackgroundDispatcher : IDisposable
     {
         bool Wait(TimeSpan timeout);

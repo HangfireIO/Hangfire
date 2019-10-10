@@ -214,6 +214,15 @@ namespace Hangfire
             return $"{minute} {hour} {day} {month} *";
         }
 
+		/// <summary>
+		/// Returns cron expression that never fires. Specifically 31st of February
+		/// </summary>
+		/// <returns></returns>
+		public static string Never()
+		{
+			return Yearly(2, 31);
+		}
+
         /// <summary>
         /// Returns cron expression that fires every &lt;<paramref name="interval"></paramref>&gt; minutes.
         /// </summary>

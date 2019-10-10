@@ -15,7 +15,9 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+#if !NETSTANDARD1_3
 using System.Diagnostics;
+#endif
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
@@ -26,8 +28,7 @@ namespace Hangfire.Processing
     internal sealed class BackgroundDispatcherAsync : IBackgroundDispatcher
     {
         private readonly ILog _logger = LogProvider.GetLogger(typeof(BackgroundDispatcherAsync));
-        private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
-        private readonly TaskCompletionSource<object> _stoppedTcs = new TaskCompletionSource<object>();
+        private readonly CountdownEvent _stopped;
 
         private readonly IBackgroundExecution _execution;
         private readonly Func<Guid, object, Task> _action;
@@ -35,8 +36,6 @@ namespace Hangfire.Processing
 
         private readonly TaskScheduler _taskScheduler;
         private readonly bool _ownsScheduler;
-
-        private int _running;
 
         public BackgroundDispatcherAsync(
             [NotNull] IBackgroundExecution execution,
@@ -58,6 +57,8 @@ namespace Hangfire.Processing
             AppDomainUnloadMonitor.EnsureInitialized();
 #endif
 
+            _stopped = new CountdownEvent(maxConcurrency);
+
             for (var i = 0; i < maxConcurrency; i++)
             {
                 Task.Factory.StartNew(
@@ -70,13 +71,12 @@ namespace Hangfire.Processing
 
         public bool Wait(TimeSpan timeout)
         {
-            return _stopped.WaitOne(timeout);
+            return _stopped.WaitHandle.WaitOne(timeout);
         }
 
         public async Task WaitAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            await await Task.WhenAny(_stoppedTcs.Task, Task.Delay(timeout, cancellationToken)).ConfigureAwait(false);
+            await _stopped.WaitHandle.WaitOneAsync(timeout, cancellationToken).ConfigureAwait(false);
         }
 
         public void Dispose()
@@ -97,17 +97,8 @@ namespace Hangfire.Processing
 
         private async Task DispatchLoop()
         {
-            var incrementedRunning = false;
-
             try
             {
-                try { }
-                finally
-                {
-                    Interlocked.Increment(ref _running);
-                    incrementedRunning = true;
-                }
-
                 await _execution.RunAsync(_action, _state).ConfigureAwait(true);
             }
             catch (Exception ex)
@@ -123,7 +114,7 @@ namespace Hangfire.Processing
                     catch
                     {
 #if !NETSTANDARD1_3
-                        Trace.WriteLine($"Dispatcher is stopped due to an exception, you need to restart the server manually. Please report it to Hangfire developers: {ex}");
+                        Debug.WriteLine($"Dispatcher is stopped due to an exception, you need to restart the server manually. Please report it to Hangfire developers: {ex}");
 #endif
                     }
                 }
@@ -132,14 +123,13 @@ namespace Hangfire.Processing
             {
                 try
                 {
-                    if (incrementedRunning && Interlocked.Decrement(ref _running) == 0)
-                    {
-                        _stopped.Set();
-                        _stoppedTcs.SetResult(null);
-                    }
+                    _stopped.Signal();
                 }
                 catch (ObjectDisposedException)
                 {
+#if !NETSTANDARD1_3
+                    Debug.WriteLine("Unable to signal the stopped event for BackgroundDispatcher: it was already disposed");
+#endif
                 }
             }
         }

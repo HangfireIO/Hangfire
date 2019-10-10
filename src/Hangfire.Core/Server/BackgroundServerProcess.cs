@@ -99,7 +99,7 @@ namespace Hangfire.Server
                 try
                 {
                     // ReSharper disable once AccessToDisposedClosure
-                    using (CreateHeartbeatProcess(context, () => restartCts.Cancel()))
+                    using (var heartbeat = CreateHeartbeatProcess(context, () => restartCts.Cancel()))
                     {
                         StartDispatchers(context, dispatchers);
                         execution.NotifySucceeded();
@@ -107,6 +107,11 @@ namespace Hangfire.Server
                         WaitForDispatchers(context, dispatchers);
 
                         restartCts.Cancel();
+
+                        // TODO Either modify the IBackgroundDispatcher.Wait method to handle CancellationToken
+                        // or expose the WaitHandle property to not to perform sync-over-async and vice versa
+                        // in 2.0.
+                        heartbeat.WaitAsync(Timeout.InfiniteTimeSpan, shutdownToken).GetAwaiter().GetResult();
                     }
                 }
                 finally
@@ -227,15 +232,20 @@ namespace Hangfire.Server
                 waitTasks[i] = dispatchers[i].WaitAsync(Timeout.InfiniteTimeSpan, CancellationToken.None);
             }
 
-            Task.WaitAny(Task.WhenAll(waitTasks), context.ShutdownToken.AsTask());
-
             var nonStopped = new List<IBackgroundDispatcher>();
 
-            for (var i = 0; i < dispatchers.Count; i++)
+            try
             {
-                if (waitTasks[i].Status != TaskStatus.RanToCompletion)
+                Task.WaitAll(waitTasks, context.ShutdownToken);
+            }
+            catch (OperationCanceledException)
+            {
+                for (var i = 0; i < dispatchers.Count; i++)
                 {
-                    nonStopped.Add(dispatchers[i]);
+                    if (waitTasks[i].Status != TaskStatus.RanToCompletion)
+                    {
+                        nonStopped.Add(dispatchers[i]);
+                    }
                 }
             }
 

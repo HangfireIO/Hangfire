@@ -78,11 +78,12 @@ namespace Hangfire.SqlServer
                 _storage.UseConnection(null, connection =>
                 {
                     connection.Execute(
-                        $"update [{_storage.SchemaName}].JobQueue set FetchedAt = null where Id = @id and FetchedAt = @fetchedAt",
-                        new { id = Id, fetchedAt = FetchedAt },
+                        $"update JQ set FetchedAt = null from [{_storage.SchemaName}].JobQueue JQ with ({GetTableHints()}) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
+                        new { queue = Queue, id = Id, fetchedAt = FetchedAt },
                         commandTimeout: _storage.CommandTimeout);
                 });
 
+                FetchedAt = null;
                 _requeued = true;
             }
         }
@@ -126,8 +127,8 @@ namespace Hangfire.SqlServer
                     _storage.UseConnection(null, connection =>
                     {
                         FetchedAt = connection.ExecuteScalar<DateTime?>(
-                            $"update [{_storage.SchemaName}].JobQueue set FetchedAt = getutcdate() output INSERTED.FetchedAt where Id = @id and FetchedAt = @fetchedAt ",
-                            new { id = Id, fetchedAt = FetchedAt },
+                            $"update JQ set FetchedAt = getutcdate() output INSERTED.FetchedAt from [{_storage.SchemaName}].JobQueue JQ with ({GetTableHints()}) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
+                            new { queue = Queue, id = Id, fetchedAt = FetchedAt },
                             commandTimeout: _storage.CommandTimeout);
                     });
 

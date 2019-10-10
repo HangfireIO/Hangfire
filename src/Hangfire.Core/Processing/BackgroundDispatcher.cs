@@ -16,7 +16,9 @@
 
 using System;
 using System.Collections.Generic;
+#if !NETSTANDARD1_3
 using System.Diagnostics;
+#endif
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,14 +31,11 @@ namespace Hangfire.Processing
     internal sealed class BackgroundDispatcher : IBackgroundDispatcher
     {
         private readonly ILog _logger = LogProvider.GetLogger(typeof(BackgroundDispatcher));
-        private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
-        private readonly TaskCompletionSource<object> _stoppedTcs = new TaskCompletionSource<object>();
+        private readonly CountdownEvent _stopped;
 
         private readonly IBackgroundExecution _execution;
         private readonly Action<Guid, object> _action;
         private readonly object _state;
-
-        private int _running;
 
         public BackgroundDispatcher(
             [NotNull] IBackgroundExecution execution,
@@ -66,6 +65,8 @@ namespace Hangfire.Processing
                 throw new ArgumentException("All the threads should be non-null and in the ThreadState.Unstarted state.", nameof(threadFactory));
             }
 
+            _stopped = new CountdownEvent(threads.Length);
+
             foreach (var thread in threads)
             {
                 thread.Start();
@@ -74,13 +75,12 @@ namespace Hangfire.Processing
 
         public bool Wait(TimeSpan timeout)
         {
-            return _stopped.WaitOne(timeout);
+            return _stopped.WaitHandle.WaitOne(timeout);
         }
 
         public async Task WaitAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            await await Task.WhenAny(_stoppedTcs.Task, Task.Delay(timeout, cancellationToken)).ConfigureAwait(false);
+            await _stopped.WaitHandle.WaitOneAsync(timeout, cancellationToken).ConfigureAwait(false);
         }
 
         public void Dispose()
@@ -96,17 +96,8 @@ namespace Hangfire.Processing
 
         private void DispatchLoop()
         {
-            var incrementedRunning = false;
-
             try
             {
-                try { }
-                finally
-                {
-                    Interlocked.Increment(ref _running);
-                    incrementedRunning = true;
-                }
-
                 _execution.Run(_action, _state);
             }
             catch (Exception ex)
@@ -122,7 +113,7 @@ namespace Hangfire.Processing
                     catch
                     {
 #if !NETSTANDARD1_3
-                        Trace.WriteLine($"Dispatcher is stopped due to an exception, you need to restart the server manually. Please report it to Hangfire developers: {ex}");
+                        Debug.WriteLine($"Dispatcher is stopped due to an exception, you need to restart the server manually. Please report it to Hangfire developers: {ex}");
 #endif
                     }
                 }
@@ -131,14 +122,13 @@ namespace Hangfire.Processing
             {
                 try
                 {
-                    if (incrementedRunning && Interlocked.Decrement(ref _running) == 0)
-                    {
-                        _stopped.Set();
-                        _stoppedTcs.SetResult(null);
-                    }
+                    _stopped.Signal();
                 }
                 catch (ObjectDisposedException)
                 {
+#if !NETSTANDARD1_3
+                    Debug.WriteLine("Unable to signal the stopped event for BackgroundDispatcher: it was already disposed");
+#endif
                 }
             }
         }

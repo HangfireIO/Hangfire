@@ -73,14 +73,13 @@ namespace Hangfire
         public static void UpdateRecurringJob(
             [NotNull] this IWriteOnlyTransaction transaction,
             [NotNull] string recurringJobId,
-            [NotNull] IReadOnlyDictionary<string, string> changedFields,
+            [CanBeNull] IReadOnlyDictionary<string, string> changedFields,
             [CanBeNull] DateTime? nextExecution)
         {
             if (transaction == null) throw new ArgumentNullException(nameof(transaction));
             if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
-            if (changedFields == null) throw new ArgumentNullException(nameof(changedFields));
 
-            if (changedFields.Count > 0)
+            if (changedFields != null && changedFields.Count > 0)
             {
                 transaction.SetRangeInHash($"recurring-job:{recurringJobId}", changedFields);
             }

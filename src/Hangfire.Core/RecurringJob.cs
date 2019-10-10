@@ -16,6 +16,7 @@
 
 using System;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.States;
@@ -25,7 +26,7 @@ namespace Hangfire
     public static class RecurringJob
     {
         private static readonly Lazy<RecurringJobManager> Instance = new Lazy<RecurringJobManager>(
-            () => new RecurringJobManager());
+            () => new RecurringJobManager(), LazyThreadSafetyMode.PublicationOnly);
 
         public static void AddOrUpdate(
             Expression<Action> methodCall,

@@ -19,7 +19,82 @@ https://www.hangfire.io/
     <tags>Hangfire AspNet MVC AspNetCore SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
-Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade.
+Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
+
+1.7.6
+
+Hangfire.Core
+
+• Changed – Add support for dash characters (`-`) in queue names (by @caioproiete).
+• Fixed – Show actual error in Dashboard UI when recurring job can't be scheduled.
+• Fixed – Ensure backward compatibility when JSON payloads are serialized with field names only.
+• Fixed – Non-awaited continuations can bring down the whole app when `TaskScheduler` is set to `null`.
+• Fixed – Timeout value is not respected in some cases in the `WaitOneAsync` method.
+
+1.7.5
+
+Hangfire.Core
+
+• Fixed – Show error message when there's an error loading the statistics in Dashboard UI (by @prochnowc).
+• Fixed – Properly handle recurring jobs with null or empty 'Job' field.
+• Fixed – Disable recurring job when we can't schedule it due to an error.
+• Fixed – Use `LazyThreadSafetyMode.PublicationOnly` to avoid caching "JobStorage.Current is null" exceptions.
+
+Hangfire.AspNetCore &amp; Hangfire.NetCore
+
+• Fixed – Add missing overload for the `AddHangfireServer` method with "options" action.
+
+1.7.4
+
+Hangfire.Core
+
+• Added – `BackgroundJobClient.RetryAttempts` property to make job creation resilient to transient exceptions.
+• Added – Dashboard localization support in `pt-BR` (by @candidodmv).
+• Changed – Protect background dispatchers from moving from stopped state to non-stopped one.
+• Changed – Unify `WaitOne` and `WaitOneAsync` methods with timeout and cancellation token for `WaitHandle` class.
+• Fixed – Don't hide an original fatal exception occurred in dispatchers in some cases.
+• Fixed – Dashboard UI to display "await" keyword on all task-like methods.
+• Fixed – Display links properly in an informational message on the Servers page in Dashboard UI.
+• Fixed – Wait for the heartbeat process before shutting down a server.
+
+Hangfire.SqlServer
+
+• Fixed – Potential deadlocks cause by suboptimal queries when using `SlidingInvisibilityTimeout` fetching.
+• Fixed – Prevent zero delays between fetch retry attempts when lock acquisition failed without blocking.
+• Fixed – Specify float precision explicitly for the `Score` column in the `AddToSet` method.
+
+1.7.3
+
+Hangfire.Core
+
+• SECURITY – Use `HtmlEncode` in all remaining places in Dashboard UI to prevent XSS attacks.
+
+• Added – Added Dutch language, and updated missing translation on "Servers" page (by @r-win).
+• Added – `Cron.Never` method for adding manual recurring jobs that never fire (by @michaltalaga).
+• Fixed – Add missing `AddOrUpdate` extension methods for the `IRecurringJobManager` interface.
+• Deprecated – Unused `HtmlHelper.FormatProperties` method is now obsolete.
+
+Hangfire.SqlServer
+
+• Fixed – Wrong error message in migration script, when @CurrentSchemaVersion has a NULL value (by @penenkel).
+
+1.7.2
+
+Hangfire.Core
+
+• Added – `DashboardOptions.TimeZoneResolver` property to handle custom time zone resolvers in Dashboard UI.
+• Fixed – `RecurringJob.AddOrUpdate` method is now able to update a broken recurring job.
+• Fixed – Recurring job scheduler now properly handles recurring jobs whose job method or time zone is wrong.
+• Fixed – Don't throw an exception on Recurring Jobs page when time zone can't be resolved.
+
+Hangfire.AspNetCore &amp; Hangfire.NetCore
+
+• Added – Automatically resolve `ITimeZoneResolver` service for the `DashboardOptions.TimeZoneResolver` property.
+• Fixed – Allow to resolve `IJobFilterProvider` service from the `AddHangfire` method.
+
+Hangfire.SqlServer
+
+• Fixed – Occasional "DataException: Error parsing column" error when using blocking fetch.
 
 1.7.1
 

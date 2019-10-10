@@ -118,431 +118,425 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AwaitingJobsPage_ContinuationsWarning_Text" xml:space="preserve">
-    <value>Don't worry, continuations are working as expected. But your current job storage does not support some queries required to show this page. Please try to update your storage or wait until the full command set is implemented.</value>
+    <value>Geen paniek, voortzettingen werken zoals verwacht. De huidige opslagmethode voor taken ondersteund niet alle functies die nodig zijn om deze pagina te laten zien. Werk de opslagmethode bij, of wacht tot een complete implementatie gereed is.</value>
   </data>
   <data name="AwaitingJobsPage_ContinuationsWarning_Title" xml:space="preserve">
-    <value>Continuations are working, but this page can't be displayed</value>
+    <value>Voortzettingen werken zoals verwacht, maar de pagina kan niet worden getoond.</value>
   </data>
   <data name="AwaitingJobsPage_NoJobs" xml:space="preserve">
-    <value>No jobs found in awaiting state.</value>
+    <value>Geen afwachtende taken gevonden.</value>
   </data>
   <data name="AwaitingJobsPage_Table_Options" xml:space="preserve">
-    <value>Options</value>
+    <value>Opties</value>
   </data>
   <data name="AwaitingJobsPage_Table_Parent" xml:space="preserve">
-    <value>Parent</value>
+    <value>Bovenliggende</value>
   </data>
   <data name="AwaitingJobsPage_Title" xml:space="preserve">
-    <value>Awaiting Jobs</value>
+    <value>Wachtende taken</value>
   </data>
   <data name="Common_Created" xml:space="preserve">
-    <value>Created</value>
+    <value>Aangemaakt</value>
   </data>
   <data name="Common_Delete" xml:space="preserve">
-    <value>Delete</value>
+    <value>Verwijderen</value>
   </data>
   <data name="Common_DeleteConfirm" xml:space="preserve">
-    <value>Do you really want to DELETE ALL selected jobs?</value>
+    <value>Weet u zeker dat u alle geselecteeerde taken wilt VERWIJDEREN?</value>
   </data>
   <data name="Common_Deleting" xml:space="preserve">
-    <value>Deleting...</value>
+    <value>Verwijderen...</value>
   </data>
   <data name="Common_DeleteSelected" xml:space="preserve">
-    <value>Delete selected</value>
+    <value>Verwijder selectie</value>
   </data>
   <data name="Common_EnqueueButton_Text" xml:space="preserve">
-    <value>Enqueue jobs</value>
+    <value>Taken inplannen</value>
   </data>
   <data name="Common_Enqueueing" xml:space="preserve">
-    <value>Enqueueing...</value>
+    <value>Inplannen...</value>
   </data>
   <data name="Common_Fetched" xml:space="preserve">
-    <value>Fetched</value>
+    <value>Opgehaald</value>
   </data>
   <data name="Common_Id" xml:space="preserve">
     <value>Id</value>
   </data>
   <data name="Common_Job" xml:space="preserve">
-    <value>Job</value>
+    <value>Taak</value>
   </data>
   <data name="Common_JobExpired" xml:space="preserve">
-    <value>Job expired.</value>
+    <value>Taak verlopen.</value>
   </data>
   <data name="Common_JobStateChanged_Text" xml:space="preserve">
-    <value>Job's state has been changed while fetching data.</value>
+    <value>De status van de taak is gewijzigd tijdens het ophalen.</value>
   </data>
   <data name="Common_LessDetails" xml:space="preserve">
-    <value>Fewer details...</value>
+    <value>Minder details...</value>
   </data>
   <data name="Common_MoreDetails" xml:space="preserve">
-    <value>More details...</value>
+    <value>Meer details...</value>
   </data>
   <data name="Common_NotAvailable" xml:space="preserve">
-    <value>N/A</value>
+    <value>n.v.t.</value>
   </data>
   <data name="Common_PeriodDay" xml:space="preserve">
-    <value>Day</value>
+    <value>Dag</value>
   </data>
   <data name="Common_PeriodWeek" xml:space="preserve">
     <value>Week</value>
   </data>
   <data name="Common_Reason" xml:space="preserve">
-    <value>Reason</value>
+    <value>Reden</value>
   </data>
   <data name="Common_RequeueJobs" xml:space="preserve">
-    <value>Requeue jobs</value>
+    <value>Taken opnieuw inplannen</value>
   </data>
   <data name="Common_Retry" xml:space="preserve">
-    <value>Retry</value>
+    <value>Opnieuw</value>
   </data>
   <data name="Common_Server" xml:space="preserve">
     <value>Server</value>
   </data>
   <data name="Common_State" xml:space="preserve">
-    <value>State</value>
+    <value>Status</value>
   </data>
   <data name="Common_Unknown" xml:space="preserve">
-    <value>Unknown</value>
+    <value>Onbekend</value>
   </data>
   <data name="DeletedJobsPage_NoJobs" xml:space="preserve">
-    <value>No deleted jobs found.</value>
+    <value>Geen verwijderde taken gevonden.</value>
   </data>
   <data name="DeletedJobsPage_Table_Deleted" xml:space="preserve">
-    <value>Deleted</value>
+    <value>Verwijderd</value>
   </data>
   <data name="DeletedJobsPage_Title" xml:space="preserve">
-    <value>Deleted Jobs</value>
+    <value>Verwijderde taken</value>
   </data>
   <data name="EnqueuedJobsPage_NoJobs" xml:space="preserve">
-    <value>The queue is empty.</value>
+    <value>De wachtrij is leeg.</value>
   </data>
   <data name="EnqueuedJobsPage_Title" xml:space="preserve">
-    <value>Enqueued jobs</value>
+    <value>Ingeplande taken</value>
   </data>
   <data name="FailedJobsPage_FailedJobsNotExpire_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;Failed jobs do not become expired&lt;/strong&gt; to allow you to re-queue them without any
-                time pressure. You should re-queue or delete them manually, or apply &lt;code&gt;AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)&lt;/code&gt;
-                attribute to delete them automatically.</value>
+    <value>&lt;strong&gt;Mislukte taken verlopen niet&lt;/strong&gt; zodat ze opnieuw ingepland kunnen worden zonder 
+                tijdsdruk. Deze taken dienen handmatig opnieuw ingepland of gewist te worden, of het attribuut &lt;code&gt;AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)&lt;/code&gt;
+                kan worden toegevoegd in code om deze taken automatisch te wissen.</value>
   </data>
   <data name="FailedJobsPage_NoJobs" xml:space="preserve">
-    <value>You have no failed jobs at the moment.</value>
+    <value>Geen mislukte taken gevonden.</value>
   </data>
   <data name="FailedJobsPage_Table_Failed" xml:space="preserve">
-    <value>Failed</value>
+    <value>Mislukt</value>
   </data>
   <data name="FailedJobsPage_Title" xml:space="preserve">
-    <value>Failed Jobs</value>
+    <value>Mislukte taken</value>
   </data>
   <data name="FetchedJobsPage_NoJobs" xml:space="preserve">
-    <value>The queue is empty.</value>
+    <value>De lijst met opgehaalde taken is leeg.</value>
   </data>
   <data name="FetchedJobsPage_Title" xml:space="preserve">
-    <value>Fetched jobs</value>
+    <value>Opgehaalde taken</value>
   </data>
   <data name="HomePage_HistoryGraph" xml:space="preserve">
-    <value>History graph</value>
+    <value>Historische grafiek</value>
   </data>
   <data name="HomePage_RealtimeGraph" xml:space="preserve">
-    <value>Realtime graph</value>
+    <value>Realtime grafiek</value>
   </data>
   <data name="HomePage_Title" xml:space="preserve">
-    <value>Overview</value>
+    <value>Overzicht</value>
   </data>
   <data name="JobDetailsPage_Created" xml:space="preserve">
-    <value>Created</value>
+    <value>Aangemaakt</value>
   </data>
   <data name="JobDetailsPage_DeleteConfirm" xml:space="preserve">
-    <value>Do you really want to delete this job?</value>
+    <value>Wilt u deze taak echt verwijderen?</value>
   </data>
   <data name="JobDetailsPage_State" xml:space="preserve">
-    <value>State</value>
+    <value>Status</value>
   </data>
   <data name="JobDetailsPage_JobAbortedNotActive_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;The job was aborted&lt;/strong&gt; – it is processed by server
-                        &lt;code&gt;{0}&lt;/code&gt; which is not in the 
-                        &lt;a href="{1}"&gt;active servers&lt;/a&gt; list for now.
-                        It will be retried automatically after invisibility timeout, but you can
-                        also re-queue or delete it manually.</value>
+    <value>&lt;strong&gt;De taak is afgebroken&lt;/strong&gt; – de taak is verwerkt door server
+                        &lt;code&gt;{0}&lt;/code&gt; welke op dit moment niet voorkomt in de lijst met
+                        &lt;a href="{1}"&gt;actieve servers&lt;/a&gt;.
+                        De taak wordt automatisch herstart na de time-out die is ingesteld voor niet zichtbare taken, maar de taak kan ook handmatig opnieuw worden gestart, of verwijderd.</value>
   </data>
   <data name="JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;Looks like the job was aborted&lt;/strong&gt; – it is processed by server
-                        &lt;code&gt;{0}&lt;/code&gt;, which reported its heartbeat more than 1 minute ago.
-                        It will be retried automatically after invisibility timeout, but you can
-                        also re-queue or delete it manually.</value>
+    <value>&lt;strong&gt;Het lijkt erop dat de taak is afgebroken&lt;/strong&gt; – de taak is verwerkt door server
+                        &lt;code&gt;{0}&lt;/code&gt;, welke meer dan 1 minuut geleden voor het laatst activiteit heeft gemeld.
+                        De taak wordt automatisch herstart na de time-out die is ingesteld voor niet zichtbare taken, maar de taak kan ook handmatig opnieuw worden gestart, of verwijderd.</value>
   </data>
   <data name="JobDetailsPage_JobExpired" xml:space="preserve">
-    <value>Background job '{0}' has expired or could not be found on the server.</value>
+    <value>Taak '{0}' is verlopen, of kan niet worden gevonden op de server.</value>
   </data>
   <data name="JobDetailsPage_JobFinished_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;The job is finished&lt;/strong&gt;.
-                    It will be removed automatically &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;.</value>
+    <value>&lt;strong&gt;De taak is afgerond&lt;/strong&gt;.
+                    De taak zal automatisch worden verwijderd op &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;.</value>
   </data>
   <data name="JobDetailsPage_JobId" xml:space="preserve">
-    <value>Job ID</value>
+    <value>Taak Id</value>
   </data>
   <data name="JobDetailsPage_Requeue" xml:space="preserve">
-    <value>Requeue</value>
+    <value>Opnieuw inplannen</value>
   </data>
   <data name="LayoutPage_Back" xml:space="preserve">
-    <value>Back to site</value>
+    <value>Terug naar de site</value>
   </data>
   <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
-    <value>Generated: {0}ms</value>
+    <value>Gegenereerd: {0}ms</value>
   </data>
   <data name="LayoutPage_Footer_Time" xml:space="preserve">
-    <value>Time:</value>
+    <value>Tijd:</value>
   </data>
   <data name="Paginator_Next" xml:space="preserve">
-    <value>Next</value>
+    <value>Volgende</value>
   </data>
   <data name="Paginator_Prev" xml:space="preserve">
-    <value>Prev</value>
+    <value>Vorige</value>
   </data>
   <data name="Paginator_TotalItems" xml:space="preserve">
-    <value>Total items</value>
+    <value>Aantal items</value>
   </data>
   <data name="PerPageSelector_ItemsPerPage" xml:space="preserve">
-    <value>Items per page</value>
+    <value>Items per pagina</value>
   </data>
   <data name="ProcessingJobsPage_Aborted" xml:space="preserve">
-    <value>Looks like the job was aborted</value>
+    <value>Het lijkt erop dat de taak is afgebroken</value>
   </data>
   <data name="ProcessingJobsPage_NoJobs" xml:space="preserve">
-    <value>No jobs are being processed right now.</value>
+    <value>Op dit moment worden er geen taken uitgevoerd.</value>
   </data>
   <data name="ProcessingJobsPage_Table_Started" xml:space="preserve">
-    <value>Started</value>
+    <value>Gestart</value>
   </data>
   <data name="ProcessingJobsPage_Title" xml:space="preserve">
-    <value>Processing Jobs</value>
+    <value>Uitvoerende taken</value>
   </data>
   <data name="QueuesPage_NoJobs" xml:space="preserve">
-    <value>No jobs queued.</value>
+    <value>Geen taken in de wachtrij.</value>
   </data>
   <data name="QueuesPage_NoQueues" xml:space="preserve">
-    <value>No queued jobs found. Try to enqueue a job.</value>
+    <value>Geen taken in de wachtrij gevonden. Probeer een taak uit te voeren.</value>
   </data>
   <data name="QueuesPage_Table_Length" xml:space="preserve">
-    <value>Length</value>
+    <value>Lengte</value>
   </data>
   <data name="QueuesPage_Table_NextsJobs" xml:space="preserve">
-    <value>Next jobs</value>
+    <value>Volgende taken</value>
   </data>
   <data name="QueuesPage_Table_Queue" xml:space="preserve">
-    <value>Queue</value>
+    <value>Wachtrij</value>
   </data>
   <data name="QueuesPage_Title" xml:space="preserve">
-    <value>Queues</value>
+    <value>Wachtrijen</value>
   </data>
   <data name="RecurringJobsPage_Canceled" xml:space="preserve">
-    <value>Canceled</value>
+    <value>Geannuleerd</value>
   </data>
   <data name="RecurringJobsPage_NoJobs" xml:space="preserve">
-    <value>No recurring jobs found.</value>
+    <value>Geen herhalende taken gevonden.</value>
   </data>
   <data name="RecurringJobsPage_Table_Cron" xml:space="preserve">
     <value>Cron</value>
   </data>
   <data name="RecurringJobsPage_Table_LastExecution" xml:space="preserve">
-    <value>Last execution</value>
+    <value>Laatst uitgevoerd</value>
   </data>
   <data name="RecurringJobsPage_Table_NextExecution" xml:space="preserve">
-    <value>Next execution</value>
+    <value>Volgende keer</value>
   </data>
   <data name="RecurringJobsPage_Table_TimeZone" xml:space="preserve">
-    <value>Time zone</value>
+    <value>Tijdzone</value>
   </data>
   <data name="RecurringJobsPage_Title" xml:space="preserve">
-    <value>Recurring jobs</value>
+    <value>Herhalende taken</value>
   </data>
   <data name="RecurringJobsPage_Triggering" xml:space="preserve">
-    <value>Triggering...</value>
+    <value>Uitvoeren...</value>
   </data>
   <data name="RecurringJobsPage_TriggerNow" xml:space="preserve">
-    <value>Trigger now</value>
+    <value>Nu uitvoeren</value>
   </data>
   <data name="RetriesPage_NoJobs" xml:space="preserve">
-    <value>All is OK – you have no retries.</value>
+    <value>Alles in orde – er zijn geen taken om opnieuw te proberen.</value>
   </data>
   <data name="RetriesPage_Title" xml:space="preserve">
-    <value>Retries</value>
+    <value>Opnieuw proberen</value>
   </data>
   <data name="RetriesPage_Warning_Html" xml:space="preserve">
-    <value>&lt;h4&gt;Retries are working, but this page can't be displayed&lt;/h4&gt;
+    <value>&lt;h4&gt;Opnieuw proberen werkt, maar de pagina kan niet worden getoond&lt;/h4&gt;
         &lt;p&gt;
-            Don't worry, retries are working as expected. Your current job storage does not support
-            some queries required to show this page. Please try to update your storage or wait until
-            the full command set is implemented.
+            Geen paniek, taken worden wel opnieuw geprobeerd. De huidige opslagmethode voor taken ondersteund
+            niet alle functies die nodig zijn om deze pagina te laten zien. Werk de opslagmethode bij, of
+            wacht tot een complete implementatie gereed is.
         &lt;/p&gt;
         &lt;p&gt;
-            Please go to the &lt;a href="{0}"&gt;Scheduled jobs&lt;/a&gt; page to see all the
-            scheduled jobs including retries.
+            Voor een overzicht van alle ingeplande taken, inclusief taken die opnieuw geprobeerd worden, ga naar de &lt;a href="{0}"&gt;Ingeplande taken&lt;/a&gt;.
         &lt;/p&gt;</value>
   </data>
   <data name="ScheduledJobsPage_EnqueueNow" xml:space="preserve">
-    <value>Enqueue now</value>
+    <value>Nu in wachtrij plaatsen</value>
   </data>
   <data name="ScheduledJobsPage_NoJobs" xml:space="preserve">
-    <value>There are no scheduled jobs.</value>
+    <value>Er zijn geen ingeplande taken.</value>
   </data>
   <data name="ScheduledJobsPage_Table_Enqueue" xml:space="preserve">
-    <value>Enqueue</value>
+    <value>In wachtrij</value>
   </data>
   <data name="ScheduledJobsPage_Table_Scheduled" xml:space="preserve">
-    <value>Scheduled</value>
+    <value>Ingepland</value>
   </data>
   <data name="ScheduledJobsPage_Title" xml:space="preserve">
-    <value>Scheduled Jobs</value>
+    <value>Ingeplande taken</value>
   </data>
   <data name="ServersPage_NoServers" xml:space="preserve">
-    <value>There are no active servers. Background tasks will not be processed.</value>
+    <value>Er zijn geen actieve servers. Achtergrondtaken worden niet uitgevoerd.</value>
   </data>
   <data name="ServersPage_Table_Heartbeat" xml:space="preserve">
-    <value>Heartbeat</value>
+    <value>Hartslag</value>
   </data>
   <data name="ServersPage_Table_Name" xml:space="preserve">
-    <value>Name</value>
+    <value>Naam</value>
   </data>
   <data name="ServersPage_Table_Queues" xml:space="preserve">
-    <value>Queues</value>
+    <value>Wachtrijen</value>
   </data>
   <data name="ServersPage_Table_Started" xml:space="preserve">
-    <value>Started</value>
+    <value>Gestart</value>
   </data>
   <data name="ServersPage_Table_Workers" xml:space="preserve">
-    <value>Workers</value>
+    <value>Werkprocessen</value>
   </data>
   <data name="ServersPage_Title" xml:space="preserve">
     <value>Servers</value>
   </data>
   <data name="SucceededJobsPage_NoJobs" xml:space="preserve">
-    <value>No succeeded jobs found.</value>
+    <value>Geen geslaagde taken gevonden.</value>
   </data>
   <data name="SucceededJobsPage_Table_Succeeded" xml:space="preserve">
-    <value>Succeeded</value>
+    <value>Geslaagd</value>
   </data>
   <data name="SucceededJobsPage_Table_TotalDuration" xml:space="preserve">
-    <value>Total Duration</value>
+    <value>Totale duur</value>
   </data>
   <data name="SucceededJobsPage_Title" xml:space="preserve">
-    <value>Succeeded Jobs</value>
+    <value>Geslaagde taken</value>
   </data>
   <data name="JobsSidebarMenu_Awaiting" xml:space="preserve">
-    <value>Awaiting</value>
+    <value>In afwachting</value>
   </data>
   <data name="JobsSidebarMenu_Deleted" xml:space="preserve">
-    <value>Deleted</value>
+    <value>Verwijderd</value>
   </data>
   <data name="JobsSidebarMenu_Failed" xml:space="preserve">
-    <value>Failed</value>
+    <value>Mislukt</value>
   </data>
   <data name="JobsSidebarMenu_Processing" xml:space="preserve">
-    <value>Processing</value>
+    <value>Verwerken</value>
   </data>
   <data name="JobsSidebarMenu_Scheduled" xml:space="preserve">
-    <value>Scheduled</value>
+    <value>Ingepland</value>
   </data>
   <data name="JobsSidebarMenu_Succeeded" xml:space="preserve">
-    <value>Succeeded</value>
+    <value>Geslaagd</value>
   </data>
   <data name="NavigationMenu_Jobs" xml:space="preserve">
-    <value>Jobs</value>
+    <value>Taken</value>
   </data>
   <data name="NavigationMenu_RecurringJobs" xml:space="preserve">
-    <value>Recurring Jobs</value>
+    <value>Herhalende taken</value>
   </data>
   <data name="NavigationMenu_Retries" xml:space="preserve">
-    <value>Retries</value>
+    <value>Opnieuw proberen</value>
   </data>
   <data name="NavigationMenu_Servers" xml:space="preserve">
     <value>Servers</value>
   </data>
   <data name="Common_CannotFindTargetMethod" xml:space="preserve">
-    <value>Can not find the target method.</value>
+    <value>Kan de doelmethode niet vinden.</value>
   </data>
   <data name="Common_Enqueued" xml:space="preserve">
-    <value>Enqueued</value>
+    <value>Ingepland</value>
   </data>
   <data name="Common_NoState" xml:space="preserve">
-    <value>No state</value>
+    <value>Geen status</value>
   </data>
   <data name="JobsSidebarMenu_Enqueued" xml:space="preserve">
-    <value>Enqueued</value>
+    <value>In wachtrij</value>
   </data>
   <data name="Metrics_ActiveConnections" xml:space="preserve">
-    <value>Active Connections</value>
+    <value>Actieve verbindingen</value>
   </data>
   <data name="Metrics_DeletedJobs" xml:space="preserve">
-    <value>Deleted Jobs</value>
+    <value>Verwijderde taken</value>
   </data>
   <data name="Metrics_FailedJobs" xml:space="preserve">
-    <value>Failed Jobs</value>
+    <value>Mislukte taken</value>
   </data>
   <data name="Metrics_ProcessingJobs" xml:space="preserve">
-    <value>Processing Jobs</value>
+    <value>Uitvoerende taken</value>
   </data>
   <data name="Metrics_RecurringJobs" xml:space="preserve">
-    <value>Recurring Jobs</value>
+    <value>Herhalende taken</value>
   </data>
   <data name="Metrics_Retries" xml:space="preserve">
-    <value>Retries</value>
+    <value>Opnieuw proberen</value>
   </data>
   <data name="Metrics_ScheduledJobs" xml:space="preserve">
-    <value>Scheduled Jobs</value>
+    <value>Ingeplande taken</value>
   </data>
   <data name="Metrics_Servers" xml:space="preserve">
     <value>Servers</value>
   </data>
   <data name="Metrics_SucceededJobs" xml:space="preserve">
-    <value>Succeeded Jobs</value>
+    <value>Geslaagde taken</value>
   </data>
   <data name="Metrics_TotalConnections" xml:space="preserve">
-    <value>Total Connections</value>
+    <value>Totaal aantal verbindingen</value>
   </data>
   <data name="Common_Condition" xml:space="preserve">
-    <value>Condition</value>
+    <value>Voorwaarde</value>
   </data>
   <data name="Common_Continuations" xml:space="preserve">
-    <value>Continuations</value>
+    <value>Voorzettingen</value>
   </data>
   <data name="Metrics_AwaitingCount" xml:space="preserve">
-    <value>Awaiting</value>
+    <value>In afwachting</value>
   </data>
   <data name="Metrics_EnqueuedCountOrNull" xml:space="preserve">
-    <value>Enqueued</value>
+    <value>In wachtrij</value>
   </data>
   <data name="Metrics_EnqueuedQueuesCount" xml:space="preserve">
-    <value>Enqueued / Queues</value>
+    <value>In wachtrij/Wachtrijen</value>
   </data>
   <data name="Metrics_FailedCountOrNull" xml:space="preserve">
-    <value>{0} failed job(s) found. Retry or delete them manually.</value>
+    <value>{0} mislukte taken gevonden. Herstart of verwijder deze handmatig.</value>
   </data>
   <data name="HomePage_GraphHover_Failed" xml:space="preserve">
-    <value>Failed</value>
+    <value>Mislukt</value>
   </data>
   <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
-    <value>Succeeded</value>
+    <value>Geslaagd</value>
   </data>
   <data name="Common_Disabled" xml:space="preserve">
-    <value>Disabled</value>
+    <value>Uitgeschakeld</value>
   </data>
   <data name="RecurringJobsPage_RecurringJobDisabled_Tooltip" xml:space="preserve">
-    <value>Cron expression is invalid or don't have any occurrences over the next 100 years</value>
+    <value>Cron expressie is ongeldig, of bevat geen gebeurtenis in de komende 100 jaar</value>
   </data>
   <data name="ServersPage_Note_Text" xml:space="preserve">
-    <value>Some of the servers don't have heartbeat reported within the last minute and may be aborted. If they don't report heartbeat in the near future, they will be removed automatically after timeout is exceeded, no manual action is required.
-                    Incomplete background jobs running on those servers will be re-queued automatically, but you can speed up the process by checking the &lt;a href="{0}"&gt;Processing Jobs&lt;/a&gt; page.</value>
+    <value>Sommige servers hebben geen hartslag gerapporteerd in de afgelopen minuut, en kunnen zijn gestopt. Als er niet spoedig een hartslag wordt gerapporteerd, worden ze automatisch verwijderd. Een handmatige actie is niet nodig.
+	Niet afgeronde taken die op deze servers worden uitgevoerd zullen automatisch opnieuw in de wachtrij worden geplaatst, maar dit proces kan worden versneld op de &lt;a href="{0}"&gt;Uitvoerende taken&lt;/a&gt; pagina.</value>
   </data>
   <data name="ServersPage_Note_Title" xml:space="preserve">
-    <value>Aborted servers will be removed automatically</value>
+    <value>Gestopte servers worden automatisch verwijderd</value>
   </data>
   <data name="ServersPage_Active" xml:space="preserve">
-    <value>Active</value>
+    <value>Actief</value>
   </data>
   <data name="ServersPage_Possibly_Aborted" xml:space="preserve">
-    <value>Possibly aborted</value>
-  </data>
-  <data name="Common_Error" xml:space="preserve">
-    <value>Error</value>
+    <value>Mogelijk afgebroken</value>
   </data>
 </root>

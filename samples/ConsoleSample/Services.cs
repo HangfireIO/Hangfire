@@ -5,7 +5,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
-using Hangfire.Common;
 using Hangfire.States;
 
 namespace ConsoleSample
@@ -16,6 +15,7 @@ namespace ConsoleSample
 
         public async Task EmptyDefault()
         {
+            await Task.Yield();
         }
 
         public async Task Async(CancellationToken cancellationToken)
@@ -27,11 +27,13 @@ namespace ConsoleSample
         [Queue("critical")]
         public async Task EmptyCritical()
         {
+            await Task.Yield();
         }
 
         [AutomaticRetry(Attempts = 0), LatencyTimeout(30)]
         public async Task Error()
         {
+            await Task.Yield();
             Console.WriteLine("Beginning error task...");
             throw new InvalidOperationException(null, new FileLoadException());
         }
@@ -50,7 +52,7 @@ namespace ConsoleSample
                 throw new Exception();
             }
 
-            Thread.Sleep(TimeSpan.FromSeconds(5 + time));
+            await Task.Delay(TimeSpan.FromSeconds(5 + time));
             Console.WriteLine("Finished task: " + number);
         }
 
@@ -60,7 +62,7 @@ namespace ConsoleSample
             {
                 for (var i = 1; i <= iterationCount; i++)
                 {
-                    Thread.Sleep(1000);
+                    await Task.Delay(1000);
                     Console.WriteLine("Performing step {0} of {1}...", i, iterationCount);
 
                     token.ThrowIfCancellationRequested();
@@ -76,11 +78,13 @@ namespace ConsoleSample
         [DisplayName("Name: {0}")]
         public async Task Args(string name, int authorId, DateTime createdAt)
         {
+            await Task.Yield();
             Console.WriteLine($"{name}, {authorId}, {createdAt}");
         }
 
         public async Task Custom(int id, string[] values, CustomObject objects, DayOfWeek dayOfWeek)
         {
+            await Task.Yield();
         }
 
         public async Task FullArgs(
@@ -98,13 +102,12 @@ namespace ConsoleSample
             object[] na,
             List<string> sl)
         {
+            await Task.Yield();
         }
 
         public async Task LongRunning(IJobCancellationToken token)
         {
-            token.ShutdownToken.Wait(TimeSpan.FromMinutes(30));
-            token.ShutdownToken.ThrowIfCancellationRequested();
-            //Thread.Sleep(TimeSpan.FromMinutes(10));
+            await Task.Delay(TimeSpan.FromMinutes(30), token.ShutdownToken);
         }
 
         public class CustomObject
@@ -115,17 +118,20 @@ namespace ConsoleSample
 
         public async Task Write(char character)
         {
+            await Task.Yield();
             Console.Write(character);
         }
 
         public async Task WriteBlankLine()
         {
+            await Task.Yield();
             Console.WriteLine();
         }
 
         [IdempotentCompletion]
         public static async Task <IState> WriteLine(string value)
         {
+            await Task.Yield();
             Console.WriteLine(value);
             return new AwaitingState("asfafs", new EnqueuedState("criticalll"));
         }

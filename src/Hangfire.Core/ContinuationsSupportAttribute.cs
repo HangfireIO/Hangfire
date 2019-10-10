@@ -86,6 +86,18 @@ namespace Hangfire
             }
         }
 
+        internal static List<Continuation> DeserializeContinuations(string serialized)
+        {
+            var continuations =  SerializationHelper.Deserialize<List<Continuation>>(serialized);
+
+            if (continuations != null && continuations.TrueForAll(x => x.JobId == null))
+            {
+                continuations = SerializationHelper.Deserialize<List<Continuation>>(serialized, SerializationOption.User);
+            }
+
+            return continuations ?? new List<Continuation>();
+        }
+
         private void AddContinuation(ElectStateContext context, AwaitingState awaitingState)
         {
             var connection = context.Connection;
@@ -256,8 +268,7 @@ namespace Hangfire
 
         private static List<Continuation> GetContinuations(IStorageConnection connection, string jobId)
         {
-            return SerializationHelper.Deserialize<List<Continuation>>(connection.GetJobParameter(
-                jobId, "Continuations")) ?? new List<Continuation>();
+            return DeserializeContinuations(connection.GetJobParameter(jobId, "Continuations"));
         }
 
         void IApplyStateFilter.OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)

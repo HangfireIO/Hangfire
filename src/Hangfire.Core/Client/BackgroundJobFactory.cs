@@ -39,6 +39,26 @@ namespace Hangfire.Client
         {
         }
 
+        public int RetryAttempts
+        {
+            get
+            {
+                if (_innerFactory is CoreBackgroundJobFactory factory)
+                {
+                    return factory.RetryAttempts;
+                }
+
+                return 0;
+            }
+            set
+            {
+                if (_innerFactory is CoreBackgroundJobFactory factory)
+                {
+                    factory.RetryAttempts = value;
+                }
+            }
+        }
+
         internal BackgroundJobFactory(
             [NotNull] IJobFilterProvider filterProvider, 
             [NotNull] IBackgroundJobFactory innerFactory)

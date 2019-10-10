@@ -16,6 +16,7 @@
 
 using System;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.States;
@@ -45,7 +46,7 @@ namespace Hangfire
     public partial class BackgroundJob
     {
         private static readonly Lazy<IBackgroundJobClient> CachedClient 
-            = new Lazy<IBackgroundJobClient>(() => new BackgroundJobClient()); 
+            = new Lazy<IBackgroundJobClient>(() => new BackgroundJobClient(), LazyThreadSafetyMode.PublicationOnly); 
 
         private static readonly Func<IBackgroundJobClient> DefaultFactory
             = () => CachedClient.Value;

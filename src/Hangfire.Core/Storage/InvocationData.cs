@@ -138,7 +138,14 @@ namespace Hangfire.Storage
                     SerializationHelper.Serialize(jobPayload.Arguments));
             }
 
-            return SerializationHelper.Deserialize<InvocationData>(payload);
+            var data = SerializationHelper.Deserialize<InvocationData>(payload);
+
+            if (data.Type == null || data.Method == null)
+            {
+                data = SerializationHelper.Deserialize<InvocationData>(payload, SerializationOption.User);
+            }
+
+            return data;
         }
 
         public string SerializePayload(bool excludeArguments = false)

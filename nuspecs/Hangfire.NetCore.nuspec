@@ -14,6 +14,12 @@
     <tags>hangfire netcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.7.5
+• Fixed – Add missing overload for the `AddHangfireServer` method with "options" action.
+
+1.7.2
+• Fixed – Allow to resolve `IJobFilterProvider` service from the `AddHangfire` method.
+
 1.7.1
 • Added – Worker Service host support for .NET Core without unnecessary dependencies to ASP.NET Core.
 
