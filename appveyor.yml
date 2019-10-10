@@ -9,7 +9,7 @@
 # Don't edit manually! Use `build.bat version` command instead!
 version: 1.7.6-build-0{build}
 
-os: Visual Studio 2017
+os: Visual Studio 2019
 
 #---------------------------------#
 #    environment configuration    #
