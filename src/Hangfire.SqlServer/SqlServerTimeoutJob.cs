@@ -60,7 +60,7 @@ namespace Hangfire.SqlServer
                 _storage.UseConnection(null, connection =>
                 {
                     connection.Execute(
-                        $"delete JQ from {_storage.SchemaName}.JobQueue JQ with ({GetTableHints()}) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
+                        $"delete JQ from [{_storage.SchemaName}].JobQueue JQ with ({GetTableHints()}) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
                         new { queue = Queue, id = Id, fetchedAt = FetchedAt },
                         commandTimeout: _storage.CommandTimeout);
                 });
@@ -78,7 +78,7 @@ namespace Hangfire.SqlServer
                 _storage.UseConnection(null, connection =>
                 {
                     connection.Execute(
-                        $"update JQ set FetchedAt = null from {_storage.SchemaName}.JobQueue JQ with ({GetTableHints()}) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
+                        $"update JQ set FetchedAt = null from [{_storage.SchemaName}].JobQueue JQ with ({GetTableHints()}) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
                         new { queue = Queue, id = Id, fetchedAt = FetchedAt },
                         commandTimeout: _storage.CommandTimeout);
                 });
@@ -127,7 +127,7 @@ namespace Hangfire.SqlServer
                     _storage.UseConnection(null, connection =>
                     {
                         FetchedAt = connection.ExecuteScalar<DateTime?>(
-                            $"update JQ set FetchedAt = getutcdate() output INSERTED.FetchedAt from {_storage.SchemaName}.JobQueue JQ with ({GetTableHints()}) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
+                            $"update JQ set FetchedAt = getutcdate() output INSERTED.FetchedAt from [{_storage.SchemaName}].JobQueue JQ with ({GetTableHints()}) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
                             new { queue = Queue, id = Id, fetchedAt = FetchedAt },
                             commandTimeout: _storage.CommandTimeout);
                     });
