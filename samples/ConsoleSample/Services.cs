@@ -39,7 +39,7 @@ namespace ConsoleSample
         }
 
         [Queue("critical")]
-        public async Task Random(int number)
+        public async Task<int> Random(int number)
         {
             int time;
             lock (Rand)
@@ -54,6 +54,7 @@ namespace ConsoleSample
 
             await Task.Delay(TimeSpan.FromSeconds(5 + time));
             Console.WriteLine("Finished task: " + number);
+            return time;
         }
 
         public async Task Cancelable(int iterationCount, IJobCancellationToken token)
