@@ -37,10 +37,23 @@ namespace Hangfire.SqlServer
 
         static SqlCommandSet()
         {
-#if FEATURE_COMMANDSET
             try
             {
                 var typeAssembly = typeof(SqlCommand).GetTypeInfo().Assembly;
+                var version = typeAssembly.GetName().Version;
+
+                if (Version.Parse("4.0.0.0") < version && version < Version.Parse("4.6.0.0"))
+                {
+                    // .NET Core version of the System.Data.SqlClient package below 4.7.0 (which
+                    // has assembly version 4.6.0.0) doesn't properly implement the SqlCommandSet
+                    // class, throwing the following exception in run-time:
+                    // ArgumentException: Specified parameter name 'Parameter1' is not valid.
+                    // GitHub Issue: https://github.com/dotnet/corefx/issues/29391
+
+                    IsAvailable = false;
+                    return;
+                }
+
                 SqlCommandSetType = typeAssembly.GetType("System.Data.SqlClient.SqlCommandSet");
 
                 if (SqlCommandSetType == null) return;
@@ -65,9 +78,6 @@ namespace Hangfire.SqlServer
             {
                 IsAvailable = false;
             }
-#else
-            IsAvailable = false;
-#endif
         }
 
         public SqlCommandSet()
