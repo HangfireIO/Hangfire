@@ -9,9 +9,7 @@
 # Don't edit manually! Use `build.bat version` command instead!
 version: 1.7.6-build-0{build}
 
-image:
-  - Visual Studio 2019
-  - Ubuntu
+os: Visual Studio 2019
 
 #---------------------------------#
 #    environment configuration    #
@@ -30,8 +28,7 @@ environment:
 
 # enable service required for tests
 services:
-  - mssql2017 # Windows Build
-  - mssql     # Linux Build
+  - mssql2017
   - msmq
 
 pull_requests:
@@ -45,8 +42,7 @@ shallow_clone: true
 
 # to run your custom scripts instead of automatic MSBuild
 build_script:
-  - cmd: build.bat ci
-  - sh:  dotnet test -c Release -f netcoreapp3.0 tests/Hangfire.Core.Tests/Hangfire.Core.Tests.csproj;
+  - build.bat ci
 
 #---------------------------------#
 #       tests configuration       #
