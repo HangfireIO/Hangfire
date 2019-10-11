@@ -15,7 +15,7 @@ matrix:
       os: osx
     - mono: latest
       os: linux
-    - mono: latest-beta
+    - mono: beta
       os: osx
 
 # Run the build script
