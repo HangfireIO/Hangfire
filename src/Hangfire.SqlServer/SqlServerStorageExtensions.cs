@@ -50,6 +50,17 @@ namespace Hangfire
 
         public static IGlobalConfiguration<SqlServerStorage> UseSqlServerStorage(
             [NotNull] this IGlobalConfiguration configuration,
+            [NotNull] Func<DbConnection> connectionFactory)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (connectionFactory == null) throw new ArgumentNullException(nameof(connectionFactory));
+
+            var storage = new SqlServerStorage(connectionFactory);
+            return configuration.UseStorage(storage);
+        }
+
+        public static IGlobalConfiguration<SqlServerStorage> UseSqlServerStorage(
+            [NotNull] this IGlobalConfiguration configuration,
             [NotNull] Func<DbConnection> connectionFactory,
             [NotNull] SqlServerStorageOptions options)
         {
