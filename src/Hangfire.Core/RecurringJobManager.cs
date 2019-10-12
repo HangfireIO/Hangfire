@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
@@ -51,7 +52,7 @@ namespace Hangfire
         }
 
         public RecurringJobManager(
-            [NotNull] JobStorage storage, 
+            [NotNull] JobStorage storage,
             [NotNull] IJobFilterProvider filterProvider,
             [NotNull] ITimeZoneResolver timeZoneResolver)
             : this(storage, filterProvider, timeZoneResolver, () => DateTime.UtcNow)
@@ -59,8 +60,8 @@ namespace Hangfire
         }
 
         public RecurringJobManager(
-            [NotNull] JobStorage storage, 
-            [NotNull] IJobFilterProvider filterProvider, 
+            [NotNull] JobStorage storage,
+            [NotNull] IJobFilterProvider filterProvider,
             [NotNull] ITimeZoneResolver timeZoneResolver,
             [NotNull] Func<DateTime> nowFactory)
             : this(storage, new BackgroundJobFactory(filterProvider), timeZoneResolver, nowFactory)
@@ -78,7 +79,7 @@ namespace Hangfire
         }
 
         internal RecurringJobManager(
-            [NotNull] JobStorage storage, 
+            [NotNull] JobStorage storage,
             [NotNull] IBackgroundJobFactory factory,
             [NotNull] ITimeZoneResolver timeZoneResolver,
             [NotNull] Func<DateTime> nowFactory)
@@ -89,7 +90,8 @@ namespace Hangfire
             _nowFactory = nowFactory ?? throw new ArgumentNullException(nameof(nowFactory));
         }
 
-        public void AddOrUpdate(string recurringJobId, Job job, string cronExpression, RecurringJobOptions options)
+        public void AddOrUpdate(string recurringJobId, Job job, string cronExpression, RecurringJobOptions options,
+            bool status = true)
         {
             if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
             if (job == null) throw new ArgumentNullException(nameof(job));
@@ -107,7 +109,7 @@ namespace Hangfire
                 recurringJob.Cron = cronExpression;
                 recurringJob.TimeZone = options.TimeZone;
                 recurringJob.Queue = options.QueueName;
-
+                recurringJob.IsActive = status;
                 if (recurringJob.IsChanged(out var changedFields, out var nextExecution))
                 {
                     using (var transaction = connection.CreateWriteTransaction())
@@ -118,7 +120,7 @@ namespace Hangfire
                 }
             }
         }
- 
+
         private static void ValidateCronExpression(string cronExpression)
         {
             try
@@ -145,9 +147,10 @@ namespace Hangfire
 
                 var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
                 if (recurringJob == null) return;
+                if(!recurringJob.IsActive)
+                    return;
 
                 var backgroundJob = _factory.TriggerRecurringJob(_storage, connection, EmptyProfiler.Instance, recurringJob, now);
-
                 if (recurringJob.IsChanged(out var changedFields, out var nextExecution))
                 {
                     using (var transaction = connection.CreateWriteTransaction())
@@ -184,6 +187,42 @@ namespace Hangfire
                 transaction.RemoveFromSet("recurring-jobs", recurringJobId);
 
                 transaction.Commit();
+            }
+        }
+
+        public void Start(string recurringJobId)
+        {
+            using (var connection = _storage.GetConnection())
+            using (connection.AcquireDistributedRecurringJobLock(recurringJobId, DefaultTimeout))
+            {
+                var recurringJob = connection.GetOrCreateRecurringJob(recurringJobId, _timeZoneResolver, _nowFactory());
+                recurringJob.IsActive = true;
+                if (recurringJob.IsChanged(out var changedFields, out var nextExecution))
+                {
+                    using (var transaction = connection.CreateWriteTransaction())
+                    {
+                        transaction.UpdateRecurringJob(recurringJobId, changedFields, nextExecution);
+                        transaction.Commit();
+                    }
+                }
+            }
+        }
+
+        public void Stop(string recurringJobId)
+        {
+            using (var connection = _storage.GetConnection())
+            using (connection.AcquireDistributedRecurringJobLock(recurringJobId, DefaultTimeout))
+            {
+                var recurringJob = connection.GetOrCreateRecurringJob(recurringJobId, _timeZoneResolver, _nowFactory());
+                recurringJob.IsActive = false;
+                if (recurringJob.IsChanged(out var changedFields, out var nextExecution))
+                {
+                    using (var transaction = connection.CreateWriteTransaction())
+                    {
+                        transaction.UpdateRecurringJob(recurringJobId, changedFields, nextExecution);
+                        transaction.Commit();
+                    }
+                }
             }
         }
     }

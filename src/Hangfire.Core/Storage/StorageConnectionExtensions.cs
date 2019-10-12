@@ -24,8 +24,8 @@ namespace Hangfire.Storage
     public static class StorageConnectionExtensions
     {
         public static IDisposable AcquireDistributedJobLock(
-            [NotNull] this IStorageConnection connection, 
-            [NotNull] string jobId, 
+            [NotNull] this IStorageConnection connection,
+            [NotNull] string jobId,
             TimeSpan timeout)
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
@@ -108,7 +108,7 @@ namespace Hangfire.Storage
                         dto.LastJobState = stateData.Name;
                     }
                 }
-                
+
                 if (hash.ContainsKey("Queue"))
                 {
                     dto.Queue = hash["Queue"];
@@ -134,9 +134,10 @@ namespace Hangfire.Storage
                     dto.Error = error;
                 }
 
+                dto.IsActive = !hash.TryGetValue("IsActive", out var status) || bool.Parse(status);
                 result.Add(dto);
             }
-            
+
             return result;
         }
     }

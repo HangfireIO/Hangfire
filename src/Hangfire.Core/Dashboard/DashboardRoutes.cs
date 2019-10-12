@@ -170,6 +170,14 @@ namespace Hangfire.Dashboard
                 (manager, jobId) => manager.RemoveIfExists(jobId));
 
             Routes.AddRecurringBatchCommand(
+                "/recurring/start",
+                (manager, jobId) => manager.Start(jobId));
+
+            Routes.AddRecurringBatchCommand(
+                "/recurring/stop",
+                (manager, jobId) => manager.Stop(jobId));
+
+            Routes.AddRecurringBatchCommand(
                 "/recurring/trigger", 
                 (manager, jobId) => manager.Trigger(jobId));
 

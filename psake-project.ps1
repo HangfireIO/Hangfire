@@ -115,7 +115,7 @@ function Repack-Assembly($projectWithOptionalTarget, $internalizeAssemblies, $ta
     $target = $null
 
     $base_dir = resolve-path .
-    $ilrepack = "$base_dir\packages\ilrepack.*\tools\ilrepack.exe"
+    $ilrepack = "$base_dir\packages\ilrepack\tools\ilrepack.exe"
 
     if ($projectWithOptionalTarget -Is [System.Array]) {
         $project = $projectWithOptionalTarget[0]

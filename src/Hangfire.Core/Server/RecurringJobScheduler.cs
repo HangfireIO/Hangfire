@@ -263,7 +263,6 @@ namespace Hangfire.Server
                 try
                 {
                     var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
-
                     if (recurringJob == null)
                     {
                         using (var transaction = connection.CreateWriteTransaction())
@@ -274,6 +273,9 @@ namespace Hangfire.Server
 
                         return false;
                     }
+
+                    if (!recurringJob.IsActive)
+                        return false;
 
                     // If a recurring job has the "V" field, then it was created by a newer
                     // version. Despite we can handle 1.7.0-based recurring jobs just fine,
