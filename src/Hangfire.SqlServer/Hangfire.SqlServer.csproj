@@ -10,7 +10,7 @@
   
   <PropertyGroup Condition="'$(TargetFramework)'=='net45'">
     <DebugType>full</DebugType>
-    <DefineConstants>$(DefineConstants);FEATURE_TRANSACTIONSCOPE;FEATURE_CONFIGURATIONMANAGER;FEATURE_COMMANDSET</DefineConstants>
+    <DefineConstants>$(DefineConstants);FEATURE_TRANSACTIONSCOPE;FEATURE_CONFIGURATIONMANAGER</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>

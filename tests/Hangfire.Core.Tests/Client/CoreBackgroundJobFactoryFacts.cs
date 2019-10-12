@@ -44,6 +44,19 @@ namespace Hangfire.Core.Tests.Client
 
             Assert.Equal("stateMachine", exception.ParamName);
         }
+
+        [Fact]
+        public void Create_ReturnsNull_WhenCreateExpiredJobReturnedNull()
+        {
+            _context.Connection
+                .Setup(x => x.CreateExpiredJob(It.IsAny<Job>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<DateTime>(), It.IsAny<TimeSpan>()))
+                .Returns<string>(null);
+
+            var factory = CreateFactory();
+            var result = factory.Create(_context.Object);
+
+            Assert.Null(result);
+        }
         
         [Fact]
         public void CreateJob_CreatesExpiredJob()

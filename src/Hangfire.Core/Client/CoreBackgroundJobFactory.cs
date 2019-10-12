@@ -76,6 +76,11 @@ namespace Hangfire.Client
                 createdAt,
                 TimeSpan.FromDays(30)));
 
+            if (String.IsNullOrEmpty(jobId))
+            {
+                return null;
+            }
+
             var backgroundJob = new BackgroundJob(jobId, context.Job, createdAt);
 
             if (context.InitialState != null)

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net452;netcoreapp2.1;</TargetFrameworks>
+    <TargetFrameworks>net452;netcoreapp2.1;netcoreapp3.0</TargetFrameworks>
     <NoWarn>0618</NoWarn>
   </PropertyGroup>
   
@@ -16,6 +16,10 @@
 
   <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp2.1'">
     <PackageReference Include="System.Data.SqlClient" Version="4.5.0" />    
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp3.0'">
+    <PackageReference Include="System.Data.SqlClient" Version="4.7.0" />    
   </ItemGroup>
 
   <ItemGroup>
