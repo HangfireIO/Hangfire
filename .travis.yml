@@ -39,7 +39,7 @@ script:
         # Uncomment the following lines when https://github.com/mono/mono/issues/16440 is fixed
         # if hash docker 2>/dev/null;
         # then
-            # mono ./packages/xunit.runner.console.2.2.0/tools/xunit.console.exe ./tests/Hangfire.SqlServer.Tests/bin/Release/net452/Hangfire.SqlServer.Tests.dll;
+        # mono ./packages/xunit.runner.console.2.2.0/tools/xunit.console.exe ./tests/Hangfire.SqlServer.Tests/bin/Release/net452/Hangfire.SqlServer.Tests.dll;
         # fi
     else
         travis_retry dotnet restore --disable-parallel;
