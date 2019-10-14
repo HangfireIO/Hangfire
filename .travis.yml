@@ -24,7 +24,7 @@ matrix:
 env:
   - Hangfire_SqlServer_ConnectionStringTemplate="Server=.\SQL2017;Database={0};User Id=sa;Password=Password12!"
 
-before_scruot:
+before_script:
   - sudo docker run --name=mssql2017 -e 'ACCEPT_EULA=Y' -e 'MSSQL_PID=SQL2017' -e 'MSSQL_SA_PASSWORD=Password12!' -p 1433:1433 -d microsoft/mssql-server-linux:2017-latest
 
 # Run the build script
