@@ -5,6 +5,9 @@ language: csharp
 sudo: required
 dist: xenial
 
+services:
+  - docker
+
 matrix:
   include:
     - dotnet: 3.0.100
@@ -18,6 +21,12 @@ matrix:
     - mono: beta
       os: osx
 
+env:
+  - Hangfire_SqlServer_ConnectionStringTemplate="Server=.\SQL2017;Database={0};User Id=sa;Password=Password12!"
+
+before_scruot:
+  - sudo docker run --name=mssql2017 -e 'ACCEPT_EULA=Y' -e 'MSSQL_PID=SQL2017' -e 'MSSQL_SA_PASSWORD=Password12!' -p 1433:1433 -d microsoft/mssql-server-linux:2017-latest
+
 # Run the build script
 script:
   - if hash mono 2>/dev/null; 
@@ -26,9 +35,11 @@ script:
         travis_retry nuget restore Hangfire.sln;
         msbuild /p:Configuration=Release /verbosity:minimal Hangfire.sln;
         mono ./packages/xunit.runner.console.2.2.0/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/net452/Hangfire.Core.Tests.dll;
+        mono ./packages/xunit.runner.console.2.2.0/tools/xunit.console.exe ./tests/Hangfire.SqlServer.Tests/bin/Release/net452/Hangfire.SqlServer.Tests.dll;
     else
         travis_retry dotnet restore --disable-parallel;
         dotnet test -c Release -f netcoreapp3.0 tests/Hangfire.Core.Tests/Hangfire.Core.Tests.csproj;
+        dotnet test -c Release -f netcoreapp3.0 tests/Hangfire.SqlServer.Tests/Hangfire.SqlServer.Tests.csproj;
     fi
 
 notifications:
