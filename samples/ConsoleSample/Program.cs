@@ -17,7 +17,7 @@ namespace ConsoleSample
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
-                .UseSqlServerStorage(@"Server=.\;Database=Hangfire.Sample;Trusted_Connection=True;", new SqlServerStorageOptions
+                .UseSqlServerStorage(@"Server=(LocalDb)\MSSQLLocalDB;Database=Hangfire.Sample;Trusted_Connection=True;", new SqlServerStorageOptions
                 {
                     CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
                     QueuePollInterval = TimeSpan.Zero,

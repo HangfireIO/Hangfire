@@ -14,7 +14,7 @@
             this._message = message;
         }
 
-        ErrorAlert.prototype.show = function() {
+        ErrorAlert.prototype.show = function () {
             this._errorAlertTitle.html(this._title);
             this._errorAlertMessage.html(this._message);
             $('#errorAlert').slideDown('fast');
@@ -23,12 +23,12 @@
         return ErrorAlert;
     })();
 
-    hangfire.Metrics = (function() {
+    hangfire.Metrics = (function () {
         function Metrics() {
             this._metrics = {};
         }
 
-        Metrics.prototype.addElement = function(name, element) {
+        Metrics.prototype.addElement = function (name, element) {
             if (!(name in this._metrics)) {
                 this._metrics[name] = [];
             }
@@ -36,7 +36,7 @@
             this._metrics[name].push(element);
         };
 
-        Metrics.prototype.getElements = function(name) {
+        Metrics.prototype.getElements = function (name) {
             if (!(name in this._metrics)) {
                 return [];
             }
@@ -44,7 +44,7 @@
             return this._metrics[name];
         };
 
-        Metrics.prototype.getNames = function() {
+        Metrics.prototype.getNames = function () {
             var result = [];
             var metrics = this._metrics;
 
@@ -60,11 +60,11 @@
         return Metrics;
     })();
 
-    hangfire.RealtimeGraph = (function() {
+    hangfire.RealtimeGraph = (function () {
         function RealtimeGraph(element, succeeded, failed, succeededStr, failedStr, pollInterval) {
             this._succeeded = succeeded;
             this._failed = failed;
-            
+
             this._chart = new Chart(element, {
                 type: 'line',
                 data: {
@@ -103,10 +103,10 @@
 
                 this._chart.data.datasets[0].data.push({ x: new Date(), y: succeeded });
                 this._chart.data.datasets[1].data.push({ x: new Date(), y: failed });
-                
+
                 this._chart.update();
             }
-            
+
             this._succeeded = newSucceeded;
             this._failed = newFailed;
         };
@@ -114,7 +114,7 @@
         return RealtimeGraph;
     })();
 
-    hangfire.HistoryGraph = (function() {
+    hangfire.HistoryGraph = (function () {
         function HistoryGraph(element, succeeded, failed, succeededStr, failedStr) {
             var timeOptions = $(element).data('period') === 'week'
                 ? { unit: 'day', tooltipFormat: 'LL', displayFormats: { day: 'll' } }
@@ -143,7 +143,7 @@
         return HistoryGraph;
     })();
 
-    hangfire.StatisticsPoller = (function() {
+    hangfire.StatisticsPoller = (function () {
         function StatisticsPoller(metricsCallback, statisticsUrl, pollInterval) {
             this._metricsCallback = metricsCallback;
             this._listeners = [];
@@ -155,7 +155,7 @@
         StatisticsPoller.prototype.start = function () {
             var self = this;
 
-            var intervalFunc = function() {
+            var intervalFunc = function () {
                 try {
                     $.post(self._statisticsUrl, { metrics: self._metricsCallback() })
                         .done(function (data) {
@@ -172,7 +172,7 @@
 
                             errorAlert.show();
                             self._timeoutId = null;
-                            setTimeout(function() { window.location.reload(); }, 60*1000);
+                            setTimeout(function () { window.location.reload(); }, 60 * 1000);
                         });
                 } catch (e) {
                     console.log(e);
@@ -182,21 +182,21 @@
             this._timeoutId = setTimeout(intervalFunc, this._pollInterval);
         };
 
-        StatisticsPoller.prototype.stop = function() {
+        StatisticsPoller.prototype.stop = function () {
             if (this._timeoutId !== null) {
                 clearTimeout(this._timeoutId);
                 this._timeoutId = null;
             }
         };
 
-        StatisticsPoller.prototype.addListener = function(listener) {
+        StatisticsPoller.prototype.addListener = function (listener) {
             this._listeners.push(listener);
         };
 
-        StatisticsPoller.prototype._notifyListeners = function(statistics) {
+        StatisticsPoller.prototype._notifyListeners = function (statistics) {
             var length = this._listeners.length;
             var i;
-            
+
             for (i = 0; i < length; i++) {
                 this._listeners[i](statistics);
             }
@@ -205,7 +205,7 @@
         return StatisticsPoller;
     })();
 
-    hangfire.Page = (function() {
+    hangfire.Page = (function () {
         function Page(config) {
             this._metrics = new Hangfire.Metrics();
 
@@ -223,7 +223,7 @@
             this._poller.start();
         };
 
-        Page.prototype._createRealtimeGraph = function(elementId, pollInterval) {
+        Page.prototype._createRealtimeGraph = function (elementId, pollInterval) {
             var realtimeElement = document.getElementById(elementId);
             if (realtimeElement) {
                 var succeeded = parseInt($(realtimeElement).data('succeeded'));
@@ -243,7 +243,7 @@
             return null;
         };
 
-        Page.prototype._createHistoryGraph = function(elementId) {
+        Page.prototype._createHistoryGraph = function (elementId) {
             var historyElement = document.getElementById(elementId);
             if (historyElement) {
                 var createSeries = function (obj) {
@@ -272,6 +272,7 @@
 
         Page.prototype._initialize = function (locale) {
             moment.locale(locale);
+            i18n.locale = locale;
             var updateRelativeDates = function () {
                 $('*[data-moment]').each(function () {
                     var $this = $(this);
@@ -352,11 +353,11 @@
 
                 if (!confirmText || confirm(confirmText)) {
                     $this.prop('disabled');
-                    var loadingDelay = setTimeout(function() {
+                    var loadingDelay = setTimeout(function () {
                         $this.button('loading');
                     }, 100);
 
-                    $.post($this.data('ajax'), function() {
+                    $.post($this.data('ajax'), function () {
                         clearTimeout(loadingDelay);
                         window.location.reload();
                     });
@@ -370,23 +371,23 @@
                     $expandable = $expander.closest('tr').next().find('.expandable');
 
                 if (!$expandable.is(':visible')) {
-                    $expander.text('Fewer details...');
+                    $expander.text(i18n`Fewer details...`);
                 }
 
-				$expandable.slideToggle(
-					150, 
-					function() {
-					    if (!$expandable.is(':visible')) {
-					        $expander.text('More details...');
-					    }
-					});
+                $expandable.slideToggle(
+                    150,
+                    function () {
+                        if (!$expandable.is(':visible')) {
+                            $expander.text(i18n`More details...`);
+                        }
+                    });
                 e.preventDefault();
             });
 
             $('.js-jobs-list').each(function () {
                 var container = this;
 
-                var selectRow = function(row, isSelected) {
+                var selectRow = function (row, isSelected) {
                     var $checkbox = $('.js-jobs-list-checkbox', row);
                     if ($checkbox.length > 0) {
                         $checkbox.prop('checked', isSelected);
@@ -394,7 +395,7 @@
                     }
                 };
 
-                var toggleRowSelection = function(row) {
+                var toggleRowSelection = function (row) {
                     var $checkbox = $('.js-jobs-list-checkbox', row);
                     if ($checkbox.length > 0) {
                         var isSelected = $checkbox.is(':checked');
@@ -406,13 +407,13 @@
                     $('.js-jobs-list-select-all', container)
                         .prop('checked', state === 'all-selected')
                         .prop('indeterminate', state === 'some-selected');
-                    
+
                     $('.js-jobs-list-command', container)
                         .prop('disabled', state === 'none-selected');
                 };
 
-                var updateListState = function() {
-                    var selectedRows = $('.js-jobs-list-checkbox', container).map(function() {
+                var updateListState = function () {
+                    var selectedRows = $('.js-jobs-list-checkbox', container).map(function () {
                         return $(this).prop('checked');
                     }).get();
 
@@ -431,7 +432,7 @@
                     setListState(state);
                 };
 
-                $(this).on('click', '.js-jobs-list-checkbox', function(e) {
+                $(this).on('click', '.js-jobs-list-checkbox', function (e) {
                     selectRow(
                         $(this).closest('.js-jobs-list-row').first(),
                         $(this).is(':checked'));
@@ -448,21 +449,21 @@
                     updateListState();
                 });
 
-                $(this).on('click', '.js-jobs-list-select-all', function() {
+                $(this).on('click', '.js-jobs-list-select-all', function () {
                     var selectRows = $(this).is(':checked');
 
-                    $('.js-jobs-list-row', container).each(function() {
+                    $('.js-jobs-list-row', container).each(function () {
                         selectRow(this, selectRows);
                     });
 
                     updateListState();
                 });
 
-                $(this).on('click', '.js-jobs-list-command', function(e) {
+                $(this).on('click', '.js-jobs-list-command', function (e) {
                     var $this = $(this);
                     var confirmText = $this.data('confirm');
 
-                    var jobs = $("input[name='jobs[]']:checked", container).map(function() {
+                    var jobs = $("input[name='jobs[]']:checked", container).map(function () {
                         return $(this).val();
                     }).get();
 
