@@ -45,6 +45,7 @@ namespace Hangfire.SqlServer
             TransactionTimeout = TimeSpan.FromMinutes(1);
             DisableGlobalLocks = false;
             UsePageLocksOnDequeue = false;
+            NonBlockingFetchSql = true;
         }
 
         [Obsolete("TransactionIsolationLevel option is deprecated, please set UseRecommendedIsolationLevel instead. Will be removed in 2.0.0.")]
@@ -122,5 +123,7 @@ namespace Hangfire.SqlServer
         public bool UsePageLocksOnDequeue { get; set; }
         public bool UseRecommendedIsolationLevel { get; set; }
         public bool EnableHeavyMigrations { get; set; }
+
+        public bool NonBlockingFetchSql { get; set; }
     }
 }
