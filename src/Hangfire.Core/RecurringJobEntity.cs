@@ -104,6 +104,19 @@ namespace Hangfire
             {
                 Version = int.Parse(recurringJob["V"], CultureInfo.InvariantCulture);
             }
+
+            if (recurringJob.ContainsKey("IsActive"))
+            {
+                try
+                {
+                    IsActive = !bool.TryParse(recurringJob["IsActive"].ToLower(), out var status) ||
+                             status;
+                }
+                catch
+                {
+                    IsActive = true;
+                }
+            }
         }
 
         public string RecurringJobId { get; }
@@ -119,6 +132,7 @@ namespace Hangfire
         public DateTime? LastExecution { get; set; }
         public string LastJobId { get; set; }
         public int? Version { get; set; }
+        public bool IsActive { get; set; }
 
         public bool TrySchedule(out DateTime? nextExecution, out Exception error)
         {
@@ -216,6 +230,12 @@ namespace Hangfire
             if (!_recurringJob.ContainsKey("V"))
             {
                 result.Add("V", "2");
+            }
+
+            if (((_recurringJob.ContainsKey("IsActive") ? _recurringJob["IsActive"] : null)
+                 != IsActive.ToString()))
+            {
+                result.Add("IsActive", IsActive.ToString());
             }
 
             if (_recurringJob.ContainsKey("Error") && !String.IsNullOrEmpty(_recurringJob["Error"]))
