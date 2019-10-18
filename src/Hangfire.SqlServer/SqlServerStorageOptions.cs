@@ -122,5 +122,6 @@ namespace Hangfire.SqlServer
         public bool UsePageLocksOnDequeue { get; set; }
         public bool UseRecommendedIsolationLevel { get; set; }
         public bool EnableHeavyMigrations { get; set; }
+        public bool UseFineGrainedLocks { get; set; }
     }
 }
