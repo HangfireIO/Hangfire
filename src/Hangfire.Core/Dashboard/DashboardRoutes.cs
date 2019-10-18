@@ -30,8 +30,8 @@ namespace Hangfire.Dashboard
             "moment-with-locales.min.js",
             "Chart.min.js",
             "chartjs-plugin-streaming.min.js",
+            "hangfire.locales.js",
             "hangfire.js",
-            "hangfire.locales.js"
         };
 
         private static readonly string[] Stylesheets =

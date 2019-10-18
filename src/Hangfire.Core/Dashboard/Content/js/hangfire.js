@@ -166,9 +166,9 @@
                         })
                         .fail(function (xhr) {
                             var errorAlert = new Hangfire.ErrorAlert(
-                                'Unable to refresh the statistics:',
-                                'the server responded with ' + xhr.status + ' (' + xhr.statusText
-                                + '). Try reloading the page manually, or wait for automatic reload that will happen in a minute.');
+                                i18n`Unable to refresh the statistics:`,
+                                i18n`the server responded with ${xhr.status} (${xhr.statusText}).`
+                                + i18n`Try reloading the page manually, or wait for automatic reload that will happen in a minute.`);
 
                             errorAlert.show();
                             self._timeoutId = null;

@@ -1,4 +1,6 @@
-﻿
+﻿/* reference: https://medium.com/@WebReflection/easy-i18n-in-10-lines-of-javascript-poc-eb9e5444d71e
+ * */
+
 function i18n(template) {
     let db = i18n.db[i18n.locale] || i18n.db['en'];
     for (var
@@ -38,3 +40,15 @@ i18n.set('en')`More details...`
 i18n.set('en')`Fewer details...`
     .for('pt')`Menos detalhes...`
     .for('pt-BR')`Menos detalhes...`;
+
+i18n.set('en')`Unable to refresh the statistics:`
+    .for('pt')`Não foi possível atualizar as estatísticas:`
+    .for('pt-BR')`Não foi possível atualizar as estatísticas:`;
+
+i18n.set('en')`the server responded with ${'status'} (${'statusText'}).`
+    .for('pt')`o servidor respondeu com ${'status'} (${'statusText'}).`
+    .for('pt-BR')`o servidor respondeu com ${'status'} (${'statusText'}).`;
+
+i18n.set('en')`Try reloading the page manually, or wait for automatic reload that will happen in a minute.`
+    .for('pt')`Tente recarregar a página manualmente ou aguarde o recarregamento automático que ocorrerá em um minuto.`
+    .for('pt-BR')`Tente recarregar a página manualmente ou aguarde o recarregamento automático que ocorrerá em um minuto.`;
