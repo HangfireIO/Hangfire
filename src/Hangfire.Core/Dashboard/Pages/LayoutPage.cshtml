@@ -41,7 +41,7 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <a class="navbar-brand" href="@Url.Home()">@DashboardOptions.DashboardTitle</a>
+                        <a class="navbar-brand" href="@Url.Home()">@Html.Raw(DashboardOptions.DashboardTitle)</a>
                     </div>
                     <div class="collapse navbar-collapse">
                         @Html.RenderPartial(new Navigation())
