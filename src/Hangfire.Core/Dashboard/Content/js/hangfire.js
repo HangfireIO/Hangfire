@@ -64,6 +64,8 @@
         function RealtimeGraph(element, succeeded, failed, succeededStr, failedStr, pollInterval) {
             this._succeeded = succeeded;
             this._failed = failed;
+            this._last = Date.now();
+            this._pollInterval = pollInterval;
             
             this._chart = new Chart(element, {
                 type: 'line',
@@ -96,19 +98,21 @@
         RealtimeGraph.prototype.appendHistory = function (statistics) {
             var newSucceeded = parseInt(statistics["succeeded:count"].intValue);
             var newFailed = parseInt(statistics["failed:count"].intValue);
+            var now = Date.now();
 
-            if (this._succeeded !== null && this._failed !== null) {
+            if (this._succeeded !== null && this._failed !== null && (now - this._last < this._pollInterval * 2)) {
                 var succeeded = newSucceeded - this._succeeded;
                 var failed = newFailed - this._failed;
 
                 this._chart.data.datasets[0].data.push({ x: new Date(), y: succeeded });
-                this._chart.data.datasets[1].data.push({ x: new Date(), y: failed });
+                this._chart.data.datasets[1].data.push({ x: new Date(), y: failed });   
                 
                 this._chart.update();
             }
             
             this._succeeded = newSucceeded;
             this._failed = newFailed;
+            this._last = now;
         };
 
         return RealtimeGraph;
