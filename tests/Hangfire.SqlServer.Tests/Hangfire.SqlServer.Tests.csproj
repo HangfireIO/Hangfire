@@ -11,7 +11,14 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
     <PackageReference Include="Moq" Version="4.10.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
-    <PackageReference Include="Dapper" Version="1.50.7" />    
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'!='net452'">
+    <PackageReference Include="Dapper" Version="2.0.4" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(TargetFramework)'=='net452'">
+    <PackageReference Include="Dapper" Version="1.50.7" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp2.1'">
