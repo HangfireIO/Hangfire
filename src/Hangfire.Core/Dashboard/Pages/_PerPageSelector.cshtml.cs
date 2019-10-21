@@ -121,7 +121,7 @@ WriteLiteral("    <div class=\"btn-group pull-right paginator\">\r\n");
 
             
             #line 17 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
-         foreach (var count in new[] { 10, 20, 50, 100, 500 })
+         foreach (var count in new[] { 10, 20, 50, 100, 500, 1000, 5000 })
         {
 
             
@@ -133,6 +133,16 @@ WriteLiteral("            <a class=\"btn btn-sm btn-default ");
             
             #line 19 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
                                          Write(count == _pager.RecordsPerPage ? "active" : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral(" ");
+
+
+            
+            #line 19 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
+                                                                                             Write(count > 999 ? "visible-lg" : null);
 
             
             #line default
@@ -152,7 +162,7 @@ WriteLiteral("\">");
 
             
             #line 20 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
-                                                      Write(count);
+                                                      Write(count.ToString("N0"));
 
             
             #line default
