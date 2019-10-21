@@ -53,7 +53,7 @@ namespace Hangfire.Dashboard
             }
         }
 
-        internal DashboardContext Context { get; private set; }
+        public DashboardContext Context { get; private set; }
 
         internal DashboardRequest Request => Context.Request;
         internal DashboardResponse Response => Context.Response;
