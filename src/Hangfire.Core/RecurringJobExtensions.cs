@@ -16,9 +16,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
+using Hangfire.Logging;
 using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -72,22 +74,31 @@ namespace Hangfire
 
         public static void UpdateRecurringJob(
             [NotNull] this IWriteOnlyTransaction transaction,
-            [NotNull] string recurringJobId,
-            [CanBeNull] IReadOnlyDictionary<string, string> changedFields,
-            [CanBeNull] DateTime? nextExecution)
+            [NotNull] RecurringJobEntity recurringJob,
+            [NotNull] IReadOnlyDictionary<string, string> changedFields,
+            [CanBeNull] DateTime? nextExecution,
+            [CanBeNull] ILog logger)
         {
             if (transaction == null) throw new ArgumentNullException(nameof(transaction));
-            if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
+            if (recurringJob == null) throw new ArgumentNullException(nameof(recurringJob));
+            if (changedFields == null) throw new ArgumentNullException(nameof(changedFields));
 
-            if (changedFields != null && changedFields.Count > 0)
+            if (changedFields.Count > 0)
             {
-                transaction.SetRangeInHash($"recurring-job:{recurringJobId}", changedFields);
+                transaction.SetRangeInHash($"recurring-job:{recurringJob.RecurringJobId}", changedFields);
+            }
+
+            var score = nextExecution.HasValue ? JobHelper.ToTimestamp(nextExecution.Value) : -1.0D;
+
+            if (logger != null && logger.IsTraceEnabled())
+            {
+                logger.Trace($"Recurring job '{recurringJob.RecurringJobId}' is being updated. RecurringJob: ({recurringJob}), Changes: ({String.Join(";", changedFields.Select(x => $"{x.Key}:{x.Value}"))}), NextExecution: ({nextExecution})");
             }
 
             transaction.AddToSet(
                 "recurring-jobs",
-                recurringJobId,
-                nextExecution.HasValue ? JobHelper.ToTimestamp(nextExecution.Value) : -1.0D);
+                recurringJob.RecurringJobId,
+                score);
         }
 
         public static BackgroundJob TriggerRecurringJob(

@@ -325,7 +325,7 @@ namespace Hangfire.Server
                                 _profiler);
                         }
 
-                        transaction.UpdateRecurringJob(recurringJobId, changedFields, nextExecution);
+                        transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
 
                         transaction.Commit();
                         return true;
