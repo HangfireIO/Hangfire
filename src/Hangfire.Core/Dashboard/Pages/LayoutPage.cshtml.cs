@@ -194,8 +194,18 @@ WriteLiteral(@""">
             
             #line default
             #line hidden
-WriteLiteral("\">Hangfire Dashboard</a>\r\n                    </div>\r\n                    <div cl" +
-"ass=\"collapse navbar-collapse\">\r\n                        ");
+WriteLiteral("\">");
+
+
+            
+            #line 44 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                                                              Write(Html.Raw(DashboardOptions.DashboardTitle));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</a>\r\n                    </div>\r\n                    <div class=\"collapse navbar" +
+"-collapse\">\r\n                        ");
 
 
             
