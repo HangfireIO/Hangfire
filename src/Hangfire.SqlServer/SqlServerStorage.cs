@@ -43,6 +43,7 @@ namespace Hangfire.SqlServer
         private readonly Func<DbConnection> _connectionFactory;
         private readonly SqlServerStorageOptions _options;
         private readonly string _connectionString;
+        private string _escapedSchemaName;
 
         public SqlServerStorage(string nameOrConnectionString)
             : this(nameOrConnectionString, new SqlServerStorageOptions())
@@ -129,7 +130,7 @@ namespace Hangfire.SqlServer
 
         public override bool LinearizableReads => true;
 
-        internal string SchemaName => _options.SchemaName;
+        internal string SchemaName => _escapedSchemaName;
         internal int? CommandTimeout => _options.CommandTimeout.HasValue ? (int)_options.CommandTimeout.Value.TotalSeconds : (int?)null;
         internal int? CommandBatchMaxTimeout => _options.CommandBatchMaxTimeout.HasValue ? (int)_options.CommandBatchMaxTimeout.Value.TotalSeconds : (int?)null;
         internal TimeSpan? SlidingInvisibilityTimeout => _options.SlidingInvisibilityTimeout;
@@ -305,6 +306,8 @@ namespace Hangfire.SqlServer
 
         private void Initialize()
         {
+            _escapedSchemaName = _options.SchemaName.Replace("]", "]]");
+
             if (_options.PrepareSchemaIfNecessary)
             {
                 var log = LogProvider.GetLogger(typeof(SqlServerObjectsInstaller));
