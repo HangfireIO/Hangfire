@@ -142,9 +142,11 @@ option (loop join, optimize for (@count = 20000));";
                 command.CommandTimeout = 0;
 
                 var countParameter = command.CreateParameter();
+                countParameter.ParameterName = "@count";
                 countParameter.Value = NumberOfRecordsInSinglePass;
 
                 var nowParameter = command.CreateParameter();
+                nowParameter.ParameterName = "@now";
                 nowParameter.Value = DateTime.UtcNow;
 
                 command.Parameters.Add(countParameter);
