@@ -66,6 +66,7 @@
             this._failed = failed;
             this._last = Date.now();
             this._pollInterval = pollInterval;
+
             this._chart = new Chart(element, {
                 type: 'line',
                 data: {
