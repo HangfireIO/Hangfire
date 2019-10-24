@@ -105,6 +105,7 @@
 
                 this._chart.data.datasets[0].data.push({ x: new Date(), y: succeeded });
                 this._chart.data.datasets[1].data.push({ x: new Date(), y: failed });
+
                 this._chart.update();
             }
 
