@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Cronos;
 using Hangfire.Annotations;
 using Hangfire.Common;
@@ -224,6 +225,11 @@ namespace Hangfire
             }
 
             return result;
+        }
+
+        public override string ToString()
+        {
+            return String.Join(";", _recurringJob.Select(x => $"{x.Key}:{x.Value}"));
         }
 
         public static CronExpression ParseCronExpression([NotNull] string cronExpression)

@@ -89,9 +89,19 @@ WriteLiteral("\">\r\n<head>\r\n    <title>");
             
             #line default
             #line hidden
-WriteLiteral(" - Hangfire</title>\r\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\r\n " +
-"   <meta charset=\"utf-8\">\r\n    <meta name=\"viewport\" content=\"width=device-width" +
-", initial-scale=1.0\">\r\n    <meta name=\"robots\" content=\"none\">\r\n");
+WriteLiteral(" – ");
+
+
+            
+            #line 12 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                Write(DashboardOptions.DashboardTitle.Contains("<") ? "Hangfire Dashboard" : DashboardOptions.DashboardTitle);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</title>\r\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\r\n    <meta ch" +
+"arset=\"utf-8\">\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-s" +
+"cale=1.0\">\r\n    <meta name=\"robots\" content=\"none\">\r\n");
 
 
             
@@ -194,8 +204,18 @@ WriteLiteral(@""">
             
             #line default
             #line hidden
-WriteLiteral("\">Hangfire Dashboard</a>\r\n                    </div>\r\n                    <div cl" +
-"ass=\"collapse navbar-collapse\">\r\n                        ");
+WriteLiteral("\">");
+
+
+            
+            #line 44 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                                                              Write(Html.Raw(DashboardOptions.DashboardTitle));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</a>\r\n                    </div>\r\n                    <div class=\"collapse navbar" +
+"-collapse\">\r\n                        ");
 
 
             

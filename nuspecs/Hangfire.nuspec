@@ -21,6 +21,43 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.7
+
+Hangfire.Core
+
+• Changed – Produce a trace log message with details when updating a recurring job.
+• Changed – Return early from `CoreBackgroundJobFactory.Create` when storage returns `null`.
+• Project – Minor changes for the `Readme.md` file (by @231293).
+• Project – Add `netcoreapp3.0` target framework for Hangfire.Core.Tests.
+• Project – Add support for MSBuild 15.0 (VS 2019) when building `*.cshtml` files.
+
+Dashboard UI
+
+• Added – Allow modification of the Dashboard UI title (by @tbertenshaw).
+• Added – Support for HTML tags on the Dashboard UI title (by @caioproiete).
+• Added – Buttons for 1,000 and 5,000 items per page in dashboard.
+• Added – Links to previous/next pages to the top of the dashboard page.
+• Changed – Expose the `RazorPage.Context` property as a public member.
+• Fixed – Supplementary Chinese translation (by @mccj).
+• Fixed – Don't update real-time chart when too much time passed since the last update.
+
+Hangfire.SqlServer
+
+• Added – Add support for Microsoft.Data.SqlClient package when using custom connection factory.
+• Added – Add `UseFineGrainedLocks` option to avoid deadlocks in some theoretical cases.
+• Added – Add missing overload for `UseSqlServerStorage` with connection factory parameter only.
+• Added – Expose the SqlServerObjectsInstaller.GetInstallScript method (by @altso).
+• Fixed – Make command batching working on .NET Core when using System.Data.SqlClient 4.7.0 and higher.
+• Fixed – Permit dash characters (`-`) in schema names (by @kendaleiv).
+• Fixed – Escape square bracket characters in schema names.
+• Project – Add support for `netcoreapp3.0` target in Hangfire.SqlServer.Tests.
+• Project – Take schema name from constant in Hangfire.SqlServer.Tests (by @kendaleiv).
+• Project – Make Hangfire.SqlServer.Tests work on Linux in Travis CI environment.
+
+Hangfire.AspNetCore
+
+• Fixed – Add missing `AddHangfireServer` method for .NET Framework 4.6.1 and higher (by @danstur).
+
 1.7.6
 
 Hangfire.Core

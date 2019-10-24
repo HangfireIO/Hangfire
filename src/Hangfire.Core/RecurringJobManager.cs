@@ -18,6 +18,7 @@ using System;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
+using Hangfire.Logging;
 using Hangfire.Profiling;
 
 namespace Hangfire
@@ -29,6 +30,8 @@ namespace Hangfire
     public class RecurringJobManager : IRecurringJobManager
     {
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
+
+        private readonly ILog _logger = LogProvider.GetLogger(typeof(RecurringJobManager));
 
         private readonly JobStorage _storage;
         private readonly IBackgroundJobFactory _factory;
@@ -112,7 +115,7 @@ namespace Hangfire
                 {
                     using (var transaction = connection.CreateWriteTransaction())
                     {
-                        transaction.UpdateRecurringJob(recurringJobId, changedFields, nextExecution);
+                        transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
                         transaction.Commit();
                     }
                 }
@@ -164,8 +167,7 @@ namespace Hangfire
                                 EmptyProfiler.Instance);
                         }
 
-                        transaction.UpdateRecurringJob(recurringJobId, changedFields, nextExecution);
-
+                        transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
                         transaction.Commit();
                     }
                 }

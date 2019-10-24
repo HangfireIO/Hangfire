@@ -9,7 +9,7 @@
 <!DOCTYPE html>
 <html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
 <head>
-    <title>@Title - Hangfire</title>
+    <title>@Title – @(DashboardOptions.DashboardTitle.Contains("<") ? "Hangfire Dashboard" : DashboardOptions.DashboardTitle)</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -41,7 +41,7 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <a class="navbar-brand" href="@Url.Home()">Hangfire Dashboard</a>
+                        <a class="navbar-brand" href="@Url.Home()">@Html.Raw(DashboardOptions.DashboardTitle)</a>
                     </div>
                     <div class="collapse navbar-collapse">
                         @Html.RenderPartial(new Navigation())
