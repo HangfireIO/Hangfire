@@ -16,7 +16,6 @@
 
 using System;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Threading;
 using Hangfire.Common;
 using Hangfire.Logging;
@@ -75,9 +74,7 @@ namespace Hangfire.SqlServer
                         affected = ExecuteNonQuery(
                             connection,
                             GetExpireQuery(_storage.SchemaName, table),
-                            cancellationToken,
-                            new SqlParameter("@count", NumberOfRecordsInSinglePass),
-                            new SqlParameter("@now", DateTime.UtcNow));
+                            cancellationToken);
 
                     } while (affected == NumberOfRecordsInSinglePass);
                 });
@@ -137,22 +134,29 @@ option (loop join, optimize for (@count = 20000));";
         private static int ExecuteNonQuery(
             DbConnection connection,
             string commandText,
-            CancellationToken cancellationToken,
-            params SqlParameter[] parameters)
+            CancellationToken cancellationToken)
         {
             using (var command = connection.CreateCommand())
             {
                 command.CommandText = commandText;
-                command.Parameters.AddRange(parameters);
                 command.CommandTimeout = 0;
 
-                using (cancellationToken.Register(state => ((SqlCommand)state).Cancel(), command))
+                var countParameter = command.CreateParameter();
+                countParameter.Value = NumberOfRecordsInSinglePass;
+
+                var nowParameter = command.CreateParameter();
+                nowParameter.Value = DateTime.UtcNow;
+
+                command.Parameters.Add(countParameter);
+                command.Parameters.Add(nowParameter);
+
+                using (cancellationToken.Register(state => ((DbCommand)state).Cancel(), command))
                 {
                     try
                     {
                         return command.ExecuteNonQuery();
                     }
-                    catch (SqlException) when (cancellationToken.IsCancellationRequested)
+                    catch (DbException) when (cancellationToken.IsCancellationRequested)
                     {
                         // Exception was triggered due to the Cancel method call, ignoring
                         return 0;
