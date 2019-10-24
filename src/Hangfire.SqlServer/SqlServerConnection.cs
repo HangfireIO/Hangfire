@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using Dapper;
@@ -152,19 +151,17 @@ commit tran;";
                 var insertParameterSql =
 $@"insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value)";
 
-                using (var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
+                using (var commandBatch = new SqlCommandBatch(connection, transaction, preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
                 {
-                    commandBatch.Connection = connection;
-                    commandBatch.Transaction = transaction;
                     commandBatch.CommandTimeout = _storage.CommandTimeout;
                     commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
 
                     foreach (var parameter in parametersArray)
                     {
                         commandBatch.Append(insertParameterSql,
-                            new SqlParameter("@jobId", SqlDbType.BigInt) { Value = long.Parse(jobId) },
-                            new SqlParameter("@name", SqlDbType.NVarChar, 40) { Value = parameter.Key },
-                            new SqlParameter("@value", SqlDbType.NVarChar, -1) { Value = (object)parameter.Value ?? DBNull.Value });
+                            new SqlCommandBatchParameter("@jobId", DbType.Int64) { Value = long.Parse(jobId) },
+                            new SqlCommandBatchParameter("@name",DbType.String, 40) { Value = parameter.Key },
+                            new SqlCommandBatchParameter("@value", DbType.String, -1) { Value = (object)parameter.Value ?? DBNull.Value });
                     }
 
                     commandBatch.ExecuteNonQuery();
@@ -331,32 +328,30 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
 
             _storage.UseTransaction(_dedicatedConnection, (connection, transaction) =>
             {
-                using (var commandBatch = new SqlCommandBatch(preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
+                using (var commandBatch = new SqlCommandBatch(connection, transaction, preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
                 {
                     if (!_storage.Options.DisableGlobalLocks)
                     {
                         commandBatch.Append(
                             "SET XACT_ABORT ON;exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive', @LockOwner=N'Transaction', @LockTimeout=-1;",
-                            new SqlParameter("@resource", lockResourceKey));
+                            new SqlCommandBatchParameter("@resource", DbType.String, 255) { Value = lockResourceKey });
                     }
 
                     foreach (var keyValuePair in keyValuePairs)
                     {
                         commandBatch.Append(sql,
-                            new SqlParameter("@key", key),
-                            new SqlParameter("@field", keyValuePair.Key),
-                            new SqlParameter("@value", (object) keyValuePair.Value ?? DBNull.Value));
+                            new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
+                            new SqlCommandBatchParameter("@field", DbType.String, 100) { Value = keyValuePair.Key },
+                            new SqlCommandBatchParameter("@value", DbType.String, -1) { Value = (object) keyValuePair.Value ?? DBNull.Value });
                     }
 
                     if (!_storage.Options.DisableGlobalLocks)
                     {
                         commandBatch.Append(
                             "exec sp_releaseapplock @Resource=@resource, @LockOwner=N'Transaction';",
-                            new SqlParameter("@resource", lockResourceKey));
+                            new SqlCommandBatchParameter("@resource", DbType.String, 255) { Value = lockResourceKey });
                     }
 
-                    commandBatch.Connection = connection;
-                    commandBatch.Transaction = transaction;
                     commandBatch.CommandTimeout = _storage.CommandTimeout;
                     commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
 
