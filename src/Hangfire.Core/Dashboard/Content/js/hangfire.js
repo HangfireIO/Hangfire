@@ -64,6 +64,8 @@
         function RealtimeGraph(element, succeeded, failed, succeededStr, failedStr, pollInterval) {
             this._succeeded = succeeded;
             this._failed = failed;
+            this._last = Date.now();
+            this._pollInterval = pollInterval;
             this._chart = new Chart(element, {
                 type: 'line',
                 data: {
