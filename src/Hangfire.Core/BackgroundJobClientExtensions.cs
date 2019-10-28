@@ -141,6 +141,7 @@ namespace Hangfire
             string queue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
+            if (string.IsNullOrEmpty(queue)) throw new ArgumentNullException(nameof(queue));
 
             return client.Create(methodCall, new ScheduledState(delay) { CandidateQueue = queue });
         }
@@ -177,7 +178,8 @@ namespace Hangfire
             string queue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
-
+            if (string.IsNullOrEmpty(queue)) throw new ArgumentNullException(nameof(queue));
+            
             return client.Create(methodCall, new ScheduledState(delay) { CandidateQueue = queue });
         }
 
@@ -214,6 +216,7 @@ namespace Hangfire
             string queue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
+            if (string.IsNullOrEmpty(queue)) throw new ArgumentNullException(nameof(queue));
 
             return client.Create(methodCall, new ScheduledState(enqueueAt.UtcDateTime) { CandidateQueue = queue });
         }
@@ -251,6 +254,7 @@ namespace Hangfire
             string queue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
+            if (string.IsNullOrEmpty(queue)) throw new ArgumentNullException(nameof(queue));
 
             return client.Create(methodCall, new ScheduledState(enqueueAt.UtcDateTime) { CandidateQueue = queue });
         }
@@ -293,6 +297,7 @@ namespace Hangfire
             string queue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
+            if (string.IsNullOrEmpty(queue)) throw new ArgumentNullException(nameof(queue));
 
             return client.Create(methodCall, new ScheduledState(delay) { CandidateQueue = queue });
         }
@@ -334,6 +339,7 @@ namespace Hangfire
             string queue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
+            if (string.IsNullOrEmpty(queue)) throw new ArgumentNullException(nameof(queue));
 
             return client.Create(methodCall, new ScheduledState(delay) { CandidateQueue = queue });
         }
@@ -372,6 +378,7 @@ namespace Hangfire
             string queue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
+            if (string.IsNullOrEmpty(queue)) throw new ArgumentNullException(nameof(queue));
 
             return client.Create(methodCall, new ScheduledState(enqueueAt.UtcDateTime) { CandidateQueue = queue });
         }
@@ -410,6 +417,7 @@ namespace Hangfire
             string queue)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
+            if (string.IsNullOrEmpty(queue)) throw new ArgumentNullException(nameof(queue));
 
             return client.Create(methodCall, new ScheduledState(enqueueAt.UtcDateTime) { CandidateQueue = queue });
         }
