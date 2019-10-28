@@ -102,6 +102,16 @@ namespace Hangfire.Core.Tests
 
             Assert.Equal("client", exception.ParamName);
         }
+        
+        [Fact]
+        public void StaticSchedule_ThrowsAnException_WhenQueueIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => _client.Object.Schedule(
+                    () => StaticMethod(), TimeSpan.FromDays(1), null));
+
+            Assert.Equal("queue", exception.ParamName);
+        }
 
         [Fact]
         public void StaticSchedule_ShouldCreateAJobInTheScheduledState()
