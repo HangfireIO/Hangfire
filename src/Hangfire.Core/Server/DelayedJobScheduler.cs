@@ -163,7 +163,15 @@ namespace Hangfire.Server
                     foreach (var jobId in jobIds)
                     {
                         if (context.IsStopping) return false;
-                        EnqueueBackgroundJob(context, connection, jobId);
+                        
+                        var currentState = connection.GetStateData(jobId);
+                        if (currentState?.Name == null || currentState.Name != ScheduledState.StateName)
+                        {
+                            return false;
+                        }
+
+                        var candidateQueue = currentState.Data["CandidateQueue"] ?? EnqueuedState.DefaultQueue;
+                        EnqueueBackgroundJob(context, connection, jobId, candidateQueue);
                     }
                 }
                 else
@@ -177,7 +185,14 @@ namespace Hangfire.Server
                         var jobId = connection.GetFirstByLowestScoreFromSet("schedule", 0, timestamp);
                         if (jobId == null) return false;
 
-                        EnqueueBackgroundJob(context, connection, jobId);
+                        var currentState = connection.GetStateData(jobId);
+                        if (currentState?.Name == null || currentState.Name != ScheduledState.StateName)
+                        {
+                            return false;
+                        }
+
+                        var candidateQueue = currentState.Data["CandidateQueue"] ?? EnqueuedState.DefaultQueue;
+                        EnqueueBackgroundJob(context, connection, jobId, candidateQueue);
                     }
                 }
 
@@ -185,14 +200,14 @@ namespace Hangfire.Server
             });
         }
 
-        private void EnqueueBackgroundJob(BackgroundProcessContext context, IStorageConnection connection, string jobId)
+        private void EnqueueBackgroundJob(BackgroundProcessContext context, IStorageConnection connection, string jobId, string candidateQueue)
         {
             var appliedState = _stateChanger.ChangeState(new StateChangeContext(
                 context.Storage,
                 connection,
                 jobId,
-                new EnqueuedState { Reason = $"Triggered by {ToString()}" },
-                new [] { ScheduledState.StateName },
+                new EnqueuedState { Queue = candidateQueue, Reason = $"Triggered by {ToString()}"},
+                new[] { ScheduledState.StateName },
                 CancellationToken.None,
                 _profiler));
 

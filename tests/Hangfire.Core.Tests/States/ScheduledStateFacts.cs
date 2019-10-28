@@ -38,6 +38,7 @@ namespace Hangfire.Core.Tests.States
 
             var data = state.SerializeData();
 
+            Assert.Equal("default", data["CandidateQueue"]);
             Assert.Equal(JobHelper.SerializeDateTime(state.EnqueueAt), data["EnqueueAt"]);
             Assert.Equal(JobHelper.SerializeDateTime(state.ScheduledAt), data["ScheduledAt"]);
         }
@@ -67,7 +68,7 @@ namespace Hangfire.Core.Tests.States
             var serialized = SerializationHelper.Serialize<IState>(state, SerializationOption.TypedInternal);
 
             Assert.Equal(
-                "{\"$type\":\"Hangfire.States.ScheduledState, Hangfire.Core\",\"EnqueueAt\":" + convertedDateTime + ",\"Reason\":null}",
+                "{\"$type\":\"Hangfire.States.ScheduledState, Hangfire.Core\",\"CandidateQueue\":\"" + EnqueuedState.DefaultQueue + "\",\"EnqueueAt\":" + convertedDateTime + ",\"Reason\":null}",
                 serialized);
         }
 

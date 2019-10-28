@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -15,6 +16,7 @@ namespace Hangfire.Core.Tests.Server
     public class DelayedJobSchedulerFacts
     {
         private const string JobId = "id";
+        private readonly StateData _stateData;
         private readonly Mock<JobStorageConnection> _connection;
         private readonly Mock<IBackgroundJobStateChanger> _stateChanger;
         private readonly BackgroundProcessContextMock _context;
@@ -28,9 +30,21 @@ namespace Hangfire.Core.Tests.Server
             _connection = new Mock<JobStorageConnection>();
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
 
+            _stateData = new StateData
+            {
+                Name = ScheduledState.StateName,
+                Data = new Dictionary<string, string>
+                {
+                    { "CandidateQueue", "default" }, 
+                    { "EnqueueAt", JobHelper.SerializeDateTime(DateTime.UtcNow) },
+                    { "ScheduledAt", JobHelper.SerializeDateTime(DateTime.UtcNow) }
+                }
+            };
+            
             _stateChanger = new Mock<IBackgroundJobStateChanger>();
             _transaction = new Mock<IWriteOnlyTransaction>();
             _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
+            _connection.Setup(x => x.GetStateData(It.IsAny<string>())).Returns(_stateData);
 
             _distributedLock = new Mock<IDisposable>();
             _connection
@@ -53,14 +67,16 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_MovesJobStateToEnqueued()
+        public void Execute_MovesJobStateToEnqueued_WhenInScheduledState()
         {
             RunSchedulerAndWait();
 
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.BackgroundJobId == JobId &&
                 ctx.NewState is EnqueuedState &&
-                ctx.ExpectedStates.SequenceEqual(new[] { ScheduledState.StateName }))));
+                ctx.ExpectedStates.SequenceEqual(new[] { ScheduledState.StateName }) && 
+                (ctx.NewState as EnqueuedState).Queue == "default"))
+            );
 
             _connection.Verify(x => x.Dispose());
         }

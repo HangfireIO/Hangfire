@@ -102,6 +102,16 @@ namespace Hangfire.Core.Tests
 
             Assert.Equal("client", exception.ParamName);
         }
+        
+        [Fact]
+        public void StaticSchedule_ThrowsAnException_WhenQueueIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => _client.Object.Schedule(
+                    () => StaticMethod(), TimeSpan.FromDays(1), null));
+
+            Assert.Equal("queue", exception.ParamName);
+        }
 
         [Fact]
         public void StaticSchedule_ShouldCreateAJobInTheScheduledState()
@@ -110,7 +120,20 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow)));
+                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow && 
+                                               state.CandidateQueue == EnqueuedState.DefaultQueue)));
+        }
+        
+        [Fact]
+        public void StaticSchedule_WithNonDefaultQueue_ShouldCreateAJobInTheScheduledState()
+        {
+            _client.Object.Schedule(() => StaticMethod(), TimeSpan.FromDays(1), "myqueue");
+
+            _client.Verify(x => x.Create(
+                It.IsNotNull<Job>(),
+                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow &&
+                                               state.CandidateQueue == "myqueue")
+                ));
         }
 
         [Fact]
@@ -132,7 +155,22 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.Is<ScheduledState>(state => state.EnqueueAt == now.UtcDateTime)));
+                It.Is<ScheduledState>(state => state.EnqueueAt == now.UtcDateTime && 
+                                               state.CandidateQueue == EnqueuedState.DefaultQueue)));
+        }
+        
+        [Fact]
+        public void StaticSchedule_WithDateTimeOffset_And_NonDefaultQueue_ShouldCreateAJob_InTheScheduledState()
+        {
+            var now = DateTimeOffset.Now;
+
+            _client.Object.Schedule(() => StaticMethod(), now, "myqueue");
+
+            _client.Verify(x => x.Create(
+                It.IsNotNull<Job>(),
+                It.Is<ScheduledState>(state => state.EnqueueAt == now.UtcDateTime && 
+                                               state.CandidateQueue == "myqueue")
+                ));
         }
 
         [Fact]
@@ -144,7 +182,7 @@ namespace Hangfire.Core.Tests
 
             Assert.Equal("client", exception.ParamName);
         }
-
+        
         [Fact]
         public void InstanceSchedule_ShouldCreateAJobInTheScheduledState()
         {
@@ -153,7 +191,21 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow)));
+                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow && 
+                                               state.CandidateQueue == EnqueuedState.DefaultQueue)));
+        }
+        
+        [Fact]
+        public void InstanceSchedule_WithNonDefaultQueue_ShouldCreateAJobInTheScheduledState()
+        {
+            _client.Object.Schedule<BackgroundJobClientExtensionsFacts>(
+                x => x.InstanceMethod(), TimeSpan.FromDays(1), "myqueue");
+
+            _client.Verify(x => x.Create(
+                It.IsNotNull<Job>(),
+                It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow && 
+                                               state.CandidateQueue == "myqueue")
+            ));
         }
 
         [Fact]
@@ -177,7 +229,23 @@ namespace Hangfire.Core.Tests
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
-                It.Is<ScheduledState>(state => state.EnqueueAt == now.UtcDateTime)));
+                It.Is<ScheduledState>(state => state.EnqueueAt == now.UtcDateTime && 
+                                               state.CandidateQueue == EnqueuedState.DefaultQueue)));
+        }
+        
+        [Fact]
+        public void InstanceSchedule_WithDateTimeOffset_And_NonDefaultQueue_ShouldCreateAJobInTheScheduledState()
+        {
+            var now = DateTimeOffset.Now;
+
+            _client.Object.Schedule<BackgroundJobClientExtensionsFacts>(
+                x => x.InstanceMethod(),
+                now, "myqueue");
+
+            _client.Verify(x => x.Create(
+                It.IsNotNull<Job>(),
+                It.Is<ScheduledState>(state => state.EnqueueAt == now.UtcDateTime && 
+                                               state.CandidateQueue == "myqueue")));
         }
 
         [Fact]
