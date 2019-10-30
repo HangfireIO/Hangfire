@@ -128,7 +128,7 @@ Please see the [Extensions](http://hangfire.io/extensions.html) page on the offi
 Building the sources
 ---------------------
 
-Prerequesities:
+Prerequisites:
 * [Razor Generator](https://marketplace.visualstudio.com/items?itemName=DavidEbbo.RazorGenerator): Required if you intend to edit the cshtml files.
 * Install the MSMQ service (Microsoft Message Queue Server), if not already installed.
 
