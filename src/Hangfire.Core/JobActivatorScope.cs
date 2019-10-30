@@ -32,6 +32,7 @@ namespace Hangfire
 
         public static JobActivatorScope Current => _current.Value;
 
+        [Obsolete("This property wasn't implemented and will be removed in Hangfire 2.0.0.")]
         public object InnerScope { get; set; }
 
         public abstract object Resolve(Type type);
