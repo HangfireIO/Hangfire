@@ -39,9 +39,21 @@ namespace Hangfire.Server
             if (process == null) throw new ArgumentNullException(nameof(process));
             if (threadCount <= 0) throw new ArgumentOutOfRangeException(nameof(threadCount));
 
+            return UseBackgroundPool(
+                process,
+                (threadName, threadStart) => DefaultThreadFactory(threadCount, threadName, threadStart));
+        }
+
+        public static IBackgroundProcessDispatcherBuilder UseBackgroundPool(
+            [NotNull] this IBackgroundProcess process,
+            [NotNull] Func<string, ThreadStart, IEnumerable<Thread>> threadFactory)
+        {
+            if (process == null) throw new ArgumentNullException(nameof(process));
+            if (threadFactory == null) throw new ArgumentNullException(nameof(threadFactory));
+
             return new BackgroundProcessDispatcherBuilder(
                 process,
-                threadStart => DefaultThreadFactory(threadCount, process.GetType().Name, threadStart));
+                threadStart => threadFactory(process.GetType().Name, threadStart));
         }
 
         public static IBackgroundProcessDispatcherBuilder UseBackgroundPool(
@@ -69,8 +81,23 @@ namespace Hangfire.Server
             if (maxConcurrency <= 0) throw new ArgumentOutOfRangeException(nameof(maxConcurrency));
             if (threadCount <= 0) throw new ArgumentOutOfRangeException(nameof(threadCount));
 
+            return UseBackgroundPool(
+                process,
+                maxConcurrency,
+                (threadName, threadStart) => DefaultThreadFactory(threadCount, threadName, threadStart));
+        }
+
+        public static IBackgroundProcessDispatcherBuilder UseBackgroundPool(
+            [NotNull] this IBackgroundProcessAsync process,
+            int maxConcurrency,
+            [NotNull] Func<string, ThreadStart, IEnumerable<Thread>> threadFactory)
+        {
+            if (process == null) throw new ArgumentNullException(nameof(process));
+            if (maxConcurrency <= 0) throw new ArgumentOutOfRangeException(nameof(maxConcurrency));
+            if (threadFactory == null) throw new ArgumentNullException(nameof(threadFactory));
+
             Func<TaskScheduler> createScheduler = () => new BackgroundTaskScheduler(
-                threadStart => DefaultThreadFactory(threadCount, process.GetType().Name, threadStart),
+                threadStart => threadFactory(process.GetType().Name, threadStart),
                 exception =>
                 {
                     LogProvider.GetLogger(typeof(BackgroundTaskScheduler)).FatalException(
