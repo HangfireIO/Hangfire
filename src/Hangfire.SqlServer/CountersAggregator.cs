@@ -100,11 +100,11 @@ BEGIN TRAN
 
 DELETE TOP (@count) C
 OUTPUT DELETED.[Key], DELETED.[Value], DELETED.[ExpireAt] INTO @RecordsToAggregate
-FROM [{storage.SchemaName}].[Counter] C WITH (READPAST, XLOCK, INDEX(0))
+FROM [{storage.SchemaName}].[{storage.TablePrefix}Counter] C WITH (READPAST, XLOCK, INDEX(0))
 
 SET NOCOUNT ON
 
-;MERGE [{storage.SchemaName}].[AggregatedCounter] WITH (FORCESEEK, HOLDLOCK) AS [Target]
+;MERGE [{storage.SchemaName}].[{storage.TablePrefix}AggregatedCounter] WITH (FORCESEEK, HOLDLOCK) AS [Target]
 USING (
 	SELECT [Key], SUM([Value]) as [Value], MAX([ExpireAt]) AS [ExpireAt] FROM @RecordsToAggregate
 	GROUP BY [Key]) AS [Source] ([Key], [Value], [ExpireAt])

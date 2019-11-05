@@ -131,7 +131,8 @@ namespace Hangfire.SqlServer
         public override bool LinearizableReads => true;
 
         internal string SchemaName => _escapedSchemaName;
-        internal int? CommandTimeout => _options.CommandTimeout.HasValue ? (int)_options.CommandTimeout.Value.TotalSeconds : (int?)null;
+        internal string TablePrefix => _options.TablePrefix;
+		internal int? CommandTimeout => _options.CommandTimeout.HasValue ? (int)_options.CommandTimeout.Value.TotalSeconds : (int?)null;
         internal int? CommandBatchMaxTimeout => _options.CommandBatchMaxTimeout.HasValue ? (int)_options.CommandBatchMaxTimeout.Value.TotalSeconds : (int?)null;
         internal TimeSpan? SlidingInvisibilityTimeout => _options.SlidingInvisibilityTimeout;
         internal SqlServerStorageOptions Options => _options;
@@ -323,7 +324,7 @@ namespace Hangfire.SqlServer
                     {
                         UseConnection(null, connection =>
                         {
-                            SqlServerObjectsInstaller.Install(connection, _options.SchemaName, _options.EnableHeavyMigrations);
+                            SqlServerObjectsInstaller.Install(connection, _options.SchemaName, _options.TablePrefix, _options.EnableHeavyMigrations);
                         });
 
                         lastException = null;

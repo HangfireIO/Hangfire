@@ -49,7 +49,7 @@ namespace Hangfire.SqlServer
 
         public IEnumerable<string> GetQueues()
         {
-            string sqlQuery = $@"select distinct(Queue) from [{_storage.SchemaName}].JobQueue with (nolock)";
+            string sqlQuery = $@"select distinct(Queue) from [{_storage.SchemaName}].{_storage.TablePrefix}JobQueue with (nolock)";
 
             lock (_cacheLock)
             {
@@ -73,7 +73,7 @@ namespace Hangfire.SqlServer
             var sqlQuery =
 $@"select r.JobId from (
   select jq.JobId, row_number() over (order by jq.Id) as row_num 
-  from [{_storage.SchemaName}].JobQueue jq with (nolock, forceseek)
+  from [{_storage.SchemaName}].{_storage.TablePrefix}JobQueue jq with (nolock, forceseek)
   where jq.Queue = @queue and jq.FetchedAt is null
 ) as r
 where r.row_num between @start and @end";
@@ -95,7 +95,7 @@ where r.row_num between @start and @end";
             var fetchedJobsSql = $@"
 select r.JobId from (
   select jq.JobId, jq.FetchedAt, row_number() over (order by jq.Id) as row_num 
-  from [{_storage.SchemaName}].JobQueue jq with (nolock, forceseek)
+  from [{_storage.SchemaName}].{_storage.TablePrefix}JobQueue jq with (nolock, forceseek)
   where jq.Queue = @queue and jq.FetchedAt is not null
 ) as r
 where r.row_num between @start and @end";
@@ -119,7 +119,7 @@ from (
     select 
         case when FetchedAt is null then 1 else 0 end as Enqueued,
         case when FetchedAt is not null then 1 else 0 end as Fetched
-    from [{_storage.SchemaName}].JobQueue with (nolock, forceseek)
+    from [{_storage.SchemaName}].{_storage.TablePrefix}JobQueue with (nolock, forceseek)
     where Queue = @queue
 ) q";
 

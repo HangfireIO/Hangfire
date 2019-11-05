@@ -101,7 +101,7 @@ namespace Hangfire.SqlServer
             AddCommand(
                 _jobCommands,
                 long.Parse(jobId),
-                $@"update J set ExpireAt = @expireAt from [{_storage.SchemaName}].Job J with (forceseek) where Id = @id;",
+                $@"update J set ExpireAt = @expireAt from [{_storage.SchemaName}].{_storage.TablePrefix}Job J with (forceseek) where Id = @id;",
                 new SqlCommandBatchParameter("@expireAt", DbType.DateTime) { Value = DateTime.UtcNow.Add(expireIn) },
                 new SqlCommandBatchParameter("@id", DbType.Int64) { Value = long.Parse(jobId) });
         }
@@ -111,16 +111,16 @@ namespace Hangfire.SqlServer
             AddCommand(
                 _jobCommands,
                 long.Parse(jobId),
-                $@"update J set ExpireAt = NULL from [{_storage.SchemaName}].Job J with (forceseek) where Id = @id;",
+                $@"update J set ExpireAt = NULL from [{_storage.SchemaName}].{_storage.TablePrefix}Job J with (forceseek) where Id = @id;",
                 new SqlCommandBatchParameter("@id", DbType.Int64) { Value = long.Parse(jobId) });
         }
 
         public override void SetJobState(string jobId, IState state)
         {
             string addAndSetStateSql = 
-$@"insert into [{_storage.SchemaName}].State (JobId, Name, Reason, CreatedAt, Data)
+$@"insert into [{_storage.SchemaName}].{_storage.TablePrefix}State (JobId, Name, Reason, CreatedAt, Data)
 values (@jobId, @name, @reason, @createdAt, @data);
-update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @name where Id = @jobId;";
+update [{_storage.SchemaName}].{_storage.TablePrefix}Job set StateId = SCOPE_IDENTITY(), StateName = @name where Id = @jobId;";
 
             AddCommand(
                 _jobCommands,
@@ -136,7 +136,7 @@ update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @
         public override void AddJobState(string jobId, IState state)
         {
             string addStateSql =
-$@"insert into [{_storage.SchemaName}].State (JobId, Name, Reason, CreatedAt, Data)
+$@"insert into [{_storage.SchemaName}].{_storage.TablePrefix}State (JobId, Name, Reason, CreatedAt, Data)
 values (@jobId, @name, @reason, @createdAt, @data)";
 
             AddCommand(
@@ -160,7 +160,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
                 AddCommand(
                     _queueCommands,
                     queue,
-                    $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)",
+                    $@"insert into [{_storage.SchemaName}].{_storage.TablePrefix}JobQueue (JobId, Queue) values (@jobId, @queue)",
                     new SqlCommandBatchParameter("@jobId", DbType.Int64) { Value = long.Parse(jobId) },
                     new SqlCommandBatchParameter("@queue", DbType.String, 50) { Value = queue });
 
@@ -183,7 +183,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
             AddCommand(
                 _counterCommands,
                 key,
-                $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value]) values (@key, @value)",
+                $@"insert into [{_storage.SchemaName}].{_storage.TablePrefix}Counter ([Key], [Value]) values (@key, @value)",
                 new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.Int32) { Value = +1 });
         }
@@ -193,7 +193,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
             AddCommand(
                 _counterCommands,
                 key,
-                $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
+                $@"insert into [{_storage.SchemaName}].{_storage.TablePrefix}Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
                 new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.Int32) { Value = +1 },
                 new SqlCommandBatchParameter("@expireAt", DbType.DateTime) { Value = DateTime.UtcNow.Add(expireIn) });
@@ -204,7 +204,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
             AddCommand(
                 _counterCommands,
                 key,
-                $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value]) values (@key, @value)",
+                $@"insert into [{_storage.SchemaName}].{_storage.TablePrefix}Counter ([Key], [Value]) values (@key, @value)",
                 new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.Int32) { Value = -1 });
         }
@@ -214,7 +214,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
             AddCommand(
                 _counterCommands,
                 key,
-                $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
+                $@"insert into [{_storage.SchemaName}].{_storage.TablePrefix}Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
                 new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.Int32) { Value = -1 },
                 new SqlCommandBatchParameter("@expireAt", DbType.DateTime) { Value = DateTime.UtcNow.Add(expireIn) });
@@ -228,7 +228,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
         public override void AddToSet(string key, string value, double score)
         {
             string addSql =
-$@";merge [{_storage.SchemaName}].[Set] with (holdlock) as Target
+$@";merge [{_storage.SchemaName}].[{_storage.TablePrefix}Set] with (holdlock) as Target
 using (VALUES (@key, @value, @score)) as Source ([Key], Value, Score)
 on Target.[Key] = Source.[Key] and Target.Value = Source.Value
 when matched then update set Score = Source.Score
@@ -246,7 +246,7 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
 
         public override void RemoveFromSet(string key, string value)
         {
-            string query = $@"delete from [{_storage.SchemaName}].[Set] where [Key] = @key and Value = @value";
+            string query = $@"delete from [{_storage.SchemaName}].[{_storage.TablePrefix}Set] where [Key] = @key and Value = @value";
 
             AcquireSetLock(key);
             AddCommand(
@@ -264,9 +264,9 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
                 _listCommands,
                 key,
                 $@"
-select [Key] from [{_storage.SchemaName}].List with (xlock)
+select [Key] from [{_storage.SchemaName}].{_storage.TablePrefix}List with (xlock)
 where [Key] = @key;
-insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
+insert into [{_storage.SchemaName}].{_storage.TablePrefix}List ([Key], Value) values (@key, @value);",
                 new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.String, -1) { Value = value });
         }
@@ -277,7 +277,7 @@ insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
             AddCommand(
                 _listCommands,
                 key,
-                $@"delete from [{_storage.SchemaName}].List where [Key] = @key and Value = @value",
+                $@"delete from [{_storage.SchemaName}].{_storage.TablePrefix}List where [Key] = @key and Value = @value",
                 new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.String, -1) { Value = value });
         }
@@ -287,7 +287,7 @@ insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
             string trimSql =
 $@";with cte as (
     select row_number() over (order by Id desc) as row_num
-    from [{_storage.SchemaName}].List with (xlock)
+    from [{_storage.SchemaName}].{_storage.TablePrefix}List with (xlock)
     where [Key] = @key)
 delete from cte where row_num not between @start and @end";
 
@@ -308,7 +308,7 @@ delete from cte where row_num not between @start and @end";
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
 
             string sql =
-$@";merge [{_storage.SchemaName}].Hash with (holdlock) as Target
+$@";merge [{_storage.SchemaName}].{_storage.TablePrefix}Hash with (holdlock) as Target
 using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
 on Target.[Key] = Source.[Key] and Target.Field = Source.Field
 when matched then update set Value = Source.Value
@@ -332,7 +332,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = $@"delete from [{_storage.SchemaName}].Hash where [Key] = @key";
+            string query = $@"delete from [{_storage.SchemaName}].{_storage.TablePrefix}Hash where [Key] = @key";
 
             AcquireHashLock(key);
             AddCommand(_hashCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key });
@@ -345,7 +345,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
 
             // TODO: Rewrite using the `MERGE` statement.
             string query =
-$@"insert into [{_storage.SchemaName}].[Set] ([Key], Value, Score)
+$@"insert into [{_storage.SchemaName}].[{_storage.TablePrefix}Set] ([Key], Value, Score)
 values (@key, @value, 0.0)";
 
             AcquireSetLock(key);
@@ -362,7 +362,7 @@ values (@key, @value, 0.0)";
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = $@"delete from [{_storage.SchemaName}].[Set] where [Key] = @key";
+            string query = $@"delete from [{_storage.SchemaName}].[{_storage.TablePrefix}Set] where [Key] = @key";
 
             AcquireSetLock(key);
             AddCommand(_setCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key });
@@ -373,7 +373,7 @@ values (@key, @value, 0.0)";
             if (key == null) throw new ArgumentNullException(nameof(key));
 
              string query = $@"
-update [{_storage.SchemaName}].[Hash] set ExpireAt = @expireAt where [Key] = @key";
+update [{_storage.SchemaName}].[{_storage.TablePrefix}Hash] set ExpireAt = @expireAt where [Key] = @key";
 
             AcquireHashLock(key);
             AddCommand(_hashCommands, key, query,
@@ -386,7 +386,7 @@ update [{_storage.SchemaName}].[Hash] set ExpireAt = @expireAt where [Key] = @ke
             if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"
-update [{_storage.SchemaName}].[Set] set ExpireAt = @expireAt where [Key] = @key";
+update [{_storage.SchemaName}].[{_storage.TablePrefix}Set] set ExpireAt = @expireAt where [Key] = @key";
 
             AcquireSetLock(key);
             AddCommand(_setCommands, key, query,
@@ -399,7 +399,7 @@ update [{_storage.SchemaName}].[Set] set ExpireAt = @expireAt where [Key] = @key
             if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"
-update [{_storage.SchemaName}].[List] set ExpireAt = @expireAt where [Key] = @key";
+update [{_storage.SchemaName}].[{_storage.TablePrefix}List] set ExpireAt = @expireAt where [Key] = @key";
 
             AcquireListLock(key);
             AddCommand(_listCommands, key, query,
@@ -412,7 +412,7 @@ update [{_storage.SchemaName}].[List] set ExpireAt = @expireAt where [Key] = @ke
             if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"
-update [{_storage.SchemaName}].Hash set ExpireAt = null where [Key] = @key";
+update [{_storage.SchemaName}].{_storage.TablePrefix}Hash set ExpireAt = null where [Key] = @key";
 
             AcquireHashLock(key);
             AddCommand(_hashCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key });
@@ -423,7 +423,7 @@ update [{_storage.SchemaName}].Hash set ExpireAt = null where [Key] = @key";
             if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"
-update [{_storage.SchemaName}].[Set] set ExpireAt = null where [Key] = @key";
+update [{_storage.SchemaName}].[{_storage.TablePrefix}Set] set ExpireAt = null where [Key] = @key";
 
             AcquireSetLock(key);
             AddCommand(_setCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key });
@@ -434,7 +434,7 @@ update [{_storage.SchemaName}].[Set] set ExpireAt = null where [Key] = @key";
             if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"
-update [{_storage.SchemaName}].[List] set ExpireAt = null where [Key] = @key";
+update [{_storage.SchemaName}].[{_storage.TablePrefix}List] set ExpireAt = null where [Key] = @key";
 
             AcquireListLock(key);
             AddCommand(_listCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key });
@@ -489,7 +489,7 @@ update [{_storage.SchemaName}].[List] set ExpireAt = null where [Key] = @key";
         {
             if (!_storage.Options.DisableGlobalLocks || _storage.Options.UseFineGrainedLocks)
             {
-                _lockedResources.Add($"{_storage.SchemaName}:{resource}:Lock");
+                _lockedResources.Add($"{_storage.SchemaName}:{_storage.TablePrefix}{resource}:Lock");
             }
         }
     }

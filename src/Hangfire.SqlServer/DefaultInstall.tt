@@ -12,7 +12,7 @@
         "Hangfire.SqlServer.Install.sql");
 
     script = script.Replace("$(HangFireSchema)", "HangFire");
-
+	script = script.Replace("$(HangFireTabelPrefix)", "");
     Write(script);
 #>
 
