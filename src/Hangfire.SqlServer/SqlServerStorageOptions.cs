@@ -124,11 +124,12 @@ namespace Hangfire.SqlServer
 			get { return _tablePrefix; }
 			set
 			{
-				if (string.IsNullOrWhiteSpace(_tablePrefix))
-				{
-					throw new ArgumentException(_tablePrefix, nameof(value));
-				}
-				_tablePrefix = value;
+				if (value == null)
+					_tablePrefix = Constants.DefaultTablePrefix;
+				else if (value.Length > 111)
+					throw new ArgumentException(_schemaName, nameof(value));
+				else
+					_tablePrefix = value;
 			}
 		}
 

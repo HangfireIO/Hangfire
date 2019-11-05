@@ -43,8 +43,9 @@ SELECT @SCHEMA_ID = [schema_id] FROM [sys].[schemas] WHERE [name] = '$(HangFireS
 
 -- Create the [$(HangFireSchema)].Schema table if not exists
 
+DECLARE @SCHEMAColumnName nvarchar(128);
 SELECT @SCHEMAColumnName = [t].[name] FROM [sys].[columns] c
-INNER JOIN [sys].[tables] t ON [c].[object_id] = [t.object_id]
+INNER JOIN [sys].[tables] t ON [c].[object_id] = [t].[object_id]
 WHERE [c].[name] = 'Version' and [t].[name] like '%Schema' and [t].schema_id = @SCHEMA_ID
 
 IF NOT EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @SCHEMAColumnName AND [schema_id] = @SCHEMA_ID)
@@ -62,84 +63,84 @@ ELSE
     PRINT 'Table [$(HangFireSchema)].[$(HangFireTabelPrefix)Schema] already exists';
    
 -- Update table names if prefix has changed
-DECLARE @OLDTABLEPREFIX varchar(20) =  SUBSTRING(@SCHEMAColumnName, CHARINDEX('Schema', @SCHEMAColumnName), 7);
+DECLARE @OLDTABLEPREFIX varchar(111) =  SUBSTRING(@SCHEMAColumnName, 0, CHARINDEX('Schema', @SCHEMAColumnName));
 
 IF '$(HangFireTabelPrefix)' <> @OLDTABLEPREFIX
 BEGIN
-	DECLARE @OLDAggregatedCounterOldColumnName varchar(37) = CONCAT(@OLDTABLEPREFIX, 'AggregatedCounter');
+	DECLARE @OLDAggregatedCounterOldColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'AggregatedCounter');
 	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDAggregatedCounterOldColumnName AND [schema_id] = @SCHEMA_ID)
 		BEGIN
-			DECLARE @OLDAggregatedCounter varchar(37) = CONCAT('[$(HangFireSchema)].[', @OLDAggregatedCounterOldColumnName, ']');
-			EXEC sp_rename @OLDAggregatedCounter, '[$(HangFireSchema)].[$(HangFireTabelPrefix)AggregatedCounter]'
+			DECLARE @OLDAggregatedCounter varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDAggregatedCounterOldColumnName, ']');
+			EXEC sp_rename @OLDAggregatedCounter, '$(HangFireTabelPrefix)AggregatedCounter'
 		END
 
-	DECLARE @OLDCounterColumnName varchar(37) = CONCAT(@OLDTABLEPREFIX, 'Counter');
+	DECLARE @OLDCounterColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'Counter');
 	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDCounterColumnName AND [schema_id] = @SCHEMA_ID)
 		BEGIN
-			DECLARE @OLDCounter varchar(27) = CONCAT('[$(HangFireSchema)].[', @OLDCounterColumnName, ']');
-			EXEC sp_rename @OLDCounter, '[$(HangFireSchema)].[$(HangFireTabelPrefix)Counter]'
+			DECLARE @OLDCounter varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDCounterColumnName, ']');
+			EXEC sp_rename @OLDCounter, '$(HangFireTabelPrefix)Counter'
 		END
 	
-	DECLARE @OLDHashColumnName varchar(37) = CONCAT(@OLDTABLEPREFIX, 'Hash');
-	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDCounterColumnName AND [schema_id] = @SCHEMA_ID)
+	DECLARE @OLDHashColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'Hash');
+	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDHashColumnName AND [schema_id] = @SCHEMA_ID)
 		BEGIN
-			DECLARE @OLDHash varchar(24) = CONCAT('[$(HangFireSchema)].[', @OLDHashColumnName,']');
-			EXEC sp_rename @OLDHash, '[$(HangFireSchema)].[$(HangFireTabelPrefix)Hash]'
+			DECLARE @OLDHash varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDHashColumnName,']');
+			EXEC sp_rename @OLDHash, '$(HangFireTabelPrefix)Hash'
 		END
 
-	DECLARE @OLDJobColumnName varchar(37) = CONCAT(@OLDTABLEPREFIX, 'Job');
+	DECLARE @OLDJobColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'Job');
 	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDJobColumnName AND [schema_id] = @SCHEMA_ID)
 		BEGIN
-			DECLARE @OLDJob varchar(24) = CONCAT('[$(HangFireSchema)].[', @OLDJobColumnName, ']');
-			EXEC sp_rename @OLDJob, '[$(HangFireSchema)].[$(HangFireTabelPrefix)Job]'
+			DECLARE @OLDJob varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDJobColumnName, ']');
+			EXEC sp_rename @OLDJob, '$(HangFireTabelPrefix)Job'
 		END
 
-	DECLARE @OLDJobParameterColumnName varchar(37) = CONCAT(@OLDTABLEPREFIX, 'JobParameter');
+	DECLARE @OLDJobParameterColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'JobParameter');
 	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDJobParameterColumnName AND [schema_id] = @SCHEMA_ID)
 		BEGIN
-			DECLARE @OLDJobParameter varchar(24) = CONCAT('[$(HangFireSchema)].[', @OLDJobParameterColumnName, ']');
-			EXEC sp_rename @OLDJobParameter, '[$(HangFireSchema)].[$(HangFireTabelPrefix)JobParameter]'		
+			DECLARE @OLDJobParameter varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDJobParameterColumnName, ']');
+			EXEC sp_rename @OLDJobParameter, '$(HangFireTabelPrefix)JobParameter'		
 		END
 
-	DECLARE @OLDJobQueueColumnName varchar(37) = CONCAT(@OLDTABLEPREFIX, 'JobQueue');
+	DECLARE @OLDJobQueueColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'JobQueue');
 	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDJobQueueColumnName AND [schema_id] = @SCHEMA_ID)
 		BEGIN
-			DECLARE @OLDJobQueue varchar(24) = CONCAT('[$(HangFireSchema)].[', @OLDJobQueueColumnName, ']');
-			EXEC sp_rename @OLDJobQueue, '[$(HangFireSchema)].[$(HangFireTabelPrefix)JobQueue]'
+			DECLARE @OLDJobQueue varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDJobQueueColumnName, ']');
+			EXEC sp_rename @OLDJobQueue, '$(HangFireTabelPrefix)JobQueue'
 		END
 
-	DECLARE @OLDListColumnName varchar(37) = CONCAT(@OLDTABLEPREFIX, 'List');
+	DECLARE @OLDListColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'List');
 	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDListColumnName AND [schema_id] = @SCHEMA_ID)
 		BEGIN
-			DECLARE @OLDList varchar(24) = CONCAT('[$(HangFireSchema)].[', @OLDListColumnName, ']');
-			EXEC sp_rename @OLDList, '[$(HangFireSchema)].[$(HangFireTabelPrefix)List]'
+			DECLARE @OLDList varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDListColumnName, ']');
+			EXEC sp_rename @OLDList, '$(HangFireTabelPrefix)List'
 		END
 
-	DECLARE @OLDSchemaColumnName varchar(37) = CONCAT(@OLDTABLEPREFIX, 'Schema');
+	DECLARE @OLDSchemaColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'Schema');
 	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDSchemaColumnName AND [schema_id] = @SCHEMA_ID)
 		BEGIN
-			DECLARE @OLDSchema varchar(24) = CONCAT('[$(HangFireSchema)].[', @OLDSchemaColumnName, ']');
-			EXEC sp_rename @OLDSchema, '[$(HangFireSchema)].[$(HangFireTabelPrefix)Schema]'
+			DECLARE @OLDSchema varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDSchemaColumnName, ']');
+			EXEC sp_rename @OLDSchema, '$(HangFireTabelPrefix)Schema'
 		END
 
-	DECLARE @OLDServerColumnName varchar(37) = CONCAT(@OLDTABLEPREFIX, 'Server');
+	DECLARE @OLDServerColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'Server');
 	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDServerColumnName AND [schema_id] = @SCHEMA_ID)
 		BEGIN
-			DECLARE @OLDServer varchar(24) = CONCAT('[$(HangFireSchema)].[', @OLDServerColumnName, ']');
-			EXEC sp_rename @OLDServer, '[$(HangFireSchema)].[$(HangFireTabelPrefix)Server]'
+			DECLARE @OLDServer varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDServerColumnName, ']');
+			EXEC sp_rename @OLDServer, '$(HangFireTabelPrefix)Server'
 		END
 
-	DECLARE @OLDSetColumnName varchar(37) = CONCAT(@OLDTABLEPREFIX, 'Set');
+	DECLARE @OLDSetColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'Set');
 	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDSetColumnName AND [schema_id] = @SCHEMA_ID)
 		BEGIN
-			DECLARE @OLDSet varchar(24) = CONCAT('[$(HangFireSchema)].[', @OLDSetColumnName, ']');
-			EXEC sp_rename @OLDSet, '[$(HangFireSchema)].[$(HangFireTabelPrefix)Set]'
+			DECLARE @OLDSet varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDSetColumnName, ']');
+			EXEC sp_rename @OLDSet, '$(HangFireTabelPrefix)Set'
 		END
-	DECLARE @OLDStateColumnName varchar(37) = CONCAT(@OLDTABLEPREFIX, 'State');
-	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDSetColumnName AND [schema_id] = @SCHEMA_ID)
+	DECLARE @OLDStateColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'State');
+	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDStateColumnName AND [schema_id] = @SCHEMA_ID)
 		BEGIN
-			DECLARE @OLDState varchar(24) = CONCAT('[$(HangFireSchema)].[', @OLDState, ']');
-			EXEC sp_rename @OLDState, '[$(HangFireSchema)].[$(HangFireTabelPrefix)State]'
+			DECLARE @OLDState varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDStateColumnName, ']');
+			EXEC sp_rename @OLDState, '$(HangFireTabelPrefix)State'
 		END
 END
 

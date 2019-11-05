@@ -347,10 +347,27 @@ namespace Hangfire.SqlServer
                 }
             }
 
-            InitializeQueueProviders();
+			ValidateTablePrefix();
+			InitializeQueueProviders();
         }
 
-        private void InitializeQueueProviders()
+		private void ValidateTablePrefix()
+		{
+			UseConnection(null, connection =>
+			{
+				var tableCount = connection.Query<int>(string.Format(@"
+					SELECT COUNT(1) from [sys].[tables] AS t
+					INNER JOIN [sys].[schemas] AS s ON t.schema_id = s.schema_id
+					WHERE s.name = '{0}' AND t.name = '{1}Schema'",
+					Options.SchemaName, Options.TablePrefix)
+				).FirstOrDefault();
+
+				if (tableCount == 0)
+					throw new ArgumentException("TablePrefix does not match with database, use PrepareSchemaIfNecessary = true if it should be changed at Initialize.");
+			});
+		}
+
+		private void InitializeQueueProviders()
         {
             var defaultQueueProvider = new SqlServerJobQueueProvider(this, _options);
             QueueProviders = new PersistentJobQueueProviderCollection(defaultQueueProvider);
