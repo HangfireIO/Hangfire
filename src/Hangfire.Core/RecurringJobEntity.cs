@@ -29,6 +29,7 @@ namespace Hangfire
     {
         private readonly IList<Exception> _errors = new List<Exception>();
         private readonly IDictionary<string, string> _recurringJob;
+        private readonly DateTime _now;
 
         public RecurringJobEntity(
             [NotNull] string recurringJobId,
@@ -39,6 +40,7 @@ namespace Hangfire
             if (timeZoneResolver == null) throw new ArgumentNullException(nameof(timeZoneResolver));
 
             _recurringJob = recurringJob ?? throw new ArgumentNullException(nameof(recurringJob));
+            _now = now;
 
             RecurringJobId = recurringJobId ?? throw new ArgumentNullException(nameof(recurringJobId));
 
