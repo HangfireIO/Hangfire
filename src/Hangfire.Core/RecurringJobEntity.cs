@@ -105,6 +105,12 @@ namespace Hangfire
             {
                 Version = int.Parse(recurringJob["V"], CultureInfo.InvariantCulture);
             }
+
+            if (recurringJob.TryGetValue("RetryAttempt", out var attemptString) &&
+                int.TryParse(attemptString, out var retryAttempt))
+            {
+                RetryAttempt = retryAttempt;
+            }
         }
 
         public string RecurringJobId { get; }
@@ -120,6 +126,7 @@ namespace Hangfire
         public DateTime? LastExecution { get; set; }
         public string LastJobId { get; set; }
         public int? Version { get; set; }
+        public int RetryAttempt { get; set; }
 
         public bool TrySchedule(out DateTime? nextExecution, out Exception error)
         {
@@ -138,6 +145,24 @@ namespace Hangfire
         {
             changedFields = GetChangedFields(out nextExecution);
             return changedFields.Count > 0 || nextExecution != NextExecution;
+        }
+
+        public void ScheduleRetry(TimeSpan delay, out IReadOnlyDictionary<string, string> changedFields, out DateTime? nextExecution)
+        {
+            RetryAttempt++;
+            nextExecution = _now.Add(delay);
+
+            var result = new Dictionary<string, string>
+            {
+                { "RetryAttempt", RetryAttempt.ToString(CultureInfo.InvariantCulture) }
+            };
+            
+            if (!_recurringJob.ContainsKey("V"))
+            {
+                result.Add("V", "2");
+            }
+
+            changedFields = result;
         }
 
         public void Disable([NotNull] Exception error, out IReadOnlyDictionary<string, string> changedFields, out DateTime? nextExecution)
@@ -222,6 +247,11 @@ namespace Hangfire
             if (_recurringJob.ContainsKey("Error") && !String.IsNullOrEmpty(_recurringJob["Error"]))
             {
                 result.Add("Error", String.Empty);
+            }
+
+            if (_recurringJob.ContainsKey("RetryAttempt") && _recurringJob["RetryAttempt"] != "0")
+            {
+                result.Add("RetryAttempt", "0");
             }
 
             return result;

@@ -66,6 +66,7 @@ namespace Hangfire.Server
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
         private static readonly int BatchSize = 1000;
+        private static readonly int MaxRetryAttemptCount = 10;
 
         private readonly ILog _logger = LogProvider.For<RecurringJobScheduler>();
         private readonly ConcurrentDictionary<Type, bool> _isBatchingAvailableCache = new ConcurrentDictionary<Type, bool>();
@@ -300,6 +301,13 @@ namespace Hangfire.Server
                         }
 
                         recurringJob.IsChanged(out changedFields, out nextExecution);
+                    }
+                    else if (recurringJob.RetryAttempt < MaxRetryAttemptCount)
+                    {
+                        var delay = _pollingDelay > TimeSpan.Zero ? _pollingDelay : TimeSpan.FromMinutes(1);
+                        
+                        _logger.WarnException($"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be retried in {delay}.", error);
+                        recurringJob.ScheduleRetry(delay, out changedFields, out nextExecution);
                     }
                     else
                     {
