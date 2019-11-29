@@ -261,13 +261,14 @@ namespace Hangfire.Dashboard
             public string Render(bool isJson, string deserializedValue, string rawValue)
             {
                 var builder = new StringBuilder();
+
+                if (rawValue == null)
+                {
+                    return WrapKeyword("null");
+                }
+
                 if (_deserializationType != null)
                 {
-                    if (rawValue == null)
-                    {
-                        return WrapKeyword("null");
-                    }
-
                     builder.Append(WrapIdentifier(
                         isJson ? "FromJson" : "Deserialize"));
 
