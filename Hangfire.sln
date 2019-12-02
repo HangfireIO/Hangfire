@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.136
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29519.87
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleSample", "samples\ConsoleSample\ConsoleSample.csproj", "{C02BB718-2AE4-434C-8668-C894FF663FCE}"
 EndProject
@@ -52,7 +52,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.AspNetCore", "src\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreSample", "samples\NetCoreSample\NetCoreSample.csproj", "{FA751692-20C8-4986-8164-D21F505B2172}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.NetCore", "src\Hangfire.NetCore\Hangfire.NetCore.csproj", "{AA8E3A67-8731-423A-9B69-EE44EC6B8E1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.NetCore", "src\Hangfire.NetCore\Hangfire.NetCore.csproj", "{AA8E3A67-8731-423A-9B69-EE44EC6B8E1A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetCore30Sample", "samples\AspNetCore30Sample\AspNetCore30Sample.csproj", "{54EAA716-FDF0-4B93-958B-93AD0FB93D9D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -100,6 +102,10 @@ Global
 		{AA8E3A67-8731-423A-9B69-EE44EC6B8E1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA8E3A67-8731-423A-9B69-EE44EC6B8E1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA8E3A67-8731-423A-9B69-EE44EC6B8E1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54EAA716-FDF0-4B93-958B-93AD0FB93D9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54EAA716-FDF0-4B93-958B-93AD0FB93D9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54EAA716-FDF0-4B93-958B-93AD0FB93D9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54EAA716-FDF0-4B93-958B-93AD0FB93D9D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -110,6 +116,7 @@ Global
 		{6DFFA275-C483-4501-823A-741AC9EC0846} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
 		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
 		{FA751692-20C8-4986-8164-D21F505B2172} = {119DA7FA-B94C-4B63-AEC9-428EF834E0D8}
+		{54EAA716-FDF0-4B93-958B-93AD0FB93D9D} = {119DA7FA-B94C-4B63-AEC9-428EF834E0D8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7597454C-C272-4016-87A2-CF1196347355}
