@@ -25,7 +25,7 @@ using Hangfire.States;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-#if NETSTANDARD2_0 || NET461
+#if NETCOREAPP3_0 || NETSTANDARD2_0 || NET461
 using Microsoft.Extensions.Hosting;
 #endif
 
@@ -121,7 +121,7 @@ namespace Hangfire
             return services;
         }
 
-#if NETSTANDARD2_0 || NET461
+#if NETCOREAPP3_0 || NETSTANDARD2_0 || NET461
         public static IServiceCollection AddHangfireServer(
             [NotNull] this IServiceCollection services,
             [NotNull] Action<BackgroundJobServerOptions> optionsAction)

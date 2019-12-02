@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net451;net461;netstandard1.3;netstandard2.0;</TargetFrameworks>
+    <TargetFrameworks>net451;net461;netstandard1.3;netstandard2.0;netcoreapp3.0</TargetFrameworks>
     <DebugType>portable</DebugType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -34,5 +34,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Antiforgery" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.0" />
-  </ItemGroup>  
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp3.0'">
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
 </Project>
