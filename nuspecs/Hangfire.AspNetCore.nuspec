@@ -67,7 +67,17 @@
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="2.0.0" />
         <dependency id="Hangfire.Core" version="[0.0.0]" />
       </group>	  
+      <group targetFramework="netcoreapp3.0">
+        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="3.0.0" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="3.0.0" />
+        <dependency id="Hangfire.Core" version="[0.0.0]" />
+      </group>
     </dependencies>
+    <frameworkReferences>
+      <group targetFramework=".NETCoreApp3.0">
+        <frameworkReference name="Microsoft.AspNetCore.App" />
+      </group>
+    </frameworkReferences>
   </metadata>
   <files>
     <file src="net451\Hangfire.AspNetCore.dll" target="lib\net451" />
@@ -85,6 +95,10 @@
     <file src="net461\Hangfire.AspNetCore.dll" target="lib\net461" />
     <file src="net461\Hangfire.AspNetCore.xml" target="lib\net461" />
     <file src="net461\Hangfire.AspNetCore.pdb" target="lib\net461" />	
+
+    <file src="netcoreapp3.0\Hangfire.AspNetCore.dll" target="lib\netcoreapp3.0" />
+    <file src="netcoreapp3.0\Hangfire.AspNetCore.xml" target="lib\netcoreapp3.0" />
+    <file src="netcoreapp3.0\Hangfire.AspNetCore.pdb" target="lib\netcoreapp3.0" />
     
     <file src="..\src\Hangfire.AspNetCore\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
 
