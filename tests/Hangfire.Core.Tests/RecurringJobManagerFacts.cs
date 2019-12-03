@@ -552,6 +552,28 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void Trigger_ThrowsAnException_WhenRecurringJobCanNotBeTriggered_AndDoesNotCreateBackgroundJob()
+        {
+            // Arrange
+            _timeZoneResolver.Setup(x => x.GetTimeZoneById(It.IsAny<string>())).Throws<Exception>();
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}"))
+                .Returns(new Dictionary<string, string>
+                {
+                    { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) },
+                    { "Cron", Cron.Minutely() },
+                    { "TimeZoneId", "UnexistingID" }
+                });
+
+            var manager = CreateManager();
+
+            // Act
+            Assert.Throws<AggregateException>(() => manager.Trigger(_id));
+
+            // Assert
+            _stateMachine.Verify(x => x.ApplyState(It.IsAny<ApplyStateContext>()), Times.Never);
+        }
+
+        [Fact]
         public void RemoveIfExists_ThrowsAnException_WhenIdIsNull()
         {
             var manager = CreateManager();

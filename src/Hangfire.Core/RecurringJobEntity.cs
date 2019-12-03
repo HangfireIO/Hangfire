@@ -130,6 +130,8 @@ namespace Hangfire
         public int? Version { get; set; }
         public int RetryAttempt { get; set; }
 
+        public Exception[] Errors => _errors.ToArray();
+
         public bool TrySchedule(out DateTime? nextExecution, out Exception error)
         {
             nextExecution = null;

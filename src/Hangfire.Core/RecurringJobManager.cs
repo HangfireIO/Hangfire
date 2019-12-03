@@ -149,6 +149,11 @@ namespace Hangfire
                 var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
                 if (recurringJob == null) return;
 
+                if (recurringJob.Errors.Length > 0)
+                {
+                    throw new AggregateException($"Can't trigger recurring job '{recurringJobId}' due to errors", recurringJob.Errors);
+                }
+
                 var backgroundJob = _factory.TriggerRecurringJob(_storage, connection, EmptyProfiler.Instance, recurringJob, now);
 
                 if (recurringJob.IsChanged(out var changedFields, out var nextExecution))
