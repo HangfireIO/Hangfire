@@ -142,7 +142,7 @@ namespace Hangfire
                 return false;
             }
 
-            return TryGetNextExecution(out nextExecution, out error);
+            return TryGetNextExecution(scheduleChanged: false, out nextExecution, out error);
         }
 
         public bool IsChanged(out IReadOnlyDictionary<string, string> changedFields, out DateTime? nextExecution)
@@ -229,7 +229,7 @@ namespace Hangfire
                 result.Add("LastExecution", serializedLastExecution ?? String.Empty);
             }
 
-            TryGetNextExecution(out nextExecution, out _);
+            TryGetNextExecution(result.ContainsKey("Cron"), out nextExecution, out _);
             var serializedNextExecution = nextExecution.HasValue ? JobHelper.SerializeDateTime(nextExecution.Value) : null;
 
             if ((_recurringJob.ContainsKey("NextExecution") ? _recurringJob["NextExecution"] : null) !=
@@ -286,12 +286,12 @@ namespace Hangfire
             return CronExpression.Parse(cronExpression, format);
         }
 
-        private bool TryGetNextExecution(out DateTime? nextExecution, out Exception exception)
+        private bool TryGetNextExecution(bool scheduleChanged, out DateTime? nextExecution, out Exception exception)
         {
             try
             {
                 nextExecution = ParseCronExpression(Cron).GetNextOccurrence(
-                    LastExecution ?? CreatedAt.AddSeconds(-1),
+                    scheduleChanged ? _now.AddSeconds(-1) : LastExecution ?? CreatedAt.AddSeconds(-1),
                     TimeZone,
                     inclusive: false);
 
