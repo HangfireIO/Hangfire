@@ -21,6 +21,19 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.8
+• Added – `IGlobalConfiguration.UseResultsInContinuations` method to globally enable results for continuations.
+• Added – Ability to push antecedent job's result to continuations via job parameters with `ContinuationsSupport`.
+• Added – `JobParameterInjectionFilter` server filter to inject job parameters as arguments.
+• Added – Allow to specify a custom thread factory in `UseBackgroundPool` methods.
+• Changed – Add retry attempts for recurring jobs instead of immediately disabling them.
+• Fixed – `CultureInfo.InvariantCulture` is now restored properly in background jobs.
+• Fixed – Recurring jobs aren't triggered early after changing their cron expressions.
+• Fixed – Don't trigger recurring job when it can't be scheduled due to errors.
+• Fixed – Argument with a `null` value is skipped when displaying job arguments in Dashboard UI.
+• Fixed – Add a workaround for resolving `System.Diagnostics.Debug` type in .NET Core 3.0.
+• Deprecated – Deprecate the `JobActivatorScope.InnerScope` property as it wasn't implemented.
+
 1.7.7
 
 Core

@@ -14,6 +14,9 @@
     <tags>hangfire netcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.7.7
+• Changed – Add explicit `netcoreapp3.0` target with reference to "3.0.0" packages.
+
 1.7.5
 • Fixed – Add missing overload for the `AddHangfireServer` method with "options" action.
 

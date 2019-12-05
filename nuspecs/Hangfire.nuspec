@@ -21,6 +21,44 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.8
+
+Hangfire.Core
+
+• Added – `IGlobalConfiguration.UseResultsInContinuations` method to globally enable results for continuations.
+• Added – Ability to push antecedent job's result to continuations via job parameters with `ContinuationsSupport`.
+• Added – `JobParameterInjectionFilter` server filter to inject job parameters as arguments.
+• Added – Allow to specify a custom thread factory in `UseBackgroundPool` methods.
+• Changed – Add retry attempts for recurring jobs instead of immediately disabling them.
+• Fixed – `CultureInfo.InvariantCulture` is now restored properly in background jobs.
+• Fixed – Recurring jobs aren't triggered early after changing their cron expressions.
+• Fixed – Don't trigger recurring job when it can't be scheduled due to errors.
+• Fixed – Argument with a `null` value is skipped when displaying job arguments in Dashboard UI.
+• Fixed – Add a workaround for resolving `System.Diagnostics.Debug` type in .NET Core 3.0.
+• Deprecated – Deprecate the `JobActivatorScope.InnerScope` property as it wasn't implemented.
+
+Hangfire.SqlServer
+
+• Added – Support for Microsoft.Data.SqlClient package when using a custom connection factory (Part II).
+• Fixed – Remove `System.Data.SqlClient` dependency from `SqlCommandBatch` and `ExpirationManager`.
+
+Hangfire.AspNetCore
+
+• Added – `IAppBuilder.MapHangfireDashboard` method for ASP.NET Core 3.0 endpoint routing (by @kendaleiv).
+• Changed – Add explicit `netcoreapp3.0` target with "Microsoft.AspNetCore.App" framework reference (by @stebueh).
+
+Hangfire.NetCore
+
+• Changed – Add explicit `netcoreapp3.0` target with reference to "3.0.0" packages.
+
+Documentation
+
+• Added – Making ASP.NET Core application always running on IIS (by @bamotav).
+• Fixed – Small typo on the "Getting Started in ASP.NET Core applications" page (by @msynk).
+• Fixed – Small spelling correction in "Throttling &amp; Rate Limiters" (by @Bert-R).
+• Fixed – Small typo in the "Sending Email" tutorial (by @nabeelvalley).
+• Fixed – Correct spelling of 'prerequisites' in README.md (by @lgirvin).
+
 1.7.7
 
 Hangfire.Core
@@ -43,7 +81,7 @@ Dashboard UI
 
 Hangfire.SqlServer
 
-• Added – Add support for Microsoft.Data.SqlClient package when using custom connection factory.
+• Added – Add support for Microsoft.Data.SqlClient package when using custom connection factory (Part I).
 • Added – Add `UseFineGrainedLocks` option to avoid deadlocks in some theoretical cases.
 • Added – Add missing overload for `UseSqlServerStorage` with connection factory parameter only.
 • Added – Expose the SqlServerObjectsInstaller.GetInstallScript method (by @altso).

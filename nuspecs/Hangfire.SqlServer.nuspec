@@ -16,8 +16,12 @@
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.8
+• Added – Support for Microsoft.Data.SqlClient package when using a custom connection factory (Part II).
+• Fixed – Remove `System.Data.SqlClient` dependency from `SqlCommandBatch` and `ExpirationManager`.
+
 1.7.7
-• Added – Add support for Microsoft.Data.SqlClient package when using custom connection factory.
+• Added – Add support for Microsoft.Data.SqlClient package when using custom connection factory (Part I).
 • Added – Add `UseFineGrainedLocks` option to avoid deadlocks in some theoretical cases.
 • Added – Add missing overload for `UseSqlServerStorage` with connection factory parameter only.
 • Added – Expose the SqlServerObjectsInstaller.GetInstallScript method (by @altso).
