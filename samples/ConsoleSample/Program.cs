@@ -17,6 +17,7 @@ namespace ConsoleSample
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
+                .UseResultsInContinuations()
                 .UseSqlServerStorage(@"Server=.\;Database=Hangfire.Sample;Trusted_Connection=True;", new SqlServerStorageOptions
                 {
                     CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
@@ -28,8 +29,14 @@ namespace ConsoleSample
                     EnableHeavyMigrations = true
                 });
 
-            var job1 = BackgroundJob.Enqueue(() => Services.WriteLine("First Job"));
-            var job2 = BackgroundJob.ContinueJobWith(job1, () => Services.WriteLine("Second Job"));
+            var backgroundJobs = new BackgroundJobClient();
+            backgroundJobs.RetryAttempts = 5;
+
+            var job1 = BackgroundJob.Enqueue<Services>(x => x.WriteIndex(0));
+            var job2 = BackgroundJob.ContinueJobWith<Services>(job1, x => x.WriteIndex(null));
+            var job3 = BackgroundJob.ContinueJobWith<Services>(job2, x => x.WriteIndex(null));
+            var job4 = BackgroundJob.ContinueJobWith<Services>(job3, x => x.WriteIndex(null));
+            var job5 = BackgroundJob.ContinueJobWith<Services>(job4, x => x.WriteIndex(null));
 
             RecurringJob.AddOrUpdate("seconds", () => Console.WriteLine("Hello, seconds!"), "*/15 * * * * *");
             RecurringJob.AddOrUpdate(() => Console.WriteLine("Hello, world!"), Cron.Minutely);
