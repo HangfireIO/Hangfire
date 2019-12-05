@@ -257,6 +257,13 @@ namespace Hangfire
             return configuration;
         }
 
+        public static IGlobalConfiguration UseResultsInContinuations(this IGlobalConfiguration configuration)
+        {
+            return configuration
+                .UseFilter(new JobParameterInjectionFilter())
+                .UseFilter(new ContinuationsSupportAttribute(pushResults: true));
+        }
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static IGlobalConfiguration<T> Use<T>(
             [NotNull] this IGlobalConfiguration configuration, T entry,

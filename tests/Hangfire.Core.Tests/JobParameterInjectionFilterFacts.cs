@@ -121,6 +121,18 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void OnPerforming_ModifiesParameters_BasedOnFromResultAttribute()
+        {
+            _context.BackgroundJob.Job = Job.FromExpression(() => DecoratedWithFromResult(null));
+            _context.Connection.Setup(x => x.GetJobParameter(_context.BackgroundJob.Id, "AntecedentResult")).Returns("\"Result\"");
+            var filter = CreateFilter();
+
+            filter.OnPerforming(CreatePerformingContext());
+
+            Assert.Equal("Result", _context.BackgroundJob.Job.Args[0]);
+        }
+
+        [Fact]
         public void OnPerforming_CanModifyMultipleParameters()
         {
             _context.BackgroundJob.Job = Job.FromExpression(() => Decorated(null, null));
@@ -164,6 +176,10 @@ namespace Hangfire.Core.Tests
         }
 
         public static void Decorated([FromParameter("Result123")] int value)
+        {
+        }
+
+        public static void DecoratedWithFromResult([FromResult] string value)
         {
         }
 
