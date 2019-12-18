@@ -81,29 +81,37 @@
                             @{ var index = 0; }
                             @foreach (var job in failedJobs)
                             {
-                                <tr class="js-jobs-list-row @(!job.Value.InFailedState ? "obsolete-data" : null) @(job.Value.InFailedState ? "hover" : null)">
-                                    @if (!IsReadOnly)
+                            <tr class="js-jobs-list-row @(job.Value == null || !job.Value.InFailedState ? "obsolete-data" : null) @(job.Value != null && job.Value.InFailedState ? "hover" : null)">
+                                @if (!IsReadOnly)
+                                {
+                                    <td rowspan="@(job.Value != null && job.Value.InFailedState ? "2" : "1")">
+                                        @if (job.Value == null || job.Value.InFailedState)
+                                        {
+                                            <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
+                                        }
+                                    </td>
+                                }
+                                <td class="min-width" rowspan="@(job.Value != null && job.Value.InFailedState ? "2" : "1")">
+                                    @Html.JobIdLink(job.Key)
+                                    @if (job.Value == null || !job.Value.InFailedState)
                                     {
-                                        <td rowspan="@(job.Value.InFailedState ? "2" : "1")">
-                                            @if (job.Value.InFailedState)
-                                            {
-                                                <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
-                                            }
-                                        </td>
+                                        <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
                                     }
-                                    <td class="min-width" rowspan="@(job.Value.InFailedState ? "2" : "1")">
-                                        @Html.JobIdLink(job.Key)
-                                        @if (!job.Value.InFailedState)
-                                        {
-                                            <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
-                                        }
+                                </td>
+                                <td class="min-width">
+                                    @if (job.Value != null && job.Value.FailedAt.HasValue)
+                                    {
+                                        @Html.RelativeTime(job.Value.FailedAt.Value)
+                                    }
+                                </td>
+                                @if (job.Value == null)
+                                {
+                                    <td colspan="3">
+                                        <em>@Strings.Common_JobExpired</em>
                                     </td>
-                                    <td class="min-width">
-                                        @if (job.Value.FailedAt.HasValue)
-                                        {
-                                            @Html.RelativeTime(job.Value.FailedAt.Value)
-                                        }
-                                    </td>
+                                }
+                                else
+                                {
                                     <td>
                                         <div class="word-break">
                                             @Html.JobNameLink(job.Key, job.Value.Job)
@@ -115,8 +123,9 @@
                                             </div>
                                         }
                                     </td>
-                                </tr>
-                                if (job.Value.InFailedState)
+                                }
+                            </tr>
+                                if (job.Value != null && job.Value.InFailedState)
                                 {
                                     <tr>
                                         <td colspan="2" class="failed-job-details">
