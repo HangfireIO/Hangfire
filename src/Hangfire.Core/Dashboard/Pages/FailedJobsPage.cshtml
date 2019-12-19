@@ -85,7 +85,7 @@
                                 @if (!IsReadOnly)
                                 {
                                     <td rowspan="@(job.Value != null && job.Value.InFailedState ? "2" : "1")">
-                                        @if (job.Value == null || job.Value.InFailedState)
+                                        @if (job.Value != null && job.Value.InFailedState)
                                         {
                                             <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
                                         }
@@ -93,25 +93,25 @@
                                 }
                                 <td class="min-width" rowspan="@(job.Value != null && job.Value.InFailedState ? "2" : "1")">
                                     @Html.JobIdLink(job.Key)
-                                    @if (job.Value == null || !job.Value.InFailedState)
+                                    @if (job.Value != null && !job.Value.InFailedState)
                                     {
                                         <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
                                     }
                                 </td>
-                                <td class="min-width">
-                                    @if (job.Value != null && job.Value.FailedAt.HasValue)
-                                    {
-                                        @Html.RelativeTime(job.Value.FailedAt.Value)
-                                    }
-                                </td>
                                 @if (job.Value == null)
                                 {
-                                    <td colspan="3">
+                                    <td colspan="2">
                                         <em>@Strings.Common_JobExpired</em>
                                     </td>
                                 }
                                 else
                                 {
+                                    <td class="min-width">
+                                        @if (job.Value.FailedAt.HasValue)
+                                        {
+                                            @Html.RelativeTime(job.Value.FailedAt.Value)
+                                        }
+                                    </td>
                                     <td>
                                         <div class="word-break">
                                             @Html.JobNameLink(job.Key, job.Value.Job)
