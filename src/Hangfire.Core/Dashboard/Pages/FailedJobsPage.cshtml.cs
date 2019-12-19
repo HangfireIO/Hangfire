@@ -320,17 +320,17 @@ WriteLiteral("</th>\r\n                                <th>");
 
             
             #line 76 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                               Write(Strings.FailedJobsPage_Table_Failed);
+                               Write(Strings.Common_Job);
 
             
             #line default
             #line hidden
-WriteLiteral("</th>\r\n                                <th>");
+WriteLiteral("</th>\r\n                                <th class=\"align-right\">");
 
 
             
             #line 77 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                               Write(Strings.Common_Job);
+                                                   Write(Strings.FailedJobsPage_Table_Failed);
 
             
             #line default
@@ -523,42 +523,12 @@ WriteLiteral("</em>\r\n                                    </td>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                                    <td class=\"min-width\">\r\n");
-
-
-            
-            #line 110 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                                         if (job.Value.FailedAt.HasValue)
-                                        {
-                                            
-            
-            #line default
-            #line hidden
-            
-            #line 112 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                                       Write(Html.RelativeTime(job.Value.FailedAt.Value));
-
-            
-            #line default
-            #line hidden
-            
-            #line 112 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                                                                                        
-                                        }
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                                    </td>\r\n");
-
-
-
 WriteLiteral("                                    <td>\r\n                                       " +
 " <div class=\"word-break\">\r\n                                            ");
 
 
             
-            #line 117 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 111 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                        Write(Html.JobNameLink(job.Key, job.Value.Job));
 
             
@@ -568,7 +538,7 @@ WriteLiteral("\r\n                                        </div>\r\n");
 
 
             
-            #line 119 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 113 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                          if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))
                                         {
 
@@ -580,7 +550,7 @@ WriteLiteral("                                            <div style=\"color: #8
 
 
             
-            #line 122 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 116 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                            Write(job.Value.Reason);
 
             
@@ -590,7 +560,7 @@ WriteLiteral(" <a class=\"expander\" href=\"#\">");
 
 
             
-            #line 122 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 116 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                                                                            Write(index == 0 ? Strings.Common_LessDetails : Strings.Common_MoreDetails);
 
             
@@ -600,7 +570,37 @@ WriteLiteral("</a>\r\n                                            </div>\r\n");
 
 
             
-            #line 124 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 118 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+                                        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                    </td>\r\n");
+
+
+
+WriteLiteral("                                    <td class=\"align-right\">\r\n");
+
+
+            
+            #line 121 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+                                         if (job.Value.FailedAt.HasValue)
+                                        {
+                                            
+            
+            #line default
+            #line hidden
+            
+            #line 123 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+                                       Write(Html.RelativeTime(job.Value.FailedAt.Value));
+
+            
+            #line default
+            #line hidden
+            
+            #line 123 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+                                                                                        
                                         }
 
             
