@@ -81,50 +81,50 @@
                             @{ var index = 0; }
                             @foreach (var job in failedJobs)
                             {
-                            <tr class="js-jobs-list-row @(job.Value == null || !job.Value.InFailedState ? "obsolete-data" : null) @(job.Value != null && job.Value.InFailedState ? "hover" : null)">
-                                @if (!IsReadOnly)
-                                {
-                                    <td rowspan="@(job.Value != null && job.Value.InFailedState ? "2" : "1")">
-                                        @if (job.Value != null && job.Value.InFailedState)
-                                        {
-                                            <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
-                                        }
-                                    </td>
-                                }
-                                <td class="min-width" rowspan="@(job.Value != null && job.Value.InFailedState ? "2" : "1")">
-                                    @Html.JobIdLink(job.Key)
-                                    @if (job.Value != null && !job.Value.InFailedState)
+                                <tr class="js-jobs-list-row @(job.Value == null || !job.Value.InFailedState ? "obsolete-data" : null) @(job.Value != null && job.Value.InFailedState ? "hover" : null)">
+                                    @if (!IsReadOnly)
                                     {
-                                        <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
+                                        <td rowspan="@(job.Value != null && job.Value.InFailedState ? "2" : "1")">
+                                            @if (job.Value != null && job.Value.InFailedState)
+                                            {
+                                                <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
+                                            }
+                                        </td>
                                     }
-                                </td>
-                                @if (job.Value == null)
-                                {
-                                    <td colspan="2">
-                                        <em>@Strings.Common_JobExpired</em>
-                                    </td>
-                                }
-                                else
-                                {
-                                    <td>
-                                        <div class="word-break">
-                                            @Html.JobNameLink(job.Key, job.Value.Job)
-                                        </div>
-                                        @if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))
+                                    <td class="min-width" rowspan="@(job.Value != null && job.Value.InFailedState ? "2" : "1")">
+                                        @Html.JobIdLink(job.Key)
+                                        @if (job.Value != null && !job.Value.InFailedState)
                                         {
-                                            <div style="color: #888;">
-                                                @job.Value.Reason <a class="expander" href="#">@(index == 0 ? Strings.Common_LessDetails : Strings.Common_MoreDetails)</a>
+                                            <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
+                                        }
+                                    </td>
+                                    @if (job.Value == null)
+                                    {
+                                        <td colspan="2">
+                                            <em>@Strings.Common_JobExpired</em>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td>
+                                            <div class="word-break">
+                                                @Html.JobNameLink(job.Key, job.Value.Job)
                                             </div>
-                                        }
-                                    </td>
-                                    <td class="align-right">
-                                        @if (job.Value.FailedAt.HasValue)
-                                        {
-                                            @Html.RelativeTime(job.Value.FailedAt.Value)
-                                        }
-                                    </td>
-                                }
-                            </tr>
+                                            @if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))
+                                            {
+                                                <div style="color: #888;">
+                                                    @job.Value.Reason <a class="expander" href="#">@(index == 0 ? Strings.Common_LessDetails : Strings.Common_MoreDetails)</a>
+                                                </div>
+                                            }
+                                        </td>
+                                        <td class="align-right">
+                                            @if (job.Value.FailedAt.HasValue)
+                                            {
+                                                @Html.RelativeTime(job.Value.FailedAt.Value)
+                                            }
+                                        </td>
+                                    }
+                                </tr>
                                 if (job.Value != null && job.Value.InFailedState)
                                 {
                                     <tr>
