@@ -182,7 +182,7 @@ namespace Hangfire.Dashboard
         {
             if (job == null)
             {
-                return Strings.Common_CannotFindTargetMethod;
+                return null;
             }
 
             var jobDescriptionAttribute = job.Method.GetCustomAttribute<JobDescriptionAttribute>();
