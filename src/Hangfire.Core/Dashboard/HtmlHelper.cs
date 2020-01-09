@@ -177,6 +177,43 @@ namespace Hangfire.Dashboard
 
             return job.ToString();
         }
+        
+        public string JobDescription(Job job)
+        {
+            if (job == null)
+            {
+                return Strings.Common_CannotFindTargetMethod;
+            }
+
+            var jobDescriptionAttribute = job.Method.GetCustomAttribute<JobDescriptionAttribute>();
+            if (jobDescriptionAttribute != null)
+            {
+                try
+                {
+                    return jobDescriptionAttribute.Format(_page.Context, job);
+                }
+                catch (Exception)
+                {
+                    return jobDescriptionAttribute.Description;
+                }
+            }
+
+            var descriptionProvider = _page.DashboardOptions.DescriptionFunc;
+            if (descriptionProvider != null)
+            {
+                try
+                {
+                    return descriptionProvider(_page.Context, job);
+                }
+                catch
+                {
+                    // Ignoring exceptions
+                }
+            }
+
+            return null;
+        }
+
 
         public NonEscapedString StateLabel(string stateName)
         {

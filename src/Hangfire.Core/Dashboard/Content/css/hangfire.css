@@ -215,6 +215,12 @@ a:hover .label-hover {
     color: #333;
 }
 
+/* Job Description styles */
+
+.job-description {
+    margin-bottom: 20px;
+}
+
 /* Job Snippet styles */
 
 .job-snippet {

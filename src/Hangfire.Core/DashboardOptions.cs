@@ -32,6 +32,7 @@ namespace Hangfire
             DisplayStorageConnectionString = true;
             DashboardTitle = "Hangfire Dashboard";
             DisplayNameFunc = null;
+            DescriptionFunc = null;
         }
 
         /// <summary>
@@ -64,7 +65,11 @@ namespace Hangfire
         /// Display name provider for jobs
         /// </summary>
         public Func<DashboardContext, Job, string> DisplayNameFunc { get; set; }
-
+        
+        /// <summary>
+        /// Description provider for jobs
+        /// </summary>
+        public Func<DashboardContext, Job, string> DescriptionFunc { get; set; }
         public bool IgnoreAntiforgeryToken { get; set; }
 
         public ITimeZoneResolver TimeZoneResolver { get; set; }
