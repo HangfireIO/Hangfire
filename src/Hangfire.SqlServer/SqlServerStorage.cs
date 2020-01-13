@@ -280,14 +280,24 @@ namespace Hangfire.SqlServer
         {
             using (_options.ImpersonationFunc?.Invoke())
             {
-                var connection = _existingConnection ?? _connectionFactory();
+                DbConnection connection = null;
 
-                if (connection.State == ConnectionState.Closed)
+                try
                 {
-                    connection.Open();
-                }
+                    connection = _existingConnection ?? _connectionFactory();
 
-                return connection;
+                    if (connection.State == ConnectionState.Closed)
+                    {
+                        connection.Open();
+                    }
+
+                    return connection;
+                }
+                catch
+                {
+                    ReleaseConnection(connection);
+                    throw;
+                }
             }
         }
 
