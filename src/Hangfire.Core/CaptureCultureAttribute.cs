@@ -48,7 +48,7 @@ namespace Hangfire
 
             try
             {
-                if (!String.IsNullOrEmpty(cultureName))
+                if (cultureName != null)
                 {
                     filterContext.Items["PreviousCulture"] = CultureInfo.CurrentCulture;
                     SetCurrentCulture(new CultureInfo(cultureName));
@@ -61,7 +61,7 @@ namespace Hangfire
 
             try
             {
-                if (!String.IsNullOrEmpty(uiCultureName))
+                if (uiCultureName != null)
                 {
                     filterContext.Items["PreviousUICulture"] = CultureInfo.CurrentUICulture;
                     SetCurrentUICulture(new CultureInfo(uiCultureName));
