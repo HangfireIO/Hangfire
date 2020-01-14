@@ -14,6 +14,10 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.6.28
+Backported from 1.7:
+• Fixed – Don't leak a `DbConnection` instance when an exception occurs while trying to open it.
+
 1.6.27
 Backported from 1.7:
 • Fixed – Cannot resolve the collation conflict in `CountersAggregator`.

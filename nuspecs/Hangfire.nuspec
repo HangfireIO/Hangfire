@@ -19,6 +19,19 @@ https://www.hangfire.io/
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.6.28
+
+Hangfire.Core
+
+Backported from 1.7:
+• Fixed – `CultureInfo.InvariantCulture` is now restored properly in background jobs.
+• Fixed – Use `LazyThreadSafetyMode.PublicationOnly` to avoid caching "JobStorage.Current is null" exceptions.
+
+Hangfire.SqlServer
+
+Backported from 1.7:
+• Fixed – Don't leak a `DbConnection` instance when an exception occurs while trying to open it.
+
 1.6.27
 
 Hangfire.SqlServer
