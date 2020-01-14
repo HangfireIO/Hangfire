@@ -1,5 +1,5 @@
 // This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright Â© 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -267,15 +267,24 @@ namespace Hangfire.SqlServer
 
         internal DbConnection CreateAndOpenConnection()
         {
-            var connection = _existingConnection
-                ?? _connectionFactory();
+            DbConnection connection = null;
 
-            if (connection.State == ConnectionState.Closed)
+            try
             {
-                connection.Open();
-            }
+                connection = _existingConnection ?? _connectionFactory();
 
-            return connection;
+                if (connection.State == ConnectionState.Closed)
+                {
+                    connection.Open();
+                }
+
+                return connection;
+            }
+            catch
+            {
+                ReleaseConnection(connection);
+                throw;
+            }
         }
 
         internal bool IsExistingConnection(IDbConnection connection)
