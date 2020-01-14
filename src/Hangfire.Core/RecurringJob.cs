@@ -25,7 +25,7 @@ namespace Hangfire
     public static class RecurringJob
     {
         private static readonly Lazy<RecurringJobManager> Instance = new Lazy<RecurringJobManager>(
-            () => new RecurringJobManager());
+            () => new RecurringJobManager(), LazyThreadSafetyMode.PublicationOnly);
 
         public static void AddOrUpdate(
             Expression<Action> methodCall,

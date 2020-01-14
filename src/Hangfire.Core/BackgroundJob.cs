@@ -45,7 +45,7 @@ namespace Hangfire
     public partial class BackgroundJob
     {
         private static readonly Lazy<IBackgroundJobClient> CachedClient 
-            = new Lazy<IBackgroundJobClient>(() => new BackgroundJobClient()); 
+            = new Lazy<IBackgroundJobClient>(() => new BackgroundJobClient(), LazyThreadSafetyMode.PublicationOnly); 
 
         private static readonly Func<IBackgroundJobClient> DefaultFactory
             = () => CachedClient.Value;
