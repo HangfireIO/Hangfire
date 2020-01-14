@@ -16,6 +16,7 @@
 
 using System;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.States;
