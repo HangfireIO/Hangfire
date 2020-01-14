@@ -41,7 +41,7 @@ namespace Hangfire.SqlServer
         private static readonly string[] ProcessedTables =
         {
             "AggregatedCounter",
-            "Job",
+			"Job",
             "List",
             "Set",
             "Hash",
@@ -61,9 +61,10 @@ namespace Hangfire.SqlServer
 
         public void Execute(CancellationToken cancellationToken)
         {
-            foreach (var table in ProcessedTables)
+            foreach (var tableNameWithOutPrefix in ProcessedTables)
             {
-                _logger.Debug($"Removing outdated records from the '{table}' table...");
+				var table = _storage.TablePrefix + tableNameWithOutPrefix;
+				_logger.Debug($"Removing outdated records from the '{table}' table...");
 
                 UseConnectionDistributedLock(_storage, connection =>
                 {

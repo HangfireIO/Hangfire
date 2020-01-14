@@ -30,32 +30,33 @@ namespace Hangfire.SqlServer
 
         public static void Install(DbConnection connection)
         {
-            Install(connection, null);
+            Install(connection, null, null);
         }
 
-        public static void Install(DbConnection connection, string schema)
+        public static void Install(DbConnection connection, string schema, string tablePrefix)
         {
-            Install(connection, schema, false);
+            Install(connection, schema, tablePrefix, false);
         }
 
-        public static void Install(DbConnection connection, string schema, bool enableHeavyMigrations)
+        public static void Install(DbConnection connection, string schema, string tablePrefix, bool enableHeavyMigrations)
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
 
-            var script = GetInstallScript(schema, enableHeavyMigrations);
+            var script = GetInstallScript(schema, tablePrefix, enableHeavyMigrations);
 
             connection.Execute(script, commandTimeout: 0);
         }
 
-        public static string GetInstallScript(string schema, bool enableHeavyMigrations)
+        public static string GetInstallScript(string schema, string tablePrefix, bool enableHeavyMigrations)
         {
             var script = GetStringResource(
                 typeof(SqlServerObjectsInstaller).GetTypeInfo().Assembly,
                 "Hangfire.SqlServer.Install.sql");
 
             script = script.Replace("$(HangFireSchema)", !string.IsNullOrWhiteSpace(schema) ? schema : Constants.DefaultSchema);
+            script = script.Replace("$(HangFireTabelPrefix)", !string.IsNullOrWhiteSpace(tablePrefix) ? tablePrefix : Constants.DefaultTablePrefix);
 
-            if (!enableHeavyMigrations)
+			if (!enableHeavyMigrations)
             {
                 script = script.Replace("--SET @DISABLE_HEAVY_MIGRATIONS = 1;", "SET @DISABLE_HEAVY_MIGRATIONS = 1;");
             }

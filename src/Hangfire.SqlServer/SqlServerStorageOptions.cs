@@ -27,7 +27,8 @@ namespace Hangfire.SqlServer
     {
         private TimeSpan _queuePollInterval;
         private string _schemaName;
-        private TimeSpan _jobExpirationCheckInterval;
+        private string _tablePrefix;
+		private TimeSpan _jobExpirationCheckInterval;
         private TimeSpan? _slidingInvisibilityTimeout;
 
         public SqlServerStorageOptions()
@@ -42,7 +43,8 @@ namespace Hangfire.SqlServer
             PrepareSchemaIfNecessary = true;
             DashboardJobListLimit = 10000;
             _schemaName = Constants.DefaultSchema;
-            TransactionTimeout = TimeSpan.FromMinutes(1);
+            _tablePrefix = Constants.DefaultTablePrefix;
+			TransactionTimeout = TimeSpan.FromMinutes(1);
             DisableGlobalLocks = false;
             UsePageLocksOnDequeue = false;
         }
@@ -117,7 +119,21 @@ namespace Hangfire.SqlServer
             }
         }
 
-        public Func<IDisposable> ImpersonationFunc { get; set; }
+		public string TablePrefix
+		{
+			get { return _tablePrefix; }
+			set
+			{
+				if (value == null)
+					_tablePrefix = Constants.DefaultTablePrefix;
+				else if (value.Length > 111)
+					throw new ArgumentException(_schemaName, nameof(value));
+				else
+					_tablePrefix = value;
+			}
+		}
+
+		public Func<IDisposable> ImpersonationFunc { get; set; }
         public bool DisableGlobalLocks { get; set; }
         public bool UsePageLocksOnDequeue { get; set; }
         public bool UseRecommendedIsolationLevel { get; set; }

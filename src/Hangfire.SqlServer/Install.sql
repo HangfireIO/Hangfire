@@ -42,20 +42,111 @@ DECLARE @SCHEMA_ID int;
 SELECT @SCHEMA_ID = [schema_id] FROM [sys].[schemas] WHERE [name] = '$(HangFireSchema)';
 
 -- Create the [$(HangFireSchema)].Schema table if not exists
-IF NOT EXISTS(SELECT [object_id] FROM [sys].[tables] 
-    WHERE [name] = 'Schema' AND [schema_id] = @SCHEMA_ID)
+
+DECLARE @SCHEMAColumnName nvarchar(128);
+SELECT @SCHEMAColumnName = [t].[name] FROM [sys].[columns] c
+INNER JOIN [sys].[tables] t ON [c].[object_id] = [t].[object_id]
+WHERE [c].[name] = 'Version' and [t].[name] like '%Schema' and [t].schema_id = @SCHEMA_ID
+
+IF NOT EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @SCHEMAColumnName AND [schema_id] = @SCHEMA_ID)
 BEGIN
-    CREATE TABLE [$(HangFireSchema)].[Schema](
+    CREATE TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Schema](
         [Version] [int] NOT NULL,
+		[TablePrefix] varchar(20) NOT NULL DEFAULT(''),
+		[TablePrefixOld] varchar(20) NOT NULL DEFAULT(''),
         CONSTRAINT [PK_HangFire_Schema] PRIMARY KEY CLUSTERED ([Version] ASC)
     );
-    PRINT 'Created table [$(HangFireSchema)].[Schema]';
+	SET @SCHEMAColumnName = '[$(HangFireTabelPrefix)Schema]';
+    PRINT 'Created table [$(HangFireSchema)].[$(HangFireTabelPrefix)Schema]';
 END
 ELSE
-    PRINT 'Table [$(HangFireSchema)].[Schema] already exists';
-    
+    PRINT 'Table [$(HangFireSchema)].[$(HangFireTabelPrefix)Schema] already exists';
+   
+-- Update table names if prefix has changed
+DECLARE @OLDTABLEPREFIX varchar(111) =  SUBSTRING(@SCHEMAColumnName, 0, CHARINDEX('Schema', @SCHEMAColumnName));
+
+IF '$(HangFireTabelPrefix)' <> @OLDTABLEPREFIX
+BEGIN
+	DECLARE @OLDAggregatedCounterOldColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'AggregatedCounter');
+	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDAggregatedCounterOldColumnName AND [schema_id] = @SCHEMA_ID)
+		BEGIN
+			DECLARE @OLDAggregatedCounter varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDAggregatedCounterOldColumnName, ']');
+			EXEC sp_rename @OLDAggregatedCounter, '$(HangFireTabelPrefix)AggregatedCounter'
+		END
+
+	DECLARE @OLDCounterColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'Counter');
+	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDCounterColumnName AND [schema_id] = @SCHEMA_ID)
+		BEGIN
+			DECLARE @OLDCounter varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDCounterColumnName, ']');
+			EXEC sp_rename @OLDCounter, '$(HangFireTabelPrefix)Counter'
+		END
+	
+	DECLARE @OLDHashColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'Hash');
+	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDHashColumnName AND [schema_id] = @SCHEMA_ID)
+		BEGIN
+			DECLARE @OLDHash varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDHashColumnName,']');
+			EXEC sp_rename @OLDHash, '$(HangFireTabelPrefix)Hash'
+		END
+
+	DECLARE @OLDJobColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'Job');
+	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDJobColumnName AND [schema_id] = @SCHEMA_ID)
+		BEGIN
+			DECLARE @OLDJob varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDJobColumnName, ']');
+			EXEC sp_rename @OLDJob, '$(HangFireTabelPrefix)Job'
+		END
+
+	DECLARE @OLDJobParameterColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'JobParameter');
+	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDJobParameterColumnName AND [schema_id] = @SCHEMA_ID)
+		BEGIN
+			DECLARE @OLDJobParameter varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDJobParameterColumnName, ']');
+			EXEC sp_rename @OLDJobParameter, '$(HangFireTabelPrefix)JobParameter'		
+		END
+
+	DECLARE @OLDJobQueueColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'JobQueue');
+	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDJobQueueColumnName AND [schema_id] = @SCHEMA_ID)
+		BEGIN
+			DECLARE @OLDJobQueue varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDJobQueueColumnName, ']');
+			EXEC sp_rename @OLDJobQueue, '$(HangFireTabelPrefix)JobQueue'
+		END
+
+	DECLARE @OLDListColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'List');
+	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDListColumnName AND [schema_id] = @SCHEMA_ID)
+		BEGIN
+			DECLARE @OLDList varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDListColumnName, ']');
+			EXEC sp_rename @OLDList, '$(HangFireTabelPrefix)List'
+		END
+
+	DECLARE @OLDSchemaColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'Schema');
+	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDSchemaColumnName AND [schema_id] = @SCHEMA_ID)
+		BEGIN
+			DECLARE @OLDSchema varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDSchemaColumnName, ']');
+			EXEC sp_rename @OLDSchema, '$(HangFireTabelPrefix)Schema'
+		END
+
+	DECLARE @OLDServerColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'Server');
+	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDServerColumnName AND [schema_id] = @SCHEMA_ID)
+		BEGIN
+			DECLARE @OLDServer varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDServerColumnName, ']');
+			EXEC sp_rename @OLDServer, '$(HangFireTabelPrefix)Server'
+		END
+
+	DECLARE @OLDSetColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'Set');
+	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDSetColumnName AND [schema_id] = @SCHEMA_ID)
+		BEGIN
+			DECLARE @OLDSet varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDSetColumnName, ']');
+			EXEC sp_rename @OLDSet, '$(HangFireTabelPrefix)Set'
+		END
+	DECLARE @OLDStateColumnName varchar(128) = CONCAT(@OLDTABLEPREFIX, 'State');
+	IF EXISTS(SELECT [object_id] FROM [sys].[tables] WHERE [name] = @OLDStateColumnName AND [schema_id] = @SCHEMA_ID)
+		BEGIN
+			DECLARE @OLDState varchar(261) = CONCAT('[$(HangFireSchema)].[', @OLDStateColumnName, ']');
+			EXEC sp_rename @OLDState, '$(HangFireTabelPrefix)State'
+		END
+END
+
+
 DECLARE @CURRENT_SCHEMA_VERSION int;
-SELECT @CURRENT_SCHEMA_VERSION = [Version] FROM [$(HangFireSchema)].[Schema];
+SELECT @CURRENT_SCHEMA_VERSION = [Version] FROM [$(HangFireSchema)].[$(HangFireTabelPrefix)Schema];
 
 PRINT 'Current Hangfire schema version: ' + CASE WHEN @CURRENT_SCHEMA_VERSION IS NULL THEN 'none' ELSE CONVERT(nvarchar, @CURRENT_SCHEMA_VERSION) END;
 
@@ -80,7 +171,7 @@ BEGIN
     PRINT 'Installing schema version 1';
         
     -- Create job tables
-    CREATE TABLE [$(HangFireSchema)].[Job] (
+    CREATE TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Job] (
         [Id] [int] IDENTITY(1,1) NOT NULL,
 		[StateId] [int] NULL,
 		[StateName] [nvarchar](20) NULL, -- To speed-up queries.
@@ -91,14 +182,14 @@ BEGIN
 
         CONSTRAINT [PK_HangFire_Job] PRIMARY KEY CLUSTERED ([Id] ASC)
     );
-    PRINT 'Created table [$(HangFireSchema)].[Job]';
+    PRINT 'Created table [$(HangFireSchema)].[$(HangFireTabelPrefix)Job]';
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_Job_StateName] ON [$(HangFireSchema)].[Job] ([StateName] ASC);
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Job_StateName] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Job] ([StateName] ASC);
 	PRINT 'Created index [IX_HangFire_Job_StateName]';
         
     -- Job history table
         
-    CREATE TABLE [$(HangFireSchema)].[State] (
+    CREATE TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)State] (
         [Id] [int] IDENTITY(1,1) NOT NULL,
         [JobId] [int] NOT NULL,
 		[Name] [nvarchar](20) NOT NULL,
@@ -108,20 +199,20 @@ BEGIN
             
         CONSTRAINT [PK_HangFire_State] PRIMARY KEY CLUSTERED ([Id] ASC)
     );
-    PRINT 'Created table [$(HangFireSchema)].[State]';
+    PRINT 'Created table [$(HangFireSchema)].[$(HangFireTabelPrefix)State]';
 
-    ALTER TABLE [$(HangFireSchema)].[State] ADD CONSTRAINT [FK_HangFire_State_Job] FOREIGN KEY([JobId])
-        REFERENCES [$(HangFireSchema)].[Job] ([Id])
+    ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)State] ADD CONSTRAINT [FK_HangFire_State_Job] FOREIGN KEY([JobId])
+        REFERENCES [$(HangFireSchema)].[$(HangFireTabelPrefix)Job] ([Id])
         ON UPDATE CASCADE
         ON DELETE CASCADE;
     PRINT 'Created constraint [FK_HangFire_State_Job]';
         
-    CREATE NONCLUSTERED INDEX [IX_HangFire_State_JobId] ON [$(HangFireSchema)].[State] ([JobId] ASC);
+    CREATE NONCLUSTERED INDEX [IX_HangFire_State_JobId] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)State] ([JobId] ASC);
     PRINT 'Created index [IX_HangFire_State_JobId]';
         
     -- Job parameters table
         
-    CREATE TABLE [$(HangFireSchema)].[JobParameter](
+    CREATE TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)JobParameter](
         [Id] [int] IDENTITY(1,1) NOT NULL,
         [JobId] [int] NOT NULL,
         [Name] [nvarchar](40) NOT NULL,
@@ -129,15 +220,15 @@ BEGIN
             
         CONSTRAINT [PK_HangFire_JobParameter] PRIMARY KEY CLUSTERED ([Id] ASC)
     );
-    PRINT 'Created table [$(HangFireSchema)].[JobParameter]';
+    PRINT 'Created table [$(HangFireSchema)].[$(HangFireTabelPrefix)JobParameter]';
 
-    ALTER TABLE [$(HangFireSchema)].[JobParameter] ADD CONSTRAINT [FK_HangFire_JobParameter_Job] FOREIGN KEY([JobId])
-        REFERENCES [$(HangFireSchema)].[Job] ([Id])
+    ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)JobParameter] ADD CONSTRAINT [FK_HangFire_JobParameter_Job] FOREIGN KEY([JobId])
+        REFERENCES [$(HangFireSchema)].[$(HangFireTabelPrefix)Job] ([Id])
         ON UPDATE CASCADE
         ON DELETE CASCADE;
     PRINT 'Created constraint [FK_HangFire_JobParameter_Job]';
         
-    CREATE NONCLUSTERED INDEX [IX_HangFire_JobParameter_JobIdAndName] ON [$(HangFireSchema)].[JobParameter] (
+    CREATE NONCLUSTERED INDEX [IX_HangFire_JobParameter_JobIdAndName] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)JobParameter] (
         [JobId] ASC,
         [Name] ASC
     );
@@ -145,7 +236,7 @@ BEGIN
         
     -- Job queue table
         
-    CREATE TABLE [$(HangFireSchema)].[JobQueue](
+    CREATE TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)JobQueue](
         [Id] [int] IDENTITY(1,1) NOT NULL,
         [JobId] [int] NOT NULL,
         [Queue] [nvarchar](20) NOT NULL,
@@ -153,15 +244,15 @@ BEGIN
             
         CONSTRAINT [PK_HangFire_JobQueue] PRIMARY KEY CLUSTERED ([Id] ASC)
     );
-    PRINT 'Created table [$(HangFireSchema)].[JobQueue]';
+    PRINT 'Created table [$(HangFireSchema)].[$(HangFireTabelPrefix)JobQueue]';
         
-    CREATE NONCLUSTERED INDEX [IX_HangFire_JobQueue_JobIdAndQueue] ON [$(HangFireSchema)].[JobQueue] (
+    CREATE NONCLUSTERED INDEX [IX_HangFire_JobQueue_JobIdAndQueue] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)JobQueue] (
         [JobId] ASC,
         [Queue] ASC
     );
     PRINT 'Created index [IX_HangFire_JobQueue_JobIdAndQueue]';
         
-    CREATE NONCLUSTERED INDEX [IX_HangFire_JobQueue_QueueAndFetchedAt] ON [$(HangFireSchema)].[JobQueue] (
+    CREATE NONCLUSTERED INDEX [IX_HangFire_JobQueue_QueueAndFetchedAt] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)JobQueue] (
         [Queue] ASC,
         [FetchedAt] ASC
     );
@@ -169,18 +260,18 @@ BEGIN
         
     -- Servers table
         
-    CREATE TABLE [$(HangFireSchema)].[Server](
+    CREATE TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Server](
         [Id] [nvarchar](50) NOT NULL,
         [Data] [nvarchar](max) NULL,
         [LastHeartbeat] [datetime] NULL,
             
         CONSTRAINT [PK_HangFire_Server] PRIMARY KEY CLUSTERED ([Id] ASC)
     );
-    PRINT 'Created table [$(HangFireSchema)].[Server]';
+    PRINT 'Created table [$(HangFireSchema)].[$(HangFireTabelPrefix)Server]';
         
     -- Extension tables
         
-    CREATE TABLE [$(HangFireSchema)].[Hash](
+    CREATE TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Hash](
         [Id] [int] IDENTITY(1,1) NOT NULL,
         [Key] [nvarchar](100) NOT NULL,
         [Name] [nvarchar](40) NOT NULL,
@@ -190,15 +281,15 @@ BEGIN
             
         CONSTRAINT [PK_HangFire_Hash] PRIMARY KEY CLUSTERED ([Id] ASC)
     );
-    PRINT 'Created table [$(HangFireSchema)].[Hash]';
+    PRINT 'Created table [$(HangFireSchema)].[$(HangFireTabelPrefix)Hash]';
         
-    CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_Hash_KeyAndName] ON [$(HangFireSchema)].[Hash] (
+    CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_Hash_KeyAndName] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Hash] (
         [Key] ASC,
         [Name] ASC
     );
     PRINT 'Created index [UX_HangFire_Hash_KeyAndName]';
         
-    CREATE TABLE [$(HangFireSchema)].[List](
+    CREATE TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)List](
         [Id] [int] IDENTITY(1,1) NOT NULL,
         [Key] [nvarchar](100) NOT NULL,
         [Value] [nvarchar](max) NULL,
@@ -206,9 +297,9 @@ BEGIN
             
         CONSTRAINT [PK_HangFire_List] PRIMARY KEY CLUSTERED ([Id] ASC)
     );
-    PRINT 'Created table [$(HangFireSchema)].[List]';
+    PRINT 'Created table [$(HangFireSchema)].[$(HangFireTabelPrefix)List]';
         
-    CREATE TABLE [$(HangFireSchema)].[Set](
+    CREATE TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Set](
         [Id] [int] IDENTITY(1,1) NOT NULL,
         [Key] [nvarchar](100) NOT NULL,
         [Score] [float] NOT NULL,
@@ -217,15 +308,15 @@ BEGIN
             
         CONSTRAINT [PK_HangFire_Set] PRIMARY KEY CLUSTERED ([Id] ASC)
     );
-    PRINT 'Created table [$(HangFireSchema)].[Set]';
+    PRINT 'Created table [$(HangFireSchema)].[$(HangFireTabelPrefix)Set]';
         
-    CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_Set_KeyAndValue] ON [$(HangFireSchema)].[Set] (
+    CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_Set_KeyAndValue] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Set] (
         [Key] ASC,
         [Value] ASC
     );
     PRINT 'Created index [UX_HangFire_Set_KeyAndValue]';
         
-    CREATE TABLE [$(HangFireSchema)].[Value](
+    CREATE TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Value](
         [Id] [int] IDENTITY(1,1) NOT NULL,
         [Key] [nvarchar](100) NOT NULL,
         [StringValue] [nvarchar](max) NULL,
@@ -236,14 +327,14 @@ BEGIN
             [Id] ASC
         )
     );
-    PRINT 'Created table [$(HangFireSchema)].[Value]';
+    PRINT 'Created table [$(HangFireSchema)].[$(HangFireTabelPrefix)Value]';
         
-    CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_Value_Key] ON [$(HangFireSchema)].[Value] (
+    CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_Value_Key] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Value] (
         [Key] ASC
     );
     PRINT 'Created index [UX_HangFire_Value_Key]';
 
-	CREATE TABLE [$(HangFireSchema)].[Counter](
+	CREATE TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Counter](
 		[Id] [int] IDENTITY(1,1) NOT NULL,
 		[Key] [nvarchar](100) NOT NULL,
 		[Value] [tinyint] NOT NULL,
@@ -251,9 +342,9 @@ BEGIN
 
 		CONSTRAINT [PK_HangFire_Counter] PRIMARY KEY CLUSTERED ([Id] ASC)
 	);
-	PRINT 'Created table [$(HangFireSchema)].[Counter]';
+	PRINT 'Created table [$(HangFireSchema)].[$(HangFireTabelPrefix)Counter]';
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_Counter_Key] ON [$(HangFireSchema)].[Counter] ([Key] ASC)
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Counter_Key] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Counter] ([Key] ASC)
 	INCLUDE ([Value]);
 	PRINT 'Created index [IX_HangFire_Counter_Key]';
 
@@ -266,20 +357,20 @@ BEGIN
 
 	-- https://github.com/odinserj/HangFire/issues/83
 
-	DROP INDEX [IX_HangFire_Counter_Key] ON [$(HangFireSchema)].[Counter];
+	DROP INDEX [IX_HangFire_Counter_Key] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Counter];
 
-	ALTER TABLE [$(HangFireSchema)].[Counter] ALTER COLUMN [Value] SMALLINT NOT NULL;
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Counter] ALTER COLUMN [Value] SMALLINT NOT NULL;
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_Counter_Key] ON [$(HangFireSchema)].[Counter] ([Key] ASC)
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Counter_Key] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Counter] ([Key] ASC)
 	INCLUDE ([Value]);
 	PRINT 'Index [IX_HangFire_Counter_Key] re-created';
 
-	DROP TABLE [$(HangFireSchema)].[Value];
-	DROP TABLE [$(HangFireSchema)].[Hash];
-	PRINT 'Dropped tables [$(HangFireSchema)].[Value] and [$(HangFireSchema)].[Hash]'
+	DROP TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Value];
+	DROP TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Hash];
+	PRINT 'Dropped tables [$(HangFireSchema)].[Value] and [$(HangFireSchema)].[$(HangFireTabelPrefix)Hash]'
 
-	DELETE FROM [$(HangFireSchema)].[Server] WHERE [LastHeartbeat] IS NULL;
-	ALTER TABLE [$(HangFireSchema)].[Server] ALTER COLUMN [LastHeartbeat] DATETIME NOT NULL;
+	DELETE FROM [$(HangFireSchema)].[$(HangFireTabelPrefix)Server] WHERE [LastHeartbeat] IS NULL;
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Server] ALTER COLUMN [LastHeartbeat] DATETIME NOT NULL;
 
 	SET @CURRENT_SCHEMA_VERSION = 2;
 END
@@ -288,10 +379,10 @@ IF @CURRENT_SCHEMA_VERSION = 2
 BEGIN
 	PRINT 'Installing schema version 3';
 
-	DROP INDEX [IX_HangFire_JobQueue_JobIdAndQueue] ON [$(HangFireSchema)].[JobQueue];
+	DROP INDEX [IX_HangFire_JobQueue_JobIdAndQueue] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)JobQueue];
 	PRINT 'Dropped index [IX_HangFire_JobQueue_JobIdAndQueue]';
 
-	CREATE TABLE [$(HangFireSchema)].[Hash](
+	CREATE TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Hash](
 		[Id] [int] IDENTITY(1,1) NOT NULL,
 		[Key] [nvarchar](100) NOT NULL,
 		[Field] [nvarchar](100) NOT NULL,
@@ -300,9 +391,9 @@ BEGIN
 		
 		CONSTRAINT [PK_HangFire_Hash] PRIMARY KEY CLUSTERED ([Id] ASC)
 	);
-	PRINT 'Created table [$(HangFireSchema)].[Hash]';
+	PRINT 'Created table [$(HangFireSchema)].[$(HangFireTabelPrefix)Hash]';
 
-	CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_Hash_Key_Field] ON [$(HangFireSchema)].[Hash] (
+	CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_Hash_Key_Field] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Hash] (
 		[Key] ASC,
 		[Field] ASC
 	);
@@ -315,7 +406,7 @@ IF @CURRENT_SCHEMA_VERSION = 3
 BEGIN
 	PRINT 'Installing schema version 4';
 
-	CREATE TABLE [$(HangFireSchema)].[AggregatedCounter] (
+	CREATE TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)AggregatedCounter] (
 		[Id] [int] IDENTITY(1,1) NOT NULL,
 		[Key] [nvarchar](100) NOT NULL,
 		[Value] [bigint] NOT NULL,
@@ -323,36 +414,36 @@ BEGIN
 
 		CONSTRAINT [PK_HangFire_CounterAggregated] PRIMARY KEY CLUSTERED ([Id] ASC)
 	);
-	PRINT 'Created table [$(HangFireSchema)].[AggregatedCounter]';
+	PRINT 'Created table [$(HangFireSchema)].[$(HangFireTabelPrefix)AggregatedCounter]';
 
-	CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_CounterAggregated_Key] ON [$(HangFireSchema)].[AggregatedCounter] (
+	CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_CounterAggregated_Key] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)AggregatedCounter] (
 		[Key] ASC
 	) INCLUDE ([Value]);
 	PRINT 'Created index [UX_HangFire_CounterAggregated_Key]';
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_Hash_ExpireAt] ON [$(HangFireSchema)].[Hash] ([ExpireAt])
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Hash_ExpireAt] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Hash] ([ExpireAt])
 	INCLUDE ([Id]);
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_Job_ExpireAt] ON [$(HangFireSchema)].[Job] ([ExpireAt])
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Job_ExpireAt] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Job] ([ExpireAt])
 	INCLUDE ([Id]);
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_List_ExpireAt] ON [$(HangFireSchema)].[List] ([ExpireAt])
+	CREATE NONCLUSTERED INDEX [IX_HangFire_List_ExpireAt] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)List] ([ExpireAt])
 	INCLUDE ([Id]);
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_Set_ExpireAt] ON [$(HangFireSchema)].[Set] ([ExpireAt])
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Set_ExpireAt] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Set] ([ExpireAt])
 	INCLUDE ([Id]);
 
 	PRINT 'Created indexes for [ExpireAt] columns';
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_Hash_Key] ON [$(HangFireSchema)].[Hash] ([Key] ASC)
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Hash_Key] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Hash] ([Key] ASC)
 	INCLUDE ([ExpireAt]);
 	PRINT 'Created index [IX_HangFire_Hash_Key]';
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_List_Key] ON [$(HangFireSchema)].[List] ([Key] ASC)
+	CREATE NONCLUSTERED INDEX [IX_HangFire_List_Key] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)List] ([Key] ASC)
 	INCLUDE ([ExpireAt], [Value]);
 	PRINT 'Created index [IX_HangFire_List_Key]';
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_Set_Key] ON [$(HangFireSchema)].[Set] ([Key] ASC)
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Set_Key] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Set] ([Key] ASC)
 	INCLUDE ([ExpireAt], [Value]);
 	PRINT 'Created index [IX_HangFire_Set_Key]';
 
@@ -363,25 +454,25 @@ IF @CURRENT_SCHEMA_VERSION = 4
 BEGIN
 	PRINT 'Installing schema version 5';
 
-	DROP INDEX [IX_HangFire_JobQueue_QueueAndFetchedAt] ON [$(HangFireSchema)].[JobQueue];
-	PRINT 'Dropped index [IX_HangFire_JobQueue_QueueAndFetchedAt] to modify the [$(HangFireSchema)].[JobQueue].[Queue] column';
+	DROP INDEX [IX_HangFire_JobQueue_QueueAndFetchedAt] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)JobQueue];
+	PRINT 'Dropped index [IX_HangFire_JobQueue_QueueAndFetchedAt] to modify the [$(HangFireSchema)].[$(HangFireTabelPrefix)JobQueue].[Queue] column';
 
-	ALTER TABLE [$(HangFireSchema)].[JobQueue] ALTER COLUMN [Queue] NVARCHAR (50) NOT NULL;
-	PRINT 'Modified [$(HangFireSchema)].[JobQueue].[Queue] length to 50';
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)JobQueue] ALTER COLUMN [Queue] NVARCHAR (50) NOT NULL;
+	PRINT 'Modified [$(HangFireSchema)].[$(HangFireTabelPrefix)JobQueue].[Queue] length to 50';
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_JobQueue_QueueAndFetchedAt] ON [$(HangFireSchema)].[JobQueue] (
+	CREATE NONCLUSTERED INDEX [IX_HangFire_JobQueue_QueueAndFetchedAt] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)JobQueue] (
         [Queue] ASC,
         [FetchedAt] ASC
     );
     PRINT 'Re-created index [IX_HangFire_JobQueue_QueueAndFetchedAt]';
 
-	ALTER TABLE [$(HangFireSchema)].[Server] DROP CONSTRAINT [PK_HangFire_Server]
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Server] DROP CONSTRAINT [PK_HangFire_Server]
     PRINT 'Dropped constraint [PK_HangFire_Server] to modify the [HangFire].[Server].[Id] column';
 
-	ALTER TABLE [$(HangFireSchema)].[Server] ALTER COLUMN [Id] NVARCHAR (100) NOT NULL;
-	PRINT 'Modified [$(HangFireSchema)].[Server].[Id] length to 100';
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Server] ALTER COLUMN [Id] NVARCHAR (100) NOT NULL;
+	PRINT 'Modified [$(HangFireSchema)].[$(HangFireTabelPrefix)Server].[Id] length to 100';
 
-	ALTER TABLE [$(HangFireSchema)].[Server] ADD  CONSTRAINT [PK_HangFire_Server] PRIMARY KEY CLUSTERED
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Server] ADD  CONSTRAINT [PK_HangFire_Server] PRIMARY KEY CLUSTERED
 	(
 		[Id] ASC
 	);
@@ -413,15 +504,15 @@ BEGIN
 	AND i.index_id <> 0
 	AND o.is_ms_shipped = 0
 	AND SCHEMA_NAME(o.[schema_id]) = '$(HangFireSchema)'
-	AND o.name = 'Set';
+	AND o.name = '$(HangFireTabelPrefix)Set';
 
 	EXEC sp_executesql @dropIndexSql;
-	PRINT 'Dropped all secondary indexes on the [Set] table';
+	PRINT 'Dropped all secondary indexes on the [$(HangFireTabelPrefix)Set] table';
 
 	-- Next, we'll remove the unnecessary indexes. They were unnecessary in the previous schema,
 	-- and are unnecessary in the new schema as well. We'll not re-create them.
 
-	DROP INDEX [IX_HangFire_Hash_Key] ON [$(HangFireSchema)].[Hash];
+	DROP INDEX [IX_HangFire_Hash_Key] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Hash];
 	PRINT 'Dropped unnecessary index [IX_HangFire_Hash_Key]';
 
 	-- Next, all the indexes that cover expiration will be filtered, to include only non-null values. This
@@ -429,176 +520,176 @@ BEGIN
 	-- expiration time. Also, they include the Id column by a mistake. So we'll re-create them later in the
 	-- migration.
 
-	DROP INDEX [IX_HangFire_Hash_ExpireAt] ON [$(HangFireSchema)].[Hash];
+	DROP INDEX [IX_HangFire_Hash_ExpireAt] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Hash];
 	PRINT 'Dropped index [IX_HangFire_Hash_ExpireAt]';
 
-	DROP INDEX [IX_HangFire_Job_ExpireAt] ON [$(HangFireSchema)].[Job];
+	DROP INDEX [IX_HangFire_Job_ExpireAt] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Job];
 	PRINT 'Dropped index [IX_HangFire_Job_ExpireAt]';
 
-	DROP INDEX [IX_HangFire_List_ExpireAt] ON [$(HangFireSchema)].[List];
+	DROP INDEX [IX_HangFire_List_ExpireAt] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)List];
 	PRINT 'Dropped index [IX_HangFire_List_ExpireAt]';
 
 	-- IX_HangFire_Job_StateName index can also be optimized, since we are querying it only with a
 	-- non-null state name. This will decrease the number of operations, when creating a background job.
 	-- It will be recreated later in the migration.
 
-	DROP INDEX [IX_HangFire_Job_StateName] ON [$(HangFireSchema)].Job;
+	DROP INDEX [IX_HangFire_Job_StateName] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Job];
 	PRINT 'Dropped index [IX_HangFire_Job_StateName]';
 
 	-- Dropping foreign key constraints based on the JobId column, because we need to modify the underlying
 	-- column type of the clustered index to BIGINT. We'll recreate them later in the migration.
 
-	ALTER TABLE [$(HangFireSchema)].[JobParameter] DROP CONSTRAINT [FK_HangFire_JobParameter_Job];
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)JobParameter] DROP CONSTRAINT [FK_HangFire_JobParameter_Job];
 	PRINT 'Dropped constraint [FK_HangFire_JobParameter_Job]';
 
-	ALTER TABLE [$(HangFireSchema)].[State] DROP CONSTRAINT [FK_HangFire_State_Job];
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)State] DROP CONSTRAINT [FK_HangFire_State_Job];
 	PRINT 'Dropped constraint [FK_HangFire_State_Job]';
 
 	-- We are going to create composite clustered indexes that are more natural for the following tables,
 	-- so the following indexes will be unnecessary. Natural sorting will keep related data close to each
 	-- other, and simplify the index modifications by the cost of fragmentation and additional page splits.
 
-	DROP INDEX [UX_HangFire_CounterAggregated_Key] ON [$(HangFireSchema)].[AggregatedCounter];
+	DROP INDEX [UX_HangFire_CounterAggregated_Key] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)AggregatedCounter];
 	PRINT 'Dropped index [UX_HangFire_CounterAggregated_Key]';
 
-	DROP INDEX [IX_HangFire_Counter_Key] ON [$(HangFireSchema)].[Counter];
+	DROP INDEX [IX_HangFire_Counter_Key] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Counter];
 	PRINT 'Dropped index [IX_HangFire_Counter_Key]';
 
-	DROP INDEX [IX_HangFire_JobParameter_JobIdAndName] ON [$(HangFireSchema)].[JobParameter];
+	DROP INDEX [IX_HangFire_JobParameter_JobIdAndName] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)JobParameter];
 	PRINT 'Dropped index [IX_HangFire_JobParameter_JobIdAndName]';
 
-	DROP INDEX [IX_HangFire_JobQueue_QueueAndFetchedAt] ON [$(HangFireSchema)].[JobQueue];
+	DROP INDEX [IX_HangFire_JobQueue_QueueAndFetchedAt] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)JobQueue];
 	PRINT 'Dropped index [IX_HangFire_JobQueue_QueueAndFetchedAt]';
 
-	DROP INDEX [UX_HangFire_Hash_Key_Field] ON [$(HangFireSchema)].[Hash];
+	DROP INDEX [UX_HangFire_Hash_Key_Field] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Hash];
 	PRINT 'Dropped index [UX_HangFire_Hash_Key_Field]';
 
-	DROP INDEX [IX_HangFire_List_Key] ON [$(HangFireSchema)].[List];
+	DROP INDEX [IX_HangFire_List_Key] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)List];
 	PRINT 'Dropped index [IX_HangFire_List_Key]';
 
-	DROP INDEX [IX_HangFire_State_JobId] ON [$(HangFireSchema)].[State];
+	DROP INDEX [IX_HangFire_State_JobId] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)State];
 	PRINT 'Dropped index [IX_HangFire_State_JobId]';
 
 	-- Then, we need to drop the primary key constraints, to modify id columns to the BIGINT type. Some of them
 	-- will be re-created later in the migration. But some of them would be removed forever, because their
 	-- uniqueness property sometimes unnecessary.
 
-	ALTER TABLE [$(HangFireSchema)].[AggregatedCounter] DROP CONSTRAINT [PK_HangFire_CounterAggregated];
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)AggregatedCounter] DROP CONSTRAINT [PK_HangFire_CounterAggregated];
 	PRINT 'Dropped constraint [PK_HangFire_CounterAggregated]';
 
-	ALTER TABLE [$(HangFireSchema)].[Counter] DROP CONSTRAINT [PK_HangFire_Counter];
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Counter] DROP CONSTRAINT [PK_HangFire_Counter];
 	PRINT 'Dropped constraint [PK_HangFire_Counter]';
 
-	ALTER TABLE [$(HangFireSchema)].[Hash] DROP CONSTRAINT [PK_HangFire_Hash];
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Hash] DROP CONSTRAINT [PK_HangFire_Hash];
 	PRINT 'Dropped constraint [PK_HangFire_Hash]';
 
-	ALTER TABLE [$(HangFireSchema)].[Job] DROP CONSTRAINT [PK_HangFire_Job];
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Job] DROP CONSTRAINT [PK_HangFire_Job];
 	PRINT 'Dropped constraint [PK_HangFire_Job]';
 
-	ALTER TABLE [$(HangFireSchema)].[JobParameter] DROP CONSTRAINT [PK_HangFire_JobParameter];
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)JobParameter] DROP CONSTRAINT [PK_HangFire_JobParameter];
 	PRINT 'Dropped constraint [PK_HangFire_JobParameter]';
 
-	ALTER TABLE [$(HangFireSchema)].[JobQueue] DROP CONSTRAINT [PK_HangFire_JobQueue];
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)JobQueue] DROP CONSTRAINT [PK_HangFire_JobQueue];
 	PRINT 'Dropped constraint [PK_HangFire_JobQueue]';
 
-	ALTER TABLE [$(HangFireSchema)].[List] DROP CONSTRAINT [PK_HangFire_List];
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)List] DROP CONSTRAINT [PK_HangFire_List];
 	PRINT 'Dropped constraint [PK_HangFire_List]';
 
-	ALTER TABLE [$(HangFireSchema)].[Set] DROP CONSTRAINT [PK_HangFire_Set];
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Set] DROP CONSTRAINT [PK_HangFire_Set];
 	PRINT 'Dropped constraint [PK_HangFire_Set]';
 
-	ALTER TABLE [$(HangFireSchema)].[State] DROP CONSTRAINT [PK_HangFire_State];
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)State] DROP CONSTRAINT [PK_HangFire_State];
 	PRINT 'Dropped constraint [PK_HangFire_State]';
 
 	-- We are removing identity columns of the following tables completely, their clustered
 	-- index will be based on natural values. So, instead of modifying them to BIGINT, we
 	-- are dropping them.
 
-	ALTER TABLE [$(HangFireSchema)].[AggregatedCounter] DROP COLUMN [Id];
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)AggregatedCounter] DROP COLUMN [Id];
 	PRINT 'Dropped [AggregatedCounter].[Id] column, we will cluster on [Key] column with uniqufier';
 
-	ALTER TABLE [$(HangFireSchema)].[Counter] DROP COLUMN [Id];
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Counter] DROP COLUMN [Id];
 	PRINT 'Dropped [Counter].[Id] column, we will cluster on [Key] column';
 
-	ALTER TABLE [$(HangFireSchema)].[Hash] DROP COLUMN [Id];
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Hash] DROP COLUMN [Id];
 	PRINT 'Dropped [Hash].[Id] column, we will cluster on [Key]/[Field] columns';
 
-	ALTER TABLE [$(HangFireSchema)].[Set] DROP COLUMN [Id];
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Set] DROP COLUMN [Id];
 	PRINT 'Dropped [Set].[Id] column, we will cluster on [Key]/[Value] columns';
 
-	ALTER TABLE [$(HangFireSchema)].[JobParameter] DROP COLUMN [Id];
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)JobParameter] DROP COLUMN [Id];
 	PRINT 'Dropped [JobParameter].[Id] column, we will cluster on [JobId]/[Name] columns';
 
 	-- Then we need to modify all the remaining Id columns to be of type BIGINT.
 
-	ALTER TABLE [$(HangFireSchema)].[List] ALTER COLUMN [Id] BIGINT NOT NULL;
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)List] ALTER COLUMN [Id] BIGINT NOT NULL;
 	PRINT 'Modified [List].[Id] type to BIGINT';
 
-	ALTER TABLE [$(HangFireSchema)].[Job] ALTER COLUMN [Id] BIGINT NOT NULL;
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Job] ALTER COLUMN [Id] BIGINT NOT NULL;
 	PRINT 'Modified [Job].[Id] type to BIGINT';
 
-	ALTER TABLE [$(HangFireSchema)].[Job] ALTER COLUMN [StateId] BIGINT NULL;
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Job] ALTER COLUMN [StateId] BIGINT NULL;
 	PRINT 'Modified [Job].[StateId] type to BIGINT';
 
-	ALTER TABLE [$(HangFireSchema)].[JobParameter] ALTER COLUMN [JobId] BIGINT NOT NULL;
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)JobParameter] ALTER COLUMN [JobId] BIGINT NOT NULL;
 	PRINT 'Modified [JobParameter].[JobId] type to BIGINT';
 
-	ALTER TABLE [$(HangFireSchema)].[JobQueue] ALTER COLUMN [JobId] BIGINT NOT NULL;
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)JobQueue] ALTER COLUMN [JobId] BIGINT NOT NULL;
 	PRINT 'Modified [JobQueue].[JobId] type to BIGINT';
 
-	ALTER TABLE [$(HangFireSchema)].[State] ALTER COLUMN [Id] BIGINT NOT NULL;
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)State] ALTER COLUMN [Id] BIGINT NOT NULL;
 	PRINT 'Modified [State].[Id] type to BIGINT';
 
-	ALTER TABLE [$(HangFireSchema)].[State] ALTER COLUMN [JobId] BIGINT NOT NULL;
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)State] ALTER COLUMN [JobId] BIGINT NOT NULL;
 	PRINT 'Modified [State].[JobId] type to BIGINT';
 
-	ALTER TABLE [$(HangFireSchema)].[Counter] ALTER COLUMN [Value] INT NOT NULL;
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Counter] ALTER COLUMN [Value] INT NOT NULL;
 	PRINT 'Modified [Counter].[Value] type to INT';
 
 	-- Adding back all the Primary Key constraints or clustered indexes where PKs aren't appropriate.
 
-	ALTER TABLE [$(HangFireSchema)].[AggregatedCounter] ADD CONSTRAINT [PK_HangFire_CounterAggregated] PRIMARY KEY CLUSTERED (
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)AggregatedCounter] ADD CONSTRAINT [PK_HangFire_CounterAggregated] PRIMARY KEY CLUSTERED (
 		[Key] ASC
 	);
 	PRINT 'Re-created constraint [PK_HangFire_CounterAggregated]';
 
-	CREATE CLUSTERED INDEX [CX_HangFire_Counter] ON [$(HangFireSchema)].[Counter] ([Key]);
+	CREATE CLUSTERED INDEX [CX_HangFire_Counter] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Counter] ([Key]);
 	PRINT 'Created clustered index [CX_HangFire_Counter]';
 
-	ALTER TABLE [$(HangFireSchema)].[Hash] ADD CONSTRAINT [PK_HangFire_Hash] PRIMARY KEY CLUSTERED (
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Hash] ADD CONSTRAINT [PK_HangFire_Hash] PRIMARY KEY CLUSTERED (
 		[Key] ASC,
 		[Field] ASC
 	);
 	PRINT 'Re-created constraint [PK_HangFire_Hash]';
 
-	ALTER TABLE [$(HangFireSchema)].[Job] ADD CONSTRAINT [PK_HangFire_Job] PRIMARY KEY CLUSTERED ([Id] ASC);
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Job] ADD CONSTRAINT [PK_HangFire_Job] PRIMARY KEY CLUSTERED ([Id] ASC);
 	PRINT 'Re-created constraint [PK_HangFire_Job]';
 	
-	ALTER TABLE [$(HangFireSchema)].[JobParameter] ADD CONSTRAINT [PK_HangFire_JobParameter] PRIMARY KEY CLUSTERED (
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)JobParameter] ADD CONSTRAINT [PK_HangFire_JobParameter] PRIMARY KEY CLUSTERED (
 		[JobId] ASC,
 		[Name] ASC
 	);
 	PRINT 'Re-created constraint [PK_HangFire_JobParameter]';
 
-	ALTER TABLE [$(HangFireSchema)].[JobQueue] ADD CONSTRAINT [PK_HangFire_JobQueue] PRIMARY KEY CLUSTERED (
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)JobQueue] ADD CONSTRAINT [PK_HangFire_JobQueue] PRIMARY KEY CLUSTERED (
 		[Queue] ASC,
 		[Id] ASC
 	);
 	PRINT 'Re-created constraint [PK_HangFire_JobQueue]';
 
-	ALTER TABLE [$(HangFireSchema)].[List] ADD CONSTRAINT [PK_HangFire_List] PRIMARY KEY CLUSTERED (
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)List] ADD CONSTRAINT [PK_HangFire_List] PRIMARY KEY CLUSTERED (
 		[Key] ASC,
 		[Id] ASC
 	);
 	PRINT 'Re-created constraint [PK_HangFire_List]';
 
-	ALTER TABLE [$(HangFireSchema)].[Set] ADD CONSTRAINT [PK_HangFire_Set] PRIMARY KEY CLUSTERED (
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)Set] ADD CONSTRAINT [PK_HangFire_Set] PRIMARY KEY CLUSTERED (
 		[Key] ASC,
 		[Value] ASC
 	);
 	PRINT 'Re-created constraint [PK_HangFire_Set]';
 
-	ALTER TABLE [$(HangFireSchema)].[State] ADD CONSTRAINT [PK_HangFire_State] PRIMARY KEY CLUSTERED (
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)State] ADD CONSTRAINT [PK_HangFire_State] PRIMARY KEY CLUSTERED (
 		[JobId] ASC,
 		[Id]
 	);
@@ -606,50 +697,50 @@ BEGIN
 
 	-- Creating secondary, nonclustered indexes
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_Job_StateName] ON [$(HangFireSchema)].[Job] ([StateName])
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Job_StateName] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Job] ([StateName])
 	WHERE [StateName] IS NOT NULL;
 	PRINT 'Re-created index [IX_HangFire_Job_StateName]';
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_Set_Score] ON [$(HangFireSchema)].[Set] ([Score])
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Set_Score] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Set] ([Score])
 	WHERE [Score] IS NOT NULL;
 	PRINT 'Created index [IX_HangFire_Set_Score]';
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_Server_LastHeartbeat] ON [$(HangFireSchema)].[Server] ([LastHeartbeat]);
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Server_LastHeartbeat] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Server] ([LastHeartbeat]);
 	PRINT 'Created index [IX_HangFire_Server_LastHeartbeat]';
 
 	-- Creating filtered indexes for ExpireAt columns
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_AggregatedCounter_ExpireAt] ON [$(HangFireSchema)].[AggregatedCounter] ([ExpireAt])
+	CREATE NONCLUSTERED INDEX [IX_HangFire_AggregatedCounter_ExpireAt] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)AggregatedCounter] ([ExpireAt])
 	WHERE [ExpireAt] IS NOT NULL;
 	PRINT 'Created index [IX_HangFire_AggregatedCounter_ExpireAt]';
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_Hash_ExpireAt] ON [$(HangFireSchema)].[Hash] ([ExpireAt])
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Hash_ExpireAt] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Hash] ([ExpireAt])
 	WHERE [ExpireAt] IS NOT NULL;
 	PRINT 'Re-created index [IX_HangFire_Hash_ExpireAt]';
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_Job_ExpireAt] ON [$(HangFireSchema)].[Job] ([ExpireAt])
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Job_ExpireAt] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Job] ([ExpireAt])
 	INCLUDE ([StateName])
 	WHERE [ExpireAt] IS NOT NULL;
 	PRINT 'Re-created index [IX_HangFire_Job_ExpireAt]';
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_List_ExpireAt] ON [$(HangFireSchema)].[List] ([ExpireAt])
+	CREATE NONCLUSTERED INDEX [IX_HangFire_List_ExpireAt] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)List] ([ExpireAt])
 	WHERE [ExpireAt] IS NOT NULL;
 	PRINT 'Re-created index [IX_HangFire_List_ExpireAt]';
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_Set_ExpireAt] ON [$(HangFireSchema)].[Set] ([ExpireAt])
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Set_ExpireAt] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Set] ([ExpireAt])
 	WHERE [ExpireAt] IS NOT NULL;
 	PRINT 'Re-created index [IX_HangFire_Set_ExpireAt]';
 
 	-- Restoring foreign keys
 
-	ALTER TABLE [$(HangFireSchema)].[State] ADD CONSTRAINT [FK_HangFire_State_Job] FOREIGN KEY([JobId])
-		REFERENCES [$(HangFireSchema)].[Job] ([Id])
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)State] ADD CONSTRAINT [FK_HangFire_State_Job] FOREIGN KEY([JobId])
+		REFERENCES [$(HangFireSchema)].[$(HangFireTabelPrefix)Job] ([Id])
 		ON UPDATE CASCADE
 		ON DELETE CASCADE;
 	PRINT 'Re-created constraint [FK_HangFire_State_Job]';
 
-	ALTER TABLE [$(HangFireSchema)].[JobParameter] ADD CONSTRAINT [FK_HangFire_JobParameter_Job] FOREIGN KEY([JobId])
-		REFERENCES [$(HangFireSchema)].[Job] ([Id])
+	ALTER TABLE [$(HangFireSchema)].[$(HangFireTabelPrefix)JobParameter] ADD CONSTRAINT [FK_HangFire_JobParameter_Job] FOREIGN KEY([JobId])
+		REFERENCES [$(HangFireSchema)].[$(HangFireTabelPrefix)Job] ([Id])
 		ON UPDATE CASCADE
 		ON DELETE CASCADE;
 	PRINT 'Re-created constraint [FK_HangFire_JobParameter_Job]';
@@ -661,10 +752,10 @@ IF @CURRENT_SCHEMA_VERSION = 6
 BEGIN
 	PRINT 'Installing schema version 7';
 
-	DROP INDEX [IX_HangFire_Set_Score] ON [$(HangFireSchema)].[Set];
+	DROP INDEX [IX_HangFire_Set_Score] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Set];
 	PRINT 'Dropped index [IX_HangFire_Set_Score]';
 
-	CREATE NONCLUSTERED INDEX [IX_HangFire_Set_Score] ON [$(HangFireSchema)].[Set] ([Key], [Score]);
+	CREATE NONCLUSTERED INDEX [IX_HangFire_Set_Score] ON [$(HangFireSchema)].[$(HangFireTabelPrefix)Set] ([Key], [Score]);
 	PRINT 'Created index [IX_HangFire_Set_Score] with the proper composite key';
 
 	SET @CURRENT_SCHEMA_VERSION = 7;
@@ -679,9 +770,9 @@ BEGIN
 	SET @CURRENT_SCHEMA_VERSION = 8;
 END*/
 
-UPDATE [$(HangFireSchema)].[Schema] SET [Version] = @CURRENT_SCHEMA_VERSION
+UPDATE [$(HangFireSchema)].[$(HangFireTabelPrefix)Schema] SET [Version] = @CURRENT_SCHEMA_VERSION
 IF @@ROWCOUNT = 0 
-	INSERT INTO [$(HangFireSchema)].[Schema] ([Version]) VALUES (@CURRENT_SCHEMA_VERSION)        
+	INSERT INTO [$(HangFireSchema)].[$(HangFireTabelPrefix)Schema] ([Version]) VALUES (@CURRENT_SCHEMA_VERSION)        
 
 PRINT 'Hangfire database schema installed';
 

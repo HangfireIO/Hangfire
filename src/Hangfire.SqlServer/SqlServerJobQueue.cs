@@ -73,7 +73,7 @@ namespace Hangfire.SqlServer
 #endif
         {
             string enqueueJobSql =
-$@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)";
+$@"insert into [{_storage.SchemaName}].{_storage.TablePrefix}JobQueue (JobId, Queue) values (@jobId, @queue)";
 
             connection.Execute(
                 enqueueJobSql, 
@@ -169,7 +169,7 @@ set transaction isolation level read committed;
 update top (1) JQ
 set FetchedAt = GETUTCDATE()
 output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
-from [{_storage.SchemaName}].JobQueue JQ with ({GetSlidingFetchTableHints()})
+from [{_storage.SchemaName}].{_storage.TablePrefix}JobQueue JQ with ({GetSlidingFetchTableHints()})
 where Queue in @queues and
 (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()));";
         }
@@ -194,7 +194,7 @@ BEGIN
         update top (1) JQ
         set FetchedAt = @now
         output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
-        from [{_storage.SchemaName}].JobQueue JQ with ({GetSlidingFetchTableHints()})
+        from [{_storage.SchemaName}].{_storage.TablePrefix}JobQueue JQ with ({GetSlidingFetchTableHints()})
         where Queue in @queues and
         (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, @now));
 
@@ -231,7 +231,7 @@ SELECT 0 AS [Id], CAST(0 AS BIGINT) AS [JobId], CAST(NULL AS NVARCHAR) as [Queue
             string fetchJobSqlTemplate =
                 $@"delete top (1) JQ
 output DELETED.Id, DELETED.JobId, DELETED.Queue
-from [{_storage.SchemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
+from [{_storage.SchemaName}].{_storage.TablePrefix}JobQueue JQ with (readpast, updlock, rowlock, forceseek)
 where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))";
 
             var pollInterval = _options.QueuePollInterval > TimeSpan.Zero
