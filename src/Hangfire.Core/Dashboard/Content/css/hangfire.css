@@ -344,6 +344,10 @@ a:hover .label-hover {
     margin-bottom: 0;
 }
 
+.state-card-body dd {
+    word-break: break-all;
+}
+
 .state-card-body pre {
     white-space: pre-wrap;       /* CSS 3 */
     word-wrap: break-word;       /* Internet Explorer 5.5+ */
