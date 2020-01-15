@@ -331,12 +331,12 @@ WriteLiteral("                                    <th class=\"min-width\">\r\n  
             
             #line default
             #line hidden
-WriteLiteral("                                <th class=\"min-width\">");
+WriteLiteral("                                <th>");
 
 
             
             #line 87 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                                 Write(Strings.Common_Id);
+                               Write(Strings.Common_Id);
 
             
             #line default
@@ -351,12 +351,12 @@ WriteLiteral("</th>\r\n                                <th class=\"min-width\">"
             
             #line default
             #line hidden
-WriteLiteral("</th>\r\n                                <th class=\"min-width\">");
+WriteLiteral("</th>\r\n                                <th>");
 
 
             
             #line 89 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                                 Write(Strings.RecurringJobsPage_Table_TimeZone);
+                               Write(Strings.RecurringJobsPage_Table_TimeZone);
 
             
             #line default
@@ -446,12 +446,12 @@ WriteLiteral("\"/>\r\n                                        </td>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                                    <td class=\"min-width\">");
+WriteLiteral("                                    <td class=\"word-break width-15\">");
 
 
             
             #line 106 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                                     Write(job.Id);
+                                                               Write(job.Id);
 
             
             #line default
@@ -586,7 +586,7 @@ WriteLiteral("</code>\r\n");
             #line default
             #line hidden
 WriteLiteral("                                    </td>\r\n                                    <t" +
-"d class=\"min-width\">\r\n");
+"d style=\"word-break: break-word;\">\r\n");
 
 
             
@@ -688,7 +688,7 @@ WriteLiteral(" UTC\r\n");
             #line default
             #line hidden
 WriteLiteral("                                    </td>\r\n                                    <t" +
-"d class=\"word-break\">\r\n");
+"d class=\"word-break width-30\">\r\n");
 
 
             

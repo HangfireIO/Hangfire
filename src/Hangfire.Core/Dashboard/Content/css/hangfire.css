@@ -105,6 +105,18 @@ a:hover .label-hover {
     white-space: nowrap;
 }
 
+.width-15 {
+    width: 15%;
+}
+
+.width-30 {
+    width: 30%;
+}
+
+@media (max-width: 991px) {
+    .width-30 { width: 15%; }
+}
+
 .align-right {
     text-align: right;
 }

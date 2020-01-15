@@ -84,9 +84,9 @@
                                         <input type="checkbox" class="js-jobs-list-select-all"/>
                                     </th>
                                 }
-                                <th class="min-width">@Strings.Common_Id</th>
+                                <th>@Strings.Common_Id</th>
                                 <th class="min-width">@Strings.RecurringJobsPage_Table_Cron</th>
-                                <th class="min-width">@Strings.RecurringJobsPage_Table_TimeZone</th>
+                                <th>@Strings.RecurringJobsPage_Table_TimeZone</th>
                                 <th>@Strings.Common_Job</th>
                                 <th class="align-right min-width">@Strings.RecurringJobsPage_Table_NextExecution</th>
                                 <th class="align-right min-width">@Strings.RecurringJobsPage_Table_LastExecution</th>
@@ -103,7 +103,7 @@
                                             <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Id"/>
                                         </td>
                                     }
-                                    <td class="min-width">@job.Id</td>
+                                    <td class="word-break width-15">@job.Id</td>
                                     <td class="min-width">
                                         @* ReSharper disable once EmptyGeneralCatchClause *@
                                         @{
@@ -152,7 +152,7 @@
                                             <code>@job.Cron</code>
                                         }
                                     </td>
-                                    <td class="min-width">
+                                    <td style="word-break: break-word;">
                                         @if (!String.IsNullOrWhiteSpace(job.TimeZoneId))
                                         {
                                             string displayName;
@@ -181,7 +181,7 @@
                                             @: UTC
                                         }
                                     </td>
-                                    <td class="word-break">
+                                    <td class="word-break width-30">
                                         @if (job.Job != null)
                                         {
                                             @: @Html.JobName(job.Job)
