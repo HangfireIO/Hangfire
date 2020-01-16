@@ -147,6 +147,9 @@
   <data name="Common_Deleting" xml:space="preserve">
     <value>删除中...</value>
   </data>
+  <data name="Common_Disabled" xml:space="preserve">
+    <value>禁用</value>
+  </data>
   <data name="Common_DeleteSelected" xml:space="preserve">
     <value>删除选中</value>
   </data>
@@ -155,6 +158,9 @@
   </data>
   <data name="Common_Enqueueing" xml:space="preserve">
     <value>加入队列中...</value>
+  </data>
+  <data name="Common_Error" xml:space="preserve">
+    <value>错误</value>
   </data>
   <data name="Common_Fetched" xml:space="preserve">
     <value>获取到</value>
@@ -263,7 +269,7 @@
                         &lt;code&gt;{0}&lt;/code&gt;, 心跳包超过1分钟请求超时后，作业会自动重试。但也可以重新加入队列或者删除作业。</value>
   </data>
   <data name="JobDetailsPage_JobExpired" xml:space="preserve">
-    <value>Background job '{0}' has expired or could not be found on the server.</value>
+    <value>作业 '{0}' 已经过期或不存在于这台服务器。</value>
   </data>
   <data name="JobDetailsPage_JobFinished_Warning_Html" xml:space="preserve">
     <value>&lt;strong&gt;任务完成&lt;/strong&gt;.系统将在&lt;em&gt;&lt;abbr data-moment=\"{0}\"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;被自动删除这个任务记录.</value>
@@ -284,10 +290,10 @@
     <value>时间:</value>
   </data>
   <data name="Paginator_Next" xml:space="preserve">
-    <value>下一步</value>
+    <value>下一页</value>
   </data>
   <data name="Paginator_Prev" xml:space="preserve">
-    <value>上一步</value>
+    <value>上一页</value>
   </data>
   <data name="Paginator_TotalItems" xml:space="preserve">
     <value>总条数</value>
@@ -330,6 +336,9 @@
   </data>
   <data name="RecurringJobsPage_NoJobs" xml:space="preserve">
     <value>没有作业</value>
+  </data>
+  <data name="RecurringJobsPage_RecurringJobDisabled_Tooltip" xml:space="preserve">
+    <value>Cron 表达式无效或者在未来 100 年都不会发生</value>
   </data>
   <data name="RecurringJobsPage_Table_Cron" xml:space="preserve">
     <value>Cron</value>
@@ -376,8 +385,21 @@
   <data name="ScheduledJobsPage_Title" xml:space="preserve">
     <value>计划作业</value>
   </data>
+  <data name="ServersPage_Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
   <data name="ServersPage_NoServers" xml:space="preserve">
     <value>没有活动服务器。后台作业将不会被执行。</value>
+  </data>
+  <data name="ServersPage_Note_Text" xml:space="preserve">
+    <value>没有在最近一分钟内报告心跳的服务器可能会被终止。如果这些服务器不尽快报告心跳信号，会在超时后被自动移除，这不需要人工操作。
+	在这些服务器上的未完成作业也会被自动重新排入作业队列，但是你也可以通过 &lt;a href="{0}"&gt;执行中作业&lt;/a&gt; 页面加速这个过程。</value>
+  </data>
+  <data name="ServersPage_Note_Title" xml:space="preserve">
+    <value>终止运行的服务器会被自动移除</value>
+  </data>
+  <data name="ServersPage_Possibly_Aborted" xml:space="preserve">
+    <value>可能已终止</value>
   </data>
   <data name="ServersPage_Table_Heartbeat" xml:space="preserve">
     <value>心跳</value>
@@ -455,7 +477,7 @@
     <value>活动连接</value>
   </data>
   <data name="Metrics_DeletedJobs" xml:space="preserve">
-    <value>删除</value>
+    <value>已删除任务</value>
   </data>
   <data name="Metrics_FailedJobs" xml:space="preserve">
     <value>失败</value>
@@ -482,10 +504,10 @@
     <value>总连接数</value>
   </data>
   <data name="Common_Condition" xml:space="preserve">
-    <value>Condition</value>
+    <value>条件</value>
   </data>
   <data name="Common_Continuations" xml:space="preserve">
-    <value>Continuations</value>
+    <value>持续</value>
   </data>
   <data name="Metrics_AwaitingCount" xml:space="preserve">
     <value>等待中</value>
