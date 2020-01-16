@@ -106,7 +106,6 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                 do
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    int? lockResult = null;
 
                     try
                     {
@@ -119,7 +118,6 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                             parameters.Add("@timeoutSs", (int)_options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds);
                             parameters.Add("@delayMs", pollingDelayMs);
                             parameters.Add("@endMs", PollingQuantumMs);
-                            parameters.Add("@result", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
                             var query = useLongPolling ? GetBlockingFetchSql() : GetNonBlockingFetchSql();
 
@@ -136,7 +134,6 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                                 }
                             }
 
-                            lockResult = parameters.Get<int?>("@result");
                             return null;
                         });
                     }
@@ -151,11 +148,6 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                     if (fetched != null)
                     {
                         break;
-                    }
-
-                    if (lockResult.HasValue && lockResult.Value < -1)
-                    {
-                        throw new InvalidOperationException($"A call to sp_getapplock returned unexpected result '{lockResult.Value}' while fetching a job. Please report this problem to Hangfire developers and don't use sub-second values for the QueuePollInterval option.");
                     }
 
                     if (_options.QueuePollInterval < LongPollingThreshold)
