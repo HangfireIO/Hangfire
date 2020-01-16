@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
@@ -39,6 +40,7 @@ namespace Hangfire.SqlServer
         private static readonly TimeSpan LongPollingThreshold = TimeSpan.FromSeconds(1);
         private static readonly int PollingQuantumMs = 1000;
         private static readonly int MinPollingDelayMs = 50;
+        private static readonly ConcurrentDictionary<string, SemaphoreSlim> Semaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
 
         private readonly SqlServerStorage _storage;
         private readonly SqlServerStorageOptions _options;
@@ -89,8 +91,9 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
             if (queues == null) throw new ArgumentNullException(nameof(queues));
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", nameof(queues));
 
-            var lockResource = $"{_storage.SchemaName}_FetchLockLock_{String.Join("_", queues.OrderBy(x => x))}";
-            var isBlocking = false;
+            var useLongPolling = false;
+            var queuesString = String.Join("_", queues.OrderBy(x => x));
+            var semaphore = Semaphores.GetOrAdd(queuesString, new SemaphoreSlim(initialCount: 1));
 
             var pollingDelayMs = Math.Min(
                 Math.Max((int)_options.QueuePollInterval.TotalMilliseconds, MinPollingDelayMs),
@@ -105,34 +108,45 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                     cancellationToken.ThrowIfCancellationRequested();
                     int? lockResult = null;
 
-                    fetched = _storage.UseConnection(null, connection =>
+                    try
                     {
-                        var parameters = new DynamicParameters();
-                        parameters.Add("@queues", queues);
-                        parameters.Add("@timeout", (int)_options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds);
-                        parameters.Add("@lockResource", lockResource);
-                        parameters.Add("@pollingDelayMs", pollingDelayMs);
-                        parameters.Add("@pollingQuantumMs", PollingQuantumMs);
-                        parameters.Add("@result", dbType: DbType.Int32, direction: ParameterDirection.Output);
+                        if (useLongPolling) semaphore.Wait(cancellationToken);
 
-                        var query = isBlocking ? GetBlockingFetchSql() : GetNonBlockingFetchSql();
-
-                        using (var reader = connection.QueryMultiple(query, parameters, commandTimeout: _storage.CommandTimeout))
+                        fetched = _storage.UseConnection(null, connection =>
                         {
-                            while (!reader.IsConsumed)
+                            var parameters = new DynamicParameters();
+                            parameters.Add("@queues", queues);
+                            parameters.Add("@timeoutSs", (int)_options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds);
+                            parameters.Add("@delayMs", pollingDelayMs);
+                            parameters.Add("@endMs", PollingQuantumMs);
+                            parameters.Add("@result", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+                            var query = useLongPolling ? GetBlockingFetchSql() : GetNonBlockingFetchSql();
+
+                            using (var reader = connection.QueryMultiple(query, parameters, commandTimeout: _storage.CommandTimeout))
                             {
-                                cancellationToken.ThrowIfCancellationRequested();
-                                var fetchedJob = reader.Read<FetchedJob>().SingleOrDefault(x => x != null);
-                                if (fetchedJob != null && !(fetchedJob.Id == 0 && fetchedJob.JobId == 0 && fetchedJob.Queue == null))
+                                while (!reader.IsConsumed)
                                 {
-                                    return new SqlServerTimeoutJob(_storage, fetchedJob.Id, fetchedJob.JobId.ToString(CultureInfo.InvariantCulture), fetchedJob.Queue, fetchedJob.FetchedAt.Value);
+                                    cancellationToken.ThrowIfCancellationRequested();
+                                    var fetchedJob = reader.Read<FetchedJob>().SingleOrDefault(x => x != null);
+                                    if (fetchedJob != null)
+                                    {
+                                        return new SqlServerTimeoutJob(_storage, fetchedJob.Id, fetchedJob.JobId.ToString(CultureInfo.InvariantCulture), fetchedJob.Queue, fetchedJob.FetchedAt.Value);
+                                    }
                                 }
                             }
-                        }
 
-                        lockResult = parameters.Get<int?>("@result");
-                        return null;
-                    });
+                            lockResult = parameters.Get<int?>("@result");
+                            return null;
+                        });
+                    }
+                    finally
+                    {
+                        if (useLongPolling && semaphore.CurrentCount == 0)
+                        {
+                            semaphore.Release();
+                        }
+                    }
 
                     if (fetched != null)
                     {
@@ -146,7 +160,7 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
 
                     if (_options.QueuePollInterval < LongPollingThreshold)
                     {
-                        isBlocking = true;
+                        useLongPolling = true;
                     }
                     else
                     {
@@ -162,55 +176,34 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
         private string GetNonBlockingFetchSql()
         {
             return $@"
-set nocount on;
-set xact_abort on;
-set transaction isolation level read committed;
+set nocount on;set xact_abort on;set tran isolation level read committed;
 
 update top (1) JQ
 set FetchedAt = GETUTCDATE()
 output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
 from [{_storage.SchemaName}].JobQueue JQ with ({GetSlidingFetchTableHints()})
 where Queue in @queues and
-(FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()));";
+(FetchedAt is null or FetchedAt < DATEADD(second, @timeoutSs, GETUTCDATE()));";
         }
 
         private string GetBlockingFetchSql()
         {
             return $@"
-set nocount on;
-set xact_abort on;
-set transaction isolation level read committed;
+set nocount on;set xact_abort on;set tran isolation level read committed;
 
-EXEC @result = sp_getapplock @Resource = @lockResource, @LockMode = 'Exclusive', @LockTimeout = @pollingQuantumMs, @LockOwner = 'Session';
+declare @end datetime2 = DATEADD(ms, @endMs, SYSUTCDATETIME()),
+	@delay datetime = DATEADD(ms, @delayMs, convert(DATETIME, 0));
 
-IF (@result >= 0)
+WHILE (SYSUTCDATETIME() < @end)
 BEGIN
-    declare @now DATETIME2 = SYSUTCDATETIME();
-    declare @pollingDelay datetime = dateadd(ms, @pollingDelayMs, convert(DATETIME, 0));
-    declare @quantumEnd datetime2 = DATEADD(ms, @pollingQuantumMs, @now);
+	update top (1) JQ set FetchedAt = GETUTCDATE()
+	output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
+	from [{_storage.SchemaName}].JobQueue JQ with ({GetSlidingFetchTableHints()})
+	where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeoutSs, GETUTCDATE()));
 
-    WHILE (@now < @quantumEnd)
-    BEGIN
-        update top (1) JQ
-        set FetchedAt = @now
-        output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
-        from [{_storage.SchemaName}].JobQueue JQ with ({GetSlidingFetchTableHints()})
-        where Queue in @queues and
-        (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, @now));
-
-        IF @@ROWCOUNT > 0
-        BEGIN
-            EXEC sp_releaseapplock @Resource = @lockResource, @LockOwner = 'Session';
-            RETURN;
-        END;
-
-        WAITFOR DELAY @pollingDelay;
-        SET @now = SYSUTCDATETIME();
-    END
-    EXEC sp_releaseapplock @Resource = @lockResource, @LockOwner = 'Session';
-END
-
-SELECT 0 AS [Id], CAST(0 AS BIGINT) AS [JobId], CAST(NULL AS NVARCHAR) as [Queue], CAST(NULL AS DATETIME) as [FetchedAt];";
+	IF @@ROWCOUNT > 0 RETURN;
+	WAITFOR DELAY @delay;
+END";
         }
 
         private string GetSlidingFetchTableHints()
