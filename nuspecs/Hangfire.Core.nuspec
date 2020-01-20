@@ -21,6 +21,12 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.9
+• Fixed – Additional Chinese translation for Dashboard UI (by @brookqin).
+• Fixed – Added `null` checks for expired failed jobs in Dashboard UI (by @ppkale1995-cimpress).
+• Fixed – Add word break to definition lists for state cards in Dashboard UI.
+• Fixed – Render long recurring job identifiers correctly in Dashboard UI.
+
 1.7.8
 • Added – `IGlobalConfiguration.UseResultsInContinuations` method to globally enable results for continuations.
 • Added – Ability to push antecedent job's result to continuations via job parameters with `ContinuationsSupport`.

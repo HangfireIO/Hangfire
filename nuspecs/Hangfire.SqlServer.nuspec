@@ -16,6 +16,12 @@
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.9
+• Changed – Implement long polling fetch for sub-second polling delays without `sp_getapplock`.
+• Fixed – Don't leak `DbConnection` instance when an exception occurs during its opening.
+• Fixed – Can not obtain connection from the pool exception after database was offline.
+• Fixed – High number of waits in SQL Server when Hangfire Servers are idle.
+
 1.7.8
 • Added – Support for Microsoft.Data.SqlClient package when using a custom connection factory (Part II).
 • Fixed – Remove `System.Data.SqlClient` dependency from `SqlCommandBatch` and `ExpirationManager`.
