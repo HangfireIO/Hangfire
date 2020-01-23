@@ -29,14 +29,14 @@ namespace Hangfire
         /// <summary>
         /// Gets the metadata for this attribute.
         /// </summary>
-        public string MetadataValue { get; }
+        protected string MetadataValue { get; }
 
         /// <summary>
         /// Gets or sets resource type to localize the metadata string.
         /// </summary>
         public Type ResourceType { get; set; }
 
-        public string Format(DashboardContext context, Job job)
+        public virtual string Format(DashboardContext context, Job job)
         {
             var formatted = MetadataValue;
 

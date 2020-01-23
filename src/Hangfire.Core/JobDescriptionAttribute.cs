@@ -8,7 +8,7 @@ namespace Hangfire
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class JobDescriptionAttribute : JobMetadataAttribute
     {
-        public JobDescriptionAttribute(string metadataValue) : base(metadataValue)
+        public JobDescriptionAttribute(string description) : base(description)
         {
         }
 
