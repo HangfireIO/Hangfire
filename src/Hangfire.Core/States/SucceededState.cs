@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Hangfire.Common;
 using Hangfire.Storage;
+using Newtonsoft.Json;
 
 namespace Hangfire.States
 {
@@ -49,18 +50,19 @@ namespace Hangfire.States
         /// </remarks>
         public static readonly string StateName = "Succeeded";
 
-        internal SucceededState(object result, long latency, long performanceDuration)
+        [JsonConstructor]
+        public SucceededState(object result, long latency, long performanceDuration)
         {
             SucceededAt = DateTime.UtcNow;
             Result = result;
             Latency = latency;
             PerformanceDuration = performanceDuration;
-            
         }
 
         /// <summary>
         /// Gets a date/time when the current state instance was created.
         /// </summary>
+        [JsonIgnore]
         public DateTime SucceededAt { get; }
 
         /// <summary>
@@ -85,6 +87,7 @@ namespace Hangfire.States
         /// Please see the remarks section of the <see cref="IState.Name">IState.Name</see>
         /// article for the details.
         /// </remarks>
+        [JsonIgnore]
         public string Name => StateName;
 
         /// <inheritdoc />
@@ -96,6 +99,7 @@ namespace Hangfire.States
         /// Please refer to the <see cref="IState.IsFinal">IState.IsFinal</see> documentation
         /// for the details.
         /// </remarks>
+        [JsonIgnore]
         public bool IsFinal => true;
 
         /// <inheritdoc />
@@ -105,6 +109,7 @@ namespace Hangfire.States
         /// <see cref="IState.IgnoreJobLoadException">IState.IgnoreJobLoadException</see>
         /// article.
         /// </remarks>
+        [JsonIgnore]
         public bool IgnoreJobLoadException => false;
 
         /// <inheritdoc />
@@ -146,7 +151,7 @@ namespace Hangfire.States
         ///     <item>
         ///         <term><c>Result</c></term>
         ///         <term><see cref="object"/></term>
-        ///         <term><see cref="JobHelper.FromJson"/></term>
+        ///         <term><see cref="SerializationHelper.Serialize{T}(T, SerializationOption)"/> with <see cref="SerializationOption.User"/> argument</term>
         ///         <description>
         ///             <para>Please see the <see cref="Result"/> property.</para>
         ///             <para>This key may be missing from the dictionary, when the return 
@@ -171,7 +176,7 @@ namespace Hangfire.States
 
                 try
                 {
-                    serializedResult = JobHelper.ToJson(Result);
+                    serializedResult = SerializationHelper.Serialize(Result, SerializationOption.User);
                 }
                 catch (Exception)
                 {

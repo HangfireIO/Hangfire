@@ -22,7 +22,7 @@ using Hangfire.Storage.Monitoring;
 
 namespace Hangfire.Dashboard
 {
-    public abstract class RazorPage 
+    public abstract class RazorPage
     {
         private Lazy<StatisticsDto> _statisticsLazy;
 
@@ -39,9 +39,9 @@ namespace Hangfire.Dashboard
         public HtmlHelper Html { get; private set; }
         public UrlHelper Url { get; private set; }
 
-        public JobStorage Storage { get; internal set; }
-        public string AppPath { get; internal set; }
-        public int StatsPollingInterval { get; internal set; }
+        public JobStorage Storage => Context.Storage;
+        public string AppPath => Context.Options.AppPath;
+        public DashboardOptions DashboardOptions => Context.Options;
         public Stopwatch GenerationTime { get; private set; }
 
         public StatisticsDto Statistics
@@ -53,11 +53,15 @@ namespace Hangfire.Dashboard
             }
         }
 
-        internal DashboardRequest Request { private get; set; }
-        internal DashboardResponse Response { private get; set; }
+        public DashboardContext Context { get; private set; }
+
+        internal DashboardRequest Request => Context.Request;
+        internal DashboardResponse Response => Context.Response;
 
         public string RequestPath => Request.Path;
 
+        public bool IsReadOnly => Context.IsReadOnly;
+        
         /// <exclude />
         public abstract void Execute();
 
@@ -74,11 +78,7 @@ namespace Hangfire.Dashboard
         /// <exclude />
         public void Assign(RazorPage parentPage)
         {
-            Request = parentPage.Request;
-            Response = parentPage.Response;
-            Storage = parentPage.Storage;
-            AppPath = parentPage.AppPath;
-            StatsPollingInterval = parentPage.StatsPollingInterval;
+            Context = parentPage.Context;
             Url = parentPage.Url;
 
             GenerationTime = parentPage.GenerationTime;
@@ -87,12 +87,7 @@ namespace Hangfire.Dashboard
 
         internal void Assign(DashboardContext context)
         {
-            Request = context.Request;
-            Response = context.Response;
-
-            Storage = context.Storage;
-            AppPath = context.Options.AppPath;
-            StatsPollingInterval = context.Options.StatsPollingInterval;
+            Context = context;
             Url = new UrlHelper(context);
 
             _statisticsLazy = new Lazy<StatisticsDto>(() =>

@@ -21,7 +21,7 @@ namespace Hangfire.Dashboard.Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Strings {
@@ -189,6 +189,15 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Disabled.
+        /// </summary>
+        public static string Common_Disabled {
+            get {
+                return ResourceManager.GetString("Common_Disabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Enqueue jobs.
         /// </summary>
         public static string Common_EnqueueButton_Text {
@@ -212,6 +221,15 @@ namespace Hangfire.Dashboard.Resources {
         public static string Common_Enqueueing {
             get {
                 return ResourceManager.GetString("Common_Enqueueing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        public static string Common_Error {
+            get {
+                return ResourceManager.GetString("Common_Error", resourceCulture);
             }
         }
         
@@ -261,7 +279,7 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Less details....
+        ///   Looks up a localized string similar to Fewer details....
         /// </summary>
         public static string Common_LessDetails {
             get {
@@ -506,7 +524,7 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Dashboard.
+        ///   Looks up a localized string similar to Overview.
         /// </summary>
         public static string HomePage_Title {
             get {
@@ -955,7 +973,7 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Nexts jobs.
+        ///   Looks up a localized string similar to Next jobs.
         /// </summary>
         public static string QueuesPage_Table_NextsJobs {
             get {
@@ -996,6 +1014,15 @@ namespace Hangfire.Dashboard.Resources {
         public static string RecurringJobsPage_NoJobs {
             get {
                 return ResourceManager.GetString("RecurringJobsPage_NoJobs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cron expression is invalid or don&apos;t have any occurrences over the next 100 years.
+        /// </summary>
+        public static string RecurringJobsPage_RecurringJobDisabled_Tooltip {
+            get {
+                return ResourceManager.GetString("RecurringJobsPage_RecurringJobDisabled_Tooltip", resourceCulture);
             }
         }
         
@@ -1144,11 +1171,48 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Active.
+        /// </summary>
+        public static string ServersPage_Active {
+            get {
+                return ResourceManager.GetString("ServersPage_Active", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There are no active servers. Background tasks will not be processed..
         /// </summary>
         public static string ServersPage_NoServers {
             get {
                 return ResourceManager.GetString("ServersPage_NoServers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some of the servers don&apos;t have heartbeat reported within the last minute and may be aborted. If they don&apos;t report heartbeat in the near future, they will be removed automatically after timeout is exceeded, no manual action is required.
+        ///                    Incomplete background jobs running on those servers will be re-queued automatically, but you can speed up the process by checking the &lt;a href=&quot;{0}&quot;&gt;Processing Jobs&lt;/a&gt; page..
+        /// </summary>
+        public static string ServersPage_Note_Text {
+            get {
+                return ResourceManager.GetString("ServersPage_Note_Text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Aborted servers will be removed automatically.
+        /// </summary>
+        public static string ServersPage_Note_Title {
+            get {
+                return ResourceManager.GetString("ServersPage_Note_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Possibly aborted.
+        /// </summary>
+        public static string ServersPage_Possibly_Aborted {
+            get {
+                return ResourceManager.GetString("ServersPage_Possibly_Aborted", resourceCulture);
             }
         }
         

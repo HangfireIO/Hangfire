@@ -1,8 +1,10 @@
-﻿using System;
+﻿extern alias ReferencedDapper;
+
+using System;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
-using Dapper;
+using ReferencedDapper::Dapper;
 using Xunit;
 
 namespace Hangfire.SqlServer.Tests
@@ -12,8 +14,8 @@ namespace Hangfire.SqlServer.Tests
         [Fact, CleanDatabase]
         public void CountersAggregatorExecutesProperly()
         {
-            const string createSql = @"
-insert into HangFire.Counter ([Key], [Value], ExpireAt) 
+            var createSql = $@"
+insert into [{Constants.DefaultSchema}].Counter ([Key], [Value], ExpireAt) 
 values ('key', 1, @expireAt)";
 
             using (var connection = CreateConnection())
@@ -29,7 +31,7 @@ values ('key', 1, @expireAt)";
                 aggregator.Execute(cts.Token);
 
                 // Assert
-                Assert.Equal(1, connection.Query<int>(@"select count(*) from HangFire.AggregatedCounter").Single());
+                Assert.Equal(1, connection.Query<int>($"select count(*) from [{Constants.DefaultSchema}].AggregatedCounter").Single());
             }
         }
 

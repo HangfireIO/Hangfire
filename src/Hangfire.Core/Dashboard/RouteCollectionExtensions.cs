@@ -17,6 +17,7 @@
 using System;
 using System.Text.RegularExpressions;
 using Hangfire.Annotations;
+using System.ComponentModel;
 
 namespace Hangfire.Dashboard
 {
@@ -34,7 +35,7 @@ namespace Hangfire.Dashboard
             routes.Add(pathTemplate, new RazorPageDispatcher(pageFunc));
         }
 
-#if NETFULL
+#if FEATURE_OWIN
         [Obsolete("Use the AddCommand(RouteCollection, string, Func<DashboardContext, bool>) overload instead. Will be removed in 2.0.0.")]
         public static void AddCommand(
             [NotNull] this RouteCollection routes, 
@@ -61,7 +62,7 @@ namespace Hangfire.Dashboard
             routes.Add(pathTemplate, new CommandDispatcher(command));
         }
 
-#if NETFULL
+#if FEATURE_OWIN
         [Obsolete("Use the AddBatchCommand(RouteCollection, string, Func<DashboardContext, bool>) overload instead. Will be removed in 2.0.0.")]
         public static void AddBatchCommand(
             [NotNull] this RouteCollection routes, 
@@ -97,11 +98,27 @@ namespace Hangfire.Dashboard
 
             routes.AddBatchCommand(pathTemplate, (context, jobId) =>
             {
-                var client = new BackgroundJobClient(context.Storage);
+                var client = context.GetBackgroundJobClient();
                 command(client, jobId);
             });
         }
 
+        public static void AddRecurringBatchCommand(
+            this RouteCollection routes,
+            string pathTemplate,
+            [NotNull] Action<IRecurringJobManager, string> command)
+        {
+            if (command == null) throw new ArgumentNullException(nameof(command));
+
+            routes.AddBatchCommand(pathTemplate, (context, jobId) =>
+            {
+                var manager = context.GetRecurringJobManager();
+                command(manager, jobId);
+            });
+        }
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [Obsolete("For binary compatibility only. Use overload with Action<IRecurringJobManager, string> instead.")]
         public static void AddRecurringBatchCommand(
             this RouteCollection routes,
             string pathTemplate,

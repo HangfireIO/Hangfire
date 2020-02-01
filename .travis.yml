@@ -1,61 +1,50 @@
 # Travis-CI Build for Hangfire
 # see travis-ci.org for details
 
-#language: csharp
-language: cpp
+language: csharp
 sudo: required
-dist: trusty
+dist: xenial
 
-os:  
-  - linux
-  - osx
+services:
+  - docker
 
-env:  
-  global:
-    - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-    - DOTNET_CLI_TELEMETRY_OPTOUT: 1
-    - CLI_VERSION=1.0.0-preview2-003121
-  
-addons:  
-  apt:
-    packages:
-    - gettext
-    - libcurl4-openssl-dev
-    - libicu-dev
-    - libssl-dev
-    - libunwind8
-    - zlib1g
+matrix:
+  include:
+    - dotnet: 3.0.100
+      mono: none
+      os: linux
+    - dotnet: 3.0.100
+      mono: none
+      os: osx
+    - mono: latest
+      os: linux
+    - mono: beta
+      os: osx
 
-# Only watch the master branch.
-branches:
-  only:
-    - master
-    - dev
-
-# Make sure build dependencies are installed.
-before_install:  
-  - if test "$TRAVIS_OS_NAME" == "osx"; then ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/; ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/; fi
-  - export DOTNET_INSTALL_DIR="$PWD/.dotnetcli"
-  - export PATH="$DOTNET_INSTALL_DIR:$PATH"  
-  
-install:
-  - travis_retry curl -sSL https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.sh | bash /dev/stdin --version "$CLI_VERSION" --install-dir "$DOTNET_INSTALL_DIR"
-
-#cache: 
-# - apt
-# - directories:
-#   - packages
+before_script:
+  - if hash docker 2>/dev/null;
+    then
+        sudo docker run --name=mssql2017 -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=Password12!' -p 1433:1433 -d microsoft/mssql-server-linux:2017-latest;
+        export Hangfire_SqlServer_ConnectionStringTemplate="Server=tcp:127.0.0.1,1433;Database={0};User Id=sa;Password=Password12!";
+    fi
 
 # Run the build script
+# Add tests for MSSQL in Mono when https://github.com/mono/mono/issues/16440 is fixed
 script:
-  - travis_retry dotnet restore --disable-parallel
-  - dotnet test tests/Hangfire.Core.Tests -verbose
- 
-# Tests on Mono disabled – waiting for https://github.com/NuGet/Home/issues/3085
-# - travis_retry mono .nuget/NuGet.exe install .nuget/packages.config -OutputDirectory packages
-# - travis_retry mono .nuget/NuGet.exe install .
-# - xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
-# - mono ./packages/xunit.runner.console.2.2.0-beta2-build3300/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/Hangfire.Core.Tests.dll
+  - if hash mono 2>/dev/null; 
+    then
+        travis_retry nuget install .nuget/packages.config -OutputDirectory packages;
+        travis_retry nuget restore Hangfire.sln;
+        msbuild /p:Configuration=Release /verbosity:minimal Hangfire.sln;
+        mono ./packages/xunit.runner.console.2.2.0/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/net452/Hangfire.Core.Tests.dll;
+    else
+        set -e;
+        dotnet test -c Release -f netcoreapp3.0 tests/Hangfire.Core.Tests/Hangfire.Core.Tests.csproj;
+        if hash docker 2>/dev/null;
+        then
+            dotnet test -c Release -f netcoreapp3.0 tests/Hangfire.SqlServer.Tests/Hangfire.SqlServer.Tests.csproj;
+        fi
+    fi
 
 notifications:
   slack:

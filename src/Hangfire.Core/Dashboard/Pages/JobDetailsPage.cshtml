@@ -94,8 +94,8 @@
 
                 using (var connection = Storage.GetConnection())
                 {
-                    continuations = JobHelper.FromJson<List<ContinuationsSupportAttribute.Continuation>>(connection.GetJobParameter(
-                        JobId, "Continuations")) ?? new List<ContinuationsSupportAttribute.Continuation>();
+                    continuations = ContinuationsSupportAttribute.DeserializeContinuations(connection.GetJobParameter(
+                        JobId, "Continuations"));
                 }
 
                 if (continuations.Count > 0)
@@ -147,8 +147,23 @@
                 @if (job.History.Count > 1)
                 {
                     <span class="job-snippet-buttons pull-right">
-                        <button class="btn btn-sm btn-default" data-ajax="@Url.To("/jobs/actions/requeue/" + JobId)" data-loading-text="@Strings.Common_Enqueueing">@Strings.JobDetailsPage_Requeue</button>
-                        <button class="btn btn-sm btn-death" data-ajax="@Url.To("/jobs/actions/delete/" + JobId)" data-loading-text="@Strings.Common_Deleting" data-confirm="@Strings.JobDetailsPage_DeleteConfirm">@Strings.Common_Delete</button>
+                        @if (!IsReadOnly)
+                        {
+                            <button class="btn btn-sm btn-default"
+                                    data-ajax="@Url.To("/jobs/actions/requeue/" + JobId)"
+                                    data-loading-text="@Strings.Common_Enqueueing">
+                                @Strings.JobDetailsPage_Requeue
+                            </button>
+                        }
+                        @if (!IsReadOnly)
+                        {
+                            <button class="btn btn-sm btn-death"
+                                    data-ajax="@Url.To("/jobs/actions/delete/" + JobId)"
+                                    data-loading-text="@Strings.Common_Deleting"
+                                    data-confirm="@Strings.JobDetailsPage_DeleteConfirm">
+                                @Strings.Common_Delete
+                            </button>
+                        }
                     </span>
                 }
 

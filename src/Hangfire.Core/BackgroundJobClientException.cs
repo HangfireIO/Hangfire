@@ -26,6 +26,9 @@ namespace Hangfire
     /// implements the <see cref="IBackgroundJobClient"/> interface is unable
     /// to perform an operation due to an error.
     /// </summary>
+#if !NETSTANDARD1_3
+    [Serializable]
+#endif
     public class BackgroundJobClientException : CreateJobFailedException
     {
         /// <summary>

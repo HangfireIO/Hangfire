@@ -20,7 +20,7 @@ namespace Hangfire.Core.Tests.Server
             _serverTimeout = TimeSpan.FromSeconds(5);
 
             _context = new BackgroundProcessContextMock();
-            _context.CancellationTokenSource.Cancel();
+            _context.StoppingTokenSource.Cancel();
 
             _connection = new Mock<IStorageConnection>();
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);

@@ -1,5 +1,6 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
 @using System
+@using Hangfire
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @using Hangfire.Dashboard.Resources
@@ -38,22 +39,26 @@
             
             <div class="js-jobs-list">
                 <div class="btn-toolbar btn-toolbar-top">
-                    <button class="js-jobs-list-command btn btn-sm btn-primary"
-                            data-url="@Url.To("/jobs/failed/requeue")"
-                            data-loading-text="@Strings.Common_Enqueueing"
-                            disabled="disabled">
-                        <span class="glyphicon glyphicon-repeat"></span>
-                        @Strings.Common_RequeueJobs
-                    </button>
-
-                    <button class="js-jobs-list-command btn btn-sm btn-default"
-                            data-url="@Url.To("/jobs/failed/delete")"
-                            data-loading-text="@Strings.Common_Deleting"
-                            data-confirm="@Strings.Common_DeleteConfirm">
-                        <span class="glyphicon glyphicon-remove"></span>
-                        @Strings.Common_DeleteSelected
-                    </button>
-
+                    @if (!IsReadOnly)
+                    {
+                        <button class="js-jobs-list-command btn btn-sm btn-primary"
+                                data-url="@Url.To("/jobs/failed/requeue")"
+                                data-loading-text="@Strings.Common_Enqueueing"
+                                disabled="disabled">
+                            <span class="glyphicon glyphicon-repeat"></span>
+                            @Strings.Common_RequeueJobs
+                        </button>
+                    }
+                    @if (!IsReadOnly)
+                    {
+                        <button class="js-jobs-list-command btn btn-sm btn-default"
+                                data-url="@Url.To("/jobs/failed/delete")"
+                                data-loading-text="@Strings.Common_Deleting"
+                                data-confirm="@Strings.Common_DeleteConfirm">
+                            <span class="glyphicon glyphicon-remove"></span>
+                            @Strings.Common_DeleteSelected
+                        </button>
+                    }
                     @Html.PerPageSelector(pager)
                 </div>
 
@@ -61,51 +66,66 @@
                     <table class="table">
                         <thead>
                             <tr>
-                                <th class="min-width">
-                                    <input type="checkbox" class="js-jobs-list-select-all" />
-                                </th>
+                                @if (!IsReadOnly)
+                                {
+                                    <th class="min-width">
+                                        <input type="checkbox" class="js-jobs-list-select-all"/>
+                                    </th>
+                                }
                                 <th class="min-width">@Strings.Common_Id</th>
-                                <th>@Strings.FailedJobsPage_Table_Failed</th>
                                 <th>@Strings.Common_Job</th>
+                                <th class="align-right">@Strings.FailedJobsPage_Table_Failed</th>
                             </tr>
                         </thead>
                         <tbody>
                             @{ var index = 0; }
                             @foreach (var job in failedJobs)
                             {
-                                <tr class="js-jobs-list-row @(!job.Value.InFailedState ? "obsolete-data" : null) @(job.Value.InFailedState ? "hover" : null)">
-                                    <td rowspan="@(job.Value.InFailedState ? "2" : "1")">
-                                        @if (job.Value.InFailedState)
-                                        {
-                                            <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
-                                        }
-                                    </td>
-                                    <td class="min-width" rowspan="@(job.Value.InFailedState ? "2" : "1")">
+                                <tr class="js-jobs-list-row @(job.Value == null || !job.Value.InFailedState ? "obsolete-data" : null) @(job.Value != null && job.Value.InFailedState ? "hover" : null)">
+                                    @if (!IsReadOnly)
+                                    {
+                                        <td rowspan="@(job.Value != null && job.Value.InFailedState ? "2" : "1")">
+                                            @if (job.Value != null && job.Value.InFailedState)
+                                            {
+                                                <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
+                                            }
+                                        </td>
+                                    }
+                                    <td class="min-width" rowspan="@(job.Value != null && job.Value.InFailedState ? "2" : "1")">
                                         @Html.JobIdLink(job.Key)
-                                        @if (!job.Value.InFailedState)
+                                        @if (job.Value != null && !job.Value.InFailedState)
                                         {
                                             <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
                                         }
                                     </td>
-                                    <td class="min-width">
-                                        @if (job.Value.FailedAt.HasValue)
-                                        {
-                                            @Html.RelativeTime(job.Value.FailedAt.Value)
-                                        }
-                                    </td>
-                                    <td>
-                                        <div class="word-break">
-                                            @Html.JobNameLink(job.Key, job.Value.Job)
-                                        </div>
-                                        @if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))
-                                        {
-                                            <div style="color: #888;">
-                                                @job.Value.Reason <a class="expander" href="#">@(index == 0 ? Strings.Common_LessDetails : Strings.Common_MoreDetails)</a>
+                                    @if (job.Value == null)
+                                    {
+                                        <td colspan="2">
+                                            <em>@Strings.Common_JobExpired</em>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td>
+                                            <div class="word-break">
+                                                @Html.JobNameLink(job.Key, job.Value.Job)
                                             </div>
-                                        }
-                                    </td>
+                                            @if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))
+                                            {
+                                                <div style="color: #888;">
+                                                    @job.Value.Reason <a class="expander" href="#">@(index == 0 ? Strings.Common_LessDetails : Strings.Common_MoreDetails)</a>
+                                                </div>
+                                            }
+                                        </td>
+                                        <td class="align-right">
+                                            @if (job.Value.FailedAt.HasValue)
+                                            {
+                                                @Html.RelativeTime(job.Value.FailedAt.Value)
+                                            }
+                                        </td>
+                                    }
                                 </tr>
-                                if (job.Value.InFailedState)
+                                if (job.Value != null && job.Value.InFailedState)
                                 {
                                     <tr>
                                         <td colspan="2" class="failed-job-details">

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Threading;
 using Dapper;
 using Hangfire.Annotations;
@@ -26,9 +27,10 @@ namespace Hangfire.SqlServer
 {
     public class SqlServerDistributedLock : IDisposable
     {
+        private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(5);
+
         private const string LockMode = "Exclusive";
         private const string LockOwner = "Session";
-        private const int CommandTimeoutAdditionSeconds = 1;
 
         // Connections to SQL Azure Database that are idle for 30 minutes 
         // or longer will be terminated. And since we are using separate
@@ -56,15 +58,12 @@ namespace Hangfire.SqlServer
 
         private bool _completed;
 
+        [Obsolete("Don't use this class directly, use SqlServerConnection.AcquireDistributedLock instead as it provides better safety. Will be removed in 2.0.0.")]
         public SqlServerDistributedLock([NotNull] SqlServerStorage storage, [NotNull] string resource, TimeSpan timeout)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (String.IsNullOrEmpty(resource)) throw new ArgumentNullException(nameof(resource));
-            if (timeout.TotalSeconds + CommandTimeoutAdditionSeconds > Int32.MaxValue) throw new ArgumentException(
-                $"The timeout specified is too large. Please supply a timeout equal to or less than {Int32.MaxValue - CommandTimeoutAdditionSeconds} seconds", nameof(timeout));
-            if (timeout.TotalMilliseconds > Int32.MaxValue) throw new ArgumentException(
-                $"The timeout specified is too large. Please supply a timeout equal to or less than {(int)TimeSpan.FromMilliseconds(Int32.MaxValue).TotalSeconds} seconds", nameof(timeout));
-                
+
             _storage = storage;
             _resource = resource;
 
@@ -72,7 +71,15 @@ namespace Hangfire.SqlServer
             {
                 _connection = storage.CreateAndOpenConnection();
 
-                Acquire(_connection, _resource, timeout);
+                try
+                {
+                    Acquire(_connection, _resource, timeout);
+                }
+                catch (Exception)
+                {
+                    storage.ReleaseConnection(_connection);
+                    throw;
+                }
 
                 if (!_storage.IsExistingConnection(_connection))
                 {
@@ -110,7 +117,14 @@ namespace Hangfire.SqlServer
 
                     _timer?.Dispose();
 
-                    Release(_connection, _resource);
+                    if (_connection.State == ConnectionState.Open)
+                    {
+                        // Session-scoped application locks are held only when connection
+                        // is open. When connection is closed or broken, for example, when
+                        // there was an error, application lock is already released by SQL
+                        // Server itself, and we shouldn't do anything.
+                        Release(_connection, _resource);
+                    }
                 }
                 finally
                 {
@@ -135,42 +149,73 @@ namespace Hangfire.SqlServer
                     // for the code that is wrapped with this block. So it was
                     // a bad idea to have a separate connection for just
                     // distributed lock.
-                    // TODO: Think about distributed locks and connections.
+                    
+                    // OBSOLETE. This class is not used anymore by the SqlServerConnection
+                    // class. The problem above was solved there by establishing a
+                    // dedicated connection, when there is at least one acquired lock.
+                    // Since the acquisition, all the commands and transactions are routed
+                    // through that connection to ensure all the locks are still active.
                 }
             }
         }
 
         internal static void Acquire(IDbConnection connection, string resource, TimeSpan timeout)
         {
-            var parameters = new DynamicParameters();
-            parameters.Add("@Resource", resource);
-            parameters.Add("@DbPrincipal", "public");
-            parameters.Add("@LockMode", LockMode);
-            parameters.Add("@LockOwner", LockOwner);
-            parameters.Add("@LockTimeout", (int)timeout.TotalMilliseconds);
-            parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
-
-            // Ensuring the timeout for the command is longer than the timeout specified for the stored procedure.
-            var commandTimeout = (int)(timeout.TotalSeconds + CommandTimeoutAdditionSeconds);
-
-            connection.Execute(
-                @"sp_getapplock",
-                parameters,
-                commandTimeout: commandTimeout,
-                commandType: CommandType.StoredProcedure);
-
-            var lockResult = parameters.Get<int>("@Result");
-
-            if (lockResult < 0)
+            if (connection.State != ConnectionState.Open)
             {
-                if (lockResult == -1)
+                // When we are passing a closed connection to Dapper's Execute method,
+                // it kindly opens it for us, but after command execution, it will be closed
+                // automatically, and our just-acquired application lock will immediately
+                // be released. This is not behavior we want to achieve, so let's throw an
+                // exception instead.
+                throw new InvalidOperationException("Connection must be open before acquiring a distributed lock.");
+            }
+
+            var started = Stopwatch.StartNew();
+
+            // We can't pass our timeout directly to the sp_getapplock stored procedure, because
+            // high values, such as minute or more, may cause SQL Server's thread pool starvation,
+            // when the number of connections that try to acquire a lock is more than the number of 
+            // available threads in SQL Server. In this case a deadlock will occur, when SQL Server 
+            // tries to schedule some more work for a connection that acquired a lock, but all the 
+            // available threads in a pool waiting for that lock to be released.
+            //
+            // So we are trying to acquire a lock multiple times instead, with timeout that's equal
+            // to seconds, not minutes.
+            var lockTimeout = (long) Math.Min(LockTimeout.TotalMilliseconds, timeout.TotalMilliseconds);
+
+            do
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@Resource", resource);
+                parameters.Add("@DbPrincipal", "public");
+                parameters.Add("@LockMode", LockMode);
+                parameters.Add("@LockOwner", LockOwner);
+                parameters.Add("@LockTimeout", lockTimeout);
+                parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
+
+                connection.Execute(
+                    @"sp_getapplock",
+                    parameters,
+                    commandTimeout: (int) (lockTimeout / 1000) + 5,
+                    commandType: CommandType.StoredProcedure);
+
+                var lockResult = parameters.Get<int>("@Result");
+
+                if (lockResult >= 0)
                 {
-                    throw new DistributedLockTimeoutException(resource);
+                    // The lock has been successfully obtained on the specified resource.
+                    return;
                 }
 
-                throw new SqlServerDistributedLockException(
-                    $"Could not place a lock on the resource '{resource}': {(LockErrorMessages.ContainsKey(lockResult) ? LockErrorMessages[lockResult] : $"Server returned the '{lockResult}' error.")}.");
-            }
+                if (lockResult == -999 /* Indicates a parameter validation or other call error. */)
+                {
+                    throw new SqlServerDistributedLockException(
+                        $"Could not place a lock on the resource '{resource}': {(LockErrorMessages.ContainsKey(lockResult) ? LockErrorMessages[lockResult] : $"Server returned the '{lockResult}' error.")}.");
+                }
+            } while (started.Elapsed < timeout);
+
+            throw new DistributedLockTimeoutException(resource);
         }
 
         internal static void Release(IDbConnection connection, string resource)

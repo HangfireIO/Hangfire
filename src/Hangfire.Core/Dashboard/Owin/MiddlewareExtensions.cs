@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
+using Hangfire.Dashboard.Owin;
 using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
@@ -44,14 +45,15 @@ namespace Hangfire.Dashboard
             [NotNull] this BuildFunc builder,
             [NotNull] DashboardOptions options, 
             [NotNull] JobStorage storage, 
-            [NotNull] RouteCollection routes)
+            [NotNull] RouteCollection routes,
+            [CanBeNull] IOwinDashboardAntiforgery antiforgery)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
             if (options == null) throw new ArgumentNullException(nameof(options));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (routes == null) throw new ArgumentNullException(nameof(routes));
 
-            builder(_ => UseHangfireDashboard(options, storage, routes));
+            builder(_ => UseHangfireDashboard(options, storage, routes, antiforgery));
 
             return builder;
         }
@@ -59,7 +61,8 @@ namespace Hangfire.Dashboard
         public static MidFunc UseHangfireDashboard(
             [NotNull] DashboardOptions options, 
             [NotNull] JobStorage storage, 
-            [NotNull] RouteCollection routes)
+            [NotNull] RouteCollection routes,
+            [CanBeNull] IOwinDashboardAntiforgery antiforgery)
         {
             if (options == null) throw new ArgumentNullException(nameof(options));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -71,6 +74,12 @@ namespace Hangfire.Dashboard
                 {
                     var owinContext = new OwinContext(env);
                     var context = new OwinDashboardContext(storage, options, env);
+
+                    if (!options.IgnoreAntiforgeryToken && antiforgery != null)
+                    {
+                        context.AntiforgeryHeader = antiforgery.HeaderName;
+                        context.AntiforgeryToken = antiforgery.GetToken(env);
+                    }
 
 #pragma warning disable 618
                     if (options.AuthorizationFilters != null)
@@ -89,6 +98,11 @@ namespace Hangfire.Dashboard
                         }
                     }
 
+                    if (!options.IgnoreAntiforgeryToken && antiforgery != null && !antiforgery.ValidateRequest(env))
+                    {
+                        return Unauthorized(owinContext);
+                    }
+
                     var findResult = routes.FindDispatcher(owinContext.Request.Path.Value);
 
                     if (findResult == null)
@@ -104,7 +118,9 @@ namespace Hangfire.Dashboard
 
         private static Task Unauthorized(IOwinContext owinContext)
         {
-            owinContext.Response.StatusCode = owinContext.Authentication.User.Identity.IsAuthenticated
+            var isAuthenticated = owinContext.Authentication?.User?.Identity?.IsAuthenticated;
+
+            owinContext.Response.StatusCode = isAuthenticated == true
                 ? (int)HttpStatusCode.Forbidden
                 : (int)HttpStatusCode.Unauthorized;
 

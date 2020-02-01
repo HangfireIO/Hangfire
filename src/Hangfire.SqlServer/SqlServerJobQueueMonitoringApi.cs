@@ -17,8 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
-#if NETFULL
+#if FEATURE_TRANSACTIONSCOPE
 using System.Transactions;
 #else
 using System.Data;
@@ -38,7 +39,7 @@ namespace Hangfire.SqlServer
         private readonly object _cacheLock = new object();
 
         private List<string> _queuesCache = new List<string>();
-        private DateTime _cacheUpdated;
+        private Stopwatch _cacheUpdated;
 
         public SqlServerJobQueueMonitoringApi([NotNull] SqlServerStorage storage)
         {
@@ -52,69 +53,86 @@ namespace Hangfire.SqlServer
 
             lock (_cacheLock)
             {
-                if (_queuesCache.Count == 0 || _cacheUpdated.Add(QueuesCacheTimeout) < DateTime.UtcNow)
+                if (_queuesCache.Count == 0 || _cacheUpdated.Elapsed > QueuesCacheTimeout)
                 {
-                    var result = UseTransaction((connection, transaction) =>
+                    var result = _storage.UseConnection(null, connection =>
                     {
-                        return connection.Query(sqlQuery, transaction: transaction, commandTimeout: _storage.CommandTimeout).Select(x => (string) x.Queue).ToList();
+                        return connection.Query(sqlQuery, commandTimeout: _storage.CommandTimeout).Select(x => (string) x.Queue).ToList();
                     });
 
                     _queuesCache = result;
-                    _cacheUpdated = DateTime.UtcNow;
+                    _cacheUpdated = Stopwatch.StartNew();
                 }
 
                 return _queuesCache.ToList();
             }  
         }
 
-        public IEnumerable<int> GetEnqueuedJobIds(string queue, int @from, int perPage)
+        public IEnumerable<long> GetEnqueuedJobIds(string queue, int @from, int perPage)
         {
-            string sqlQuery =
+            var sqlQuery =
 $@"select r.JobId from (
   select jq.JobId, row_number() over (order by jq.Id) as row_num 
-  from [{_storage.SchemaName}].JobQueue jq with (nolock)
-  where jq.Queue = @queue
+  from [{_storage.SchemaName}].JobQueue jq with (nolock, forceseek)
+  where jq.Queue = @queue and jq.FetchedAt is null
 ) as r
 where r.row_num between @start and @end";
 
-            return UseTransaction((connection, transaction) =>
+            return _storage.UseConnection(null, connection =>
             {
-                // TODO: Remove cast to `int` to support `bigint`.
                 return connection.Query<JobIdDto>(
                     sqlQuery,
                     new { queue = queue, start = from + 1, end = @from + perPage },
-                    transaction,
                     commandTimeout: _storage.CommandTimeout)
                     .ToList()
-                    .Select(x => (int)x.JobId)
+                    .Select(x => x.JobId)
                     .ToList();
             });
         }
 
-        public IEnumerable<int> GetFetchedJobIds(string queue, int @from, int perPage)
+        public IEnumerable<long> GetFetchedJobIds(string queue, int @from, int perPage)
         {
-            return Enumerable.Empty<int>();
+            var fetchedJobsSql = $@"
+select r.JobId from (
+  select jq.JobId, jq.FetchedAt, row_number() over (order by jq.Id) as row_num 
+  from [{_storage.SchemaName}].JobQueue jq with (nolock, forceseek)
+  where jq.Queue = @queue and jq.FetchedAt is not null
+) as r
+where r.row_num between @start and @end";
+
+            return _storage.UseConnection(null, connection =>
+            {
+                return connection.Query<JobIdDto>(
+                        fetchedJobsSql,
+                        new { queue = queue, start = from + 1, end = @from + perPage })
+                    .ToList()
+                    .Select(x => x.JobId)
+                    .ToList();
+            });
         }
 
         public EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue)
         {
-            string sqlQuery = $@"
-select count(Id) from [{_storage.SchemaName}].JobQueue with (nolock) where [Queue] = @queue";
+            var sqlQuery = $@"
+select sum(Enqueued) as EnqueuedCount, sum(Fetched) as FetchedCount 
+from (
+    select 
+        case when FetchedAt is null then 1 else 0 end as Enqueued,
+        case when FetchedAt is not null then 1 else 0 end as Fetched
+    from [{_storage.SchemaName}].JobQueue with (nolock, forceseek)
+    where Queue = @queue
+) q";
 
-            return UseTransaction((connection, transaction) =>
+            return _storage.UseConnection(null, connection =>
             {
-                var result = connection.ExecuteScalar<int>(sqlQuery, new { queue = queue }, transaction, commandTimeout: _storage.CommandTimeout);
+                var result = connection.Query(sqlQuery, new { queue = queue }).Single();
 
                 return new EnqueuedAndFetchedCountDto
                 {
-                    EnqueuedCount = result,
+                    EnqueuedCount = result.EnqueuedCount,
+                    FetchedCount = result.FetchedCount
                 };
             });
-        }
-
-        private T UseTransaction<T>(Func<DbConnection, DbTransaction, T> func)
-        {
-            return _storage.UseTransaction(func, IsolationLevel.ReadUncommitted);
         }
 
         private class JobIdDto

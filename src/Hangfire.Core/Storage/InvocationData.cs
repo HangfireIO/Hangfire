@@ -16,21 +16,38 @@
 
 using System;
 using System.Collections.Generic;
+#if !NETSTANDARD1_3
 using System.ComponentModel;
+#endif
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
+using Newtonsoft.Json;
 
 namespace Hangfire.Storage
 {
     public class InvocationData
     {
-        public InvocationData(
-            string type, string method, string parameterTypes, string arguments)
+        private static readonly object[] EmptyArray = new object[0];
+
+        [Obsolete("Please use IGlobalConfiguration.UseTypeResolver instead. Will be removed in 2.0.0.")]
+        public static void SetTypeResolver([CanBeNull] Func<string, Type> typeResolver)
+        {
+            TypeHelper.CurrentTypeResolver = typeResolver;
+        }
+
+        [Obsolete("Please use IGlobalConfiguration.UseTypeSerializer instead. Will be removed in 2.0.0.")]
+        public static void SetTypeSerializer([CanBeNull] Func<Type, string> typeSerializer)
+        {
+            TypeHelper.CurrentTypeSerializer = typeSerializer;
+        }
+
+        public InvocationData(string type, string method, string parameterTypes, string arguments)
         {
             Type = type;
             Method = method;
@@ -43,22 +60,39 @@ namespace Hangfire.Storage
         public string ParameterTypes { get; }
         public string Arguments { get; set; }
 
+        [Obsolete("Please use DeserializeJob() method instead. Will be removed in 2.0.0 for clarity.")]
         public Job Deserialize()
         {
+            return DeserializeJob();
+        }
+
+        [Obsolete("Please use SerializeJob(Job) method instead. Will be removed in 2.0.0 for clarity.")]
+        public static InvocationData Serialize(Job job)
+        {
+            return SerializeJob(job);
+        }
+
+        public Job DeserializeJob()
+        {
+            var typeResolver = TypeHelper.CurrentTypeResolver;
+
             try
             {
-                var type = System.Type.GetType(Type, throwOnError: true, ignoreCase: true);
-                var parameterTypes = JobHelper.FromJson<Type[]>(ParameterTypes);
+                var type = typeResolver(Type);
+
+                var parameterTypesArray = DeserializeParameterTypesArray();
+                var parameterTypes = parameterTypesArray?.Select(typeResolver).ToArray();
+
                 var method = type.GetNonOpenMatchingMethod(Method, parameterTypes);
-                
+
                 if (method == null)
                 {
                     throw new InvalidOperationException(
-                        $"The type `{type.FullName}` does not contain a method with signature `{Method}({String.Join(", ", parameterTypes.Select(x => x.Name))})`");
+                        $"The type `{type.FullName}` does not contain a method with signature `{Method}({String.Join(", ", parameterTypes?.Select(x => x.Name) ?? parameterTypesArray)})`");
                 }
 
-                var serializedArguments = JobHelper.FromJson<string[]>(Arguments);
-                var arguments = DeserializeArguments(method, serializedArguments);
+                var argumentsArray = SerializationHelper.Deserialize<string[]>(Arguments);
+                var arguments = DeserializeArguments(method, argumentsArray);
 
                 return new Job(type, method, arguments);
             }
@@ -68,27 +102,112 @@ namespace Hangfire.Storage
             }
         }
 
-        public static InvocationData Serialize(Job job)
+        public static InvocationData SerializeJob(Job job)
         {
-            return new InvocationData(
-                job.Type.AssemblyQualifiedName,
-                job.Method.Name,
-                JobHelper.ToJson(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()),
-                JobHelper.ToJson(SerializeArguments(job.Args)));
+            var typeSerializer = TypeHelper.CurrentTypeSerializer;
+
+            var type = typeSerializer(job.Type);
+            var methodName = job.Method.Name;
+            var parameterTypes = SerializationHelper.Serialize(
+                job.Method.GetParameters().Select(x => typeSerializer(x.ParameterType)).ToArray());
+            var arguments = SerializationHelper.Serialize(SerializeArguments(job.Method, job.Args));
+
+            return new InvocationData(type, methodName, parameterTypes, arguments);
         }
 
-        internal static string[] SerializeArguments(IReadOnlyCollection<object> arguments)
+        public static InvocationData DeserializePayload(string payload)
+        {
+            JobPayload jobPayload = null;
+            Exception exception = null;
+
+            try
+            {
+                jobPayload = SerializationHelper.Deserialize<JobPayload>(payload);
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+            }
+
+            if (exception == null && jobPayload.TypeName != null && jobPayload.MethodName != null)
+            {
+                return new InvocationData(
+                    jobPayload.TypeName,
+                    jobPayload.MethodName,
+                    SerializationHelper.Serialize(jobPayload.ParameterTypes),
+                    SerializationHelper.Serialize(jobPayload.Arguments));
+            }
+
+            var data = SerializationHelper.Deserialize<InvocationData>(payload);
+
+            if (data.Type == null || data.Method == null)
+            {
+                data = SerializationHelper.Deserialize<InvocationData>(payload, SerializationOption.User);
+            }
+
+            return data;
+        }
+
+        public string SerializePayload(bool excludeArguments = false)
+        {
+            if (GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_170))
+            {
+                var parameterTypes = DeserializeParameterTypesArray();
+                var arguments = excludeArguments ? null : SerializationHelper.Deserialize<string[]>(Arguments);
+
+                return SerializationHelper.Serialize(new JobPayload
+                {
+                    TypeName = Type,
+                    MethodName = Method,
+                    ParameterTypes = parameterTypes?.Length > 0 ? parameterTypes : null,
+                    Arguments = arguments?.Length > 0 ? arguments : null
+                });
+            }
+
+            return SerializationHelper.Serialize(excludeArguments
+                ? new InvocationData(Type, Method, ParameterTypes, null)
+                : this);
+        }
+
+        private string[] DeserializeParameterTypesArray()
+        {
+            try
+            {
+                return SerializationHelper.Deserialize<string[]>(ParameterTypes);
+            }
+            catch (Exception outerException)
+            {
+                try
+                {
+                    var parameterTypes = SerializationHelper.Deserialize<Type[]>(ParameterTypes);
+                    return parameterTypes.Select(TypeHelper.CurrentTypeSerializer).ToArray();
+                }
+                catch (Exception)
+                {
+                    ExceptionDispatchInfo.Capture(outerException).Throw();
+                    throw;
+                }
+            }
+        }
+
+        internal static string[] SerializeArguments(MethodInfo methodInfo, IReadOnlyList<object> arguments)
         {
             var serializedArguments = new List<string>(arguments.Count);
-            foreach (var argument in arguments)
+            var parameters = methodInfo.GetParameters();
+
+            for (var i = 0; i < parameters.Length; i++)
             {
+                var parameter = parameters[i];
+                var argument = arguments[i];
+
                 string value;
 
                 if (argument != null)
                 {
-                    if (argument is DateTime)
+                    if (!GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_170) &&
+                        argument is DateTime dateTime)
                     {
-                        value = ((DateTime) argument).ToString("o", CultureInfo.InvariantCulture);
+                        value = dateTime.ToString("o", CultureInfo.InvariantCulture);
                     }
                     else if (argument is CancellationToken)
                     {
@@ -99,7 +218,10 @@ namespace Hangfire.Storage
                     }
                     else
                     {
-                        value = JobHelper.ToJson(argument);
+                        value = SerializationHelper.Serialize(
+                            argument,
+                            parameter.ParameterType,
+                            SerializationOption.User);
                     }
                 }
                 else
@@ -119,6 +241,8 @@ namespace Hangfire.Storage
 
         internal static object[] DeserializeArguments(MethodInfo methodInfo, string[] arguments)
         {
+            if (arguments == null) return EmptyArray;
+
             var parameters = methodInfo.GetParameters();
             var result = new List<object>(arguments.Length);
 
@@ -151,25 +275,27 @@ namespace Hangfire.Storage
             object value;
             try
             {
-                value = argument != null
-                    ? JobHelper.FromJson(argument, type)
-                    : null;
+                value = SerializationHelper.Deserialize(argument, type, SerializationOption.User);
             }
             catch (Exception
-#if NETFULL
+#if !NETSTANDARD1_3
             jsonException
 #endif
             )
             {
-                if (type == typeof (object))
+                if (type == typeof(object))
                 {
                     // Special case for handling object types, because string can not
                     // be converted to object type.
                     value = argument;
                 }
+                else if ((type == typeof(DateTime) || type == typeof(DateTime?)) && ParseDateTimeArgument(argument, out var dateTime))
+                {
+                    value = dateTime;
+                }
                 else
                 {
-#if NETFULL
+#if !NETSTANDARD1_3
                     try
                     {
                         var converter = TypeDescriptor.GetConverter(type);
@@ -191,15 +317,7 @@ namespace Hangfire.Storage
                         throw;
                     }
 #else
-                    DateTime dateTime;
-                    if (type == typeof(DateTime) && ParseDateTimeArgument(argument, out dateTime))
-                    {
-                        value = dateTime;
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    throw;
 #endif
                 }
             }
@@ -208,21 +326,39 @@ namespace Hangfire.Storage
 
         internal static bool ParseDateTimeArgument(string argument, out DateTime value)
         {
-            DateTime dateTime;
-            var result = DateTime.TryParse(argument, out dateTime);
+            var result = DateTime.TryParseExact(
+                argument,
+                "MM/dd/yyyy HH:mm:ss.ffff",
+                CultureInfo.CurrentCulture,
+                DateTimeStyles.None,
+                out var dateTime);
 
             if (!result)
             {
-                result = DateTime.TryParseExact(
-                    argument, 
-                    "MM/dd/yyyy HH:mm:ss.ffff", 
-                    CultureInfo.CurrentCulture,
-                    DateTimeStyles.None, 
+                result = DateTime.TryParse(
+                    argument,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.RoundtripKind,
                     out dateTime);
             }
 
             value = dateTime;
             return result;
+        }
+
+        private class JobPayload
+        {
+            [JsonProperty("t")]
+            public string TypeName { get; set; }
+
+            [JsonProperty("m")]
+            public string MethodName { get; set; }
+
+            [JsonProperty("p", NullValueHandling = NullValueHandling.Ignore)]
+            public string[] ParameterTypes { get; set; }
+
+            [JsonProperty("a", NullValueHandling = NullValueHandling.Ignore)]
+            public string[] Arguments { get; set; }
         }
     }
 }

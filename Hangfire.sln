@@ -1,17 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleSample", "samples\ConsoleSample\ConsoleSample.csproj", "{C02BB718-2AE4-434C-8668-C894FF663FCE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleSample", "samples\ConsoleSample\ConsoleSample.csproj", "{C02BB718-2AE4-434C-8668-C894FF663FCE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Core", "src\Hangfire.Core\Hangfire.Core.csproj", "{C995EA9E-56EE-4951-8260-D94260A7F4C2}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MvcSample", "samples\MvcSample\MvcSample.csproj", "{FE5EAE49-2627-42B6-8C2B-EBE4D45B4D97}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.Core", "src\Hangfire.Core\Hangfire.Core.csproj", "{C995EA9E-56EE-4951-8260-D94260A7F4C2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{119DA7FA-B94C-4B63-AEC9-428EF834E0D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer", "src\Hangfire.SqlServer\Hangfire.SqlServer.csproj", "{A523C0E3-097D-4869-977F-15A717EA3E83}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.SqlServer", "src\Hangfire.SqlServer\Hangfire.SqlServer.csproj", "{A523C0E3-097D-4869-977F-15A717EA3E83}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{766BE831-F758-46BC-AFD3-BBEEFE0F686F}"
 EndProject
@@ -26,6 +24,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspecs", "nuspecs", "{5E68
 	ProjectSection(SolutionItems) = preProject
 		nuspecs\Hangfire.AspNetCore.nuspec = nuspecs\Hangfire.AspNetCore.nuspec
 		nuspecs\Hangfire.Core.nuspec = nuspecs\Hangfire.Core.nuspec
+		nuspecs\Hangfire.NetCore.nuspec = nuspecs\Hangfire.NetCore.nuspec
 		nuspecs\Hangfire.nuspec = nuspecs\Hangfire.nuspec
 		nuspecs\Hangfire.SqlServer.MSMQ.nuspec = nuspecs\Hangfire.SqlServer.MSMQ.nuspec
 		nuspecs\Hangfire.SqlServer.nuspec = nuspecs\Hangfire.SqlServer.nuspec
@@ -36,31 +35,24 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{37E2
 		content\readme.txt = content\readme.txt
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Core.Tests", "tests\Hangfire.Core.Tests\Hangfire.Core.Tests.csproj", "{E13C3543-39A3-475C-BB43-2E311E634843}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.Core.Tests", "tests\Hangfire.Core.Tests\Hangfire.Core.Tests.csproj", "{E13C3543-39A3-475C-BB43-2E311E634843}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.Tests", "tests\Hangfire.SqlServer.Tests\Hangfire.SqlServer.Tests.csproj", "{6DFFA275-C483-4501-823A-741AC9EC0846}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.SqlServer.Tests", "tests\Hangfire.SqlServer.Tests\Hangfire.SqlServer.Tests.csproj", "{6DFFA275-C483-4501-823A-741AC9EC0846}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.Msmq", "src\Hangfire.SqlServer.Msmq\Hangfire.SqlServer.Msmq.csproj", "{762BE479-0AEC-47E0-8F9C-34FA54641749}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.SqlServer.Msmq", "src\Hangfire.SqlServer.Msmq\Hangfire.SqlServer.Msmq.csproj", "{762BE479-0AEC-47E0-8F9C-34FA54641749}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.Msmq.Tests", "tests\Hangfire.SqlServer.Msmq.Tests\Hangfire.SqlServer.Msmq.Tests.csproj", "{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.SqlServer.Msmq.Tests", "tests\Hangfire.SqlServer.Msmq.Tests\Hangfire.SqlServer.Msmq.Tests.csproj", "{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{F710C9CF-69F9-4373-9B74-ABB185BF985B}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\packages.config = .nuget\packages.config
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8667E5ED-006A-4542-B200-9C0C2C48FF13}"
-	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.AspNetCore", "src\Hangfire.AspNetCore\Hangfire.AspNetCore.csproj", "{73AFEBE0-9B11-44F6-A69C-8A51538CF18E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Core.NetStandard", "src\Hangfire.Core\Hangfire.Core.NetStandard.csproj", "{2A528F3A-5120-430A-B881-E265FA09ABB5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreSample", "samples\NetCoreSample\NetCoreSample.csproj", "{FA751692-20C8-4986-8164-D21F505B2172}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.NetStandard", "src\Hangfire.SqlServer\Hangfire.SqlServer.NetStandard.csproj", "{1513919A-5746-46CE-B8C6-C2FDB3361C2D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.AspNetCore.NetStandard", "src\Hangfire.AspNetCore\Hangfire.AspNetCore.NetStandard.csproj", "{6DCC60C2-4F6E-4855-82EC-E8E1ABB36700}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.AspNetCore", "src\Hangfire.AspNetCore\Hangfire.AspNetCore.csproj", "{73AFEBE0-9B11-44F6-A69C-8A51538CF18E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.NetCore", "src\Hangfire.NetCore\Hangfire.NetCore.csproj", "{AA8E3A67-8731-423A-9B69-EE44EC6B8E1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -76,10 +68,6 @@ Global
 		{C995EA9E-56EE-4951-8260-D94260A7F4C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C995EA9E-56EE-4951-8260-D94260A7F4C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C995EA9E-56EE-4951-8260-D94260A7F4C2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FE5EAE49-2627-42B6-8C2B-EBE4D45B4D97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FE5EAE49-2627-42B6-8C2B-EBE4D45B4D97}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FE5EAE49-2627-42B6-8C2B-EBE4D45B4D97}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FE5EAE49-2627-42B6-8C2B-EBE4D45B4D97}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A523C0E3-097D-4869-977F-15A717EA3E83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A523C0E3-097D-4869-977F-15A717EA3E83}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A523C0E3-097D-4869-977F-15A717EA3E83}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -100,31 +88,30 @@ Global
 		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2A528F3A-5120-430A-B881-E265FA09ABB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2A528F3A-5120-430A-B881-E265FA09ABB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2A528F3A-5120-430A-B881-E265FA09ABB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2A528F3A-5120-430A-B881-E265FA09ABB5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1513919A-5746-46CE-B8C6-C2FDB3361C2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1513919A-5746-46CE-B8C6-C2FDB3361C2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1513919A-5746-46CE-B8C6-C2FDB3361C2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1513919A-5746-46CE-B8C6-C2FDB3361C2D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6DCC60C2-4F6E-4855-82EC-E8E1ABB36700}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6DCC60C2-4F6E-4855-82EC-E8E1ABB36700}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6DCC60C2-4F6E-4855-82EC-E8E1ABB36700}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6DCC60C2-4F6E-4855-82EC-E8E1ABB36700}.Release|Any CPU.Build.0 = Release|Any CPU
 		{73AFEBE0-9B11-44F6-A69C-8A51538CF18E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{73AFEBE0-9B11-44F6-A69C-8A51538CF18E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{73AFEBE0-9B11-44F6-A69C-8A51538CF18E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{73AFEBE0-9B11-44F6-A69C-8A51538CF18E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA751692-20C8-4986-8164-D21F505B2172}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA751692-20C8-4986-8164-D21F505B2172}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA751692-20C8-4986-8164-D21F505B2172}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA751692-20C8-4986-8164-D21F505B2172}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA8E3A67-8731-423A-9B69-EE44EC6B8E1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA8E3A67-8731-423A-9B69-EE44EC6B8E1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA8E3A67-8731-423A-9B69-EE44EC6B8E1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA8E3A67-8731-423A-9B69-EE44EC6B8E1A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C02BB718-2AE4-434C-8668-C894FF663FCE} = {119DA7FA-B94C-4B63-AEC9-428EF834E0D8}
-		{FE5EAE49-2627-42B6-8C2B-EBE4D45B4D97} = {119DA7FA-B94C-4B63-AEC9-428EF834E0D8}
 		{E13C3543-39A3-475C-BB43-2E311E634843} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
 		{6DFFA275-C483-4501-823A-741AC9EC0846} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
 		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
+		{FA751692-20C8-4986-8164-D21F505B2172} = {119DA7FA-B94C-4B63-AEC9-428EF834E0D8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7597454C-C272-4016-87A2-CF1196347355}
 	EndGlobalSection
 EndGlobal

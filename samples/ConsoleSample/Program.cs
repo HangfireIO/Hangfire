@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
+using Hangfire.SqlServer;
+using Microsoft.Owin.Hosting;
 
 namespace ConsoleSample
 {
@@ -12,22 +14,40 @@ namespace ConsoleSample
         {
             GlobalConfiguration.Configuration
                 .UseColouredConsoleLogProvider()
-                .UseSqlServerStorage(@"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;")
-                .UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseResultsInContinuations()
+                .UseSqlServerStorage(@"Server=.\;Database=Hangfire.Sample;Trusted_Connection=True;", new SqlServerStorageOptions
+                {
+                    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                    QueuePollInterval = TimeSpan.Zero,
+                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(1),
+                    UseRecommendedIsolationLevel = true,
+                    UsePageLocksOnDequeue = true,
+                    DisableGlobalLocks = true,
+                    EnableHeavyMigrations = true
+                });
 
+            var backgroundJobs = new BackgroundJobClient();
+            backgroundJobs.RetryAttempts = 5;
+
+            var job1 = BackgroundJob.Enqueue<Services>(x => x.WriteIndex(0));
+            var job2 = BackgroundJob.ContinueJobWith<Services>(job1, x => x.WriteIndex(null));
+            var job3 = BackgroundJob.ContinueJobWith<Services>(job2, x => x.WriteIndex(null));
+            var job4 = BackgroundJob.ContinueJobWith<Services>(job3, x => x.WriteIndex(null));
+            var job5 = BackgroundJob.ContinueJobWith<Services>(job4, x => x.WriteIndex(null));
+
+            RecurringJob.AddOrUpdate("seconds", () => Console.WriteLine("Hello, seconds!"), "*/15 * * * * *");
             RecurringJob.AddOrUpdate(() => Console.WriteLine("Hello, world!"), Cron.Minutely);
             RecurringJob.AddOrUpdate("hourly", () => Console.WriteLine("Hello"), "25 15 * * *");
+            RecurringJob.AddOrUpdate("neverfires", () => Console.WriteLine("Can only be triggered"), "0 0 31 2 *");
 
-            RecurringJob.AddOrUpdate("Hawaiian", () => Console.WriteLine("Hawaiian"),  "15 08 * * *", TimeZoneInfo.FindSystemTimeZoneById("Hawaiian Standard Time"));
+            RecurringJob.AddOrUpdate("Hawaiian", () => Console.WriteLine("Hawaiian"), "15 08 * * *", TimeZoneInfo.FindSystemTimeZoneById("Hawaiian Standard Time"));
             RecurringJob.AddOrUpdate("UTC", () => Console.WriteLine("UTC"), "15 18 * * *");
             RecurringJob.AddOrUpdate("Russian", () => Console.WriteLine("Russian"), "15 21 * * *", TimeZoneInfo.Local);
 
-            var options = new BackgroundJobServerOptions
-            {
-                Queues = new[] { "critical", "default" }
-            };
-            
-            using (new BackgroundJobServer(options))
+            using (WebApp.Start<Startup>("http://localhost:12345"))
             {
                 var count = 1;
 
@@ -117,7 +137,7 @@ namespace ConsoleSample
                         {
                             BackgroundJob.Enqueue<Services>(x => x.Custom(
                                 new Random().Next(),
-                                new []{ "Hello", "world!" },
+                                new[] { "Hello", "world!" },
                                 new Services.CustomObject { Id = 123 },
                                 DayOfWeek.Friday
                                 ));
@@ -174,7 +194,7 @@ namespace ConsoleSample
                         try
                         {
                             var workCount = int.Parse(command.Substring(5));
-                            Parallel.For(0, workCount, i =>
+                            Parallel.For(0, workCount, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, i =>
                             {
                                 if (i % 2 == 0)
                                 {
@@ -215,10 +235,10 @@ namespace ConsoleSample
 
             for (var i = 1; i < value.Length; i++)
             {
-                lastId = BackgroundJob.ContinueWith<Services>(lastId, x => x.Write(value[i]));
+                lastId = BackgroundJob.ContinueJobWith<Services>(lastId, x => x.Write(value[i]));
             }
 
-            BackgroundJob.ContinueWith<Services>(lastId, x => x.WriteBlankLine());
+            BackgroundJob.ContinueJobWith<Services>(lastId, x => x.WriteBlankLine());
         }
     }
 }

@@ -16,6 +16,7 @@
 
 using System;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.States;
@@ -45,7 +46,7 @@ namespace Hangfire
     public partial class BackgroundJob
     {
         private static readonly Lazy<IBackgroundJobClient> CachedClient 
-            = new Lazy<IBackgroundJobClient>(() => new BackgroundJobClient()); 
+            = new Lazy<IBackgroundJobClient>(() => new BackgroundJobClient(), LazyThreadSafetyMode.PublicationOnly); 
 
         private static readonly Func<IBackgroundJobClient> DefaultFactory
             = () => CachedClient.Value;
@@ -341,12 +342,12 @@ namespace Hangfire
         /// <param name="parentId">Identifier of a background job to wait completion for.</param>
         /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
         /// <returns>Unique identifier of a created job.</returns>
+        [Obsolete("Deprecated for clarity, please use ContinueJobWith method with the same arguments. Will be removed in 2.0.0.")]
         public static string ContinueWith(
             [NotNull] string parentId, 
             [NotNull, InstantHandle] Expression<Action> methodCall)
         {
-            var client = ClientFactory();
-            return client.ContinueWith(parentId, methodCall);
+            return ContinueJobWith(parentId, methodCall);
         }
 
         /// <summary>
@@ -356,12 +357,42 @@ namespace Hangfire
         /// <param name="parentId">Identifier of a background job to wait completion for.</param>
         /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
         /// <returns>Unique identifier of a created job.</returns>
+        public static string ContinueJobWith(
+            [NotNull] string parentId,
+            [NotNull, InstantHandle] Expression<Action> methodCall)
+        {
+            var client = ClientFactory();
+            return client.ContinueJobWith(parentId, methodCall);
+        }
+
+        /// <summary>
+        /// Creates a new background job that will wait for a successful completion 
+        /// of another background job to be enqueued.
+        /// </summary>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <returns>Unique identifier of a created job.</returns>
+        [Obsolete("Deprecated for clarity, please use ContinueJobWith method with the same arguments. Will be removed in 2.0.0.")]
         public static string ContinueWith<T>(
             [NotNull] string parentId, 
             [NotNull, InstantHandle] Expression<Action<T>> methodCall)
         {
+            return ContinueJobWith(parentId, methodCall);
+        }
+
+        /// <summary>
+        /// Creates a new background job that will wait for a successful completion 
+        /// of another background job to be enqueued.
+        /// </summary>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <returns>Unique identifier of a created job.</returns>
+        public static string ContinueJobWith<T>(
+            [NotNull] string parentId,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall)
+        {
             var client = ClientFactory();
-            return client.ContinueWith(parentId, methodCall);
+            return client.ContinueJobWith(parentId, methodCall);
         }
 
         /// <summary>
@@ -371,30 +402,13 @@ namespace Hangfire
         /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
         /// <param name="options">Continuation options.</param>
         /// <returns>Unique identifier of a created job.</returns>
+        [Obsolete("Deprecated for clarity, please use ContinueJobWith method with the same arguments. Will be removed in 2.0.0.")]
         public static string ContinueWith(
             [NotNull] string parentId, 
             [NotNull, InstantHandle] Expression<Action> methodCall, 
             JobContinuationOptions options)
         {
-            var client = ClientFactory();
-            return client.ContinueWith(parentId, methodCall, options);
-        }
-
-        /// <summary>
-        /// Creates a new background job that will wait for another background job to be enqueued.
-        /// </summary>
-        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
-        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
-        /// <param name="options">Continuation options. By default, 
-        /// <see cref="JobContinuationOptions.OnlyOnSucceededState"/> is used.</param>
-        /// <returns>Unique identifier of a created job.</returns>
-        public static string ContinueWith(
-            [NotNull] string parentId,
-            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
-            JobContinuationOptions options = JobContinuationOptions.OnlyOnSucceededState)
-        {
-            var client = ClientFactory();
-            return client.ContinueWith(parentId, methodCall, options: options);
+            return ContinueJobWith(parentId, methodCall, options);
         }
 
         /// <summary>
@@ -404,13 +418,13 @@ namespace Hangfire
         /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
         /// <param name="options">Continuation options.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string ContinueWith<T>(
-            [NotNull] string parentId, 
-            [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
+        public static string ContinueJobWith(
+            [NotNull] string parentId,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
             JobContinuationOptions options)
         {
             var client = ClientFactory();
-            return client.ContinueWith(parentId, methodCall, options);
+            return client.ContinueJobWith(parentId, methodCall, options);
         }
 
         /// <summary>
@@ -421,13 +435,96 @@ namespace Hangfire
         /// <param name="options">Continuation options. By default, 
         /// <see cref="JobContinuationOptions.OnlyOnSucceededState"/> is used.</param>
         /// <returns>Unique identifier of a created job.</returns>
+        [Obsolete("Deprecated for clarity, please use ContinueJobWith method with the same arguments. Will be removed in 2.0.0.")]
+        public static string ContinueWith(
+            [NotNull] string parentId,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
+            JobContinuationOptions options = JobContinuationOptions.OnlyOnSucceededState)
+        {
+            return ContinueJobWith(parentId, methodCall, options);
+        }
+
+        /// <summary>
+        /// Creates a new background job that will wait for another background job to be enqueued.
+        /// </summary>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="options">Continuation options. By default, 
+        /// <see cref="JobContinuationOptions.OnlyOnSucceededState"/> is used.</param>
+        /// <returns>Unique identifier of a created job.</returns>
+        public static string ContinueJobWith(
+            [NotNull] string parentId,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
+            JobContinuationOptions options = JobContinuationOptions.OnlyOnSucceededState)
+        {
+            var client = ClientFactory();
+            return client.ContinueJobWith(parentId, methodCall, options: options);
+        }
+
+        /// <summary>
+        /// Creates a new background job that will wait for another background job to be enqueued.
+        /// </summary>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="options">Continuation options.</param>
+        /// <returns>Unique identifier of a created job.</returns>
+        [Obsolete("Deprecated for clarity, please use ContinueJobWith method with the same arguments. Will be removed in 2.0.0.")]
+        public static string ContinueWith<T>(
+            [NotNull] string parentId, 
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
+            JobContinuationOptions options)
+        {
+            return ContinueJobWith(parentId, methodCall, options);
+        }
+
+        /// <summary>
+        /// Creates a new background job that will wait for another background job to be enqueued.
+        /// </summary>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="options">Continuation options.</param>
+        /// <returns>Unique identifier of a created job.</returns>
+        public static string ContinueJobWith<T>(
+            [NotNull] string parentId,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
+            JobContinuationOptions options)
+        {
+            var client = ClientFactory();
+            return client.ContinueJobWith(parentId, methodCall, options);
+        }
+
+        /// <summary>
+        /// Creates a new background job that will wait for another background job to be enqueued.
+        /// </summary>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="options">Continuation options. By default, 
+        /// <see cref="JobContinuationOptions.OnlyOnSucceededState"/> is used.</param>
+        /// <returns>Unique identifier of a created job.</returns>
+        [Obsolete("Deprecated for clarity, please use ContinueJobWith method with the same arguments. Will be removed in 2.0.0.")]
         public static string ContinueWith<T>(
             [NotNull] string parentId,
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             JobContinuationOptions options = JobContinuationOptions.OnlyOnSucceededState)
         {
+            return ContinueJobWith(parentId, methodCall, options);
+        }
+
+        /// <summary>
+        /// Creates a new background job that will wait for another background job to be enqueued.
+        /// </summary>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="options">Continuation options. By default, 
+        /// <see cref="JobContinuationOptions.OnlyOnSucceededState"/> is used.</param>
+        /// <returns>Unique identifier of a created job.</returns>
+        public static string ContinueJobWith<T>(
+            [NotNull] string parentId,
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
+            JobContinuationOptions options = JobContinuationOptions.OnlyOnSucceededState)
+        {
             var client = ClientFactory();
-            return client.ContinueWith(parentId, methodCall, options: options);
+            return client.ContinueJobWith(parentId, methodCall, options: options);
         }
     }
 }

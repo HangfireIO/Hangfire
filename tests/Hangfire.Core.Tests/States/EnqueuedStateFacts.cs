@@ -75,5 +75,59 @@ namespace Hangfire.Core.Tests.States
 
             Assert.False(state.IgnoreJobLoadException);
         }
+
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
+        public void JsonSerialize_ReturnsCorrectString_Before170()
+        {
+            var state = new EnqueuedState("default");
+
+            var serialized = SerializationHelper.Serialize<IState>(state, SerializationOption.TypedInternal);
+
+            Assert.Equal(
+                "{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\",\"Queue\":\"default\",\"Reason\":null}",
+                serialized);
+        }
+
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
+        public void JsonSerialize_ReturnsCorrectString_After170()
+        {
+            var state = new EnqueuedState("default");
+
+            var serialized = SerializationHelper.Serialize<IState>(state, SerializationOption.TypedInternal);
+
+            Assert.Equal(
+                "{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\",\"Queue\":\"default\"}",
+                serialized);
+        }
+
+        [DataCompatibilityRangeFact]
+        public void JsonDeserialize_CanHandlePreviousFormat()
+        {
+            var json = "{\"Queue\":\"critical\",\"EnqueuedAt\":\"2012-04-02T11:22:33.0000000Z\",\"Name\":\"Enqueued\",\"Reason\":\"hello\",\"IsFinal\":false,\"IgnoreJobLoadException\":false}";
+            var state = SerializationHelper.Deserialize<EnqueuedState>(json);
+
+            Assert.Equal("critical", state.Queue);
+            Assert.Equal("hello", state.Reason);
+        }
+
+        [DataCompatibilityRangeFact]
+        public void JsonDeserialize_CanHandleNewFormat()
+        {
+            var json = "{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\",\"Queue\":\"default\"}";
+            var state = SerializationHelper.Deserialize<EnqueuedState>(json);
+
+            Assert.Equal("default", state.Queue);
+            Assert.Equal(null, state.Reason);
+        }
+
+        [DataCompatibilityRangeFact]
+        public void JsonDeserialize_CanHandle170Beta1Format_WithDefaultValueForQueue()
+        {
+            var json = "{\"$type\":\"Hangfire.States.EnqueuedState, Hangfire.Core\"}";
+            var state = SerializationHelper.Deserialize<EnqueuedState>(json);
+
+            Assert.Equal("default", state.Queue);
+            Assert.Equal(null, state.Reason);
+        }
     }
 }

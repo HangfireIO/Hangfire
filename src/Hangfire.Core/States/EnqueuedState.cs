@@ -20,6 +20,7 @@ using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Storage;
+using Newtonsoft.Json;
 
 namespace Hangfire.States
 {
@@ -105,8 +106,11 @@ namespace Hangfire.States
         /// <exception cref="ArgumentException">
         /// The <paramref name="queue"/> argument is not a valid queue name.
         /// </exception>
-        public EnqueuedState([NotNull] string queue)
+        [JsonConstructor]
+        public EnqueuedState([CanBeNull] string queue)
         {
+            queue = queue ?? DefaultQueue;
+
             ValidateQueueName(nameof(queue), queue);
 
             _queue = queue;
@@ -151,6 +155,7 @@ namespace Hangfire.States
         /// <summary>
         /// Gets a date/time when the current state instance was created.
         /// </summary>
+        [JsonIgnore]
         public DateTime EnqueuedAt { get; }
 
         /// <inheritdoc />
@@ -159,6 +164,7 @@ namespace Hangfire.States
         /// Please see the remarks section of the <see cref="IState.Name">IState.Name</see>
         /// article for the details.
         /// </remarks>
+        [JsonIgnore]
         public string Name => StateName;
 
         /// <inheritdoc />
@@ -170,6 +176,7 @@ namespace Hangfire.States
         /// Please refer to the <see cref="IState.IsFinal">IState.IsFinal</see> documentation
         /// for the details.
         /// </remarks>
+        [JsonIgnore]
         public bool IsFinal => false;
 
         /// <inheritdoc />
@@ -179,6 +186,7 @@ namespace Hangfire.States
         /// <see cref="IState.IgnoreJobLoadException">IState.IgnoreJobLoadException</see>
         /// article.
         /// </remarks>
+        [JsonIgnore]
         public bool IgnoreJobLoadException => false;
 
         /// <inheritdoc />
@@ -223,10 +231,10 @@ namespace Hangfire.States
                 throw new ArgumentNullException(parameterName);
             }
 
-            if (!Regex.IsMatch(value, @"^[a-z0-9_]+$"))
+            if (!Regex.IsMatch(value, @"^[a-z0-9_-]+$"))
             {
                 throw new ArgumentException(
-                    $"The queue name must consist of lowercase letters, digits and underscore characters only. Given: '{value}'.",
+                    $"The queue name must consist of lowercase letters, digits, underscore, and dash characters only. Given: '{value}'.",
                     parameterName);
             }
         }

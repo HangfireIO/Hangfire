@@ -6,6 +6,7 @@ using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
 using Xunit;
+#pragma warning disable 618
 
 // ReSharper disable AssignNullToNotNullAttribute
 

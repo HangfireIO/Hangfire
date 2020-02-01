@@ -18,12 +18,15 @@ using System;
 using System.Globalization;
 using Hangfire.Client;
 using Hangfire.Common;
+using Hangfire.Logging;
 using Hangfire.Server;
 
 namespace Hangfire
 {
     public sealed class CaptureCultureAttribute : JobFilterAttribute, IClientFilter, IServerFilter
     {
+        private readonly ILog _logger = LogProvider.GetLogger(typeof(CaptureCultureAttribute));
+
         public void OnCreating(CreatingContext filterContext)
         {
             if (filterContext == null) throw new ArgumentNullException(nameof(filterContext));
@@ -43,16 +46,30 @@ namespace Hangfire
             var cultureName = filterContext.GetJobParameter<string>("CurrentCulture");
             var uiCultureName = filterContext.GetJobParameter<string>("CurrentUICulture");
 
-            if (!String.IsNullOrEmpty(cultureName))
+            try
             {
-                filterContext.Items["PreviousCulture"] = CultureInfo.CurrentCulture;
-                SetCurrentCulture(new CultureInfo(cultureName));
+                if (cultureName != null)
+                {
+                    filterContext.Items["PreviousCulture"] = CultureInfo.CurrentCulture;
+                    SetCurrentCulture(new CultureInfo(cultureName));
+                }
+            }
+            catch (CultureNotFoundException ex)
+            {
+                _logger.WarnException($"Unable to set CurrentCulture for job {filterContext.BackgroundJob.Id} due to an exception", ex);
             }
 
-            if (!String.IsNullOrEmpty(uiCultureName))
+            try
             {
-                filterContext.Items["PreviousUICulture"] = CultureInfo.CurrentUICulture;
-                SetCurrentUICulture(new CultureInfo(uiCultureName));
+                if (uiCultureName != null)
+                {
+                    filterContext.Items["PreviousUICulture"] = CultureInfo.CurrentUICulture;
+                    SetCurrentUICulture(new CultureInfo(uiCultureName));
+                }
+            }
+            catch (CultureNotFoundException ex)
+            {
+                _logger.WarnException($"Unable to set CurrentUICulture for job {filterContext.BackgroundJob.Id} due to an exception", ex);
             }
         }
 
@@ -72,7 +89,7 @@ namespace Hangfire
         
         private static void SetCurrentCulture(CultureInfo value)
         {
-#if NETFULL
+#if !NETSTANDARD1_3
             System.Threading.Thread.CurrentThread.CurrentCulture = value;
 #else
             CultureInfo.CurrentCulture = value;
@@ -82,7 +99,7 @@ namespace Hangfire
         // ReSharper disable once InconsistentNaming
         private static void SetCurrentUICulture(CultureInfo value)
         {
-#if NETFULL
+#if !NETSTANDARD1_3
             System.Threading.Thread.CurrentThread.CurrentUICulture = value;
 #else
             CultureInfo.CurrentUICulture = value;

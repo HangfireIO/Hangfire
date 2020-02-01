@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Hangfire.NetCore</id>
+    <version>0.0.0</version>
+    <title>Hangfire .NET Core's Worker Service Support</title>
+    <authors>Sergey Odinokov</authors>
+    <owners>odinserj</owners>
+    <projectUrl>https://www.hangfire.io/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
+    <description>.NET Core's Worker Service host support for Hangfire (background job system for ASP.NET applications).</description>
+    <copyright>Copyright © 2019 Sergey Odinokov</copyright>
+    <tags>hangfire netcore</tags>
+    <releaseNotes>https://www.hangfire.io/blog/
+
+1.7.7
+• Changed – Add explicit `netcoreapp3.0` target with reference to "3.0.0" packages.
+
+1.7.5
+• Fixed – Add missing overload for the `AddHangfireServer` method with "options" action.
+
+1.7.2
+• Fixed – Allow to resolve `IJobFilterProvider` service from the `AddHangfire` method.
+
+1.7.1
+• Added – Worker Service host support for .NET Core without unnecessary dependencies to ASP.NET Core.
+
+    </releaseNotes>
+    <dependencies>
+      <group targetFramework="netstandard2.0">
+        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="2.0.0" />
+        <dependency id="Microsoft.Extensions.Hosting.Abstractions" version="2.0.0" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="2.0.0" />
+        <dependency id="Hangfire.Core" version="[0.0.0]" />
+      </group>
+      <group targetFramework="netcoreapp3.0">
+        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="3.0.0" />
+        <dependency id="Microsoft.Extensions.Hosting.Abstractions" version="3.0.0" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="3.0.0" />
+        <dependency id="Hangfire.Core" version="[0.0.0]" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="netstandard2.0\Hangfire.NetCore.dll" target="lib\netstandard2.0" />
+    <file src="netstandard2.0\Hangfire.NetCore.xml" target="lib\netstandard2.0" />
+    <file src="netstandard2.0\Hangfire.NetCore.pdb" target="lib\netstandard2.0" />
+
+    <file src="netcoreapp3.0\Hangfire.NetCore.dll" target="lib\netcoreapp3.0" />
+    <file src="netcoreapp3.0\Hangfire.NetCore.xml" target="lib\netcoreapp3.0" />
+    <file src="netcoreapp3.0\Hangfire.NetCore.pdb" target="lib\netcoreapp3.0" />
+    
+    <file src="..\src\Hangfire.AspNetCore\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
+
+    <file src="LICENSE.md" />
+    <file src="NOTICES" />
+    <file src="COPYING" />
+    <file src="COPYING.LESSER" />
+    <file src="LICENSE_STANDARD" />
+    <file src="LICENSE_ROYALTYFREE" />
+  </files>
+</package>

@@ -172,7 +172,7 @@
     <value>Job's state has been changed while fetching data.</value>
   </data>
   <data name="Common_LessDetails" xml:space="preserve">
-    <value>Less details...</value>
+    <value>Fewer details...</value>
   </data>
   <data name="Common_MoreDetails" xml:space="preserve">
     <value>More details...</value>
@@ -246,7 +246,7 @@
     <value>Realtime graph</value>
   </data>
   <data name="HomePage_Title" xml:space="preserve">
-    <value>Dashboard</value>
+    <value>Overview</value>
   </data>
   <data name="JobDetailsPage_Created" xml:space="preserve">
     <value>Created</value>
@@ -522,5 +522,27 @@
   </data>
   <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
     <value>Succeeded</value>
+  </data>
+  <data name="Common_Disabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="RecurringJobsPage_RecurringJobDisabled_Tooltip" xml:space="preserve">
+    <value>Cron expression is invalid or don't have any occurrences over the next 100 years</value>
+  </data>
+  <data name="ServersPage_Note_Text" xml:space="preserve">
+    <value>Some of the servers don't have heartbeat reported within the last minute and may be aborted. If they don't report heartbeat in the near future, they will be removed automatically after timeout is exceeded, no manual action is required.
+                    Incomplete background jobs running on those servers will be re-queued automatically, but you can speed up the process by checking the &lt;a href="{0}"&gt;Processing Jobs&lt;/a&gt; page.</value>
+  </data>
+  <data name="ServersPage_Note_Title" xml:space="preserve">
+    <value>Aborted servers will be removed automatically</value>
+  </data>
+  <data name="ServersPage_Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="ServersPage_Possibly_Aborted" xml:space="preserve">
+    <value>Possibly aborted</value>
+  </data>
+  <data name="Common_Error" xml:space="preserve">
+    <value>Error</value>
   </data>
 </root>

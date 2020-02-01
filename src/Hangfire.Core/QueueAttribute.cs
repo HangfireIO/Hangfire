@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Linq;
 using Hangfire.Common;
 using Hangfire.States;
 
@@ -54,6 +56,7 @@ namespace Hangfire
         public QueueAttribute(string queue)
         {
             Queue = queue;
+            Order = Int32.MaxValue;
         }
 
         /// <summary>
@@ -63,10 +66,9 @@ namespace Hangfire
 
         public void OnStateElection(ElectStateContext context)
         {
-            var enqueuedState = context.CandidateState as EnqueuedState;
-            if (enqueuedState != null)
+            if (context.CandidateState is EnqueuedState enqueuedState)
             {
-                enqueuedState.Queue = Queue;
+                enqueuedState.Queue = String.Format(Queue, context.BackgroundJob.Job.Args.ToArray());
             }
         }
     }

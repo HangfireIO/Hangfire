@@ -2,14 +2,25 @@
 @using Hangfire.Dashboard.Resources;
 @inherits Hangfire.Dashboard.RazorPage
 
+@if (_pager.TotalPageCount > 1)
+{
+    <div class="btn-group paginator pull-right hidden-xs">
+        <a href="@_pager.PageUrl(_pager.CurrentPage > 1 ? _pager.CurrentPage - 1 : 0)" class="btn btn-default btn-sm @(_pager.CurrentPage == 1 ? "disabled" : null)">
+            @Strings.Paginator_Prev
+        </a>
+        <a href="@_pager.PageUrl(_pager.CurrentPage < _pager.TotalPageCount ? _pager.CurrentPage + 1 : 0)" class="btn btn-default btn-sm @(_pager.CurrentPage == _pager.TotalPageCount ? "disabled" : null)">
+            @Strings.Paginator_Next
+        </a>
+    </div>
+}
     <div class="btn-group pull-right paginator">
-        @foreach (var count in new[] { 10, 20, 50, 100, 500 })
+        @foreach (var count in new[] { 10, 20, 50, 100, 500, 1000, 5000 })
         {
-            <a class="btn btn-sm btn-default @(count == _pager.RecordsPerPage ? "active" : null)" 
-                   href="@_pager.RecordsPerPageUrl(count)">@count</a>    
+            <a class="btn btn-sm btn-default @(count == _pager.RecordsPerPage ? "active" : null) @(count > 999 ? "visible-lg" : null)" 
+                   href="@_pager.RecordsPerPageUrl(count)">@count.ToString("N0")</a>    
         }
     </div>
-    <div class="btn-toolbar-spacer pull-right"></div>
-    <div class="btn-toolbar-label btn-toolbar-label-sm pull-right">
+    <div class="btn-toolbar-spacer pull-right hidden-xs"></div>
+    <div class="btn-toolbar-label btn-toolbar-label-sm pull-right hidden-xs">
         @Strings.PerPageSelector_ItemsPerPage:
     </div>

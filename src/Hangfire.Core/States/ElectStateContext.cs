@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.Profiling;
 using Hangfire.Storage;
 
 namespace Hangfire.States
@@ -41,6 +42,7 @@ namespace Hangfire.States
             Connection = applyContext.Connection;
             Transaction = applyContext.Transaction;
             CurrentState = applyContext.OldStateName;
+            Profiler = applyContext.Profiler;
         }
         
         public override BackgroundJob BackgroundJob { get; }
@@ -79,15 +81,19 @@ namespace Hangfire.States
         [NotNull]
         public IState[] TraversedStates => _traversedStates.ToArray();
 
+        [NotNull]
+        internal IProfiler Profiler { get; }
+
         public void SetJobParameter<T>(string name, T value)
         {
-            Connection.SetJobParameter(BackgroundJob.Id, name, JobHelper.ToJson(value));
+            Connection.SetJobParameter(BackgroundJob.Id, name, SerializationHelper.Serialize(value, SerializationOption.User));
         }
 
         public T GetJobParameter<T>(string name)
         {
-            return JobHelper.FromJson<T>(Connection.GetJobParameter(
-                BackgroundJob.Id, name));
+            return SerializationHelper.Deserialize<T>(
+                Connection.GetJobParameter(BackgroundJob.Id, name),
+                SerializationOption.User);
         }
     }
 }

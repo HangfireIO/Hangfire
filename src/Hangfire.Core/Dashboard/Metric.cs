@@ -23,6 +23,12 @@ namespace Hangfire.Dashboard
             Value = value;
         }
 
+        public Metric(long value)
+        {
+            Value = value.ToString("N0");
+            IntValue = value;
+        }
+
         public string Value { get; }
         public long IntValue { get; set; }
         public MetricStyle Style { get; set; }

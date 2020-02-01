@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using System.ComponentModel;
-using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -287,6 +286,25 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void FromScopedExpression_ThrowsWhenExplicitInterfaceImplementationIsPassed()
+        {
+            IService service = new ServiceImpl();
+            Assert.Throws<NotSupportedException>(() => Job.FromExpression(() => service.Method()));
+        }
+
+        public interface IService
+        {
+            void Method();
+        }
+
+        public class ServiceImpl : IService
+        {
+            void IService.Method()
+            {
+            }
+        }
+
+        [Fact]
         public void Ctor_ThrowsAnException_WhenMethodContainsReferenceParameter()
         {
             string test = null;
@@ -392,7 +410,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.True(_methodInvoked);
         }
 
-#if NETFULL
+#if !NETCOREAPP1_0
         [Fact, StaticLock]
         public void Perform_PassesCorrectDateTime_IfItWasSerialized_UsingTypeConverter()
         {
@@ -748,11 +766,22 @@ namespace Hangfire.Core.Tests.Common
                 await Task.Yield();
             }
 
-            public async Task<string> FunctionReturningTaskResultingInString()
+            public async Task FunctionReturningValueTask()
             {
                 await Task.Yield();
+            }
+
+            public async Task<string> FunctionReturningTaskResultingInString(bool continueOnCapturedContext)
+            {
+                await Task.Yield();
+                await Task.Delay(15).ConfigureAwait(continueOnCapturedContext);
 
                 return FunctionReturningValue();
+            }
+            
+            public ValueTask<string> FunctionReturningValueTaskResultingInString(bool continueOnCapturedContext)
+            {
+                return new ValueTask<string>(FunctionReturningTaskResultingInString(continueOnCapturedContext));
             }
         }
 

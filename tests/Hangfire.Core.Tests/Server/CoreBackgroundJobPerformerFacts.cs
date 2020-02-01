@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,9 +33,16 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new CoreBackgroundJobPerformer(null));
+                () => new CoreBackgroundJobPerformer(null, null));
 
             Assert.Equal("activator", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_DoesNotThrowAnException_WhenTaskSchedulerIsNull()
+        {
+            var performer = new CoreBackgroundJobPerformer(_activator.Object, null);
+            Assert.NotNull(performer);
         }
 
         [Fact, StaticLock]
@@ -98,7 +107,7 @@ namespace Hangfire.Core.Tests.Server
             Assert.True(_methodInvoked);
         }
 
-#if NETFULL
+#if !NETCOREAPP1_0
         [Fact, StaticLock]
         public void Perform_PassesCorrectDateTime_IfItWasSerialized_UsingTypeConverter()
         {
@@ -241,7 +250,6 @@ namespace Hangfire.Core.Tests.Server
             Assert.Equal("exception", thrownException.InnerException.Message);
         }
 
-#pragma warning disable 4014
         [Fact]
         public void Run_ThrowsPerformanceException_WithUnwrappedInnerException_ForTasks()
         {
@@ -254,7 +262,6 @@ namespace Hangfire.Core.Tests.Server
             Assert.IsType<InvalidOperationException>(thrownException.InnerException);
             Assert.Equal("exception", thrownException.InnerException.Message);
         }
-#pragma warning restore 4014
 
         [Fact]
         public void Perform_ThrowsPerformanceException_WhenMethodThrownTaskCanceledException()
@@ -295,13 +302,13 @@ namespace Hangfire.Core.Tests.Server
             // Act & Assert
             Assert.Throws<TaskCanceledException>(() => performer.Perform(_context.Object));
         }
-
+        
         [Fact]
         public void Run_RethrowsJobAbortedException()
         {
             // Arrange
             _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
-            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(CancellationToken.None);
+            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(new CancellationToken(true));
             _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<JobAbortedException>();
 
             var performer = CreatePerformer();
@@ -350,7 +357,6 @@ namespace Hangfire.Core.Tests.Server
             Assert.Equal("Return value", result);
         }
 
-#pragma warning disable 4014
         [Fact]
         public void Run_DoesNotReturnValue_WhenCallingFunctionReturningPlainTask()
         {
@@ -361,20 +367,69 @@ namespace Hangfire.Core.Tests.Server
 
             Assert.Equal(null, result);
         }
-#pragma warning restore 4014
 
-#pragma warning disable 4014
         [Fact]
-        public void Run_ReturnsTaskResult_WhenCallingFunctionReturningGenericTask()
+        public void Run_DoesNotReturnValue_WhenCallingFunctionReturningValueTask()
         {
-            _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningTaskResultingInString());
+            _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningValueTask());
+            var performer = CreatePerformer();
+
+            var result = performer.Perform(_context.Object);
+
+            Assert.Equal(null, result);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Run_ReturnsTaskResult_WhenCallingFunctionReturningGenericTask(bool continueOnCapturedContext)
+        {
+            _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningTaskResultingInString(continueOnCapturedContext));
             var performer = CreatePerformer();
 
             var result = performer.Perform(_context.Object);
 
             Assert.Equal("Return value", result);
         }
-#pragma warning restore 4014
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Run_ReturnsTaskResult_WhenCallingFunctionReturningValueTask(bool continueOnCapturedContext)
+        {
+            _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningValueTaskResultingInString(continueOnCapturedContext));
+            var performer = CreatePerformer();
+
+            var result = performer.Perform(_context.Object);
+
+            Assert.Equal("Return value", result);
+        }
+
+        [Fact]
+        public void Perform_ExecutesAsyncMethod_AlwaysWithinTheSameThread()
+        {
+            SynchronizationContext.SetSynchronizationContext(null);
+            _context.BackgroundJob.Job = Job.FromExpression(() => AsyncMethod(Thread.CurrentThread.ManagedThreadId));
+            var performer = CreatePerformer();
+
+            var result = performer.Perform(_context.Object);
+
+            Assert.True((bool)result);
+        }
+
+        [Fact]
+        public void Perform_ExecutesAsyncMethod_OnCustomScheduler_WhenItIsSet()
+        {
+            SynchronizationContext.SetSynchronizationContext(null);
+            var scheduler = new MyCustomTaskScheduler();
+
+            _context.BackgroundJob.Job = Job.FromExpression(() => TaskExceptionMethod());
+            var performer = CreatePerformer(scheduler);
+
+            Assert.Throws<JobPerformanceException>(() => performer.Perform(_context.Object));
+            
+            Assert.True(scheduler.TasksPerformed > 1);
+        }
 
         public void InstanceMethod()
         {
@@ -465,9 +520,76 @@ namespace Hangfire.Core.Tests.Server
             throw new TaskCanceledException();
         }
 
-        private CoreBackgroundJobPerformer CreatePerformer()
+        public static async Task<bool> AsyncMethod(int threadId)
         {
-            return new CoreBackgroundJobPerformer(_activator.Object);
+            if (threadId != Thread.CurrentThread.ManagedThreadId)
+            {
+                throw new InvalidOperationException("Start");
+            }
+
+            await Task.Yield();
+
+            if (threadId != Thread.CurrentThread.ManagedThreadId)
+            {
+                throw new InvalidOperationException("After Yield");
+            }
+
+            await Task.Delay(1).ConfigureAwait(true);
+
+            if (threadId != Thread.CurrentThread.ManagedThreadId)
+            {
+                throw new InvalidOperationException("After Delay");
+            }
+
+            Parallel.For(0, 4, new ParallelOptions { MaxDegreeOfParallelism = 4, TaskScheduler = TaskScheduler.Current },
+                i =>
+                {
+                    Thread.Sleep(TimeSpan.FromSeconds(1));
+                });
+
+            if (threadId != Thread.CurrentThread.ManagedThreadId)
+            {
+                throw new InvalidOperationException("After Parallel.For");
+            }
+
+            await Task.Delay(1).ConfigureAwait(false);
+
+#if NETCOREAPP1_0
+            if (threadId == Thread.CurrentThread.ManagedThreadId)
+#else
+            if (!Thread.CurrentThread.IsThreadPoolThread)
+#endif
+            {
+                throw new InvalidOperationException("Not running on ThreadPool after ConfigureAwait(false)");
+            }
+
+            return true;
+        }
+
+        private CoreBackgroundJobPerformer CreatePerformer(TaskScheduler taskScheduler = null)
+        {
+            return new CoreBackgroundJobPerformer(_activator.Object, taskScheduler);
+        }
+
+        private class MyCustomTaskScheduler : TaskScheduler
+        {
+            public int TasksPerformed { get; private set; }
+
+            protected override void QueueTask(Task task)
+            {
+                TryExecuteTask(task);
+                TasksPerformed++;
+            }
+
+            protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued)
+            {
+                return false;
+            }
+
+            protected override IEnumerable<Task> GetScheduledTasks()
+            {
+                return Enumerable.Empty<Task>();
+            }
         }
     }
 }

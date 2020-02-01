@@ -17,9 +17,11 @@
 using System;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.Profiling;
 
 namespace Hangfire.States
 {
+    // TODO: Merge this class with BackgroundJobStateChanger in 2.0.0
     public class StateMachine : IStateMachine
     {
         private readonly IJobFilterProvider _filterProvider;
@@ -52,7 +54,10 @@ namespace Hangfire.States
 
             foreach (var filter in electFilters)
             {
-                filter.OnStateElection(electContext);
+                electContext.Profiler.InvokeMeasured(
+                    filter,
+                    x => x.OnStateElection(electContext),
+                    $"OnStateElection for {electContext.BackgroundJob.Id}");
             }
 
             foreach (var state in electContext.TraversedStates)
@@ -68,12 +73,18 @@ namespace Hangfire.States
 
             foreach (var filter in applyFilters)
             {
-                filter.OnStateUnapplied(context, context.Transaction);
+                context.Profiler.InvokeMeasured(
+                    filter,
+                    x => x.OnStateUnapplied(context, context.Transaction),
+                    $"OnStateUnapplied for {context.BackgroundJob.Id}");
             }
 
             foreach (var filter in applyFilters)
             {
-                filter.OnStateApplied(context, context.Transaction);
+                context.Profiler.InvokeMeasured(
+                    filter,
+                    x => x.OnStateApplied(context, context.Transaction),
+                    $"OnStateApplied for {context.BackgroundJob.Id}");
             }
 
             return _innerStateMachine.ApplyState(context);

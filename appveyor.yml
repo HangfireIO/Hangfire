@@ -7,9 +7,9 @@
 #   - Section names should be unique on each level.
 
 # Don't edit manually! Use `build.bat version` command instead!
-version: 1.6.9-build-0{build}
+version: 1.7.9-build-0{build}
 
-os: Visual Studio 2015
+os: Visual Studio 2019
 
 #---------------------------------#
 #    environment configuration    #
@@ -18,7 +18,7 @@ os: Visual Studio 2015
 # environment variables
 environment:
   BuildEnvironment: appveyor
-  Hangfire_SqlServer_ConnectionStringTemplate: Server=.\SQL2008R2SP2;Database={0};User Id=sa;Password=Password12!
+  Hangfire_SqlServer_ConnectionStringTemplate: Server=.\SQL2017;Database={0};User Id=sa;Password=Password12!
   COVERALLS_REPO_TOKEN: 
     secure: oE4uB475V9hPzKmm+ZRP+1BacnMFOE98a/2tVeFieYJi5BbYG6X3VM+p6vKIQZdd
   COVERITY_TOKEN:
@@ -28,23 +28,13 @@ environment:
 
 # enable service required for tests
 services:
-  - mssql2008r2sp2
+  - mssql2017
   - msmq
-
-# branches to build
-branches:
-  # whitelist
-  only:
-    - master
-    - dev
 
 pull_requests:
   do_not_increment_build_number: true
 
 shallow_clone: true
-
-cache:
-  - packages
 
 #---------------------------------#
 #       build configuration       #
@@ -53,11 +43,6 @@ cache:
 # to run your custom scripts instead of automatic MSBuild
 build_script:
   - build.bat ci
-
-after_build:
-  - "SET PATH=C:\\Python34;C:\\Python34\\Scripts;%PATH%"
-  - pip install codecov
-  - codecov -f coverage.xml
 
 #---------------------------------#
 #       tests configuration       #

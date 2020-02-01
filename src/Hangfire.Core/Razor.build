@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="PrecompileRazorFiles" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\RazorGenerator.MsBuild.2.4.7\build\RazorGenerator.MsBuild.targets" />
+  <PropertyGroup>
+    <RootNamespace>Hangfire</RootNamespace>
+    <GeneratePrettyNames>true</GeneratePrettyNames>
+    <RazorViewsCodeGenDirectory>$(MsBuildProjectDirectory)\</RazorViewsCodeGenDirectory>
+  </PropertyGroup>
+</Project>

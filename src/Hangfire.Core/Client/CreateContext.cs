@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
 
@@ -29,17 +30,27 @@ namespace Hangfire.Client
     public class CreateContext
     {
         public CreateContext([NotNull] CreateContext context)
-            : this(context.Storage, context.Connection, context.Job, context.InitialState)
+            : this(context.Storage, context.Connection, context.Job, context.InitialState, context.Profiler)
         {
             Items = context.Items;
             Parameters = context.Parameters;
         }
 
         public CreateContext(
+            [NotNull] JobStorage storage,
+            [NotNull] IStorageConnection connection,
+            [NotNull] Job job,
+            [CanBeNull] IState initialState)
+            : this(storage, connection, job, initialState, EmptyProfiler.Instance)
+        {
+        }
+
+        internal CreateContext(
             [NotNull] JobStorage storage, 
             [NotNull] IStorageConnection connection, 
             [NotNull] Job job, 
-            [CanBeNull] IState initialState)
+            [CanBeNull] IState initialState,
+            [NotNull] IProfiler profiler)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (connection == null) throw new ArgumentNullException(nameof(connection));
@@ -49,6 +60,7 @@ namespace Hangfire.Client
             Connection = connection;
             Job = job;
             InitialState = initialState;
+            Profiler = profiler;
 
             Items = new Dictionary<string, object>();
             Parameters = new Dictionary<string, object>();
@@ -82,5 +94,8 @@ namespace Hangfire.Client
         /// </summary>
         [CanBeNull]
         public IState InitialState { get; }
+
+        [NotNull]
+        internal IProfiler Profiler { get; }
     }
 }

@@ -1,11 +1,12 @@
-﻿using System;
+﻿extern alias ReferencedDapper;
+
+using System;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Transactions;
-using Dapper;
+using ReferencedDapper::Dapper;
 using Hangfire.Storage;
 using Xunit;
 
@@ -24,32 +25,6 @@ namespace Hangfire.SqlServer.Tests
                 () => new SqlServerDistributedLock(null, "hello", _timeout));
 
             Assert.Equal("storage", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenTimeoutTooLarge()
-        {
-            UseConnection(connection =>
-            {
-                var storage = CreateStorage(connection);
-                var tooLargeTimeout = TimeSpan.FromSeconds(Int32.MaxValue);
-                var exception = Assert.Throws<ArgumentException>(() => new SqlServerDistributedLock(storage, "hello", tooLargeTimeout));
-
-                Assert.Equal("timeout", exception.ParamName);
-            });
-        }
-        
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenTimeoutTooLargeForLock()
-        {
-            UseConnection(connection =>
-            {
-                var storage = CreateStorage(connection);
-                var tooLargeTimeout = TimeSpan.FromDays(25);
-                var exception = Assert.Throws<ArgumentException>(() => new SqlServerDistributedLock(storage, "hello", tooLargeTimeout));
-
-                Assert.Equal("timeout", exception.ParamName);
-            });
         }
 
         [Fact, CleanDatabase]
