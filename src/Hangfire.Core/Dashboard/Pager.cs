@@ -49,7 +49,7 @@ namespace Hangfire.Dashboard
 
         internal ICollection<Item> PagerItems { get; }
 
-        public string PageUrl(int page)
+        public virtual string PageUrl(int page)
         {
             if (page < 1 || page > TotalPageCount) return "#";
 
