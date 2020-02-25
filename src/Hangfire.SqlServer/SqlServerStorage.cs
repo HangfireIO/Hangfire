@@ -43,6 +43,7 @@ namespace Hangfire.SqlServer
         private readonly Func<DbConnection> _connectionFactory;
         private readonly SqlServerStorageOptions _options;
         private readonly string _connectionString;
+        private string _escapedSchemaName;
 
         public SqlServerStorage(string nameOrConnectionString)
             : this(nameOrConnectionString, new SqlServerStorageOptions())
@@ -129,7 +130,7 @@ namespace Hangfire.SqlServer
 
         public override bool LinearizableReads => true;
 
-        internal string SchemaName => _options.SchemaName;
+        internal string SchemaName => _escapedSchemaName;
         internal int? CommandTimeout => _options.CommandTimeout.HasValue ? (int)_options.CommandTimeout.Value.TotalSeconds : (int?)null;
         internal int? CommandBatchMaxTimeout => _options.CommandBatchMaxTimeout.HasValue ? (int)_options.CommandBatchMaxTimeout.Value.TotalSeconds : (int?)null;
         internal TimeSpan? SlidingInvisibilityTimeout => _options.SlidingInvisibilityTimeout;
@@ -279,14 +280,24 @@ namespace Hangfire.SqlServer
         {
             using (_options.ImpersonationFunc?.Invoke())
             {
-                var connection = _existingConnection ?? _connectionFactory();
+                DbConnection connection = null;
 
-                if (connection.State == ConnectionState.Closed)
+                try
                 {
-                    connection.Open();
-                }
+                    connection = _existingConnection ?? _connectionFactory();
 
-                return connection;
+                    if (connection.State == ConnectionState.Closed)
+                    {
+                        connection.Open();
+                    }
+
+                    return connection;
+                }
+                catch
+                {
+                    ReleaseConnection(connection);
+                    throw;
+                }
             }
         }
 
@@ -305,12 +316,44 @@ namespace Hangfire.SqlServer
 
         private void Initialize()
         {
+            _escapedSchemaName = _options.SchemaName.Replace("]", "]]");
+
             if (_options.PrepareSchemaIfNecessary)
             {
-                UseConnection(null, connection =>
+                var log = LogProvider.GetLogger(typeof(SqlServerObjectsInstaller));
+                const int RetryAttempts = 3;
+
+                log.Info("Start installing Hangfire SQL objects...");
+
+                Exception lastException = null;
+
+                for (var i = 0; i < RetryAttempts; i++)
                 {
-                    SqlServerObjectsInstaller.Install(connection, _options.SchemaName, _options.EnableHeavyMigrations);
-                });
+                    try
+                    {
+                        UseConnection(null, connection =>
+                        {
+                            SqlServerObjectsInstaller.Install(connection, _options.SchemaName, _options.EnableHeavyMigrations);
+                        });
+
+                        lastException = null;
+                        break;
+                    }
+                    catch (DbException ex)
+                    {
+                        lastException = ex;
+                        log.WarnException("An exception occurred while trying to perform the migration." + (i < RetryAttempts - 1 ? " Retrying..." : ""), ex);
+                    }
+                }
+
+                if (lastException != null)
+                {
+                    log.WarnException("Was unable to perform the Hangfire schema migration due to an exception. Ignore this message unless you've just installed or upgraded Hangfire.", lastException);
+                }
+                else
+                {
+                    log.Info("Hangfire SQL objects installed.");
+                }
             }
 
             InitializeQueueProviders();

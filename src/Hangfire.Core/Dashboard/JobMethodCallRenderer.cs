@@ -24,6 +24,8 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using Hangfire.Common;
+using Hangfire.Dashboard.Resources;
+using Hangfire.Processing;
 
 namespace Hangfire.Dashboard
 {
@@ -33,7 +35,7 @@ namespace Hangfire.Dashboard
 
         public static NonEscapedString Render(Job job)
         {
-            if (job == null) { return new NonEscapedString("<em>Can not find the target method.</em>"); }
+            if (job == null) { return new NonEscapedString($"<em>{Encode(Strings.Common_CannotFindTargetMethod)}</em>"); }
 
             var builder = new StringBuilder();
 
@@ -64,7 +66,8 @@ namespace Hangfire.Dashboard
                 builder.AppendLine();
             }
 
-            if (job.Method.GetCustomAttribute<AsyncStateMachineAttribute>() != null)
+            if (job.Method.GetCustomAttribute<AsyncStateMachineAttribute>() != null ||
+                job.Method.ReturnType.IsTaskLike(out _))
             {
                 builder.Append($"{WrapKeyword("await")} ");
             }
@@ -258,13 +261,14 @@ namespace Hangfire.Dashboard
             public string Render(bool isJson, string deserializedValue, string rawValue)
             {
                 var builder = new StringBuilder();
+
+                if (rawValue == null)
+                {
+                    return WrapKeyword("null");
+                }
+
                 if (_deserializationType != null)
                 {
-                    if (rawValue == null)
-                    {
-                        return WrapKeyword("null");
-                    }
-
                     builder.Append(WrapIdentifier(
                         isJson ? "FromJson" : "Deserialize"));
 

@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
@@ -34,7 +35,12 @@ namespace Hangfire.SqlServer
         // This is an optimization that helps to overcome the polling delay, when
         // both client and server reside in the same process. Everything is working
         // without this event, but it helps to reduce the delays in processing.
-        internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(true);
+        internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(false);
+
+        private static readonly TimeSpan LongPollingThreshold = TimeSpan.FromSeconds(1);
+        private static readonly int PollingQuantumMs = 1000;
+        private static readonly int MinPollingDelayMs = 50;
+        private static readonly ConcurrentDictionary<string, SemaphoreSlim> Semaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
 
         private readonly SqlServerStorage _storage;
         private readonly SqlServerStorageOptions _options;
@@ -85,8 +91,14 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
             if (queues == null) throw new ArgumentNullException(nameof(queues));
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", nameof(queues));
 
-            var lockResource = $"{_storage.SchemaName}_FetchLockLock_{String.Join("_", queues.OrderBy(x => x))}";
-            var isBlocking = false;
+            var useLongPolling = false;
+            var queuesString = String.Join("_", queues.OrderBy(x => x));
+            var semaphore = Semaphores.GetOrAdd(queuesString, new SemaphoreSlim(initialCount: 1));
+
+            var pollingDelayMs = Math.Min(
+                Math.Max((int)_options.QueuePollInterval.TotalMilliseconds, MinPollingDelayMs),
+                PollingQuantumMs);
+
             SqlServerTimeoutJob fetched;
 
             using (var cancellationEvent = cancellationToken.GetCancellationEvent())
@@ -95,44 +107,58 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    fetched = _storage.UseConnection(null, connection =>
+                    try
                     {
-                        var parameters = new
-                        {
-                            queues = queues,
-                            timeout = _options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds,
-                            lockResource = lockResource,
-                            precision = 50,
-                            quantum = 2000
-                        };
+                        if (useLongPolling) semaphore.Wait(cancellationToken);
 
-                        var query = isBlocking ? GetBlockingFetchSql() : GetNonBlockingFetchSql();
-
-                        using (var reader = connection.QueryMultiple(query, parameters, commandTimeout: _storage.CommandTimeout))
+                        fetched = _storage.UseConnection(null, connection =>
                         {
-                            while (!reader.IsConsumed)
+                            var parameters = new DynamicParameters();
+                            parameters.Add("@queues", queues);
+                            parameters.Add("@timeoutSs", (int)_options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds);
+                            parameters.Add("@delayMs", pollingDelayMs);
+                            parameters.Add("@endMs", PollingQuantumMs);
+
+                            var query = useLongPolling ? GetBlockingFetchSql() : GetNonBlockingFetchSql();
+
+                            using (var reader = connection.QueryMultiple(query, parameters, commandTimeout: _storage.CommandTimeout))
                             {
-                                cancellationToken.ThrowIfCancellationRequested();
-                                var fetchedJob = reader.Read<FetchedJob>().SingleOrDefault(x => x != null);
-                                if (fetchedJob != null)
+                                while (!reader.IsConsumed)
                                 {
-                                    return new SqlServerTimeoutJob(_storage, fetchedJob.Id, fetchedJob.JobId.ToString(CultureInfo.InvariantCulture), fetchedJob.Queue, fetchedJob.FetchedAt);
+                                    cancellationToken.ThrowIfCancellationRequested();
+                                    var fetchedJob = reader.Read<FetchedJob>().SingleOrDefault(x => x != null);
+                                    if (fetchedJob != null)
+                                    {
+                                        return new SqlServerTimeoutJob(_storage, fetchedJob.Id, fetchedJob.JobId.ToString(CultureInfo.InvariantCulture), fetchedJob.Queue, fetchedJob.FetchedAt.Value);
+                                    }
                                 }
                             }
-                        }
 
-                        return null;
-                    });
+                            return null;
+                        });
+                    }
+                    finally
+                    {
+                        if (useLongPolling && semaphore.CurrentCount == 0)
+                        {
+                            semaphore.Release();
+                        }
+                    }
 
                     if (fetched != null)
                     {
                         break;
                     }
 
-                    isBlocking = true;
-
-                    cancellationEvent.WaitHandle.WaitOne(_options.QueuePollInterval);
-                    cancellationToken.ThrowIfCancellationRequested();
+                    if (_options.QueuePollInterval < LongPollingThreshold)
+                    {
+                        useLongPolling = true;
+                    }
+                    else
+                    {
+                        WaitHandle.WaitAny(new WaitHandle[] { cancellationEvent.WaitHandle, NewItemInQueueEvent }, _options.QueuePollInterval);
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
                 } while (true);
             }
 
@@ -142,57 +168,34 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
         private string GetNonBlockingFetchSql()
         {
             return $@"
-set nocount on;
-set xact_abort on;
-set transaction isolation level read committed;
+set nocount on;set xact_abort on;set tran isolation level read committed;
 
 update top (1) JQ
 set FetchedAt = GETUTCDATE()
 output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
 from [{_storage.SchemaName}].JobQueue JQ with ({GetSlidingFetchTableHints()})
 where Queue in @queues and
-(FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()));";
+(FetchedAt is null or FetchedAt < DATEADD(second, @timeoutSs, GETUTCDATE()));";
         }
 
         private string GetBlockingFetchSql()
         {
             return $@"
-set nocount on;
-set xact_abort on;
-set transaction isolation level read committed;
+set nocount on;set xact_abort on;set tran isolation level read committed;
 
-declare @result int;
-declare @delay datetime = dateadd(ms, @precision, convert(DATETIME, 0));
+declare @end datetime2 = DATEADD(ms, @endMs, SYSUTCDATETIME()),
+	@delay datetime = DATEADD(ms, @delayMs, convert(DATETIME, 0));
 
-exec @result = sp_getapplock @Resource = @lockResource, @LockMode = 'Exclusive', @LockTimeout = @quantum, @LockOwner = 'Session';
-
-IF (@result >= 0)
+WHILE (SYSUTCDATETIME() < @end)
 BEGIN
-    DECLARE @now DATETIME2 = SYSUTCDATETIME();
-    DECLARE @endTime datetime2 = DATEADD(ms, @quantum, @now);
+	update top (1) JQ set FetchedAt = GETUTCDATE()
+	output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
+	from [{_storage.SchemaName}].JobQueue JQ with ({GetSlidingFetchTableHints()})
+	where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeoutSs, GETUTCDATE()));
 
-    WHILE (@now < @endTime)
-    BEGIN
-        update top (1) JQ
-        set FetchedAt = GETUTCDATE()
-        output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
-        from [{_storage.SchemaName}].JobQueue JQ with ({GetSlidingFetchTableHints()})
-        where Queue in @queues and
-        (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()));
-
-        IF @@ROWCOUNT > 0
-        BEGIN
-            EXEC sp_releaseapplock @Resource = @lockResource, @LockOwner = 'Session';
-            RETURN;
-        END;
-
-        WAITFOR DELAY @delay;
-        SET @now = SYSUTCDATETIME();
-    END
-    EXEC sp_releaseapplock @Resource = @lockResource, @LockOwner = 'Session';
-END
-
-SELECT TOP (0) [Id], [JobId], [Queue], [FetchedAt] FROM [{_storage.SchemaName}].JobQueue;";
+	IF @@ROWCOUNT > 0 RETURN;
+	WAITFOR DELAY @delay;
+END";
         }
 
         private string GetSlidingFetchTableHints()
@@ -215,6 +218,10 @@ SELECT TOP (0) [Id], [JobId], [Queue], [FetchedAt] FROM [{_storage.SchemaName}].
 output DELETED.Id, DELETED.JobId, DELETED.Queue
 from [{_storage.SchemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
 where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))";
+
+            var pollInterval = _options.QueuePollInterval > TimeSpan.Zero
+                ? _options.QueuePollInterval
+                : TimeSpan.FromSeconds(1);
 
             using (var cancellationEvent = cancellationToken.GetCancellationEvent())
             {
@@ -255,10 +262,6 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
                             _storage.ReleaseConnection(connection);
                         }
                     }
-
-                    var pollInterval = _options.QueuePollInterval > TimeSpan.Zero
-                        ? _options.QueuePollInterval
-                        : TimeSpan.FromSeconds(1);
 
                     WaitHandle.WaitAny(new WaitHandle[] { cancellationEvent.WaitHandle, NewItemInQueueEvent }, pollInterval);
                     cancellationToken.ThrowIfCancellationRequested();

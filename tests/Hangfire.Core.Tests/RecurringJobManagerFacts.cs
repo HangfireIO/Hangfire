@@ -367,6 +367,101 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void AddOrUpdate_CanUpdateRecurringJobs_WhoseMethodCouldNotBeFound()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
+            {
+                { "Cron", "* * * * *" },
+                { "Job", InvocationData.Serialize(_job).SerializePayload().Replace("Hangfire", "Test") },
+                { "CreatedAt", JobHelper.SerializeDateTime(_now.AddMinutes(-2)) },
+                { "LastExecution", JobHelper.SerializeDateTime(_now.AddMinutes(-1)) },
+                { "NextExecution", JobHelper.SerializeDateTime(_now) }
+            });
+
+            var manager = CreateManager();
+
+            // Act
+            manager.AddOrUpdate(_id, _job, "* * * * *");
+
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{_id}", It.Is<Dictionary<string, string>>(
+                dict => dict.ContainsKey("Job") && dict["Job"].Contains("Hangfire.Core.Tests"))));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", _id, JobHelper.ToTimestamp(_now)));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void AddOrUpdate_CanUpdateRecurringJobs_WhoseJobPropertyCanNotBeDeserialized()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
+            {
+                { "Cron", "* * * * *" },
+                { "Job", "some garbage" },
+                { "CreatedAt", JobHelper.SerializeDateTime(_now.AddMinutes(-2)) },
+                { "LastExecution", JobHelper.SerializeDateTime(_now.AddMinutes(-1)) },
+                { "NextExecution", JobHelper.SerializeDateTime(_now) }
+            });
+
+            var manager = CreateManager();
+
+            // Act
+            manager.AddOrUpdate(_id, _job, "* * * * *");
+
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{_id}", It.Is<Dictionary<string, string>>(
+                dict => dict.ContainsKey("Job") && dict["Job"].Contains("Hangfire.Core.Tests"))));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", _id, JobHelper.ToTimestamp(_now)));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void AddOrUpdate_ResetsRetryAttemptNumber_WhenUpdatingARecurringJob()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
+            {
+                { "Cron", "* * * * *" },
+                { "Job", "some garbage" },
+                { "RetryAttempt", "10" }
+            });
+            
+            var manager = CreateManager();
+
+            // Act
+            manager.AddOrUpdate(_id, _job, "* * * * *");
+
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{_id}", It.Is<Dictionary<string, string>>(
+                dict => dict.ContainsKey("RetryAttempt") && dict["RetryAttempt"] == "0")));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void AddOrUpdate_UsesCurrentTime_InsteadOfLastExecution_ToCalculateNextExecution_WhenChangingCronExpression()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
+            {
+                { "Cron", "30 12 * * *" },
+                { "Job", InvocationData.Serialize(_job).SerializePayload() },
+                { "LastExecution", JobHelper.SerializeDateTime(_now.AddHours(-3)) }
+            });
+
+            var manager = CreateManager();
+
+            // Act
+            manager.AddOrUpdate(_id, _job, "30 13 * * *");
+
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{_id}", It.Is<Dictionary<string, string>>(dict =>
+                JobHelper.DeserializeDateTime(dict["NextExecution"]) == _now.AddHours(22))));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", _id, JobHelper.ToTimestamp(_now.AddHours(22))));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
         public void Trigger_ThrowsAnException_WhenIdIsNull()
         {
             var manager = CreateManager();
@@ -477,6 +572,28 @@ namespace Hangfire.Core.Tests
                 dict["NextExecution"] == JobHelper.SerializeDateTime(_now.AddMinutes(1)))));
             _transaction.Verify(x => x.AddToSet("recurring-jobs", _id, JobHelper.ToTimestamp(_now.AddMinutes(1))));
             _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void Trigger_ThrowsAnException_WhenRecurringJobCanNotBeTriggered_AndDoesNotCreateBackgroundJob()
+        {
+            // Arrange
+            _timeZoneResolver.Setup(x => x.GetTimeZoneById(It.IsAny<string>())).Throws<Exception>();
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}"))
+                .Returns(new Dictionary<string, string>
+                {
+                    { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) },
+                    { "Cron", Cron.Minutely() },
+                    { "TimeZoneId", "UnexistingID" }
+                });
+
+            var manager = CreateManager();
+
+            // Act
+            Assert.Throws<AggregateException>(() => manager.Trigger(_id));
+
+            // Assert
+            _stateMachine.Verify(x => x.ApplyState(It.IsAny<ApplyStateContext>()), Times.Never);
         }
 
         [Fact]

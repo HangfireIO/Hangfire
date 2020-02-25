@@ -25,7 +25,7 @@ using Hangfire.States;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-#if NETSTANDARD2_0
+#if NETCOREAPP3_0 || NETSTANDARD2_0 || NET461
 using Microsoft.Extensions.Hosting;
 #endif
 
@@ -46,26 +46,13 @@ namespace Hangfire
         {
             if (services == null) throw new ArgumentNullException(nameof(services));
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
-            
-            // ===== Configurable services =====
 
             services.TryAddSingletonChecked(_ => JobStorage.Current);
             services.TryAddSingletonChecked(_ => JobActivator.Current);
-            services.TryAddSingletonChecked(_ => DashboardRoutes.Routes);
-            services.TryAddSingletonChecked<IJobFilterProvider>(_ => JobFilterProviders.Providers);
 
-
-            // ===== Internal services =====
-
-            // NOTE: these are not required to be checked, because they only depend on already checked configurables,
-            //       are not accessed directly, and can't be affected by customizations made from configuration block.
-
-            services.TryAddSingleton<ITimeZoneResolver>(x => new DefaultTimeZoneResolver());
-
-            // ===== Client services =====
-
-            // NOTE: these, on the other hand, need to be double-checked to be sure configuration block was executed, 
-            //       in case of a client-only scenario with all configurables above replaced with custom implementations.
+            services.TryAddSingleton(_ => DashboardRoutes.Routes);
+            services.TryAddSingleton<IJobFilterProvider>(_ => JobFilterProviders.Providers);
+            services.TryAddSingleton<ITimeZoneResolver>(_ => new DefaultTimeZoneResolver());
 
             services.TryAddSingletonChecked<IBackgroundJobClient>(x =>
             {
@@ -134,32 +121,57 @@ namespace Hangfire
             return services;
         }
 
-#if NETSTANDARD2_0
+#if NETCOREAPP3_0 || NETSTANDARD2_0 || NET461
+        public static IServiceCollection AddHangfireServer(
+            [NotNull] this IServiceCollection services,
+            [NotNull] Action<BackgroundJobServerOptions> optionsAction)
+        {
+            if (services == null) throw new ArgumentNullException(nameof(services));
+            if (optionsAction == null) throw new ArgumentNullException(nameof(optionsAction));
+
+            services.AddTransient<IHostedService, BackgroundJobServerHostedService>(provider =>
+            {
+                var options = new BackgroundJobServerOptions();
+                optionsAction(options);
+
+                return CreateBackgroundJobServerHostedService(provider, options);
+            });
+
+            return services;
+        }
+
         public static IServiceCollection AddHangfireServer([NotNull] this IServiceCollection services)
         {
             if (services == null) throw new ArgumentNullException(nameof(services));
 
             services.AddTransient<IHostedService, BackgroundJobServerHostedService>(provider =>
             {
-                ThrowIfNotConfigured(provider);
-
                 var options = provider.GetService<BackgroundJobServerOptions>() ?? new BackgroundJobServerOptions();
-                var storage = provider.GetService<JobStorage>() ?? JobStorage.Current;
-                var additionalProcesses = provider.GetServices<IBackgroundProcess>();
-
-                options.Activator = options.Activator ?? provider.GetService<JobActivator>();
-                options.FilterProvider = options.FilterProvider ?? provider.GetService<IJobFilterProvider>();
-                options.TimeZoneResolver = options.TimeZoneResolver ?? provider.GetService<ITimeZoneResolver>();
-
-                GetInternalServices(provider, out var factory, out var stateChanger, out var performer);
-
-#pragma warning disable 618
-                return new BackgroundJobServerHostedService(
-#pragma warning restore 618
-                    storage, options, additionalProcesses, factory, performer, stateChanger);
+                return CreateBackgroundJobServerHostedService(provider, options);
             });
 
             return services;
+        }
+
+        private static BackgroundJobServerHostedService CreateBackgroundJobServerHostedService(
+            IServiceProvider provider,
+            BackgroundJobServerOptions options)
+        {
+            ThrowIfNotConfigured(provider);
+
+            var storage = provider.GetService<JobStorage>() ?? JobStorage.Current;
+            var additionalProcesses = provider.GetServices<IBackgroundProcess>();
+
+            options.Activator = options.Activator ?? provider.GetService<JobActivator>();
+            options.FilterProvider = options.FilterProvider ?? provider.GetService<IJobFilterProvider>();
+            options.TimeZoneResolver = options.TimeZoneResolver ?? provider.GetService<ITimeZoneResolver>();
+
+            GetInternalServices(provider, out var factory, out var stateChanger, out var performer);
+
+#pragma warning disable 618
+            return new BackgroundJobServerHostedService(
+#pragma warning restore 618
+                storage, options, additionalProcesses, factory, performer, stateChanger);
         }
 #endif
 

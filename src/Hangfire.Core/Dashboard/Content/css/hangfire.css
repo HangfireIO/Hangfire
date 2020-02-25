@@ -105,6 +105,18 @@ a:hover .label-hover {
     white-space: nowrap;
 }
 
+.width-15 {
+    width: 15%;
+}
+
+.width-30 {
+    width: 30%;
+}
+
+@media (max-width: 991px) {
+    .width-30 { width: 15%; }
+}
+
 .align-right {
     text-align: right;
 }
@@ -342,6 +354,10 @@ a:hover .label-hover {
 .state-card-body dl {
     margin-top: 5px;
     margin-bottom: 0;
+}
+
+.state-card-body dd {
+    word-break: break-all;
 }
 
 .state-card-body pre {

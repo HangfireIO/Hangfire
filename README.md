@@ -118,7 +118,7 @@ Open-source projects develop more smoothly when discussions are public.
 
 If you have any questions, problems related to Hangfire usage or if you want to discuss new features, please visit the [discussion forum](http://discuss.hangfire.io). You can sign in there using your existing Google or GitHub account, so it's very simple to start using it.
 
-If you've discovered a bug, please report it to the [Hangfire GitHub Issues](https://github.com/odinserj/Hangfire/issues?state=open). Detailed reports with stack traces, actual and expected behavours are welcome. 
+If you've discovered a bug, please report it to the [Hangfire GitHub Issues](https://github.com/HangfireIO/Hangfire/issues?state=open). Detailed reports with stack traces, actual and expected behaviours are welcome.
 
 Related Projects
 -----------------
@@ -128,7 +128,7 @@ Please see the [Extensions](http://hangfire.io/extensions.html) page on the offi
 Building the sources
 ---------------------
 
-Prerequesities:
+Prerequisites:
 * [Razor Generator](https://marketplace.visualstudio.com/items?itemName=DavidEbbo.RazorGenerator): Required if you intend to edit the cshtml files.
 * Install the MSMQ service (Microsoft Message Queue Server), if not already installed.
 
@@ -149,7 +149,7 @@ To build NuGet packages as well as an archive file, use the `pack` command as sh
 build pack
 ```
 
-To see the full list of avalable commands, pass the `-docs` switch:
+To see the full list of available commands, pass the `-docs` switch:
 
 ```
 build -docs

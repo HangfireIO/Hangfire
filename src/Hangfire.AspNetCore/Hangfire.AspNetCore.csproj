@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net451;netstandard1.3;netstandard2.0;</TargetFrameworks>
+    <TargetFrameworks>net451;net461;netstandard1.3;netstandard2.0;netcoreapp3.0</TargetFrameworks>
     <DebugType>portable</DebugType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -8,10 +8,10 @@
     <RootNamespace>Hangfire</RootNamespace>
   </PropertyGroup>
   
-  <PropertyGroup Condition="'$(TargetFramework)'=='net45'">
+  <PropertyGroup Condition="'$(TargetFramework)'=='net45' or '$(TargetFramework)'=='net461'">
     <DebugType>full</DebugType>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <Compile Include="..\SharedAssemblyInfo.cs" Link="Properties\SharedAssemblyInfo.cs" />
   </ItemGroup>
@@ -28,11 +28,15 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.0.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+  <ItemGroup Condition="'$(TargetFramework)'=='net461' or '$(TargetFramework)'=='netstandard2.0'">
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Antiforgery" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.0" />
-  </ItemGroup>  
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp3.0'">
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
 </Project>

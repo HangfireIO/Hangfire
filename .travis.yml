@@ -3,22 +3,33 @@
 
 language: csharp
 sudo: required
-dist: trusty
+dist: xenial
+
+services:
+  - docker
 
 matrix:
   include:
-    - dotnet: 1.1.11
+    - dotnet: 3.0.100
       mono: none
       os: linux
-    - dotnet: 1.1.11
+    - dotnet: 3.0.100
       mono: none
       os: osx
     - mono: latest
       os: linux
-    - mono: latest
+    - mono: beta
       os: osx
 
+before_script:
+  - if hash docker 2>/dev/null;
+    then
+        sudo docker run --name=mssql2017 -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=Password12!' -p 1433:1433 -d microsoft/mssql-server-linux:2017-latest;
+        export Hangfire_SqlServer_ConnectionStringTemplate="Server=tcp:127.0.0.1,1433;Database={0};User Id=sa;Password=Password12!";
+    fi
+
 # Run the build script
+# Add tests for MSSQL in Mono when https://github.com/mono/mono/issues/16440 is fixed
 script:
   - if hash mono 2>/dev/null; 
     then
@@ -27,8 +38,12 @@ script:
         msbuild /p:Configuration=Release /verbosity:minimal Hangfire.sln;
         mono ./packages/xunit.runner.console.2.2.0/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/net452/Hangfire.Core.Tests.dll;
     else
-        travis_retry dotnet restore --disable-parallel;
-        dotnet test -c Release -f netcoreapp1.0 tests/Hangfire.Core.Tests/Hangfire.Core.Tests.csproj;
+        set -e;
+        dotnet test -c Release -f netcoreapp3.0 tests/Hangfire.Core.Tests/Hangfire.Core.Tests.csproj;
+        if hash docker 2>/dev/null;
+        then
+            dotnet test -c Release -f netcoreapp3.0 tests/Hangfire.SqlServer.Tests/Hangfire.SqlServer.Tests.csproj;
+        fi
     fi
 
 notifications:

@@ -40,8 +40,15 @@ namespace Hangfire.Processing
 
         public override void Post(SendOrPostCallback callback, object state)
         {
-            _queue.Enqueue(Tuple.Create(callback, state));
-            _semaphore.Release();
+            try
+            {
+                _queue.Enqueue(Tuple.Create(callback, state));
+                _semaphore.Release();
+            }
+            catch (ObjectDisposedException)
+            {
+                base.Post(callback, state);
+            }
         }
     }
 }

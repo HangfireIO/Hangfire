@@ -9,18 +9,21 @@
 <!DOCTYPE html>
 <html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
 <head>
-    <title>@Title - Hangfire</title>
+    <title>@Title – @(DashboardOptions.DashboardTitle.Contains("<") ? "Hangfire Dashboard" : DashboardOptions.DashboardTitle)</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="none">
-    @if (!String.IsNullOrWhiteSpace(Context.AntiforgeryHeader))
+    @if (!DashboardOptions.IgnoreAntiforgeryToken)
     {
-        @: <meta name="csrf-header" content="@Context.AntiforgeryHeader">
-    }
-    @if (!String.IsNullOrWhiteSpace(Context.AntiforgeryToken))
-    {
-        @: <meta name="csrf-token" content="@Context.AntiforgeryToken">
+        if (!String.IsNullOrWhiteSpace(Context.AntiforgeryHeader))
+        {
+            @: <meta name="csrf-header" content="@Context.AntiforgeryHeader">
+        }
+        if (!String.IsNullOrWhiteSpace(Context.AntiforgeryToken))
+        {
+            @: <meta name="csrf-token" content="@Context.AntiforgeryToken">
+        }
     }
     @{ var version = GetType().GetTypeInfo().Assembly.GetName().Version; }
     <link rel="stylesheet" href="@Url.To($"/css{version.Major}{version.Minor}{version.Build}0")">
@@ -38,7 +41,7 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <a class="navbar-brand" href="@Url.Home()">Hangfire Dashboard</a>
+                        <a class="navbar-brand" href="@Url.Home()">@Html.Raw(DashboardOptions.DashboardTitle)</a>
                     </div>
                     <div class="collapse navbar-collapse">
                         @Html.RenderPartial(new Navigation())
@@ -59,6 +62,9 @@
 
             <!-- Begin page content -->
             <div class="container" style="margin-bottom: 20px;">
+                <!-- Error alert when polling fails -->
+                @Html.RenderPartial(new ErrorAlert())
+
                 @RenderBody()
             </div>
         </div>

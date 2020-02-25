@@ -75,7 +75,7 @@ namespace Hangfire.Dashboard
                     var owinContext = new OwinContext(env);
                     var context = new OwinDashboardContext(storage, options, env);
 
-                    if (antiforgery != null)
+                    if (!options.IgnoreAntiforgeryToken && antiforgery != null)
                     {
                         context.AntiforgeryHeader = antiforgery.HeaderName;
                         context.AntiforgeryToken = antiforgery.GetToken(env);
@@ -98,7 +98,7 @@ namespace Hangfire.Dashboard
                         }
                     }
 
-                    if (antiforgery != null && !antiforgery.ValidateRequest(env))
+                    if (!options.IgnoreAntiforgeryToken && antiforgery != null && !antiforgery.ValidateRequest(env))
                     {
                         return Unauthorized(owinContext);
                     }

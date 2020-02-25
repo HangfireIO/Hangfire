@@ -11,10 +11,10 @@ namespace Hangfire.Core.Tests
         public DataCompatibilityRangeTheoryAttribute()
         {
             MinLevel = DataCompatibilityRangeFactAttribute.PossibleMinLevel;
-            MaxExclusiveLevel = DataCompatibilityRangeFactAttribute.PossibleMaxExcludingLevel;
+            MaxExcludingLevel = DataCompatibilityRangeFactAttribute.PossibleMaxExcludingLevel;
         }
 
         public CompatibilityLevel MinLevel { get; set; }
-        public CompatibilityLevel MaxExclusiveLevel { get; set; }
+        public CompatibilityLevel MaxExcludingLevel { get; set; }
     }
 }

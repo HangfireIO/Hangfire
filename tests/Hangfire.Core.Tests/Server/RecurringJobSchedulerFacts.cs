@@ -210,6 +210,39 @@ namespace Hangfire.Core.Tests.Server
                     rj.ContainsKey("NextExecution") && rj["NextExecution"]
                         == JobHelper.SerializeDateTime(_nextInstant))));
             
+            _transaction.Verify(x => x.SetRangeInHash(
+                jobKey,
+                It.Is<Dictionary<string, string>>(rj => !rj.ContainsKey("RetryAttempt"))));
+            
+            _transaction.Verify(x => x.Commit());
+        }
+        
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Execute_DoesNotUpdateRetryAttempt_WhenItWasNotModified(bool useJobStorageConnection)
+        {
+            // Arrange
+            SetupConnection(useJobStorageConnection);
+            _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant);
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant);
+            _recurringJob["V"] = "2";
+            _recurringJob["RetryAttempt"] = "0";
+            
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            
+            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
+            
+            _transaction.Verify(x => x.SetRangeInHash(
+                $"recurring-job:{RecurringJobId}",
+                It.Is<Dictionary<string, string>>(rj => !rj.ContainsKey("RetryAttempt"))));
+            
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, JobHelper.ToTimestamp(_nowInstant.AddMinutes(1))));
             _transaction.Verify(x => x.Commit());
         }
 
@@ -574,7 +607,7 @@ namespace Hangfire.Core.Tests.Server
                     .Returns(RecurringJobId);
             }
 
-            _recurringJob["Job"] = "Some job";
+            _factory.Setup(x => x.Create(It.IsAny<CreateContext>())).Throws<InvalidOperationException>();
 
             var scheduler = CreateScheduler();
 
@@ -715,6 +748,262 @@ namespace Hangfire.Core.Tests.Server
 
             // Assert
             _factory.Verify(x => x.Create(It.IsAny<CreateContext>()));
+        }
+        
+        [Fact]
+        public void Execute_ReschedulesRecurringJob_WhenCronExpressionIsInvalid_AndRetryAttemptsAreNotExceeded()
+        {
+            // Arrange
+            _context.StoppingTokenSource = new CancellationTokenSource();
+            SetupConnection(false);
+
+            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
+                .Returns(RecurringJobId)
+                .Returns((string)null);
+
+            _recurringJob["Cron"] = "some garbage";
+            _recurringJob["V"] = "2";
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            Assert.True(_delay > TimeSpan.Zero);
+            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict =>
+                dict.Count == 1 && dict["RetryAttempt"] == "1")));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, JobHelper.ToTimestamp(_nowInstant.Add(_delay))));
+            _transaction.Verify(x => x.Commit());
+        }
+        
+        [Fact]
+        public void Execute_DoesNotFailOnInvalidCronExpression_AndSimplySetsNextExecutionToNull_WhenRetryAttemptsExceeded()
+        {
+            // Arrange
+            _context.StoppingTokenSource = new CancellationTokenSource();
+            SetupConnection(false);
+
+            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
+                .Returns(RecurringJobId)
+                .Returns((string)null);
+
+            _recurringJob["Cron"] = "some garbage";
+            _recurringJob["RetryAttempt"] = "10";
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void Execute_ClearsLastError_AndRetryAttempts_AfterSuccessfulScheduling()
+        {
+            // Arrange
+            SetupConnection(false);
+
+            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
+                .Returns(RecurringJobId)
+                .Returns((string)null);
+
+            var scheduler = CreateScheduler();
+
+            _recurringJob["Error"] = "Some error that previously happened";
+            _recurringJob["RetryAttempt"] = "10";
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _factory.Verify(x => x.Create(It.IsNotNull<CreateContext>()));
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict =>
+                dict["Error"] == String.Empty && dict["RetryAttempt"] == "0")));
+            _transaction.Verify(x => x.Commit());
+        }
+        
+        [Fact]
+        public void Execute_ReschedulesRecurringJob_WhenThereAreIssuesWithJobLoading_AndRetryAttemptsAreNotExceeded()
+        {
+            // Arrange
+            _context.StoppingTokenSource = new CancellationTokenSource();
+            SetupConnection(false);
+
+            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
+                .Returns(RecurringJobId)
+                .Returns((string) null);
+
+            _recurringJob["Job"] = null;
+            _recurringJob["V"] = "2";
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+            
+            // Assert
+            Assert.True(_delay > TimeSpan.Zero);
+            
+            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
+            
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict =>
+                dict.Count == 1 && dict["RetryAttempt"] == "1")));
+            
+            _transaction.Verify(x => x.AddToSet(
+                "recurring-jobs",
+                RecurringJobId,
+                JobHelper.ToTimestamp(_nowInstant.Add(_delay))));
+            
+            _transaction.Verify(x => x.Commit());
+        }
+        
+        [Fact]
+        public void Execute_ReschedulesRecurringJob_WithIncreasedAttemptNumber_WhenThereAreIssuesWithJobLoading_AndRetryAttemptsAreNotExceeded()
+        {
+            // Arrange
+            _context.StoppingTokenSource = new CancellationTokenSource();
+            SetupConnection(false);
+
+            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
+                .Returns(RecurringJobId)
+                .Returns((string) null);
+
+            _recurringJob["Job"] = null;
+            _recurringJob["RetryAttempt"] = "1";
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+            
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict =>
+                dict.ContainsKey("RetryAttempt") && dict["RetryAttempt"] == "2")));
+            
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void Execute_HidesRecurringJob_FromScheduler_WhenJobCanNotBeLoaded_AndRetryAttemptsExceeded()
+        {
+            // Arrange
+            _context.StoppingTokenSource = new CancellationTokenSource();
+            SetupConnection(false);
+
+            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
+                .Returns(RecurringJobId)
+                .Returns((string)null);
+
+            _recurringJob["RetryAttempt"] = "10";
+            _recurringJob["Job"] = InvocationData.SerializeJob(
+                Job.FromExpression(() => Console.WriteLine())).SerializePayload().Replace("Console", "SomeNonExistingClass");
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict => 
+                dict.Count == 3 &&
+                dict["NextExecution"] == String.Empty &&
+                dict["Error"].StartsWith("Could not load the job") &&
+                dict["V"] == "2")));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void Execute_HidesRecurringJob_FromScheduler_WhenJobCanNotBeDeserialized_AndRetryAttemptsExceeded()
+        {
+            // Arrange
+            _context.StoppingTokenSource = new CancellationTokenSource();
+            SetupConnection(false);
+
+            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
+                .Returns(RecurringJobId)
+                .Returns((string)null);
+
+            _recurringJob["RetryAttempt"] = "10";
+            _recurringJob["Job"] = "Some garbage";
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict => 
+                dict.Count == 3 &&
+                dict["NextExecution"] == String.Empty &&
+                dict["Error"].StartsWith("Unexpected character") &&
+                dict["V"] == "2")));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void Execute_HidesRecurringJob_FromScheduler_WhenJobIsNull_AndRetryAttemptsExceeded()
+        {
+            // Arrange
+            _context.StoppingTokenSource = new CancellationTokenSource();
+            SetupConnection(false);
+
+            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
+                .Returns(RecurringJobId)
+                .Returns((string)null);
+
+            _recurringJob["RetryAttempt"] = "10";
+            _recurringJob["Job"] = null;
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict => 
+                dict.Count == 3 &&
+                dict["NextExecution"] == String.Empty &&
+                dict["Error"].StartsWith("The 'Job' field has a null") &&
+                dict["V"] == "2")));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void Execute_HidesRecurringJob_FromScheduler_WhenTimeZoneCanNotBeResolved_AndRetryAttemptsExceeded()
+        {
+            // Arrange
+            _context.StoppingTokenSource = new CancellationTokenSource();
+            SetupConnection(false);
+
+            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
+                .Returns(RecurringJobId)
+                .Returns((string)null);
+
+            _recurringJob["RetryAttempt"] = "10";
+            _recurringJob["TimeZoneId"] = "Non-existing time zone";
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict => 
+                dict.Count == 3 &&
+                dict["NextExecution"] == String.Empty &&
+                dict["Error"].StartsWith("Exception of type 'System.InvalidTimeZoneException'") &&
+                dict["V"] == "2")));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1));
+            _transaction.Verify(x => x.Commit());
         }
 
         private void SetupConnection(bool useJobStorageConnection)

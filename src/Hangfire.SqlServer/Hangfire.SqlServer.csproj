@@ -10,7 +10,7 @@
   
   <PropertyGroup Condition="'$(TargetFramework)'=='net45'">
     <DebugType>full</DebugType>
-    <DefineConstants>$(DefineConstants);FEATURE_TRANSACTIONSCOPE;FEATURE_CONFIGURATIONMANAGER;FEATURE_COMMANDSET</DefineConstants>
+    <DefineConstants>$(DefineConstants);FEATURE_TRANSACTIONSCOPE;FEATURE_CONFIGURATIONMANAGER</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>
@@ -20,8 +20,13 @@
   <ItemGroup>
     <ProjectReference Include="..\Hangfire.Core\Hangfire.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+    <PackageReference Include="Dapper" Version="2.0.4" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />
+  </ItemGroup>
   
-  <ItemGroup Condition="'$(TargetFramework)'!='net45'">
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
     <PackageReference Include="Dapper" Version="1.50.7" />
   </ItemGroup>
 

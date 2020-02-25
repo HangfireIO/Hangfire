@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 
@@ -27,9 +28,12 @@ namespace Hangfire.SqlServer
         private readonly SqlCommandSet _commandSet;
         private readonly int _defaultTimeout;
 
-        public SqlCommandBatch(bool preferBatching)
+        public SqlCommandBatch(DbConnection connection, DbTransaction transaction, bool preferBatching)
         {
-            if (SqlCommandSet.IsAvailable && preferBatching)
+            Connection = connection;
+            Transaction = transaction;
+
+            if (connection is SqlConnection && SqlCommandSet.IsAvailable && preferBatching)
             {
                 try
                 {
@@ -43,8 +47,8 @@ namespace Hangfire.SqlServer
             }
         }
 
-        public DbConnection Connection { get; set; }
-        public DbTransaction Transaction { get; set; }
+        public DbConnection Connection { get; }
+        public DbTransaction Transaction { get; }
 
         public int? CommandTimeout { get; set; }
         public int? CommandBatchMaxTimeout { get; set; }
@@ -59,13 +63,14 @@ namespace Hangfire.SqlServer
             _commandSet?.Dispose();
         }
 
-        public void Append(string commandText, params SqlParameter[] parameters)
+        public void Append(string commandText, params SqlCommandBatchParameter[] parameters)
         {
-            var command = new SqlCommand(commandText);
+            var command = Connection.CreateCommand();
+            command.CommandText = commandText;
 
             foreach (var parameter in parameters)
             {
-                command.Parameters.Add(parameter);
+                parameter.AddToCommand(command);
             }
 
             Append(command);
@@ -118,6 +123,34 @@ namespace Hangfire.SqlServer
 
                 command.ExecuteNonQuery();
             }
+        }
+    }
+
+    internal class SqlCommandBatchParameter
+    {
+        public SqlCommandBatchParameter(string parameterName, DbType dbType, int? size = null)
+        {
+            ParameterName = parameterName;
+            DbType = dbType;
+            Size = size;
+        }
+
+        public string ParameterName { get; }
+        public DbType DbType { get; }
+        public int? Size { get; }
+        public object Value { get; set; }
+
+        public void AddToCommand(DbCommand command)
+        {
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = ParameterName;
+            parameter.DbType = DbType;
+
+            if (Size.HasValue) parameter.Size = Size.Value;
+
+            parameter.Value = Value;
+
+            command.Parameters.Add(parameter);
         }
     }
 }

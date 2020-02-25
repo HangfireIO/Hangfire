@@ -50,6 +50,12 @@ Task Collect -Depends Test -Description "Copy all artifacts to the build folder.
     Collect-Assembly "Hangfire.Core" "netstandard2.0"
     Collect-Assembly "Hangfire.SqlServer" "netstandard2.0"
     Collect-Assembly "Hangfire.AspNetCore" "netstandard2.0"
+    Collect-Assembly "Hangfire.NetCore" "netstandard2.0"
+    
+    Collect-Assembly "Hangfire.AspNetCore" "net461"
+
+    Collect-Assembly "Hangfire.AspNetCore" "netcoreapp3.0"
+    Collect-Assembly "Hangfire.NetCore" "netcoreapp3.0"
     
     Collect-Content "content\readme.txt"
     Collect-Tool "src\Hangfire.SqlServer\DefaultInstall.sql"
@@ -77,6 +83,7 @@ Task Pack -Depends Collect -Description "Create NuGet packages and archive files
     Create-Package "Hangfire.SqlServer" $version
     Create-Package "Hangfire.SqlServer.Msmq" $version
     Create-Package "Hangfire.AspNetCore" $version
+    Create-Package "Hangfire.NetCore" $version
 }
 
 function Collect-Localizations($project, $target) {

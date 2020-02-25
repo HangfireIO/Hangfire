@@ -30,6 +30,7 @@ namespace Hangfire
             IsReadOnlyFunc = _ => false;
             StatsPollingInterval = 2000;
             DisplayStorageConnectionString = true;
+            DashboardTitle = "Hangfire Dashboard";
             DisplayNameFunc = null;
         }
 
@@ -55,8 +56,17 @@ namespace Hangfire
         public bool DisplayStorageConnectionString { get; set; }
 
         /// <summary>
+        /// The Title displayed on the dashboard, optionally modify to describe this dashboards purpose.
+        /// </summary>
+        public string DashboardTitle { get; set; }
+
+        /// <summary>
         /// Display name provider for jobs
         /// </summary>
         public Func<DashboardContext, Job, string> DisplayNameFunc { get; set; }
+
+        public bool IgnoreAntiforgeryToken { get; set; }
+
+        public ITimeZoneResolver TimeZoneResolver { get; set; }
     }
 }

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net452;netcoreapp2.1;</TargetFrameworks>
+    <TargetFrameworks>net452;netcoreapp2.1;netcoreapp3.0</TargetFrameworks>
     <NoWarn>0618</NoWarn>
   </PropertyGroup>
   
@@ -11,11 +11,22 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
     <PackageReference Include="Moq" Version="4.10.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
-    <PackageReference Include="Dapper" Version="1.50.7" />    
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'!='net452'">
+    <PackageReference Include="Dapper" Version="2.0.4" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(TargetFramework)'=='net452'">
+    <PackageReference Include="Dapper" Version="1.50.7" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp2.1'">
     <PackageReference Include="System.Data.SqlClient" Version="4.5.0" />    
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp3.0'">
+    <PackageReference Include="System.Data.SqlClient" Version="4.7.0" />    
   </ItemGroup>
 
   <ItemGroup>

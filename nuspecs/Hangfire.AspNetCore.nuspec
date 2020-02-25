@@ -14,6 +14,20 @@
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.7.8
+• Added – `IAppBuilder.MapHangfireDashboard` method for ASP.NET Core 3.0 endpoint routing (by @kendaleiv).
+• Changed – Add explicit `netcoreapp3.0` target with "Microsoft.AspNetCore.App" framework reference (by @stebueh).
+
+1.7.7
+• Fixed – Add missing `AddHangfireServer` method for .NET Framework 4.6.1 and higher (by @danstur).
+
+1.7.5
+• Fixed – Add missing overload for the `AddHangfireServer` method with "options" action.
+
+1.7.2
+• Added – Automatically resolve `ITimeZoneResolver` service for the `DashboardOptions.TimeZoneResolver` property.
+• Fixed – Allow to resolve `IJobFilterProvider` service from the `AddHangfire` method.
+
 1.7.0
 • Added – Full .NET Core 2.0 support by explicitly targeting .NET Standard 2.0.
 • Added – An overloaded AddHangfire method with `IServiceProvider` parameter (by @ericgreenmix and @denis-ivanov).
@@ -49,7 +63,23 @@
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="2.0.0" />
         <dependency id="Hangfire.Core" version="[0.0.0]" />
       </group>
+      <group targetFramework="net461">
+        <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="2.0.0" />
+        <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="2.0.0" />
+        <dependency id="Microsoft.AspNetCore.Antiforgery" version="2.0.0" />
+        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="2.0.0" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="2.0.0" />
+        <dependency id="Hangfire.Core" version="[0.0.0]" />
+      </group>	  
+      <group targetFramework="netcoreapp3.0">
+        <dependency id="Hangfire.Core" version="[0.0.0]" />
+      </group>
     </dependencies>
+    <frameworkReferences>
+      <group targetFramework=".NETCoreApp3.0">
+        <frameworkReference name="Microsoft.AspNetCore.App" />
+      </group>
+    </frameworkReferences>
   </metadata>
   <files>
     <file src="net451\Hangfire.AspNetCore.dll" target="lib\net451" />
@@ -63,6 +93,14 @@
     <file src="netstandard2.0\Hangfire.AspNetCore.dll" target="lib\netstandard2.0" />
     <file src="netstandard2.0\Hangfire.AspNetCore.xml" target="lib\netstandard2.0" />
     <file src="netstandard2.0\Hangfire.AspNetCore.pdb" target="lib\netstandard2.0" />
+	
+    <file src="net461\Hangfire.AspNetCore.dll" target="lib\net461" />
+    <file src="net461\Hangfire.AspNetCore.xml" target="lib\net461" />
+    <file src="net461\Hangfire.AspNetCore.pdb" target="lib\net461" />	
+
+    <file src="netcoreapp3.0\Hangfire.AspNetCore.dll" target="lib\netcoreapp3.0" />
+    <file src="netcoreapp3.0\Hangfire.AspNetCore.xml" target="lib\netcoreapp3.0" />
+    <file src="netcoreapp3.0\Hangfire.AspNetCore.pdb" target="lib\netcoreapp3.0" />
     
     <file src="..\src\Hangfire.AspNetCore\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
 

@@ -15,9 +15,97 @@ An easy and reliable way to perform fire-and-forget, delayed and recurring, long
 Backed by Redis, SQL Server, SQL Azure or MSMQ. This is a .NET alternative to Sidekiq, Resque and Celery.
 https://www.hangfire.io/
     </description>
-    <copyright>Copyright © 2013-2019 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013-2020 Sergey Odinokov</copyright>
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
+
+Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
+
+1.7.9
+• Fixed – Additional Chinese translation for Dashboard UI (by @brookqin).
+• Fixed – Added `null` checks for expired failed jobs in Dashboard UI (by @ppkale1995-cimpress).
+• Fixed – Add word break to definition lists for state cards in Dashboard UI.
+• Fixed – Render long recurring job identifiers correctly in Dashboard UI.
+
+1.7.8
+• Added – `IGlobalConfiguration.UseResultsInContinuations` method to globally enable results for continuations.
+• Added – Ability to push antecedent job's result to continuations via job parameters with `ContinuationsSupport`.
+• Added – `JobParameterInjectionFilter` server filter to inject job parameters as arguments.
+• Added – Allow to specify a custom thread factory in `UseBackgroundPool` methods.
+• Changed – Add retry attempts for recurring jobs instead of immediately disabling them.
+• Fixed – `CultureInfo.InvariantCulture` is now restored properly in background jobs.
+• Fixed – Recurring jobs aren't triggered early after changing their cron expressions.
+• Fixed – Don't trigger recurring job when it can't be scheduled due to errors.
+• Fixed – Argument with a `null` value is skipped when displaying job arguments in Dashboard UI.
+• Fixed – Add a workaround for resolving `System.Diagnostics.Debug` type in .NET Core 3.0.
+• Deprecated – Deprecate the `JobActivatorScope.InnerScope` property as it wasn't implemented.
+
+1.7.7
+
+Core
+• Changed – Produce a trace log message with details when updating a recurring job.
+• Changed – Return early from `CoreBackgroundJobFactory.Create` when storage returns `null`.
+• Project – Minor changes for the `Readme.md` file (by @231293).
+• Project – Add `netcoreapp3.0` target framework for Hangfire.Core.Tests.
+• Project – Add support for MSBuild 15.0 (VS 2019) when building `*.cshtml` files.
+
+Dashboard UI
+• Added – Allow modification of the Dashboard UI title (by @tbertenshaw).
+• Added – Support for HTML tags on the Dashboard UI title (by @caioproiete).
+• Added – Buttons for 1,000 and 5,000 items per page in dashboard.
+• Added – Links to previous/next pages to the top of the dashboard page.
+• Changed – Expose the `RazorPage.Context` property as a public member.
+• Fixed – Supplementary Chinese translation (by @mccj).
+• Fixed – Don't update real-time chart when too much time passed since the last update.
+
+1.7.6
+• Changed – Add support for dash characters (`-`) in queue names (by @caioproiete).
+• Fixed – Show actual error in Dashboard UI when recurring job can't be scheduled.
+• Fixed – Ensure backward compatibility when JSON payloads are serialized with field names only.
+• Fixed – Non-awaited continuations can bring down the whole app when `TaskScheduler` is set to `null`.
+• Fixed – Timeout value is not respected in some cases in the `WaitOneAsync` method.
+
+1.7.5
+• Fixed – Show error message when there's an error loading the statistics in Dashboard UI (by @prochnowc).
+• Fixed – Properly handle recurring jobs with null or empty 'Job' field.
+• Fixed – Disable recurring job when we can't schedule it due to an error.
+• Fixed – Use `LazyThreadSafetyMode.PublicationOnly` to avoid caching "JobStorage.Current is null" exceptions.
+
+1.7.4
+• Added – `BackgroundJobClient.RetryAttempts` property to make job creation resilient to transient exceptions.
+• Added – Dashboard localization support in `pt-BR` (by @candidodmv).
+• Changed – Protect background dispatchers from moving from stopped state to non-stopped one.
+• Changed – Unify `WaitOne` and `WaitOneAsync` methods with timeout and cancellation token for `WaitHandle` class.
+• Fixed – Don't hide an original fatal exception occurred in dispatchers in some cases.
+• Fixed – Dashboard UI to display "await" keyword on all task-like methods.
+• Fixed – Display links properly in an informational message on the Servers page in Dashboard UI.
+• Fixed – Wait for the heartbeat process before shutting down a server.
+
+1.7.3
+
+• SECURITY – Use `HtmlEncode` in all remaining places in Dashboard UI to prevent XSS attacks.
+
+• Added – Added Dutch language, and updated missing translation on "Servers" page (by @r-win).
+• Added – `Cron.Never` method for adding manual recurring jobs that never fire (by @michaltalaga).
+• Fixed – Add missing `AddOrUpdate` extension methods for the `IRecurringJobManager` interface.
+• Deprecated – Unused `HtmlHelper.FormatProperties` method is now obsolete.
+
+1.7.2
+• Added – `DashboardOptions.TimeZoneResolver` property to handle custom time zone resolvers in Dashboard UI.
+• Fixed – `RecurringJob.AddOrUpdate` method is now able to update a broken recurring job.
+• Fixed – Recurring job scheduler now properly handles recurring jobs whose job method or time zone is wrong.
+• Fixed – Don't throw an exception on Recurring Jobs page when time zone can't be resolved.
+
+1.7.1
+• Added – `DashboardOptions.IgnoreAntiforgeryToken` property to disable token validation in Dashboard UI.
+• Added – Display hints regarding server status on Servers page in Dashboard UI.
+• Added – Highlight recurring jobs with no next execution in Dashboard UI.
+• Added – Show actual error in Dashboard UI when recurring job has an invalid Cron expression.
+• Fixed – `InvalidOperationException` when `AllowSynchronousIO` option isn't set in ASP.NET Core 3.0.
+• Fixed – Set `NextExecution` value to `null` when existing recurring job has an invalid Cron expression.
+• Fixed – Make dashboard charts to be more culture-specific to use correct time format.
+• Fixed – Obsolete `UseSerializationSettings` comment now contains correct method name (by @PaitoAnderson).
+• Project – `resx` files now re-generated automatically when building a project.
 
 1.7.0
 • Added – Full .NET Core 2.0 support by explicitly targeting .NET Standard 2.0.

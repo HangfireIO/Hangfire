@@ -1,0 +1,520 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AwaitingJobsPage_ContinuationsWarning_Text" xml:space="preserve">
+    <value>نگران نباشید. کارهای "ادامه دار"، مطابق انتظار در حال اجرا هستند. اما محل ذخیره سازی شما از برخی کوئری های مورد نیاز جهت نمایش این صفحه پشتیبانی نمیکند. لطفاً یا محل ذخیره سازی خود را به روز رسانی کنید یا تا اتمام عملیات منتظر بمانید.</value>
+  </data>
+  <data name="AwaitingJobsPage_ContinuationsWarning_Title" xml:space="preserve">
+    <value>کارهای "ادامه دار" در حال اجرا هستند، اما این صفحه قابلیت نمایش ندارد</value>
+  </data>
+  <data name="AwaitingJobsPage_NoJobs" xml:space="preserve">
+    <value>هیچ کاری در وضعیت انتظار برای اجرا وجود ندارد</value>
+  </data>
+  <data name="AwaitingJobsPage_Table_Options" xml:space="preserve">
+    <value>گزینه ها</value>
+  </data>
+  <data name="AwaitingJobsPage_Table_Parent" xml:space="preserve">
+    <value>والد</value>
+  </data>
+  <data name="AwaitingJobsPage_Title" xml:space="preserve">
+    <value>کارهای در حال انتظار</value>
+  </data>
+  <data name="Common_Created" xml:space="preserve">
+    <value>ایجاد شده</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>حذف شده</value>
+  </data>
+  <data name="Common_DeleteConfirm" xml:space="preserve">
+    <value>آیا از حذف تمامی موارد انتخاب شده مطمئن هستید؟</value>
+  </data>
+  <data name="Common_Deleting" xml:space="preserve">
+    <value>در حال حذف...</value>
+  </data>
+  <data name="Common_DeleteSelected" xml:space="preserve">
+    <value>حذف انتخاب شد</value>
+  </data>
+  <data name="Common_EnqueueButton_Text" xml:space="preserve">
+    <value>وارد کردن کارها به صف</value>
+  </data>
+  <data name="Common_Enqueueing" xml:space="preserve">
+    <value>در حال ورود به صف</value>
+  </data>
+  <data name="Common_Fetched" xml:space="preserve">
+    <value>دریافت شده</value>
+  </data>
+  <data name="Common_Id" xml:space="preserve">
+    <value>شناسه</value>
+  </data>
+  <data name="Common_Job" xml:space="preserve">
+    <value>کار</value>
+  </data>
+  <data name="Common_JobExpired" xml:space="preserve">
+    <value>کارهای منقضی شده</value>
+  </data>
+  <data name="Common_JobStateChanged_Text" xml:space="preserve">
+    <value>در حالی که داده دریافت میشد، وضعیت کار تغییر کرده</value>
+  </data>
+  <data name="Common_LessDetails" xml:space="preserve">
+    <value>جزئیات کمتر</value>
+  </data>
+  <data name="Common_MoreDetails" xml:space="preserve">
+    <value>جزئیات بیشتر</value>
+  </data>
+  <data name="Common_NotAvailable" xml:space="preserve">
+    <value>خارج از دسترس</value>
+  </data>
+  <data name="Common_PeriodDay" xml:space="preserve">
+    <value>روز</value>
+  </data>
+  <data name="Common_PeriodWeek" xml:space="preserve">
+    <value>هفته</value>
+  </data>
+  <data name="Common_Reason" xml:space="preserve">
+    <value>علت</value>
+  </data>
+  <data name="Common_RequeueJobs" xml:space="preserve">
+    <value>ورود مجدد به صف</value>
+  </data>
+  <data name="Common_Retry" xml:space="preserve">
+    <value>تلاش مجدد</value>
+  </data>
+  <data name="Common_Server" xml:space="preserve">
+    <value>سرویس دهنده</value>
+  </data>
+  <data name="Common_State" xml:space="preserve">
+    <value>وضعیت</value>
+  </data>
+  <data name="Common_Unknown" xml:space="preserve">
+    <value>نامشخص</value>
+  </data>
+  <data name="DeletedJobsPage_NoJobs" xml:space="preserve">
+    <value>هیچ کار حذف شده ای پیدا نشد</value>
+  </data>
+  <data name="DeletedJobsPage_Table_Deleted" xml:space="preserve">
+    <value>حذف شده</value>
+  </data>
+  <data name="DeletedJobsPage_Title" xml:space="preserve">
+    <value>کارهای حذف شده</value>
+  </data>
+  <data name="EnqueuedJobsPage_NoJobs" xml:space="preserve">
+    <value>این کوئری خالی است</value>
+  </data>
+  <data name="EnqueuedJobsPage_Title" xml:space="preserve">
+    <value>کارهای وارد شده به صف</value>
+  </data>
+  <data name="FailedJobsPage_FailedJobsNotExpire_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;کارهای ناموفق منقضی نخواهند شد&lt;/strong&gt; تا شما در زمان مناسب مجدداً آنها را اجرا نمایید. باید آنها را بصورت دستی حذف کرده یا دوباره به صف وارد نمایید, یا اینکه اتریبیوت &lt;code&gt;AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)&lt;/code&gt;
+              را جهت حذف خودکار آنها اعمال نمایید.</value>
+  </data>
+  <data name="FailedJobsPage_NoJobs" xml:space="preserve">
+    <value>در حال حاضر هیچ کار ناموفقی وجود ندارد</value>
+  </data>
+  <data name="FailedJobsPage_Table_Failed" xml:space="preserve">
+    <value>ناموفق ها</value>
+  </data>
+  <data name="FailedJobsPage_Title" xml:space="preserve">
+    <value>کارهای ناموفق</value>
+  </data>
+  <data name="FetchedJobsPage_NoJobs" xml:space="preserve">
+    <value>صف خالی است</value>
+  </data>
+  <data name="FetchedJobsPage_Title" xml:space="preserve">
+    <value>کارهای دریافت شده</value>
+  </data>
+  <data name="HomePage_HistoryGraph" xml:space="preserve">
+    <value>نمودار تاریخچه</value>
+  </data>
+  <data name="HomePage_RealtimeGraph" xml:space="preserve">
+    <value>نمودار لحظه ای</value>
+  </data>
+  <data name="HomePage_Title" xml:space="preserve">
+    <value>داشبورد</value>
+  </data>
+  <data name="JobDetailsPage_Created" xml:space="preserve">
+    <value>ایجاد شده</value>
+  </data>
+  <data name="JobDetailsPage_DeleteConfirm" xml:space="preserve">
+    <value>آیا از حذف این کار اطمینان دارید؟</value>
+  </data>
+  <data name="JobDetailsPage_State" xml:space="preserve">
+    <value>وضعیت</value>
+  </data>
+  <data name="JobDetailsPage_JobAbortedNotActive_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;کار ناتمام مانده&lt;/strong&gt; – توسط سرویس دهنده 
+                        &lt;code&gt;{0}&lt;/code&gt; پردازش شده که اکنون در فهرست
+                        &lt;a href="{1}"&gt;سرویس دهنده های فعال&lt;/a&gt; نیست.
+                      این کار بعد از سپری شدن مدت زمانی دوباره اجرا خواهد شد, اما شما میتوانید آن را بصورت دستی حذف یا مجدداً اجرا نمایید..</value>
+  </data>
+  <data name="JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;بنظر این کار ناتمام مانده&lt;/strong&gt; – توسط سرویس دهنده
+                        &lt;code&gt;{0}&lt;/code&gt;, پردازش شده که بیش از یک دقیقه  ی پیش اجرا شده.
+                           این کار بعد از سپری شدن مدت زمانی دوباره اجرا خواهد شد, اما شما میتوانید آن را بصورت دستی حذف یا مجدداً اجرا نمایید.</value>
+  </data>
+  <data name="JobDetailsPage_JobExpired" xml:space="preserve">
+    <value>کار پس زمینه '{0}' منقضی شد یا در سرور یافت نشد.</value>
+  </data>
+  <data name="JobDetailsPage_JobFinished_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;این کار به اتمام رسیده&lt;/strong&gt;.
+                    بصورت خودکار حذف خواهد شد &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;.</value>
+  </data>
+  <data name="JobDetailsPage_JobId" xml:space="preserve">
+    <value>شناسه کار</value>
+  </data>
+  <data name="JobDetailsPage_Requeue" xml:space="preserve">
+    <value>ورود مجدد به صف</value>
+  </data>
+  <data name="LayoutPage_Back" xml:space="preserve">
+    <value>برگشت به سایت</value>
+  </data>
+  <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
+    <value>ایجاد شد{0}میلی ثانیه</value>
+  </data>
+  <data name="LayoutPage_Footer_Time" xml:space="preserve">
+    <value>زمان:</value>
+  </data>
+  <data name="Paginator_Next" xml:space="preserve">
+    <value>بعدی</value>
+  </data>
+  <data name="Paginator_Prev" xml:space="preserve">
+    <value>قبلی</value>
+  </data>
+  <data name="Paginator_TotalItems" xml:space="preserve">
+    <value>کل</value>
+  </data>
+  <data name="PerPageSelector_ItemsPerPage" xml:space="preserve">
+    <value>تعداد در هر صفحه</value>
+  </data>
+  <data name="ProcessingJobsPage_Aborted" xml:space="preserve">
+    <value>بنظر کار مد نظر شما ناتمام مانده</value>
+  </data>
+  <data name="ProcessingJobsPage_NoJobs" xml:space="preserve">
+    <value>کار هم اکنون در حال اجرا است</value>
+  </data>
+  <data name="ProcessingJobsPage_Table_Started" xml:space="preserve">
+    <value>شروع شده</value>
+  </data>
+  <data name="ProcessingJobsPage_Title" xml:space="preserve">
+    <value>کارهای در حال پردازش</value>
+  </data>
+  <data name="QueuesPage_NoJobs" xml:space="preserve">
+    <value>هیچ کاری وارد صف نشده</value>
+  </data>
+  <data name="QueuesPage_NoQueues" xml:space="preserve">
+    <value>هیچ کاری موجود نیست. ابتدا وارد صف کنید</value>
+  </data>
+  <data name="QueuesPage_Table_Length" xml:space="preserve">
+    <value>طول</value>
+  </data>
+  <data name="QueuesPage_Table_NextsJobs" xml:space="preserve">
+    <value>کار بعدی</value>
+  </data>
+  <data name="QueuesPage_Table_Queue" xml:space="preserve">
+    <value>صف</value>
+  </data>
+  <data name="QueuesPage_Title" xml:space="preserve">
+    <value>صف ها</value>
+  </data>
+  <data name="RecurringJobsPage_Canceled" xml:space="preserve">
+    <value>انصراف داده شده</value>
+  </data>
+  <data name="RecurringJobsPage_NoJobs" xml:space="preserve">
+    <value>هیچ کار مکرری یافت نشد</value>
+  </data>
+  <data name="RecurringJobsPage_Table_Cron" xml:space="preserve">
+    <value>Cron</value>
+  </data>
+  <data name="RecurringJobsPage_Table_LastExecution" xml:space="preserve">
+    <value>آخرین اجرا</value>
+  </data>
+  <data name="RecurringJobsPage_Table_NextExecution" xml:space="preserve">
+    <value>اجرای بعدی</value>
+  </data>
+  <data name="RecurringJobsPage_Table_TimeZone" xml:space="preserve">
+    <value>منطقه زمانی</value>
+  </data>
+  <data name="RecurringJobsPage_Title" xml:space="preserve">
+    <value>کارهای مکرر</value>
+  </data>
+  <data name="RecurringJobsPage_Triggering" xml:space="preserve">
+    <value>در حال راه اندازی</value>
+  </data>
+  <data name="RecurringJobsPage_TriggerNow" xml:space="preserve">
+    <value>راه اندازی</value>
+  </data>
+  <data name="RetriesPage_NoJobs" xml:space="preserve">
+    <value>همه چیز صحیح کار میکند- نیاز به اجرای مجدد نیست</value>
+  </data>
+  <data name="RetriesPage_Title" xml:space="preserve">
+    <value>اجرای مجدد</value>
+  </data>
+  <data name="RetriesPage_Warning_Html" xml:space="preserve">
+    <value>&lt;h4&gt;کارهای نیازمند اجرای مجدد دچار هیچ مشکلی نشده اند, اما  این صفحه قابل نمایش نیست&lt;/h4&gt;
+        &lt;p&gt;
+           نگران نشوید، کارهای اجرای مجدد مطابق انتظار در حال اجرا هستند اما برخی از کوئری های مورد نیاز جهت نمایش این صفحه توسط سیستم دخیره سازی شما پشتیبانی نمیشوند. . لطفا سیستم ذخیره سازی خود را به روز رسانی کرده یا تا اتمام دستورات منتظر بمانید.
+        &lt;/p&gt;
+        &lt;p&gt;
+          لطفا به آدرس &lt;a href="{0}"&gt;کارهای زمان بندی شده&lt;/a&gt; رجوع کرده تا همه ی کارهای زمان بندی شده از جمله کارهای نیازمند اجرای مجدد را مشاهده نمایید.
+        &lt;/p&gt;</value>
+  </data>
+  <data name="ScheduledJobsPage_EnqueueNow" xml:space="preserve">
+    <value>وارد صف کردن</value>
+  </data>
+  <data name="ScheduledJobsPage_NoJobs" xml:space="preserve">
+    <value>هیچ کار زمانبندی شده ای وجود ندارد</value>
+  </data>
+  <data name="ScheduledJobsPage_Table_Enqueue" xml:space="preserve">
+    <value>وارد کردن به صف</value>
+  </data>
+  <data name="ScheduledJobsPage_Table_Scheduled" xml:space="preserve">
+    <value>زمان بندی شده</value>
+  </data>
+  <data name="ScheduledJobsPage_Title" xml:space="preserve">
+    <value>کارهای زمان بندی شده</value>
+  </data>
+  <data name="ServersPage_NoServers" xml:space="preserve">
+    <value>هیچ سرویس دهنده ی فعالی وجود ندارد. کار های پس زمینه پردازش نخواهند شد.</value>
+  </data>
+  <data name="ServersPage_Table_Heartbeat" xml:space="preserve">
+    <value>ضربان</value>
+  </data>
+  <data name="ServersPage_Table_Name" xml:space="preserve">
+    <value>نام</value>
+  </data>
+  <data name="ServersPage_Table_Queues" xml:space="preserve">
+    <value>صف</value>
+  </data>
+  <data name="ServersPage_Table_Started" xml:space="preserve">
+    <value>شروع شده</value>
+  </data>
+  <data name="ServersPage_Table_Workers" xml:space="preserve">
+    <value>اجرا کننده ها</value>
+  </data>
+  <data name="ServersPage_Title" xml:space="preserve">
+    <value>سرویس دهنده ها</value>
+  </data>
+  <data name="SucceededJobsPage_NoJobs" xml:space="preserve">
+    <value>هیچ کار موفق شده ای وجود ندارد</value>
+  </data>
+  <data name="SucceededJobsPage_Table_Succeeded" xml:space="preserve">
+    <value>موفق شده</value>
+  </data>
+  <data name="SucceededJobsPage_Table_TotalDuration" xml:space="preserve">
+    <value>زمان کل اجرا</value>
+  </data>
+  <data name="SucceededJobsPage_Title" xml:space="preserve">
+    <value>کارهای موفق شده</value>
+  </data>
+  <data name="JobsSidebarMenu_Awaiting" xml:space="preserve">
+    <value>در حال انتظار</value>
+  </data>
+  <data name="JobsSidebarMenu_Deleted" xml:space="preserve">
+    <value>حذف شده</value>
+  </data>
+  <data name="JobsSidebarMenu_Failed" xml:space="preserve">
+    <value>ناموفق</value>
+  </data>
+  <data name="JobsSidebarMenu_Processing" xml:space="preserve">
+    <value>در حال پردازش</value>
+  </data>
+  <data name="JobsSidebarMenu_Scheduled" xml:space="preserve">
+    <value>زمانبندی شده</value>
+  </data>
+  <data name="JobsSidebarMenu_Succeeded" xml:space="preserve">
+    <value>موفق شده</value>
+  </data>
+  <data name="NavigationMenu_Jobs" xml:space="preserve">
+    <value>کارها</value>
+  </data>
+  <data name="NavigationMenu_RecurringJobs" xml:space="preserve">
+    <value>کارهای مکرر</value>
+  </data>
+  <data name="NavigationMenu_Retries" xml:space="preserve">
+    <value>اجرای مجدد</value>
+  </data>
+  <data name="NavigationMenu_Servers" xml:space="preserve">
+    <value>سرویس دهنده</value>
+  </data>
+  <data name="Common_CannotFindTargetMethod" xml:space="preserve">
+    <value>متد مقصد یافت نشد</value>
+  </data>
+  <data name="Common_Enqueued" xml:space="preserve">
+    <value>وارد شده به صف</value>
+  </data>
+  <data name="Common_NoState" xml:space="preserve">
+    <value>وضعیت خالی است</value>
+  </data>
+  <data name="JobsSidebarMenu_Enqueued" xml:space="preserve">
+    <value>وارد صف شده</value>
+  </data>
+  <data name="Metrics_ActiveConnections" xml:space="preserve">
+    <value>اتصال های فعال</value>
+  </data>
+  <data name="Metrics_DeletedJobs" xml:space="preserve">
+    <value>کارهای حذف شده</value>
+  </data>
+  <data name="Metrics_FailedJobs" xml:space="preserve">
+    <value>کارهای ناموفق</value>
+  </data>
+  <data name="Metrics_ProcessingJobs" xml:space="preserve">
+    <value>کارهای در حال پردازش</value>
+  </data>
+  <data name="Metrics_RecurringJobs" xml:space="preserve">
+    <value>کاراهای مکرر</value>
+  </data>
+  <data name="Metrics_Retries" xml:space="preserve">
+    <value>اجرای مجدد</value>
+  </data>
+  <data name="Metrics_ScheduledJobs" xml:space="preserve">
+    <value>کارهای زمانبندی شده</value>
+  </data>
+  <data name="Metrics_Servers" xml:space="preserve">
+    <value>سرویس دهنده ها</value>
+  </data>
+  <data name="Metrics_SucceededJobs" xml:space="preserve">
+    <value>کارهای موفق</value>
+  </data>
+  <data name="Metrics_TotalConnections" xml:space="preserve">
+    <value>تعداد کل اتصال ها</value>
+  </data>
+  <data name="Common_Condition" xml:space="preserve">
+    <value>شرط</value>
+  </data>
+  <data name="Common_Continuations" xml:space="preserve">
+    <value>کارهای "ادامه دار"</value>
+  </data>
+  <data name="Metrics_AwaitingCount" xml:space="preserve">
+    <value>در حال انتظار</value>
+  </data>
+  <data name="Metrics_EnqueuedCountOrNull" xml:space="preserve">
+    <value>وارد صف شده</value>
+  </data>
+  <data name="Metrics_EnqueuedQueuesCount" xml:space="preserve">
+    <value>وارد صف شده/ صف ها</value>
+  </data>
+  <data name="Metrics_FailedCountOrNull" xml:space="preserve">
+    <value>{0}کار(ها)ی ناموفق found. مجدداً اجرا کرده یا بصورت دستی حذف نمایید.</value>
+  </data>
+  <data name="HomePage_GraphHover_Failed" xml:space="preserve">
+    <value>ناموفق ها</value>
+  </data>
+  <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
+    <value>موفقیت آمیز</value>
+  </data>
+</root>

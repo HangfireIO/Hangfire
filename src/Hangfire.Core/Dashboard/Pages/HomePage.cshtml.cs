@@ -318,11 +318,21 @@ WriteLiteral("\"\r\n                 data-failed-string=\"");
             
             #line default
             #line hidden
+WriteLiteral("\"\r\n                 data-period=\"");
+
+
+            
+            #line 67 "..\..\Dashboard\Pages\HomePage.cshtml"
+                         Write(period);
+
+            
+            #line default
+            #line hidden
 WriteLiteral("\">\r\n            </canvas>\r\n");
 
 
             
-            #line 68 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 69 "..\..\Dashboard\Pages\HomePage.cshtml"
         }
 
             

@@ -77,7 +77,7 @@ namespace Hangfire.SqlServer.Tests
                     processingJob.RemoveFromQueue();
 
                     // Assert
-                    var count = sql.Query<int>("select count(*) from HangFire.JobQueue").Single();
+                    var count = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].JobQueue").Single();
                     Assert.Equal(0, count);
                 }
             });
@@ -99,7 +99,7 @@ namespace Hangfire.SqlServer.Tests
                     fetchedJob.RemoveFromQueue();
 
                     // Assert
-                    var count = sql.Query<int>("select count(*) from HangFire.JobQueue").Single();
+                    var count = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].JobQueue").Single();
                     Assert.Equal(3, count);
                 }
             });
@@ -118,7 +118,7 @@ namespace Hangfire.SqlServer.Tests
                     processingJob.Requeue();
 
                     // Assert
-                    var record = sql.Query("select * from HangFire.JobQueue").Single();
+                    var record = sql.Query($"select * from [{Constants.DefaultSchema}].JobQueue").Single();
                     Assert.Null(record.FetchedAt);
                 }
             });
@@ -135,9 +135,10 @@ namespace Hangfire.SqlServer.Tests
                 {
                     Thread.Sleep(TimeSpan.FromSeconds(10));
 
-                    var record = sql.Query("select * from HangFire.JobQueue").Single();
+                    var record = sql.Query($"select * from [{Constants.DefaultSchema}].JobQueue").Single();
 
-                    Assert.Equal(processingJob.FetchedAt, record.FetchedAt);
+                    Assert.NotNull(processingJob.FetchedAt);
+                    Assert.Equal<DateTime?>(processingJob.FetchedAt, record.FetchedAt);
                     var now = DateTime.UtcNow;
                     Assert.True(now.AddSeconds(-5) < record.FetchedAt, (now - record.FetchedAt).ToString());
                 }
@@ -159,7 +160,7 @@ namespace Hangfire.SqlServer.Tests
                     processingJob.RemoveFromQueue();
 
                     // Assert
-                    var count = sql.Query<int>("select count(*) from HangFire.JobQueue").Single();
+                    var count = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].JobQueue").Single();
                     Assert.Equal(0, count);
                 }
             });
@@ -180,7 +181,7 @@ namespace Hangfire.SqlServer.Tests
                     processingJob.Requeue();
 
                     // Assert
-                    var record = sql.Query("select * from HangFire.JobQueue").Single();
+                    var record = sql.Query($"select * from [{Constants.DefaultSchema}].JobQueue").Single();
                     Assert.Null(record.FetchedAt);
                 }
             });
@@ -199,7 +200,7 @@ namespace Hangfire.SqlServer.Tests
                     processingJob.Dispose();
 
                     // Assert
-                    var record = sql.Query("select * from HangFire.JobQueue").Single();
+                    var record = sql.Query($"select * from [{Constants.DefaultSchema}].JobQueue").Single();
                     Assert.Null(record.FetchedAt);
                 }
             });
@@ -207,8 +208,8 @@ namespace Hangfire.SqlServer.Tests
 
         private static int CreateJobQueueRecord(IDbConnection connection, string jobId, string queue, DateTime? fetchedAt)
         {
-            const string arrangeSql = @"
-insert into HangFire.JobQueue (JobId, Queue, FetchedAt)
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].JobQueue (JobId, Queue, FetchedAt)
 values (@id, @queue, @fetchedAt);
 select scope_identity() as Id";
 

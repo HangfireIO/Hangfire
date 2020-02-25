@@ -133,6 +133,12 @@ namespace Hangfire.SqlServer
                 foreach (var server in servers)
                 {
                     var data = SerializationHelper.Deserialize<ServerData>(server.Data);
+
+                    if (data.Queues == null && data.StartedAt == null && data.WorkerCount == 0)
+                    {
+                        data = SerializationHelper.Deserialize<ServerData>(server.Data, SerializationOption.User);
+                    }
+
                     result.Add(new ServerDto
                     {
                         Name = server.Id,

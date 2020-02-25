@@ -28,8 +28,6 @@ namespace Hangfire.SqlServer
         [Obsolete("This field is unused and will be removed in 2.0.0.")]
         public static readonly int RequiredSchemaVersion = 5;
 
-        private const int RetryAttempts = 3;
-
         public static void Install(DbConnection connection)
         {
             Install(connection, null);
@@ -44,12 +42,15 @@ namespace Hangfire.SqlServer
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
 
-            var log = LogProvider.GetLogger(typeof(SqlServerObjectsInstaller));
+            var script = GetInstallScript(schema, enableHeavyMigrations);
 
-            log.Info("Start installing Hangfire SQL objects...");
+            connection.Execute(script, commandTimeout: 0);
+        }
 
+        public static string GetInstallScript(string schema, bool enableHeavyMigrations)
+        {
             var script = GetStringResource(
-                typeof(SqlServerObjectsInstaller).GetTypeInfo().Assembly, 
+                typeof(SqlServerObjectsInstaller).GetTypeInfo().Assembly,
                 "Hangfire.SqlServer.Install.sql");
 
             script = script.Replace("$(HangFireSchema)", !string.IsNullOrWhiteSpace(schema) ? schema : Constants.DefaultSchema);
@@ -59,31 +60,7 @@ namespace Hangfire.SqlServer
                 script = script.Replace("--SET @DISABLE_HEAVY_MIGRATIONS = 1;", "SET @DISABLE_HEAVY_MIGRATIONS = 1;");
             }
 
-#if !NETSTANDARD1_3
-            for (var i = 0; i < RetryAttempts; i++)
-            {
-                try
-                {
-                    connection.Execute(script, commandTimeout: 0);
-                    break;
-                }
-                catch (DbException ex)
-                {
-                    if (ex.ErrorCode == 1205)
-                    {
-                        log.WarnException("Deadlock occurred during automatic migration execution. Retrying...", ex);
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-            }
-#else
-            connection.Execute(script, commandTimeout: 0);
-#endif
-
-            log.Info("Hangfire SQL objects installed.");
+            return script;
         }
 
         private static string GetStringResource(Assembly assembly, string resourceName)

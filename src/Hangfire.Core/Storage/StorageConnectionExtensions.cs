@@ -82,8 +82,11 @@ namespace Hangfire.Storage
 
                 try
                 {
-                    var invocationData = InvocationData.DeserializePayload(hash["Job"]);
-                    dto.Job = invocationData.DeserializeJob();
+                    if (hash.TryGetValue("Job", out var payload) && !String.IsNullOrWhiteSpace(payload))
+                    {
+                        var invocationData = InvocationData.DeserializePayload(payload);
+                        dto.Job = invocationData.DeserializeJob();
+                    }
                 }
                 catch (JobLoadException ex)
                 {
@@ -124,6 +127,11 @@ namespace Hangfire.Storage
                 if (hash.ContainsKey("CreatedAt"))
                 {
                     dto.CreatedAt = JobHelper.DeserializeNullableDateTime(hash["CreatedAt"]);
+                }
+
+                if (hash.TryGetValue("Error", out var error))
+                {
+                    dto.Error = error;
                 }
 
                 result.Add(dto);

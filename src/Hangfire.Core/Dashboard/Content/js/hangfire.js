@@ -5,6 +5,24 @@
         locale: document.documentElement.lang
     };
 
+    hangfire.ErrorAlert = (function () {
+        function ErrorAlert(title, message) {
+            this._errorAlert = $('#errorAlert');
+            this._errorAlertTitle = $('#errorAlertTitle');
+            this._errorAlertMessage = $('#errorAlertMessage');
+            this._title = title;
+            this._message = message;
+        }
+
+        ErrorAlert.prototype.show = function() {
+            this._errorAlertTitle.html(this._title);
+            this._errorAlertMessage.html(this._message);
+            $('#errorAlert').slideDown('fast');
+        };
+
+        return ErrorAlert;
+    })();
+
     hangfire.Metrics = (function() {
         function Metrics() {
             this._metrics = {};
@@ -46,6 +64,8 @@
         function RealtimeGraph(element, succeeded, failed, succeededStr, failedStr, pollInterval) {
             this._succeeded = succeeded;
             this._failed = failed;
+            this._last = Date.now();
+            this._pollInterval = pollInterval;
             
             this._chart = new Chart(element, {
                 type: 'line',
@@ -60,7 +80,8 @@
                         xAxes: [{
                             type: 'realtime',
                             realtime: { duration: 60 * 1000, delay: pollInterval },
-                            time: { unit: 'second', tooltipFormat: 'll HH:mm:ss' }
+                            time: { unit: 'second', tooltipFormat: 'LL LTS', displayFormats: { second: 'LTS', minute: 'LTS' } },
+                            ticks: { maxRotation: 0 }
                         }],
                         yAxes: [{ ticks: { beginAtZero: true, precision: 0, min: 0, maxTicksLimit: 6, suggestedMax: 10 }, stacked: true }]
                     },
@@ -77,19 +98,21 @@
         RealtimeGraph.prototype.appendHistory = function (statistics) {
             var newSucceeded = parseInt(statistics["succeeded:count"].intValue);
             var newFailed = parseInt(statistics["failed:count"].intValue);
+            var now = Date.now();
 
-            if (this._succeeded !== null && this._failed !== null) {
+            if (this._succeeded !== null && this._failed !== null && (now - this._last < this._pollInterval * 2)) {
                 var succeeded = newSucceeded - this._succeeded;
                 var failed = newFailed - this._failed;
 
                 this._chart.data.datasets[0].data.push({ x: new Date(), y: succeeded });
-                this._chart.data.datasets[1].data.push({ x: new Date(), y: failed });
+                this._chart.data.datasets[1].data.push({ x: new Date(), y: failed });   
                 
                 this._chart.update();
             }
             
             this._succeeded = newSucceeded;
             this._failed = newFailed;
+            this._last = now;
         };
 
         return RealtimeGraph;
@@ -97,6 +120,10 @@
 
     hangfire.HistoryGraph = (function() {
         function HistoryGraph(element, succeeded, failed, succeededStr, failedStr) {
+            var timeOptions = $(element).data('period') === 'week'
+                ? { unit: 'day', tooltipFormat: 'LL', displayFormats: { day: 'll' } }
+                : { unit: 'hour', tooltipFormat: 'LLL', displayFormats: { hour: 'LT', day: 'll' } };
+
             this._chart = new Chart(element, {
                 type: 'line',
                 data: {
@@ -107,7 +134,7 @@
                 },
                 options: {
                     scales: {
-                        xAxes: [{ type: 'time', time: { unit: 'hour', tooltipFormat: 'll HH:mm' } }],
+                        xAxes: [{ type: 'time', time: timeOptions, ticks: { maxRotation: 0 } }],
                         yAxes: [{ ticks: { beginAtZero: true, precision: 0, maxTicksLimit: 6 }, stacked: true }]
                     },
                     elements: { line: { tension: 0 }, point: { radius: 0 } },
@@ -126,7 +153,7 @@
             this._listeners = [];
             this._statisticsUrl = statisticsUrl;
             this._pollInterval = pollInterval;
-            this._intervalId = null;
+            this._timeoutId = null;
         }
 
         StatisticsPoller.prototype.start = function () {
@@ -134,21 +161,35 @@
 
             var intervalFunc = function() {
                 try {
-                    $.post(self._statisticsUrl, { metrics: self._metricsCallback() }, function(data) {
-                        self._notifyListeners(data);
-                    });
+                    $.post(self._statisticsUrl, { metrics: self._metricsCallback() })
+                        .done(function (data) {
+                            self._notifyListeners(data);
+                            if (self._timeoutId !== null) {
+                                self._timeoutId = setTimeout(intervalFunc, self._pollInterval);
+                            }
+                        })
+                        .fail(function (xhr) {
+                            var errorAlert = new Hangfire.ErrorAlert(
+                                'Unable to refresh the statistics:',
+                                'the server responded with ' + xhr.status + ' (' + xhr.statusText
+                                + '). Try reloading the page manually, or wait for automatic reload that will happen in a minute.');
+
+                            errorAlert.show();
+                            self._timeoutId = null;
+                            setTimeout(function() { window.location.reload(); }, 60*1000);
+                        });
                 } catch (e) {
                     console.log(e);
                 }
             };
 
-            this._intervalId = setInterval(intervalFunc, this._pollInterval);
+            this._timeoutId = setTimeout(intervalFunc, this._pollInterval);
         };
 
         StatisticsPoller.prototype.stop = function() {
-            if (this._intervalId !== null) {
-                clearInterval(this._intervalId);
-                this._intervalId = null;
+            if (this._timeoutId !== null) {
+                clearTimeout(this._timeoutId);
+                this._timeoutId = null;
             }
         };
 

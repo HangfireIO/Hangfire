@@ -34,26 +34,46 @@ namespace Hangfire
 
         private readonly ILog _logger = LogProvider.For<ContinuationsSupportAttribute>();
 
+        private readonly bool _pushResults;
         private readonly HashSet<string> _knownFinalStates;
         private readonly IBackgroundJobStateChanger _stateChanger;
 
         public ContinuationsSupportAttribute()
-            : this(new HashSet<string> { DeletedState.StateName, SucceededState.StateName })
+            : this(false)
+        {
+        }
+
+        public ContinuationsSupportAttribute(bool pushResults)
+            : this(pushResults, new HashSet<string> { DeletedState.StateName, SucceededState.StateName })
         {
         }
 
         public ContinuationsSupportAttribute(HashSet<string> knownFinalStates)
-            : this(knownFinalStates, new BackgroundJobStateChanger())
+            : this(false, knownFinalStates)
+        {
+        }
+
+        public ContinuationsSupportAttribute(bool pushResults, HashSet<string> knownFinalStates)
+            : this(pushResults, knownFinalStates, new BackgroundJobStateChanger())
         {
         }
 
         public ContinuationsSupportAttribute(
+            [NotNull] HashSet<string> knownFinalStates,
+            [NotNull] IBackgroundJobStateChanger stateChanger)
+            : this(false, knownFinalStates, stateChanger)
+        {
+        }
+
+        public ContinuationsSupportAttribute(
+            bool pushResults,
             [NotNull] HashSet<string> knownFinalStates, 
             [NotNull] IBackgroundJobStateChanger stateChanger)
         {
             if (knownFinalStates == null) throw new ArgumentNullException(nameof(knownFinalStates));
             if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
 
+            _pushResults = pushResults;
             _knownFinalStates = knownFinalStates;
             _stateChanger = stateChanger;
 
@@ -84,6 +104,18 @@ namespace Hangfire
             {
                 context.JobExpirationTimeout = awaitingState.Expiration;
             }
+        }
+
+        internal static List<Continuation> DeserializeContinuations(string serialized)
+        {
+            var continuations =  SerializationHelper.Deserialize<List<Continuation>>(serialized);
+
+            if (continuations != null && continuations.TrueForAll(x => x.JobId == null))
+            {
+                continuations = SerializationHelper.Deserialize<List<Continuation>>(serialized, SerializationOption.User);
+            }
+
+            return continuations ?? new List<Continuation>();
         }
 
         private void AddContinuation(ElectStateContext context, AwaitingState awaitingState)
@@ -128,6 +160,11 @@ namespace Hangfire
                 {
                     var startImmediately = !awaitingState.Options.HasFlag(JobContinuationOptions.OnlyOnSucceededState) ||
                         currentState.Name == SucceededState.StateName;
+
+                    if (_pushResults && currentState.Data.TryGetValue("Result", out var antecedentResult))
+                    {
+                        context.Connection.SetJobParameter(context.BackgroundJob.Id, "AntecedentResult", antecedentResult);
+                    }
 
                     context.CandidateState = startImmediately
                         ? awaitingState.NextState
@@ -190,8 +227,21 @@ namespace Hangfire
                 }
             }
             
+            string antecedentResult = null;
+
+            if (_pushResults)
+            {
+                var serializedData = context.CandidateState.SerializeData();
+                serializedData.TryGetValue("Result", out antecedentResult);
+            }
+
             foreach (var tuple in nextStates)
             {
+                if (antecedentResult != null)
+                {
+                    context.Connection.SetJobParameter(tuple.Key, "AntecedentResult", antecedentResult);
+                }
+
                 _stateChanger.ChangeState(new StateChangeContext(
                     context.Storage,
                     context.Connection,
@@ -256,8 +306,7 @@ namespace Hangfire
 
         private static List<Continuation> GetContinuations(IStorageConnection connection, string jobId)
         {
-            return SerializationHelper.Deserialize<List<Continuation>>(connection.GetJobParameter(
-                jobId, "Continuations")) ?? new List<Continuation>();
+            return DeserializeContinuations(connection.GetJobParameter(jobId, "Continuations"));
         }
 
         void IApplyStateFilter.OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)

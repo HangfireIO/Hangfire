@@ -45,12 +45,10 @@ namespace Hangfire.Processing
         private CancellationToken _stopToken;
         private readonly BackgroundExecutionOptions _options;
         private readonly ILog _logger;
-        private readonly WaitHandle[] _waitHandles;
 
         private readonly Stopwatch _createdAt;
         private Stopwatch _stoppedAt;
         private CancellationTokenRegistration _stopRegistration;
-        private CancellationTokenExtentions.CancellationEvent _stopped;
 
         private volatile bool _disposed;
 
@@ -64,9 +62,6 @@ namespace Hangfire.Processing
             _stopToken = stopToken;
 
             _stopRegistration = _stopToken.Register(SetStoppedAt);
-
-            _stopped = _stopToken.GetCancellationEvent();
-            _waitHandles = new WaitHandle[] { _running, _stopped.WaitHandle };
 
 #if !NETSTANDARD1_3
             AppDomainUnloadMonitor.EnsureInitialized();
@@ -248,7 +243,6 @@ namespace Hangfire.Processing
 
                 _stopRegistration.Dispose();
                 _running.Dispose();
-                _stopped.Dispose();
             }
         }
 
@@ -284,17 +278,13 @@ namespace Hangfire.Processing
         private void HandleDelay(Guid executionId, TimeSpan delay)
         {
             LogRetry(executionId, delay);
-
-            WaitHandle.WaitAny(_waitHandles, delay);
-
-            _stopToken.ThrowIfCancellationRequested();
+            _running.WaitOne(delay, _stopToken);
         }
 
         private async Task HandleDelayAsync(Guid executionId, TimeSpan delay)
         {
             LogRetry(executionId, delay);
-
-            await await Task.WhenAny(_running.AsTask(_stopToken), Task.Delay(delay, _stopToken)).ConfigureAwait(true);
+            await _running.WaitOneAsync(delay, _stopToken).ConfigureAwait(true);
         }
 
         private void LogRetry(Guid executionId, TimeSpan delay)

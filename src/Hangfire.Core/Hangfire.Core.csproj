@@ -57,14 +57,16 @@
   
   <!-- Full MSBuild is required to generate Razor classes -->
   <PropertyGroup>
-    <MSBuildFullPath>$(MSBuildProgramFiles32)\MSBuild\14.0\bin\MSBuild.exe</MSBuildFullPath>
+    <MSBuild14FullPath>$(MSBuildProgramFiles32)\MSBuild\14.0\bin\MSBuild.exe</MSBuild14FullPath>
+    <MSBuildCurrentFullPath>$(MSBuildProgramFiles32)\MSBuild\Current\bin\MSBuild.exe</MSBuildCurrentFullPath>
     <RazorProjectFile>Razor.build</RazorProjectFile>
     <InnerTargets>GenerateRazorClasses;Build</InnerTargets>
   </PropertyGroup>
 
   <Target Name="GenerateRazorClasses">
-    <Exec Command="&quot;$(MSBuildFullPath)&quot; $(RazorProjectFile) /v:quiet /nologo" Condition="Exists('$(MSBuildFullPath)')" />
-    <Warning Text="Classes for Razor files (*.cshtml) weren't re-generated: couldn't find the '$(MSBuildFullPath)' file" Condition="!Exists('$(MSBuildFullPath)')" />
+    <Exec Command="&quot;$(MSBuildCurrentFullPath)&quot; $(RazorProjectFile) /v:quiet /nologo" Condition="Exists('$(MSBuildCurrentFullPath)')" />
+    <Exec Command="&quot;$(MSBuild14FullPath)&quot; $(RazorProjectFile) /v:quiet /nologo" Condition="Exists('$(MSBuild14FullPath)') and !Exists('$(MSBuildCurrentFullPath)')" />
+    <Warning Text="Classes for Razor files (*.cshtml) weren't re-generated: couldn't find the '$(MSBuild14FullPath)' or '$(MSBuildCurrentFullPath)' file" Condition="!Exists('$(MSBuild14FullPath)') and !Exists('$(MSBuildCurrentFullPath)')" />
   </Target>
   
   <ItemGroup>
@@ -85,6 +87,19 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="Dashboard\Content\resx\Strings.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Hangfire.Dashboard.Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <Compile Update="Dashboard\Content\resx\Strings.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Dashboard\Pages\_BlockMetric.cshtml.cs">
       <DependentUpon>_BlockMetric.cshtml</DependentUpon>
     </Compile>
@@ -96,6 +111,9 @@
     </Compile>
     <Compile Update="Dashboard\Pages\_Breadcrumbs.cs">
       <DependentUpon>_Breadcrumbs.cshtml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\Pages\_ErrorAlert.cshtml.cs">
+      <DependentUpon>_ErrorAlert.cshtml</DependentUpon>
     </Compile>
     <Compile Update="Dashboard\Pages\_InlineMetric.cshtml.cs">
       <DependentUpon>_InlineMetric.cshtml</DependentUpon>

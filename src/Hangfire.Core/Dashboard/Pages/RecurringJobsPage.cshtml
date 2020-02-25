@@ -84,9 +84,9 @@
                                         <input type="checkbox" class="js-jobs-list-select-all"/>
                                     </th>
                                 }
-                                <th class="min-width">@Strings.Common_Id</th>
+                                <th>@Strings.Common_Id</th>
                                 <th class="min-width">@Strings.RecurringJobsPage_Table_Cron</th>
-                                <th class="min-width">@Strings.RecurringJobsPage_Table_TimeZone</th>
+                                <th>@Strings.RecurringJobsPage_Table_TimeZone</th>
                                 <th class="min-width">@Strings.RecurringJobsPage_Table_Queue</th>
                                 <th>@Strings.Common_Job</th>
                                 <th class="align-right min-width">@Strings.RecurringJobsPage_Table_NextExecution</th>
@@ -104,35 +104,78 @@
                                             <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Id"/>
                                         </td>
                                     }
-                                    <td class="min-width">@job.Id</td>
+                                    <td class="word-break width-15">@job.Id</td>
                                     <td class="min-width">
                                         @* ReSharper disable once EmptyGeneralCatchClause *@
                                         @{
                                             string cronDescription = null;
+                                            bool cronError = false;
+
+                                            if (!String.IsNullOrEmpty(job.Cron))
+                                            {
+                                                try
+                                                {
+                                                    RecurringJobEntity.ParseCronExpression(job.Cron);
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    cronDescription = ex.Message;
+                                                    cronError = true;
+                                                }
+
+                                                if (cronDescription == null)
+                                                {
 #if FEATURE_CRONDESCRIPTOR
-                                            try
-                                            {
-                                                cronDescription = string.IsNullOrEmpty(job.Cron) ? null : CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.Cron);
-                                            }
-                                            catch (FormatException)
-                                            {
-                                            }
+                                                    try
+                                                    {
+                                                        cronDescription = CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.Cron);
+                                                    }
+                                                    catch (FormatException)
+                                                    {
+                                                    }
 #endif
+                                                }
+                                            }
                                         }
 
                                         @if (cronDescription != null)
                                         {
-                                            <code title="@cronDescription">@job.Cron</code>
+                                        <code title="@cronDescription">
+                                            @if (cronError)
+                                            {
+                                                <span class="glyphicon glyphicon-exclamation-sign"></span>
+                                            }
+                                            @job.Cron
+                                        </code>
                                         }
                                         else
                                         {
                                             <code>@job.Cron</code>
                                         }
                                     </td>
-                                    <td class="min-width">
+                                    <td style="word-break: break-word;">
                                         @if (!String.IsNullOrWhiteSpace(job.TimeZoneId))
                                         {
-                                            <span title="@TimeZoneInfo.FindSystemTimeZoneById(job.TimeZoneId).DisplayName" data-container="body">@job.TimeZoneId</span>
+                                            string displayName;
+                                            Exception exception = null;
+
+                                            try
+                                            {
+                                                var resolver = DashboardOptions.TimeZoneResolver ?? new DefaultTimeZoneResolver();
+                                                displayName = resolver.GetTimeZoneById(job.TimeZoneId).DisplayName;
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                displayName = null;
+                                                exception = ex;
+                                            }
+
+                                            <span title="@displayName" data-container="body">@job.TimeZoneId
+                                                @if (exception != null)
+                                                {
+                                                    <span class="glyphicon glyphicon-exclamation-sign" title="@exception.Message"></span>
+                                                }
+                                            </span>
                                         }
                                         else
                                         {
@@ -142,7 +185,7 @@
                                     <td class="min-width">
                                         @Html.QueueLabel(job.Queue)
                                     </td>
-                                    <td class="word-break">
+                                    <td class="word-break width-30">
                                         @if (job.Job != null)
                                         {
                                             @: @Html.JobName(job.Job)
@@ -167,7 +210,14 @@
                                         }
                                         else
                                         {
-                                            <em>@Strings.Common_NotAvailable</em>
+                                            if (!String.IsNullOrEmpty(job.Error))
+                                            {
+                                                <span class="label label-danger text-uppercase" title="@job.Error">@Strings.Common_Error</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="label label-warning text-uppercase" title="@Strings.RecurringJobsPage_RecurringJobDisabled_Tooltip">@Strings.Common_Disabled</span>
+                                            }
                                         }
                                     </td>
                                     <td class="align-right min-width">
@@ -175,7 +225,7 @@
                                         {
                                             if (!String.IsNullOrEmpty(job.LastJobId))
                                             {
-                                                <a href="@Url.JobDetails(job.LastJobId)">
+                                                <a href="@Url.JobDetails(job.LastJobId)" style="text-decoration: none">
                                                     <span class="label label-default label-hover" style="@($"background-color: {JobHistoryRenderer.GetForegroundStateColor(job.LastJobState ?? EnqueuedState.StateName)};")">
                                                         @Html.RelativeTime(job.LastExecution.Value)
                                                     </span>
