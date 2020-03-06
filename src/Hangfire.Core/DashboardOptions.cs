@@ -26,6 +26,7 @@ namespace Hangfire
         public DashboardOptions()
         {
             AppPath = "/";
+            PrefixPath = string.Empty;
             Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
             IsReadOnlyFunc = _ => false;
             StatsPollingInterval = 2000;
@@ -38,6 +39,12 @@ namespace Hangfire
         /// The path for the Back To Site link. Set to <see langword="null" /> in order to hide the Back To Site link.
         /// </summary>
         public string AppPath { get; set; }
+        
+        /// <summary>
+        /// The path for the first url prefix link, eg. set "/admin", then url is "{domain}/{PrefixPath}/{hangfire}"
+        /// </summary>
+        public string PrefixPath { get; set; }
+
 
 #if FEATURE_OWIN
         [Obsolete("Please use `Authorization` property instead. Will be removed in 2.0.0.")]
