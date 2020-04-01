@@ -251,6 +251,21 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
                                 fetchedJob.JobId.ToString(CultureInfo.InvariantCulture),
                                 fetchedJob.Queue);
                         }
+                        else
+                        {
+                            // Nothing updated, just commit the empty transaction.
+                            transaction.Commit();
+                        }
+                    }
+                    catch
+                    {
+                        // Check connection isn't broken first, and that transaction
+                        // can be rolled back without throwing InvalidOperationException
+                        // on older System.Data.SqlClient in .NET Core.
+                        // https://github.com/HangfireIO/Hangfire/issues/1494
+                        // https://github.com/dotnet/efcore/issues/12864
+                        if (transaction?.Connection != null) transaction.Rollback();
+                        throw;
                     }
                     finally
                     {
