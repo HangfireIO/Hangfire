@@ -125,6 +125,7 @@ It will be retried in {_checkInterval.TotalSeconds} seconds.",
             return $@"
 set deadlock_priority low;
 set transaction isolation level read committed;
+set xact_abort on;
 set lock_timeout 1000;
 delete top (@count) from [{schemaName}].[{table}]
 where ExpireAt < @now
