@@ -16,6 +16,11 @@
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.10
+• Changed – Use `XACT_ABORT` option for `ExpirationManager` queries.
+• Changed – Don't rely on implicit rollback when disposing transactions.
+• Fixed – `NullReferenceException` in logs thrown from `SqlInternalTransaction.Rollback` method.
+
 1.7.9
 • Changed – Implement long polling fetch for sub-second polling delays without `sp_getapplock`.
 • Fixed – Don't leak `DbConnection` instance when an exception occurs during its opening.

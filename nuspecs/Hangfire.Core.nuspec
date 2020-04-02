@@ -21,6 +21,12 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.10
+• Added – Farsi translation for Dashboard UI (by @sepehr1101).
+• Added – Portuguese translation for Dashboard UI (by @GeErghon).
+• Added – `PrefixPath` in `DashboardOptions` (by @shenjielx).
+• Added – Allow `PageUrl` to be overridden by subclass (by @brendonparker).
+
 1.7.9
 • Fixed – Additional Chinese translation for Dashboard UI (by @brookqin).
 • Fixed – Added `null` checks for expired failed jobs in Dashboard UI (by @ppkale1995-cimpress).
