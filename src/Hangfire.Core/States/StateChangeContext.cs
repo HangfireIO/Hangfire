@@ -1,17 +1,17 @@
 // This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
-// 
+// Copyright ï¿½ 2013-2014 Sergey Odinokov.
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
@@ -27,50 +27,56 @@ namespace Hangfire.States
     {
         public StateChangeContext(
             [NotNull] JobStorage storage,
+            [NotNull] IClock clock,
             [NotNull] IStorageConnection connection,
-            [NotNull] string backgroundJobId, 
+            [NotNull] string backgroundJobId,
             [NotNull] IState newState)
-            : this(storage, connection, backgroundJobId, newState, null)
+            : this(storage, clock, connection, backgroundJobId, newState, null)
         {
         }
 
         public StateChangeContext(
             [NotNull] JobStorage storage,
+            [NotNull] IClock clock,
             [NotNull] IStorageConnection connection,
-            [NotNull] string backgroundJobId, 
-            [NotNull] IState newState, 
+            [NotNull] string backgroundJobId,
+            [NotNull] IState newState,
             [CanBeNull] params string[] expectedStates)
-            : this(storage, connection, backgroundJobId, newState, expectedStates, CancellationToken.None)
+            : this(storage, clock, connection, backgroundJobId, newState, expectedStates, CancellationToken.None)
         {
         }
 
         public StateChangeContext(
             [NotNull] JobStorage storage,
+            [NotNull] IClock clock,
             [NotNull] IStorageConnection connection,
             [NotNull] string backgroundJobId,
             [NotNull] IState newState,
             [CanBeNull] IEnumerable<string> expectedStates,
             CancellationToken cancellationToken)
-        : this(storage, connection, backgroundJobId, newState, expectedStates, cancellationToken, EmptyProfiler.Instance)
+            : this(storage, clock, connection, backgroundJobId, newState, expectedStates, cancellationToken, EmptyProfiler.Instance)
         {
         }
 
         internal StateChangeContext(
-            [NotNull] JobStorage storage, 
+            [NotNull] JobStorage storage,
+            [NotNull] IClock clock,
             [NotNull] IStorageConnection connection,
-            [NotNull] string backgroundJobId, 
-            [NotNull] IState newState, 
-            [CanBeNull] IEnumerable<string> expectedStates, 
+            [NotNull] string backgroundJobId,
+            [NotNull] IState newState,
+            [CanBeNull] IEnumerable<string> expectedStates,
             CancellationToken cancellationToken,
             [NotNull] IProfiler profiler)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (clock == null) throw new ArgumentNullException(nameof(clock));
             if (connection == null) throw new ArgumentNullException(nameof(connection));
             if (backgroundJobId == null) throw new ArgumentNullException(nameof(backgroundJobId));
             if (newState == null) throw new ArgumentNullException(nameof(newState));
             if (profiler == null) throw new ArgumentNullException(nameof(profiler));
 
             Storage = storage;
+            Clock = clock;
             Connection = connection;
             BackgroundJobId = backgroundJobId;
             NewState = newState;
@@ -80,6 +86,7 @@ namespace Hangfire.States
         }
 
         public JobStorage Storage { get; }
+        public IClock Clock { get; }
         public IStorageConnection Connection { get; }
         public string BackgroundJobId { get; }
         public IState NewState { get; }

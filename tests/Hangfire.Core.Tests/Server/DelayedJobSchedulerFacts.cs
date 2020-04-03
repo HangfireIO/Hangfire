@@ -28,6 +28,8 @@ namespace Hangfire.Core.Tests.Server
             _connection = new Mock<JobStorageConnection>();
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
 
+            _context.Clock.SetupGet(x => x.UtcNow).Returns(DateTime.UtcNow);
+
             _stateChanger = new Mock<IBackgroundJobStateChanger>();
             _transaction = new Mock<IWriteOnlyTransaction>();
             _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);

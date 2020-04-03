@@ -19,6 +19,7 @@ namespace Hangfire.Core.Tests
         private readonly Mock<IState> _state;
         private readonly Job _job;
         private readonly Mock<IBackgroundJobStateChanger> _stateChanger;
+        private readonly Mock<IClock> _clock;
 
         public BackgroundJobClientFacts()
         {
@@ -26,8 +27,10 @@ namespace Hangfire.Core.Tests
             _storage = new Mock<JobStorage>();
             _storage.Setup(x => x.GetConnection()).Returns(connection.Object);
 
+            _clock = new Mock<IClock>();
+
             _stateChanger = new Mock<IBackgroundJobStateChanger>();
-            
+
             _state = new Mock<IState>();
             _state.Setup(x => x.Name).Returns("Mock");
             _job = Job.FromExpression(() => Method());
@@ -41,16 +44,25 @@ namespace Hangfire.Core.Tests
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundJobClient(null, _factory.Object, _stateChanger.Object));
+                () => new BackgroundJobClient(null, _clock.Object, _factory.Object, _stateChanger.Object));
 
             Assert.Equal("storage", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenClockIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new BackgroundJobClient(_storage.Object, null, _factory.Object, _stateChanger.Object));
+
+            Assert.Equal("clock", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenFactoryIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundJobClient(_storage.Object, null, _stateChanger.Object));
+                () => new BackgroundJobClient(_storage.Object, _clock.Object, null, _stateChanger.Object));
 
             Assert.Equal("factory", exception.ParamName);
         }
@@ -59,7 +71,7 @@ namespace Hangfire.Core.Tests
         public void Ctor_ThrowsAnException_WhenStateChangerIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundJobClient(_storage.Object, _factory.Object, null));
+                () => new BackgroundJobClient(_storage.Object, _clock.Object, _factory.Object, null));
 
             Assert.Equal("stateChanger", exception.ParamName);
         }
@@ -195,7 +207,7 @@ namespace Hangfire.Core.Tests
 
         private BackgroundJobClient CreateClient()
         {
-            return new BackgroundJobClient(_storage.Object, _factory.Object, _stateChanger.Object);
+            return new BackgroundJobClient(_storage.Object, _clock.Object, _factory.Object, _stateChanger.Object);
         }
     }
 }

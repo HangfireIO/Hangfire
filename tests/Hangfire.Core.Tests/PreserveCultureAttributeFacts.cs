@@ -22,11 +22,12 @@ namespace Hangfire.Core.Tests
             _connection = new Mock<IStorageConnection>();
 
             var storage = new Mock<JobStorage>();
+            var clock = new Mock<IClock>();
             var backgroundJob = new BackgroundJobMock { Id = JobId };
             var state = new Mock<IState>();
 
             var createContext = new CreateContext(
-                storage.Object, _connection.Object, backgroundJob.Job, state.Object);
+                storage.Object, clock.Object, _connection.Object, backgroundJob.Job, state.Object);
             _creatingContext = new CreatingContext(createContext);
 
             var performContext = new PerformContext(
@@ -85,8 +86,8 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void OnPerforming_DoesNotDoAnything_WhenCultureJobParameterIsNotSet()
         {
-            _connection.Setup(x => x.GetJobParameter(JobId, "CurrentCulture")).Returns((string)null);
-            _connection.Setup(x => x.GetJobParameter(JobId, "CurrentUICulture")).Returns((string)null);
+            _connection.Setup(x => x.GetJobParameter(JobId, "CurrentCulture")).Returns((string) null);
+            _connection.Setup(x => x.GetJobParameter(JobId, "CurrentUICulture")).Returns((string) null);
 
             CultureHelper.SetCurrentCulture("en-US");
             CultureHelper.SetCurrentUICulture("en-US");
@@ -126,8 +127,8 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void OnPerformed_RestoresPreviousCurrentCulture_OnlyIfItWasChanged()
         {
-            _connection.Setup(x => x.GetJobParameter(JobId, "CurrentCulture")).Returns((string)null);
-            _connection.Setup(x => x.GetJobParameter(JobId, "CurrentUICulture")).Returns((string)null);
+            _connection.Setup(x => x.GetJobParameter(JobId, "CurrentCulture")).Returns((string) null);
+            _connection.Setup(x => x.GetJobParameter(JobId, "CurrentUICulture")).Returns((string) null);
 
             CultureHelper.SetCurrentCulture("en-US");
             CultureHelper.SetCurrentUICulture("en-US");
@@ -140,7 +141,9 @@ namespace Hangfire.Core.Tests
             Assert.Equal("en-US", CultureInfo.CurrentUICulture.Name);
         }
 
-        public static void Sample() { }
+        public static void Sample()
+        {
+        }
 
         private CaptureCultureAttribute CreateFilter()
         {

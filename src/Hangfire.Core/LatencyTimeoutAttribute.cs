@@ -16,14 +16,14 @@ namespace Hangfire
         private readonly ILog _logger = LogProvider.For<LatencyTimeoutAttribute>();
 
         private readonly int _timeoutInSeconds;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LatencyTimeoutAttribute"/>
         /// class with the given timeout value.
         /// </summary>
-        /// <param name="timeoutInSeconds">Non-negative timeout value in seconds 
+        /// <param name="timeoutInSeconds">Non-negative timeout value in seconds
         /// that will be used to determine whether to delete a job.</param>
-        /// 
+        ///
         /// <exception cref="ArgumentOutOfRangeException">
         ///   <paramref name="timeoutInSeconds"/> has a negative value.
         /// </exception>
@@ -54,7 +54,7 @@ namespace Hangfire
                 return;
             }
 
-            var elapsedTime = DateTime.UtcNow - context.BackgroundJob.CreatedAt;
+            var elapsedTime = context.Clock.UtcNow - context.BackgroundJob.CreatedAt;
 
             if (elapsedTime.TotalSeconds > _timeoutInSeconds)
             {

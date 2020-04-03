@@ -1,17 +1,17 @@
 // This file is part of Hangfire.
 // Copyright © 2019 Sergey Odinokov.
-// 
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
@@ -94,6 +94,7 @@ namespace Hangfire
         public static BackgroundJob TriggerRecurringJob(
             [NotNull] this IBackgroundJobFactory factory,
             [NotNull] JobStorage storage,
+            [NotNull] IClock clock,
             [NotNull] IStorageConnection connection,
             [NotNull] IProfiler profiler,
             [NotNull] RecurringJobEntity recurringJob,
@@ -101,11 +102,12 @@ namespace Hangfire
         {
             if (factory == null) throw new ArgumentNullException(nameof(factory));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (clock == null) throw new ArgumentNullException(nameof(clock));
             if (connection == null) throw new ArgumentNullException(nameof(connection));
             if (profiler == null) throw new ArgumentNullException(nameof(profiler));
             if (recurringJob == null) throw new ArgumentNullException(nameof(recurringJob));
 
-            var context = new CreateContext(storage, connection, recurringJob.Job, null, profiler);
+            var context = new CreateContext(storage, clock, connection, recurringJob.Job, null, profiler);
             context.Parameters["RecurringJobId"] = recurringJob.RecurringJobId;
             context.Parameters["Time"] = JobHelper.ToTimestamp(now);
 
@@ -120,6 +122,7 @@ namespace Hangfire
         public static void EnqueueBackgroundJob(
             [NotNull] this IStateMachine stateMachine,
             [NotNull] JobStorage storage,
+            [NotNull] IClock clock,
             [NotNull] IStorageConnection connection,
             [NotNull] IWriteOnlyTransaction transaction,
             [NotNull] RecurringJobEntity recurringJob,
@@ -129,6 +132,7 @@ namespace Hangfire
         {
             if (stateMachine == null) throw new ArgumentNullException(nameof(stateMachine));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (clock == null) throw new ArgumentNullException(nameof(clock));
             if (connection == null) throw new ArgumentNullException(nameof(connection));
             if (transaction == null) throw new ArgumentNullException(nameof(transaction));
             if (recurringJob == null) throw new ArgumentNullException(nameof(recurringJob));
@@ -144,6 +148,7 @@ namespace Hangfire
 
             stateMachine.ApplyState(new ApplyStateContext(
                 storage,
+                clock,
                 connection,
                 transaction,
                 backgroundJob,

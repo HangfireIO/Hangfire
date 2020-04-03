@@ -17,6 +17,7 @@ namespace Hangfire.Core.Tests.Client
         private readonly Mock<IState> _state;
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<JobStorage> _storage;
+        private readonly Mock<IClock> _clock;
 
         public CreateContextFacts()
         {
@@ -24,22 +25,32 @@ namespace Hangfire.Core.Tests.Client
             _state = new Mock<IState>();
             _connection = new Mock<IStorageConnection>();
             _storage = new Mock<JobStorage>();
+            _clock = new Mock<IClock>();
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new CreateContext(null, _connection.Object, _job, _state.Object));
+                () => new CreateContext(null, _clock.Object, _connection.Object, _job, _state.Object));
 
             Assert.Equal("storage", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenClockIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new CreateContext(_storage.Object, null, _connection.Object, _job, _state.Object));
+
+            Assert.Equal("clock", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new CreateContext(_storage.Object, null, _job, _state.Object));
+                () => new CreateContext(_storage.Object, _clock.Object, null, _job, _state.Object));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -48,7 +59,7 @@ namespace Hangfire.Core.Tests.Client
         public void Ctor_ThrowsAnException_WhenJobIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new CreateContext(_storage.Object, _connection.Object, null, _state.Object));
+                () => new CreateContext(_storage.Object, _clock.Object, _connection.Object, null, _state.Object));
 
             Assert.Equal("job", exception.ParamName);
         }
@@ -57,7 +68,7 @@ namespace Hangfire.Core.Tests.Client
         public void Ctor_DoesNotThrowAnException_WhenStateIsNull()
         {
             // Does not throw
-            new CreateContext(_storage.Object, _connection.Object, _job, null);
+            new CreateContext(_storage.Object, _clock.Object, _connection.Object, _job, null);
         }
 
         [Fact]
@@ -66,6 +77,7 @@ namespace Hangfire.Core.Tests.Client
             var context = CreateContext();
 
             Assert.Same(_storage.Object, context.Storage);
+            Assert.Same(_clock.Object, context.Clock);
             Assert.Same(_connection.Object, context.Connection);
             Assert.Same(_job, context.Job);
             Assert.Same(_state.Object, context.InitialState);
@@ -90,7 +102,7 @@ namespace Hangfire.Core.Tests.Client
 
         private CreateContext CreateContext()
         {
-            return new CreateContext(_storage.Object, _connection.Object, _job, _state.Object);
+            return new CreateContext(_storage.Object, _clock.Object, _connection.Object, _job, _state.Object);
         }
     }
 }

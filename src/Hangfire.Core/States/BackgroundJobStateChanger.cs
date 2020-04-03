@@ -1,17 +1,17 @@
 ﻿// This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
-// 
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
@@ -45,7 +45,7 @@ namespace Hangfire.States
 
             _stateMachine = new StateMachine(filterProvider, stateMachine);
         }
-        
+
         public IState ChangeState(StateChangeContext context)
         {
             // To ensure that job state will be changed only from one of the
@@ -67,7 +67,7 @@ namespace Hangfire.States
                 {
                     return null;
                 }
-                
+
                 var stateToApply = context.NewState;
 
                 try
@@ -80,7 +80,7 @@ namespace Hangfire.States
                     // serialized within a background job. There are many reasons
                     // for this case, including refactored code, or a missing
                     // assembly reference due to a mistake or erroneous deployment.
-                    // 
+                    //
                     // The problem is that in this case we can't get any filters,
                     // applied at a method or a class level, and we can't proceed
                     // with the state change without breaking a consistent behavior:
@@ -91,11 +91,11 @@ namespace Hangfire.States
                     // There's a problem with filters related to handling the states
                     // which ignore this exception, i.e. fitlers for the FailedState
                     // and the DeletedState, such as AutomaticRetryAttrubute filter.
-                    // 
+                    //
                     // We should document that such a filters may not be fired, when
                     // we can't find a target method, and these filters should be
                     // applied only at the global level to get consistent results.
-                    // 
+                    //
                     // In 2.0 we should have a special state for all the errors, when
                     // Hangfire doesn't know what to do, without any possibility to
                     // add method or class-level filters for such a state to provide
@@ -114,6 +114,7 @@ namespace Hangfire.States
                 {
                     var applyContext = new ApplyStateContext(
                         context.Storage,
+                        context.Clock,
                         context.Connection,
                         transaction,
                         new BackgroundJob(context.BackgroundJobId, jobData.Job, jobData.CreatedAt),
@@ -144,14 +145,14 @@ namespace Hangfire.States
             // the NULL value instead of waiting for a transaction to be committed. With
             // this code, we will make several retry attempts to handle this case to wait
             // on the client side.
-            // 
+            //
             // On the other hand, we need to give up after some retry attempt, because
             // we should also handle the case, when our queue and job storage became
             // unsynchronized with each other due to failures, manual intervention or so.
             // Otherwise we will wait forever in this cases, since And there's no way to
             // make a distinction between a non-linearizable read and the storages, non-
             // synchronized with each other.
-            // 
+            //
             // In recent versions, Hangfire.SqlServer uses query hints to make all the
             // reads linearizable no matter what, but there may be other storages that
             // still require this workaround.
@@ -190,8 +191,8 @@ namespace Hangfire.States
                 // There is always a chance it will be issued against a non-existing or an
                 // already expired background job, and a minute wait (or whatever timeout is
                 // used) is completely unnecessary in this case.
-                // 
-                // Since waiting is only required when a worker picks up a job, and 
+                //
+                // Since waiting is only required when a worker picks up a job, and
                 // cancellation tokens are used only by the Worker class, we can avoid the
                 // unnecessary waiting logic when no cancellation token is passed.
 

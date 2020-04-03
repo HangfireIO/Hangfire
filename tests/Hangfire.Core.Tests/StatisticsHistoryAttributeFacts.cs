@@ -31,6 +31,8 @@ namespace Hangfire.Core.Tests
                     Transaction = _transaction
                 }
             };
+
+            _context.ApplyContext.Clock.SetupGet(x => x.UtcNow).Returns(DateTime.UtcNow);
         }
 
         [Fact]

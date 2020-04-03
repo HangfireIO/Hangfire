@@ -1,17 +1,17 @@
 // This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
-// 
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
@@ -48,7 +48,7 @@ namespace Hangfire
         }
 
         public ContinuationsSupportAttribute(
-            [NotNull] HashSet<string> knownFinalStates, 
+            [NotNull] HashSet<string> knownFinalStates,
             [NotNull] IBackgroundJobStateChanger stateChanger)
         {
             if (knownFinalStates == null) throw new ArgumentNullException(nameof(knownFinalStates));
@@ -91,8 +91,8 @@ namespace Hangfire
             var connection = context.Connection;
             var parentId = awaitingState.ParentId;
 
-            // We store continuations as a json array in a job parameter. Since there 
-            // is no way to add a continuation in an atomic way, we are placing a 
+            // We store continuations as a json array in a job parameter. Since there
+            // is no way to add a continuation in an atomic way, we are placing a
             // distributed lock on parent job to prevent race conditions, when
             // multiple threads add continuation to the same parent job.
             using (connection.AcquireDistributedJobLock(parentId, AddJobLockTimeout))
@@ -143,7 +143,7 @@ namespace Hangfire
             var continuations = GetContinuations(context.Connection, context.BackgroundJob.Id);
             var nextStates = new Dictionary<string, IState>();
 
-            // Getting continuation data for all continuations – state they are waiting 
+            // Getting continuation data for all continuations – state they are waiting
             // for and their next state.
             foreach (var continuation in continuations)
             {
@@ -155,7 +155,7 @@ namespace Hangfire
                     continue;
                 }
 
-                // All continuations should be in the awaiting state. If someone changed 
+                // All continuations should be in the awaiting state. If someone changed
                 // the state of a continuation, we should simply skip it.
                 if (currentState.Name != AwaitingState.StateName) continue;
 
@@ -189,11 +189,12 @@ namespace Hangfire
                     nextStates.Add(continuation.JobId, nextState);
                 }
             }
-            
+
             foreach (var tuple in nextStates)
             {
                 _stateChanger.ChangeState(new StateChangeContext(
                     context.Storage,
+                    context.Clock,
                     context.Connection,
                     tuple.Key,
                     tuple.Value,
@@ -225,7 +226,7 @@ namespace Hangfire
                     break;
                 }
 
-                if (DateTime.UtcNow - continuationData.CreatedAt > ContinuationInvalidTimeout)
+                if (context.Clock.UtcNow - continuationData.CreatedAt > ContinuationInvalidTimeout)
                 {
                     _logger.Warn(
                         $"Continuation '{continuationJobId}' has been ignored: it was deemed to be aborted, because its state is still non-initialized.");

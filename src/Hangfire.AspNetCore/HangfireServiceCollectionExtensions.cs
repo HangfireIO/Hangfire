@@ -1,17 +1,17 @@
 ﻿// This file is part of Hangfire.
 // Copyright © 2016 Sergey Odinokov.
-// 
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
@@ -27,6 +27,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 #if NETSTANDARD2_0
 using Microsoft.Extensions.Hosting;
+
 #endif
 
 namespace Hangfire
@@ -46,10 +47,11 @@ namespace Hangfire
         {
             if (services == null) throw new ArgumentNullException(nameof(services));
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
-            
+
             // ===== Configurable services =====
 
             services.TryAddSingletonChecked(_ => JobStorage.Current);
+            services.TryAddSingletonChecked(_ => SystemClock.Current);
             services.TryAddSingletonChecked(_ => JobActivator.Current);
             services.TryAddSingletonChecked(_ => DashboardRoutes.Routes);
             services.TryAddSingletonChecked<IJobFilterProvider>(_ => JobFilterProviders.Providers);
@@ -64,18 +66,19 @@ namespace Hangfire
 
             // ===== Client services =====
 
-            // NOTE: these, on the other hand, need to be double-checked to be sure configuration block was executed, 
+            // NOTE: these, on the other hand, need to be double-checked to be sure configuration block was executed,
             //       in case of a client-only scenario with all configurables above replaced with custom implementations.
 
             services.TryAddSingletonChecked<IBackgroundJobClient>(x =>
             {
                 if (GetInternalServices(x, out var factory, out var stateChanger, out _))
                 {
-                    return new BackgroundJobClient(x.GetRequiredService<JobStorage>(), factory, stateChanger);
+                    return new BackgroundJobClient(x.GetRequiredService<JobStorage>(), x.GetRequiredService<IClock>(), factory, stateChanger);
                 }
 
                 return new BackgroundJobClient(
                     x.GetRequiredService<JobStorage>(),
+                    x.GetRequiredService<IClock>(),
                     x.GetRequiredService<IJobFilterProvider>());
             });
 
@@ -85,23 +88,25 @@ namespace Hangfire
                 {
                     return new RecurringJobManager(
                         x.GetRequiredService<JobStorage>(),
+                        x.GetRequiredService<IClock>(),
                         factory,
                         x.GetRequiredService<ITimeZoneResolver>());
                 }
 
                 return new RecurringJobManager(
                     x.GetRequiredService<JobStorage>(),
+                    x.GetRequiredService<IClock>(),
                     x.GetRequiredService<IJobFilterProvider>(),
                     x.GetRequiredService<ITimeZoneResolver>());
             });
 
 
-            // IGlobalConfiguration serves as a marker indicating that Hangfire's services 
+            // IGlobalConfiguration serves as a marker indicating that Hangfire's services
             // were added to the service container (checked by IApplicationBuilder extensions).
-            // 
-            // Being a singleton, it also guarantees that the configuration callback will be 
+            //
+            // Being a singleton, it also guarantees that the configuration callback will be
             // executed just once upon initialization, so there's no need to double-check that.
-            // 
+            //
             // It should never be replaced by another implementation !!!
             // AddSingleton() will throw an exception if it was already registered
 
@@ -127,10 +132,10 @@ namespace Hangfire
                 // do configuration inside callback
 
                 configuration(serviceProvider, configurationInstance);
-                
+
                 return configurationInstance;
             });
-            
+
             return services;
         }
 
@@ -145,6 +150,7 @@ namespace Hangfire
 
                 var options = provider.GetService<BackgroundJobServerOptions>() ?? new BackgroundJobServerOptions();
                 var storage = provider.GetService<JobStorage>() ?? JobStorage.Current;
+                var clock = provider.GetService<IClock>() ?? SystemClock.Current;
                 var additionalProcesses = provider.GetServices<IBackgroundProcess>();
 
                 options.Activator = options.Activator ?? provider.GetService<JobActivator>();
@@ -156,7 +162,7 @@ namespace Hangfire
 #pragma warning disable 618
                 return new BackgroundJobServerHostedService(
 #pragma warning restore 618
-                    storage, options, additionalProcesses, factory, performer, stateChanger);
+                    storage, clock, options, additionalProcesses, factory, performer, stateChanger);
             });
 
             return services;
@@ -186,7 +192,7 @@ namespace Hangfire
         }
 
         private static void TryAddSingletonChecked<T>(
-            [NotNull] this IServiceCollection serviceCollection, 
+            [NotNull] this IServiceCollection serviceCollection,
             [NotNull] Func<IServiceProvider, T> implementationFactory)
             where T : class
         {

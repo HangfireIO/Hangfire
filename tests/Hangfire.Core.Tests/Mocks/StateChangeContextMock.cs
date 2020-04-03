@@ -14,6 +14,7 @@ namespace Hangfire.Core.Tests
         public StateChangeContextMock()
         {
             Storage = new Mock<JobStorage>();
+            Clock = new Mock<IClock>();
             Connection = new Mock<IStorageConnection>();
             BackgroundJobId = "JobId";
             NewState = new Mock<IState>();
@@ -23,6 +24,7 @@ namespace Hangfire.Core.Tests
             _context = new Lazy<StateChangeContext>(
                 () => new StateChangeContext(
                     Storage.Object,
+                    Clock.Object,
                     Connection.Object,
                     BackgroundJobId,
                     NewState.Object,
@@ -31,12 +33,13 @@ namespace Hangfire.Core.Tests
         }
 
         public Mock<JobStorage> Storage { get; set; }
+        public Mock<IClock> Clock { get; set; }
         public Mock<IStorageConnection> Connection { get; set; }
         public string BackgroundJobId { get; set; }
         public Mock<IState> NewState { get; set; }
-        public IEnumerable<string> ExpectedStates { get; set; } 
+        public IEnumerable<string> ExpectedStates { get; set; }
         public CancellationToken CancellationToken { get; set; }
-        
+
         public StateChangeContext Object => _context.Value;
     }
 }

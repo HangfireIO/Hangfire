@@ -1,17 +1,17 @@
 ﻿// This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
-// 
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
@@ -50,8 +50,8 @@ namespace Hangfire
         /// with default options and the given storage.
         /// </summary>
         /// <param name="storage">The storage</param>
-        public BackgroundJobServer([NotNull] JobStorage storage)
-            : this(new BackgroundJobServerOptions(), storage)
+        public BackgroundJobServer([NotNull] JobStorage storage, [NotNull] IClock clock)
+            : this(new BackgroundJobServerOptions(), storage, clock)
         {
         }
 
@@ -61,7 +61,7 @@ namespace Hangfire
         /// </summary>
         /// <param name="options">Server options</param>
         public BackgroundJobServer([NotNull] BackgroundJobServerOptions options)
-            : this(options, JobStorage.Current)
+            : this(options, JobStorage.Current, SystemClock.Current)
         {
         }
 
@@ -71,17 +71,18 @@ namespace Hangfire
         /// </summary>
         /// <param name="options">Server options</param>
         /// <param name="storage">The storage</param>
-        public BackgroundJobServer([NotNull] BackgroundJobServerOptions options, [NotNull] JobStorage storage)
-            : this(options, storage, Enumerable.Empty<IBackgroundProcess>())
+        public BackgroundJobServer([NotNull] BackgroundJobServerOptions options, [NotNull] JobStorage storage, [NotNull] IClock clock)
+            : this(options, storage, clock, Enumerable.Empty<IBackgroundProcess>())
         {
         }
 
         public BackgroundJobServer(
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] JobStorage storage,
+            [NotNull] IClock clock,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses)
 #pragma warning disable 618
-            : this(options, storage, additionalProcesses, null, null, null, null, null)
+            : this(options, storage, clock, additionalProcesses, null, null, null, null, null)
 #pragma warning restore 618
         {
         }
@@ -91,6 +92,7 @@ namespace Hangfire
         public BackgroundJobServer(
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] JobStorage storage,
+            [NotNull] IClock clock,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
             [CanBeNull] IJobFilterProvider filterProvider,
             [CanBeNull] JobActivator activator,
@@ -99,6 +101,7 @@ namespace Hangfire
             [CanBeNull] IBackgroundJobStateChanger stateChanger)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (clock == null) throw new ArgumentNullException(nameof(clock));
             if (options == null) throw new ArgumentNullException(nameof(options));
             if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
 
@@ -119,15 +122,16 @@ namespace Hangfire
             storage.WriteOptionsToLog(_logger);
 
             _logger.Info("Using the following options for Hangfire Server:\r\n" +
-                $"    Worker count: {options.WorkerCount}\r\n" +
-                $"    Listening queues: {String.Join(", ", options.Queues.Select(x => "'" + x + "'"))}\r\n" +
-                $"    Shutdown timeout: {options.ShutdownTimeout}\r\n" +
-                $"    Schedule polling interval: {options.SchedulePollingInterval}");
-            
+                         $"    Worker count: {options.WorkerCount}\r\n" +
+                         $"    Listening queues: {String.Join(", ", options.Queues.Select(x => "'" + x + "'"))}\r\n" +
+                         $"    Shutdown timeout: {options.ShutdownTimeout}\r\n" +
+                         $"    Schedule polling interval: {options.SchedulePollingInterval}");
+
             _processingServer = new BackgroundProcessingServer(
-                storage, 
-                processes, 
-                properties, 
+                storage,
+                clock,
+                processes,
+                properties,
                 GetProcessingServerOptions());
         }
 
@@ -169,8 +173,7 @@ namespace Hangfire
             return _processingServer.WaitForShutdownAsync(cancellationToken);
         }
 
-        private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses(
-            [CanBeNull] IJobFilterProvider filterProvider,
+        private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses([CanBeNull] IJobFilterProvider filterProvider,
             [CanBeNull] JobActivator activator,
             [CanBeNull] IBackgroundJobFactory factory,
             [CanBeNull] IBackgroundJobPerformer performer,

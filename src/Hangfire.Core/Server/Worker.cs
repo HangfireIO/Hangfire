@@ -1,17 +1,17 @@
 // This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
-// 
+// Copyright ï¿½ 2013-2014 Sergey Odinokov.
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
@@ -29,16 +29,16 @@ using Hangfire.Storage;
 namespace Hangfire.Server
 {
     /// <summary>
-    /// Represents a background process responsible for <i>processing 
+    /// Represents a background process responsible for <i>processing
     /// fire-and-forget jobs</i>.
     /// </summary>
-    /// 
+    ///
     /// <remarks>
     /// <para>This is the heart of background processing in Hangfire</para>
     /// </remarks>
-    /// 
+    ///
     /// <threadsafety static="true" instance="true"/>
-    /// 
+    ///
     /// <seealso cref="EnqueuedState"/>
     public class Worker : IBackgroundProcess
     {
@@ -52,7 +52,7 @@ namespace Hangfire.Server
         private readonly IBackgroundJobPerformer _performer;
         private readonly IBackgroundJobStateChanger _stateChanger;
         private readonly IProfiler _profiler;
-        
+
         public Worker() : this(EnqueuedState.DefaultQueue)
         {
         }
@@ -72,7 +72,7 @@ namespace Hangfire.Server
 
         internal Worker(
             [NotNull] IEnumerable<string> queues,
-            [NotNull] IBackgroundJobPerformer performer, 
+            [NotNull] IBackgroundJobPerformer performer,
             [NotNull] IBackgroundJobStateChanger stateChanger,
             TimeSpan jobInitializationTimeout,
             int maxStateChangeAttempts)
@@ -80,7 +80,7 @@ namespace Hangfire.Server
             if (queues == null) throw new ArgumentNullException(nameof(queues));
             if (performer == null) throw new ArgumentNullException(nameof(performer));
             if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
-            
+
             _queues = queues.ToArray();
             _performer = performer;
             _stateChanger = stateChanger;
@@ -111,10 +111,10 @@ namespace Hangfire.Server
                         var processingState = new ProcessingState(context.ServerId, context.ExecutionId.ToString());
 
                         var appliedState = TryChangeState(
-                            context, 
-                            connection, 
-                            fetchedJob, 
-                            processingState, 
+                            context,
+                            connection,
+                            fetchedJob,
+                            processingState,
                             new[] { EnqueuedState.StateName, ProcessingState.StateName },
                             linkedCts.Token,
                             context.StoppingToken);
@@ -173,8 +173,8 @@ namespace Hangfire.Server
         }
 
         private IState TryChangeState(
-            BackgroundProcessContext context, 
-            IStorageConnection connection, 
+            BackgroundProcessContext context,
+            IStorageConnection connection,
             IFetchedJob fetchedJob,
             IState state,
             string[] expectedStates,
@@ -191,6 +191,7 @@ namespace Hangfire.Server
                 {
                     return _stateChanger.ChangeState(new StateChangeContext(
                         context.Storage,
+                        context.Clock,
                         connection,
                         fetchedJob.JobId,
                         state,
@@ -201,7 +202,7 @@ namespace Hangfire.Server
                 catch (Exception ex)
                 {
                     _logger.DebugException(
-                        $"State change attempt {retryAttempt + 1} of {_maxStateChangeAttempts} failed due to an error, see inner exception for details", 
+                        $"State change attempt {retryAttempt + 1} of {_maxStateChangeAttempts} failed due to an error, see inner exception for details",
                         ex);
 
                     exception = ex;
@@ -217,6 +218,7 @@ namespace Hangfire.Server
 
             return _stateChanger.ChangeState(new StateChangeContext(
                 context.Storage,
+                context.Clock,
                 connection,
                 fetchedJob.JobId,
                 new FailedState(exception) { Reason = $"Failed to change state to a '{state.Name}' one due to an exception after {_maxStateChangeAttempts} retry attempts" },
@@ -259,7 +261,7 @@ namespace Hangfire.Server
                 {
                     var performContext = new PerformContext(context.Storage, connection, backgroundJob, jobToken, _profiler);
 
-                    var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
+                    var latency = (context.Clock.UtcNow - jobData.CreatedAt).TotalMilliseconds;
                     var duration = Stopwatch.StartNew();
 
                     var result = _performer.Perform(performContext);

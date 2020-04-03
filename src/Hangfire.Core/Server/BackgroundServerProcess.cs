@@ -1,17 +1,17 @@
 ﻿// This file is part of Hangfire.
 // Copyright © 2017 Sergey Odinokov.
-// 
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
@@ -30,19 +30,23 @@ namespace Hangfire.Server
     {
         private readonly ILog _logger = LogProvider.GetLogger(typeof(BackgroundServerProcess));
         private readonly JobStorage _storage;
+        private readonly IClock _clock;
         private readonly BackgroundProcessingServerOptions _options;
         private readonly IDictionary<string, object> _properties;
         private readonly IBackgroundProcessDispatcherBuilder[] _dispatcherBuilders;
 
         public BackgroundServerProcess(
             [NotNull] JobStorage storage,
+            [NotNull] IClock clock,
             [NotNull] IEnumerable<IBackgroundProcessDispatcherBuilder> dispatcherBuilders,
             [NotNull] BackgroundProcessingServerOptions options,
             [NotNull] IDictionary<string, object> properties)
         {
+            if (clock == null) throw new ArgumentNullException(nameof(clock));
             if (dispatcherBuilders == null) throw new ArgumentNullException(nameof(dispatcherBuilders));
 
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            _clock = clock;
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _properties = properties ?? throw new ArgumentNullException(nameof(properties));
 
@@ -87,6 +91,7 @@ namespace Hangfire.Server
                 var context = new BackgroundServerContext(
                     serverId,
                     _storage,
+                    _clock,
                     _properties,
                     restartStoppingCts.Token,
                     restartStoppedCts.Token,
@@ -133,7 +138,7 @@ namespace Hangfire.Server
         private IEnumerable<IBackgroundProcessDispatcherBuilder> GetStorageComponents()
         {
             return _storage.GetComponents().Select(component => new ServerProcessDispatcherBuilder(
-                component, 
+                component,
                 threadStart => BackgroundProcessExtensions.DefaultThreadFactory(1, component.GetType().Name, threadStart)));
         }
 

@@ -14,6 +14,7 @@ namespace Hangfire.Core.Tests
         {
             ServerId = "server";
             Storage = new Mock<JobStorage>();
+            Clock = new Mock<IClock>();
             Properties = new Dictionary<string, object>();
             ExecutionId = Guid.NewGuid();
             StoppingTokenSource = new CancellationTokenSource();
@@ -21,15 +22,17 @@ namespace Hangfire.Core.Tests
             ShutdownTokenSource = new CancellationTokenSource();
 
             _context = new Lazy<BackgroundProcessContext>(
-                () => new BackgroundProcessContext(ServerId, Storage.Object, Properties, ExecutionId,
+                () => new BackgroundProcessContext(ServerId, Storage.Object, Clock.Object, Properties, ExecutionId,
                     StoppingTokenSource.Token, StoppedTokenSource.Token, ShutdownTokenSource.Token));
         }
+
+        public Mock<IClock> Clock { get; set; }
 
         public BackgroundProcessContext Object => _context.Value;
 
         public string ServerId { get; set; }
         public Mock<JobStorage> Storage { get; set; }
-        public IDictionary<string, object> Properties { get; set; } 
+        public IDictionary<string, object> Properties { get; set; }
         public Guid ExecutionId { get; set; }
         public CancellationTokenSource StoppingTokenSource { get; set; }
         public CancellationTokenSource StoppedTokenSource { get; set; }

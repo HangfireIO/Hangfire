@@ -1,17 +1,17 @@
 ﻿// This file is part of Hangfire.
 // Copyright © 2016 Sergey Odinokov.
-// 
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
@@ -33,7 +33,8 @@ namespace Hangfire
             [NotNull] this IApplicationBuilder app,
             [NotNull] string pathMatch = "/hangfire",
             [CanBeNull] DashboardOptions options = null,
-            [CanBeNull] JobStorage storage = null)
+            [CanBeNull] JobStorage storage = null,
+            [CanBeNull] IClock clock = null)
         {
             if (app == null) throw new ArgumentNullException(nameof(app));
             if (pathMatch == null) throw new ArgumentNullException(nameof(pathMatch));
@@ -43,12 +44,13 @@ namespace Hangfire
             var services = app.ApplicationServices;
 
             storage = storage ?? services.GetRequiredService<JobStorage>();
+            clock = clock ?? services.GetRequiredService<IClock>();
             options = options ?? services.GetService<DashboardOptions>() ?? new DashboardOptions();
             options.TimeZoneResolver = options.TimeZoneResolver ?? services.GetService<ITimeZoneResolver>();
 
             var routes = app.ApplicationServices.GetRequiredService<RouteCollection>();
 
-            app.Map(new PathString(pathMatch), x => x.UseMiddleware<AspNetCoreDashboardMiddleware>(storage, options, routes));
+            app.Map(new PathString(pathMatch), x => x.UseMiddleware<AspNetCoreDashboardMiddleware>(storage, clock, options, routes));
 
             return app;
         }
@@ -57,16 +59,18 @@ namespace Hangfire
             [NotNull] this IApplicationBuilder app,
             [CanBeNull] BackgroundJobServerOptions options = null,
             [CanBeNull] IEnumerable<IBackgroundProcess> additionalProcesses = null,
-            [CanBeNull] JobStorage storage = null)
+            [CanBeNull] JobStorage storage = null,
+            [CanBeNull] IClock clock = null)
         {
             if (app == null) throw new ArgumentNullException(nameof(app));
-            
+
             HangfireServiceCollectionExtensions.ThrowIfNotConfigured(app.ApplicationServices);
 
             var services = app.ApplicationServices;
             var lifetime = services.GetRequiredService<IApplicationLifetime>();
 
             storage = storage ?? services.GetRequiredService<JobStorage>();
+            clock = clock ?? services.GetRequiredService<IClock>();
             options = options ?? services.GetService<BackgroundJobServerOptions>() ?? new BackgroundJobServerOptions();
             additionalProcesses = additionalProcesses ?? services.GetServices<IBackgroundProcess>();
 
@@ -76,9 +80,9 @@ namespace Hangfire
 
             var server = HangfireServiceCollectionExtensions.GetInternalServices(services, out var factory, out var stateChanger, out var performer)
 #pragma warning disable 618
-                ? new BackgroundJobServer(options, storage, additionalProcesses, null, null, factory, performer, stateChanger)
+                ? new BackgroundJobServer(options, storage, clock, additionalProcesses, null, null, factory, performer, stateChanger)
 #pragma warning restore 618
-                : new BackgroundJobServer(options, storage, additionalProcesses);
+                : new BackgroundJobServer(options, storage, clock, additionalProcesses);
 
             lifetime.ApplicationStopping.Register(() => server.SendStop());
             lifetime.ApplicationStopped.Register(() => server.Dispose());

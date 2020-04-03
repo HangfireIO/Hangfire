@@ -1,17 +1,17 @@
 ﻿// This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
-// 
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
@@ -26,40 +26,40 @@ using Hangfire.Storage;
 namespace Hangfire.Server
 {
     /// <summary>
-    /// Represents a background process responsible for <i>enqueueing recurring 
+    /// Represents a background process responsible for <i>enqueueing recurring
     /// jobs</i>.
     /// </summary>
-    /// 
+    ///
     /// <remarks>
     /// <para>This background process polls the <i>recurring job schedule</i>
     /// for recurring jobs ready to be enqueued. Interval between scheduler
     /// polls is hard-coded to <b>1 minute</b> as a compromise between
     /// frequency and additional stress on job storage.</para>
-    /// 
+    ///
     /// <note type="tip">
     /// Use custom background processes if you need to schedule recurring jobs
-    /// with frequency less than one minute. Please see the 
+    /// with frequency less than one minute. Please see the
     /// <see cref="IBackgroundProcess"/> interface for details.
     /// </note>
-    /// 
+    ///
     /// <para>Recurring job schedule is based on Set and Hash data structures
-    /// of a job storage, so you can use this background process as an example 
+    /// of a job storage, so you can use this background process as an example
     /// of a custom extension.</para>
-    /// 
+    ///
     /// <para>Multiple instances of this background process can be used in
     /// separate threads/processes without additional configuration (distributed
-    /// locks are used). However, this only adds support for fail-over, and does 
+    /// locks are used). However, this only adds support for fail-over, and does
     /// not increase the performance.</para>
-    /// 
+    ///
     /// <note type="important">
-    /// If you are using <b>custom filter providers</b>, you need to pass a 
-    /// custom <see cref="IBackgroundJobFactory"/> instance to make this 
+    /// If you are using <b>custom filter providers</b>, you need to pass a
+    /// custom <see cref="IBackgroundJobFactory"/> instance to make this
     /// process respect your filters when enqueueing background jobs.
     /// </note>
     /// </remarks>
-    /// 
+    ///
     /// <threadsafety static="true" instance="true"/>
-    /// 
+    ///
     /// <seealso cref="RecurringJobManager"/>
     public class RecurringJobScheduler : IBackgroundProcess
     {
@@ -70,7 +70,6 @@ namespace Hangfire.Server
         private readonly ConcurrentDictionary<Type, bool> _isBatchingAvailableCache = new ConcurrentDictionary<Type, bool>();
 
         private readonly IBackgroundJobFactory _factory;
-        private readonly Func<DateTime> _nowFactory;
         private readonly ITimeZoneResolver _timeZoneResolver;
         private readonly TimeSpan _pollingDelay;
         private readonly IProfiler _profiler;
@@ -83,13 +82,13 @@ namespace Hangfire.Server
             : this(new BackgroundJobFactory(JobFilterProviders.Providers))
         {
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RecurringJobScheduler"/>
         /// class with custom background job factory and a state machine.
         /// </summary>
         /// <param name="factory">Factory that will be used to create background jobs.</param>
-        /// 
+        ///
         /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
         public RecurringJobScheduler(
             [NotNull] IBackgroundJobFactory factory)
@@ -124,22 +123,11 @@ namespace Hangfire.Server
             [NotNull] IBackgroundJobFactory factory,
             TimeSpan pollingDelay,
             [NotNull] ITimeZoneResolver timeZoneResolver)
-            : this(factory, pollingDelay, timeZoneResolver, () => DateTime.UtcNow)
-        {
-        }
-
-        public RecurringJobScheduler(
-            [NotNull] IBackgroundJobFactory factory,
-            TimeSpan pollingDelay,
-            [NotNull] ITimeZoneResolver timeZoneResolver,
-            [NotNull] Func<DateTime> nowFactory)
         {
             if (factory == null) throw new ArgumentNullException(nameof(factory));
-            if (nowFactory == null) throw new ArgumentNullException(nameof(nowFactory));
             if (timeZoneResolver == null) throw new ArgumentNullException(nameof(timeZoneResolver));
 
             _factory = factory;
-            _nowFactory = nowFactory;
             _timeZoneResolver = timeZoneResolver;
             _pollingDelay = pollingDelay;
             _profiler = new SlowLogProfiler(_logger);
@@ -173,7 +161,7 @@ namespace Hangfire.Server
             }
             else
             {
-                var now = _nowFactory();
+                var now = context.Clock.UtcNow;
                 context.Wait(now.AddMilliseconds(-now.Millisecond).AddSeconds(-now.Second).AddMinutes(1) - now);
             }
         }
@@ -192,9 +180,9 @@ namespace Hangfire.Server
 
                 if (IsBatchingAvailable(connection))
                 {
-                    var now = _nowFactory();
+                    var now = context.Clock.UtcNow;
                     var timestamp = JobHelper.ToTimestamp(now);
-                    var recurringJobIds = ((JobStorageConnection)connection).GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp, BatchSize);
+                    var recurringJobIds = ((JobStorageConnection) connection).GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp, BatchSize);
 
                     if (recurringJobIds == null || recurringJobIds.Count == 0) return false;
 
@@ -214,7 +202,7 @@ namespace Hangfire.Server
                     {
                         if (context.IsStopping) return false;
 
-                        var now = _nowFactory();
+                        var now = context.Clock.UtcNow;
                         var timestamp = JobHelper.ToTimestamp(now);
 
                         var recurringJobId = connection.GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp);
@@ -253,7 +241,7 @@ namespace Hangfire.Server
 
         private bool EnqueueBackgroundJob(
             BackgroundProcessContext context,
-            IStorageConnection connection, 
+            IStorageConnection connection,
             string recurringJobId,
             DateTime now)
         {
@@ -289,7 +277,7 @@ namespace Hangfire.Server
 
                     if (nextExecution.HasValue && nextExecution <= now)
                     {
-                        backgroundJob = _factory.TriggerRecurringJob(context.Storage, connection, _profiler, recurringJob, now);
+                        backgroundJob = _factory.TriggerRecurringJob(context.Storage, context.Clock, connection, _profiler, recurringJob, now);
 
                         if (String.IsNullOrEmpty(backgroundJob?.Id))
                         {
@@ -309,6 +297,7 @@ namespace Hangfire.Server
                         {
                             _factory.StateMachine.EnqueueBackgroundJob(
                                 context.Storage,
+                                context.Clock,
                                 connection,
                                 transaction,
                                 recurringJob,
@@ -359,7 +348,8 @@ namespace Hangfire.Server
                 // It just means another Hangfire server did this work.
                 _logger.Log(
                     LogLevel.Debug,
-                    () => $@"An exception was thrown during acquiring distributed lock the {resource} resource within {LockTimeout.TotalSeconds} seconds. The recurring jobs have not been handled this time.",
+                    () =>
+                        $@"An exception was thrown during acquiring distributed lock the {resource} resource within {LockTimeout.TotalSeconds} seconds. The recurring jobs have not been handled this time.",
                     e);
             }
 
