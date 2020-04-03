@@ -5,6 +5,7 @@ using System.Threading;
 using Hangfire.Server;
 using Moq;
 using Xunit;
+
 #pragma warning disable 618
 
 // ReSharper disable AssignNullToNotNullAttribute
@@ -17,11 +18,13 @@ namespace Hangfire.Core.Tests.Server
         private readonly Mock<JobStorage> _storage;
         private readonly CancellationTokenSource _cts;
         private readonly Dictionary<string, object> _properties;
+        private readonly Mock<IClock> _clock;
 
         public BackgroundProcessContextFacts()
         {
             _storage = new Mock<JobStorage>();
-            _properties = new Dictionary<string, object> {{"key", "value"}};
+            _clock = new Mock<IClock>();
+            _properties = new Dictionary<string, object> { { "key", "value" } };
             _cts = new CancellationTokenSource();
         }
 
@@ -29,7 +32,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenServerIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundProcessContext(null, _storage.Object, _properties, _cts.Token));
+                () => new BackgroundProcessContext(null, _storage.Object, _clock.Object, _properties, _cts.Token));
 
             Assert.Equal("serverId", exception.ParamName);
         }
@@ -38,16 +41,25 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundProcessContext(_serverId, null, _properties, _cts.Token));
+                () => new BackgroundProcessContext(_serverId, null, _clock.Object, _properties, _cts.Token));
 
             Assert.Equal("storage", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenClockIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new BackgroundProcessContext(_serverId, _storage.Object, null, _properties, _cts.Token));
+
+            Assert.Equal("clock", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenPropertiesArgumentIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundProcessContext(_serverId, _storage.Object, null, _cts.Token));
+                () => new BackgroundProcessContext(_serverId, _storage.Object, _clock.Object, null, _cts.Token));
 
             Assert.Equal("properties", exception.ParamName);
         }
@@ -55,7 +67,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Ctor_CorrectlyInitializes_AllTheProperties()
         {
-            var context = new BackgroundProcessContext(_serverId, _storage.Object, _properties, _cts.Token);
+            var context = new BackgroundProcessContext(_serverId, _storage.Object, _clock.Object, _properties, _cts.Token);
 
             Assert.Equal(_serverId, context.ServerId);
             Assert.True(_properties.SequenceEqual(context.Properties));

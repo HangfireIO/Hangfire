@@ -113,17 +113,20 @@ namespace Hangfire.Core.Tests.Client
                 () => context.GetJobParameter<int>("name"));
         }
 
-        public static void TestMethod() { }
+        public static void TestMethod()
+        {
+        }
 
         private CreatingContext CreateContext()
         {
             var storage = new Mock<JobStorage>();
+            var clock = new Mock<IClock>();
             var connection = new Mock<IStorageConnection>();
             var job = Job.FromExpression(() => TestMethod());
             var state = new Mock<IState>();
 
-            var createContext = new CreateContext(storage.Object, connection.Object, job, state.Object);
-            return new CreatingContext(createContext);            
+            var createContext = new CreateContext(storage.Object, clock.Object, connection.Object, job, state.Object);
+            return new CreatingContext(createContext);
         }
     }
 }

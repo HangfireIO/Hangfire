@@ -1,17 +1,17 @@
 ﻿// This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
-// 
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
@@ -31,62 +31,49 @@ namespace Hangfire
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
         private readonly JobStorage _storage;
+        private readonly IClock _clock;
         private readonly IBackgroundJobFactory _factory;
-        private readonly Func<DateTime> _nowFactory;
         private readonly ITimeZoneResolver _timeZoneResolver;
 
         public RecurringJobManager()
-            : this(JobStorage.Current)
+            : this(JobStorage.Current, SystemClock.Current)
         {
         }
 
-        public RecurringJobManager([NotNull] JobStorage storage)
-            : this(storage, JobFilterProviders.Providers)
+        public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IClock clock)
+            : this(storage, clock, JobFilterProviders.Providers)
         {
         }
 
-        public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IJobFilterProvider filterProvider)
-            : this(storage, filterProvider, new DefaultTimeZoneResolver())
+        public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IClock clock, [NotNull] IJobFilterProvider filterProvider)
+            : this(storage, clock, filterProvider, new DefaultTimeZoneResolver())
         {
         }
 
         public RecurringJobManager(
-            [NotNull] JobStorage storage, 
+            [NotNull] JobStorage storage,
+            [NotNull] IClock clock,
             [NotNull] IJobFilterProvider filterProvider,
             [NotNull] ITimeZoneResolver timeZoneResolver)
-            : this(storage, filterProvider, timeZoneResolver, () => DateTime.UtcNow)
+            : this(storage, clock, new BackgroundJobFactory(filterProvider), timeZoneResolver)
+        {
+        }
+
+        public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IClock clock, [NotNull] IBackgroundJobFactory factory)
+            : this(storage, clock, factory, new DefaultTimeZoneResolver())
         {
         }
 
         public RecurringJobManager(
-            [NotNull] JobStorage storage, 
-            [NotNull] IJobFilterProvider filterProvider, 
-            [NotNull] ITimeZoneResolver timeZoneResolver,
-            [NotNull] Func<DateTime> nowFactory)
-            : this(storage, new BackgroundJobFactory(filterProvider), timeZoneResolver, nowFactory)
-        {
-        }
-
-        public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobFactory factory)
-            : this(storage, factory, new DefaultTimeZoneResolver())
-        {
-        }
-
-        public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobFactory factory, [NotNull] ITimeZoneResolver timeZoneResolver)
-            : this(storage, factory, timeZoneResolver, () => DateTime.UtcNow)
-        {
-        }
-
-        internal RecurringJobManager(
-            [NotNull] JobStorage storage, 
+            [NotNull] JobStorage storage,
+            [NotNull] IClock clock,
             [NotNull] IBackgroundJobFactory factory,
-            [NotNull] ITimeZoneResolver timeZoneResolver,
-            [NotNull] Func<DateTime> nowFactory)
+            [NotNull] ITimeZoneResolver timeZoneResolver)
         {
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            _clock = clock ?? throw new ArgumentNullException(nameof(clock));
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
             _timeZoneResolver = timeZoneResolver ?? throw new ArgumentNullException(nameof(timeZoneResolver));
-            _nowFactory = nowFactory ?? throw new ArgumentNullException(nameof(nowFactory));
         }
 
         public void AddOrUpdate(string recurringJobId, Job job, string cronExpression, RecurringJobOptions options)
@@ -101,7 +88,7 @@ namespace Hangfire
             using (var connection = _storage.GetConnection())
             using (connection.AcquireDistributedRecurringJobLock(recurringJobId, DefaultTimeout))
             {
-                var recurringJob = connection.GetOrCreateRecurringJob(recurringJobId, _timeZoneResolver, _nowFactory());
+                var recurringJob = connection.GetOrCreateRecurringJob(recurringJobId, _timeZoneResolver, _clock.UtcNow);
 
                 recurringJob.Job = job;
                 recurringJob.Cron = cronExpression;
@@ -118,7 +105,7 @@ namespace Hangfire
                 }
             }
         }
- 
+
         private static void ValidateCronExpression(string cronExpression)
         {
             try
@@ -141,12 +128,12 @@ namespace Hangfire
             using (var connection = _storage.GetConnection())
             using (connection.AcquireDistributedRecurringJobLock(recurringJobId, DefaultTimeout))
             {
-                var now = _nowFactory();
+                var now = _clock.UtcNow;
 
                 var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
                 if (recurringJob == null) return;
 
-                var backgroundJob = _factory.TriggerRecurringJob(_storage, connection, EmptyProfiler.Instance, recurringJob, now);
+                var backgroundJob = _factory.TriggerRecurringJob(_storage, _clock, connection, EmptyProfiler.Instance, recurringJob, now);
 
                 if (recurringJob.IsChanged(out var changedFields, out var nextExecution))
                 {
@@ -156,6 +143,7 @@ namespace Hangfire
                         {
                             _factory.StateMachine.EnqueueBackgroundJob(
                                 _storage,
+                                _clock,
                                 connection,
                                 transaction,
                                 recurringJob,

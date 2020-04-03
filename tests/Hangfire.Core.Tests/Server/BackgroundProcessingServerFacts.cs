@@ -17,6 +17,7 @@ namespace Hangfire.Core.Tests.Server
         private readonly List<IBackgroundProcess> _processes;
         private readonly Dictionary<string, object> _properties;
         private readonly Mock<IStorageConnection> _connection;
+        private readonly Mock<IClock> _clock;
 
         public BackgroundProcessingServerFacts()
         {
@@ -26,22 +27,34 @@ namespace Hangfire.Core.Tests.Server
 
             _connection = new Mock<IStorageConnection>();
             _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
+
+            _clock = new Mock<IClock>();
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundProcessingServer(null, _processes, _properties));
+                () => new BackgroundProcessingServer(null, _clock.Object, _processes, _properties));
 
             Assert.Equal("storage", exception.ParamName);
+        }
+
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenClockIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new BackgroundProcessingServer(_storage.Object, null, _processes, _properties));
+
+            Assert.Equal("clock", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenProcessesArgumentIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundProcessingServer(_storage.Object, null, _properties));
+                () => new BackgroundProcessingServer(_storage.Object, _clock.Object, null, _properties));
 
             Assert.Equal("processes", exception.ParamName);
         }
@@ -50,15 +63,18 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenPropertiesArgumentIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundProcessingServer(_storage.Object, _processes, null));
-            
+                () => new BackgroundProcessingServer(_storage.Object, _clock.Object, _processes, null));
+
             Assert.Equal("properties", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_AnnouncesTheServer_AndRemovesIt()
         {
-            using (CreateServer()) { Thread.Sleep(50); }
+            using (CreateServer())
+            {
+                Thread.Sleep(50);
+            }
 
             _connection.Verify(x => x.AnnounceServer(
                 It.IsNotNull<string>(),
@@ -75,16 +91,10 @@ namespace Hangfire.Core.Tests.Server
             var component2Countdown = new CountdownEvent(5);
 
             var component1 = CreateProcessMock<IBackgroundProcess>();
-            component1.Setup(x => x.Execute(It.IsAny<BackgroundProcessContext>())).Callback(() =>
-            {
-                component1Countdown.Signal();
-            });
+            component1.Setup(x => x.Execute(It.IsAny<BackgroundProcessContext>())).Callback(() => { component1Countdown.Signal(); });
 
             var component2 = CreateProcessMock<IBackgroundProcess>();
-            component2.Setup(x => x.Execute(It.IsAny<BackgroundProcessContext>())).Callback(() =>
-            {
-                component2Countdown.Signal();
-            });
+            component2.Setup(x => x.Execute(It.IsAny<BackgroundProcessContext>())).Callback(() => { component2Countdown.Signal(); });
 
             // Act
             using (CreateServer())
@@ -99,7 +109,7 @@ namespace Hangfire.Core.Tests.Server
 
         private BackgroundProcessingServer CreateServer()
         {
-            return new BackgroundProcessingServer(_storage.Object, _processes, _properties);
+            return new BackgroundProcessingServer(_storage.Object, _clock.Object, _processes, _properties);
         }
 
         private Mock<T> CreateProcessMock<T>()

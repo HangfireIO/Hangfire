@@ -25,20 +25,21 @@ namespace Hangfire.Core.Tests.Client
         public BackgroundJobFactoryFacts()
         {
             var storage = new Mock<JobStorage>();
+            var clock = new Mock<IClock>();
             var connection = new Mock<IStorageConnection>();
             var state = new Mock<IState>();
             _backgroundJob = new BackgroundJobMock();
 
-            _context = new Mock<CreateContext>(storage.Object, connection.Object, _backgroundJob.Job, state.Object)
+            _context = new Mock<CreateContext>(storage.Object, clock.Object, connection.Object, _backgroundJob.Job, state.Object)
             {
                 CallBase = true
             };
-            
+
             _filters = new List<object>();
             _filterProvider = new Mock<IJobFilterProvider>();
             _filterProvider.Setup(x => x.GetFilters(It.IsNotNull<Job>())).Returns(
                 _filters.Select(f => new JobFilter(f, JobFilterScope.Type, null)));
-            
+
             _innerFactory = new Mock<IBackgroundJobFactory>();
             _innerFactory.Setup(x => x.Create(_context.Object)).Returns(_backgroundJob.Object);
         }
@@ -71,7 +72,7 @@ namespace Hangfire.Core.Tests.Client
 
             Assert.Equal("context", exception.ParamName);
         }
-        
+
         [Fact]
         public void Run_CallsInnerFactory_ToCreateAJob()
         {
@@ -80,7 +81,7 @@ namespace Hangfire.Core.Tests.Client
             factory.Create(_context.Object);
 
             _innerFactory.Verify(
-                x => x.Create(_context.Object), 
+                x => x.Create(_context.Object),
                 Times.Once);
         }
 
@@ -120,7 +121,7 @@ namespace Hangfire.Core.Tests.Client
             // Act
             Assert.Throws<InvalidOperationException>(
                 () => factory.Create(_context.Object));
-            
+
             // Assert
             filter.Verify(x => x.OnClientException(
                 It.IsNotNull<ClientExceptionContext>()));
@@ -227,7 +228,7 @@ namespace Hangfire.Core.Tests.Client
 
             filter.Setup(x => x.OnCreating(It.IsAny<CreatingContext>()))
                 .Callback((CreatingContext x) => x.Canceled = true);
-            
+
             var factory = CreateFactory();
 
             // Act
@@ -237,7 +238,7 @@ namespace Hangfire.Core.Tests.Client
             Assert.Null(jobId);
 
             _innerFactory.Verify(
-                x => x.Create(It.IsAny<CreateContext>()), 
+                x => x.Create(It.IsAny<CreateContext>()),
                 Times.Never);
 
             filter.Verify(x => x.OnCreated(It.IsAny<CreatedContext>()), Times.Never);
@@ -283,7 +284,7 @@ namespace Hangfire.Core.Tests.Client
 
             // Assert
             _innerFactory.Verify(
-                x => x.Create(It.IsAny<CreateContext>()), 
+                x => x.Create(It.IsAny<CreateContext>()),
                 Times.Never);
 
             filter.Verify(x => x.OnCreated(It.IsAny<CreatedContext>()), Times.Never);

@@ -14,6 +14,7 @@ namespace Hangfire.Core.Tests
         public CreateContextMock()
         {
             Storage = new Mock<JobStorage>();
+            Clock = new Mock<IClock>();
             Connection = new Mock<IStorageConnection>();
             Job = Job.FromExpression(() => Method());
             InitialState = new Mock<IState>();
@@ -21,15 +22,17 @@ namespace Hangfire.Core.Tests
             _context = new Lazy<CreateContext>(
                 () => new CreateContext(
                     Storage.Object,
+                    Clock.Object,
                     Connection.Object,
                     Job,
                     InitialState.Object));
         }
 
         public Mock<JobStorage> Storage { get; set; }
+        public Mock<IClock> Clock { get; set; }
         public Mock<IStorageConnection> Connection { get; set; }
         public Job Job { get; set; }
-        public Mock<IState> InitialState { get; set; } 
+        public Mock<IState> InitialState { get; set; }
 
         public CreateContext Object => _context.Value;
 

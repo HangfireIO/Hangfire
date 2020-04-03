@@ -15,6 +15,7 @@ namespace Hangfire
     {
         private readonly BackgroundJobServerOptions _options;
         private readonly JobStorage _storage;
+        private readonly IClock _clock;
         private readonly IEnumerable<IBackgroundProcess> _additionalProcesses;
         private readonly IBackgroundJobFactory _factory;
         private readonly IBackgroundJobPerformer _performer;
@@ -24,10 +25,11 @@ namespace Hangfire
 
         public BackgroundJobServerHostedService(
             [NotNull] JobStorage storage,
+            [NotNull] IClock clock,
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses)
 #pragma warning disable 618
-            : this(storage, options, additionalProcesses, null, null, null)
+            : this(storage, clock, options, additionalProcesses, null, null, null)
 #pragma warning restore 618
         {
         }
@@ -35,6 +37,7 @@ namespace Hangfire
         [Obsolete("This constructor uses an obsolete constructor overload of the BackgroundJobServer type that will be removed in 2.0.0.")]
         public BackgroundJobServerHostedService(
             [NotNull] JobStorage storage,
+            [NotNull] IClock clock,
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
             [CanBeNull] IBackgroundJobFactory factory,
@@ -43,6 +46,7 @@ namespace Hangfire
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            _clock = clock ?? throw new ArgumentNullException(nameof(clock));
 
             _additionalProcesses = additionalProcesses;
 
@@ -55,9 +59,9 @@ namespace Hangfire
         {
             _processingServer = _factory != null && _performer != null && _stateChanger != null
 #pragma warning disable 618
-                ? new BackgroundJobServer(_options, _storage, _additionalProcesses, null, null, _factory, _performer, _stateChanger)
+                ? new BackgroundJobServer(_options, _storage, _clock, _additionalProcesses, null, null, _factory, _performer, _stateChanger)
 #pragma warning restore 618
-                : new BackgroundJobServer(_options, _storage, _additionalProcesses);
+                : new BackgroundJobServer(_options, _storage, _clock, _additionalProcesses);
 
             return Task.CompletedTask;
         }

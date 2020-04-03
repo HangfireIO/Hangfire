@@ -1,17 +1,17 @@
 ﻿// This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
-// 
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
@@ -29,12 +29,12 @@ namespace Hangfire.States
     /// <see cref="EnqueuedState"/> by the <see cref="ContinuationsSupportAttribute"/>
     /// filter.
     /// </summary>
-    /// 
+    ///
     /// <remarks>
     /// <para>Background job in <see cref="AwaitingState"/> is referred as a
     /// <b>continuation</b> of a background job with <see cref="ParentId"/>.</para>
     /// </remarks>
-    /// 
+    ///
     /// <threadsafety static="true" instance="false"/>
     public class AwaitingState : IState
     {
@@ -47,10 +47,10 @@ namespace Hangfire.States
         /// The value of this field is <c>"Awaiting"</c>.
         /// </remarks>
         public static readonly string StateName = "Awaiting";
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AwaitingState"/> class with
-        /// the specified parent background job id and with an instance of the 
+        /// the specified parent background job id and with an instance of the
         /// <see cref="EnqueuedState"/> class as a next state.
         /// </summary>
         /// <param name="parentId">The identifier of a background job to wait for.</param>
@@ -163,7 +163,7 @@ namespace Hangfire.States
 
         /// <inheritdoc />
         /// <remarks>
-        /// <para>Returning dictionary contains the following keys. You can obtain 
+        /// <para>Returning dictionary contains the following keys. You can obtain
         /// the state data by using the <see cref="IStorageConnection.GetStateData"/>
         /// method.</para>
         /// <list type="table">
@@ -183,7 +183,7 @@ namespace Hangfire.States
         ///         <term><c>NextState</c></term>
         ///         <term><see cref="IState"/></term>
         ///         <term>
-        ///             <see cref="SerializationHelper.Deserialize{T}(string, SerializationOption)"/> with 
+        ///             <see cref="SerializationHelper.Deserialize{T}(string, SerializationOption)"/> with
         ///             <see cref="SerializationOption.TypedInternal"/>
         ///         </term>
         ///         <description>Please see the <see cref="NextState"/> property.</description>
@@ -223,7 +223,7 @@ namespace Hangfire.States
         {
             public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
-                transaction.AddToSet("awaiting", context.BackgroundJob.Id, JobHelper.ToTimestamp(DateTime.UtcNow));
+                transaction.AddToSet("awaiting", context.BackgroundJob.Id, JobHelper.ToTimestamp(context.Clock.UtcNow));
             }
 
             public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)

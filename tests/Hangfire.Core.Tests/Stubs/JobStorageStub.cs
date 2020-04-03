@@ -15,4 +15,8 @@ namespace Hangfire.Core.Tests.Stubs
             throw new NotImplementedException();
         }
     }
+    class ClockStub : IClock
+    {
+        public DateTime UtcNow => throw new NotImplementedException();
+    }
 }

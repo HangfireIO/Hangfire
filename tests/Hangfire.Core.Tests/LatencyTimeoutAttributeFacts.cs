@@ -17,6 +17,8 @@ namespace Hangfire.Core.Tests
             _context = new ElectStateContextMock();
             _context.ApplyContext.BackgroundJob.Id = JobId;
             _context.ApplyContext.NewStateObject = state;
+
+            _context.ApplyContext.Clock.SetupGet(x => x.UtcNow).Returns(DateTime.UtcNow);
         }
 
         [Fact]
@@ -24,7 +26,7 @@ namespace Hangfire.Core.Tests
         {
             var exception = Assert.Throws<ArgumentOutOfRangeException>(
                 () => CreateFilter(-1));
-            
+
             Assert.Equal("timeoutInSeconds", exception.ParamName);
         }
 

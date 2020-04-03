@@ -1,17 +1,17 @@
 ﻿// This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
-// 
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
@@ -43,29 +43,33 @@ namespace Hangfire.Dashboard
     {
         public static BuildFunc UseHangfireDashboard(
             [NotNull] this BuildFunc builder,
-            [NotNull] DashboardOptions options, 
-            [NotNull] JobStorage storage, 
+            [NotNull] DashboardOptions options,
+            [NotNull] JobStorage storage,
+            [NotNull] IClock clock,
             [NotNull] RouteCollection routes,
             [CanBeNull] IOwinDashboardAntiforgery antiforgery)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
             if (options == null) throw new ArgumentNullException(nameof(options));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (clock == null) throw new ArgumentNullException(nameof(clock));
             if (routes == null) throw new ArgumentNullException(nameof(routes));
 
-            builder(_ => UseHangfireDashboard(options, storage, routes, antiforgery));
+            builder(_ => UseHangfireDashboard(options, storage, clock, routes, antiforgery));
 
             return builder;
         }
 
         public static MidFunc UseHangfireDashboard(
-            [NotNull] DashboardOptions options, 
-            [NotNull] JobStorage storage, 
+            [NotNull] DashboardOptions options,
+            [NotNull] JobStorage storage,
+            [NotNull] IClock clock,
             [NotNull] RouteCollection routes,
             [CanBeNull] IOwinDashboardAntiforgery antiforgery)
         {
             if (options == null) throw new ArgumentNullException(nameof(options));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (clock == null) throw new ArgumentNullException(nameof(clock));
             if (routes == null) throw new ArgumentNullException(nameof(routes));
 
             return
@@ -73,7 +77,7 @@ namespace Hangfire.Dashboard
                 env =>
                 {
                     var owinContext = new OwinContext(env);
-                    var context = new OwinDashboardContext(storage, options, env);
+                    var context = new OwinDashboardContext(storage, clock, options, env);
 
                     if (!options.IgnoreAntiforgeryToken && antiforgery != null)
                     {

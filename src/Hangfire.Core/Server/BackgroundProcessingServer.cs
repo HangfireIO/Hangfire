@@ -1,17 +1,17 @@
 ﻿// This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
-// 
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
@@ -28,7 +28,7 @@ namespace Hangfire.Server
     /// <summary>
     /// Responsible for running the given collection background processes.
     /// </summary>
-    /// 
+    ///
     /// <remarks>
     /// Immediately starts the processes in a background thread.
     /// Responsible for announcing/removing a server, bound to a storage.
@@ -58,47 +58,51 @@ namespace Hangfire.Server
         private bool _awaited;
 
         public BackgroundProcessingServer([NotNull] IEnumerable<IBackgroundProcess> processes)
-            : this(JobStorage.Current, processes)
+            : this(JobStorage.Current, SystemClock.Current, processes)
         {
         }
 
         public BackgroundProcessingServer(
             [NotNull] IEnumerable<IBackgroundProcess> processes,
             [NotNull] IDictionary<string, object> properties)
-            : this(JobStorage.Current, processes, properties)
+            : this(JobStorage.Current, SystemClock.Current, processes, properties)
         {
         }
 
         public BackgroundProcessingServer(
             [NotNull] JobStorage storage,
+            [NotNull] IClock clock,
             [NotNull] IEnumerable<IBackgroundProcess> processes)
-            : this(storage, processes, new Dictionary<string, object>())
+            : this(storage, clock, processes, new Dictionary<string, object>())
         {
         }
 
         public BackgroundProcessingServer(
             [NotNull] JobStorage storage,
+            [NotNull] IClock clock,
             [NotNull] IEnumerable<IBackgroundProcess> processes,
             [NotNull] IDictionary<string, object> properties)
-            : this(storage, processes, properties, new BackgroundProcessingServerOptions())
+            : this(storage, clock, processes, properties, new BackgroundProcessingServerOptions())
         {
         }
 
         public BackgroundProcessingServer(
             [NotNull] JobStorage storage,
+            [NotNull] IClock clock,
             [NotNull] IEnumerable<IBackgroundProcess> processes,
             [NotNull] IDictionary<string, object> properties,
             [NotNull] BackgroundProcessingServerOptions options)
-            : this(storage, GetProcesses(processes), properties, options)
+            : this(storage, clock, GetProcesses(processes), properties, options)
         {
         }
 
         public BackgroundProcessingServer(
             [NotNull] JobStorage storage,
+            [NotNull] IClock clock,
             [NotNull] IEnumerable<IBackgroundProcessDispatcherBuilder> dispatcherBuilders,
             [NotNull] IDictionary<string, object> properties,
             [NotNull] BackgroundProcessingServerOptions options)
-            : this(new BackgroundServerProcess(storage, dispatcherBuilders, options, properties), options)
+            : this(new BackgroundServerProcess(storage, clock, dispatcherBuilders, options, properties), options)
         {
         }
 
@@ -213,7 +217,7 @@ namespace Hangfire.Server
 
         private void RunServer(Guid executionId, object state)
         {
-            _process.Execute(executionId, (BackgroundExecution)state, _stoppingCts.Token, _stoppedCts.Token, _shutdownCts.Token);
+            _process.Execute(executionId, (BackgroundExecution) state, _stoppingCts.Token, _stoppedCts.Token, _shutdownCts.Token);
         }
 
         private static IEnumerable<Thread> ThreadFactory(ThreadStart threadStart)

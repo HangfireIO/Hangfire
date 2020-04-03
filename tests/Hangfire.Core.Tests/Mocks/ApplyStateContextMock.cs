@@ -12,6 +12,7 @@ namespace Hangfire.Core.Tests
         public ApplyStateContextMock()
         {
             Storage = new Mock<JobStorage>();
+            Clock = new Mock<IClock>();
             Connection = new Mock<IStorageConnection>();
             Transaction = new Mock<IWriteOnlyTransaction>();
             BackgroundJob = new BackgroundJobMock();
@@ -22,6 +23,7 @@ namespace Hangfire.Core.Tests
             _context = new Lazy<ApplyStateContext>(
                 () => new ApplyStateContext(
                     Storage.Object,
+                    Clock.Object,
                     Connection.Object,
                     Transaction.Object,
                     BackgroundJob.Object,
@@ -32,14 +34,15 @@ namespace Hangfire.Core.Tests
                 });
         }
 
+        public Mock<IClock> Clock { get; set; }
         public Mock<JobStorage> Storage { get; set; }
-        public Mock<IStorageConnection> Connection { get; set; } 
-        public Mock<IWriteOnlyTransaction> Transaction { get; set; } 
-        public BackgroundJobMock BackgroundJob { get; set; } 
+        public Mock<IStorageConnection> Connection { get; set; }
+        public Mock<IWriteOnlyTransaction> Transaction { get; set; }
+        public BackgroundJobMock BackgroundJob { get; set; }
         public IState NewStateObject { get; set; }
         public Mock<IState> NewState { get; set; }
         public string OldStateName { get; set; }
-        public TimeSpan JobExpirationTimeout { get; set; } 
+        public TimeSpan JobExpirationTimeout { get; set; }
 
         public ApplyStateContext Object => _context.Value;
     }

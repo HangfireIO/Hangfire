@@ -1,17 +1,17 @@
 ﻿// This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
-// 
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
@@ -30,41 +30,41 @@ namespace Hangfire.Server
     /// Represents a background process responsible for <i>enqueueing delayed
     /// jobs</i>.
     /// </summary>
-    /// 
+    ///
     /// <remarks>
-    /// <para>This background process polls the <i>delayed job schedule</i> for 
+    /// <para>This background process polls the <i>delayed job schedule</i> for
     /// delayed jobs that are ready to be enqueued. To prevent a stress load
-    /// on a job storage, the configurable delay is used between scheduler 
+    /// on a job storage, the configurable delay is used between scheduler
     /// runs. Delay is used only when there are no more background jobs to be
     /// enqueued.</para>
-    /// 
+    ///
     /// <para>When a background job is ready to be enqueued, it is simply
     /// moved from <see cref="ScheduledState"/> to the <see cref="EnqueuedState"/>
     /// by using <see cref="IBackgroundJobStateChanger"/>.</para>
-    /// 
+    ///
     /// <para>Delayed job schedule is based on a Set data structure of a job
     /// storage, so you can use this background process as an example of a
     /// custom extension.</para>
-    ///  
+    ///
     /// <para>Multiple instances of this background process can be used in
     /// separate threads/processes without additional configuration (distributed
-    /// locks are used). However, this only adds support for fail-over, and does 
+    /// locks are used). However, this only adds support for fail-over, and does
     /// not increase the performance.</para>
-    /// 
+    ///
     /// <note type="important">
     /// If you are using <b>custom filter providers</b>, you need to pass a custom
     /// <see cref="IBackgroundJobStateChanger"/> instance to make this process
     /// respect your filters when enqueueing background jobs.
     /// </note>
     /// </remarks>
-    /// 
+    ///
     /// <threadsafety static="true" instance="true"/>
-    /// 
+    ///
     /// <seealso cref="ScheduledState"/>
     public class DelayedJobScheduler : IBackgroundProcess
     {
         /// <summary>
-        /// Represents a default polling interval for delayed job scheduler. 
+        /// Represents a default polling interval for delayed job scheduler.
         /// This field is read-only.
         /// </summary>
         /// <remarks>
@@ -86,7 +86,7 @@ namespace Hangfire.Server
         /// class with the <see cref="DefaultPollingDelay"/> value as a
         /// delay between runs.
         /// </summary>
-        public DelayedJobScheduler() 
+        public DelayedJobScheduler()
             : this(DefaultPollingDelay)
         {
         }
@@ -107,7 +107,7 @@ namespace Hangfire.Server
         /// </summary>
         /// <param name="pollingDelay">Delay between scheduler runs.</param>
         /// <param name="stateChanger">State changer to use for background jobs.</param>
-        /// 
+        ///
         /// <exception cref="ArgumentNullException"><paramref name="stateChanger"/> is null.</exception>
         public DelayedJobScheduler(TimeSpan pollingDelay, [NotNull] IBackgroundJobStateChanger stateChanger)
         {
@@ -155,7 +155,7 @@ namespace Hangfire.Server
             {
                 if (IsBatchingAvailable(connection))
                 {
-                    var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
+                    var timestamp = JobHelper.ToTimestamp(context.Clock.UtcNow);
                     var jobIds = ((JobStorageConnection)connection).GetFirstByLowestScoreFromSet("schedule", 0, timestamp, BatchSize);
 
                     if (jobIds == null || jobIds.Count == 0) return false;
@@ -172,7 +172,7 @@ namespace Hangfire.Server
                     {
                         if (context.IsStopping) return false;
 
-                        var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
+                        var timestamp = JobHelper.ToTimestamp(context.Clock.UtcNow);
 
                         var jobId = connection.GetFirstByLowestScoreFromSet("schedule", 0, timestamp);
                         if (jobId == null) return false;
@@ -189,6 +189,7 @@ namespace Hangfire.Server
         {
             var appliedState = _stateChanger.ChangeState(new StateChangeContext(
                 context.Storage,
+                context.Clock,
                 connection,
                 jobId,
                 new EnqueuedState { Reason = $"Triggered by {ToString()}" },
@@ -252,7 +253,7 @@ namespace Hangfire.Server
                 // It just means another Hangfire server did this work.
                 _logger.DebugException(
                     $@"An exception was thrown during acquiring distributed lock on the {resource} resource within {DefaultLockTimeout.TotalSeconds} seconds. The scheduled jobs have not been handled this time.
-It will be retried in {_pollingDelay.TotalSeconds} seconds", 
+It will be retried in {_pollingDelay.TotalSeconds} seconds",
                     e);
                 return default(T);
             }

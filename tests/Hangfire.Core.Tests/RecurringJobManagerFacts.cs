@@ -6,6 +6,7 @@ using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
 using Xunit;
+
 #pragma warning disable 618
 
 // ReSharper disable AssignNullToNotNullAttribute
@@ -23,9 +24,9 @@ namespace Hangfire.Core.Tests
         private readonly Mock<IBackgroundJobFactory> _factory;
         private readonly Mock<IStateMachine> _stateMachine;
         private readonly DateTime _now = new DateTime(2017, 03, 30, 15, 30, 0, DateTimeKind.Utc);
-        private readonly Func<DateTime> _nowFactory;
         private readonly BackgroundJob _backgroundJob;
         private readonly Mock<ITimeZoneResolver> _timeZoneResolver;
+        private readonly Mock<IClock> _clock;
 
         public RecurringJobManagerFacts()
         {
@@ -37,7 +38,9 @@ namespace Hangfire.Core.Tests
             _factory = new Mock<IBackgroundJobFactory>();
             _stateMachine = new Mock<IStateMachine>();
             _factory.SetupGet(x => x.StateMachine).Returns(_stateMachine.Object);
-            _nowFactory = () => _now;
+
+            _clock = new Mock<IClock>();
+            _clock.SetupGet(x => x.UtcNow).Returns(_now);
 
             _timeZoneResolver = new Mock<ITimeZoneResolver>();
             _timeZoneResolver.Setup(x => x.GetTimeZoneById(It.IsAny<string>())).Returns(TimeZoneInfo.Utc);
@@ -59,16 +62,25 @@ namespace Hangfire.Core.Tests
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RecurringJobManager(null, _factory.Object));
+                () => new RecurringJobManager(null, _clock.Object, _factory.Object));
 
             Assert.Equal("storage", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenClockIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new RecurringJobManager(_storage.Object, null, _factory.Object));
+
+            Assert.Equal("clock", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenFactoryIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RecurringJobManager(_storage.Object, (IBackgroundJobFactory)null));
+                () => new RecurringJobManager(_storage.Object, _clock.Object, (IBackgroundJobFactory) null));
 
             Assert.Equal("factory", exception.ParamName);
         }
@@ -77,18 +89,9 @@ namespace Hangfire.Core.Tests
         public void Ctor_ThrowsAnException_WhenTimeZoneResolverIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RecurringJobManager(_storage.Object, _factory.Object, null, _nowFactory));
+                () => new RecurringJobManager(_storage.Object, _clock.Object, _factory.Object, null));
 
             Assert.Equal("timeZoneResolver", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenNowFactoryIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new RecurringJobManager(_storage.Object, _factory.Object, _timeZoneResolver.Object, null));
-
-            Assert.Equal("nowFactory", exception.ParamName);
         }
 
         [Fact]
@@ -123,7 +126,7 @@ namespace Hangfire.Core.Tests
 
             Assert.Equal("queue", exception.ParamName);
         }
-        
+
         [Fact]
         public void AddOrUpdate_ThrowsAnException_WhenCronExpressionIsNull()
         {
@@ -209,7 +212,7 @@ namespace Hangfire.Core.Tests
 
             _transaction.Verify(x => x.SetRangeInHash(
                 $"recurring-job:{_id}",
-                It.Is<Dictionary<string, string>>(rj => 
+                It.Is<Dictionary<string, string>>(rj =>
                     rj["Cron"] == "* * * * *"
                     && !String.IsNullOrEmpty(rj["Job"])
                     && JobHelper.DeserializeDateTime(rj["CreatedAt"]) > _now.AddMinutes(-1))));
@@ -277,7 +280,7 @@ namespace Hangfire.Core.Tests
 
             // Assert
             _transaction.Verify(x => x.SetRangeInHash(
-                $"recurring-job:{_id}", 
+                $"recurring-job:{_id}",
                 It.Is<Dictionary<string, string>>(dict => dict.Count == 1 && dict["V"] == "2")));
 
             _transaction.Verify(x => x.AddToSet("recurring-jobs", _id, JobHelper.ToTimestamp(_now)));
@@ -295,8 +298,8 @@ namespace Hangfire.Core.Tests
 
             // Assert
             _transaction.Verify(x => x.SetRangeInHash(
-                $"recurring-job:{_id}", 
-                It.Is<Dictionary<string, string>>(dict => 
+                $"recurring-job:{_id}",
+                It.Is<Dictionary<string, string>>(dict =>
                     dict.ContainsKey("Cron") && dict["Cron"] == "0 0 31 2 *" &&
                     !dict.ContainsKey("NextExecution"))));
 
@@ -414,7 +417,7 @@ namespace Hangfire.Core.Tests
 
             // Assert
             _stateMachine.Verify(x => x.ApplyState(It.Is<ApplyStateContext>(context =>
-                ((EnqueuedState)context.NewState).Queue == "my_queue")));
+                ((EnqueuedState) context.NewState).Queue == "my_queue")));
         }
 
         [Fact]
@@ -520,9 +523,11 @@ namespace Hangfire.Core.Tests
 
         private RecurringJobManager CreateManager()
         {
-            return new RecurringJobManager(_storage.Object, _factory.Object, _timeZoneResolver.Object, _nowFactory);
+            return new RecurringJobManager(_storage.Object, _clock.Object, _factory.Object, _timeZoneResolver.Object);
         }
 
-        public static void Method() { }
+        public static void Method()
+        {
+        }
     }
 }

@@ -15,12 +15,13 @@ namespace Hangfire.Core.Tests.Client
         public ClientExceptionContextFacts()
         {
             var storage = new Mock<JobStorage>();
+            var clock = new Mock<IClock>();
             var connection = new Mock<IStorageConnection>();
             var job = Job.FromExpression(() => TestMethod());
             var state = new Mock<IState>();
 
             _createContext = new CreateContext(
-                storage.Object, connection.Object, job, state.Object);
+                storage.Object, clock.Object, connection.Object, job, state.Object);
         }
 
         [Fact]
