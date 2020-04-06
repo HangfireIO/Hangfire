@@ -87,8 +87,12 @@ namespace Hangfire.Storage
 
                 if (method == null)
                 {
+                    var parametersString = parameterTypes != null
+                        ? String.Join(", ", parameterTypes.Select(x => x.Name))
+                        : String.Empty;
+                    
                     throw new InvalidOperationException(
-                        $"The type `{type.FullName}` does not contain a method with signature `{Method}({String.Join(", ", parameterTypes?.Select(x => x.Name) ?? parameterTypesArray)})`");
+                        $"The type `{type.FullName}` does not contain a method with signature `{Method}({parametersString})`");
                 }
 
                 var argumentsArray = SerializationHelper.Deserialize<string[]>(Arguments);
