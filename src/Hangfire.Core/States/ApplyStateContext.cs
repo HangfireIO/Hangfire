@@ -59,7 +59,8 @@ namespace Hangfire.States
             if (transaction == null) throw new ArgumentNullException(nameof(transaction));
             if (backgroundJob == null) throw new ArgumentNullException(nameof(backgroundJob));
             if (newState == null) throw new ArgumentNullException(nameof(newState));
-            
+            if (profiler == null) throw new ArgumentNullException(nameof(profiler));
+
             BackgroundJob = backgroundJob;
 
             Storage = storage;

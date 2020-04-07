@@ -84,6 +84,22 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
+        public void Ctor_ThrowsAnException_WhenProfilerIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new ApplyStateContext(
+                    _storage.Object,
+                    _connection.Object,
+                    _transaction.Object,
+                    _backgroundJob.Object,
+                    _newState.Object,
+                    OldState,
+                    null));
+
+            Assert.Equal("profiler", exception.ParamName);
+        }
+
+        [Fact]
         public void Ctor_ShouldSetPropertiesCorrectly()
         {
             var context = new ApplyStateContext(
