@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Profiling;
 using Hangfire.Storage;
@@ -50,7 +51,8 @@ namespace Hangfire.States
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IState newState, 
             [CanBeNull] string oldStateName,
-            [NotNull] IProfiler profiler)
+            [NotNull] IProfiler profiler,
+            [CanBeNull] IReadOnlyDictionary<string, object> customData = null)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (connection == null) throw new ArgumentNullException(nameof(connection));
@@ -67,6 +69,7 @@ namespace Hangfire.States
             NewState = newState;
             JobExpirationTimeout = storage.JobExpirationTimeout;
             Profiler = profiler;
+            CustomData = customData;
         }
 
         [NotNull]
@@ -90,5 +93,8 @@ namespace Hangfire.States
 
         [NotNull]
         internal IProfiler Profiler { get; }
+
+        [CanBeNull]
+        public IReadOnlyDictionary<string, object> CustomData { get; }
     }
 }
