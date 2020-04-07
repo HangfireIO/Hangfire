@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using Hangfire.Profiling;
 using Hangfire.States;
@@ -20,6 +21,7 @@ namespace Hangfire.Core.Tests.States
         private readonly string[] _expectedStates;
         private readonly CancellationToken _token;
         private readonly Mock<IProfiler> _profiler;
+        private readonly Dictionary<string, object> _customData;
 
         public StateChangeContextFacts()
         {
@@ -29,6 +31,7 @@ namespace Hangfire.Core.Tests.States
             _expectedStates = new[] { "Succeeded", "Failed" };
             _token = new CancellationToken(true);
             _profiler = new Mock<IProfiler>();
+            _customData = new Dictionary<string, object>();
         }
 
         [Fact]
@@ -115,6 +118,7 @@ namespace Hangfire.Core.Tests.States
             Assert.Null(context.ExpectedStates);
             Assert.Equal(CancellationToken.None, context.CancellationToken);
             Assert.NotNull(context.Profiler);
+            Assert.Null(context.CustomData);
         }
 
         [Fact]
@@ -134,6 +138,7 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(_expectedStates, context.ExpectedStates);
             Assert.Equal(CancellationToken.None, context.CancellationToken);
             Assert.NotNull(context.Profiler);
+            Assert.Null(context.CustomData);
         }
 
         [Fact]
@@ -154,6 +159,7 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(_expectedStates, context.ExpectedStates);
             Assert.Equal(_token, context.CancellationToken);
             Assert.NotNull(context.Profiler);
+            Assert.Null(context.CustomData);
         }
 
         [Fact]
@@ -166,7 +172,8 @@ namespace Hangfire.Core.Tests.States
                 _newState.Object,
                 _expectedStates,
                 _token,
-                _profiler.Object);
+                _profiler.Object,
+                _customData);
 
             Assert.Same(_storage.Object, context.Storage);
             Assert.Same(_connection.Object, context.Connection);
@@ -175,6 +182,7 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(_expectedStates, context.ExpectedStates);
             Assert.Equal(_token, context.CancellationToken);
             Assert.Same(_profiler.Object, context.Profiler);
+            Assert.Same(_customData, context.CustomData);
         }
     }
 }
