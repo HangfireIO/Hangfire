@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
@@ -27,7 +28,9 @@ namespace Hangfire.Core.Tests
                     BackgroundJobId,
                     NewState.Object,
                     ExpectedStates,
-                    CancellationToken));
+                    CancellationToken,
+                    EmptyProfiler.Instance,
+                    CustomData));
         }
 
         public Mock<JobStorage> Storage { get; set; }
@@ -36,6 +39,7 @@ namespace Hangfire.Core.Tests
         public Mock<IState> NewState { get; set; }
         public IEnumerable<string> ExpectedStates { get; set; } 
         public CancellationToken CancellationToken { get; set; }
+        public IReadOnlyDictionary<string, object> CustomData { get; set; }
         
         public StateChangeContext Object => _context.Value;
     }

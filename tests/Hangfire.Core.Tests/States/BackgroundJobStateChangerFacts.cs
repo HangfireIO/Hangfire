@@ -69,7 +69,11 @@ namespace Hangfire.Core.Tests.States
                 Connection = _connection,
                 CancellationToken = _cts.Token,
                 NewState = _state,
-                ExpectedStates = FromOldState
+                ExpectedStates = FromOldState,
+                CustomData = new Dictionary<string, object>
+                {
+                    { "Key", "Value" }
+                }
             };
 
             _stateMachine.Setup(x => x.ApplyState(It.IsNotNull<ApplyStateContext>()))
@@ -120,6 +124,17 @@ namespace Hangfire.Core.Tests.States
 
             Assert.NotNull(result);
             Assert.Equal(_state.Object.Name, result.Name);
+        }
+
+        [Fact]
+        public void ChangeState_PassesCustomData_ToApplyStateContext()
+        {
+            var stateChanger = CreateStateChanger();
+
+            stateChanger.ChangeState(_context.Object);
+
+            _stateMachine.Verify(x => x.ApplyState(It.Is<ApplyStateContext>(
+                sc => sc.CustomData["Key"].Equals("Value"))));
         }
 
         [Fact]
