@@ -43,6 +43,7 @@ namespace Hangfire.States
             Transaction = applyContext.Transaction;
             CurrentState = applyContext.OldStateName;
             Profiler = applyContext.Profiler;
+            CustomData = applyContext.CustomData?.ToDictionary(x => x.Key, x => x.Value);
         }
         
         public override BackgroundJob BackgroundJob { get; }
@@ -83,6 +84,9 @@ namespace Hangfire.States
 
         [NotNull]
         internal IProfiler Profiler { get; }
+
+        [CanBeNull]
+        public IDictionary<string, object> CustomData { get; }
 
         public void SetJobParameter<T>(string name, T value)
         {
