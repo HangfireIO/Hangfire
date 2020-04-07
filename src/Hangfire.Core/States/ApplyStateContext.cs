@@ -29,8 +29,9 @@ namespace Hangfire.States
         public ApplyStateContext(
             [NotNull] IWriteOnlyTransaction transaction, 
             [NotNull] ElectStateContext context)
-            : this(context.Storage, context.Connection, transaction, context.BackgroundJob, context.CandidateState, context.CurrentState, context.Profiler)
+            : this(context.Storage, context.Connection, transaction, context.BackgroundJob, context.CandidateState, context.CurrentState, context.Profiler, context.CustomData != null ? new Dictionary<string, object>(context.CustomData) : null)
         {
+            // TODO: Add explicit JobExpirationTimeout parameter in 2.0, because it's unclear it isn't preserved
         }
 
         public ApplyStateContext(

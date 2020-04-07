@@ -141,5 +141,35 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(_storage.Object.JobExpirationTimeout, context.JobExpirationTimeout);
             Assert.Same(_customData.Object, context.CustomData);
         }
+
+        [Fact]
+        public void CopyCtor_ForElectStateContext_CorrectlySetsAllTheProperties()
+        {
+            var electContext = new ElectStateContextMock();
+            var context = new ApplyStateContext(_transaction.Object, electContext.Object);
+
+            Assert.Same(electContext.Object.Storage, context.Storage);
+            Assert.Same(electContext.Object.Connection, context.Connection);
+            Assert.Same(_transaction.Object, context.Transaction);
+            Assert.Same(electContext.Object.BackgroundJob, context.BackgroundJob);
+            Assert.Equal(electContext.Object.CurrentState, context.OldStateName);
+            Assert.Same(electContext.Object.CandidateState, context.NewState);
+            Assert.Null(context.CustomData);
+        }
+
+        [Fact]
+        public void CopyCtor_ForElectStateContext_CopiesCustomData_ToAnotherDictionary()
+        {
+            // Arrange
+            var dictionary = new Dictionary<string, object> { { "lalala", new object() } };
+            var electContext = new ElectStateContextMock { ApplyContext = { CustomData = dictionary } };
+
+            // Act
+            var context = new ApplyStateContext(_transaction.Object, electContext.Object);
+
+            // Assert
+            Assert.Equal(electContext.Object.CustomData, context.CustomData);
+            Assert.NotSame(electContext.Object.CustomData, context.CustomData);
+        }
     }
 }
