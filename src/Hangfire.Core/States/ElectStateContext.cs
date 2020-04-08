@@ -60,7 +60,7 @@ namespace Hangfire.States
         [NotNull]
         public IState CandidateState
         {
-            get { return _candidateState; }
+            get => _candidateState;
             set
             {
                 if (value == null)
@@ -77,7 +77,7 @@ namespace Hangfire.States
         }
 
         [CanBeNull]
-        public string CurrentState { get; private set; }
+        public string CurrentState { get; }
 
         [NotNull]
         public IState[] TraversedStates => _traversedStates.ToArray();

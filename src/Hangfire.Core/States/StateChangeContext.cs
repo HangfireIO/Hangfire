@@ -65,19 +65,13 @@ namespace Hangfire.States
             [NotNull] IProfiler profiler,
             [CanBeNull] IReadOnlyDictionary<string, object> customData = null)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
-            if (connection == null) throw new ArgumentNullException(nameof(connection));
-            if (backgroundJobId == null) throw new ArgumentNullException(nameof(backgroundJobId));
-            if (newState == null) throw new ArgumentNullException(nameof(newState));
-            if (profiler == null) throw new ArgumentNullException(nameof(profiler));
-
-            Storage = storage;
-            Connection = connection;
-            BackgroundJobId = backgroundJobId;
-            NewState = newState;
+            Storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            BackgroundJobId = backgroundJobId ?? throw new ArgumentNullException(nameof(backgroundJobId));
+            NewState = newState ?? throw new ArgumentNullException(nameof(newState));
             ExpectedStates = expectedStates;
             CancellationToken = cancellationToken;
-            Profiler = profiler;
+            Profiler = profiler ?? throw new ArgumentNullException(nameof(profiler));
             CustomData = customData;
         }
 
