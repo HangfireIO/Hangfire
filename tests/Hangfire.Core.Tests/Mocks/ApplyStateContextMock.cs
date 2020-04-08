@@ -7,7 +7,7 @@ using Moq;
 
 namespace Hangfire.Core.Tests
 {
-    class ApplyStateContextMock
+    public class ApplyStateContextMock
     {
         private readonly Lazy<ApplyStateContext> _context;
 
