@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using ReferencedCronos::Cronos;
 using Hangfire.Client;
@@ -18,7 +19,7 @@ namespace Hangfire.Core.Tests.Server
     {
         private const string RecurringJobId = "recurring-job-id";
 
-        private readonly Mock<IStorageConnection> _connection;
+        private readonly Mock<JobStorageConnection> _connection;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
         private readonly Dictionary<string, string> _recurringJob;
         private readonly Func<DateTime> _nowInstantFactory;
@@ -33,12 +34,11 @@ namespace Hangfire.Core.Tests.Server
         private readonly CronExpression _cronExpression = CronExpression.Parse(_expressionString);
         private readonly DateTime _nowInstant = new DateTime(2017, 03, 30, 15, 30, 0, DateTimeKind.Utc);
         private readonly DateTime _nextInstant;
-        private readonly Mock<JobStorageConnection> _storageConnection;
+        private readonly List<string> _schedule = new List<string> { RecurringJobId };
 
         public RecurringJobSchedulerFacts()
         {
             _context = new BackgroundProcessContextMock();
-            _context.StoppingTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(1));
 
             // Setting up the successful path
 
@@ -60,28 +60,27 @@ namespace Hangfire.Core.Tests.Server
                 { "TimeZoneId", timeZone.Id }
             };
 
-            _connection = new Mock<IStorageConnection>();
+            _connection = new Mock<JobStorageConnection>();
+            _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
 
-            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, JobHelper.ToTimestamp(_nowInstant)))
-                .Returns(RecurringJobId)
-                .Returns((string)null);
+            _connection.Setup(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, JobHelper.ToTimestamp(_nowInstant)))
+                .Returns(() => _schedule.FirstOrDefault());
 
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{RecurringJobId}"))
                 .Returns(_recurringJob);
 
-            _storageConnection = new Mock<JobStorageConnection>();
-            _storageConnection.Setup(x => x.GetFirstByLowestScoreFromSet(null, It.IsAny<double>(), It.IsAny<double>(), It.IsAny<int>()))
-                .Throws(new ArgumentNullException("key"));
-            _storageConnection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, JobHelper.ToTimestamp(_nowInstant), It.IsAny<int>()))
-                .Returns(new List<string> { RecurringJobId })
-                .Returns((List<string>)null);
-
-            _storageConnection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{RecurringJobId}")).Returns(_recurringJob);
+            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, JobHelper.ToTimestamp(_nowInstant), It.IsAny<int>()))
+                .Returns(() => _schedule.ToList());
 
             _transaction = new Mock<IWriteOnlyTransaction>();
+            _transaction
+                .Setup(x => x.RemoveFromSet("recurring-jobs", It.IsNotNull<string>()))
+                .Callback<string, string>((key, value) => _schedule.Remove(value));
+            _transaction
+                .Setup(x => x.AddToSet("recurring-jobs", It.IsNotNull<string>(), It.IsAny<double>()))
+                .Callback<string, string, double>((key, value, score) => _schedule.Remove(value));
 
             _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
-            _storageConnection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
 
             _backgroundJobMock = new BackgroundJobMock();
 
@@ -299,17 +298,9 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             SetupConnection(useJobStorageConnection);
-
-            if (useJobStorageConnection)
-                _storageConnection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, JobHelper.ToTimestamp(_nowInstant), It.IsAny<int>()))
-                    .Returns(new List<string> { "non-existing-job" })
-                    .Returns((List<string>)null);
-            else
-            {
-                _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, JobHelper.ToTimestamp(_nowInstant)))
-                    .Returns("non-existing-job")
-                    .Returns((string)null);
-                }
+            
+            _schedule.Clear();
+            _schedule.Add("non-existing-job");
 
             var scheduler = CreateScheduler();
 
@@ -466,19 +457,9 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             SetupConnection(useJobStorageConnection);
-
-            if (useJobStorageConnection)
-            {
-                _storageConnection
-                    .Setup(x => x.AcquireDistributedLock("recurring-jobs:lock", It.IsAny<TimeSpan>()))
-                    .Throws(new DistributedLockTimeoutException("recurring-jobs:lock"));
-            }
-            else
-            {
-                _connection
-                    .Setup(x => x.AcquireDistributedLock("recurring-jobs:lock", It.IsAny<TimeSpan>()))
-                    .Throws(new DistributedLockTimeoutException("recurring-jobs:lock"));
-            }
+            _connection
+                .Setup(x => x.AcquireDistributedLock("recurring-jobs:lock", It.IsAny<TimeSpan>()))
+                .Throws(new DistributedLockTimeoutException("recurring-jobs:lock"));
 
             var scheduler = CreateScheduler();
 
@@ -520,10 +501,7 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
 
             // Assert
-            if (useJobStorageConnection)
-                _storageConnection.Verify(x => x.AcquireDistributedLock("lock:recurring-job:recurring-job-id", It.IsAny<TimeSpan>()));
-            else
-                _connection.Verify(x => x.AcquireDistributedLock("lock:recurring-job:recurring-job-id", It.IsAny<TimeSpan>()));
+            _connection.Verify(x => x.AcquireDistributedLock("lock:recurring-job:recurring-job-id", It.IsAny<TimeSpan>()));
         }
 
         [Theory]
@@ -591,21 +569,7 @@ namespace Hangfire.Core.Tests.Server
         public void Execute_DoesNotCycleImmediately_WhenItCantDeserializeEverything(bool useJobStorageConnection)
         {
             // Arrange
-            _context.StoppingTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
-
             SetupConnection(useJobStorageConnection);
-            if (useJobStorageConnection)
-            {
-                _storageConnection
-                    .Setup(x => x.GetFirstByLowestScoreFromSet(It.IsNotNull<string>(), It.IsAny<double>(), It.IsAny<double>(), It.IsAny<int>()))
-                    .Returns(new List<string> { RecurringJobId });
-            }
-            else
-            {
-                _connection
-                    .Setup(x => x.GetFirstByLowestScoreFromSet(It.IsAny<string>(), It.IsAny<double>(), It.IsAny<double>()))
-                    .Returns(RecurringJobId);
-            }
 
             _factory.Setup(x => x.Create(It.IsAny<CreateContext>())).Throws<InvalidOperationException>();
 
@@ -615,21 +579,15 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
 
             // Assert
-            if (useJobStorageConnection)
-            {
-                _storageConnection.Verify(x => x.GetAllEntriesFromHash(It.IsAny<string>()), Times.Once);
-            }
-            else
-            {
-                _connection.Verify(x => x.GetAllEntriesFromHash(It.IsAny<string>()), Times.Once);
-            }
+            _connection.Verify(x => x.GetAllEntriesFromHash(It.IsAny<string>()), Times.Once);
         }
 
-        [Fact]
-        public void Execute_UsesTimeZoneResolver_WhenCalculatingNextExecution()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_UsesTimeZoneResolver_WhenCalculatingNextExecution(bool batching)
         {
             // Arrange
-            SetupConnection(false);
+            SetupConnection(batching);
 
             var timeZone = TimeZoneInfo.FindSystemTimeZoneById(PlatformHelper.IsRunningOnWindows()
                 ? "Hawaiian Standard Time"
@@ -656,11 +614,12 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
 
-        [Fact]
-        public void Execute_DoesNotScheduleRecurringJob_ToThePast()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_DoesNotScheduleRecurringJob_ToThePast(bool batching)
         {
             // Arrange
-            SetupConnection(false);
+            SetupConnection(batching);
 
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddMinutes(-2));
 
@@ -681,12 +640,9 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             SetupConnection(true);
-            _storageConnection
+            _connection
                 .Setup(x => x.GetFirstByLowestScoreFromSet(It.IsAny<string>(), It.IsAny<double>(), It.IsAny<double>(), It.IsAny<int>()))
                 .Throws<NotSupportedException>();
-            _storageConnection
-                .Setup(x => x.GetFirstByLowestScoreFromSet(It.IsAny<string>(), It.IsAny<double>(), It.IsAny<double>()))
-                .Returns(RecurringJobId);
 
             var scheduler = CreateScheduler();
 
@@ -699,16 +655,12 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
 
-        [Fact]
-        public void Execute_AlwaysUpdatesScoreForTheSetItem_EvenIfRecurringJobWasNotChanged()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_AlwaysUpdatesScoreForTheSetItem_EvenIfRecurringJobWasNotChanged(bool batching)
         {
             // Arrange
-            _context.StoppingTokenSource = new CancellationTokenSource();
-            SetupConnection(false);
-
-            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
-                .Returns(RecurringJobId)
-                .Returns((string)null);
+            SetupConnection(batching);
 
             _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddMinutes(-1));
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant);
@@ -727,16 +679,12 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
 
-        [Fact]
-        public void Execute_UsesUtcTimeZone_WhenCorrespondingFieldIsNullOrEmpty()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_UsesUtcTimeZone_WhenCorrespondingFieldIsNullOrEmpty(bool batching)
         {
             // Arrange
-            _context.StoppingTokenSource = new CancellationTokenSource();
-            SetupConnection(false);
-
-            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
-                .Returns(RecurringJobId)
-                .Returns((string)null);
+            SetupConnection(batching);
 
             _recurringJob["TimeZoneId"] = null;
             _recurringJob["Cron"] = "0 30 15 30 03 *";
@@ -750,16 +698,12 @@ namespace Hangfire.Core.Tests.Server
             _factory.Verify(x => x.Create(It.IsAny<CreateContext>()));
         }
         
-        [Fact]
-        public void Execute_ReschedulesRecurringJob_WhenCronExpressionIsInvalid_AndRetryAttemptsAreNotExceeded()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_ReschedulesRecurringJob_WhenCronExpressionIsInvalid_AndRetryAttemptsAreNotExceeded(bool batching)
         {
             // Arrange
-            _context.StoppingTokenSource = new CancellationTokenSource();
-            SetupConnection(false);
-
-            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
-                .Returns(RecurringJobId)
-                .Returns((string)null);
+            SetupConnection(batching);
 
             _recurringJob["Cron"] = "some garbage";
             _recurringJob["V"] = "2";
@@ -778,16 +722,12 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
         
-        [Fact]
-        public void Execute_DoesNotFailOnInvalidCronExpression_AndSimplySetsNextExecutionToNull_WhenRetryAttemptsExceeded()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_DoesNotFailOnInvalidCronExpression_AndSimplySetsNextExecutionToNull_WhenRetryAttemptsExceeded(bool batching)
         {
             // Arrange
-            _context.StoppingTokenSource = new CancellationTokenSource();
-            SetupConnection(false);
-
-            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
-                .Returns(RecurringJobId)
-                .Returns((string)null);
+            SetupConnection(batching);
 
             _recurringJob["Cron"] = "some garbage";
             _recurringJob["RetryAttempt"] = "10";
@@ -803,15 +743,12 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
 
-        [Fact]
-        public void Execute_ClearsLastError_AndRetryAttempts_AfterSuccessfulScheduling()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_ClearsLastError_AndRetryAttempts_AfterSuccessfulScheduling(bool batching)
         {
             // Arrange
-            SetupConnection(false);
-
-            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
-                .Returns(RecurringJobId)
-                .Returns((string)null);
+            SetupConnection(batching);
 
             var scheduler = CreateScheduler();
 
@@ -828,16 +765,12 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
         
-        [Fact]
-        public void Execute_ReschedulesRecurringJob_WhenThereAreIssuesWithJobLoading_AndRetryAttemptsAreNotExceeded()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_ReschedulesRecurringJob_WhenThereAreIssuesWithJobLoading_AndRetryAttemptsAreNotExceeded(bool batching)
         {
             // Arrange
-            _context.StoppingTokenSource = new CancellationTokenSource();
-            SetupConnection(false);
-
-            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
-                .Returns(RecurringJobId)
-                .Returns((string) null);
+            SetupConnection(batching);
 
             _recurringJob["Job"] = null;
             _recurringJob["V"] = "2";
@@ -863,16 +796,12 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
         
-        [Fact]
-        public void Execute_ReschedulesRecurringJob_WithIncreasedAttemptNumber_WhenThereAreIssuesWithJobLoading_AndRetryAttemptsAreNotExceeded()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_ReschedulesRecurringJob_WithIncreasedAttemptNumber_WhenThereAreIssuesWithJobLoading_AndRetryAttemptsAreNotExceeded(bool batching)
         {
             // Arrange
-            _context.StoppingTokenSource = new CancellationTokenSource();
-            SetupConnection(false);
-
-            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
-                .Returns(RecurringJobId)
-                .Returns((string) null);
+            SetupConnection(batching);
 
             _recurringJob["Job"] = null;
             _recurringJob["RetryAttempt"] = "1";
@@ -889,16 +818,12 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
 
-        [Fact]
-        public void Execute_HidesRecurringJob_FromScheduler_WhenJobCanNotBeLoaded_AndRetryAttemptsExceeded()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_HidesRecurringJob_FromScheduler_WhenJobCanNotBeLoaded_AndRetryAttemptsExceeded(bool batching)
         {
             // Arrange
-            _context.StoppingTokenSource = new CancellationTokenSource();
-            SetupConnection(false);
-
-            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
-                .Returns(RecurringJobId)
-                .Returns((string)null);
+            SetupConnection(batching);
 
             _recurringJob["RetryAttempt"] = "10";
             _recurringJob["Job"] = InvocationData.SerializeJob(
@@ -919,16 +844,12 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
 
-        [Fact]
-        public void Execute_HidesRecurringJob_FromScheduler_WhenJobCanNotBeDeserialized_AndRetryAttemptsExceeded()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_HidesRecurringJob_FromScheduler_WhenJobCanNotBeDeserialized_AndRetryAttemptsExceeded(bool batching)
         {
             // Arrange
-            _context.StoppingTokenSource = new CancellationTokenSource();
-            SetupConnection(false);
-
-            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
-                .Returns(RecurringJobId)
-                .Returns((string)null);
+            SetupConnection(batching);
 
             _recurringJob["RetryAttempt"] = "10";
             _recurringJob["Job"] = "Some garbage";
@@ -948,16 +869,12 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
 
-        [Fact]
-        public void Execute_HidesRecurringJob_FromScheduler_WhenJobIsNull_AndRetryAttemptsExceeded()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_HidesRecurringJob_FromScheduler_WhenJobIsNull_AndRetryAttemptsExceeded(bool batching)
         {
             // Arrange
-            _context.StoppingTokenSource = new CancellationTokenSource();
-            SetupConnection(false);
-
-            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
-                .Returns(RecurringJobId)
-                .Returns((string)null);
+            SetupConnection(batching);
 
             _recurringJob["RetryAttempt"] = "10";
             _recurringJob["Job"] = null;
@@ -977,16 +894,12 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
 
-        [Fact]
-        public void Execute_HidesRecurringJob_FromScheduler_WhenTimeZoneCanNotBeResolved_AndRetryAttemptsExceeded()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_HidesRecurringJob_FromScheduler_WhenTimeZoneCanNotBeResolved_AndRetryAttemptsExceeded(bool batching)
         {
             // Arrange
-            _context.StoppingTokenSource = new CancellationTokenSource();
-            SetupConnection(false);
-
-            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", It.IsAny<double>(), It.IsAny<double>()))
-                .Returns(RecurringJobId)
-                .Returns((string)null);
+            SetupConnection(batching);
 
             _recurringJob["RetryAttempt"] = "10";
             _recurringJob["TimeZoneId"] = "Non-existing time zone";
@@ -1008,8 +921,14 @@ namespace Hangfire.Core.Tests.Server
 
         private void SetupConnection(bool useJobStorageConnection)
         {
-            if (useJobStorageConnection) _context.Storage.Setup(x => x.GetConnection()).Returns(_storageConnection.Object);
-            else _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
+            if (useJobStorageConnection) EnableBatching();
+        }
+        
+        private void EnableBatching()
+        {
+            _connection
+                .Setup(x => x.GetFirstByLowestScoreFromSet(null, It.IsAny<double>(), It.IsAny<double>(), It.IsAny<int>()))
+                .Throws(new ArgumentNullException("key"));
         }
 
         private RecurringJobScheduler CreateScheduler(DateTime? lastExecution = null)
