@@ -20,7 +20,7 @@ namespace Hangfire.Core.Tests.Server
         private readonly BackgroundProcessContextMock _context;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
         private readonly Mock<IDisposable> _distributedLock;
-        private readonly HashSet<string> _schedule = new HashSet<string>();
+        private readonly List<string> _schedule = new List<string>();
 
         public DelayedJobSchedulerFacts()
         {
@@ -162,6 +162,56 @@ namespace Hangfire.Core.Tests.Server
 
             _transaction.Verify(x => x.RemoveFromSet("schedule", JobId));
             _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void Execute_MovesJobToTheFailedState_WhenStateChangerThrowsAnException()
+        {
+            // Arrange
+            _schedule.Add(JobId);
+            _stateChanger
+                .Setup(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is EnqueuedState)))
+                .Throws<InvalidOperationException>();
+
+            var scheduler = CreateScheduler();
+            
+            // Act
+            scheduler.Execute(_context.Object);
+            
+            // Assert
+            _stateChanger.Verify(
+                x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is EnqueuedState)),
+                Times.Exactly(3));
+            
+            _stateChanger.Verify(
+                x => x.ChangeState(It.Is<StateChangeContext>(ctx => 
+                    ctx.BackgroundJobId == JobId &&
+                    ctx.NewState is FailedState &&
+                    ((FailedState)ctx.NewState).Exception.GetType() == typeof(InvalidOperationException) &&
+                    ctx.ExpectedStates.Contains(ScheduledState.StateName))),
+                Times.Once);
+        }
+
+        [Fact]
+        public void Execute_AbleToProcessFurtherJobs_WhenStateChangerThrowsAnException_ForPreviousOnes()
+        {
+            // Arrange
+            _schedule.Add(JobId);
+            _schedule.Add("AnotherId");
+
+            _stateChanger
+                .Setup(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.BackgroundJobId == JobId && ctx.NewState is ScheduledState)))
+                .Throws<InvalidOperationException>();
+
+            var scheduler = CreateScheduler();
+            
+            // Act
+            scheduler.Execute(_context.Object);
+            
+            // Assert
+            _stateChanger.Verify(
+                x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.BackgroundJobId == "AnotherId" && ctx.NewState is EnqueuedState)),
+                Times.Once);
         }
 
         [Fact]
