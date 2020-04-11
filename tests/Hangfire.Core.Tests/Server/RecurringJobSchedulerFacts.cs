@@ -918,6 +918,111 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1));
             _transaction.Verify(x => x.Commit());
         }
+        
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_ReschedulesRecurringJob_WhenFactoryThrowsAnException_AndRetryAttemptsAreNotExceeded(bool batching)
+        {
+            // Arrange
+            SetupConnection(batching);
+            _recurringJob["V"] = "2";
+            _factory.Setup(x => x.Create(It.IsAny<CreateContext>())).Throws<InvalidOperationException>();
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+            
+            // Assert
+            Assert.True(_delay > TimeSpan.Zero);
+            
+            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Once);
+            
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict =>
+                dict.Count == 1 && dict["RetryAttempt"] == "1")));
+            
+            _transaction.Verify(x => x.AddToSet(
+                "recurring-jobs",
+                RecurringJobId,
+                JobHelper.ToTimestamp(_nowInstant.Add(_delay))));
+            
+            _transaction.Verify(x => x.Commit());
+        }
+        
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_HidesRecurringJob_FromScheduler_WhenFactoryThrowsAnException_AndRetryAttemptsExceeded(bool batching)
+        {
+            // Arrange
+            SetupConnection(batching);
+            _factory.Setup(x => x.Create(It.IsAny<CreateContext>())).Throws(new InvalidOperationException("Invalid operation"));
+            _recurringJob["RetryAttempt"] = "10";
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict => 
+                dict.Count == 3 &&
+                dict["NextExecution"] == String.Empty &&
+                dict["Error"].StartsWith("Invalid operation") &&
+                dict["V"] == "2")));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_AbleToProcessFurtherJobs_WhenStateChangerThrowsAnException_ForPreviousOnes(bool batching)
+        {
+            // Arrange
+            SetupConnection(batching);
+            _schedule.Add("AnotherId");
+            _connection.Setup(x => x.GetAllEntriesFromHash("recurring-job:AnotherId"))
+                .Returns(_recurringJob);
+
+            _factory
+                .Setup(x => x.Create(It.Is<CreateContext>(ctx => ctx.Parameters["RecurringJobId"] == RecurringJobId)))
+                .Throws<InvalidOperationException>();
+
+            var scheduler = CreateScheduler();
+            
+            // Act
+            scheduler.Execute(_context.Object);
+            
+            // Assert
+            _factory.Verify(
+                x => x.Create(It.Is<CreateContext>(ctx => ctx.Parameters["RecurringJobId"] == "AnotherId")),
+                Times.Once);
+        }
+        
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_DoesNotRescheduleRecurringJob_WhenExceptionRaisedFromTransactionCommit(bool batching)
+        {
+            // Arrange
+            SetupConnection(batching);
+            _recurringJob["RetryAttempt"] = "10";
+            _transaction.SetupSequence(x => x.Commit())
+                .Throws<InvalidOperationException>()
+                .Pass();
+
+            var scheduler = CreateScheduler();
+            
+            // Act
+            scheduler.Execute(_context.Object);
+            
+            // Assert
+            _transaction.Verify(
+                x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict => 
+                    dict.ContainsKey("Error") &&
+                    dict["NextExecution"] == String.Empty)),
+                Times.Never);
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1), Times.Never);
+            _transaction.Verify(x => x.Commit(), Times.Once);
+        }
 
         private void SetupConnection(bool useJobStorageConnection)
         {

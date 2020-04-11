@@ -285,59 +285,27 @@ namespace Hangfire.Server
                         return false;
                     }
 
-                    BackgroundJob backgroundJob = null;
-                    IReadOnlyDictionary<string, string> changedFields;
+                    BackgroundJobClientException exception;
 
-                    if (recurringJob.TrySchedule(out var nextExecution, out var error))
+                    try
                     {
-                        if (nextExecution.HasValue && nextExecution <= now)
-                        {
-                            backgroundJob = _factory.TriggerRecurringJob(context.Storage, connection, _profiler, recurringJob, now);
-
-                            if (String.IsNullOrEmpty(backgroundJob?.Id))
-                            {
-                                _logger.Debug($"Recurring job '{recurringJobId}' execution at '{nextExecution}' has been canceled.");
-                            }
-                        }
-
-                        recurringJob.IsChanged(out changedFields, out nextExecution);
-                    }
-                    else if (recurringJob.RetryAttempt < MaxRetryAttemptCount)
-                    {
-                        var delay = _pollingDelay > TimeSpan.Zero ? _pollingDelay : TimeSpan.FromMinutes(1);
-                        
-                        _logger.WarnException($"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be retried in {delay}.", error);
-                        recurringJob.ScheduleRetry(delay, out changedFields, out nextExecution);
-                    }
-                    else
-                    {
-                        _logger.ErrorException($"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be disabled.", error);
-                        recurringJob.Disable(error, out changedFields, out nextExecution);
-                    }
-
-                    // We always start a transaction, regardless our recurring job was updated or not,
-                    // to prevent from infinite loop, when there's an old processing server (pre-1.7.0)
-                    // in our environment that doesn't know it should modify the score for entries in
-                    // the recurring jobs set.
-                    using (var transaction = connection.CreateWriteTransaction())
-                    {
-                        if (backgroundJob != null)
-                        {
-                            _factory.StateMachine.EnqueueBackgroundJob(
-                                context.Storage,
-                                connection,
-                                transaction,
-                                recurringJob,
-                                backgroundJob,
-                                "Triggered by recurring job scheduler",
-                                _profiler);
-                        }
-
-                        transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
-
-                        transaction.Commit();
+                        ScheduleRecurringJob(context, connection, recurringJobId, recurringJob, now);
                         return true;
                     }
+                    catch (BackgroundJobClientException ex)
+                    {
+                        exception = ex;
+                    }
+
+                    RetryRecurringJob(recurringJobId, recurringJob, exception, out var changedFields, out var nextExecution);
+
+                    using (var transaction = connection.CreateWriteTransaction())
+                    {
+                        transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
+                        transaction.Commit();
+                    }
+
+                    return true;
                 }
 #if !NETSTANDARD1_3
                 catch (TimeZoneNotFoundException ex)
@@ -355,6 +323,90 @@ namespace Hangfire.Server
                 }
 
                 return false;
+            }
+        }
+
+        private void ScheduleRecurringJob(BackgroundProcessContext context, IStorageConnection connection,
+            string recurringJobId, RecurringJobEntity recurringJob, DateTime now)
+        {
+            // We always start a transaction, regardless our recurring job was updated or not,
+            // to prevent from infinite loop, when there's an old processing server (pre-1.7.0)
+            // in our environment that doesn't know it should modify the score for entries in
+            // the recurring jobs set.
+            using (var transaction = connection.CreateWriteTransaction())
+            {
+                try
+                {
+                    BackgroundJob backgroundJob = null;
+                    IReadOnlyDictionary<string, string> changedFields;
+
+                    if (recurringJob.TrySchedule(out var nextExecution, out var error))
+                    {
+                        if (nextExecution.HasValue && nextExecution <= now)
+                        {
+                            backgroundJob = _factory.TriggerRecurringJob(context.Storage, connection, _profiler,
+                                recurringJob, now);
+
+                            if (String.IsNullOrEmpty(backgroundJob?.Id))
+                            {
+                                _logger.Debug(
+                                    $"Recurring job '{recurringJobId}' execution at '{nextExecution}' has been canceled.");
+                            }
+                        }
+
+                        recurringJob.IsChanged(out changedFields, out nextExecution);
+                    }
+                    else
+                    {
+                        RetryRecurringJob(recurringJobId, recurringJob, error, out changedFields, out nextExecution);
+                    }
+
+                    if (backgroundJob != null)
+                    {
+                        _factory.StateMachine.EnqueueBackgroundJob(
+                            context.Storage,
+                            connection,
+                            transaction,
+                            recurringJob,
+                            backgroundJob,
+                            "Triggered by recurring job scheduler",
+                            _profiler);
+                    }
+
+                    transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
+                }
+                catch (Exception ex)
+                {
+                    throw new BackgroundJobClientException(ex.Message, ex);
+                }
+
+                // We should commit transaction outside of the internal try/catch block, because these
+                // exceptions are always due to network issues, and in case of a timeout exception we
+                // can't determine whether it was actually succeeded or not, and can't perform an
+                // idempotent retry in this case.
+                transaction.Commit();
+            }
+        }
+
+        private void RetryRecurringJob(
+            string recurringJobId, RecurringJobEntity recurringJob, Exception error,
+            out IReadOnlyDictionary<string, string> changedFields,
+            out DateTime? nextExecution)
+        {
+            if (recurringJob.RetryAttempt < MaxRetryAttemptCount)
+            {
+                var delay = _pollingDelay > TimeSpan.Zero ? _pollingDelay : TimeSpan.FromMinutes(1);
+
+                _logger.WarnException(
+                    $"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be retried in {delay}.",
+                    error);
+                recurringJob.ScheduleRetry(delay, out changedFields, out nextExecution);
+            }
+            else
+            {
+                _logger.ErrorException(
+                    $"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be disabled.", error);
+                recurringJob.Disable(error, out changedFields, out nextExecution);
             }
         }
 
