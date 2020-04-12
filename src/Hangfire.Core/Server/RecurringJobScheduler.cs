@@ -335,7 +335,7 @@ namespace Hangfire.Server
                     // emit a warning message to the log.
                     if (recurringJob.Version.HasValue && recurringJob.Version > MaxSupportedVersion)
                     {
-                        throw new InvalidOperationException($"Server '{context.ServerId}' can't process recurring job '{recurringJobId}' of version '{recurringJob.Version ?? 1}'. Max supported version of this server is '{MaxSupportedVersion}'.");
+                        throw new NotSupportedException($"Server '{context.ServerId}' can't process recurring job '{recurringJobId}' of version '{recurringJob.Version ?? 1}'. Max supported version of this server is '{MaxSupportedVersion}'.");
                     }
                     
                     BackgroundJob backgroundJob = null;
@@ -345,13 +345,11 @@ namespace Hangfire.Server
                     {
                         if (nextExecution.HasValue && nextExecution <= now)
                         {
-                            backgroundJob = _factory.TriggerRecurringJob(context.Storage, connection, _profiler,
-                                recurringJob, now);
+                            backgroundJob = _factory.TriggerRecurringJob(context.Storage, connection, _profiler, recurringJob, now);
 
                             if (String.IsNullOrEmpty(backgroundJob?.Id))
                             {
-                                _logger.Debug(
-                                    $"Recurring job '{recurringJobId}' execution at '{nextExecution}' has been canceled.");
+                                _logger.Debug($"Recurring job '{recurringJobId}' execution at '{nextExecution}' has been canceled.");
                             }
                         }
 
@@ -359,7 +357,7 @@ namespace Hangfire.Server
                     }
                     else
                     {
-                        RetryRecurringJob(recurringJobId, recurringJob, error, out changedFields, out nextExecution);
+                        throw new InvalidOperationException("Recurring job can't be scheduled, see inner exception for details.", error);
                     }
 
                     if (backgroundJob != null)
