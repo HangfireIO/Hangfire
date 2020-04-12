@@ -369,6 +369,117 @@ namespace Hangfire.Core.Tests.States
                 Times.Once);
         }
 
+        [Fact]
+        public void ChangeState_DoesNotApplyAnything_AndRethrowsExceptions_ThrownByElectStateFilters()
+        {
+            // Arrange
+            var electStateFilter = new Mock<IElectStateFilter>();
+
+            electStateFilter
+                .Setup(x => x.OnStateElection(It.IsAny<ElectStateContext>()))
+                .Throws<NotSupportedException>();
+
+            _filterProvider
+                .Setup(x => x.GetFilters(It.IsAny<Job>()))
+                .Returns(new [] { new JobFilter(electStateFilter.Object, JobFilterScope.Method, 0) });
+
+            var stateChanger = CreateStateChanger();
+
+            // Act
+            Assert.Throws<NotSupportedException>(() => stateChanger.ChangeState(_context.Object));
+
+            // Assert
+            electStateFilter.Verify(x => x.OnStateElection(It.IsNotNull<ElectStateContext>()), Times.Once);
+            _transaction.Verify(x => x.Commit(), Times.Never);
+        }
+
+        [Fact]
+        public void ChangeState_DoesNotApplyAnything_AndRethrowsAndException_ThrownByApplyStateFilters()
+        {
+            // Arrange
+            var applyStateFilter = new Mock<IApplyStateFilter>();
+
+            applyStateFilter
+                .Setup(x => x.OnStateApplied(It.IsAny<ApplyStateContext>(), It.IsAny<IWriteOnlyTransaction>()))
+                .Throws<NotSupportedException>();
+
+            _filterProvider
+                .Setup(x => x.GetFilters(It.IsAny<Job>()))
+                .Returns(new [] { new JobFilter(applyStateFilter.Object, JobFilterScope.Method, 0) });
+
+            var stateChanger = CreateStateChanger();
+
+            // Act
+            Assert.Throws<NotSupportedException>(() => stateChanger.ChangeState(_context.Object));
+
+            // Assert
+            applyStateFilter.Verify(
+                x => x.OnStateApplied(It.IsNotNull<ApplyStateContext>(), It.IsNotNull<IWriteOnlyTransaction>()),
+                Times.Once);
+
+            _transaction.Verify(x => x.Commit(), Times.Never);
+        }
+
+        [Fact]
+        public void ChangeState_DoesNotInvokeElectStateFilters_WhenFiltersDisabled()
+        {
+            // Arrange
+            var electStateFilter = new Mock<IElectStateFilter>();
+
+            electStateFilter
+                .Setup(x => x.OnStateElection(It.IsAny<ElectStateContext>()))
+                .Throws<NotSupportedException>();
+
+            _filterProvider
+                .Setup(x => x.GetFilters(It.IsAny<Job>()))
+                .Returns(new [] { new JobFilter(electStateFilter.Object, JobFilterScope.Method, 0) });
+
+            _context.DisableFilters = true;
+
+            var stateChanger = CreateStateChanger();
+
+            // Act
+            stateChanger.ChangeState(_context.Object);
+
+            // Assert
+            electStateFilter.Verify(
+                x => x.OnStateElection(It.IsAny<ElectStateContext>()),
+                Times.Never);
+
+            _stateMachine.Verify(x => x.ApplyState(It.IsNotNull<ApplyStateContext>()));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void ChangeState_DoesNotInvokeApplyStateFilters_WhenFiltersDisabled()
+        {
+            // Arrange
+            var applyStateFilter = new Mock<IApplyStateFilter>();
+
+            applyStateFilter
+                .Setup(x => x.OnStateApplied(It.IsAny<ApplyStateContext>(), It.IsAny<IWriteOnlyTransaction>()))
+                .Throws<NotSupportedException>();
+
+            _filterProvider
+                .Setup(x => x.GetFilters(It.IsAny<Job>()))
+                .Returns(new [] { new JobFilter(applyStateFilter.Object, JobFilterScope.Method, 0) });
+
+            _context.DisableFilters = true;
+
+            var stateChanger = CreateStateChanger();
+
+            // Act
+            stateChanger.ChangeState(_context.Object);
+
+            // Assert
+            applyStateFilter.Verify(
+                x => x.OnStateApplied(It.IsAny<ApplyStateContext>(), It.IsAny<IWriteOnlyTransaction>()),
+                Times.Never);
+
+            _stateMachine.Verify(x => x.ApplyState(It.IsNotNull<ApplyStateContext>()));
+            _transaction.Verify(x => x.Commit());
+        }
+
         private BackgroundJobStateChanger CreateStateChanger()
         {
             return new BackgroundJobStateChanger(_filterProvider.Object, _stateMachine.Object);

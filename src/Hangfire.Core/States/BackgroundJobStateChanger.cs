@@ -27,7 +27,8 @@ namespace Hangfire.States
     {
         private static readonly TimeSpan JobLockTimeout = TimeSpan.FromMinutes(15);
 
-        private readonly IStateMachine _stateMachine;
+        private readonly IStateMachine _innerStateMachine;
+        private readonly StateMachine _stateMachine;
 
         public BackgroundJobStateChanger()
             : this(JobFilterProviders.Providers)
@@ -41,8 +42,7 @@ namespace Hangfire.States
 
         internal BackgroundJobStateChanger([NotNull] IJobFilterProvider filterProvider, [NotNull] IStateMachine stateMachine)
         {
-            if (stateMachine == null) throw new ArgumentNullException(nameof(stateMachine));
-
+            _innerStateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
             _stateMachine = new StateMachine(filterProvider, stateMachine);
         }
         
@@ -86,21 +86,6 @@ namespace Hangfire.States
                     // with the state change without breaking a consistent behavior:
                     // in some cases our filters will be applied, and in other ones
                     // will not.
-
-                    // TODO 1.X/2.0:
-                    // There's a problem with filters related to handling the states
-                    // which ignore this exception, i.e. fitlers for the FailedState
-                    // and the DeletedState, such as AutomaticRetryAttrubute filter.
-                    // 
-                    // We should document that such a filters may not be fired, when
-                    // we can't find a target method, and these filters should be
-                    // applied only at the global level to get consistent results.
-                    // 
-                    // In 2.0 we should have a special state for all the errors, when
-                    // Hangfire doesn't know what to do, without any possibility to
-                    // add method or class-level filters for such a state to provide
-                    // the same behavior no matter what.
-
                     if (!stateToApply.IgnoreJobLoadException)
                     {
                         stateToApply = new FailedState(ex.InnerException)
@@ -121,7 +106,15 @@ namespace Hangfire.States
                         jobData.State,
                         context.Profiler);
 
-                    var appliedState = _stateMachine.ApplyState(applyContext);
+                    // State changing process can fail due to an exception in state filters themselves,
+                    // and DisableFilters property will cause state machine to perform a state transition
+                    // without calling any filters. This is required when all the other state change
+                    // attempts failed and we need to remove such a job from the processing pipeline.
+                    // In this case all the filters are ignored, which may lead to confusion, so it's
+                    // highly recommended to use the DisableFilters property only when changing state
+                    // to the FailedState.
+                    var stateMachine = context.DisableFilters ? _innerStateMachine : _stateMachine;
+                    var appliedState = stateMachine.ApplyState(applyContext);
 
                     transaction.Commit();
 

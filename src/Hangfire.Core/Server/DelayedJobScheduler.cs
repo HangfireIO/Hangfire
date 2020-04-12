@@ -200,6 +200,7 @@ namespace Hangfire.Server
                         jobId,
                         new EnqueuedState { Reason = $"Triggered by {ToString()}" },
                         new [] { ScheduledState.StateName },
+                        disableFilters: false,
                         context.StoppingToken,
                         _profiler));
 
@@ -238,8 +239,6 @@ namespace Hangfire.Server
             // because otherwise delayed job scheduler will fetch such a failing job identifier again and again
             // and will be unable to make any progress. Any successful state change will cause that identifier
             // to be removed from the schedule.
-            // TODO: The following call may also end with an exception thrown from a user code, need additional work
-            
             _stateChanger.ChangeState(new StateChangeContext(
                 context.Storage,
                 connection,
@@ -249,6 +248,7 @@ namespace Hangfire.Server
                     Reason = $"Failed to change state to the '{ScheduledState.StateName}' one due to an exception after {MaxStateChangeAttempts} retry attempts"
                 },
                 new[] { ScheduledState.StateName },
+                disableFilters: true,
                 context.StoppingToken,
                 _profiler));
         }

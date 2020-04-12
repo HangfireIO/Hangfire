@@ -78,7 +78,8 @@ namespace Hangfire.Core.Tests.Server
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.BackgroundJobId == JobId &&
                 ctx.NewState is EnqueuedState &&
-                ctx.ExpectedStates.SequenceEqual(new[] { ScheduledState.StateName }))));
+                ctx.ExpectedStates.SequenceEqual(new[] { ScheduledState.StateName }) &&
+                ctx.DisableFilters == false)));
 
             _connection.Verify(x => x.Dispose());
         }
@@ -165,7 +166,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_MovesJobToTheFailedState_WhenStateChangerThrowsAnException()
+        public void Execute_MovesJobToTheFailedState_WithFiltersDisabled_WhenStateChangerThrowsAnException()
         {
             // Arrange
             _schedule.Add(JobId);
@@ -188,7 +189,8 @@ namespace Hangfire.Core.Tests.Server
                     ctx.BackgroundJobId == JobId &&
                     ctx.NewState is FailedState &&
                     ((FailedState)ctx.NewState).Exception.GetType() == typeof(InvalidOperationException) &&
-                    ctx.ExpectedStates.Contains(ScheduledState.StateName))),
+                    ctx.ExpectedStates.Contains(ScheduledState.StateName) &&
+                    ctx.DisableFilters == true)),
                 Times.Once);
         }
 
