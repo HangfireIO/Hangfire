@@ -273,7 +273,7 @@ namespace Hangfire.Server
                             transaction.Commit();
                         }
 
-                        return false;
+                        return true;
                     }
 
                     // If a recurring job has the "V" field, then it was created by a newer

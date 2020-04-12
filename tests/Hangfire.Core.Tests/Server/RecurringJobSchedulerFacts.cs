@@ -997,6 +997,28 @@ namespace Hangfire.Core.Tests.Server
                 x => x.Create(It.Is<CreateContext>(ctx => ctx.Parameters["RecurringJobId"] == "AnotherId")),
                 Times.Once);
         }
+
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_RemovesNonExistingRecurringJobFromSet_AndDoesNotStopPipelineImmediatelyInThisCase(bool batching)
+        {
+            // Arrange
+            SetupConnection(batching);
+            _schedule.Add("AnotherId");
+            _connection.Setup(x => x.GetAllEntriesFromHash("recurring-job:AnotherId")).Returns(_recurringJob);
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{RecurringJobId}")).Returns<Dictionary<string, string>>(null);
+
+            var scheduler = CreateScheduler();
+            
+            // Act
+            scheduler.Execute(_context.Object);
+            
+            // Assert
+            _transaction.Verify(x => x.RemoveFromSet("recurring-jobs", RecurringJobId));
+            _factory.Verify(
+                x => x.Create(It.Is<CreateContext>(ctx => ctx.Parameters["RecurringJobId"] == "AnotherId")),
+                Times.Once);
+        }
         
         [Theory]
         [InlineData(false), InlineData(true)]
