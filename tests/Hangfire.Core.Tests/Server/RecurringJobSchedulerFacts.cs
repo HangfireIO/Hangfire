@@ -1024,7 +1024,7 @@ namespace Hangfire.Core.Tests.Server
                 .Returns(_recurringJob);
 
             _factory
-                .Setup(x => x.Create(It.Is<CreateContext>(ctx => ctx.Parameters["RecurringJobId"] == RecurringJobId)))
+                .Setup(x => x.Create(It.Is<CreateContext>(ctx => (string)ctx.Parameters["RecurringJobId"] == RecurringJobId)))
                 .Throws<InvalidOperationException>();
 
             var scheduler = CreateScheduler();
@@ -1034,7 +1034,7 @@ namespace Hangfire.Core.Tests.Server
             
             // Assert
             _factory.Verify(
-                x => x.Create(It.Is<CreateContext>(ctx => ctx.Parameters["RecurringJobId"] == "AnotherId")),
+                x => x.Create(It.Is<CreateContext>(ctx => (string)ctx.Parameters["RecurringJobId"] == "AnotherId")),
                 Times.Once);
         }
 
@@ -1056,7 +1056,7 @@ namespace Hangfire.Core.Tests.Server
             // Assert
             _transaction.Verify(x => x.RemoveFromSet("recurring-jobs", RecurringJobId));
             _factory.Verify(
-                x => x.Create(It.Is<CreateContext>(ctx => ctx.Parameters["RecurringJobId"] == "AnotherId")),
+                x => x.Create(It.Is<CreateContext>(ctx => (string)ctx.Parameters["RecurringJobId"] == "AnotherId")),
                 Times.Once);
         }
         
