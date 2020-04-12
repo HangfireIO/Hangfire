@@ -953,7 +953,7 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict => 
                 dict.Count == 3 &&
                 dict["NextExecution"] == String.Empty &&
-                dict["Error"].StartsWith("System.InvalidTimeZoneException") &&
+                dict["Error"].Contains("System.InvalidTimeZoneException") &&
                 dict["V"] == "2")));
             _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1));
             _transaction.Verify(x => x.Commit());

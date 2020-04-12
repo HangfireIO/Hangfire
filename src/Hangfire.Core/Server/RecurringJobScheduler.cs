@@ -248,16 +248,11 @@ namespace Hangfire.Server
 
                     if (recurringJob == null)
                     {
-                        using (var transaction = connection.CreateWriteTransaction())
-                        {
-                            transaction.RemoveFromSet("recurring-jobs", recurringJobId);
-                            transaction.Commit();
-                        }
-
+                        RemoveRecurringJob(connection, recurringJobId);
                         return true;
                     }
 
-                    BackgroundJobClientException exception;
+                    Exception exception;
 
                     try
                     {
@@ -266,17 +261,10 @@ namespace Hangfire.Server
                     }
                     catch (BackgroundJobClientException ex)
                     {
-                        exception = ex;
+                        exception = ex.InnerException;
                     }
 
-                    RetryRecurringJob(recurringJobId, recurringJob, exception.InnerException, out var changedFields, out var nextExecution);
-
-                    using (var transaction = connection.CreateWriteTransaction())
-                    {
-                        transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
-                        transaction.Commit();
-                    }
-
+                    RetryRecurringJob(connection, recurringJobId, recurringJob, exception);
                     return true;
                 }
             }
@@ -360,10 +348,11 @@ namespace Hangfire.Server
         }
 
         private void RetryRecurringJob(
-            string recurringJobId, RecurringJobEntity recurringJob, Exception error,
-            out IReadOnlyDictionary<string, string> changedFields,
-            out DateTime? nextExecution)
+            IStorageConnection connection, string recurringJobId, RecurringJobEntity recurringJob, Exception error)
         {
+            IReadOnlyDictionary<string, string> changedFields;
+            DateTime? nextExecution;
+
             if (recurringJob.RetryAttempt < MaxRetryAttemptCount)
             {
                 var delay = _pollingDelay > TimeSpan.Zero ? _pollingDelay : TimeSpan.FromMinutes(1);
@@ -378,6 +367,23 @@ namespace Hangfire.Server
                 _logger.ErrorException(
                     $"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be disabled.", error);
                 recurringJob.Disable(error.ToString(), out changedFields, out nextExecution);
+            }
+
+            using (var transaction = connection.CreateWriteTransaction())
+            {
+                transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
+                transaction.Commit();
+            }
+        }
+
+        private void RemoveRecurringJob(IStorageConnection connection, string recurringJobId)
+        {
+            _logger.Debug($"Recurring job '{recurringJobId}' doesn't exist and will be removed from schedule.");
+
+            using (var transaction = connection.CreateWriteTransaction())
+            {
+                transaction.RemoveFromSet("recurring-jobs", recurringJobId);
+                transaction.Commit();
             }
         }
 
