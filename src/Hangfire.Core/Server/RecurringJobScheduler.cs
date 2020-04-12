@@ -297,7 +297,7 @@ namespace Hangfire.Server
                         exception = ex;
                     }
 
-                    RetryRecurringJob(recurringJobId, recurringJob, exception, out var changedFields, out var nextExecution);
+                    RetryRecurringJob(recurringJobId, recurringJob, exception.InnerException, out var changedFields, out var nextExecution);
 
                     using (var transaction = connection.CreateWriteTransaction())
                     {
@@ -406,7 +406,7 @@ namespace Hangfire.Server
             {
                 _logger.ErrorException(
                     $"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be disabled.", error);
-                recurringJob.Disable(error, out changedFields, out nextExecution);
+                recurringJob.Disable(error.ToString(), out changedFields, out nextExecution);
             }
         }
 
