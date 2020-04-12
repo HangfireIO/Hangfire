@@ -242,27 +242,7 @@ namespace Hangfire.Server
         {
             try
             {
-                return EnqueueBackgroundJob(context, connection, recurringJobId, now);
-            }
-            catch (Exception ex)
-            {
-                _logger.WarnException(
-                    $"Recurring job '{recurringJobId}' can not be scheduled due to an exception.",
-                    ex);
-            }
-
-            return false;
-        }
-
-        private bool EnqueueBackgroundJob(
-            BackgroundProcessContext context,
-            IStorageConnection connection, 
-            string recurringJobId,
-            DateTime now)
-        {
-            using (connection.AcquireDistributedRecurringJobLock(recurringJobId, LockTimeout))
-            {
-                try
+                using (connection.AcquireDistributedRecurringJobLock(recurringJobId, LockTimeout))
                 {
                     var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
 
@@ -299,20 +279,12 @@ namespace Hangfire.Server
 
                     return true;
                 }
-#if !NETSTANDARD1_3
-                catch (TimeZoneNotFoundException ex)
-                {
-#else
-                catch (Exception ex)
-                {
-                    // https://github.com/dotnet/corefx/issues/7552
-                    if (!ex.GetType().Name.Equals("TimeZoneNotFoundException")) throw;
-#endif
-
-                    _logger.ErrorException(
-                        $"Recurring job '{recurringJobId}' was not triggered: {ex.Message}.",
-                        ex);
-                }
+            }
+            catch (Exception ex)
+            {
+                _logger.WarnException(
+                    $"Recurring job '{recurringJobId}' can not be scheduled due to an exception.",
+                    ex);
 
                 return false;
             }
