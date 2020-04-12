@@ -67,6 +67,7 @@ namespace Hangfire.Server
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
         private static readonly int BatchSize = 1000;
         private static readonly int MaxRetryAttemptCount = 10;
+        private static readonly int MaxSupportedVersion = 2;
 
         private readonly ILog _logger = LogProvider.For<RecurringJobScheduler>();
         private readonly ConcurrentDictionary<Type, bool> _isBatchingAvailableCache = new ConcurrentDictionary<Type, bool>();
@@ -276,15 +277,6 @@ namespace Hangfire.Server
                         return true;
                     }
 
-                    // If a recurring job has the "V" field, then it was created by a newer
-                    // version. Despite we can handle 1.7.0-based recurring jobs just fine,
-                    // future versions may introduce new features anyway, so it's safer to
-                    // let other servers to handle this recurring job.
-                    if (recurringJob.Version.HasValue && recurringJob.Version > 2)
-                    {
-                        return false;
-                    }
-
                     BackgroundJobClientException exception;
 
                     try
@@ -337,6 +329,15 @@ namespace Hangfire.Server
             {
                 try
                 {
+                    // We can't handle recurring job with unsupported versions - there may be additional
+                    // features. we don't know about. We also shouldn't stop the whole scheduler as
+                    // there may be jobs with lower versions. Instead, we'll re-schedule such a job and
+                    // emit a warning message to the log.
+                    if (recurringJob.Version.HasValue && recurringJob.Version > MaxSupportedVersion)
+                    {
+                        throw new InvalidOperationException($"Server '{context.ServerId}' can't process recurring job '{recurringJobId}' of version '{recurringJob.Version ?? 1}'. Max supported version of this server is '{MaxSupportedVersion}'.");
+                    }
+                    
                     BackgroundJob backgroundJob = null;
                     IReadOnlyDictionary<string, string> changedFields;
 

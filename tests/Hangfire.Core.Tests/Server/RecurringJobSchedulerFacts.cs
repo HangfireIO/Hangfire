@@ -159,7 +159,47 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
 
             _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
-            _transaction.Verify(x => x.Commit(), Times.Never);
+        }
+
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_ReschedulesRecurringJobs_WithUnsupportedVersions_WhenSomeRetriesLeft(bool batching)
+        {
+            // Arrange
+            SetupConnection(batching);
+            _recurringJob["V"] = "3";
+            var scheduler = CreateScheduler();
+            
+            // Act
+            scheduler.Execute(_context.Object);
+            
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict =>
+                dict["RetryAttempt"] == "1")));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, JobHelper.ToTimestamp(_nowInstant + _delay)));
+            
+            _transaction.Verify(x => x.Commit());
+        }
+        
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_DisablesRecurringJobs_WithUnsupportedVersions_WhenRetryAttemptsExceeded(bool batching)
+        {
+            // Arrange
+            SetupConnection(batching);
+            _recurringJob["V"] = "3";
+            _recurringJob["RetryAttempt"] = "10";
+            var scheduler = CreateScheduler();
+            
+            // Act
+            scheduler.Execute(_context.Object);
+            
+            // Assert
+            _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict =>
+                dict["Error"].Contains("supported version"))));
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1));
+            
+            _transaction.Verify(x => x.Commit());
         }
 
         [Theory]
