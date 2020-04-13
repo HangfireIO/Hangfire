@@ -49,6 +49,7 @@ namespace Hangfire.Server
         private readonly CancellationTokenSource _stoppingCts = new CancellationTokenSource();
         private readonly CancellationTokenSource _stoppedCts = new CancellationTokenSource();
         private readonly CancellationTokenSource _shutdownCts = new CancellationTokenSource();
+        private CancellationTokenRegistration _shutdownRegistration;
 
         private readonly IBackgroundServerProcess _process;
         private readonly BackgroundProcessingServerOptions _options;
@@ -119,6 +120,8 @@ namespace Hangfire.Server
             AppDomain.CurrentDomain.DomainUnload += OnCurrentDomainUnload;
             AppDomain.CurrentDomain.ProcessExit += OnCurrentDomainUnload;
 #endif
+
+            _shutdownRegistration = AspNetShutdownDetector.GetShutdownToken().Register(Dispose);
         }
 
         public void SendStop()
@@ -149,6 +152,8 @@ namespace Hangfire.Server
         public void Dispose()
         {
             if (Volatile.Read(ref _disposed) == 1) return;
+
+            _shutdownRegistration.Dispose();
 
             if (!_stoppingCts.IsCancellationRequested)
             {
