@@ -239,6 +239,29 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
         }
 
+        [Fact]
+        public void Execute_RemovesJobFromSchedule_WhenIdDoesNotExists()
+        {
+            // Arrange
+            _schedule.Add(JobId);
+
+            _connection.Setup(x => x.GetJobData(JobId)).Returns<JobData>(null);
+
+            _stateChanger
+                .Setup(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is EnqueuedState)))
+                .Returns<IState>(null);
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _stateChanger.Verify(x => x.ChangeState(It.IsAny<StateChangeContext>()), Times.Once);
+            _transaction.Verify(x => x.RemoveFromSet("schedule", JobId));
+            _transaction.Verify(x => x.Commit());
+        }
+
         private DelayedJobScheduler CreateScheduler()
         {
             return new DelayedJobScheduler(TimeSpan.Zero, _stateChanger.Object);

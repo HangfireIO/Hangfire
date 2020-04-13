@@ -204,7 +204,7 @@ namespace Hangfire.Server
                         context.StoppingToken,
                         _profiler));
 
-                    if (appliedState == null)
+                    if (appliedState == null && connection.GetJobData(jobId) == null)
                     {
                         // When a background job with the given id does not exist, we should
                         // remove its id from a schedule manually. This may happen when someone
