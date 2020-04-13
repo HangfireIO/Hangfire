@@ -165,10 +165,13 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
 
-        [Fact]
-        public void Execute_MovesJobToTheFailedState_WithFiltersDisabled_WhenStateChangerThrowsAnException()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_MovesJobToTheFailedState_WithFiltersDisabled_WhenStateChangerThrowsAnException(bool batching)
         {
             // Arrange
+            if (batching) EnableBatching();
+
             _schedule.Add(JobId);
             _stateChanger
                 .Setup(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is EnqueuedState)))
@@ -194,10 +197,13 @@ namespace Hangfire.Core.Tests.Server
                 Times.Once);
         }
 
-        [Fact]
-        public void Execute_AbleToProcessFurtherJobs_WhenStateChangerThrowsAnException_ForPreviousOnes()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_AbleToProcessFurtherJobs_WhenStateChangerThrowsAnException_ForPreviousOnes(bool batching)
         {
             // Arrange
+            if (batching) EnableBatching();
+
             _schedule.Add(JobId);
             _schedule.Add("AnotherId");
 
@@ -216,20 +222,24 @@ namespace Hangfire.Core.Tests.Server
                 Times.Once);
         }
 
-        [Fact]
-        public void Execute_ActsWithinADistributedLock()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_ActsWithinADistributedLock(bool batching)
         {
+            if (batching) EnableBatching();
             var scheduler = CreateScheduler();
-            
+
             scheduler.Execute(_context.Object);
 
             _connection.Verify(x => x.AcquireDistributedLock(It.IsAny<string>(), It.IsAny<TimeSpan>()));
             _distributedLock.Verify(x => x.Dispose());
         }
 
-        [Fact]
-        public void Execute_DoesNotThrowDistributedLockTimeoutException()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_DoesNotThrowDistributedLockTimeoutException(bool batching)
         {
+            if (batching) EnableBatching();
             _connection
                 .Setup(x => x.AcquireDistributedLock("locks:schedulepoller", It.IsAny<TimeSpan>()))
                 .Throws(new DistributedLockTimeoutException("locks:schedulepoller"));
@@ -239,10 +249,12 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
         }
 
-        [Fact]
-        public void Execute_RemovesJobFromSchedule_WhenIdDoesNotExists()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_RemovesJobFromSchedule_WhenIdDoesNotExists(bool batching)
         {
             // Arrange
+            if (batching) EnableBatching();
             _schedule.Add(JobId);
 
             _connection.Setup(x => x.GetJobData(JobId)).Returns<JobData>(null);
