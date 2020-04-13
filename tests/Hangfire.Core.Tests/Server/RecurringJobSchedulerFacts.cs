@@ -1074,7 +1074,7 @@ namespace Hangfire.Core.Tests.Server
             var scheduler = CreateScheduler();
             
             // Act
-            scheduler.Execute(_context.Object);
+            Assert.Throws<InvalidOperationException>(() => scheduler.Execute(_context.Object));
             
             // Assert
             _transaction.Verify(

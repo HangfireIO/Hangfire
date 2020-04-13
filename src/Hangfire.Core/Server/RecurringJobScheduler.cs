@@ -191,8 +191,6 @@ namespace Hangfire.Server
         {
             return UseConnectionDistributedLock(context.Storage, connection =>
             {
-                var result = false;
-
                 if (IsBatchingAvailable(connection))
                 {
                     var now = _nowFactory();
@@ -205,10 +203,7 @@ namespace Hangfire.Server
                     {
                         if (context.IsStopping) return false;
 
-                        if (TryEnqueueBackgroundJob(context, connection, recurringJobId, now))
-                        {
-                            result = true;
-                        }
+                        TryEnqueueBackgroundJob(context, connection, recurringJobId, now);
                     }
                 }
                 else
@@ -223,58 +218,43 @@ namespace Hangfire.Server
                         var recurringJobId = connection.GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp);
                         if (recurringJobId == null) return false;
 
-                        if (!TryEnqueueBackgroundJob(context, connection, recurringJobId, now))
-                        {
-                            return false;
-                        }
+                        TryEnqueueBackgroundJob(context, connection, recurringJobId, now);
                     }
                 }
 
-                return result;
+                return true;
             });
         }
 
-        private bool TryEnqueueBackgroundJob(
+        private void TryEnqueueBackgroundJob(
             BackgroundProcessContext context,
             IStorageConnection connection,
             string recurringJobId,
             DateTime now)
         {
-            try
+            using (connection.AcquireDistributedRecurringJobLock(recurringJobId, LockTimeout))
             {
-                using (connection.AcquireDistributedRecurringJobLock(recurringJobId, LockTimeout))
+                var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
+
+                if (recurringJob == null)
                 {
-                    var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
-
-                    if (recurringJob == null)
-                    {
-                        RemoveRecurringJob(connection, recurringJobId);
-                        return true;
-                    }
-
-                    Exception exception;
-
-                    try
-                    {
-                        ScheduleRecurringJob(context, connection, recurringJobId, recurringJob, now);
-                        return true;
-                    }
-                    catch (BackgroundJobClientException ex)
-                    {
-                        exception = ex.InnerException;
-                    }
-
-                    RetryRecurringJob(connection, recurringJobId, recurringJob, exception);
-                    return true;
+                    RemoveRecurringJob(connection, recurringJobId);
+                    return;
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.WarnException(
-                    $"Recurring job '{recurringJobId}' can not be scheduled due to an exception.",
-                    ex);
 
-                return false;
+                Exception exception;
+
+                try
+                {
+                    ScheduleRecurringJob(context, connection, recurringJobId, recurringJob, now);
+                    return;
+                }
+                catch (BackgroundJobClientException ex)
+                {
+                    exception = ex.InnerException;
+                }
+
+                RetryRecurringJob(connection, recurringJobId, recurringJob, exception);
             }
         }
 
