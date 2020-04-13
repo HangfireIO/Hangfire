@@ -245,7 +245,7 @@ namespace Hangfire.Server
                 jobId,
                 new FailedState(exception)
                 {
-                    Reason = $"Failed to change state to the '{ScheduledState.StateName}' one due to an exception after {MaxStateChangeAttempts} retry attempts"
+                    Reason = $"Failed to change state to the '{EnqueuedState.StateName}' one due to an exception after {MaxStateChangeAttempts} retry attempts"
                 },
                 new[] { ScheduledState.StateName },
                 disableFilters: true,
