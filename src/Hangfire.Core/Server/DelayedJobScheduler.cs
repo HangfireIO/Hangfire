@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Logging;
@@ -124,22 +123,17 @@ namespace Hangfire.Server
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
 
-            var jobsEnqueued = 0;
+            int jobsProcessed;
 
-            while (EnqueueNextScheduledJobs(context))
+            do
             {
-                jobsEnqueued++;
+                jobsProcessed = EnqueueNextScheduledJobs(context);
 
-                if (context.IsStopping)
+                if (jobsProcessed != 0)
                 {
-                    break;
+                    _logger.Debug($"{jobsProcessed} scheduled job(s) processed by scheduler.");
                 }
-            }
-
-            if (jobsEnqueued != 0)
-            {
-                _logger.Debug($"{jobsEnqueued} scheduled job(s) enqueued.");
-            }
+            } while (jobsProcessed > 0 && !context.IsStopping);
 
             context.Wait(_pollingDelay);
         }
@@ -150,39 +144,45 @@ namespace Hangfire.Server
             return GetType().Name;
         }
 
-        private bool EnqueueNextScheduledJobs(BackgroundProcessContext context)
+        private int EnqueueNextScheduledJobs(BackgroundProcessContext context)
         {
             return UseConnectionDistributedLock(context.Storage, connection =>
             {
+                var jobsProcessed = 0;
+
                 if (IsBatchingAvailable(connection))
                 {
                     var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
                     var jobIds = ((JobStorageConnection)connection).GetFirstByLowestScoreFromSet("schedule", 0, timestamp, BatchSize);
 
-                    if (jobIds == null || jobIds.Count == 0) return false;
-
-                    foreach (var jobId in jobIds)
+                    if (jobIds != null)
                     {
-                        if (context.IsStopping) return false;
-                        EnqueueBackgroundJob(context, connection, jobId);
+                        foreach (var jobId in jobIds)
+                        {
+                            if (context.IsStopping) break;
+
+                            EnqueueBackgroundJob(context, connection, jobId);
+                            jobsProcessed++;
+                        }
                     }
                 }
                 else
                 {
                     for (var i = 0; i < BatchSize; i++)
                     {
-                        if (context.IsStopping) return false;
+                        if (context.IsStopping) break;
 
                         var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
 
                         var jobId = connection.GetFirstByLowestScoreFromSet("schedule", 0, timestamp);
-                        if (jobId == null) return false;
+                        if (jobId == null) break;
 
                         EnqueueBackgroundJob(context, connection, jobId);
+                        jobsProcessed++;
                     }
                 }
 
-                return true;
+                return jobsProcessed;
             });
         }
 
