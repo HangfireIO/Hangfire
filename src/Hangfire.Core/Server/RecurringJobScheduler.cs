@@ -153,22 +153,17 @@ namespace Hangfire.Server
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
 
-            var jobsEnqueued = 0;
+            int jobsProcessed;
 
-            while (EnqueueNextRecurringJobs(context))
+            do
             {
-                jobsEnqueued++;
+                jobsProcessed = EnqueueNextRecurringJobs(context);
 
-                if (context.IsStopping)
+                if (jobsProcessed != 0)
                 {
-                    break;
+                    _logger.Debug($"{jobsProcessed} recurring job(s) processed by scheduler.");
                 }
-            }
-
-            if (jobsEnqueued != 0)
-            {
-                _logger.Debug($"{jobsEnqueued} recurring job(s) enqueued.");
-            }
+            } while (jobsProcessed > 0 && !context.IsStopping);
 
             if (_pollingDelay > TimeSpan.Zero)
             {
@@ -187,42 +182,47 @@ namespace Hangfire.Server
             return GetType().Name;
         }
 
-        private bool EnqueueNextRecurringJobs(BackgroundProcessContext context)
+        private int EnqueueNextRecurringJobs(BackgroundProcessContext context)
         {
             return UseConnectionDistributedLock(context.Storage, connection =>
             {
+                var jobsProcessed = 0;
+
                 if (IsBatchingAvailable(connection))
                 {
                     var now = _nowFactory();
                     var timestamp = JobHelper.ToTimestamp(now);
                     var recurringJobIds = ((JobStorageConnection)connection).GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp, BatchSize);
 
-                    if (recurringJobIds == null || recurringJobIds.Count == 0) return false;
-
-                    foreach (var recurringJobId in recurringJobIds)
+                    if (recurringJobIds != null)
                     {
-                        if (context.IsStopping) return false;
+                        foreach (var recurringJobId in recurringJobIds)
+                        {
+                            if (context.IsStopping) break;
 
-                        TryEnqueueBackgroundJob(context, connection, recurringJobId, now);
+                            TryEnqueueBackgroundJob(context, connection, recurringJobId, now);
+                            jobsProcessed++;
+                        }
                     }
                 }
                 else
                 {
                     for (var i = 0; i < BatchSize; i++)
                     {
-                        if (context.IsStopping) return false;
+                        if (context.IsStopping) break;
 
                         var now = _nowFactory();
                         var timestamp = JobHelper.ToTimestamp(now);
 
                         var recurringJobId = connection.GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp);
-                        if (recurringJobId == null) return false;
+                        if (recurringJobId == null) break;
 
                         TryEnqueueBackgroundJob(context, connection, recurringJobId, now);
+                        jobsProcessed++;
                     }
                 }
 
-                return true;
+                return jobsProcessed;
             });
         }
 
@@ -367,7 +367,7 @@ namespace Hangfire.Server
             }
         }
 
-        private bool UseConnectionDistributedLock(JobStorage storage, Func<IStorageConnection, bool> action)
+        private T UseConnectionDistributedLock<T>(JobStorage storage, Func<IStorageConnection, T> action)
         {
             var resource = "recurring-jobs:lock";
             try
@@ -388,7 +388,7 @@ namespace Hangfire.Server
                     e);
             }
 
-            return false;
+            return default;
         }
 
         private bool IsBatchingAvailable(IStorageConnection connection)
