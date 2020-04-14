@@ -33,12 +33,12 @@ namespace Hangfire.States
         }
 
         internal StateMachine(
-            [NotNull] IJobFilterProvider filterProvider, 
+            [NotNull] IJobFilterProvider filterProvider,
             [NotNull] IStateMachine innerStateMachine)
         {
             if (filterProvider == null) throw new ArgumentNullException(nameof(filterProvider));
             if (innerStateMachine == null) throw new ArgumentNullException(nameof(innerStateMachine));
-            
+
             _filterProvider = filterProvider;
             _innerStateMachine = innerStateMachine;
         }
@@ -55,8 +55,8 @@ namespace Hangfire.States
             foreach (var filter in electFilters)
             {
                 electContext.Profiler.InvokeMeasured(
-                    filter,
-                    x => x.OnStateElection(electContext),
+                    Tuple.Create(filter, electContext),
+                    InvokeOnStateElection,
                     $"OnStateElection for {electContext.BackgroundJob.Id}");
             }
 
@@ -74,20 +74,35 @@ namespace Hangfire.States
             foreach (var filter in applyFilters)
             {
                 context.Profiler.InvokeMeasured(
-                    filter,
-                    x => x.OnStateUnapplied(context, context.Transaction),
+                    Tuple.Create(filter, context),
+                    InvokeOnStateUnapplied,
                     $"OnStateUnapplied for {context.BackgroundJob.Id}");
             }
 
             foreach (var filter in applyFilters)
             {
                 context.Profiler.InvokeMeasured(
-                    filter,
-                    x => x.OnStateApplied(context, context.Transaction),
+                    Tuple.Create(filter, context),
+                    InvokeOnStateApplied,
                     $"OnStateApplied for {context.BackgroundJob.Id}");
             }
 
             return _innerStateMachine.ApplyState(context);
+        }
+
+        private static void InvokeOnStateElection(Tuple<IElectStateFilter, ElectStateContext> x)
+        {
+            x.Item1.OnStateElection(x.Item2);
+        }
+
+        private static void InvokeOnStateApplied(Tuple<IApplyStateFilter, ApplyStateContext> x)
+        {
+            x.Item1.OnStateApplied(x.Item2, x.Item2.Transaction);
+        }
+
+        private static void InvokeOnStateUnapplied(Tuple<IApplyStateFilter, ApplyStateContext> x)
+        {
+            x.Item1.OnStateUnapplied(x.Item2, x.Item2.Transaction);
         }
 
         private JobFilterInfo GetFilters(Job job)

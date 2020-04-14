@@ -125,8 +125,8 @@ namespace Hangfire.Client
             Func<CreatedContext> continuation)
         {
             preContext.Profiler.InvokeMeasured(
-                filter,
-                x => x.OnCreating(preContext),
+                Tuple.Create(filter, preContext),
+                InvokeOnCreating,
                 $"OnCreating for {preContext.Job.Type.FullName}.{preContext.Job.Method.Name}");
 
             if (preContext.Canceled)
@@ -146,8 +146,8 @@ namespace Hangfire.Client
                 postContext = new CreatedContext(preContext, null, false, ex);
 
                 postContext.Profiler.InvokeMeasured(
-                    filter,
-                    x => x.OnCreated(postContext),
+                    Tuple.Create(filter, postContext),
+                    InvokeOnCreated,
                     $"OnCreated for {postContext.BackgroundJob?.Id ?? "(null)"}");
 
                 if (!postContext.ExceptionHandled)
@@ -159,12 +159,22 @@ namespace Hangfire.Client
             if (!wasError)
             {
                 postContext.Profiler.InvokeMeasured(
-                    filter,
-                    x => x.OnCreated(postContext),
+                    Tuple.Create(filter, postContext),
+                    InvokeOnCreated,
                     $"OnCreated for {postContext.BackgroundJob?.Id ?? "(null)"}");
             }
 
             return postContext;
+        }
+
+        private static void InvokeOnCreating(Tuple<IClientFilter, CreatingContext> x)
+        {
+            x.Item1.OnCreating(x.Item2);
+        }
+
+        private static void InvokeOnCreated(Tuple<IClientFilter, CreatedContext> x)
+        {
+            x.Item1.OnCreated(x.Item2);
         }
 
         private static void InvokeExceptionFilters(
@@ -173,10 +183,15 @@ namespace Hangfire.Client
             foreach (var filter in filters.Reverse())
             {
                 context.Profiler.InvokeMeasured(
-                    filter,
-                    x => x.OnClientException(context),
+                    Tuple.Create(filter, context),
+                    InvokeOnClientException,
                     $"OnClientException for {context.Job.Type.FullName}.{context.Job.Method.Name}");
             }
+        }
+
+        private static void InvokeOnClientException(Tuple<IClientExceptionFilter, ClientExceptionContext> x)
+        {
+            x.Item1.OnClientException(x.Item2);
         }
     }
 }
