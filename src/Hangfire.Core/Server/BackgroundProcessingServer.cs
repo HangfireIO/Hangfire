@@ -121,7 +121,7 @@ namespace Hangfire.Server
             AppDomain.CurrentDomain.ProcessExit += OnCurrentDomainUnload;
 #endif
 
-            _shutdownRegistration = AspNetShutdownDetector.GetShutdownToken().Register(Dispose);
+            _shutdownRegistration = AspNetShutdownDetector.GetShutdownToken().Register(OnAspNetShutdown);
         }
 
         public void SendStop()
@@ -189,6 +189,31 @@ namespace Hangfire.Server
             _shutdownCts.Cancel();
 
             WaitForShutdown(_options.LastChanceTimeout);
+        }
+
+        private void OnAspNetShutdown()
+        {
+            if (Volatile.Read(ref _disposed) == 1)
+            {
+                // Exit if our server was already disposed, there's no need to
+                // throw ObjectDisposedException when unnecessary.
+                return;
+            }
+
+            try
+            {
+                // When ASP.NET shutdown is detected, we only need to send a stop
+                // signal to our background processing servers to allow correctly
+                // await for background processing server shutdown during a direct
+                // or indirect call to IRegisteredObject.Stop method, such as
+                // OWIN's "onAppDisposing" event.
+                SendStop();
+            }
+            catch (ObjectDisposedException)
+            {
+                // There's a benign race condition, when SendStop is called after
+                // processing server was already disposed.
+            }
         }
 
         private static IBackgroundProcessDispatcherBuilder[] GetProcesses([NotNull] IEnumerable<IBackgroundProcess> processes)

@@ -61,7 +61,11 @@ namespace Hangfire.Server
                 // shutdown once our application stopped to listen for the new requests.
                 RegisterForStopListeningEvent();
 
-                // During deployments we can get numerous of startup/shutdown attempts,
+                // Overlapped recycles feature is turned on by default in IIS, which cause
+                // both old and new application to be active at the same time during app
+                // domain recycles, which may cause old servers to process background jobs
+                // from the new ones, resulting in exceptions when new methods added.
+                // Also during deployments we can get numerous of startup/shutdown attempts,
                 // because file updates aren't transactional, and since deploys often touch
                 // multiple files.
                 // Unfortunately during such deploys registered objects often don't stopped
@@ -84,7 +88,7 @@ namespace Hangfire.Server
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("IIS shu:", ex);
+                Logger.ErrorException("Failed to initialize shutdown triggers for ASP.NET application.", ex);
             }
         }
 
@@ -106,7 +110,7 @@ namespace Hangfire.Server
         {
             _checkForShutdownTimer?.Dispose();
 
-            Logger.Info($"Web application is shutting down: {reason}.");
+            Logger.Info($"ASP.NET application is shutting down: {reason}.");
 
             try
             {
