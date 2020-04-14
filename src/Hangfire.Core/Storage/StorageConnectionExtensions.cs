@@ -134,6 +134,12 @@ namespace Hangfire.Storage
                     dto.Error = error;
                 }
 
+                if (hash.TryGetValue("RetryAttempt", out var attemptString) &&
+                    Int32.TryParse(attemptString, out var retryAttempt))
+                {
+                    dto.RetryAttempt = retryAttempt;
+                }
+
                 result.Add(dto);
             }
             
