@@ -979,7 +979,7 @@ namespace Hangfire.Core.Tests.Server
             _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Once);
             
             _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict =>
-                dict.Count == 1 && dict["RetryAttempt"] == "1")));
+                dict.Count == 2 && dict["RetryAttempt"] == "1" && dict.ContainsKey("Error"))));
             
             _transaction.Verify(x => x.AddToSet(
                 "recurring-jobs",
