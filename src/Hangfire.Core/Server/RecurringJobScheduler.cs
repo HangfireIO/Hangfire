@@ -66,7 +66,7 @@ namespace Hangfire.Server
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
         private static readonly int BatchSize = 1000;
-        private static readonly int MaxRetryAttemptCount = 10;
+        private static readonly int MaxRetryAttemptCount = 5;
         private static readonly int MaxSupportedVersion = 2;
 
         private readonly ILog _logger = LogProvider.For<RecurringJobScheduler>();
