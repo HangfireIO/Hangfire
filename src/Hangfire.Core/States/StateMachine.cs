@@ -1,5 +1,5 @@
 // This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright Â© 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -92,17 +92,41 @@ namespace Hangfire.States
 
         private static void InvokeOnStateElection(Tuple<IElectStateFilter, ElectStateContext> x)
         {
-            x.Item1.OnStateElection(x.Item2);
+            try
+            {
+                x.Item1.OnStateElection(x.Item2);
+            }
+            catch (Exception ex)
+            {
+                ex.PreserveOriginalStackTrace();
+                throw;
+            }
         }
 
         private static void InvokeOnStateApplied(Tuple<IApplyStateFilter, ApplyStateContext> x)
         {
-            x.Item1.OnStateApplied(x.Item2, x.Item2.Transaction);
+            try
+            {
+                x.Item1.OnStateApplied(x.Item2, x.Item2.Transaction);
+            }
+            catch (Exception ex)
+            {
+                ex.PreserveOriginalStackTrace();
+                throw;
+            }
         }
 
         private static void InvokeOnStateUnapplied(Tuple<IApplyStateFilter, ApplyStateContext> x)
         {
-            x.Item1.OnStateUnapplied(x.Item2, x.Item2.Transaction);
+            try
+            {
+                x.Item1.OnStateUnapplied(x.Item2, x.Item2.Transaction);
+            }
+            catch (Exception ex)
+            {
+                ex.PreserveOriginalStackTrace();
+                throw;
+            }
         }
 
         private JobFilterInfo GetFilters(Job job)

@@ -333,6 +333,8 @@ namespace Hangfire.Server
             IReadOnlyDictionary<string, string> changedFields;
             DateTime? nextExecution;
 
+            var errorString = error.ToStringWithOriginalStackTrace();
+
             if (recurringJob.RetryAttempt < MaxRetryAttemptCount)
             {
                 var delay = _pollingDelay > TimeSpan.Zero ? _pollingDelay : TimeSpan.FromMinutes(1);
@@ -340,13 +342,13 @@ namespace Hangfire.Server
                 _logger.WarnException(
                     $"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be retried in {delay}.",
                     error);
-                recurringJob.ScheduleRetry(delay, error.ToString(), out changedFields, out nextExecution);
+                recurringJob.ScheduleRetry(delay, errorString, out changedFields, out nextExecution);
             }
             else
             {
                 _logger.ErrorException(
                     $"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be disabled.", error);
-                recurringJob.Disable(error.ToString(), out changedFields, out nextExecution);
+                recurringJob.Disable(errorString, out changedFields, out nextExecution);
             }
 
             using (var transaction = connection.CreateWriteTransaction())

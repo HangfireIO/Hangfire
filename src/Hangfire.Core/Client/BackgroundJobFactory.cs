@@ -169,12 +169,28 @@ namespace Hangfire.Client
 
         private static void InvokeOnCreating(Tuple<IClientFilter, CreatingContext> x)
         {
-            x.Item1.OnCreating(x.Item2);
+            try
+            {
+                x.Item1.OnCreating(x.Item2);
+            }
+            catch (Exception ex)
+            {
+                ex.PreserveOriginalStackTrace();
+                throw;
+            }
         }
 
         private static void InvokeOnCreated(Tuple<IClientFilter, CreatedContext> x)
         {
-            x.Item1.OnCreated(x.Item2);
+            try
+            {
+                x.Item1.OnCreated(x.Item2);
+            }
+            catch (Exception ex)
+            {
+                ex.PreserveOriginalStackTrace();
+                throw;
+            }
         }
 
         private static void InvokeExceptionFilters(
@@ -191,7 +207,15 @@ namespace Hangfire.Client
 
         private static void InvokeOnClientException(Tuple<IClientExceptionFilter, ClientExceptionContext> x)
         {
-            x.Item1.OnClientException(x.Item2);
+            try
+            {
+                x.Item1.OnClientException(x.Item2);
+            }
+            catch (Exception ex)
+            {
+                ex.PreserveOriginalStackTrace();
+                throw;
+            }
         }
     }
 }
