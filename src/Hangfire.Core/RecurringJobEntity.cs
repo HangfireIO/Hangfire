@@ -151,14 +151,15 @@ namespace Hangfire
             return changedFields.Count > 0 || nextExecution != NextExecution;
         }
 
-        public void ScheduleRetry(TimeSpan delay, out IReadOnlyDictionary<string, string> changedFields, out DateTime? nextExecution)
+        public void ScheduleRetry(TimeSpan delay, string error, out IReadOnlyDictionary<string, string> changedFields, out DateTime? nextExecution)
         {
             RetryAttempt++;
             nextExecution = _now.Add(delay);
 
             var result = new Dictionary<string, string>
             {
-                { "RetryAttempt", RetryAttempt.ToString(CultureInfo.InvariantCulture) }
+                { "RetryAttempt", RetryAttempt.ToString(CultureInfo.InvariantCulture) },
+                { "Error", error ?? String.Empty }
             };
             
             if (!_recurringJob.ContainsKey("V"))

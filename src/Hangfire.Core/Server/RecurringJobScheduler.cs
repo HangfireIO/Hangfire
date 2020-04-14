@@ -340,7 +340,7 @@ namespace Hangfire.Server
                 _logger.WarnException(
                     $"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be retried in {delay}.",
                     error);
-                recurringJob.ScheduleRetry(delay, out changedFields, out nextExecution);
+                recurringJob.ScheduleRetry(delay, error.ToString(), out changedFields, out nextExecution);
             }
             else
             {
