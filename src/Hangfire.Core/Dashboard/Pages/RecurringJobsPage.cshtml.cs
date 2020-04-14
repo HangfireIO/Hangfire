@@ -833,7 +833,7 @@ WriteLiteral("</span>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                                                <span class=\"label label-warning " +
+WriteLiteral("                                                <span class=\"label label-default " +
 "text-uppercase\" title=\"");
 
 
