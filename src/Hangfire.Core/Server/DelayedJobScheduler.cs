@@ -72,7 +72,7 @@ namespace Hangfire.Server
         public static readonly TimeSpan DefaultPollingDelay = TimeSpan.FromSeconds(15);
         private static readonly TimeSpan DefaultLockTimeout = TimeSpan.FromMinutes(1);
         private static readonly int BatchSize = 1000;
-        private static readonly int MaxStateChangeAttempts = 3;
+        private static readonly int MaxStateChangeAttempts = 5;
 
         private readonly ILog _logger = LogProvider.For<DelayedJobScheduler>();
         private readonly ConcurrentDictionary<Type, bool> _isBatchingAvailableCache = new ConcurrentDictionary<Type, bool>();

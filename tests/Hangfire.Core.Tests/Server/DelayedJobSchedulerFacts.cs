@@ -185,7 +185,7 @@ namespace Hangfire.Core.Tests.Server
             // Assert
             _stateChanger.Verify(
                 x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is EnqueuedState)),
-                Times.Exactly(3));
+                Times.AtLeast(3));
             
             _stateChanger.Verify(
                 x => x.ChangeState(It.Is<StateChangeContext>(ctx => 
