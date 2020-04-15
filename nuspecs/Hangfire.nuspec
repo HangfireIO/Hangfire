@@ -19,6 +19,20 @@ https://www.hangfire.io/
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.6.29
+
+Hangfire.Core
+
+Backported from 1.7:
+• Added – Add built-in support for reliable shutdown detection of ASP.NET apps.
+• Changed – Internal feature to perform state changes without calling any filters.
+• Fixed – Let workers to ignore any state change filters when all previous attempts to call them failed.
+• Fixed – Don't let `DelayedJobScheduler` to stall the pipeline when state filters throw an exception.
+• Fixed – `JobLoadException` when new methods deployed, caused by overlapped recycles in ASP.NET applications.
+• Fixed – Configuration changes aren't taken into account, caused by overlapped recycles in ASP.NET.
+• Fixed – Zombie servers shown on the "Servers" page that aren't stopped automatically unless app pool is recycled.
+• Fixed – Add another check before removing non-existing jobs from delayed jobs to avoid race conditions.
+
 1.6.28
 
 Hangfire.Core
