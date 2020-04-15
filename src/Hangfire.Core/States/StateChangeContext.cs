@@ -51,7 +51,7 @@ namespace Hangfire.States
             [NotNull] IState newState,
             [CanBeNull] IEnumerable<string> expectedStates,
             CancellationToken cancellationToken)
-        : this(storage, connection, backgroundJobId, newState, expectedStates, cancellationToken, EmptyProfiler.Instance)
+        : this(storage, connection, backgroundJobId, newState, expectedStates, false, cancellationToken, EmptyProfiler.Instance)
         {
         }
 
@@ -60,7 +60,8 @@ namespace Hangfire.States
             [NotNull] IStorageConnection connection,
             [NotNull] string backgroundJobId, 
             [NotNull] IState newState, 
-            [CanBeNull] IEnumerable<string> expectedStates, 
+            [CanBeNull] IEnumerable<string> expectedStates,
+            bool disableFilters,
             CancellationToken cancellationToken,
             [NotNull] IProfiler profiler)
         {
@@ -75,6 +76,7 @@ namespace Hangfire.States
             BackgroundJobId = backgroundJobId;
             NewState = newState;
             ExpectedStates = expectedStates;
+            DisableFilters = disableFilters;
             CancellationToken = cancellationToken;
             Profiler = profiler;
         }
@@ -84,6 +86,7 @@ namespace Hangfire.States
         public string BackgroundJobId { get; }
         public IState NewState { get; }
         public IEnumerable<string> ExpectedStates { get; }
+        public bool DisableFilters { get; }
         public CancellationToken CancellationToken { get; }
         internal IProfiler Profiler { get; }
     }

@@ -71,6 +71,7 @@ namespace Hangfire.Server
         /// </remarks>
         public static readonly TimeSpan DefaultPollingDelay = TimeSpan.FromSeconds(15);
         private static readonly TimeSpan DefaultLockTimeout = TimeSpan.FromMinutes(1);
+        private static readonly int MaxStateChangeAttempts = 5;
 
         private readonly ILog _logger = LogProvider.For<DelayedJobScheduler>();
 
@@ -161,29 +162,76 @@ namespace Hangfire.Server
                     return false;
                 }
                 
-                var appliedState = _stateChanger.ChangeState(new StateChangeContext(
-                    context.Storage,
-                    connection,
-                    jobId,
-                    new EnqueuedState { Reason = $"Triggered by {ToString()}" }, 
-                    new [] { ScheduledState.StateName },
-                    CancellationToken.None,
-                    _profiler));
-
-                if (appliedState == null)
-                {
-                    // When a background job with the given id does not exist, we should
-                    // remove its id from a schedule manually. This may happen when someone
-                    // modifies a storage bypassing Hangfire API.
-                    using (var transaction = connection.CreateWriteTransaction())
-                    {
-                        transaction.RemoveFromSet("schedule", jobId);
-                        transaction.Commit();
-                    }
-                }
-
+                EnqueueBackgroundJob(context, connection, jobId);
                 return true;
             });
+        }
+
+        private void EnqueueBackgroundJob(BackgroundProcessContext context, IStorageConnection connection, string jobId)
+        {
+            Exception exception = null;
+
+            for (var retryAttempt = 0; retryAttempt < MaxStateChangeAttempts; retryAttempt++)
+            {
+                try
+                {
+                    var appliedState = _stateChanger.ChangeState(new StateChangeContext(
+                        context.Storage,
+                        connection,
+                        jobId,
+                        new EnqueuedState { Reason = $"Triggered by {ToString()}" },
+                        new[] { ScheduledState.StateName },
+                        disableFilters: false,
+                        context.CancellationToken,
+                        _profiler));
+
+                    if (appliedState == null && connection.GetJobData(jobId) == null)
+                    {
+                        // When a background job with the given id does not exist, we should
+                        // remove its id from a schedule manually. This may happen when someone
+                        // modifies a storage bypassing Hangfire API.
+                        using (var transaction = connection.CreateWriteTransaction())
+                        {
+                            transaction.RemoveFromSet("schedule", jobId);
+                            transaction.Commit();
+                        }
+                    }
+
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    _logger.DebugException(
+                        $"State change attempt {retryAttempt + 1} of {MaxStateChangeAttempts} failed due to an error, see inner exception for details",
+                        ex);
+
+                    exception = ex;
+                }
+
+                context.CancellationToken.Wait(TimeSpan.FromSeconds(retryAttempt));
+                context.CancellationToken.ThrowIfCancellationRequested();
+            }
+
+            _logger.ErrorException(
+                $"{MaxStateChangeAttempts} state change attempt(s) failed due to an exception, moving job to the FailedState",
+                exception);
+
+            // When exception occurs, it's essential to remove a background job identifier from the schedule,
+            // because otherwise delayed job scheduler will fetch such a failing job identifier again and again
+            // and will be unable to make any progress. Any successful state change will cause that identifier
+            // to be removed from the schedule.
+            _stateChanger.ChangeState(new StateChangeContext(
+                context.Storage,
+                connection,
+                jobId,
+                new FailedState(exception)
+                {
+                    Reason = $"Failed to change state to the '{EnqueuedState.StateName}' one due to an exception after {MaxStateChangeAttempts} retry attempts"
+                },
+                new[] { ScheduledState.StateName },
+                disableFilters: true,
+                context.CancellationToken,
+                _profiler));
         }
 
         private T UseConnectionDistributedLock<T>(JobStorage storage, Func<IStorageConnection, T> action)
