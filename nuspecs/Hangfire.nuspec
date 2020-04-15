@@ -41,6 +41,7 @@ Hangfire.Core
 • Fixed – Don't stumble over non-existing recurring jobs in a scheduler.
 • Fixed – Add another check before removing non-existing jobs from delayed jobs to avoid race conditions.
 • Fixed – Avoid throwing `NullReferenceException` instead of `InvalidOperationException` when deserializing a job.
+• Fixed – Don't transform queue names to upper case in the Dashboard UI.
 
 1.7.10
 
