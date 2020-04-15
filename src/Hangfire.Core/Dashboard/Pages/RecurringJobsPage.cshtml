@@ -212,7 +212,7 @@
                                             }
 
                                         }
-                                        else if (job.RetryAttempt.HasValue)
+                                        else if (job.RetryAttempt > 0)
                                         {
                                             <span class="label label-warning">@Html.RelativeTime(job.NextExecution.Value)</span>
                                         }

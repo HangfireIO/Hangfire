@@ -862,7 +862,7 @@ WriteLiteral("</span>\r\n");
                                             }
 
                                         }
-                                        else if (job.RetryAttempt.HasValue)
+                                        else if (job.RetryAttempt > 0)
                                         {
 
             
