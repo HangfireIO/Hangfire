@@ -84,6 +84,8 @@ namespace Hangfire.Server
 
 #if NETFULL
                 _checkForShutdownTimer = new Timer(CheckForAppDomainShutdown, null, CheckForShutdownTimerInterval, CheckForShutdownTimerInterval);
+#else
+                _checkForShutdownTimer = null;
 #endif
             }
             catch (Exception ex)
@@ -187,6 +189,8 @@ namespace Hangfire.Server
             {
                 Logger.DebugException("Unable to initialize HostingEnvironment.ShutdownReason shutdown trigger", ex);
             }
+#else
+            _shutdownReasonFunc = null;
 #endif
         }
 
@@ -209,6 +213,8 @@ namespace Hangfire.Server
             {
                 Logger.DebugException("Unable to initialize UnsafeIISMethods.MgdHasConfigChanged shutdown trigger", ex);
             }
+#else
+            _checkConfigChangedFunc = null;
 #endif
         }
     }
