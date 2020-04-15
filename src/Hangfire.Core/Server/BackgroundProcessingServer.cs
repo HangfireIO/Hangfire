@@ -53,6 +53,7 @@ namespace Hangfire.Server
 
         private readonly BackgroundProcessingServerOptions _options;
         private readonly Task _bootstrapTask;
+        private CancellationTokenRegistration _shutdownRegistration;
 
         public BackgroundProcessingServer([NotNull] IEnumerable<IBackgroundProcess> processes)
             : this(JobStorage.Current, processes)
@@ -113,6 +114,7 @@ namespace Hangfire.Server
                 _cts.Token);
 
             _bootstrapTask = WrapProcess(this).CreateTask(context);
+            _shutdownRegistration = AspNetShutdownDetector.GetShutdownToken().Register(OnAspNetShutdown);
         }
 
         public void SendStop()
@@ -124,6 +126,7 @@ namespace Hangfire.Server
         {
             SendStop();
 
+            _shutdownRegistration.Dispose();
             // TODO: Dispose _cts
 
             if (!_bootstrapTask.Wait(_options.ShutdownTimeout))
@@ -214,6 +217,24 @@ namespace Hangfire.Server
                 serverContext.WorkerCount = (int)properties["WorkerCount"];
             }
             return serverContext;
+        }
+
+        private void OnAspNetShutdown()
+        {
+            try
+            {
+                // When ASP.NET shutdown is detected, we only need to send a stop
+                // signal to our background processing servers to allow correctly
+                // await for background processing server shutdown during a direct
+                // or indirect call to IRegisteredObject.Stop method, such as
+                // OWIN's "onAppDisposing" event.
+                SendStop();
+            }
+            catch (ObjectDisposedException)
+            {
+                // There's a benign race condition, when SendStop is called after
+                // processing server was already disposed.
+            }
         }
     }
 }

@@ -324,6 +324,7 @@
     <Compile Include="RecurringJobManager.cs" />
     <Compile Include="RecurringJobManagerExtensions.cs" />
     <Compile Include="RecurringJobOptions.cs" />
+    <Compile Include="Server\AspNetShutdownDetector.cs" />
     <Compile Include="Server\AutomaticRetryProcess.cs" />
     <Compile Include="Server\BackgroundJobPerformer.cs" />
     <Compile Include="Server\BackgroundProcessContext.cs" />
