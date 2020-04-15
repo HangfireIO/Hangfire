@@ -183,7 +183,7 @@ namespace Hangfire.Server
                         fetchedJob.JobId,
                         state,
                         expectedStates,
-                        disableFilters: false,
+                        false,
                         cancellationToken,
                         _profiler));
                 }
@@ -206,7 +206,7 @@ namespace Hangfire.Server
                 fetchedJob.JobId,
                 new FailedState(exception) { Reason = $"Failed to change state to a '{state.Name}' one due to an exception after {MaxStateChangeAttempts} retry attempts" },
                 expectedStates,
-                disableFilters: true,
+                true,
                 cancellationToken,
                 _profiler));
         }

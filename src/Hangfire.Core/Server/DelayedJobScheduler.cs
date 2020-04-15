@@ -181,7 +181,7 @@ namespace Hangfire.Server
                         jobId,
                         new EnqueuedState { Reason = $"Triggered by {ToString()}" },
                         new[] { ScheduledState.StateName },
-                        disableFilters: false,
+                        false,
                         context.CancellationToken,
                         _profiler));
 
@@ -229,7 +229,7 @@ namespace Hangfire.Server
                     Reason = $"Failed to change state to the '{EnqueuedState.StateName}' one due to an exception after {MaxStateChangeAttempts} retry attempts"
                 },
                 new[] { ScheduledState.StateName },
-                disableFilters: true,
+                true,
                 context.CancellationToken,
                 _profiler));
         }

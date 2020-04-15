@@ -162,17 +162,13 @@ namespace Hangfire.Server
                 var shutdownReason = hostingEnvironment.GetProperty("ShutdownReason", BindingFlags.Static | BindingFlags.Public);
                 if (shutdownReason == null) return;
 
-                _shutdownReasonFunc = ShutdownReasonFunc;
-
-                Logger.Debug("HostingEnvironment.ShutdownReason shutdown trigger initialized successfully.");
-
-                string ShutdownReasonFunc()
+                _shutdownReasonFunc = () =>
                 {
                     try
                     {
                         var shutdownReasonValue = shutdownReason.GetValue(null);
 
-                        if (shutdownReasonValue != null && (int)shutdownReasonValue != 0)
+                        if (shutdownReasonValue != null && (int) shutdownReasonValue != 0)
                         {
                             return shutdownReasonValue.ToString();
                         }
@@ -183,7 +179,9 @@ namespace Hangfire.Server
                     }
 
                     return null;
-                }
+                };
+
+                Logger.Debug("HostingEnvironment.ShutdownReason shutdown trigger initialized successfully.");
             }
             catch (Exception ex)
             {
