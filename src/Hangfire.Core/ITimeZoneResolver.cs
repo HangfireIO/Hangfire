@@ -21,15 +21,21 @@ namespace Hangfire
 {
     public sealed class DefaultTimeZoneResolver : ITimeZoneResolver
     {
+        private TimeZoneInfo _timeZoneInfo;
         public TimeZoneInfo GetTimeZoneById(string timeZoneId)
         {
-            return TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            _timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            return _timeZoneInfo;
         }
+
+        public TimeZoneInfo GetCurrentTimeZoneInfo() => _timeZoneInfo;
     }
 
     public interface ITimeZoneResolver
     {
         [NotNull]
         TimeZoneInfo GetTimeZoneById([NotNull] string timeZoneId);
+
+        TimeZoneInfo GetCurrentTimeZoneInfo();
     }
 }

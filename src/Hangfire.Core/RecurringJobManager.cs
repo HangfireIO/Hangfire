@@ -57,7 +57,7 @@ namespace Hangfire
             [NotNull] JobStorage storage, 
             [NotNull] IJobFilterProvider filterProvider,
             [NotNull] ITimeZoneResolver timeZoneResolver)
-            : this(storage, filterProvider, timeZoneResolver, () => DateTime.UtcNow)
+            : this(storage, filterProvider, timeZoneResolver, () => TimeZoneInfo.ConvertTime(DateTime.Now, timeZoneResolver.GetCurrentTimeZoneInfo()))
         {
         }
 
@@ -76,7 +76,7 @@ namespace Hangfire
         }
 
         public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobFactory factory, [NotNull] ITimeZoneResolver timeZoneResolver)
-            : this(storage, factory, timeZoneResolver, () => DateTime.UtcNow)
+            : this(storage, factory, timeZoneResolver, () => TimeZoneInfo.ConvertTime(DateTime.Now, timeZoneResolver.GetCurrentTimeZoneInfo()))
         {
         }
 
