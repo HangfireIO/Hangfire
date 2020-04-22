@@ -22,7 +22,7 @@ namespace Hangfire.Profiling
 {
     internal class SlowLogProfiler : IProfiler
     {
-        private static readonly TimeSpan DefaultThreshold = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan DefaultThreshold = TimeSpan.FromMinutes(10);
 
         private readonly TimeSpan _threshold;
         private readonly ILog _logger;
