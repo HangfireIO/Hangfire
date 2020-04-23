@@ -38,6 +38,7 @@ namespace Hangfire.Dashboard
         public override string PathBase => _context.Request.PathBase.Value;
         public override string LocalIpAddress => _context.Request.LocalIpAddress;
         public override string RemoteIpAddress => _context.Request.RemoteIpAddress;
+        public override string QueryString => _context.Request.QueryString.ToString();
 
         public override string GetQuery(string key) => _context.Request.Query[key];
 
