@@ -68,7 +68,7 @@ WriteLiteral("\r\n");
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    var pager = new Pager(from, perPage, monitor.DeletedListCount());
+    var pager = new Pager(from, perPage, monitor.DeletedListCount(), DefaultRecordsPerPage);
     var jobs = monitor.DeletedJobs(pager.FromRecord, pager.RecordsPerPage);
 
 

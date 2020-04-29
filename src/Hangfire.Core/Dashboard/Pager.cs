@@ -22,16 +22,15 @@ namespace Hangfire.Dashboard
     public class Pager
     {
         private const int PageItemsCount = 7;
-        private const int DefaultRecordsPerPage = 10;
 
         private int _startPageIndex = 1;
         private int _endPageIndex = 1;
 
-        public Pager(int from, int perPage, long total)
+        public Pager(int from, int perPage, long total, int defaultRecordsPerPage)
         {
             FromRecord = from >= 0 ? from : 0;
-            RecordsPerPage = perPage > 0 ? perPage : DefaultRecordsPerPage;
-            TotalRecordCount = total;
+            RecordsPerPage = perPage > 0 ? perPage : defaultRecordsPerPage;
+            TotalRecordCount = total; TotalRecordCount = total;
             CurrentPage = FromRecord / RecordsPerPage + 1;
             TotalPageCount = (int)Math.Ceiling((double)TotalRecordCount / RecordsPerPage);
 

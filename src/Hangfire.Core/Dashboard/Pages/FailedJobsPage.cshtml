@@ -14,7 +14,7 @@
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    var pager = new Pager(from, perPage, monitor.FailedCount());
+    var pager = new Pager(from, perPage, monitor.FailedCount(), DefaultRecordsPerPage);
     var failedJobs = monitor.FailedJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 
