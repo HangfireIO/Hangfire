@@ -540,7 +540,11 @@ div.metric-null {
 @media (min-width: 992px) {
     #stats {
         position: fixed;
-        width: 220px
+        width: 220px;
+    }
+
+    div.jobs-sidebar {
+        max-width: 310px;
     }
 }
 

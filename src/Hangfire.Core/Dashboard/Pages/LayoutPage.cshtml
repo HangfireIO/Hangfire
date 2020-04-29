@@ -34,7 +34,7 @@
 
             <!-- Fixed navbar -->
             <div class="navbar navbar-default navbar-fixed-top">
-                <div class="container">
+                <div class="@(UseFullWidth ? "container-fluid" : "container")">
                     <div class="navbar-header">
                         <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                             <span class="icon-bar"></span>
@@ -61,7 +61,7 @@
             </div>
 
             <!-- Begin page content -->
-            <div class="container" style="margin-bottom: 20px;">
+            <div class="@(UseFullWidth ? "container-fluid" : "container")" style="margin-bottom: 20px;">
                 <!-- Error alert when polling fails -->
                 @Html.RenderPartial(new ErrorAlert())
 
@@ -70,7 +70,7 @@
         </div>
 
         <div id="footer">
-            <div class="container">
+            <div class="@(UseFullWidth ? "container-fluid" : "container")">
                 <ul class="list-inline credit">
                     <li>
                         <a href="https://www.hangfire.io/" target="_blank" rel="noopener noreferrer">Hangfire @($"{version.Major}.{version.Minor}.{version.Build}")
