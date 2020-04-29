@@ -30,7 +30,7 @@ namespace Hangfire.Dashboard
         {
             FromRecord = from >= 0 ? from : 0;
             RecordsPerPage = perPage > 0 ? perPage : defaultRecordsPerPage;
-            TotalRecordCount = total; TotalRecordCount = total;
+            TotalRecordCount = total;
             CurrentPage = FromRecord / RecordsPerPage + 1;
             TotalPageCount = (int)Math.Ceiling((double)TotalRecordCount / RecordsPerPage);
 
