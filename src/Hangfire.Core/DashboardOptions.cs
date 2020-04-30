@@ -60,6 +60,11 @@ namespace Hangfire
         /// </summary>
         public int StatsPollingInterval { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether or not to display arguments in job lists.
+        /// </summary>
+        public bool DisplayArgumentsInLists { get; set; }
+
         public bool DisplayStorageConnectionString { get; set; }
 
         /// <summary>
