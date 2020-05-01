@@ -538,4 +538,7 @@ Vous devriez les remettre en file d'attente ou les supprimer manuellement, ou ap
   <data name="Common_Error" xml:space="preserve">
     <value>Erreur</value>
   </data>
+  <data name="Arguments" xml:space="preserve">
+    <value>Arguments</value>
+  </data>
 </root>
