@@ -87,8 +87,8 @@ WriteLiteral("\r\n");
             #line 11 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
   
     Layout = new LayoutPage(Strings.RecurringJobsPage_Title);
-	List<RecurringJobDto> recurringJobs;
-    
+    List<RecurringJobDto> recurringJobs;
+
     int from, perPage;
 
     int.TryParse(Query("from"), out from);
@@ -96,19 +96,19 @@ WriteLiteral("\r\n");
 
     Pager pager = null;
 
-	using (var connection = Storage.GetConnection())
-	{
-	    var storageConnection = connection as JobStorageConnection;
-	    if (storageConnection != null)
-	    {
-	        pager = new Pager(from, perPage, storageConnection.GetRecurringJobCount(), DefaultRecordsPerPage);
-	        recurringJobs = storageConnection.GetRecurringJobs(pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
-	    }
-	    else
-	    {
+    using (var connection = Storage.GetConnection())
+    {
+        var storageConnection = connection as JobStorageConnection;
+        if (storageConnection != null)
+        {
+            pager = new Pager(from, perPage, storageConnection.GetRecurringJobCount(), DashboardOptions.DefaultRecordsPerPage);
+            recurringJobs = storageConnection.GetRecurringJobs(pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
+        }
+        else
+        {
             recurringJobs = connection.GetRecurringJobs();
-	    }
-	}
+        }
+    }
 
 
             

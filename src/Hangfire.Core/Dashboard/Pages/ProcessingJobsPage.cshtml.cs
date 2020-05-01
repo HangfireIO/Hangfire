@@ -80,7 +80,7 @@ WriteLiteral("\r\n");
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    var pager = new Pager(from, perPage, monitor.ProcessingCount(), DefaultRecordsPerPage);
+    var pager = new Pager(from, perPage, monitor.ProcessingCount(), DashboardOptions.DefaultRecordsPerPage);
     var processingJobs = monitor.ProcessingJobs(pager.FromRecord, pager.RecordsPerPage);
     var servers = monitor.Servers();
 

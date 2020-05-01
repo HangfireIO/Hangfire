@@ -87,7 +87,7 @@ WriteLiteral("\r\n");
             #line 11 "..\..\Dashboard\Pages\RetriesPage.cshtml"
   
     Layout = new LayoutPage(Strings.RetriesPage_Title);
-    
+
     int from, perPage;
 
     int.TryParse(Query("from"), out from);
@@ -102,7 +102,7 @@ WriteLiteral("\r\n");
 
         if (storageConnection != null)
         {
-            pager = new Pager(@from, perPage, storageConnection.GetSetCount("retries"), DefaultRecordsPerPage);
+            pager = new Pager(@from, perPage, storageConnection.GetSetCount("retries"), DashboardOptions.DefaultRecordsPerPage);
             jobIds = storageConnection.GetRangeFromSet("retries", pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
         }
     }

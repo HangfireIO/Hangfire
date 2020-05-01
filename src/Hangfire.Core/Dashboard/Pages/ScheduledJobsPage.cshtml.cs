@@ -68,7 +68,7 @@ WriteLiteral("\r\n");
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    var pager = new Pager(from, perPage, monitor.ScheduledCount(), DefaultRecordsPerPage);
+    var pager = new Pager(from, perPage, monitor.ScheduledCount(), DashboardOptions.DefaultRecordsPerPage);
     var scheduledJobs = monitor.ScheduledJobs(pager.FromRecord, pager.RecordsPerPage);
 
 

@@ -15,7 +15,7 @@
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    var pager = new Pager(from, perPage, monitor.FetchedCount(Queue), DefaultRecordsPerPage);
+    var pager = new Pager(from, perPage, monitor.FetchedCount(Queue), DashboardOptions.DefaultRecordsPerPage);
     var fetchedJobs = monitor.FetchedJobs(Queue, pager.FromRecord, pager.RecordsPerPage);
 }
 
