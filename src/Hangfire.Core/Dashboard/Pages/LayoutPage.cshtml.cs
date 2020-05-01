@@ -186,7 +186,7 @@ WriteLiteral("\">\r\n</head>\r\n    <body>\r\n        <!-- Wrap all page content
 
             
             #line 37 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                        Write(UseFullWidth ? "container-fluid" : "container");
+                        Write(DashboardOptions.UseFullWidth ? "container-fluid" : "container");
 
             
             #line default
@@ -279,7 +279,7 @@ WriteLiteral("                    </div>\r\n                    <!--/.nav-collap
 
             
             #line 64 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                    Write(UseFullWidth ? "container-fluid" : "container");
+                    Write(DashboardOptions.UseFullWidth ? "container-fluid" : "container");
 
             
             #line default
@@ -311,7 +311,7 @@ WriteLiteral("\r\n            </div>\r\n        </div>\r\n\r\n        <div id=\"
 
             
             #line 73 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                    Write(UseFullWidth ? "container-fluid" : "container");
+                    Write(DashboardOptions.UseFullWidth ? "container-fluid" : "container");
 
             
             #line default

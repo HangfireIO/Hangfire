@@ -39,7 +39,6 @@ namespace Hangfire.Dashboard
         public HtmlHelper Html { get; private set; }
         public UrlHelper Url { get; private set; }
 
-        public bool UseFullWidth { get; internal set; }
         public JobStorage Storage => Context.Storage;
         public string AppPath => Context.Options.AppPath;
         public DashboardOptions DashboardOptions => Context.Options;
@@ -81,7 +80,6 @@ namespace Hangfire.Dashboard
         {
             Context = parentPage.Context;
             Url = parentPage.Url;
-            UseFullWidth = parentPage.UseFullWidth;
 
             GenerationTime = parentPage.GenerationTime;
             _statisticsLazy = parentPage._statisticsLazy;
@@ -91,7 +89,6 @@ namespace Hangfire.Dashboard
         {
             Context = context;
             Url = new UrlHelper(context);
-            UseFullWidth = context.Options.UseFullWidth;
 
             _statisticsLazy = new Lazy<StatisticsDto>(() =>
             {
