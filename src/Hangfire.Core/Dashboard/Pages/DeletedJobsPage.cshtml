@@ -53,11 +53,15 @@
                                 @if (!IsReadOnly)
                                 {
                                     <th class="min-width">
-                                        <input type="checkbox" class="js-jobs-list-select-all"/>
+                                        <input type="checkbox" class="js-jobs-list-select-all" />
                                     </th>
                                 }
                                 <th class="min-width">@Strings.Common_Id</th>
                                 <th>@Strings.Common_Job</th>
+                                @if (DashboardOptions.DisplayArgumentsInLists)
+                                {
+                                    <th>@Strings.Arguments</th>
+                                }
                                 <th class="align-right">@Strings.DeletedJobsPage_Table_Deleted</th>
                             </tr>
                         </thead>
@@ -84,13 +88,19 @@
 
                                     @if (job.Value == null)
                                     {
-                                        <td colspan="2"><em>@Strings.Common_JobExpired</em></td>
+                                        <td colspan="@(DashboardOptions.DisplayArgumentsInLists ? 3 : 2)"><em>@Strings.Common_JobExpired</em></td>
                                     }
                                     else
                                     {
                                         <td class="word-break">
                                             @Html.JobNameLink(job.Key, job.Value.Job)
                                         </td>
+                                        if (DashboardOptions.DisplayArgumentsInLists)
+                                        {
+                                            <td class="ellipsis ellipsis-wrap">
+                                                @Html.JobArguments(job.Value.Job)
+                                            </td>
+                                        }
                                         <td class="align-right">
                                             @if (job.Value.DeletedAt.HasValue)
                                             {

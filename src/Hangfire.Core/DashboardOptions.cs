@@ -33,6 +33,7 @@ namespace Hangfire
             DisplayStorageConnectionString = true;
             DashboardTitle = "Hangfire Dashboard";
             DisplayNameFunc = null;
+            DisplayArgumentsInLists = false;
         }
 
         /// <summary>

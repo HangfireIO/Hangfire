@@ -81,13 +81,17 @@
                                 @if (!IsReadOnly)
                                 {
                                     <th class="min-width">
-                                        <input type="checkbox" class="js-jobs-list-select-all"/>
+                                        <input type="checkbox" class="js-jobs-list-select-all" />
                                     </th>
                                 }
                                 <th>@Strings.Common_Id</th>
                                 <th class="min-width">@Strings.RecurringJobsPage_Table_Cron</th>
                                 <th>@Strings.RecurringJobsPage_Table_TimeZone</th>
                                 <th>@Strings.Common_Job</th>
+                                @if (DashboardOptions.DisplayArgumentsInLists)
+                                {
+                                    <th>@Strings.Arguments</th>
+                                }
                                 <th class="align-right min-width">@Strings.RecurringJobsPage_Table_NextExecution</th>
                                 <th class="align-right min-width">@Strings.RecurringJobsPage_Table_LastExecution</th>
                                 <th class="align-right min-width">@Strings.Common_Created</th>
@@ -199,6 +203,23 @@
                                             <em>@Strings.Common_NotAvailable</em>
                                         }
                                     </td>
+                                    @if (DashboardOptions.DisplayArgumentsInLists)
+                                    {
+                                        <td class="ellipsis ellipsis-wrap">
+                                            @if (job.Job != null)
+                                            {
+                                                @: @Html.JobArguments(job.Job)
+                                            }
+                                            else if (job.LoadException != null)
+                                            {
+                                                <em>@job.LoadException.Message</em>
+                                            }
+                                            else
+                                            {
+                                                <em>@Strings.Common_NotAvailable</em>
+                                            }
+                                        </td>
+                                    }
                                     <td class="align-right min-width">
                                         @if (!job.NextExecution.HasValue)
                                         {
