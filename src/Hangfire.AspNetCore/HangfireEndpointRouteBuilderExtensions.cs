@@ -1,5 +1,5 @@
 #if NETCOREAPP3_0
-
+using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
 using Microsoft.AspNetCore.Builder;
@@ -46,6 +46,35 @@ namespace Hangfire
                 .Build();
 
             return endpoints.Map(pattern + "/{**path}", pipeline);
+        }
+
+        public static IEndpointConventionBuilder MapHangfireDashboardWithAuthorizationPolicy(
+            [NotNull] this IEndpointRouteBuilder endpoints,
+            [NotNull] string authorizationPolicyName,
+            [CanBeNull] DashboardOptions options = null,
+            [CanBeNull] JobStorage storage = null)
+        {
+            return MapHangfireDashboardWithAuthorizationPolicy(endpoints, authorizationPolicyName, "/hangfire", options, storage);
+        }
+
+        public static IEndpointConventionBuilder MapHangfireDashboardWithAuthorizationPolicy(
+            [NotNull] this IEndpointRouteBuilder endpoints,
+            [NotNull] string authorizationPolicyName,
+            [NotNull] string pattern,
+            [CanBeNull] DashboardOptions options = null,
+            [CanBeNull] JobStorage storage = null)
+        {
+            if (options == null)
+            {
+                options = new DashboardOptions()
+                {
+                    Authorization = new List<IDashboardAuthorizationFilter>() // We don't require the default LocalHost only filter since we provide our own policy
+                };
+            }
+
+            return endpoints
+                .MapHangfireDashboard(pattern, options, storage)
+                .RequireAuthorization(authorizationPolicyName);
         }
     }
 }
