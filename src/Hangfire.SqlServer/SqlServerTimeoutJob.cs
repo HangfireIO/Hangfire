@@ -93,7 +93,7 @@ namespace Hangfire.SqlServer
             if (_disposed) return;
             _disposed = true;
 
-            _timer?.Dispose();
+            DisposeTimer();
 
             lock (_syncRoot)
             {
@@ -102,6 +102,11 @@ namespace Hangfire.SqlServer
                     Requeue();
                 }
             }
+        }
+
+        internal void DisposeTimer()
+        {
+            _timer?.Dispose();
         }
 
         private string GetTableHints()

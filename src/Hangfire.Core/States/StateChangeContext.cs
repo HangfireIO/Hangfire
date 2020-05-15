@@ -1,5 +1,5 @@
 // This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright Â© 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -51,7 +51,7 @@ namespace Hangfire.States
             [NotNull] IState newState,
             [CanBeNull] IEnumerable<string> expectedStates,
             CancellationToken cancellationToken)
-        : this(storage, connection, backgroundJobId, newState, expectedStates, cancellationToken, EmptyProfiler.Instance)
+        : this(storage, connection, backgroundJobId, newState, expectedStates, false, cancellationToken, EmptyProfiler.Instance)
         {
         }
 
@@ -60,7 +60,8 @@ namespace Hangfire.States
             [NotNull] IStorageConnection connection,
             [NotNull] string backgroundJobId, 
             [NotNull] IState newState, 
-            [CanBeNull] IEnumerable<string> expectedStates, 
+            [CanBeNull] IEnumerable<string> expectedStates,
+            bool disableFilters,
             CancellationToken cancellationToken,
             [NotNull] IProfiler profiler,
             [CanBeNull] IReadOnlyDictionary<string, object> customData = null)
@@ -70,6 +71,7 @@ namespace Hangfire.States
             BackgroundJobId = backgroundJobId ?? throw new ArgumentNullException(nameof(backgroundJobId));
             NewState = newState ?? throw new ArgumentNullException(nameof(newState));
             ExpectedStates = expectedStates;
+            DisableFilters = disableFilters;
             CancellationToken = cancellationToken;
             Profiler = profiler ?? throw new ArgumentNullException(nameof(profiler));
             CustomData = customData;
@@ -80,6 +82,7 @@ namespace Hangfire.States
         public string BackgroundJobId { get; }
         public IState NewState { get; }
         public IEnumerable<string> ExpectedStates { get; }
+        public bool DisableFilters { get; }
         public CancellationToken CancellationToken { get; }
         internal IProfiler Profiler { get; }
         public IReadOnlyDictionary<string, object> CustomData { get; }

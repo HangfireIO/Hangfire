@@ -132,8 +132,8 @@ namespace Hangfire.Server
             try
             {
                 preContext.Profiler.InvokeMeasured(
-                    filter,
-                    x => x.OnPerforming(preContext),
+                    Tuple.Create(filter, preContext),
+                    InvokeOnPerforming,
                     $"OnPerforming for {preContext.BackgroundJob.Id}");
             }
             catch (Exception filterException)
@@ -165,8 +165,8 @@ namespace Hangfire.Server
                 try
                 {
                     postContext.Profiler.InvokeMeasured(
-                        filter,
-                        x => x.OnPerformed(postContext),
+                        Tuple.Create(filter, postContext),
+                        InvokeOnPerformed,
                         $"OnPerformed for {postContext.BackgroundJob.Id}");
                 }
                 catch (Exception filterException)
@@ -189,8 +189,8 @@ namespace Hangfire.Server
                 try
                 {
                     postContext.Profiler.InvokeMeasured(
-                        filter,
-                        x => x.OnPerformed(postContext),
+                        Tuple.Create(filter, postContext),
+                        InvokeOnPerformed,
                         $"OnPerformed for {postContext.BackgroundJob.Id}");
                 }
                 catch (Exception filterException)
@@ -206,14 +206,32 @@ namespace Hangfire.Server
             return postContext;
         }
 
+        private static void InvokeOnPerforming(Tuple<IServerFilter, PerformingContext> x)
+        {
+            x.Item1.OnPerforming(x.Item2);
+        }
+
+        private static void InvokeOnPerformed(Tuple<IServerFilter, PerformedContext> x)
+        {
+            x.Item1.OnPerformed(x.Item2);
+        }
+
         private static void InvokeServerExceptionFilters(
             ServerExceptionContext context,
             IEnumerable<IServerExceptionFilter> filters)
         {
             foreach (var filter in filters.Reverse())
             {
-                filter.OnServerException(context);
+                context.Profiler.InvokeMeasured(
+                    Tuple.Create(filter, context),
+                    InvokeOnServerException,
+                    $"OnServerException for {context.BackgroundJob.Id}");
             }
+        }
+
+        private static void InvokeOnServerException(Tuple<IServerExceptionFilter, ServerExceptionContext> x)
+        {
+            x.Item1.OnServerException(x.Item2);
         }
     }
 }

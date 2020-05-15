@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
 using Hangfire.Dashboard.Owin;
+using Hangfire.Logging;
 using Hangfire.Server;
 using Owin;
 using Microsoft.Owin;
@@ -309,9 +310,15 @@ namespace Hangfire
                     + "Please use another OWIN host or create an instance of the `BackgroundJobServer` class manually.");
             }
 
-            token.Register(server.Dispose);
-
+            token.Register(OnAppDisposing, server);
             return builder;
+        }
+
+        private static void OnAppDisposing(object state)
+        {
+            var logger = LogProvider.GetLogger(typeof(AppBuilderExtensions));
+            logger.Info("Web application is shutting down via OWIN's host.OnAppDisposing callback.");
+            ((IDisposable) state).Dispose();
         }
 
         /// <summary>

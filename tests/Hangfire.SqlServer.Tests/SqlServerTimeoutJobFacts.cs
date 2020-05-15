@@ -73,6 +73,8 @@ namespace Hangfire.SqlServer.Tests
                 var id = CreateJobQueueRecord(sql, "1", "default", FetchedAt);
                 using (var processingJob = new SqlServerTimeoutJob(storage, id, "1", "default", FetchedAt))
                 {
+                    processingJob.DisposeTimer();
+
                     // Act
                     processingJob.RemoveFromQueue();
 
@@ -95,6 +97,8 @@ namespace Hangfire.SqlServer.Tests
 
                 using (var fetchedJob = new SqlServerTimeoutJob(storage, 999, "1", "default", FetchedAt))
                 {
+                    fetchedJob.DisposeTimer();
+
                     // Act
                     fetchedJob.RemoveFromQueue();
 
@@ -114,6 +118,8 @@ namespace Hangfire.SqlServer.Tests
                 var id = CreateJobQueueRecord(sql, "1", "default", FetchedAt);
                 using (var processingJob = new SqlServerTimeoutJob(storage, id, "1", "default", FetchedAt))
                 {
+                    processingJob.DisposeTimer();
+
                     // Act
                     processingJob.Requeue();
 
@@ -134,6 +140,7 @@ namespace Hangfire.SqlServer.Tests
                 using (var processingJob = new SqlServerTimeoutJob(storage, id, "1", "default", FetchedAt))
                 {
                     Thread.Sleep(TimeSpan.FromSeconds(10));
+                    processingJob.DisposeTimer();
 
                     var record = sql.Query($"select * from [{Constants.DefaultSchema}].JobQueue").Single();
 
@@ -155,6 +162,7 @@ namespace Hangfire.SqlServer.Tests
                 using (var processingJob = new SqlServerTimeoutJob(storage, id, "1", "default", FetchedAt))
                 {
                     Thread.Sleep(TimeSpan.FromSeconds(10));
+                    processingJob.DisposeTimer();
 
                     // Act
                     processingJob.RemoveFromQueue();
@@ -176,6 +184,7 @@ namespace Hangfire.SqlServer.Tests
                 using (var processingJob = new SqlServerTimeoutJob(storage, id, "1", "default", FetchedAt))
                 {
                     Thread.Sleep(TimeSpan.FromSeconds(10));
+                    processingJob.DisposeTimer();
 
                     // Act
                     processingJob.Requeue();
