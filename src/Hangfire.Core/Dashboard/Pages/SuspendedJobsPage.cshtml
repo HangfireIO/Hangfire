@@ -9,7 +9,7 @@
 @using Hangfire.Storage
 @inherits RazorPage
 @{
-    Layout = new LayoutPage("Strings.SuspendedJobsPage_Title");
+    Layout = new LayoutPage(Strings.SuspendedJobsPage_Title);
 
     int from, perPage;
 
@@ -44,7 +44,7 @@ else
             @Html.JobsSidebar()
         </div>
         <div class="col-md-9">
-            <h1 class="page-header">xxxx @Strings.SuspendedJobsPage_Title</h1>
+            <h1 class="page-header">@Strings.SuspendedJobsPage_Title</h1>
             @if (jobIds.Count == 0)
             {
                 <div class="alert alert-success">
