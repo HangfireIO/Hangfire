@@ -545,4 +545,28 @@
   <data name="Common_Error" xml:space="preserve">
     <value>Error</value>
   </data>
+  <data name="JobsSidebarMenu_Suspended" xml:space="preserve">
+    <value>Suspended</value>
+  </data>
+  <data name="Metrics_SuspendedCount" xml:space="preserve">
+    <value>Suspended</value>
+  </data>
+  <data name="SuspendedPage_Warning_Html" xml:space="preserve">
+    <value>&lt;h4&gt;This page can't be displayed&lt;/h4&gt;
+        &lt;p&gt;
+            Don't worry, suspend is working as expected. Your current job storage does not support
+            some queries required to show this page. Please try to update your storage or wait until
+            the full command set is implemented.
+        &lt;/p&gt;
+        &lt;p&gt;
+            Please go to the &lt;a href="{0}"&gt;Scheduled jobs&lt;/a&gt; page to see all the
+            scheduled jobs including retries.
+        &lt;/p&gt;</value>
+  </data>
+  <data name="SuspendedJobsPage_NoJobs" xml:space="preserve">
+    <value>All is OK – you have no suspended.</value>
+  </data>
+  <data name="SuspendedJobsPage_Title" xml:space="preserve">
+    <value>Suspended Jobs</value>
+  </data>
 </root>

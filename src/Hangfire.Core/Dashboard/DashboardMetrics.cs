@@ -62,7 +62,7 @@ namespace Hangfire.Dashboard
         }
 
         public static readonly DashboardMetric ServerCount = new DashboardMetric(
-            "servers:count", 
+            "servers:count",
             "Metrics_Servers",
             page => new Metric(page.Statistics.Servers)
             {
@@ -190,5 +190,26 @@ namespace Hangfire.Dashboard
                     Style = awaitingCount > 0 ? MetricStyle.Info : MetricStyle.Default
                 };
             });
+        public static readonly DashboardMetric SuspendedCount = new DashboardMetric(
+          "suspended:count",
+          "Metrics_SuspendedCount",
+          page =>
+          {
+              long suspendedCount = -1;
+
+              using (var connection = page.Storage.GetConnection())
+              {
+                  var storageConnection = connection as JobStorageConnection;
+                  if (storageConnection != null)
+                  {
+                      suspendedCount = storageConnection.GetSetCount("paused-jobs");
+                  }
+              }
+
+              return new Metric(suspendedCount)
+              {
+                  Style = suspendedCount > 0 ? MetricStyle.Info : MetricStyle.Default
+              };
+          });
     }
 }

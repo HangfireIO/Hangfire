@@ -176,6 +176,16 @@ namespace Hangfire.Dashboard
             Routes.AddRazorPage("/servers", x => new ServersPage());
             Routes.AddRazorPage("/retries", x => new RetriesPage());
 
+            Routes.AddRazorPage("/jobs/suspended", x => new SuspendedJobsPage());
+            Routes.AddRecurringBatchCommand(
+               "/recurring/suspend",
+               (manager, jobId) => manager.SuspendJob(jobId));
+
+            Routes.AddRecurringBatchCommand(
+              "/recurring/resume",
+              (manager, jobId) => manager.ResumeJob(jobId));
+
+
             #endregion
         }
 
