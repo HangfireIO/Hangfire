@@ -1,5 +1,5 @@
 // This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright Â© 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -205,6 +205,7 @@ namespace Hangfire.Server
                         fetchedJob.JobId,
                         state,
                         expectedStates,
+                        disableFilters: false,
                         initializeToken,
                         _profiler,
                         customData));
@@ -232,6 +233,7 @@ namespace Hangfire.Server
                 fetchedJob.JobId,
                 new FailedState(exception) { Reason = $"Failed to change state to a '{state.Name}' one due to an exception after {_maxStateChangeAttempts} retry attempts" },
                 expectedStates,
+                disableFilters: true,
                 initializeToken,
                 _profiler));
         }

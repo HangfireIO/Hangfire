@@ -19,6 +19,7 @@ namespace Hangfire.Core.Tests
             BackgroundJobId = "JobId";
             NewState = new Mock<IState>();
             ExpectedStates = null;
+            DisableFilters = false;
             CancellationToken = CancellationToken.None;
 
             _context = new Lazy<StateChangeContext>(
@@ -37,7 +38,8 @@ namespace Hangfire.Core.Tests
         public Mock<IStorageConnection> Connection { get; set; }
         public string BackgroundJobId { get; set; }
         public Mock<IState> NewState { get; set; }
-        public IEnumerable<string> ExpectedStates { get; set; } 
+        public IEnumerable<string> ExpectedStates { get; set; }
+        public bool DisableFilters { get; set; }
         public CancellationToken CancellationToken { get; set; }
         public IReadOnlyDictionary<string, object> CustomData { get; set; }
         

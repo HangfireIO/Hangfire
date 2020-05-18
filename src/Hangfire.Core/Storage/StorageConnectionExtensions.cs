@@ -129,9 +129,19 @@ namespace Hangfire.Storage
                     dto.CreatedAt = JobHelper.DeserializeNullableDateTime(hash["CreatedAt"]);
                 }
 
-                if (hash.TryGetValue("Error", out var error))
+                if (hash.TryGetValue("Error", out var error) && !String.IsNullOrEmpty(error))
                 {
                     dto.Error = error;
+                }
+
+                if (hash.TryGetValue("RetryAttempt", out var attemptString) &&
+                    Int32.TryParse(attemptString, out var retryAttempt))
+                {
+                    dto.RetryAttempt = retryAttempt;
+                }
+                else
+                {
+                    dto.RetryAttempt = 0;
                 }
 
                 result.Add(dto);

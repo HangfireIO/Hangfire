@@ -7,7 +7,7 @@
 @using Hangfire.Dashboard.Resources
 @inherits RazorPage
 @{
-    Layout = new LayoutPage(Queue.ToUpperInvariant());
+    Layout = new LayoutPage(Queue);
 
     int from, perPage;
 
@@ -24,12 +24,12 @@
         @Html.JobsSidebar()
     </div>
     <div class="col-md-9">
-        @Html.Breadcrumbs(Queue.ToUpperInvariant(), new Dictionary<string, string>
+        @Html.Breadcrumbs(Queue, new Dictionary<string, string>
         {
             { "Queues", Url.LinkToQueues() }
         })
 
-        <h1 class="page-header">@Queue.ToUpperInvariant() <small>@Strings.EnqueuedJobsPage_Title</small></h1>
+        <h1 class="page-header">@Queue <small>@Strings.EnqueuedJobsPage_Title</small></h1>
 
         @if (pager.TotalPageCount == 0)
         {

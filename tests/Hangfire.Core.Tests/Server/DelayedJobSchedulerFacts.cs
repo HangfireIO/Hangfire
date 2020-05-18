@@ -20,6 +20,7 @@ namespace Hangfire.Core.Tests.Server
         private readonly BackgroundProcessContextMock _context;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
         private readonly Mock<IDisposable> _distributedLock;
+        private readonly List<string> _schedule = new List<string>();
 
         public DelayedJobSchedulerFacts()
         {
@@ -38,9 +39,23 @@ namespace Hangfire.Core.Tests.Server
                 .Returns(_distributedLock.Object);
 
             _connection
-                .SetupSequence(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0)))
-                .Returns(JobId)
-                .Throws(new OperationCanceledException("stopped"));
+                .Setup(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0)))
+                .Returns(_schedule.FirstOrDefault);
+            
+            _connection
+                .Setup(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0), It.IsAny<int>()))
+                .Returns(_schedule.ToList);
+
+            _stateChanger
+                .Setup(x => x.ChangeState(It.IsNotNull<StateChangeContext>()))
+                .Callback<StateChangeContext>(ctx =>
+                {
+                    if (!(ctx.NewState is ScheduledState)) _schedule.Remove(ctx.BackgroundJobId);
+                });
+
+            _transaction
+                .Setup(x => x.RemoveFromSet("schedule", It.IsNotNull<string>()))
+                .Callback<string, string>((key, value) => _schedule.Remove(value));
         }
 
         [Fact]
@@ -55,12 +70,16 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_MovesJobStateToEnqueued()
         {
-            RunSchedulerAndWait();
+            var scheduler = CreateScheduler();
+            _schedule.Add(JobId);
+            
+            scheduler.Execute(_context.Object);
 
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.BackgroundJobId == JobId &&
                 ctx.NewState is EnqueuedState &&
-                ctx.ExpectedStates.SequenceEqual(new[] { ScheduledState.StateName }))));
+                ctx.ExpectedStates.SequenceEqual(new[] { ScheduledState.StateName }) &&
+                ctx.DisableFilters == false)));
 
             _connection.Verify(x => x.Dispose());
         }
@@ -69,17 +88,15 @@ namespace Hangfire.Core.Tests.Server
         public void Execute_MovesJobStateToEnqueued_UsingBatching_WhenAvailable()
         {
             // Arrange
-            _connection
-                .Setup(x => x.GetFirstByLowestScoreFromSet(null, It.IsAny<double>(), It.IsAny<double>(),It.IsAny<int>()))
-                .Throws(new ArgumentNullException("key"));
+            EnableBatching();
 
-            _connection
-                .SetupSequence(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0), It.IsAny<int>()))
-                .Returns(new List<string> { "job-1", "job-2" })
-                .Throws(new OperationCanceledException("stopped"));
+            _schedule.Add("job-1");
+            _schedule.Add("job-2");
+
+            var scheduler = CreateScheduler();
 
             // Act
-            RunSchedulerAndWait();
+            scheduler.Execute(_context.Object);
 
             // Assert
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
@@ -98,14 +115,17 @@ namespace Hangfire.Core.Tests.Server
             _connection
                 .Setup(x => x.GetFirstByLowestScoreFromSet(It.IsAny<string>(), It.IsAny<double>(), It.IsAny<double>(),It.IsAny<int>()))
                 .Throws<NotImplementedException>();
+            
+            _schedule.Add("job-1");
 
             _connection
-                .SetupSequence(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0)))
-                .Returns("job-1")
-                .Throws(new OperationCanceledException("stopped"));
+                .Setup(x => x.GetFirstByLowestScoreFromSet("schedule", 0, It.Is<double>(time => time > 0)))
+                .Returns(_schedule.FirstOrDefault);
+
+            var scheduler = CreateScheduler();
 
             // Act
-            RunSchedulerAndWait();
+            scheduler.Execute(_context.Object);
 
             // Assert
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
@@ -113,15 +133,11 @@ namespace Hangfire.Core.Tests.Server
                 ctx.NewState is EnqueuedState)));
         }
 
-        [Fact]
-        public void Execute_DoesNotCallStateChanger_IfThereAreNoJobsToEnqueue()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_DoesNotCallStateChanger_IfThereAreNoJobsToEnqueue(bool batching)
         {
-            _connection
-                .SetupSequence(x => x.GetFirstByLowestScoreFromSet(
-                "schedule", 0, It.Is<double>(time => time > 0)))
-                .Returns((string)null)
-                .Throws(new OperationCanceledException("stopped"));
-
+            if (batching) EnableBatching();
             var scheduler = CreateScheduler();
 
             scheduler.Execute(_context.Object);
@@ -131,31 +147,99 @@ namespace Hangfire.Core.Tests.Server
                 Times.Never);
         }
 
-        [Fact]
-        public void Execute_RemovesAJobIdentifierFromTheSet_WhenStateChangeFails()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_RemovesAJobIdentifierFromTheSet_WhenStateChangeFails(bool batching)
         {
+            if (batching) EnableBatching();
             _stateChanger
                 .Setup(x => x.ChangeState(It.IsAny<StateChangeContext>()))
                 .Returns<IState>(null);
+            _schedule.Add(JobId);
 
-            RunSchedulerAndWait();
+            var scheduler = CreateScheduler();
+            
+            scheduler.Execute(_context.Object);
 
             _transaction.Verify(x => x.RemoveFromSet("schedule", JobId));
             _transaction.Verify(x => x.Commit());
         }
 
-        [Fact]
-        public void Execute_ActsWithinADistributedLock()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_MovesJobToTheFailedState_WithFiltersDisabled_WhenStateChangerThrowsAnException(bool batching)
         {
-            RunSchedulerAndWait();
+            // Arrange
+            if (batching) EnableBatching();
+
+            _schedule.Add(JobId);
+            _stateChanger
+                .Setup(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is EnqueuedState)))
+                .Throws<InvalidOperationException>();
+
+            var scheduler = CreateScheduler();
+            
+            // Act
+            scheduler.Execute(_context.Object);
+            
+            // Assert
+            _stateChanger.Verify(
+                x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is EnqueuedState)),
+                Times.AtLeast(3));
+            
+            _stateChanger.Verify(
+                x => x.ChangeState(It.Is<StateChangeContext>(ctx => 
+                    ctx.BackgroundJobId == JobId &&
+                    ctx.NewState is FailedState &&
+                    ((FailedState)ctx.NewState).Exception.GetType() == typeof(InvalidOperationException) &&
+                    ctx.ExpectedStates.Contains(ScheduledState.StateName) &&
+                    ctx.DisableFilters == true)),
+                Times.Once);
+        }
+
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_AbleToProcessFurtherJobs_WhenStateChangerThrowsAnException_ForPreviousOnes(bool batching)
+        {
+            // Arrange
+            if (batching) EnableBatching();
+
+            _schedule.Add(JobId);
+            _schedule.Add("AnotherId");
+
+            _stateChanger
+                .Setup(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.BackgroundJobId == JobId && ctx.NewState is ScheduledState)))
+                .Throws<InvalidOperationException>();
+
+            var scheduler = CreateScheduler();
+            
+            // Act
+            scheduler.Execute(_context.Object);
+            
+            // Assert
+            _stateChanger.Verify(
+                x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.BackgroundJobId == "AnotherId" && ctx.NewState is EnqueuedState)),
+                Times.Once);
+        }
+
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_ActsWithinADistributedLock(bool batching)
+        {
+            if (batching) EnableBatching();
+            var scheduler = CreateScheduler();
+
+            scheduler.Execute(_context.Object);
 
             _connection.Verify(x => x.AcquireDistributedLock(It.IsAny<string>(), It.IsAny<TimeSpan>()));
             _distributedLock.Verify(x => x.Dispose());
         }
 
-        [Fact]
-        public void Execute_DoesNotThrowDistributedLockTimeoutException()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_DoesNotThrowDistributedLockTimeoutException(bool batching)
         {
+            if (batching) EnableBatching();
             _connection
                 .Setup(x => x.AcquireDistributedLock("locks:schedulepoller", It.IsAny<TimeSpan>()))
                 .Throws(new DistributedLockTimeoutException("locks:schedulepoller"));
@@ -165,17 +249,41 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
         }
 
-        private void RunSchedulerAndWait()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_RemovesJobFromSchedule_WhenIdDoesNotExists(bool batching)
         {
-            var scheduler = CreateScheduler();
-            var exception = Assert.Throws<OperationCanceledException>(() => scheduler.Execute(_context.Object));
+            // Arrange
+            if (batching) EnableBatching();
+            _schedule.Add(JobId);
 
-            Assert.Equal("stopped", exception.Message);
+            _connection.Setup(x => x.GetJobData(JobId)).Returns<JobData>(null);
+
+            _stateChanger
+                .Setup(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is EnqueuedState)))
+                .Returns<IState>(null);
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _stateChanger.Verify(x => x.ChangeState(It.IsAny<StateChangeContext>()), Times.Once);
+            _transaction.Verify(x => x.RemoveFromSet("schedule", JobId));
+            _transaction.Verify(x => x.Commit());
         }
 
         private DelayedJobScheduler CreateScheduler()
         {
             return new DelayedJobScheduler(TimeSpan.Zero, _stateChanger.Object);
+        }
+        
+        private void EnableBatching()
+        {
+            _connection
+                .Setup(x => x.GetFirstByLowestScoreFromSet(null, It.IsAny<double>(), It.IsAny<double>(), It.IsAny<int>()))
+                .Throws(new ArgumentNullException("key"));
         }
     }
 }

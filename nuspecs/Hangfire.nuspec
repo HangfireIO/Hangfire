@@ -21,6 +21,28 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.11
+
+Hangfire.Core
+
+• Added – Display recurring job exceptions directly in the Dashboard UI.
+• Added – Add built-in support for reliable shutdown detection of ASP.NET apps.
+• Changed – Unify exception handling in recurring job scheduler.
+• Changed – Internal feature to perform state changes without calling any filters.
+• Changed – Decrease the number of retry attempts for recurring jobs to 5.
+• Fixed – Let workers to ignore any state change filters when all previous attempts to call them failed.
+• Fixed – Don't let `RecurringJobScheduler` to stall the pipeline when extension filters throw an exception.
+• Fixed – Don't let `DelayedJobScheduler` to stall the pipeline when state filters throw an exception.
+• Fixed – `JobLoadException` when new methods deployed, caused by overlapped recycles in ASP.NET applications.
+• Fixed – Configuration changes aren't taken into account, caused by overlapped recycles in ASP.NET.
+• Fixed – Zombie servers shown on the "Servers" page that aren't stopped automatically unless app pool is recycled.
+• Fixed – Pass the whole exception to the `Error` field of a recurring job.
+• Fixed – Re-schedule recurring jobs with unsupported versions, instead of stopping the pipeline.
+• Fixed – Don't stumble over non-existing recurring jobs in a scheduler.
+• Fixed – Add another check before removing non-existing jobs from delayed jobs to avoid race conditions.
+• Fixed – Avoid throwing `NullReferenceException` instead of `InvalidOperationException` when deserializing a job.
+• Fixed – Don't transform queue names to upper case in the Dashboard UI.
+
 1.7.10
 
 Hangfire.Core
