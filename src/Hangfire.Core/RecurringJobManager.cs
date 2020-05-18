@@ -55,7 +55,7 @@ namespace Hangfire
         }
 
         public RecurringJobManager(
-            [NotNull] JobStorage storage, 
+            [NotNull] JobStorage storage,
             [NotNull] IJobFilterProvider filterProvider,
             [NotNull] ITimeZoneResolver timeZoneResolver)
             : this(storage, filterProvider, timeZoneResolver, () => DateTime.UtcNow)
@@ -63,8 +63,8 @@ namespace Hangfire
         }
 
         public RecurringJobManager(
-            [NotNull] JobStorage storage, 
-            [NotNull] IJobFilterProvider filterProvider, 
+            [NotNull] JobStorage storage,
+            [NotNull] IJobFilterProvider filterProvider,
             [NotNull] ITimeZoneResolver timeZoneResolver,
             [NotNull] Func<DateTime> nowFactory)
             : this(storage, new BackgroundJobFactory(filterProvider), timeZoneResolver, nowFactory)
@@ -82,7 +82,7 @@ namespace Hangfire
         }
 
         internal RecurringJobManager(
-            [NotNull] JobStorage storage, 
+            [NotNull] JobStorage storage,
             [NotNull] IBackgroundJobFactory factory,
             [NotNull] ITimeZoneResolver timeZoneResolver,
             [NotNull] Func<DateTime> nowFactory)
@@ -122,7 +122,7 @@ namespace Hangfire
                 }
             }
         }
- 
+
         private static void ValidateCronExpression(string cronExpression)
         {
             try
@@ -215,7 +215,9 @@ namespace Hangfire
 
         public void ResumeJob(string recurringJobId)
         {
-            if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
+            if (recurringJobId == null)
+                throw new ArgumentNullException(nameof(recurringJobId));
+
             var monitor = _storage.GetMonitoringApi();
             var job = monitor.JobDetails(recurringJobId);
             string jd = "";
@@ -226,17 +228,20 @@ namespace Hangfire
                     jd = RecurringJobId.Value;
                 }
             }
-            if (jd != null && jd != "")
-                recurringJobId = String.Format(jd).ToString().Replace("\"", "");
+
+            if (!string.IsNullOrEmpty(jd))
+                recurringJobId = jd.Replace("\"", "");
 
             using (var connection = _storage.GetConnection())
-            using (connection.AcquireDistributedRecurringJobLock(recurringJobId, DefaultTimeout))
             {
-                using (var transaction = connection.CreateWriteTransaction())
+                using (connection.AcquireDistributedRecurringJobLock(recurringJobId, DefaultTimeout))
                 {
-                    transaction.RemoveFromSet("paused-jobs", recurringJobId);
-                    transaction.AddToSet("recurring-jobs", recurringJobId, JobHelper.ToTimestamp(DateTime.UtcNow));
-                    transaction.Commit();
+                    using (var transaction = connection.CreateWriteTransaction())
+                    {
+                        transaction.RemoveFromSet("paused-jobs", recurringJobId);
+                        transaction.AddToSet("recurring-jobs", recurringJobId, JobHelper.ToTimestamp(DateTime.UtcNow));
+                        transaction.Commit();
+                    }
                 }
             }
         }
