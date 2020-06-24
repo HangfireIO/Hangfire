@@ -65,5 +65,26 @@ namespace Hangfire.Core.Tests.Storage
 			_connection.VerifyAll();
 		}
 
+         [Fact]
+         public void GetRecurringJobsById()
+         {
+             var validIds = new HashSet<string> { "1", "2", "3" };
+             var recurringJobIds = new [] { "1", "2", "4" };
+
+             _connection.Setup(o => o.GetAllItemsFromSet(It.IsAny<string>())).Returns( validIds );
+             _connection.Setup(o => o.GetAllEntriesFromHash("recurring-job:1")).Returns(new Dictionary<string, string>
+             {
+                 { "Cron", "A"}
+             }).Verifiable();
+             _connection.Setup(o => o.GetAllEntriesFromHash("recurring-job:2")).Returns(new Dictionary<string, string>
+             {
+                 { "Cron", "B"}
+             }).Verifiable();
+
+             var result = _connection.Object.GetRecurringJobs(recurringJobIds);
+
+             Assert.Equal(2, result.Count);
+             _connection.VerifyAll();
+         }
 	}
 }

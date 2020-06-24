@@ -61,6 +61,18 @@ namespace Hangfire.Storage
             return GetRecurringJobDtos(connection, ids);
         }
 
+        public static List<RecurringJobDto> GetRecurringJobs([NotNull] this IStorageConnection connection, IEnumerable<string> recurringJobIds)
+        {
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            if (recurringJobIds == null) throw new ArgumentNullException(nameof(recurringJobIds));
+
+            var ids = connection.GetAllItemsFromSet("recurring-jobs");
+
+            ids.IntersectWith(recurringJobIds);
+
+            return GetRecurringJobDtos(connection, ids);
+        }
+
         private static List<RecurringJobDto> GetRecurringJobDtos(IStorageConnection connection, IEnumerable<string> ids)
         {
             var result = new List<RecurringJobDto>();
