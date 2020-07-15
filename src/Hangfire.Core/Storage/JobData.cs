@@ -26,6 +26,7 @@ namespace Hangfire.Storage
         public DateTime CreatedAt { get; set; }
 
         public JobLoadException LoadException { get; set; }
+        public InvocationData InvocationData { get; set; }
 
         public void EnsureLoaded()
         {

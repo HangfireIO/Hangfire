@@ -28,6 +28,7 @@ using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 using Hangfire.Dashboard.Pages;
 using Hangfire.Dashboard.Resources;
+using Hangfire.Storage;
 
 namespace Hangfire.Dashboard
 {
@@ -126,11 +127,14 @@ namespace Hangfire.Dashboard
                 : $"#{jobId}"));
         }
 
-        public string JobName(Job job)
+        public string JobName(Job job, InvocationData invocationData)
         {
             if (job == null)
             {
-                return Strings.Common_CannotFindTargetMethod;
+                string name = invocationData?.TypeMethodName;
+                return name is null ?
+                    Strings.Common_CannotFindTargetMethod :
+                    $"({name})";
             }
 
             var jobDisplayNameAttribute = job.Method.GetCustomAttribute<JobDisplayNameAttribute>();
@@ -194,9 +198,9 @@ namespace Hangfire.Dashboard
             return Raw($"<a href=\"{HtmlEncode(_page.Url.JobDetails(jobId))}\">{JobId(jobId)}</a>");
         }
 
-        public NonEscapedString JobNameLink(string jobId, Job job)
+        public NonEscapedString JobNameLink(string jobId, Job job, InvocationData invocationData)
         {
-            return Raw($"<a class=\"job-method\" href=\"{HtmlEncode(_page.Url.JobDetails(jobId))}\">{HtmlEncode(JobName(job))}</a>");
+            return Raw($"<a class=\"job-method\" href=\"{HtmlEncode(_page.Url.JobDetails(jobId))}\">{HtmlEncode(JobName(job, invocationData))}</a>");
         }
 
         public NonEscapedString RelativeTime(DateTime value)

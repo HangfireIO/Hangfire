@@ -123,7 +123,7 @@
                                     else
                                     {
                                         <td class="word-break">
-                                            @Html.JobNameLink(jobId, jobData.Job)
+                                            @Html.JobNameLink(jobId, jobData.Job, jobData.InvocationData)
                                         </td>
                                         <td class="min-width">
                                             @if (stateData != null && stateData.Data.ContainsKey("Options") && !String.IsNullOrWhiteSpace(stateData.Data["Options"]))

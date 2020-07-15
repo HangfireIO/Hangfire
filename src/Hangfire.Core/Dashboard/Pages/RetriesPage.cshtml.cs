@@ -520,7 +520,7 @@ WriteLiteral("                                            <td class=\"word-break
 
             
             #line 129 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                           Write(Html.JobNameLink(jobId, jobData.Job));
+                                           Write(Html.JobNameLink(jobId, jobData.Job, jobData.InvocationData));
 
             
             #line default

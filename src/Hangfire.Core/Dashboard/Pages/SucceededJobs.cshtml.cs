@@ -431,7 +431,7 @@ WriteLiteral("                                        <td class=\"word-break\">\
 
             
             #line 97 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
-                                       Write(Html.JobNameLink(job.Key, job.Value.Job));
+                                       Write(Html.JobNameLink(job.Key, job.Value.Job, job.Value.InvocationData));
 
             
             #line default

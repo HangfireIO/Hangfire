@@ -27,38 +27,47 @@ using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
-using Newtonsoft.Json;
 
 namespace Hangfire.Storage
 {
-    public class InvocationData
+    public partial class InvocationData
     {
-        private static readonly object[] EmptyArray = new object[0];
-
-        [Obsolete("Please use IGlobalConfiguration.UseTypeResolver instead. Will be removed in 2.0.0.")]
-        public static void SetTypeResolver([CanBeNull] Func<string, Type> typeResolver)
-        {
-            TypeHelper.CurrentTypeResolver = typeResolver;
-        }
-
-        [Obsolete("Please use IGlobalConfiguration.UseTypeSerializer instead. Will be removed in 2.0.0.")]
-        public static void SetTypeSerializer([CanBeNull] Func<Type, string> typeSerializer)
-        {
-            TypeHelper.CurrentTypeSerializer = typeSerializer;
-        }
-
         public InvocationData(string type, string method, string parameterTypes, string arguments)
         {
             Type = type;
+            TypeHelper.Split(type, out string @namespace, out string typeName, out string assembly);
+            TypeNamespace = @namespace;
+            TypeName = typeName;
+            TypeAssembly = assembly;
+            TypeMethodName = typeName is null ?
+                method :
+                string.Concat(typeName, TypeHelper.MemberSeparator, method);
             Method = method;
             ParameterTypes = parameterTypes;
+            ParameterTypeList = SerializationHelper.Deserialize<string[]>(parameterTypes);
             Arguments = arguments;
         }
 
         public string Type { get; }
+        public string TypeNamespace { get; }
+        public string TypeName { get; }
+        public string TypeAssembly { get; }
         public string Method { get; }
+        public string TypeMethodName { get; }
         public string ParameterTypes { get; }
-        public string Arguments { get; set; }
+        public IReadOnlyList<string> ParameterTypeList { get; }
+        public string Arguments
+        {
+            get => arguments;
+            set
+            {
+                if (arguments == value)
+                    return;
+                arguments = value;
+                ArgumentList = SerializationHelper.Deserialize<string[]>(value);
+            }
+        }
+        public IReadOnlyList<string> ArgumentList { get; private set; }
 
         [Obsolete("Please use DeserializeJob() method instead. Will be removed in 2.0.0 for clarity.")]
         public Job Deserialize()
@@ -75,7 +84,7 @@ namespace Hangfire.Storage
         public Job DeserializeJob()
         {
             var typeResolver = TypeHelper.CurrentTypeResolver;
-
+            // {"Type":"VoucherTerminal.ViewModels.ViewModelLocator, VoucherTerminal","Method":"TestHangfire","ParameterTypes":"[]","Arguments":"[]"}
             try
             {
                 var type = typeResolver(Type);
@@ -90,13 +99,12 @@ namespace Hangfire.Storage
                     var parametersString = parameterTypes != null
                         ? String.Join(", ", parameterTypes.Select(x => x.Name))
                         : String.Empty;
-                    
+
                     throw new InvalidOperationException(
                         $"The type `{type.FullName}` does not contain a method with signature `{Method}({parametersString})`");
                 }
 
-                var argumentsArray = SerializationHelper.Deserialize<string[]>(Arguments);
-                var arguments = DeserializeArguments(method, argumentsArray);
+                var arguments = DeserializeArguments(method, ArgumentList);
 
                 return new Job(type, method, arguments);
             }
@@ -243,12 +251,12 @@ namespace Hangfire.Storage
             return serializedArguments.ToArray();
         }
 
-        internal static object[] DeserializeArguments(MethodInfo methodInfo, string[] arguments)
+        internal static object[] DeserializeArguments(MethodInfo methodInfo, IReadOnlyList<string> arguments)
         {
             if (arguments == null) return EmptyArray;
 
             var parameters = methodInfo.GetParameters();
-            var result = new List<object>(arguments.Length);
+            var result = new List<object>(arguments.Count);
 
             for (var i = 0; i < parameters.Length; i++)
             {
@@ -350,19 +358,19 @@ namespace Hangfire.Storage
             return result;
         }
 
-        private class JobPayload
+        [Obsolete("Please use IGlobalConfiguration.UseTypeResolver instead. Will be removed in 2.0.0.")]
+        public static void SetTypeResolver([CanBeNull] Func<string, Type> typeResolver)
         {
-            [JsonProperty("t")]
-            public string TypeName { get; set; }
-
-            [JsonProperty("m")]
-            public string MethodName { get; set; }
-
-            [JsonProperty("p", NullValueHandling = NullValueHandling.Ignore)]
-            public string[] ParameterTypes { get; set; }
-
-            [JsonProperty("a", NullValueHandling = NullValueHandling.Ignore)]
-            public string[] Arguments { get; set; }
+            TypeHelper.CurrentTypeResolver = typeResolver;
         }
+
+        [Obsolete("Please use IGlobalConfiguration.UseTypeSerializer instead. Will be removed in 2.0.0.")]
+        public static void SetTypeSerializer([CanBeNull] Func<Type, string> typeSerializer)
+        {
+            TypeHelper.CurrentTypeSerializer = typeSerializer;
+        }
+
+        private static readonly object[] EmptyArray = new object[0];
+        private string arguments;
     }
 }

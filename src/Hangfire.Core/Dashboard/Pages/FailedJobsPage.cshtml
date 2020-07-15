@@ -108,7 +108,7 @@
                                     {
                                         <td>
                                             <div class="word-break">
-                                                @Html.JobNameLink(job.Key, job.Value.Job)
+                                                @Html.JobNameLink(job.Key, job.Value.Job, job.Value.InvocationData)
                                             </div>
                                             @if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))
                                             {

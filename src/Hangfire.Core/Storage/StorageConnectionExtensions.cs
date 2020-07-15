@@ -86,6 +86,7 @@ namespace Hangfire.Storage
                     {
                         var invocationData = InvocationData.DeserializePayload(payload);
                         dto.Job = invocationData.DeserializeJob();
+                        dto.InvocationData = invocationData;
                     }
                 }
                 catch (JobLoadException ex)

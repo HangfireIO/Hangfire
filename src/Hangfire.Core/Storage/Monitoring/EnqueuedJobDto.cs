@@ -30,5 +30,6 @@ namespace Hangfire.Storage.Monitoring
         public string State { get; set; }
         public DateTime? EnqueuedAt { get; set; }
         public bool InEnqueuedState { get; set; }
+        public InvocationData InvocationData { get; set; }
     }
 }

@@ -26,6 +26,7 @@ using System.Threading;
 using Hangfire.Common;
 using Hangfire.Dashboard.Resources;
 using Hangfire.Processing;
+using Hangfire.Storage;
 
 namespace Hangfire.Dashboard
 {
@@ -33,75 +34,66 @@ namespace Hangfire.Dashboard
     {
         private static readonly int MaxArgumentToRenderSize = 4096;
 
-        public static NonEscapedString Render(Job job)
+        public static NonEscapedString Render(Job job, InvocationData invocationData)
         {
-            if (job == null) { return new NonEscapedString($"<em>{Encode(Strings.Common_CannotFindTargetMethod)}</em>"); }
-
-            var builder = new StringBuilder();
-
-            builder.Append(WrapKeyword("using"));
-            builder.Append(" ");
-            builder.Append(Encode(job.Type.Namespace));
-            builder.Append(";");
-            builder.AppendLine();
-            builder.AppendLine();
-
-            string serviceName = null;
-
-            if (!job.Method.IsStatic)
+            if (job == null &&
+                invocationData is null)
             {
-                serviceName = GetNameWithoutGenericArity(job.Type);
+                return new NonEscapedString(RenderCannotFindTargetMethod());
+            }
+            var builder = new StringBuilder();
+            IReadOnlyList<string> arguments;
+            if (job is null)
+            {
+                builder.AppendLine(WrapComment(RenderCannotFindTargetMethod()));
+                RenderNamespace(job, invocationData, builder);
+                builder.Append(WrapType(Encode(invocationData.TypeName)));
+                builder.Append(TypeHelper.MemberSeparator);
+                builder.Append(Encode(invocationData.Method));
+                arguments = invocationData.ArgumentList;
+            }
+            else
+            {
+                RenderNamespace(job, invocationData, builder);
+                string serviceName = RenderActivation(job, builder);
 
-                if (job.Type.GetTypeInfo().IsInterface && serviceName[0] == 'I' && Char.IsUpper(serviceName[1]))
+                if (job.Method.GetCustomAttribute<AsyncStateMachineAttribute>() != null ||
+                    job.Method.ReturnType.IsTaskLike(out _))
                 {
-                    serviceName = serviceName.Substring(1);
+                    builder.Append($"{WrapKeyword("await")} ");
                 }
 
-                serviceName = Char.ToLower(serviceName[0]) + serviceName.Substring(1);
+                builder.Append(!job.Method.IsStatic ? Encode(serviceName) : WrapType(Encode(job.Type.ToGenericTypeString())));
+                builder.Append(".");
+                builder.Append(Encode(job.Method.Name));
 
-                builder.Append(WrapKeyword("var"));
-                builder.Append(
-                    $" {Encode(serviceName)} = Activate&lt;{WrapType(Encode(job.Type.ToGenericTypeString()))}&gt;();");
+                if (job.Method.IsGenericMethod)
+                {
+                    var genericArgumentTypes = job.Method.GetGenericArguments()
+                        .Select(x => WrapType(x.Name))
+                        .ToArray();
 
-                builder.AppendLine();
+                    builder.Append($"&lt;{String.Join(TypeHelper.GenericArgumentSeparator, genericArgumentTypes)}&gt;");
+                }
+
+#pragma warning disable 618
+                arguments = job.Arguments;
+#pragma warning restore 618
             }
-
-            if (job.Method.GetCustomAttribute<AsyncStateMachineAttribute>() != null ||
-                job.Method.ReturnType.IsTaskLike(out _))
-            {
-                builder.Append($"{WrapKeyword("await")} ");
-            }
-
-            builder.Append(!job.Method.IsStatic ? Encode(serviceName) : WrapType(Encode(job.Type.ToGenericTypeString())));
-
-            builder.Append(".");
-            builder.Append(Encode(job.Method.Name));
-
-            if (job.Method.IsGenericMethod)
-            {
-                var genericArgumentTypes = job.Method.GetGenericArguments()
-                    .Select(x => WrapType(x.Name))
-                    .ToArray();
-
-                builder.Append($"&lt;{String.Join(", ", genericArgumentTypes)}&gt;");
-            }
-
             builder.Append("(");
 
-            var parameters = job.Method.GetParameters();
-            var renderedArguments = new List<string>(parameters.Length);
+            var parameters = job?.Method.GetParameters();
+            int parameterCount = parameters?.Length ?? arguments.Count;
+            var renderedArguments = new List<string>(parameterCount);
             var renderedArgumentsTotalLength = 0;
 
-            const int splitStringMinLength = 100;
-
-            for (var i = 0; i < parameters.Length; i++)
+            for (var i = 0; i < parameterCount; i++)
             {
-                var parameter = parameters[i];
-#pragma warning disable 618
-                var arguments = job.Arguments;
-#pragma warning restore 618
-
-                if (i < arguments.Length)
+                var parameter = parameters is null ?
+                    null :
+                    parameters[i];
+                var parameterType = parameter?.ParameterType;
+                if (i < arguments.Count)
                 {
                     var argument = arguments[i];
 
@@ -113,26 +105,34 @@ namespace Hangfire.Dashboard
 
                     string renderedArgument;
 
-                    var enumerableArgument = GetIEnumerableGenericArgument(parameter.ParameterType);
+                    var enumerableArgument = GetIEnumerableGenericArgument(parameterType);
 
                     object argumentValue;
-                    bool isJson = true;
-
-                    try
+                    bool isJson;
+                    if (parameterType is null)
                     {
-                        argumentValue = SerializationHelper.Deserialize(argument, parameter.ParameterType, SerializationOption.User);
-                    }
-                    catch (Exception)
-                    {
-                        // If argument value is not encoded as JSON (an old
-                        // way using TypeConverter), we should display it as is.
                         argumentValue = argument;
                         isJson = false;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            argumentValue = SerializationHelper.Deserialize(argument, parameterType, SerializationOption.User);
+                            isJson = true;
+                        }
+                        catch (Exception)
+                        {
+                            // If argument value is not encoded as JSON (an old
+                            // way using TypeConverter), we should display it as is.
+                            argumentValue = argument;
+                            isJson = false;
+                        }
                     }
 
                     if (enumerableArgument == null || argumentValue == null)
                     {
-                        var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
+                        var argumentRenderer = ArgumentRenderer.GetRenderer(parameterType);
                         renderedArgument = argumentRenderer.Render(isJson, argumentValue?.ToString(), argument);
                     }
                     else
@@ -151,7 +151,7 @@ namespace Hangfire.Dashboard
                         renderedArgument = String.Format(
                             "{0}{1} {{ {2} }}",
                             WrapKeyword("new"),
-                            parameter.ParameterType.IsArray ? " []" : "",
+                            parameterType.IsArray ? " []" : "",
                             String.Join(", ", renderedItems));
                     }
 
@@ -164,10 +164,14 @@ namespace Hangfire.Dashboard
                 }
             }
 
+            const int splitStringMinLength = 100;
+
             for (int i = 0; i < renderedArguments.Count; i++)
             {
                 // TODO: be aware of out of range
-                var parameter = parameters[i];
+                var parameter = parameters is null ?
+                    null :
+                    parameters[i];
                 var tooltipPosition = "top";
 
                 var renderedArgument = renderedArguments[i];
@@ -183,9 +187,11 @@ namespace Hangfire.Dashboard
                     builder.Append(" ");
                 }
 
-                builder.Append($"<span title=\"{parameter.Name}\" data-placement=\"{tooltipPosition}\">");
+                if (parameter != null)
+                    builder.Append($"<span title=\"{parameter.Name}\" data-placement=\"{tooltipPosition}\">");
                 builder.Append(renderedArgument);
-                builder.Append("</span>");
+                if (parameter != null)
+                    builder.Append("</span>");
 
                 if (i < renderedArguments.Count - 1)
                 {
@@ -198,6 +204,46 @@ namespace Hangfire.Dashboard
             return new NonEscapedString(builder.ToString());
         }
 
+        private static string RenderCannotFindTargetMethod() => $"<em>{Encode(Strings.Common_CannotFindTargetMethod)}</em>";
+
+        private static void RenderNamespace(Job job, InvocationData invocationData, StringBuilder builder)
+        {
+            string @namespace = job?.Type.Namespace ?? invocationData.TypeNamespace;
+            if (@namespace is null)
+                return;
+            builder.Append(WrapKeyword("using"));
+            builder.Append(" ");
+            builder.Append(Encode(@namespace));
+            builder.Append(";");
+            builder.AppendLine();
+            builder.AppendLine();
+        }
+
+        private static string RenderActivation(Job job, StringBuilder builder)
+        {
+            string serviceName = null;
+            if (!job.Method.IsStatic)
+            {
+                serviceName = GetNameWithoutGenericArity(job.Type);
+
+                if (job.Type.GetTypeInfo().IsInterface && serviceName[0] == 'I' && Char.IsUpper(serviceName[1]))
+                {
+                    serviceName = serviceName.Substring(1);
+                }
+
+                serviceName = Char.ToLower(serviceName[0]) + serviceName.Substring(1);
+
+                builder.Append(WrapKeyword("var"));
+                builder.Append(
+                    $" {Encode(serviceName)} = Activate&lt;{WrapType(Encode(job.Type.ToGenericTypeString()))}&gt;();");
+
+                builder.AppendLine();
+            }
+            return serviceName;
+        }
+
+        private static string Encode(object p) => throw new NotImplementedException();
+
         private static string WrapIdentifier(string value)
         {
             return value;
@@ -207,6 +253,8 @@ namespace Hangfire.Dashboard
         {
             return Span("keyword", value);
         }
+
+        private static string WrapComment(string value) => Span("comment", "// " + value);
 
         private static string WrapType(string value)
         {
@@ -230,8 +278,12 @@ namespace Hangfire.Dashboard
 
         private static Type GetIEnumerableGenericArgument(Type type)
         {
-            if (type == typeof(string)) return null;
-
+            if (type is null ||
+                type == typeof(string)
+                )
+            {
+                return null;
+            }
             return type.GetTypeInfo().ImplementedInterfaces
                 .Where(x => x.GetTypeInfo().IsGenericType
                             && x.GetTypeInfo().GetGenericTypeDefinition() == typeof(IEnumerable<>))
@@ -304,6 +356,13 @@ namespace Hangfire.Dashboard
 
             public static ArgumentRenderer GetRenderer(Type type)
             {
+                if (type is null)
+                {
+                    return new ArgumentRenderer
+                    {
+                        _enclosingString = string.Empty
+                    };
+                }
                 if (type.GetTypeInfo().IsEnum)
                 {
                     return new ArgumentRenderer
@@ -367,7 +426,7 @@ namespace Hangfire.Dashboard
 
                 return new ArgumentRenderer
                 {
-                    _deserializationType = type,
+                    _deserializationType = type
                 };
             }
 
@@ -428,7 +487,7 @@ namespace Hangfire.Dashboard
         DateTime = 16,      // DateTime
         String = 18,        // Unicode character string
     }
-    
+
     internal static class TypeExtensionMethods
     {
         public static TypeCode GetTypeCode(this Type type)

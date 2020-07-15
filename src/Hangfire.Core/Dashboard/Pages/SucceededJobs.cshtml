@@ -94,7 +94,7 @@
                                     else
                                     {
                                         <td class="word-break">
-                                            @Html.JobNameLink(job.Key, job.Value.Job)
+                                            @Html.JobNameLink(job.Key, job.Value.Job, job.Value.InvocationData)
                                         </td>
                                         <td class="min-width align-right">
                                             @if (job.Value.TotalDuration.HasValue)

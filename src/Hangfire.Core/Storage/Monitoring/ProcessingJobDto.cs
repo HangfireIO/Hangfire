@@ -30,5 +30,6 @@ namespace Hangfire.Storage.Monitoring
         public bool InProcessingState { get; set; }
         public string ServerId { get; set; }
         public DateTime? StartedAt { get; set; }
+        public InvocationData InvocationData { get; set; }
     }
 }

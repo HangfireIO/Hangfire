@@ -456,7 +456,7 @@ WriteLiteral("                                                            <td cl
 
             
             #line 96 "..\..\Dashboard\Pages\QueuesPage.cshtml"
-                                                           Write(Html.JobNameLink(job.Key, job.Value.Job));
+                                                           Write(Html.JobNameLink(job.Key, job.Value.Job, job.Value.InvocationData));
 
             
             #line default

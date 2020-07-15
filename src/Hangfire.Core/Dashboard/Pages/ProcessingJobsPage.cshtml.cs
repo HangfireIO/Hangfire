@@ -544,7 +544,7 @@ WriteLiteral("\r\n                                            ");
 
             
             #line 115 "..\..\Dashboard\Pages\ProcessingJobsPage.cshtml"
-                                       Write(Html.JobNameLink(job.Key, job.Value.Job));
+                                       Write(Html.JobNameLink(job.Key, job.Value.Job, job.Value.InvocationData));
 
             
             #line default

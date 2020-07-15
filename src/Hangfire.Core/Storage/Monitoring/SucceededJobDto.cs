@@ -31,5 +31,6 @@ namespace Hangfire.Storage.Monitoring
         public long? TotalDuration { get; set; }
         public DateTime? SucceededAt { get; set; }
         public bool InSucceededState { get; set; }
+        public InvocationData InvocationData { get; set; }
     }
 }

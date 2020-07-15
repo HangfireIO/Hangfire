@@ -35,5 +35,6 @@ namespace Hangfire.Storage
         public string TimeZoneId { get; set; }
         public string Error { get; set; }
         public int RetryAttempt { get; set; }
+        public InvocationData InvocationData { get; internal set; }
     }
 }

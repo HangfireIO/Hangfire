@@ -530,7 +530,7 @@ WriteLiteral("                                        <td>\r\n                  
 
             
             #line 111 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                                           Write(Html.JobNameLink(job.Key, job.Value.Job));
+                                           Write(Html.JobNameLink(job.Key, job.Value.Job, job.Value.InvocationData));
 
             
             #line default

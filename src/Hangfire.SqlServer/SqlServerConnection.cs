@@ -208,6 +208,7 @@ $@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.Schema
                 return new JobData
                 {
                     Job = job,
+                    InvocationData = invocationData,
                     State = jobData.StateName,
                     CreatedAt = jobData.CreatedAt,
                     LoadException = loadException

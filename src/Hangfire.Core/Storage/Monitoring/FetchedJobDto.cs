@@ -24,5 +24,6 @@ namespace Hangfire.Storage.Monitoring
         public Job Job { get; set; }
         public string State { get; set; }
         public DateTime? FetchedAt { get; set; }
+        public InvocationData InvocationData { get; set; }
     }
 }

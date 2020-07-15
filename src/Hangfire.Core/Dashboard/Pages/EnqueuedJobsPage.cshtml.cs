@@ -475,7 +475,7 @@ WriteLiteral("                                    <td class=\"word-break\">\r\n 
 
             
             #line 104 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                                   Write(Html.JobNameLink(job.Key, job.Value.Job));
+                                   Write(Html.JobNameLink(job.Key, job.Value.Job, job.Value.InvocationData));
 
             
             #line default

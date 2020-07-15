@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -228,5 +229,46 @@ namespace Hangfire.Common
             assembly = assembly ?? typeof(int).GetTypeInfo().Assembly;
             return assembly.GetType(typeName, true, ignoreCase);
         }
+
+        #region Text
+
+        public const string AssemblySeparator = ", ";
+        public const char NamespaceSeparator = '.';
+        public const char GenericArgumentsEnd = ']';
+        public const string GenericArgumentSeparator = ", ";
+        public const char MemberSeparator = '.';
+
+        public static void Split(string type, out string @namespace, out string name, out string assembly)
+        {
+            if (string.IsNullOrWhiteSpace(type))
+                @namespace = name = assembly = null;
+            else
+            {
+                // assembly
+                int index = type.IndexOf(GenericArgumentsEnd) + 1; // after generic arguments
+                index = type.IndexOf(AssemblySeparator, index);
+                if (index >= 0)
+                {
+                    assembly = type.Substring(index + AssemblySeparator.Length);
+                    type = type.Substring(0, index);
+                }
+                else
+                    assembly = null;
+                // namespace/name
+                index = type.LastIndexOf(NamespaceSeparator);
+                if (index >= 0)
+                {
+                    @namespace = type.Substring(0, index);
+                    name = type.Substring(index + 1);
+                }
+                else
+                {
+                    @namespace = null;
+                    name = type;
+                }
+            }
+        }
+
+        #endregion
     }
 }

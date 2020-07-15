@@ -13,5 +13,6 @@ namespace Hangfire.Storage.Monitoring
         public Job Job { get; set; }
         public DateTime? DeletedAt { get; set; }
         public bool InDeletedState { get; set; }
+        public InvocationData InvocationData { get; set; }
     }
 }

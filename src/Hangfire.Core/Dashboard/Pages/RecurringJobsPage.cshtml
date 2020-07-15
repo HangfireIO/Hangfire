@@ -182,23 +182,23 @@
                                         }
                                     </td>
                                     <td class="word-break width-30">
-                                        @if (job.Job != null)
+                                        @Html.JobName(job.Job, job.InvocationData)
+                                        @if (job.Job is null)
                                         {
-                                            @: @Html.JobName(job.Job)
+                                            var error = job.LoadException?.InnerException ??
+                                                job.LoadException;
+                                            if (error != null)
+                                            {
+                                                <br />
+                                                <em>@error.Message</em>
+                                            }
+                                            else
+                                            {
+                                                <br />
+                                                <em>@Strings.Common_NotAvailable</em>
+                                            }
                                         }
-                                        else if (job.LoadException != null && job.LoadException.InnerException != null)
-                                        {
-                                            <em>@job.LoadException.InnerException.Message</em>
-                                        }
-                                        else if (job.LoadException != null)
-                                        {
-                                            <em>@job.LoadException.Message</em>
-                                        }
-                                        else
-                                        {
-                                            <em>@Strings.Common_NotAvailable</em>
-                                        }
-                                    </td>
+                                        </td>
                                     <td class="align-right min-width">
                                         @if (!job.NextExecution.HasValue)
                                         {

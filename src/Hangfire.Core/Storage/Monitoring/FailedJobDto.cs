@@ -33,5 +33,6 @@ namespace Hangfire.Storage.Monitoring
         public string ExceptionMessage { get; set; }
         public string ExceptionDetails { get; set; }
         public bool InFailedState { get; set; }
+        public InvocationData InvocationData { get; set; }
     }
 }

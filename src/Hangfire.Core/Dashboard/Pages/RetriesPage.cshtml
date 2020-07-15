@@ -126,7 +126,7 @@ else
                                                 @Html.StateLabel(jobData.State)
                                             </td>
                                             <td class="word-break">
-                                                @Html.JobNameLink(jobId, jobData.Job)
+                                                @Html.JobNameLink(jobId, jobData.Job, jobData.InvocationData)
                                             </td>
                                             <td>
                                                 @(stateData?.Reason)

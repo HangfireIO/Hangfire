@@ -14,19 +14,25 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using Hangfire.Common;
+using Newtonsoft.Json;
 
-namespace Hangfire.Storage.Monitoring
+namespace Hangfire.Storage
 {
-    public class JobDetailsDto
+    public partial class InvocationData
     {
-        public Job Job { get; set; }
-        public DateTime? CreatedAt { get; set; }
-        public IDictionary<string, string> Properties { get; set; }
-        public IList<StateHistoryDto> History { get; set; }
-        public DateTime? ExpireAt { get; set; }
-        public InvocationData InvocationData { get; set; }
+        private class JobPayload
+        {
+            [JsonProperty("t")]
+            public string TypeName { get; set; }
+
+            [JsonProperty("m")]
+            public string MethodName { get; set; }
+
+            [JsonProperty("p", NullValueHandling = NullValueHandling.Ignore)]
+            public string[] ParameterTypes { get; set; }
+
+            [JsonProperty("a", NullValueHandling = NullValueHandling.Ignore)]
+            public string[] Arguments { get; set; }
+        }
     }
 }

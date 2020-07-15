@@ -697,25 +697,12 @@ WriteLiteral(" UTC\r\n");
             #line default
             #line hidden
 WriteLiteral("                                    </td>\r\n                                    <t" +
-"d class=\"word-break width-30\">\r\n");
+"d class=\"word-break width-30\">\r\n                                        ");
 
 
             
             #line 185 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                         if (job.Job != null)
-                                        {
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                                            ");
-
-WriteLiteral(" ");
-
-
-            
-            #line 187 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                          Write(Html.JobName(job.Job));
+                                   Write(Html.JobName(job.Job, job.InvocationData));
 
             
             #line default
@@ -724,20 +711,27 @@ WriteLiteral("\r\n");
 
 
             
-            #line 188 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                        }
-                                        else if (job.LoadException != null && job.LoadException.InnerException != null)
+            #line 186 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+                                         if (job.Job is null)
                                         {
+                                            var error = job.LoadException?.InnerException ??
+                                                job.LoadException;
+                                            if (error != null)
+                                            {
 
             
             #line default
             #line hidden
-WriteLiteral("                                            <em>");
+WriteLiteral("                                                <br />\r\n");
+
+
+
+WriteLiteral("                                                <em>");
 
 
             
-            #line 191 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                           Write(job.LoadException.InnerException.Message);
+            #line 193 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+                                               Write(error.Message);
 
             
             #line default
@@ -746,58 +740,41 @@ WriteLiteral("</em>\r\n");
 
 
             
-            #line 192 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                        }
-                                        else if (job.LoadException != null)
-                                        {
+            #line 194 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+                                            }
+                                            else
+                                            {
 
             
             #line default
             #line hidden
-WriteLiteral("                                            <em>");
+WriteLiteral("                                                <br />\r\n");
+
+
+
+WriteLiteral("                                                <em>");
 
 
             
-            #line 195 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                           Write(job.LoadException.Message);
+            #line 198 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+                                               Write(Strings.Common_NotAvailable);
 
             
             #line default
             #line hidden
 WriteLiteral("</em>\r\n");
-
-
-            
-            #line 196 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                        }
-                                        else
-                                        {
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                                            <em>");
 
 
             
             #line 199 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                           Write(Strings.Common_NotAvailable);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</em>\r\n");
-
-
-            
-            #line 200 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+                                            }
                                         }
 
             
             #line default
             #line hidden
-WriteLiteral("                                    </td>\r\n                                    <t" +
-"d class=\"align-right min-width\">\r\n");
+WriteLiteral("                                        </td>\r\n                                  " +
+"  <td class=\"align-right min-width\">\r\n");
 
 
             

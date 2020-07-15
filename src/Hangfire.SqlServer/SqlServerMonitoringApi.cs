@@ -83,9 +83,10 @@ namespace Hangfire.SqlServer
                 connection,
                 from, count,
                 ProcessingState.StateName,
-                (sqlJob, job, stateData) => new ProcessingJobDto
+                (sqlJob, job, invocationData, stateData) => new ProcessingJobDto
                 {
                     Job = job,
+                    InvocationData = invocationData,
                     InProcessingState = ProcessingState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
                     ServerId = stateData.ContainsKey("ServerId") ? stateData["ServerId"] : stateData["ServerName"],
                     StartedAt = sqlJob.StateChanged,
@@ -98,9 +99,10 @@ namespace Hangfire.SqlServer
                 connection,
                 from, count,
                 ScheduledState.StateName,
-                (sqlJob, job, stateData) => new ScheduledJobDto
+                (sqlJob, job, invocationData, stateData) => new ScheduledJobDto
                 {
                     Job = job,
+                    InvocationData= invocationData,
                     InScheduledState = ScheduledState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
                     EnqueueAt = JobHelper.DeserializeNullableDateTime(stateData["EnqueueAt"]) ?? DateTime.MinValue,
                     ScheduledAt = sqlJob.StateChanged
@@ -160,9 +162,10 @@ namespace Hangfire.SqlServer
                 from,
                 count,
                 FailedState.StateName,
-                (sqlJob, job, stateData) => new FailedJobDto
+                (sqlJob, job, invocationData, stateData) => new FailedJobDto
                 {
                     Job = job,
+                    InvocationData = invocationData,
                     InFailedState = FailedState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
                     Reason = sqlJob.StateReason,
                     ExceptionDetails = stateData["ExceptionDetails"],
@@ -179,9 +182,10 @@ namespace Hangfire.SqlServer
                 from,
                 count,
                 SucceededState.StateName,
-                (sqlJob, job, stateData) => new SucceededJobDto
+                (sqlJob, job, invocationData, stateData) => new SucceededJobDto
                 {
                     Job = job,
+                    InvocationData = invocationData,
                     InSucceededState = SucceededState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
                     Result = stateData["Result"],
                     TotalDuration = stateData.ContainsKey("PerformanceDuration") && stateData.ContainsKey("Latency")
@@ -198,9 +202,10 @@ namespace Hangfire.SqlServer
                 from,
                 count,
                 DeletedState.StateName,
-                (sqlJob, job, stateData) => new DeletedJobDto
+                (sqlJob, job, invocationData, stateData) => new DeletedJobDto
                 {
                     Job = job,
+                    InvocationData= invocationData,
                     InDeletedState = DeletedState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
                     DeletedAt = sqlJob.StateChanged
                 }));
@@ -298,7 +303,8 @@ select * from [{_storage.SchemaName}].State with (nolock, forceseek) where JobId
                     {
                         CreatedAt = job.CreatedAt,
                         ExpireAt = job.ExpireAt,
-                        Job = DeserializeJob(job.InvocationData, job.Arguments),
+                        Job = DeserializeJob(job.InvocationData, job.Arguments, out var invocationData),
+                        InvocationData = invocationData,
                         History = history,
                         Properties = parameters
                     };
@@ -460,9 +466,10 @@ where j.Id in @jobIds";
             
             return DeserializeJobs(
                 sortedSqlJobs,
-                (sqlJob, job, stateData) => new EnqueuedJobDto
+                (sqlJob, job, invocationData, stateData) => new EnqueuedJobDto
                 {
                     Job = job,
+                    InvocationData = invocationData,
                     State = sqlJob.StateName,
                     InEnqueuedState = EnqueuedState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
                     EnqueuedAt = EnqueuedState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase)
@@ -485,9 +492,9 @@ where j.Id in @jobIds";
             return count;
         }
 
-        private static Job DeserializeJob(string invocationData, string arguments)
+        private static Job DeserializeJob(string invocationData, string arguments, out InvocationData data)
         {
-            var data = InvocationData.DeserializePayload(invocationData);
+            data = InvocationData.DeserializePayload(invocationData);
 
             if (!String.IsNullOrEmpty(arguments))
             {
@@ -509,7 +516,7 @@ where j.Id in @jobIds";
             int from,
             int count,
             string stateName,
-            Func<SqlJob, Job, SafeDictionary<string, string>, TDto> selector)
+            Func<SqlJob, Job, InvocationData, SafeDictionary<string, string>, TDto> selector)
         {
             string jobsSql = 
 $@";with cte as 
@@ -536,7 +543,7 @@ order by j.Id desc";
 
         private static JobList<TDto> DeserializeJobs<TDto>(
             ICollection<SqlJob> jobs,
-            Func<SqlJob, Job, SafeDictionary<string, string>, TDto> selector)
+            Func<SqlJob, Job, InvocationData, SafeDictionary<string, string>, TDto> selector)
         {
             var result = new List<KeyValuePair<string, TDto>>(jobs.Count);
             
@@ -552,7 +559,7 @@ order by j.Id desc";
                         ? new SafeDictionary<string, string>(deserializedData, StringComparer.OrdinalIgnoreCase)
                         : null;
 
-                    dto = selector(job, DeserializeJob(job.InvocationData, job.Arguments), stateData);
+                    dto = selector(job, DeserializeJob(job.InvocationData, job.Arguments, out var invocationData), invocationData, stateData);
                 }
 
                 result.Add(new KeyValuePair<string, TDto>(
@@ -585,7 +592,8 @@ where j.Id in @jobIds";
                     job.Id.ToString(),
                     new FetchedJobDto
                     {
-                        Job = DeserializeJob(job.InvocationData, job.Arguments),
+                        Job = DeserializeJob(job.InvocationData, job.Arguments, out var invocationData),
+                        InvocationData = invocationData,
                         State = job.StateName,
                     }));
             }

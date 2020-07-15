@@ -108,16 +108,16 @@ WriteLiteral("\r\n");
   
     var monitor = Storage.GetMonitoringApi();
     var job = monitor.JobDetails(JobId);
-    
-    string title = null;
 
+    string title =
+        job.Job is null &&
+        job.InvocationData is null ?
+            Strings.Common_Job :
+            Html.JobName(job.Job, job.InvocationData);
     if (job != null)
     {
-        title = job.Job != null ? Html.JobName(job.Job) : null;
         job.History.Add(new StateHistoryDto { StateName = "Created", CreatedAt = job.CreatedAt ?? default(DateTime) });
     }
-
-    title = title ?? Strings.Common_Job;
     Layout = new LayoutPage(title);
 
 
@@ -276,7 +276,7 @@ WriteLiteral("</span>\r\n");
 
             
             #line 73 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-Write(JobMethodCallRenderer.Render(job.Job));
+Write(JobMethodCallRenderer.Render(job.Job, job.InvocationData));
 
             
             #line default
@@ -386,92 +386,92 @@ WriteLiteral("</h3>\r\n");
 
 WriteLiteral("                    <div class=\"table-responsive\">\r\n                        <tabl" +
 "e class=\"table\">\r\n                            <thead>\r\n                         " +
-"   <tr>\r\n                                <th class=\"min-width\">");
+"       <tr>\r\n                                    <th class=\"min-width\">");
 
 
             
             #line 108 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                 Write(Strings.Common_Id);
+                                                     Write(Strings.Common_Id);
 
             
             #line default
             #line hidden
-WriteLiteral("</th>\r\n                                <th class=\"min-width\">");
+WriteLiteral("</th>\r\n                                    <th class=\"min-width\">");
 
 
             
             #line 109 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                 Write(Strings.Common_Condition);
+                                                     Write(Strings.Common_Condition);
 
             
             #line default
             #line hidden
-WriteLiteral("</th>\r\n                                <th class=\"min-width\">");
+WriteLiteral("</th>\r\n                                    <th class=\"min-width\">");
 
 
             
             #line 110 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                 Write(Strings.Common_State);
+                                                     Write(Strings.Common_State);
 
             
             #line default
             #line hidden
-WriteLiteral("</th>\r\n                                <th>");
+WriteLiteral("</th>\r\n                                    <th>");
 
 
             
             #line 111 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                               Write(Strings.Common_Job);
+                                   Write(Strings.Common_Job);
 
             
             #line default
             #line hidden
-WriteLiteral("</th>\r\n                                <th class=\"align-right\">");
+WriteLiteral("</th>\r\n                                    <th class=\"align-right\">");
 
 
             
             #line 112 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                   Write(Strings.Common_Created);
+                                                       Write(Strings.Common_Created);
 
             
             #line default
             #line hidden
-WriteLiteral("</th>\r\n                            </tr>\r\n                            </thead>\r\n " +
-"                           <tbody>\r\n");
+WriteLiteral("</th>\r\n                                </tr>\r\n                            </thead" +
+">\r\n                            <tbody>\r\n");
 
 
             
             #line 116 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                             foreach (var continuation in continuations)
-                            {
-                                JobData jobData;
-
-                                using (var connection = Storage.GetConnection())
+                                 foreach (var continuation in continuations)
                                 {
-                                    jobData = connection.GetJobData(continuation.JobId);
-                                }
+                                    JobData jobData;
+
+                                    using (var connection = Storage.GetConnection())
+                                    {
+                                        jobData = connection.GetJobData(continuation.JobId);
+                                    }
 
 
             
             #line default
             #line hidden
-WriteLiteral("                                <tr>\r\n");
+WriteLiteral("                                    <tr>\r\n");
 
 
             
             #line 126 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                     if (jobData == null)
-                                    {
+                                         if (jobData == null)
+                                        {
 
             
             #line default
             #line hidden
-WriteLiteral("                                        <td colspan=\"5\"><em>");
+WriteLiteral("                                            <td colspan=\"5\"><em>");
 
 
             
             #line 128 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                       Write(String.Format(Strings.JobDetailsPage_JobExpired, continuation.JobId));
+                                                           Write(String.Format(Strings.JobDetailsPage_JobExpired, continuation.JobId));
 
             
             #line default
@@ -481,19 +481,19 @@ WriteLiteral("</em></td>\r\n");
 
             
             #line 129 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                    }
-                                    else
-                                    {
+                                        }
+                                        else
+                                        {
 
             
             #line default
             #line hidden
-WriteLiteral("                                        <td class=\"min-width\">");
+WriteLiteral("                                            <td class=\"min-width\">");
 
 
             
             #line 132 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                         Write(Html.JobIdLink(continuation.JobId));
+                                                             Write(Html.JobIdLink(continuation.JobId));
 
             
             #line default
@@ -502,12 +502,12 @@ WriteLiteral("</td>\r\n");
 
 
 
-WriteLiteral("                                        <td class=\"min-width\"><code>");
+WriteLiteral("                                            <td class=\"min-width\"><code>");
 
 
             
             #line 133 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                               Write(continuation.Options.ToString("G"));
+                                                                   Write(continuation.Options.ToString("G"));
 
             
             #line default
@@ -516,12 +516,12 @@ WriteLiteral("</code></td>\r\n");
 
 
 
-WriteLiteral("                                        <td class=\"min-width\">");
+WriteLiteral("                                            <td class=\"min-width\">");
 
 
             
             #line 134 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                         Write(Html.StateLabel(jobData.State));
+                                                             Write(Html.StateLabel(jobData.State));
 
             
             #line default
@@ -530,12 +530,12 @@ WriteLiteral("</td>\r\n");
 
 
 
-WriteLiteral("                                        <td class=\"word-break\">");
+WriteLiteral("                                            <td class=\"word-break\">");
 
 
             
             #line 135 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                          Write(Html.JobNameLink(continuation.JobId, jobData.Job));
+                                                              Write(Html.JobNameLink(continuation.JobId, jobData.Job, jobData.InvocationData));
 
             
             #line default
@@ -544,12 +544,12 @@ WriteLiteral("</td>\r\n");
 
 
 
-WriteLiteral("                                        <td class=\"align-right\">");
+WriteLiteral("                                            <td class=\"align-right\">");
 
 
             
             #line 136 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                           Write(Html.RelativeTime(jobData.CreatedAt));
+                                                               Write(Html.RelativeTime(jobData.CreatedAt));
 
             
             #line default
@@ -559,17 +559,17 @@ WriteLiteral("</td>\r\n");
 
             
             #line 137 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                    }
+                                        }
 
             
             #line default
             #line hidden
-WriteLiteral("                                </tr>\r\n");
+WriteLiteral("                                    </tr>\r\n");
 
 
             
             #line 139 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                            }
+                                }
 
             
             #line default

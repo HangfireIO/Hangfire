@@ -463,7 +463,7 @@ WriteLiteral("\r\n                                </td>\r\n                     
 
             
             #line 100 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                               Write(Html.JobNameLink(job.Key, job.Value.Job));
+                               Write(Html.JobNameLink(job.Key, job.Value.Job, job.Value.InvocationData));
 
             
             #line default
