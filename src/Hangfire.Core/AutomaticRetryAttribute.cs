@@ -290,7 +290,7 @@ namespace Hangfire
         /// <param name="failedState">Object which contains details about the current failed state.</param>
         private void TransitionToDeleted(ElectStateContext context, FailedState failedState)
         {
-            context.CandidateState = new DeletedState
+            context.CandidateState = new DeletedState(new ExceptionInfo(failedState.Exception))
             {
                 Reason = Attempts > 0
                     ? "Exceeded the maximum number of retry attempts."

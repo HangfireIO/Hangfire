@@ -19,6 +19,7 @@ namespace Hangfire
     public enum JobContinuationOptions
     {
         OnAnyFinishedState = 0,
-        OnlyOnSucceededState
+        OnlyOnSucceededState,
+        OnlyOnDeletedState
     }
 }

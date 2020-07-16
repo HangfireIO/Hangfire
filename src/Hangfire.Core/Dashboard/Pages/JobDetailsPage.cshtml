@@ -88,6 +88,11 @@
                 }
             </div>
 
+            foreach (var renderer in JobDetailsRenderer.Renderers)
+            {
+                @renderer(this, job)
+            }
+
             if (job.Properties.ContainsKey("Continuations"))
             {
                 List<ContinuationsSupportAttribute.Continuation> continuations;

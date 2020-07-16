@@ -31,10 +31,8 @@ namespace Hangfire
         {
             if (filterContext == null) throw new ArgumentNullException(nameof(filterContext));
 
-            filterContext.SetJobParameter(
-                "CurrentCulture", CultureInfo.CurrentCulture.Name);
-            filterContext.SetJobParameter(
-                "CurrentUICulture", CultureInfo.CurrentUICulture.Name);
+            filterContext.SetJobParameter("CurrentCulture", CultureInfo.CurrentCulture.Name);
+            filterContext.SetJobParameter("CurrentUICulture", CultureInfo.CurrentUICulture.Name);
         }
 
         public void OnCreated(CreatedContext filterContext)
@@ -56,6 +54,7 @@ namespace Hangfire
             }
             catch (CultureNotFoundException ex)
             {
+                // TODO: Make this overridable, and start with throwing an exception
                 _logger.WarnException($"Unable to set CurrentCulture for job {filterContext.BackgroundJob.Id} due to an exception", ex);
             }
 
@@ -69,6 +68,7 @@ namespace Hangfire
             }
             catch (CultureNotFoundException ex)
             {
+                // TODO: Make this overridable, and start with throwing an exception
                 _logger.WarnException($"Unable to set CurrentUICulture for job {filterContext.BackgroundJob.Id} due to an exception", ex);
             }
         }

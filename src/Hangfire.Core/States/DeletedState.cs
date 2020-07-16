@@ -69,6 +69,14 @@ namespace Hangfire.States
             DeletedAt = DateTime.UtcNow;
         }
 
+        public DeletedState(ExceptionInfo exceptionInfo)
+        {
+            ExceptionInfo = exceptionInfo;
+        }
+
+        [JsonProperty("Ex", NullValueHandling = NullValueHandling.Ignore)]
+        public ExceptionInfo ExceptionInfo { get; }
+
         /// <inheritdoc />
         /// <remarks>
         /// Always equals to <see cref="StateName"/> for the <see cref="DeletedState"/>.
@@ -130,7 +138,8 @@ namespace Hangfire.States
         {
             return new Dictionary<string, string>
             {
-                { "DeletedAt", JobHelper.SerializeDateTime(DeletedAt) }
+                { "DeletedAt", JobHelper.SerializeDateTime(DeletedAt) },
+                { "Exception", SerializationHelper.Serialize(ExceptionInfo) }
             };
         }
 

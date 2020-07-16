@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
+using Hangfire.Common;
 using Hangfire.SqlServer;
 using Microsoft.Owin.Hosting;
 
@@ -16,6 +17,7 @@ namespace ConsoleSample
                 .UseColouredConsoleLogProvider()
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                 .UseSimpleAssemblyNameTypeSerializer()
+                .UseIgnoredAssemblyVersionTypeResolver()
                 .UseRecommendedSerializerSettings()
                 .UseResultsInContinuations()
                 .UseSqlServerStorage(@"Server=.\;Database=Hangfire.Sample;Trusted_Connection=True;", new SqlServerStorageOptions
@@ -29,8 +31,12 @@ namespace ConsoleSample
                     EnableHeavyMigrations = true
                 });
 
+            Console.WriteLine(SerializationHelper.Serialize(new ExceptionInfo(new OperationCanceledException()), SerializationOption.Internal));
+
             var backgroundJobs = new BackgroundJobClient();
             backgroundJobs.RetryAttempts = 5;
+
+            
 
             var job1 = BackgroundJob.Enqueue<Services>(x => x.WriteIndex(0));
             var job2 = BackgroundJob.ContinueJobWith<Services>(job1, x => x.WriteIndex(null));

@@ -125,7 +125,11 @@ namespace Hangfire.Server
         private IBackgroundDispatcher CreateHeartbeatProcess(BackgroundServerContext context, Action requestRestart)
         {
             return new ServerHeartbeatProcess(_options.HeartbeatInterval, _options.ServerTimeout, requestRestart)
-                .UseBackgroundPool(threadCount: 1)
+                .UseBackgroundPool(threadCount: 1
+#if !NETSTANDARD1_3
+                    , thread => { thread.Priority = ThreadPriority.AboveNormal; }
+#endif
+                )
                 .Create(context, _options);
         }
 
@@ -139,7 +143,7 @@ namespace Hangfire.Server
         {
             return _storage.GetComponents().Select(component => new ServerProcessDispatcherBuilder(
                 component, 
-                threadStart => BackgroundProcessExtensions.DefaultThreadFactory(1, component.GetType().Name, threadStart)));
+                threadStart => BackgroundProcessExtensions.DefaultThreadFactory(1, component.GetType().Name, threadStart, null)));
         }
 
         private string GetServerId()

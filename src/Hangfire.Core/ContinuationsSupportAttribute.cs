@@ -161,9 +161,16 @@ namespace Hangfire
                     var startImmediately = !awaitingState.Options.HasFlag(JobContinuationOptions.OnlyOnSucceededState) ||
                         currentState.Name == SucceededState.StateName;
 
-                    if (_pushResults && currentState.Data.TryGetValue("Result", out var antecedentResult))
+                    if (_pushResults && startImmediately)
                     {
-                        context.Connection.SetJobParameter(context.BackgroundJob.Id, "AntecedentResult", antecedentResult);
+                        if (currentState.Data.TryGetValue("Result", out var antecedentResult))
+                        {
+                            context.Connection.SetJobParameter(context.BackgroundJob.Id, "AntecedentResult", antecedentResult);
+                        }
+                        else if (currentState.Data.TryGetValue("Exception", out var antecedentException))
+                        {
+                            context.Connection.SetJobParameter(context.BackgroundJob.Id, "AntecedentException", antecedentException);
+                        }
                     }
 
                     context.CandidateState = startImmediately
@@ -198,6 +205,8 @@ namespace Hangfire
 
                 IState nextState;
 
+                //if (context.CandidateState is SucceededState && )
+
                 if (continuation.Options.HasFlag(JobContinuationOptions.OnlyOnSucceededState) &&
                     context.CandidateState.Name != SucceededState.StateName)
                 {
@@ -228,11 +237,20 @@ namespace Hangfire
             }
             
             string antecedentResult = null;
+            string antecedentException = null;
 
             if (_pushResults)
             {
-                var serializedData = context.CandidateState.SerializeData();
-                serializedData.TryGetValue("Result", out antecedentResult);
+                if (context.CandidateState is SucceededState)
+                {
+                    var serializedData = context.CandidateState.SerializeData();
+                    serializedData.TryGetValue("Result", out antecedentResult);
+                }
+                else if (context.CandidateState is DeletedState)
+                {
+                    var serializedData = context.CandidateState.SerializeData();
+                    serializedData.TryGetValue("Exception", out antecedentException);
+                }
             }
 
             foreach (var tuple in nextStates)
@@ -240,6 +258,11 @@ namespace Hangfire
                 if (antecedentResult != null)
                 {
                     context.Connection.SetJobParameter(tuple.Key, "AntecedentResult", antecedentResult);
+                }
+
+                if (antecedentException != null)
+                {
+                    context.Connection.SetJobParameter(tuple.Key, "AntecedentException", antecedentException);
                 }
 
                 _stateChanger.ChangeState(new StateChangeContext(

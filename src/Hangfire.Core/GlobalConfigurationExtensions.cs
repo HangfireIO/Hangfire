@@ -42,13 +42,12 @@ namespace Hangfire
 
         public static IGlobalConfiguration<TStorage> WithJobExpirationTimeout<TStorage>(
             [NotNull] this IGlobalConfiguration<TStorage> configuration,
-            [NotNull] TimeSpan timeout)
+            TimeSpan timeout)
             where TStorage : JobStorage
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
-            JobStorage.Current.JobExpirationTimeout = timeout;
-
+            configuration.Entry.JobExpirationTimeout = timeout;
             return configuration;
         }
 
