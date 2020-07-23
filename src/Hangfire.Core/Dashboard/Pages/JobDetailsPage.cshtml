@@ -16,14 +16,18 @@
     var job = monitor.JobDetails(JobId);
     
     string title = null;
+    string description = null;
 
     if (job != null)
     {
         title = job.Job != null ? Html.JobName(job.Job) : null;
+        description = job.Job != null ? Html.JobDescription(job.Job) : null;
         job.History.Add(new StateHistoryDto { StateName = "Created", CreatedAt = job.CreatedAt ?? default(DateTime) });
     }
 
     title = title ?? Strings.Common_Job;
+
+    
     Layout = new LayoutPage(title);
 }
 
@@ -33,6 +37,11 @@
     </div>
     <div class="col-md-9">
         <h1 class="page-header">@title</h1>
+        
+        @if (description != null)
+        {
+            <div class="job-description">@Html.Raw(description)</div>
+        }
 
         @if (job == null)
         {
