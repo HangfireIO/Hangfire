@@ -280,6 +280,28 @@ select * from [{_storage.SchemaName}].State with (nolock, forceseek) where JobId
                     if (job == null) return null;
 
                     var parameters = multi.Read<JobParameter>().ToDictionary(x => x.Name, x => x.Value);
+                    var deserializedJob = DeserializeJob(job.InvocationData, job.Arguments, out var payload, out var exception);
+
+                    if (deserializedJob == null)
+                    {
+                        if (payload != null)
+                        {
+                            parameters.Add("DBG_Type", payload.Type);
+                            parameters.Add("DBG_Method", payload.Method);
+                            parameters.Add("DBG_Args", payload.Arguments);
+                        }
+                        else
+                        {
+                            parameters.Add("DBG_Payload", job.InvocationData);
+                            parameters.Add("DBG_Args", job.Arguments);
+                        }
+                    }
+
+                    if (exception != null)
+                    {
+                        parameters.Add("DBG_Exception", (exception.InnerException ?? exception).Message);
+                    }
+
                     var history =
                         multi.Read<SqlState>()
                             .ToList()
@@ -298,7 +320,7 @@ select * from [{_storage.SchemaName}].State with (nolock, forceseek) where JobId
                     {
                         CreatedAt = job.CreatedAt,
                         ExpireAt = job.ExpireAt,
-                        Job = DeserializeJob(job.InvocationData, job.Arguments),
+                        Job = deserializedJob,
                         History = history,
                         Properties = parameters
                     };
@@ -485,9 +507,9 @@ where j.Id in @jobIds";
             return count;
         }
 
-        private static Job DeserializeJob(string invocationData, string arguments)
+        private static Job DeserializeJob(string invocationData, string arguments, out InvocationData data, out Exception exception)
         {
-            var data = InvocationData.DeserializePayload(invocationData);
+            data = InvocationData.DeserializePayload(invocationData);
 
             if (!String.IsNullOrEmpty(arguments))
             {
@@ -496,10 +518,12 @@ where j.Id in @jobIds";
 
             try
             {
+                exception = null;
                 return data.DeserializeJob();
             }
-            catch (JobLoadException)
+            catch (JobLoadException ex)
             {
+                exception = ex;
                 return null;
             }
         }
@@ -552,7 +576,7 @@ order by j.Id desc";
                         ? new SafeDictionary<string, string>(deserializedData, StringComparer.OrdinalIgnoreCase)
                         : null;
 
-                    dto = selector(job, DeserializeJob(job.InvocationData, job.Arguments), stateData);
+                    dto = selector(job, DeserializeJob(job.InvocationData, job.Arguments, out _, out _), stateData);
                 }
 
                 result.Add(new KeyValuePair<string, TDto>(
@@ -585,7 +609,7 @@ where j.Id in @jobIds";
                     job.Id.ToString(),
                     new FetchedJobDto
                     {
-                        Job = DeserializeJob(job.InvocationData, job.Arguments),
+                        Job = DeserializeJob(job.InvocationData, job.Arguments, out _, out _),
                         State = job.StateName,
                     }));
             }

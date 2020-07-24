@@ -284,16 +284,21 @@ a:hover .label-hover {
 }
 
 .job-snippet-properties pre {
-    background-color: white;
+    background-color: inherit;
     -webkit-box-shadow: none;
     -ms-box-shadow: none;
     padding: 2px 4px;
     border: none;
     margin: 0;
+    overflow: hidden;
 }
 
 .job-snippet-properties code {
     color: rgb(163, 21, 21);
+}
+
+.alert-warning .table td {
+    border-color: rgb(229, 220, 195);
 }
 
 .state-card {

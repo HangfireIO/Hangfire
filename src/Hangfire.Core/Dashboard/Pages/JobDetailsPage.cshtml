@@ -67,15 +67,39 @@
                 </div>
             }
 
-            <div class="job-snippet">
-                <div class="job-snippet-code">
-                    <pre><code><span class="comment">// @Strings.JobDetailsPage_JobId: @Html.JobId(JobId.ToString(), false)</span>
+            if (job.Job != null)
+            {
+                <div class="job-snippet">
+                    <div class="job-snippet-code">
+                        <pre><code><span class="comment">// @Strings.JobDetailsPage_JobId: @Html.JobId(JobId.ToString(), false)</span>
 @JobMethodCallRenderer.Render(job.Job)
 </code></pre>
+                    </div>
                 </div>
-            </div>
+            }
+            else
+            {
+                var dbgProperties = job.Properties.Where(x => x.Key.StartsWith("DBG_")).ToArray();
 
-            var displayProperties = job.Properties.Where(x => x.Key != "Continuations").ToArray();
+                <div class="alert alert-warning">
+                    <h4>@Strings.Common_CannotFindTargetMethod</h4>
+                    <table class="table table-condensed job-snippet-properties" style="margin-bottom: 0;">
+                        <tr>
+                            <td>@Strings.JobDetailsPage_JobId</td>
+                            <td><pre><code>@Html.JobId(JobId, false)</code></pre></td>
+                        </tr>
+                        @foreach (var property in dbgProperties)
+                        {
+                            <tr>
+                                <td style="width: 15%;">@property.Key.Substring(4)</td>
+                                <td><pre><code>@property.Value</code></pre></td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+            }
+
+            var displayProperties = job.Properties.Where(x => !x.Key.StartsWith("DBG_") && x.Key != "Continuations").ToArray();
 
             if (displayProperties.Length > 0)
             {
