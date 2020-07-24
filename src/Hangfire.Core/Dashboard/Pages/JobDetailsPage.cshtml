@@ -88,15 +88,9 @@
                 }
             </div>
 
-            if (job.Properties.ContainsKey("Continuations"))
+            if (job.Properties.TryGetValue("Continuations", out var serializedContinuations))
             {
-                List<ContinuationsSupportAttribute.Continuation> continuations;
-
-                using (var connection = Storage.GetConnection())
-                {
-                    continuations = ContinuationsSupportAttribute.DeserializeContinuations(connection.GetJobParameter(
-                        JobId, "Continuations"));
-                }
+                var continuations = ContinuationsSupportAttribute.DeserializeContinuations(serializedContinuations);
 
                 if (continuations.Count > 0)
                 {
