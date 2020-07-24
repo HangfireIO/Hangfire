@@ -73,20 +73,23 @@
 @JobMethodCallRenderer.Render(job.Job)
 </code></pre>
                 </div>
-
-                @if (job.Properties.Count > 0)
-                {
-                    <div class="job-snippet-properties">
-                        <dl>
-                            @foreach (var property in job.Properties.Where(x => x.Key != "Continuations"))
-                            {
-                                <dt>@property.Key</dt>
-                                <dd><pre><code>@property.Value</code></pre></dd>
-                            }
-                        </dl>
-                    </div>
-                }
             </div>
+
+            var displayProperties = job.Properties.Where(x => x.Key != "Continuations").ToArray();
+
+            if (displayProperties.Length > 0)
+            {
+                <h3>Properties</h3>
+                <table class="table table-condensed job-snippet-properties">
+                    @foreach (var property in displayProperties)
+                    {
+                        <tr>
+                            <td style="width: 20%; word-break: break-all;">@property.Key</td>
+                            <td><pre><code>@property.Value</code></pre></td>
+                        </tr>
+                    }
+                </table>
+            }
 
             if (job.Properties.TryGetValue("Continuations", out var serializedContinuations))
             {
