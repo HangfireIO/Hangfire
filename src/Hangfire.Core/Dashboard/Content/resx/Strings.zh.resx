@@ -527,4 +527,7 @@
   <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
     <value>完成</value>
   </data>
+  <data name="Arguments" xml:space="preserve">
+    <value>论点</value>
+  </data>
 </root>

@@ -63,6 +63,15 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Arguments.
+        /// </summary>
+        public static string Arguments {
+            get {
+                return ResourceManager.GetString("Arguments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Don&apos;t worry, continuations are working as expected. But your current job storage does not support some queries required to show this page. Please try to update your storage or wait until the full command set is implemented..
         /// </summary>
         public static string AwaitingJobsPage_ContinuationsWarning_Text {

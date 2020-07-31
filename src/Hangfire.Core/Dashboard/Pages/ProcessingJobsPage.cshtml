@@ -68,12 +68,16 @@
                                 @if (!IsReadOnly)
                                 {
                                     <th class="min-width">
-                                        <input type="checkbox" class="js-jobs-list-select-all"/>
+                                        <input type="checkbox" class="js-jobs-list-select-all" />
                                     </th>
                                 }
                                 <th class="min-width">@Strings.Common_Id</th>
                                 <th class="min-width">@Strings.Common_Server</th>
                                 <th>@Strings.Common_Job</th>
+                                @if (DashboardOptions.DisplayArgumentsInLists)
+                                {
+                                    <th>@Strings.Arguments</th>
+                                }
                                 <th class="align-right">@Strings.ProcessingJobsPage_Table_Started</th>
                             </tr>
                         </thead>
@@ -99,7 +103,7 @@
                                     </td>
                                     @if (!job.Value.InProcessingState)
                                     {
-                                        <td colspan="3">@Strings.Common_JobStateChanged_Text</td>
+                                        <td colspan="@(DashboardOptions.DisplayArgumentsInLists ? 4 : 3)">@Strings.Common_JobStateChanged_Text</td>
                                     }
                                     else
                                     {
@@ -114,6 +118,12 @@
 
                                             @Html.JobNameLink(job.Key, job.Value.Job)
                                         </td>
+                                        if (DashboardOptions.DisplayArgumentsInLists)
+                                        {
+                                            <td class="ellipsis ellipsis-wrap">
+                                                @Html.JobArguments(job.Value.Job)
+                                            </td>
+                                        }
                                         <td class="align-right">
                                             @if (job.Value.StartedAt.HasValue)
                                             {

@@ -33,6 +33,7 @@ namespace Hangfire
             DisplayStorageConnectionString = true;
             DashboardTitle = "Hangfire Dashboard";
             DisplayNameFunc = null;
+            DisplayArgumentsInLists = false;
         }
 
         /// <summary>
@@ -59,6 +60,11 @@ namespace Hangfire
         /// The interval the /stats endpoint should be polled with.
         /// </summary>
         public int StatsPollingInterval { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether or not to display arguments in job lists.
+        /// </summary>
+        public bool DisplayArgumentsInLists { get; set; }
 
         public bool DisplayStorageConnectionString { get; set; }
 

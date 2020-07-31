@@ -28,6 +28,7 @@ using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 using Hangfire.Dashboard.Pages;
 using Hangfire.Dashboard.Resources;
+using Newtonsoft.Json;
 
 namespace Hangfire.Dashboard
 {
@@ -105,6 +106,12 @@ namespace Hangfire.Dashboard
         {
             if (pager == null) throw new ArgumentNullException(nameof(pager));
             return RenderPartial(new PerPageSelector(pager));
+        }
+
+        public NonEscapedString JobArguments(Job job)
+        {
+            var serialized = JsonConvert.SerializeObject(job?.Args, Formatting.Indented);
+            return Raw($"<a class=\"job-method toggle-ellipsis\">{HtmlEncode(serialized)}</a>");
         }
 
         public NonEscapedString RenderPartial(RazorPage partialPage)

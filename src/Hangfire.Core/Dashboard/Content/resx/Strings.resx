@@ -545,4 +545,7 @@
   <data name="Common_Error" xml:space="preserve">
     <value>Error</value>
   </data>
+  <data name="Arguments" xml:space="preserve">
+    <value>Arguments</value>
+  </data>
 </root>

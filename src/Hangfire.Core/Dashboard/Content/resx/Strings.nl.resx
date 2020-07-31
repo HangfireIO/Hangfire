@@ -539,4 +539,7 @@
   <data name="ServersPage_Possibly_Aborted" xml:space="preserve">
     <value>Mogelijk afgebroken</value>
   </data>
+  <data name="Arguments" xml:space="preserve">
+    <value>Argumenten</value>
+  </data>
 </root>

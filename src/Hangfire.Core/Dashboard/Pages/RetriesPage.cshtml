@@ -83,12 +83,16 @@ else
                                     @if (!IsReadOnly)
                                     {
                                         <th class="min-width">
-                                            <input type="checkbox" class="js-jobs-list-select-all"/>
+                                            <input type="checkbox" class="js-jobs-list-select-all" />
                                         </th>
                                     }
                                     <th class="min-width">@Strings.Common_Id</th>
                                     <th class="min-width">@Strings.Common_State</th>
                                     <th>@Strings.Common_Job</th>
+                                    @if (DashboardOptions.DisplayArgumentsInLists)
+                                    {
+                                        <th>@Strings.Arguments</th>
+                                    }
                                     <th>@Strings.Common_Reason</th>
                                     <th class="align-right">@Strings.Common_Retry</th>
                                     <th class="align-right">@Strings.Common_Created</th>
@@ -118,7 +122,7 @@ else
                                         </td>
                                         @if (jobData == null)
                                         {
-                                            <td colspan="5"><em>Job expired.</em></td>
+                                            <td colspan="@(DashboardOptions.DisplayArgumentsInLists ? 6 : 5)"><em>Job expired.</em></td>
                                         }
                                         else
                                         {
@@ -128,6 +132,12 @@ else
                                             <td class="word-break">
                                                 @Html.JobNameLink(jobId, jobData.Job)
                                             </td>
+                                            if (DashboardOptions.DisplayArgumentsInLists)
+                                            {
+                                                <td class="ellipsis ellipsis-wrap">
+                                                    @Html.JobArguments(jobData.Job)
+                                                </td>
+                                            }
                                             <td>
                                                 @(stateData?.Reason)
                                             </td>

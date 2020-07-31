@@ -522,6 +522,24 @@ div.metric-null {
     display: none;
 }
 
+.ellipsis {
+    width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.ellipsis-wrap {
+    white-space: nowrap;
+}
+
+@media (min-width: 1200px) {
+    .ellipsis {
+        width: 420px;
+    }
+}
+
 @media (min-width: 992px) {
     #stats {
         position: fixed;
