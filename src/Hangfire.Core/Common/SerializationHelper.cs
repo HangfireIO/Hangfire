@@ -307,7 +307,7 @@ namespace Hangfire.Common
             }
         }
 
-        private static JsonSerializerSettings GetUserSerializerSettings()
+        internal static JsonSerializerSettings GetUserSerializerSettings()
         {
             return Volatile.Read(ref _userSerializerSettings);
         }
