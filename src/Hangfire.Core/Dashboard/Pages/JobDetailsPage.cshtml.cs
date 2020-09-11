@@ -295,7 +295,7 @@ WriteLiteral("\r\n</code></pre>\r\n                    </div>\r\n               
             }
             else
             {
-                var dbgProperties = job.Properties.Where(x => x.Key.StartsWith("DBG_")).ToArray();
+                var dbgParameters = job.Properties.Where(x => x.Key.StartsWith("DBG_")).ToArray();
 
 
             
@@ -338,7 +338,7 @@ WriteLiteral("</code></pre></td>\r\n                        </tr>\r\n");
 
             
             #line 95 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                         foreach (var property in dbgProperties)
+                         foreach (var parameter in dbgParameters)
                         {
 
             
@@ -350,7 +350,7 @@ WriteLiteral("                            <tr>\r\n                              
 
             
             #line 98 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                   Write(property.Key.Substring(4));
+                                                   Write(parameter.Key.Substring(4));
 
             
             #line default
@@ -360,7 +360,7 @@ WriteLiteral("</td>\r\n                                <td><pre><code>");
 
             
             #line 99 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                          Write(property.Value);
+                                          Write(parameter.Value);
 
             
             #line default
@@ -382,15 +382,25 @@ WriteLiteral("                    </table>\r\n                </div>\r\n");
             #line 104 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
             }
 
-            var displayProperties = job.Properties.Where(x => !x.Key.StartsWith("DBG_") && x.Key != "Continuations").ToArray();
+            var displayParameters = job.Properties.Where(x => !x.Key.StartsWith("DBG_") && x.Key != "Continuations").ToArray();
 
-            if (displayProperties.Length > 0)
+            if (displayParameters.Length > 0)
             {
 
             
             #line default
             #line hidden
-WriteLiteral("                <h3>Properties</h3>\r\n");
+WriteLiteral("                <h3>");
+
+
+            
+            #line 110 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+               Write(Strings.JobDetailsPage_Parameters);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</h3>\r\n");
 
 
 
@@ -399,7 +409,7 @@ WriteLiteral("                <table class=\"table table-condensed job-snippet-p
 
             
             #line 112 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                     foreach (var property in displayProperties)
+                     foreach (var parameter in displayParameters)
                     {
 
             
@@ -411,7 +421,7 @@ WriteLiteral("                        <tr>\r\n                            <td st
 
             
             #line 115 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                                      Write(property.Key);
+                                                                      Write(parameter.Key);
 
             
             #line default
@@ -421,7 +431,7 @@ WriteLiteral("</td>\r\n                            <td><pre><code>");
 
             
             #line 116 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                      Write(property.Value);
+                                      Write(parameter.Value);
 
             
             #line default

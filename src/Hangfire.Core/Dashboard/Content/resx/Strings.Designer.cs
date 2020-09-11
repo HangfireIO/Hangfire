@@ -604,6 +604,15 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Parameters.
+        /// </summary>
+        public static string JobDetailsPage_Parameters {
+            get {
+                return ResourceManager.GetString("JobDetailsPage_Parameters", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Requeue.
         /// </summary>
         public static string JobDetailsPage_Requeue {

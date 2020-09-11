@@ -545,4 +545,7 @@
   <data name="Common_Error" xml:space="preserve">
     <value>Error</value>
   </data>
+  <data name="JobDetailsPage_Parameters" xml:space="preserve">
+    <value>Parameters</value>
+  </data>
 </root>
