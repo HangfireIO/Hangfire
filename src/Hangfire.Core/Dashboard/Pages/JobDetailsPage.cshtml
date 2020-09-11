@@ -20,7 +20,11 @@
     if (job != null)
     {
         title = job.Job != null ? Html.JobName(job.Job) : null;
-        job.History.Add(new StateHistoryDto { StateName = "Created", CreatedAt = job.CreatedAt ?? default(DateTime) });
+
+        var historyList = new List<StateHistoryDto>(job.History);
+        historyList.Add(new StateHistoryDto { StateName = "Created", CreatedAt = job.CreatedAt ?? default(DateTime) });
+
+        job.History = historyList;
     }
 
     title = title ?? Strings.Common_Job;
