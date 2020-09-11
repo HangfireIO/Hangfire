@@ -201,7 +201,6 @@ namespace Hangfire.States
 
             public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
-                transaction.DecrementCounter("stats:succeeded");
             }
 
             // ReSharper disable once MemberHidesStaticFromOuterClass
