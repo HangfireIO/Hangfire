@@ -170,7 +170,7 @@ BEGIN
     -- Servers table
         
     CREATE TABLE [$(HangFireSchema)].[Server](
-        [Id] [nvarchar](50) NOT NULL,
+        [Id] [nvarchar](200) NOT NULL,
         [Data] [nvarchar](max) NULL,
         [LastHeartbeat] [datetime] NULL,
             
@@ -378,8 +378,8 @@ BEGIN
 	ALTER TABLE [$(HangFireSchema)].[Server] DROP CONSTRAINT [PK_HangFire_Server]
     PRINT 'Dropped constraint [PK_HangFire_Server] to modify the [HangFire].[Server].[Id] column';
 
-	ALTER TABLE [$(HangFireSchema)].[Server] ALTER COLUMN [Id] NVARCHAR (100) NOT NULL;
-	PRINT 'Modified [$(HangFireSchema)].[Server].[Id] length to 100';
+	ALTER TABLE [$(HangFireSchema)].[Server] ALTER COLUMN [Id] NVARCHAR (200) NOT NULL;
+	PRINT 'Modified [$(HangFireSchema)].[Server].[Id] length to 200';
 
 	ALTER TABLE [$(HangFireSchema)].[Server] ADD  CONSTRAINT [PK_HangFire_Server] PRIMARY KEY CLUSTERED
 	(
@@ -675,6 +675,8 @@ BEGIN
 	PRINT 'Installing schema version 8';
 
 	 Insert migration here
+	-- TODO: Increase Server.ServerId column length to 200, add IGNORE_DUP_KEY for [Set] and [Hash] tables
+	-- TODO: Add clustered index for [AggregatedCounter] table
 
 	SET @CURRENT_SCHEMA_VERSION = 8;
 END*/
