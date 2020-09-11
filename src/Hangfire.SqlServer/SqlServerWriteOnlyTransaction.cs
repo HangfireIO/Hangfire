@@ -228,7 +228,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
         public override void AddToSet(string key, string value, double score)
         {
             string addSql =
-$@";merge [{_storage.SchemaName}].[Set] with (holdlock) as Target
+$@";merge [{_storage.SchemaName}].[Set] with (xlock) as Target
 using (VALUES (@key, @value, @score)) as Source ([Key], Value, Score)
 on Target.[Key] = Source.[Key] and Target.Value = Source.Value
 when matched then update set Score = Source.Score
@@ -308,7 +308,7 @@ delete from cte where row_num not between @start and @end";
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
 
             string sql =
-$@";merge [{_storage.SchemaName}].Hash with (holdlock) as Target
+$@";merge [{_storage.SchemaName}].Hash with (xlock) as Target
 using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
 on Target.[Key] = Source.[Key] and Target.Field = Source.Field
 when matched then update set Value = Source.Value
