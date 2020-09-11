@@ -493,6 +493,83 @@ select scope_identity() as Id";
         }
 
         [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void AddToSet_WithIgnoreDupKeyOption_InsertsNonExistingValue(bool useBatching)
+        {
+            try
+            {
+                UseConnection(sql =>
+                {
+                    sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = ON)");
+
+                    Commit(sql, x =>
+                        x.AddToSet("my-key","my-value", 3.2),
+                        useBatching,
+                        options => options.UseIgnoreDupKeyOption = true);
+
+                    var record = sql.Query($"select * from [{Constants.DefaultSchema}].[Set]").Single();
+                    Assert.Equal(3.2, record.Score, 3);
+                });
+            }
+            finally
+            {
+                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = OFF)"));
+            }
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void AddToSet_WithIgnoreDupKeyOption_UpdatesExistingValue_WhenIgnoreDupKeyOptionIsSet(bool useBatching)
+        {
+            try
+            {
+                UseConnection(sql =>
+                {
+                    sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = ON)");
+                    sql.Execute($@"insert into [{Constants.DefaultSchema}].[Set] ([Key], Value, Score) VALUES
+(N'my-key1', N'value1', 1.2),
+(N'my-key1', N'value2', 1.2),
+(N'my-key2', N'value1', 1.2)");
+
+                    Commit(sql, x => 
+                        x.AddToSet("my-key1", "value1", 2.3), 
+                        useBatching, options => options.UseIgnoreDupKeyOption = true);
+
+                    var record1 = sql.Query($"select * from [{Constants.DefaultSchema}].[Set] where [Key] = N'my-key1' and Value = N'value1'").Single();
+                    Assert.Equal(2.3, record1.Score, 3);
+
+                    var record2 = sql.Query($"select * from [{Constants.DefaultSchema}].[Set] where [Key] = N'my-key1' and Value = N'value2'").Single();
+                    Assert.Equal(1.2, record2.Score, 3);
+
+                    var record3 = sql.Query($"select * from [{Constants.DefaultSchema}].[Set] where [Key] = N'my-key2' and Value = N'value1'").Single();
+                    Assert.Equal(1.2, record3.Score, 3);
+                });
+            }
+            finally
+            {
+                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = OFF)"));
+            }
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void AddToSet_WithIgnoreDupKeyOption_FailsToUpdateExistingValue_WhenIgnoreDupKeyOptionWasNotSet(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = OFF)");
+                sql.Execute($"insert into [{Constants.DefaultSchema}].[Set] ([Key], Value, Score) VALUES (N'key1', N'value1', 1.2)");
+
+                var exception = Assert.Throws<SqlException>(() =>
+                    Commit(sql, x => 
+                        x.AddToSet("key1", "value1"),
+                    useBatching, options => options.UseIgnoreDupKeyOption = true));
+
+                Assert.Contains("Violation of PRIMARY KEY", exception.Message);
+            });
+        }
+
+        [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
         public void RemoveFromSet_RemovesARecord_WithGivenKeyAndValue(bool useBatching)
@@ -817,6 +894,92 @@ select scope_identity() as Id";
         }
 
         [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void SetRangeInHash_WithIgnoreDupKeyOption_InsertsNonExistingValue(bool useBatching)
+        {
+            try
+            {
+                UseConnection(sql =>
+                {
+                    sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = ON)");
+
+                    Commit(sql, x => x.SetRangeInHash("some-hash", new Dictionary<string, string>
+                    {
+                        { "key", "value" }
+                    }), useBatching, options => options.UseIgnoreDupKeyOption = true);
+
+                    var result = sql
+                        .Query($"select * from [{Constants.DefaultSchema}].Hash where [Key] = N'some-hash'")
+                        .ToDictionary(x => (string)x.Field, x => (string)x.Value);
+
+                    Assert.Equal("value", result["key"]);
+                });
+            }
+            finally
+            {
+                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = OFF)"));
+            }
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void SetRangeInHash_WithIgnoreDupKeyOption_UpdatesExistingValue_WhenIgnoreDupKeyOptionIsSet(bool useBatching)
+        {
+            try
+            {
+                UseConnection(sql =>
+                {
+                    sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = ON)");
+                    sql.Execute($@"insert into [{Constants.DefaultSchema}].Hash([Key], Field, Value) VALUES
+(N'some-hash', N'key1', N'value1'),
+(N'some-hash', N'key2', N'value1'),
+(N'othr-hash', N'key1', N'value1')");
+
+                    Commit(sql, x => x.SetRangeInHash("some-hash", new Dictionary<string, string>
+                    {
+                        { "key1", "value2" }
+                    }), useBatching, options => options.UseIgnoreDupKeyOption = true);
+
+                    var someResult = sql
+                        .Query($"select * from [{Constants.DefaultSchema}].Hash where [Key] = N'some-hash'")
+                        .ToDictionary(x => (string)x.Field, x => (string)x.Value);
+
+                    Assert.Equal("value2", someResult["key1"]);
+                    Assert.Equal("value1", someResult["key2"]);
+
+                    var othrResult = sql
+                        .Query($"select * from [{Constants.DefaultSchema}].Hash where [Key] = N'othr-hash'")
+                        .ToDictionary(x => (string)x.Field, x => (string)x.Value);
+
+                    Assert.Equal("value1", othrResult["key1"]);
+                });
+            }
+            finally
+            {
+                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = OFF)"));
+            }
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void SetRangeInHash_WithIgnoreDupKeyOption_FailsToUpdateExistingValue_WhenIgnoreDupKeyOptionWasNotSet(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = OFF)");
+                sql.Execute($"insert into [{Constants.DefaultSchema}].Hash([Key], Field, Value) VALUES (N'some-hash', N'key', N'value1')");
+
+                var exception = Assert.Throws<SqlException>(() =>
+                    Commit(sql, x => x.SetRangeInHash("some-hash", new Dictionary<string, string>
+                    {
+                        { "key", "value2" }
+                    }), useBatching, options => options.UseIgnoreDupKeyOption = true));
+
+                Assert.Contains("Violation of PRIMARY KEY", exception.Message);
+            });
+        }
+
+        [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
         public void RemoveHash_ThrowsAnException_WhenKeyIsNull(bool useBatching)
@@ -893,6 +1056,35 @@ select scope_identity() as Id";
                 var records = sql.Query<string>($"select [Value] from [{Constants.DefaultSchema}].[Set] where [Key] = N'my-set'");
                 Assert.Equal(items, records);
             });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void AddRangeToSet_DoesNotFailWithException_WhenIgnoreDupKeyOptionIsSet(bool useBatching)
+        {
+            try
+            {
+                UseConnection(sql =>
+                {
+                    sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = ON)");
+                    sql.Execute($@"insert into [{Constants.DefaultSchema}].[Set] ([Key], Value, Score) VALUES
+(N'my-set', N'2', 1.2),
+(N'my-set', N'3', 1.2),
+(N'my-set', N'4', 1.2)");
+
+                    var items = new List<string> { "1", "2", "3" };
+
+                    Commit(sql, x => x.AddRangeToSet("my-set", items), useBatching);
+
+                    var records = sql.Query<string>($"select [Value] from [{Constants.DefaultSchema}].[Set] where [Key] = N'my-set'");
+                    Assert.Equal(new List<string> { "1", "2", "3", "4" }, records);
+                });
+            }
+            finally
+            {
+                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = OFF)"));
+            }
         }
 
         [Theory, CleanDatabase]
@@ -1313,9 +1505,13 @@ values (@jobId, '', '', getutcdate())";
         private void Commit(
             SqlConnection connection,
             Action<SqlServerWriteOnlyTransaction> action,
-            bool useBatching)
+            bool useBatching,
+            Action<SqlServerStorageOptions> optionsAction = null)
         {
-            var storage = new Mock<SqlServerStorage>(connection, new SqlServerStorageOptions { CommandBatchMaxTimeout = useBatching ? TimeSpan.FromMinutes(1) : (TimeSpan?)null });
+            var options = new SqlServerStorageOptions { CommandBatchMaxTimeout = useBatching ? TimeSpan.FromMinutes(1) : (TimeSpan?) null };
+            optionsAction?.Invoke(options);
+
+            var storage = new Mock<SqlServerStorage>(connection, options);
             storage.Setup(x => x.QueueProviders).Returns(_queueProviders);
 
             using (var transaction = new SqlServerWriteOnlyTransaction(storage.Object, () => null))

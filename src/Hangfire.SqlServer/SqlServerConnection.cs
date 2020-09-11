@@ -253,12 +253,19 @@ where j.Id = @jobId";
 
             _storage.UseConnection(_dedicatedConnection, connection =>
             {
+                var query = $@"
+set xact_abort off;
+begin try
+  insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value);
+  if @@ROWCOUNT = 0 update [{_storage.SchemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
+end try
+begin catch
+  IF ERROR_NUMBER() not in (2601, 2627) throw;
+  update [{_storage.SchemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
+end catch";
+
                 connection.Execute(
-$@";merge [{_storage.SchemaName}].JobParameter with (holdlock, forceseek) as Target
-using (VALUES (@jobId, @name, @value)) as Source (JobId, Name, Value) 
-on Target.JobId = Source.JobId AND Target.Name = Source.Name
-when matched then update set Value = Source.Value
-when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.Name, Source.Value);",
+                    query,
                     new { jobId = long.Parse(id), name, value },
                     commandTimeout: _storage.CommandTimeout);
             });
@@ -317,12 +324,16 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
 
-            var sql =
-$@";merge [{_storage.SchemaName}].Hash with (holdlock, forceseek) as Target
-using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
-on Target.[Key] = Source.[Key] and Target.Field = Source.Field
-when matched then update set Value = Source.Value
-when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
+            var sql = $@"
+set xact_abort off;
+begin try
+  insert into [{_storage.SchemaName}].Hash ([Key], Field, Value) values (@key, @field, @value);
+  if @@ROWCOUNT = 0 update [{_storage.SchemaName}].Hash set Value = @value where [Key] = @key and Field = @field;
+end try
+begin catch
+  IF ERROR_NUMBER() not in (2601, 2627) throw;
+  update [{_storage.SchemaName}].Hash set Value = @value where [Key] = @key and Field = @field;
+end catch";
 
             var lockResourceKey = $"{_storage.SchemaName}:Hash:Lock";
 

@@ -227,8 +227,11 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void AddToSet(string key, string value, double score)
         {
-            string addSql =
-$@";merge [{_storage.SchemaName}].[Set] with (xlock) as Target
+            string addSql = _storage.Options.UseIgnoreDupKeyOption
+                ? $@"insert into [{_storage.SchemaName}].[Set] ([Key], Value, Score) values (@key, @value, @score);
+if @@ROWCOUNT = 0 update [{_storage.SchemaName}].[Set] set Score = @score where [Key] = @key and Value = @value;"
+
+                : $@";merge [{_storage.SchemaName}].[Set] with (xlock) as Target
 using (VALUES (@key, @value, @score)) as Source ([Key], Value, Score)
 on Target.[Key] = Source.[Key] and Target.Value = Source.Value
 when matched then update set Score = Source.Score
@@ -307,8 +310,11 @@ delete from cte where row_num not between @start and @end";
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
 
-            string sql =
-$@";merge [{_storage.SchemaName}].Hash with (xlock) as Target
+            string sql = _storage.Options.UseIgnoreDupKeyOption
+                ? $@"insert into [{_storage.SchemaName}].Hash ([Key], Field, Value) values (@key, @field, @value);
+if @@ROWCOUNT = 0 update [{_storage.SchemaName}].Hash set Value = @value where [Key] = @key and Field = @field;"
+
+                : $@";merge [{_storage.SchemaName}].Hash with (xlock) as Target
 using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
 on Target.[Key] = Source.[Key] and Target.Field = Source.Field
 when matched then update set Value = Source.Value
@@ -343,10 +349,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (items == null) throw new ArgumentNullException(nameof(items));
 
-            // TODO: Rewrite using the `MERGE` statement.
-            string query =
-$@"insert into [{_storage.SchemaName}].[Set] ([Key], Value, Score)
-values (@key, @value, 0.0)";
+            string query = $@"insert into [{_storage.SchemaName}].[Set] ([Key], Value, Score) values (@key, @value, 0.0)";
 
             AcquireSetLock(key);
 
