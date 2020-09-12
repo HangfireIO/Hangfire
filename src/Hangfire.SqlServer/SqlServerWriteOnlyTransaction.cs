@@ -98,6 +98,8 @@ namespace Hangfire.SqlServer
 
         public override void ExpireJob(string jobId, TimeSpan expireIn)
         {
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
+
             AddCommand(
                 _jobCommands,
                 long.Parse(jobId),
@@ -108,6 +110,8 @@ namespace Hangfire.SqlServer
 
         public override void PersistJob(string jobId)
         {
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
+
             AddCommand(
                 _jobCommands,
                 long.Parse(jobId),
@@ -117,6 +121,9 @@ namespace Hangfire.SqlServer
 
         public override void SetJobState(string jobId, IState state)
         {
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
+            if (state == null) throw new ArgumentNullException(nameof(state));
+
             string addAndSetStateSql = 
 $@"insert into [{_storage.SchemaName}].State (JobId, Name, Reason, CreatedAt, Data)
 values (@jobId, @name, @reason, @createdAt, @data);
@@ -135,6 +142,9 @@ update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @
 
         public override void AddJobState(string jobId, IState state)
         {
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
+            if (state == null) throw new ArgumentNullException(nameof(state));
+
             string addStateSql =
 $@"insert into [{_storage.SchemaName}].State (JobId, Name, Reason, CreatedAt, Data)
 values (@jobId, @name, @reason, @createdAt, @data)";
@@ -152,6 +162,9 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void AddToQueue(string queue, string jobId)
         {
+            if (queue == null) throw new ArgumentNullException(nameof(queue));
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
+
             var provider = _storage.QueueProviders.GetProvider(queue);
             var persistentQueue = provider.GetJobQueue();
 
@@ -180,6 +193,8 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void IncrementCounter(string key)
         {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+
             AddCommand(
                 _counterCommands,
                 key,
@@ -190,6 +205,8 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void IncrementCounter(string key, TimeSpan expireIn)
         {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+
             AddCommand(
                 _counterCommands,
                 key,
@@ -201,6 +218,8 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void DecrementCounter(string key)
         {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+
             AddCommand(
                 _counterCommands,
                 key,
@@ -211,6 +230,8 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void DecrementCounter(string key, TimeSpan expireIn)
         {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+
             AddCommand(
                 _counterCommands,
                 key,
@@ -227,6 +248,9 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void AddToSet(string key, string value, double score)
         {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (value == null) throw new ArgumentNullException(nameof(value));
+
             string addSql = _storage.Options.UseIgnoreDupKeyOption
                 ? $@"insert into [{_storage.SchemaName}].[Set] ([Key], Value, Score) values (@key, @value, @score);
 if @@ROWCOUNT = 0 update [{_storage.SchemaName}].[Set] set Score = @score where [Key] = @key and Value = @value;"
@@ -249,6 +273,9 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
 
         public override void RemoveFromSet(string key, string value)
         {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (value == null) throw new ArgumentNullException(nameof(value));
+
             string query = $@"delete from [{_storage.SchemaName}].[Set] where [Key] = @key and Value = @value";
 
             AcquireSetLock(key);
@@ -262,6 +289,9 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
 
         public override void InsertToList(string key, string value)
         {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (value == null) throw new ArgumentNullException(nameof(value));
+
             AcquireListLock(key);
             AddCommand(
                 _listCommands,
@@ -276,6 +306,9 @@ insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
 
         public override void RemoveFromList(string key, string value)
         {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (value == null) throw new ArgumentNullException(nameof(value));
+
             AcquireListLock(key);
             AddCommand(
                 _listCommands,
@@ -287,6 +320,8 @@ insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
 
         public override void TrimList(string key, int keepStartingFrom, int keepEndingAt)
         {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+
             string trimSql =
 $@";with cte as (
     select row_number() over (order by Id desc) as row_num

@@ -39,6 +39,18 @@ namespace Hangfire.SqlServer.Tests
             Assert.Equal("storage", exception.ParamName);
         }
 
+        [Fact, CleanDatabase]
+        public void ExpireJob_ThrowsAnException_WhenJobIdIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.ExpireJob(null, TimeSpan.Zero), false));
+
+                Assert.Equal("jobId", exception.ParamName);
+            });
+        }
+
         [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
@@ -64,6 +76,18 @@ select scope_identity() as Id";
             });
         }
 
+        [Fact, CleanDatabase]
+        public void PersistJob_ThrowsAnException_WhenJobIdIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.PersistJob(null), false));
+
+                Assert.Equal("jobId", exception.ParamName);
+            });
+        }
+
         [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
@@ -86,6 +110,30 @@ select scope_identity() as Id";
 
                 var anotherJob = GetTestJob(sql, anotherJobId);
                 Assert.NotNull(anotherJob.ExpireAt);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void SetJobState_ThrowsAnException_WhenJobIdIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.SetJobState(null, new Mock<IState>().Object), false));
+
+                Assert.Equal("jobId", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void SetJobState_ThrowsAnException_WhenStateIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.SetJobState("my-job", null), false));
+
+                Assert.Equal("state", exception.ParamName);
             });
         }
 
@@ -161,6 +209,30 @@ select scope_identity() as Id";
             });
         }
 
+        [Fact, CleanDatabase]
+        public void AddJobState_ThrowsAnException_WhenJobIdIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.AddJobState(null, new Mock<IState>().Object), false));
+
+                Assert.Equal("jobId", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AddJobState_ThrowsAnException_WhenStateIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.AddJobState("my-job", null), false));
+
+                Assert.Equal("state", exception.ParamName);
+            });
+        }
+
         [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
@@ -230,6 +302,30 @@ select scope_identity() as Id";
             });
         }
 
+        [Fact, CleanDatabase]
+        public void AddToQueue_ThrowsAnException_WhenQueueIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.AddToQueue(null, "my-job"), false));
+
+                Assert.Equal("queue", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AddToQueue_ThrowsAnException_WhenJobIdIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.AddToQueue("my-queue", null), false));
+
+                Assert.Equal("jobId", exception.ParamName);
+            });
+        }
+
         [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
@@ -288,6 +384,18 @@ select scope_identity() as Id";
                 .Single();
         }
 
+        [Fact, CleanDatabase]
+        public void IncrementCounter_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.IncrementCounter(null), false));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
         [Theory, CleanDatabase]
         [InlineData(true), InlineData(false)]
         public void IncrementCounter_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
@@ -315,6 +423,18 @@ select scope_identity() as Id";
                 Assert.Equal("my-key", record.Key);
                 Assert.Equal(1, record.Value);
                 Assert.Equal((DateTime?)null, record.ExpireAt);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void IncrementCounter_WithExpiry_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.IncrementCounter(null, TimeSpan.FromHours(1)), false));
+
+                Assert.Equal("key", exception.ParamName);
             });
         }
 
@@ -372,6 +492,18 @@ select scope_identity() as Id";
             });
         }
 
+        [Fact, CleanDatabase]
+        public void DecrementCounter_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.DecrementCounter(null), false));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
         [Theory, CleanDatabase]
         [InlineData(true), InlineData(false)]
         public void DecrementCounter_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
@@ -399,6 +531,18 @@ select scope_identity() as Id";
                 Assert.Equal("my-key", record.Key);
                 Assert.Equal(-1, record.Value);
                 Assert.Equal((DateTime?)null, record.ExpireAt);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void DecrementCounter_WithExpiry_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.DecrementCounter(null, TimeSpan.FromHours(1)), false));
+
+                Assert.Equal("key", exception.ParamName);
             });
         }
 
@@ -453,6 +597,30 @@ select scope_identity() as Id";
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].Counter").Single();
 
                 Assert.Equal(2, recordCount);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AddToSet_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.AddToSet(null, "value"), false));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AddToSet_ThrowsAnException_WhenValueIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.AddToSet("my-set", null), false));
+
+                Assert.Equal("value", exception.ParamName);
             });
         }
 
@@ -521,6 +689,30 @@ select scope_identity() as Id";
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].[Set]").Single();
                 
                 Assert.Equal(1, recordCount);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AddToSet_WithScore_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.AddToSet(null, "value", 1.2D), false));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AddToSet_WithScore_ThrowsAnException_WhenValueIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.AddToSet("my-set", null, 1.2D), false));
+
+                Assert.Equal("value", exception.ParamName);
             });
         }
 
@@ -650,6 +842,30 @@ select scope_identity() as Id";
             });
         }
 
+        [Fact, CleanDatabase]
+        public void RemoveFromSet_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.RemoveFromSet(null, "value"), false));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void RemoveFromSet_ThrowsAnException_WhenValueIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.RemoveFromSet("my-set", null), false));
+
+                Assert.Equal("value", exception.ParamName);
+            });
+        }
+
         [Theory, CleanDatabase]
         [InlineData(true), InlineData(false)]
         public void RemoveFromSet_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
@@ -728,6 +944,30 @@ select scope_identity() as Id";
             });
         }
 
+        [Fact, CleanDatabase]
+        public void InsertToList_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.InsertToList(null, "value"), false));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void InsertToList_ThrowsAnException_WhenValueIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.InsertToList("my-list", null), false));
+
+                Assert.Equal("value", exception.ParamName);
+            });
+        }
+
         [Theory, CleanDatabase]
         [InlineData(true), InlineData(false)]
         public void InsertToList_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
@@ -773,6 +1013,30 @@ select scope_identity() as Id";
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].List").Single();
 
                 Assert.Equal(2, recordCount);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void RemoveFromList_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.RemoveFromList(null, "value"), false));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void RemoveFromList_ThrowsAnException_WhenValueIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.RemoveFromList("my-list", null), false));
+
+                Assert.Equal("value", exception.ParamName);
             });
         }
 
@@ -852,6 +1116,18 @@ select scope_identity() as Id";
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].List").Single();
 
                 Assert.Equal(1, recordCount);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void TrimList_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.TrimList(null, 0, 1), false));
+
+                Assert.Equal("key", exception.ParamName);
             });
         }
 
