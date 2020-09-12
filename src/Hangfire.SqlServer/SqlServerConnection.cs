@@ -351,7 +351,7 @@ end catch";
                     foreach (var keyValuePair in keyValuePairs)
                     {
                         commandBatch.Append(sql,
-                            new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
+                            new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                             new SqlCommandBatchParameter("@field", DbType.String, 100) { Value = keyValuePair.Key },
                             new SqlCommandBatchParameter("@value", DbType.String, -1) { Value = (object) keyValuePair.Value ?? DBNull.Value });
                     }

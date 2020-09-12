@@ -16,6 +16,9 @@ namespace Hangfire.SqlServer.Tests
 {
     public class SqlServerWriteOnlyTransactionFacts
     {
+        private static readonly string TooLongKey = "123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_12345";
+        private static readonly string TooLongTruncatedKey = TooLongKey.Substring(0, 100);
+
         private readonly PersistentJobQueueProviderCollection _queueProviders;
 
         public SqlServerWriteOnlyTransactionFacts()
@@ -286,6 +289,19 @@ select scope_identity() as Id";
         }
 
         [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void IncrementCounter_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<SqlException>(() => 
+                    Commit(sql, x => x.IncrementCounter(TooLongKey), useBatching));
+
+                Assert.Contains("data would be truncated", exception.Message);
+            });
+        }
+
+        [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
         public void IncrementCounter_AddsRecordToCounterTable_WithPositiveValue(bool useBatching)
@@ -299,6 +315,19 @@ select scope_identity() as Id";
                 Assert.Equal("my-key", record.Key);
                 Assert.Equal(1, record.Value);
                 Assert.Equal((DateTime?)null, record.ExpireAt);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void IncrementCounter_WithExpiry_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<SqlException>(() =>
+                    Commit(sql, x => x.IncrementCounter(TooLongKey, TimeSpan.FromHours(1)), useBatching));
+
+                Assert.Contains("data would be truncated", exception.Message);
             });
         }
 
@@ -344,6 +373,19 @@ select scope_identity() as Id";
         }
 
         [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void DecrementCounter_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<SqlException>(() =>
+                    Commit(sql, x => x.DecrementCounter(TooLongKey), useBatching));
+
+                Assert.Contains("data would be truncated", exception.Message);
+            });
+        }
+
+        [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
         public void DecrementCounter_AddsRecordToCounterTable_WithNegativeValue(bool useBatching)
@@ -357,6 +399,19 @@ select scope_identity() as Id";
                 Assert.Equal("my-key", record.Key);
                 Assert.Equal(-1, record.Value);
                 Assert.Equal((DateTime?)null, record.ExpireAt);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void DecrementCounter_WithExpiry_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<SqlException>(() =>
+                    Commit(sql, x => x.DecrementCounter(TooLongKey, TimeSpan.FromHours(1)), useBatching));
+
+                Assert.Contains("data would be truncated", exception.Message);
             });
         }
 
@@ -398,6 +453,19 @@ select scope_identity() as Id";
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].Counter").Single();
 
                 Assert.Equal(2, recordCount);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void AddToSet_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<SqlException>(() =>
+                    Commit(sql, x => x.AddToSet(TooLongKey, "value"), useBatching));
+
+                Assert.Contains("data would be truncated", exception.Message);
             });
         }
 
@@ -453,6 +521,19 @@ select scope_identity() as Id";
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].[Set]").Single();
                 
                 Assert.Equal(1, recordCount);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void AddToSet_WithScore_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<SqlException>(() =>
+                    Commit(sql, x => x.AddToSet(TooLongKey, "value", 1.2D), useBatching));
+
+                Assert.Contains("data would be truncated", exception.Message);
             });
         }
 
@@ -570,6 +651,27 @@ select scope_identity() as Id";
         }
 
         [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void RemoveFromSet_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                // Arrange
+                Commit(sql, x => x.AddToSet(TooLongTruncatedKey, "value"), useBatching);
+
+                // Act
+                Commit(sql, x => x.RemoveFromSet(TooLongKey, "value"), useBatching);
+
+                // Assert
+                var result = sql.Query(
+                    $"select [Value] from [{Constants.DefaultSchema}].[Set] where [Key] = @key",
+                    new { key = TooLongTruncatedKey }).Single();
+
+                Assert.Equal("value", result.Value);
+            });
+        }
+
+        [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
         public void RemoveFromSet_RemovesARecord_WithGivenKeyAndValue(bool useBatching)
@@ -627,6 +729,19 @@ select scope_identity() as Id";
         }
 
         [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void InsertToList_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<SqlException>(() =>
+                    Commit(sql, x => x.InsertToList(TooLongKey, "value"), useBatching));
+
+                Assert.Contains("data would be truncated", exception.Message);
+            });
+        }
+
+        [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
         public void InsertToList_AddsARecord_WithGivenValues(bool useBatching)
@@ -658,6 +773,27 @@ select scope_identity() as Id";
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].List").Single();
 
                 Assert.Equal(2, recordCount);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void RemoveFromList_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                // Arrange
+                Commit(sql, x => x.InsertToList(TooLongTruncatedKey, "value"), useBatching);
+
+                // Act
+                Commit(sql, x => x.RemoveFromList(TooLongKey, "value"), useBatching);
+
+                // Assert
+                var result = sql.Query(
+                    $"select [Value] from [{Constants.DefaultSchema}].[List] where [Key] = @key",
+                    new { key = TooLongTruncatedKey }).Single();
+
+                Assert.Equal("value", result.Value);
             });
         }
 
@@ -716,6 +852,27 @@ select scope_identity() as Id";
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].List").Single();
 
                 Assert.Equal(1, recordCount);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void TrimList_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                // Arrange
+                Commit(sql, x => x.InsertToList(TooLongTruncatedKey, "value"), useBatching);
+
+                // Act
+                Commit(sql, x => x.TrimList(TooLongKey, 1, 2), useBatching);
+
+                // Assert
+                var result = sql.Query(
+                    $"select [Value] from [{Constants.DefaultSchema}].[List] where [Key] = @key",
+                    new { key = TooLongTruncatedKey }).Single();
+
+                Assert.Equal("value", result.Value);
             });
         }
 
@@ -846,6 +1003,21 @@ select scope_identity() as Id";
                     () => Commit(sql, x => x.SetRangeInHash("some-hash", null), useBatching));
 
                 Assert.Equal("keyValuePairs", exception.ParamName);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void SetRangeInHash_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<SqlException>(() =>
+                    Commit(sql, x => x.SetRangeInHash(
+                        TooLongKey,
+                        new Dictionary<string, string> { { "field", "value" } }), useBatching));
+
+                Assert.Contains("data would be truncated", exception.Message);
             });
         }
 
@@ -992,6 +1164,29 @@ select scope_identity() as Id";
         }
 
         [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void RemoveHash_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                // Arrange
+                Commit(sql, x => x.SetRangeInHash(
+                    TooLongTruncatedKey,
+                    new Dictionary<string, string> {{ "field", "value" }}), useBatching);
+
+                // Act
+                Commit(sql, x => x.RemoveHash(TooLongKey), useBatching);
+
+                // Assert
+                var result = sql.Query(
+                    $"select [Value] from [{Constants.DefaultSchema}].[Hash] where [Key] = @key",
+                    new { key = TooLongTruncatedKey }).Single();
+
+                Assert.Equal("value", result.Value);
+            });
+        }
+
+        [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
         public void RemoveHash_RemovesAllHashRecords(bool useBatching)
@@ -1025,6 +1220,21 @@ select scope_identity() as Id";
                     () => Commit(sql, x => x.AddRangeToSet(null, new List<string>()), useBatching));
 
                 Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void AddRangeToSet_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<SqlException>(() =>
+                    Commit(sql, x => x.AddRangeToSet(
+                        TooLongKey,
+                        new List<string> { "field" }), useBatching));
+
+                Assert.Contains("data would be truncated", exception.Message);
             });
         }
 
@@ -1100,6 +1310,27 @@ select scope_identity() as Id";
         }
 
         [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void RemoveSet_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                // Arrange
+                Commit(sql, x => x.AddToSet(TooLongTruncatedKey, "value"), useBatching);
+
+                // Act
+                Commit(sql, x => x.RemoveSet(TooLongKey), useBatching);
+
+                // Assert
+                var result = sql.Query(
+                    $"select [Value] from [{Constants.DefaultSchema}].[Set] where [Key] = @key",
+                    new { key = TooLongTruncatedKey }).Single();
+
+                Assert.Equal("value", result.Value);
+            });
+        }
+
+        [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
         public void RemoveSet_RemovesASet_WithAGivenKey(bool useBatching)
@@ -1133,6 +1364,29 @@ insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score]) values (
                     () => Commit(sql, x => x.ExpireHash(null, TimeSpan.FromMinutes(5)), useBatching));
 
                 Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void ExpireHash_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                // Arrange
+                Commit(sql, x => x.SetRangeInHash(
+                    TooLongTruncatedKey,
+                    new Dictionary<string, string> {{ "field", "value" }}), useBatching);
+
+                // Act
+                Commit(sql, x => x.ExpireHash(TooLongKey, TimeSpan.FromHours(1)), useBatching);
+
+                // Assert
+                var result = sql.Query(
+                    $"select [ExpireAt] from [{Constants.DefaultSchema}].[Hash] where [Key] = @key",
+                    new { key = TooLongTruncatedKey }).Single();
+
+                Assert.Null(result.ExpireAt);
             });
         }
 
@@ -1180,6 +1434,27 @@ values (@key, @field)";
         }
 
         [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void ExpireSet_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                // Arrange
+                Commit(sql, x => x.AddToSet(TooLongTruncatedKey, "value"), useBatching);
+
+                // Act
+                Commit(sql, x => x.ExpireSet(TooLongKey, TimeSpan.FromHours(1)), useBatching);
+
+                // Assert
+                var result = sql.Query(
+                    $"select [ExpireAt] from [{Constants.DefaultSchema}].[Set] where [Key] = @key",
+                    new { key = TooLongTruncatedKey }).Single();
+
+                Assert.Null(result.ExpireAt);
+            });
+        }
+
+        [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
         public void ExpireSet_SetsExpirationTime_OnASet_WithGivenKey(bool useBatching)
@@ -1219,6 +1494,27 @@ values (@key, @value, 0.0)";
                     () => Commit(sql, x => x.ExpireList(null, TimeSpan.FromSeconds(45)), useBatching));
 
                 Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void ExpireList_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                // Arrange
+                Commit(sql, x => x.InsertToList(TooLongTruncatedKey, "value"), useBatching);
+
+                // Act
+                Commit(sql, x => x.ExpireList(TooLongKey, TimeSpan.FromHours(1)), useBatching);
+
+                // Assert
+                var result = sql.Query(
+                    $"select [ExpireAt] from [{Constants.DefaultSchema}].[List] where [Key] = @key",
+                    new { key = TooLongTruncatedKey }).Single();
+
+                Assert.Null(result.ExpireAt);
             });
         }
 
@@ -1265,6 +1561,31 @@ insert into [{Constants.DefaultSchema}].[List] ([Key]) values (@key)";
         }
 
         [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void PersistHash_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                // Arrange
+                Commit(sql, x =>
+                {
+                    x.SetRangeInHash(TooLongTruncatedKey, new Dictionary<string, string> { { "field", "value" } });
+                    x.ExpireHash(TooLongTruncatedKey, TimeSpan.FromHours(1));
+                }, useBatching);
+
+                // Act
+                Commit(sql, x => x.PersistHash(TooLongKey), useBatching);
+
+                // Assert
+                var result = sql.Query(
+                    $"select [ExpireAt] from [{Constants.DefaultSchema}].[Hash] where [Key] = @key",
+                    new { key = TooLongTruncatedKey }).Single();
+
+                Assert.NotNull(result.ExpireAt);
+            });
+        }
+
+        [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
         public void PersistHash_ClearsExpirationTime_OnAGivenHash(bool useBatching)
@@ -1307,6 +1628,31 @@ values (@key, @field, @expireAt)";
         }
 
         [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void PersistSet_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                // Arrange
+                Commit(sql, x =>
+                {
+                    x.AddToSet(TooLongTruncatedKey, "value");
+                    x.ExpireSet(TooLongTruncatedKey, TimeSpan.FromHours(1));
+                }, useBatching);
+
+                // Act
+                Commit(sql, x => x.PersistSet(TooLongKey), useBatching);
+
+                // Assert
+                var result = sql.Query(
+                    $"select [ExpireAt] from [{Constants.DefaultSchema}].[Set] where [Key] = @key",
+                    new { key = TooLongTruncatedKey }).Single();
+
+                Assert.NotNull(result.ExpireAt);
+            });
+        }
+
+        [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
         public void PersistSet_ClearsExpirationTime_OnAGivenHash(bool useBatching)
@@ -1345,6 +1691,31 @@ values (@key, @value, @expireAt, 0.0)";
                     () => Commit(sql, x => x.PersistList(null), useBatching));
 
                 Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void PersistList_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        {
+            UseConnection(sql =>
+            {
+                // Arrange
+                Commit(sql, x =>
+                {
+                    x.InsertToList(TooLongTruncatedKey, "value");
+                    x.ExpireList(TooLongTruncatedKey, TimeSpan.FromHours(1));
+                }, useBatching);
+
+                // Act
+                Commit(sql, x => x.PersistList(TooLongKey), useBatching);
+
+                // Assert
+                var result = sql.Query(
+                    $"select [ExpireAt] from [{Constants.DefaultSchema}].[List] where [Key] = @key",
+                    new { key = TooLongTruncatedKey }).Single();
+
+                Assert.NotNull(result.ExpireAt);
             });
         }
 

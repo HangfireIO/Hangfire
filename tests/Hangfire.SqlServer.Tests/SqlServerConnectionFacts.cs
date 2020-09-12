@@ -1079,6 +1079,20 @@ values (@key, 0.0, @value)";
             });
         }
 
+        [Fact, CleanDatabase]
+        public void SetRangeInHash_ThrowsSqlException_WhenKeyIsTooLong()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<SqlException>(
+                    () => connection.SetRangeInHash(
+                    "123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_12345",
+                    new Dictionary<string, string> { { "field", "value" } }));
+
+                Assert.Contains("data would be truncated", exception.Message);
+            });
+        }
+
         [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]

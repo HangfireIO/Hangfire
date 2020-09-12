@@ -184,7 +184,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
                 _counterCommands,
                 key,
                 $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value]) values (@key, @value)",
-                new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
+                new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.Int32) { Value = +1 });
         }
 
@@ -194,7 +194,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
                 _counterCommands,
                 key,
                 $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
-                new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
+                new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.Int32) { Value = +1 },
                 new SqlCommandBatchParameter("@expireAt", DbType.DateTime) { Value = DateTime.UtcNow.Add(expireIn) });
         }
@@ -205,7 +205,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
                 _counterCommands,
                 key,
                 $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value]) values (@key, @value)",
-                new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
+                new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.Int32) { Value = -1 });
         }
 
@@ -215,7 +215,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
                 _counterCommands,
                 key,
                 $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
-                new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
+                new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.Int32) { Value = -1 },
                 new SqlCommandBatchParameter("@expireAt", DbType.DateTime) { Value = DateTime.UtcNow.Add(expireIn) });
         }
@@ -242,7 +242,7 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
                 _setCommands,
                 key,
                 addSql,
-                new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
+                new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.String, 256) { Value = value },
                 new SqlCommandBatchParameter("@score", DbType.Double, 53) { Value = score });
         }
@@ -256,7 +256,7 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
                 _setCommands,
                 key,
                 query,
-                new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
+                new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.String, 256) { Value = value });
         }
 
@@ -270,7 +270,7 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
 select [Key] from [{_storage.SchemaName}].List with (xlock)
 where [Key] = @key;
 insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
-                new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
+                new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.String, -1) { Value = value });
         }
 
@@ -281,7 +281,7 @@ insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
                 _listCommands,
                 key,
                 $@"delete from [{_storage.SchemaName}].List where [Key] = @key and Value = @value",
-                new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
+                new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.String, -1) { Value = value });
         }
 
@@ -300,7 +300,7 @@ delete from cte where row_num not between @start and @end";
                 _listCommands,
                 key, 
                 trimSql,
-                new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
+                new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@start", DbType.Int32) { Value = keepStartingFrom + 1 },
                 new SqlCommandBatchParameter("@end", DbType.Int32) { Value = keepEndingAt + 1 });
         }
@@ -328,7 +328,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
                     _hashCommands,
                     key,
                     sql,
-                    new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
+                    new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                     new SqlCommandBatchParameter("@field", DbType.String, 100) { Value = pair.Key },
                     new SqlCommandBatchParameter("@value", DbType.String, -1) { Value = (object)pair.Value ?? DBNull.Value });
             }
@@ -341,7 +341,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             string query = $@"delete from [{_storage.SchemaName}].Hash where [Key] = @key";
 
             AcquireHashLock(key);
-            AddCommand(_hashCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key });
+            AddCommand(_hashCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String) { Value = key });
         }
 
         public override void AddRangeToSet(string key, IList<string> items)
@@ -356,7 +356,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             foreach (var item in items)
             {
                 AddCommand(_setCommands, key, query, 
-                    new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key }, 
+                    new SqlCommandBatchParameter("@key", DbType.String) { Value = key }, 
                     new SqlCommandBatchParameter("@value", DbType.String, 256) { Value = item });
             }
         }
@@ -368,7 +368,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             string query = $@"delete from [{_storage.SchemaName}].[Set] where [Key] = @key";
 
             AcquireSetLock(key);
-            AddCommand(_setCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key });
+            AddCommand(_setCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String) { Value = key });
         }
 
         public override void ExpireHash(string key, TimeSpan expireIn)
@@ -380,7 +380,7 @@ update [{_storage.SchemaName}].[Hash] set ExpireAt = @expireAt where [Key] = @ke
 
             AcquireHashLock(key);
             AddCommand(_hashCommands, key, query,
-                new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
+                new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@expireAt", DbType.DateTime) { Value = DateTime.UtcNow.Add(expireIn) });
         }
 
@@ -393,7 +393,7 @@ update [{_storage.SchemaName}].[Set] set ExpireAt = @expireAt where [Key] = @key
 
             AcquireSetLock(key);
             AddCommand(_setCommands, key, query,
-                new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
+                new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@expireAt", DbType.DateTime) { Value = DateTime.UtcNow.Add(expireIn) });
         }
 
@@ -406,7 +406,7 @@ update [{_storage.SchemaName}].[List] set ExpireAt = @expireAt where [Key] = @ke
 
             AcquireListLock(key);
             AddCommand(_listCommands, key, query,
-                new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
+                new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@expireAt", DbType.DateTime) { Value = DateTime.UtcNow.Add(expireIn) });
         }
 
@@ -418,7 +418,7 @@ update [{_storage.SchemaName}].[List] set ExpireAt = @expireAt where [Key] = @ke
 update [{_storage.SchemaName}].Hash set ExpireAt = null where [Key] = @key";
 
             AcquireHashLock(key);
-            AddCommand(_hashCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key });
+            AddCommand(_hashCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String) { Value = key });
         }
 
         public override void PersistSet(string key)
@@ -429,7 +429,7 @@ update [{_storage.SchemaName}].Hash set ExpireAt = null where [Key] = @key";
 update [{_storage.SchemaName}].[Set] set ExpireAt = null where [Key] = @key";
 
             AcquireSetLock(key);
-            AddCommand(_setCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key });
+            AddCommand(_setCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String) { Value = key });
         }
 
         public override void PersistList(string key)
@@ -440,7 +440,7 @@ update [{_storage.SchemaName}].[Set] set ExpireAt = null where [Key] = @key";
 update [{_storage.SchemaName}].[List] set ExpireAt = null where [Key] = @key";
 
             AcquireListLock(key);
-            AddCommand(_listCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key });
+            AddCommand(_listCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String) { Value = key });
         }
 
         private void AppendBatch<TKey>(
