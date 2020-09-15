@@ -234,7 +234,7 @@ namespace Hangfire
         }
 
         /// <summary>
-        /// These settings is used to serialize user data like arguments or parameters.
+        /// These settings are used to serialize user data like arguments or parameters.
         /// You can use <see cref="SerializationHelper.Serialize{T}(T, SerializationOption)"/> with <see cref="SerializationOption.User"/> option
         /// to serialize with specified settings
         /// </summary>
@@ -251,9 +251,19 @@ namespace Hangfire
         public static IGlobalConfiguration UseRecommendedSerializerSettings(
             [NotNull] this IGlobalConfiguration configuration)
         {
+            return UseRecommendedSerializerSettings(configuration, null);
+        }
+
+        public static IGlobalConfiguration UseRecommendedSerializerSettings(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] Action<JsonSerializerSettings> settingsConfiguration)
+        {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
-            SerializationHelper.SetUserSerializerSettings(SerializationHelper.GetInternalSettings());
+            var settings = SerializationHelper.GetInternalSettings();
+            settingsConfiguration?.Invoke(settings);
+
+            SerializationHelper.SetUserSerializerSettings(settings);
             return configuration;
         }
 
