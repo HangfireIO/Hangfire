@@ -22,7 +22,7 @@ namespace Hangfire.Core.Tests
         [Fact, CleanSerializerSettings]
         public void UseSerializationSettingsWithCallback_AffectSerializationWithUserSettings()
         {
-            GlobalConfiguration.Configuration.UseSerializerSettings(settings =>
+            GlobalConfiguration.Configuration.UseRecommendedSerializerSettings(settings =>
             {
                 settings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             });

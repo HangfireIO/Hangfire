@@ -234,7 +234,7 @@ namespace Hangfire
         }
 
         /// <summary>
-        /// These settings is used to serialize user data like arguments or parameters.
+        /// These settings are used to serialize user data like arguments or parameters.
         /// You can use <see cref="SerializationHelper.Serialize{T}(T, SerializationOption)"/> with <see cref="SerializationOption.User"/> option
         /// to serialize with specified settings
         /// </summary>
@@ -248,44 +248,23 @@ namespace Hangfire
             return configuration;
         }
 
-        /// <summary>
-        /// These settings is used to serialize user data like arguments or parameters.
-        /// You can use <see cref="SerializationHelper.Serialize{T}(T, SerializationOption)"/> with <see cref="SerializationOption.User"/> option
-        /// to serialize with specified settings
-        /// </summary>
-        public static IGlobalConfiguration UseSerializerSettings(
-            [NotNull] this IGlobalConfiguration configuration,
-            Action<JsonSerializerSettings> settingsConfiguration)
-        {
-            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
-
-            var settings = SerializationHelper.GetUserSerializerSettings();
-            if (settings == null)
-                settings = SerializationHelper.GetInternalSettings();
-
-            settingsConfiguration?.Invoke(settings);
-            SerializationHelper.SetUserSerializerSettings(settings);
-            return configuration;
-        }
-
         public static IGlobalConfiguration UseRecommendedSerializerSettings(
             [NotNull] this IGlobalConfiguration configuration)
         {
-            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
-
-            SerializationHelper.SetUserSerializerSettings(SerializationHelper.GetInternalSettings());
-            return configuration;
+            return UseRecommendedSerializerSettings(configuration, null);
         }
 
         public static IGlobalConfiguration UseRecommendedSerializerSettings(
             [NotNull] this IGlobalConfiguration configuration,
-            Action<JsonSerializerSettings> settingsConfiguration)
+            [CanBeNull] Action<JsonSerializerSettings> settingsConfiguration)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
-            return configuration
-                .UseRecommendedSerializerSettings()
-                .UseSerializerSettings(settingsConfiguration);
+            var settings = SerializationHelper.GetInternalSettings();
+            settingsConfiguration?.Invoke(settings);
+
+            SerializationHelper.SetUserSerializerSettings(settings);
+            return configuration;
         }
 
         public static IGlobalConfiguration UseResultsInContinuations(this IGlobalConfiguration configuration)
