@@ -279,7 +279,11 @@ select * from [{_storage.SchemaName}].State with (nolock, forceseek) where JobId
                     var job = multi.Read<SqlJob>().SingleOrDefault();
                     if (job == null) return null;
 
-                    var parameters = multi.Read<JobParameter>().ToDictionary(x => x.Name, x => x.Value);
+                    var parameters = multi.Read<JobParameter>()
+                        .GroupBy(x => x.Name)
+                        .Select(grp => grp.First())
+                        .ToDictionary(x => x.Name, x => x.Value);
+
                     var deserializedJob = DeserializeJob(job.InvocationData, job.Arguments, out var payload, out var exception);
 
                     if (deserializedJob == null)
