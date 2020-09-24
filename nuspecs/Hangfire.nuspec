@@ -21,6 +21,14 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.14
+
+Hangfire.SqlServer
+
+• Fixed – Duplicate entries in the `JobParameters` table after upgrading to version 1.7.13.
+• Fixed – Extensive retries on a method that has a retry attribute after upgrading to 1.7.13.
+• Fixed – "ArgumentException: An item with the same key has already been added. Key: RetryCount" in `SqlServerMonitoringApi`.
+
 1.7.13
 
 Hangfire.Core
