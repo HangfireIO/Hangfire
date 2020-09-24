@@ -253,19 +253,12 @@ where j.Id = @jobId";
 
             _storage.UseConnection(_dedicatedConnection, connection =>
             {
-                var query = $@"
-set xact_abort off;
-begin try
-  insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value);
-  if @@ROWCOUNT = 0 update [{_storage.SchemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
-end try
-begin catch
-  IF ERROR_NUMBER() not in (2601, 2627) throw;
-  update [{_storage.SchemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
-end catch";
-
                 connection.Execute(
-                    query,
+$@";merge [{_storage.SchemaName}].JobParameter with (holdlock, forceseek) as Target
+using (VALUES (@jobId, @name, @value)) as Source (JobId, Name, Value) 
+on Target.JobId = Source.JobId AND Target.Name = Source.Name
+when matched then update set Value = Source.Value
+when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.Name, Source.Value);",
                     new { jobId = long.Parse(id), name, value },
                     commandTimeout: _storage.CommandTimeout);
             });
