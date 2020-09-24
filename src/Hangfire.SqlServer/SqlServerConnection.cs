@@ -106,7 +106,7 @@ values (@invocationData, @arguments, @createdAt, @expireAt)";
 
             var parametersArray = parameters.ToArray();
 
-            if (parametersArray.Length <= 2)
+            if (parametersArray.Length <= 4)
             {
                 if (parametersArray.Length == 1)
                 {
@@ -133,6 +133,40 @@ commit tran;";
                     queryParameters.Add("@value1", parametersArray[0].Value, DbType.String, size: -1);
                     queryParameters.Add("@name2", parametersArray[1].Key, DbType.String, size: 40);
                     queryParameters.Add("@value2", parametersArray[1].Value, DbType.String, size: -1);
+                }
+                else if (parametersArray.Length == 3)
+                {
+                    queryString = $@"
+set xact_abort on; set nocount on; declare @jobId bigint;
+begin tran;
+insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) values (@invocationData, @arguments, @createdAt, @expireAt);
+select @jobId = scope_identity(); select @jobId;
+insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name1, @value1), (@jobId, @name2, @value2), (@jobId, @name3, @value3);
+commit tran;";
+                    queryParameters.Add("@name1", parametersArray[0].Key, DbType.String, size: 40);
+                    queryParameters.Add("@value1", parametersArray[0].Value, DbType.String, size: -1);
+                    queryParameters.Add("@name2", parametersArray[1].Key, DbType.String, size: 40);
+                    queryParameters.Add("@value2", parametersArray[1].Value, DbType.String, size: -1);
+                    queryParameters.Add("@name3", parametersArray[2].Key, DbType.String, size: 40);
+                    queryParameters.Add("@value3", parametersArray[2].Value, DbType.String, size: -1);
+                }
+                else if (parametersArray.Length == 4)
+                {
+                    queryString = $@"
+set xact_abort on; set nocount on; declare @jobId bigint;
+begin tran;
+insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) values (@invocationData, @arguments, @createdAt, @expireAt);
+select @jobId = scope_identity(); select @jobId;
+insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name1, @value1), (@jobId, @name2, @value2), (@jobId, @name3, @value3), (@jobId, @name4, @value4);
+commit tran;";
+                    queryParameters.Add("@name1", parametersArray[0].Key, DbType.String, size: 40);
+                    queryParameters.Add("@value1", parametersArray[0].Value, DbType.String, size: -1);
+                    queryParameters.Add("@name2", parametersArray[1].Key, DbType.String, size: 40);
+                    queryParameters.Add("@value2", parametersArray[1].Value, DbType.String, size: -1);
+                    queryParameters.Add("@name3", parametersArray[2].Key, DbType.String, size: 40);
+                    queryParameters.Add("@value3", parametersArray[2].Value, DbType.String, size: -1);
+                    queryParameters.Add("@name4", parametersArray[3].Key, DbType.String, size: 40);
+                    queryParameters.Add("@value4", parametersArray[3].Value, DbType.String, size: -1);
                 }
 
                 return _storage.UseConnection(_dedicatedConnection, connection => connection
