@@ -285,14 +285,30 @@ where j.Id = @jobId";
             if (id == null) throw new ArgumentNullException(nameof(id));
             if (name == null) throw new ArgumentNullException(nameof(name));
 
+            // First updated is required for older schema versions (5 and below), where
+            // [IX_HangFire_JobParameter_JobIdAndName] index wasn't declared as unique,
+            // to make our query resistant to (no matter what schema we are using):
+            // 
+            // https://github.com/HangfireIO/Hangfire/issues/1743 (deadlocks)
+            // https://github.com/HangfireIO/Hangfire/issues/1741 (duplicate entries)
+            // https://github.com/HangfireIO/Hangfire/issues/1693#issuecomment-697976133 (records aren't updated)
+
+            var query = $@"
+set xact_abort off;
+begin try
+  update [{_storage.SchemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
+  if @@ROWCOUNT = 0 insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value);
+  if @@ROWCOUNT = 0 update [{_storage.SchemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
+end try
+begin catch
+  IF ERROR_NUMBER() not in (2601, 2627) throw;
+  update [{_storage.SchemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
+end catch";
+
             _storage.UseConnection(_dedicatedConnection, connection =>
             {
                 connection.Execute(
-$@";merge [{_storage.SchemaName}].JobParameter with (holdlock, forceseek) as Target
-using (VALUES (@jobId, @name, @value)) as Source (JobId, Name, Value) 
-on Target.JobId = Source.JobId AND Target.Name = Source.Name
-when matched then update set Value = Source.Value
-when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.Name, Source.Value);",
+                    query,
                     new { jobId = long.Parse(id), name, value },
                     commandTimeout: _storage.CommandTimeout);
             });
