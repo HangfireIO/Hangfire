@@ -274,6 +274,17 @@ namespace Hangfire
                 .UseFilter(new ContinuationsSupportAttribute(pushResults: true));
         }
 
+        public static IGlobalConfiguration UseMaxLinesInExceptionDetails(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] int? numberOfLines)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (numberOfLines.HasValue && numberOfLines.Value <= 1) throw new ArgumentOutOfRangeException(nameof(numberOfLines), "Must be either a positive value larger than 1; or a null value.");
+
+            States.FailedState.MaxLinesInExceptionDetails = numberOfLines;
+            return configuration;
+        }
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static IGlobalConfiguration<T> Use<T>(
             [NotNull] this IGlobalConfiguration configuration, T entry,

@@ -333,7 +333,7 @@ namespace Hangfire.Server
             IReadOnlyDictionary<string, string> changedFields;
             DateTime? nextExecution;
 
-            var errorString = error.ToStringWithOriginalStackTrace();
+            var errorString = error.ToStringWithOriginalStackTrace(States.FailedState.MaxLinesInExceptionDetails);
 
             if (recurringJob.RetryAttempt < MaxRetryAttemptCount)
             {
