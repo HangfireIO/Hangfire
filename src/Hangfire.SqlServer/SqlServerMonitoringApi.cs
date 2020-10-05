@@ -550,8 +550,7 @@ select j.*, s.Reason as StateReason, s.Data as StateData, s.CreatedAt as StateCh
 from [{_storage.SchemaName}].Job j with (nolock, forceseek)
 inner join cte on cte.Id = j.Id
 left join [{_storage.SchemaName}].State s with (nolock, forceseek) on j.StateId = s.Id and j.Id = s.JobId
-where cte.row_num between @start and @end
-order by j.Id desc";
+where cte.row_num between @start and @end";
 
             var jobs = connection.Query<SqlJob>(
                         jobsSql,
