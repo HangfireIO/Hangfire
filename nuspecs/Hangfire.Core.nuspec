@@ -21,6 +21,11 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.15
+• Added – `IGlobalConfiguration.UseMaxLinesInExceptionDetails` option to cap the size of stack traces.
+• Changed – Only the first 100 lines of a stack trace will be preserved now by default in Failed state.
+• Fixed – Don't let exceptions with huge stack traces take up too much storage space.
+
 1.7.13
 • Added – Catalan translation for Dashboard UI (based on Spanish translation, by @agausachs).
 • Added – Support for configuring recommended serializer settings via callback (by @Yaevh).

@@ -16,6 +16,10 @@
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.15
+• Fixed – Avoid deadlocks when using the `SetJobParameter` method without introducing issues for older schemas.
+• Fixed – Remove duplicate sorting in the `SqlServerMonitoringApi.GetJobs` method which is used by a lot of queries.
+
 1.7.14
 • Fixed – Duplicate entries in the `JobParameters` table after upgrading to version 1.7.13.
 • Fixed – Extensive retries on a method that has a retry attribute after upgrading to 1.7.13.
