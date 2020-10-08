@@ -298,7 +298,6 @@ set xact_abort off;
 begin try
   update [{_storage.SchemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
   if @@ROWCOUNT = 0 insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value);
-  if @@ROWCOUNT = 0 update [{_storage.SchemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
 end try
 begin catch
   IF ERROR_NUMBER() not in (2601, 2627) throw;
