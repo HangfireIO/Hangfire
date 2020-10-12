@@ -159,7 +159,7 @@ option (loop join, optimize for (@count = 20000));";
                     {
                         return command.ExecuteNonQuery();
                     }
-                    catch (DbException) when (cancellationToken.IsCancellationRequested)
+                    catch (DbException ex) when (cancellationToken.IsCancellationRequested || ex.Message.Contains("Lock request time out period exceeded"))
                     {
                         // Exception was triggered due to the Cancel method call, ignoring
                         return 0;

@@ -99,7 +99,7 @@
                                 <tr class="js-jobs-list-row hover">
                                     @if (!IsReadOnly)
                                     {
-                                        <td>
+                                        <td rowspan="@(job.Error != null ? "2" : "1")">
                                             <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Id"/>
                                         </td>
                                     }
@@ -200,20 +200,25 @@
                                         }
                                     </td>
                                     <td class="align-right min-width">
-                                        @if (job.NextExecution != null)
+                                        @if (!job.NextExecution.HasValue)
                                         {
-                                            @Html.RelativeTime(job.NextExecution.Value)
-                                        }
-                                        else
-                                        {
-                                            if (!String.IsNullOrEmpty(job.Error))
+                                            if (job.Error != null)
                                             {
-                                                <span class="label label-danger text-uppercase" title="@job.Error">@Strings.Common_Error</span>
+                                                <span class="label label-danger text-uppercase">@Strings.Common_Error</span>
                                             }
                                             else
                                             {
-                                                <span class="label label-warning text-uppercase" title="@Strings.RecurringJobsPage_RecurringJobDisabled_Tooltip">@Strings.Common_Disabled</span>
+                                                <span class="label label-default text-uppercase" title="@Strings.RecurringJobsPage_RecurringJobDisabled_Tooltip">@Strings.Common_Disabled</span>
                                             }
+
+                                        }
+                                        else if (job.RetryAttempt > 0)
+                                        {
+                                            <span class="label label-warning">@Html.RelativeTime(job.NextExecution.Value)</span>
+                                        }
+                                        else
+                                        {
+                                            @Html.RelativeTime(job.NextExecution.Value)
                                         }
                                     </td>
                                     <td class="align-right min-width">
@@ -249,6 +254,14 @@
                                             <em>N/A</em>
                                         }
                                     </td>
+                                    @if (job.Error != null)
+                                    {
+                                        <tr>
+                                            <td colspan="@(IsReadOnly ? "6" : "7")" class="failed-job-details">
+                                                <pre class="stack-trace"><code>@Html.StackTrace(job.Error)</code></pre>
+                                            </td>
+                                        </tr>
+                                    }
                                 </tr>
                              }
                         </tbody>

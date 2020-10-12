@@ -66,7 +66,8 @@ namespace Hangfire.Server
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
         private static readonly int BatchSize = 1000;
-        private static readonly int MaxRetryAttemptCount = 10;
+        private static readonly int MaxRetryAttemptCount = 5;
+        private static readonly int MaxSupportedVersion = 2;
 
         private readonly ILog _logger = LogProvider.For<RecurringJobScheduler>();
         private readonly ConcurrentDictionary<Type, bool> _isBatchingAvailableCache = new ConcurrentDictionary<Type, bool>();
@@ -152,22 +153,17 @@ namespace Hangfire.Server
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
 
-            var jobsEnqueued = 0;
+            int jobsProcessed;
 
-            while (EnqueueNextRecurringJobs(context))
+            do
             {
-                jobsEnqueued++;
+                jobsProcessed = EnqueueNextRecurringJobs(context);
 
-                if (context.IsStopping)
+                if (jobsProcessed != 0)
                 {
-                    break;
+                    _logger.Debug($"{jobsProcessed} recurring job(s) processed by scheduler.");
                 }
-            }
-
-            if (jobsEnqueued != 0)
-            {
-                _logger.Debug($"{jobsEnqueued} recurring job(s) enqueued.");
-            }
+            } while (jobsProcessed > 0 && !context.IsStopping);
 
             if (_pollingDelay > TimeSpan.Zero)
             {
@@ -186,11 +182,11 @@ namespace Hangfire.Server
             return GetType().Name;
         }
 
-        private bool EnqueueNextRecurringJobs(BackgroundProcessContext context)
+        private int EnqueueNextRecurringJobs(BackgroundProcessContext context)
         {
             return UseConnectionDistributedLock(context.Storage, connection =>
             {
-                var result = false;
+                var jobsProcessed = 0;
 
                 if (IsBatchingAvailable(connection))
                 {
@@ -198,15 +194,14 @@ namespace Hangfire.Server
                     var timestamp = JobHelper.ToTimestamp(now);
                     var recurringJobIds = ((JobStorageConnection)connection).GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp, BatchSize);
 
-                    if (recurringJobIds == null || recurringJobIds.Count == 0) return false;
-
-                    foreach (var recurringJobId in recurringJobIds)
+                    if (recurringJobIds != null)
                     {
-                        if (context.IsStopping) return false;
-
-                        if (TryEnqueueBackgroundJob(context, connection, recurringJobId, now))
+                        foreach (var recurringJobId in recurringJobIds)
                         {
-                            result = true;
+                            if (context.IsStopping) break;
+
+                            TryEnqueueBackgroundJob(context, connection, recurringJobId, now);
+                            jobsProcessed++;
                         }
                     }
                 }
@@ -214,77 +209,75 @@ namespace Hangfire.Server
                 {
                     for (var i = 0; i < BatchSize; i++)
                     {
-                        if (context.IsStopping) return false;
+                        if (context.IsStopping) break;
 
                         var now = _nowFactory();
                         var timestamp = JobHelper.ToTimestamp(now);
 
                         var recurringJobId = connection.GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp);
-                        if (recurringJobId == null) return false;
+                        if (recurringJobId == null) break;
 
-                        if (!TryEnqueueBackgroundJob(context, connection, recurringJobId, now))
-                        {
-                            return false;
-                        }
+                        TryEnqueueBackgroundJob(context, connection, recurringJobId, now);
+                        jobsProcessed++;
                     }
                 }
 
-                return result;
+                return jobsProcessed;
             });
         }
 
-        private bool TryEnqueueBackgroundJob(
+        private void TryEnqueueBackgroundJob(
             BackgroundProcessContext context,
             IStorageConnection connection,
             string recurringJobId,
             DateTime now)
         {
-            try
+            using (connection.AcquireDistributedRecurringJobLock(recurringJobId, LockTimeout))
             {
-                return EnqueueBackgroundJob(context, connection, recurringJobId, now);
-            }
-            catch (Exception ex)
-            {
-                _logger.WarnException(
-                    $"Recurring job '{recurringJobId}' can not be scheduled due to an exception.",
-                    ex);
-            }
+                var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
 
-            return false;
+                if (recurringJob == null)
+                {
+                    RemoveRecurringJob(connection, recurringJobId);
+                    return;
+                }
+
+                Exception exception;
+
+                try
+                {
+                    ScheduleRecurringJob(context, connection, recurringJobId, recurringJob, now);
+                    return;
+                }
+                catch (BackgroundJobClientException ex)
+                {
+                    exception = ex.InnerException;
+                }
+
+                RetryRecurringJob(connection, recurringJobId, recurringJob, exception);
+            }
         }
 
-        private bool EnqueueBackgroundJob(
-            BackgroundProcessContext context,
-            IStorageConnection connection, 
-            string recurringJobId,
-            DateTime now)
+        private void ScheduleRecurringJob(BackgroundProcessContext context, IStorageConnection connection,
+            string recurringJobId, RecurringJobEntity recurringJob, DateTime now)
         {
-            using (connection.AcquireDistributedRecurringJobLock(recurringJobId, LockTimeout))
+            // We always start a transaction, regardless our recurring job was updated or not,
+            // to prevent from infinite loop, when there's an old processing server (pre-1.7.0)
+            // in our environment that doesn't know it should modify the score for entries in
+            // the recurring jobs set.
+            using (var transaction = connection.CreateWriteTransaction())
             {
                 try
                 {
-                    var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
-
-                    if (recurringJob == null)
+                    // We can't handle recurring job with unsupported versions - there may be additional
+                    // features. we don't know about. We also shouldn't stop the whole scheduler as
+                    // there may be jobs with lower versions. Instead, we'll re-schedule such a job and
+                    // emit a warning message to the log.
+                    if (recurringJob.Version.HasValue && recurringJob.Version > MaxSupportedVersion)
                     {
-                        using (var transaction = connection.CreateWriteTransaction())
-                        {
-                            transaction.RemoveFromSet("recurring-jobs", recurringJobId);
-                            transaction.Commit();
-                        }
-
-                        return false;
+                        throw new NotSupportedException($"Server '{context.ServerId}' can't process recurring job '{recurringJobId}' of version '{recurringJob.Version ?? 1}'. Max supported version of this server is '{MaxSupportedVersion}'.");
                     }
-
-                    // If a recurring job has the "V" field, then it was created by a newer
-                    // version. Despite we can handle 1.7.0-based recurring jobs just fine,
-                    // future versions may introduce new features anyway, so it's safer to
-                    // let other servers to handle this recurring job.
-                    if (recurringJob.Version.HasValue && recurringJob.Version > 2)
-                    {
-                        return false;
-                    }
-
+                    
                     BackgroundJob backgroundJob = null;
                     IReadOnlyDictionary<string, string> changedFields;
 
@@ -302,63 +295,81 @@ namespace Hangfire.Server
 
                         recurringJob.IsChanged(out changedFields, out nextExecution);
                     }
-                    else if (recurringJob.RetryAttempt < MaxRetryAttemptCount)
-                    {
-                        var delay = _pollingDelay > TimeSpan.Zero ? _pollingDelay : TimeSpan.FromMinutes(1);
-                        
-                        _logger.WarnException($"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be retried in {delay}.", error);
-                        recurringJob.ScheduleRetry(delay, out changedFields, out nextExecution);
-                    }
                     else
                     {
-                        _logger.ErrorException($"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be disabled.", error);
-                        recurringJob.Disable(error, out changedFields, out nextExecution);
+                        throw new InvalidOperationException("Recurring job can't be scheduled, see inner exception for details.", error);
                     }
 
-                    // We always start a transaction, regardless our recurring job was updated or not,
-                    // to prevent from infinite loop, when there's an old processing server (pre-1.7.0)
-                    // in our environment that doesn't know it should modify the score for entries in
-                    // the recurring jobs set.
-                    using (var transaction = connection.CreateWriteTransaction())
+                    if (backgroundJob != null)
                     {
-                        if (backgroundJob != null)
-                        {
-                            _factory.StateMachine.EnqueueBackgroundJob(
-                                context.Storage,
-                                connection,
-                                transaction,
-                                recurringJob,
-                                backgroundJob,
-                                "Triggered by recurring job scheduler",
-                                _profiler);
-                        }
-
-                        transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
-
-                        transaction.Commit();
-                        return true;
+                        _factory.StateMachine.EnqueueBackgroundJob(
+                            context.Storage,
+                            connection,
+                            transaction,
+                            recurringJob,
+                            backgroundJob,
+                            "Triggered by recurring job scheduler",
+                            _profiler);
                     }
+
+                    transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
                 }
-#if !NETSTANDARD1_3
-                catch (TimeZoneNotFoundException ex)
-                {
-#else
                 catch (Exception ex)
                 {
-                    // https://github.com/dotnet/corefx/issues/7552
-                    if (!ex.GetType().Name.Equals("TimeZoneNotFoundException")) throw;
-#endif
-
-                    _logger.ErrorException(
-                        $"Recurring job '{recurringJobId}' was not triggered: {ex.Message}.",
-                        ex);
+                    throw new BackgroundJobClientException(ex.Message, ex);
                 }
 
-                return false;
+                // We should commit transaction outside of the internal try/catch block, because these
+                // exceptions are always due to network issues, and in case of a timeout exception we
+                // can't determine whether it was actually succeeded or not, and can't perform an
+                // idempotent retry in this case.
+                transaction.Commit();
             }
         }
 
-        private bool UseConnectionDistributedLock(JobStorage storage, Func<IStorageConnection, bool> action)
+        private void RetryRecurringJob(
+            IStorageConnection connection, string recurringJobId, RecurringJobEntity recurringJob, Exception error)
+        {
+            IReadOnlyDictionary<string, string> changedFields;
+            DateTime? nextExecution;
+
+            var errorString = error.ToStringWithOriginalStackTrace(States.FailedState.MaxLinesInExceptionDetails);
+
+            if (recurringJob.RetryAttempt < MaxRetryAttemptCount)
+            {
+                var delay = _pollingDelay > TimeSpan.Zero ? _pollingDelay : TimeSpan.FromMinutes(1);
+
+                _logger.WarnException(
+                    $"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be retried in {delay}.",
+                    error);
+                recurringJob.ScheduleRetry(delay, errorString, out changedFields, out nextExecution);
+            }
+            else
+            {
+                _logger.ErrorException(
+                    $"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be disabled.", error);
+                recurringJob.Disable(errorString, out changedFields, out nextExecution);
+            }
+
+            using (var transaction = connection.CreateWriteTransaction())
+            {
+                transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
+                transaction.Commit();
+            }
+        }
+
+        private void RemoveRecurringJob(IStorageConnection connection, string recurringJobId)
+        {
+            _logger.Debug($"Recurring job '{recurringJobId}' doesn't exist and will be removed from schedule.");
+
+            using (var transaction = connection.CreateWriteTransaction())
+            {
+                transaction.RemoveFromSet("recurring-jobs", recurringJobId);
+                transaction.Commit();
+            }
+        }
+
+        private T UseConnectionDistributedLock<T>(JobStorage storage, Func<IStorageConnection, T> action)
         {
             var resource = "recurring-jobs:lock";
             try
@@ -379,7 +390,7 @@ namespace Hangfire.Server
                     e);
             }
 
-            return false;
+            return default;
         }
 
         private bool IsBatchingAvailable(IStorageConnection connection)

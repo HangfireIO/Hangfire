@@ -20,7 +20,11 @@
     if (job != null)
     {
         title = job.Job != null ? Html.JobName(job.Job) : null;
-        job.History.Add(new StateHistoryDto { StateName = "Created", CreatedAt = job.CreatedAt ?? default(DateTime) });
+
+        var historyList = new List<StateHistoryDto>(job.History);
+        historyList.Add(new StateHistoryDto { StateName = "Created", CreatedAt = job.CreatedAt ?? default(DateTime) });
+
+        job.History = historyList;
     }
 
     title = title ?? Strings.Common_Job;
@@ -67,36 +71,57 @@
                 </div>
             }
 
-            <div class="job-snippet">
-                <div class="job-snippet-code">
-                    <pre><code><span class="comment">// @Strings.JobDetailsPage_JobId: @Html.JobId(JobId.ToString(), false)</span>
+            if (job.Job != null)
+            {
+                <div class="job-snippet">
+                    <div class="job-snippet-code">
+                        <pre><code><span class="comment">// @Strings.JobDetailsPage_JobId: @Html.JobId(JobId.ToString(), false)</span>
 @JobMethodCallRenderer.Render(job.Job)
 </code></pre>
-                </div>
-
-                @if (job.Properties.Count > 0)
-                {
-                    <div class="job-snippet-properties">
-                        <dl>
-                            @foreach (var property in job.Properties.Where(x => x.Key != "Continuations"))
-                            {
-                                <dt>@property.Key</dt>
-                                <dd><pre><code>@property.Value</code></pre></dd>
-                            }
-                        </dl>
                     </div>
-                }
-            </div>
-
-            if (job.Properties.ContainsKey("Continuations"))
+                </div>
+            }
+            else
             {
-                List<ContinuationsSupportAttribute.Continuation> continuations;
+                var dbgParameters = job.Properties.Where(x => x.Key.StartsWith("DBG_")).ToArray();
 
-                using (var connection = Storage.GetConnection())
-                {
-                    continuations = ContinuationsSupportAttribute.DeserializeContinuations(connection.GetJobParameter(
-                        JobId, "Continuations"));
-                }
+                <div class="alert alert-warning">
+                    <h4>@Strings.Common_CannotFindTargetMethod</h4>
+                    <table class="table table-condensed job-snippet-properties" style="margin-bottom: 0;">
+                        <tr>
+                            <td>@Strings.JobDetailsPage_JobId</td>
+                            <td><pre><code>@Html.JobId(JobId, false)</code></pre></td>
+                        </tr>
+                        @foreach (var parameter in dbgParameters)
+                        {
+                            <tr>
+                                <td style="width: 15%;">@parameter.Key.Substring(4)</td>
+                                <td><pre><code>@parameter.Value</code></pre></td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+            }
+
+            var displayParameters = job.Properties.Where(x => !x.Key.StartsWith("DBG_") && x.Key != "Continuations").ToArray();
+
+            if (displayParameters.Length > 0)
+            {
+                <h3>@Strings.JobDetailsPage_Parameters</h3>
+                <table class="table table-condensed job-snippet-properties">
+                    @foreach (var parameter in displayParameters)
+                    {
+                        <tr>
+                            <td style="width: 20%; word-break: break-all;">@parameter.Key</td>
+                            <td><pre><code>@parameter.Value</code></pre></td>
+                        </tr>
+                    }
+                </table>
+            }
+
+            if (job.Properties.TryGetValue("Continuations", out var serializedContinuations))
+            {
+                var continuations = ContinuationsSupportAttribute.DeserializeContinuations(serializedContinuations);
 
                 if (continuations.Count > 0)
                 {

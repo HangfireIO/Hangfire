@@ -73,7 +73,7 @@ WriteLiteral("\r\n");
             
             #line 9 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
   
-    Layout = new LayoutPage(Queue.ToUpperInvariant());
+    Layout = new LayoutPage(Queue);
 
     int from, perPage;
 
@@ -103,7 +103,7 @@ WriteLiteral("\r\n    </div>\r\n    <div class=\"col-md-9\">\r\n        ");
 
             
             #line 27 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-   Write(Html.Breadcrumbs(Queue.ToUpperInvariant(), new Dictionary<string, string>
+   Write(Html.Breadcrumbs(Queue, new Dictionary<string, string>
         {
             { "Queues", Url.LinkToQueues() }
         }));
@@ -116,7 +116,7 @@ WriteLiteral("\r\n\r\n        <h1 class=\"page-header\">");
 
             
             #line 32 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                           Write(Queue.ToUpperInvariant());
+                           Write(Queue);
 
             
             #line default
@@ -126,7 +126,7 @@ WriteLiteral(" <small>");
 
             
             #line 32 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                                                            Write(Strings.EnqueuedJobsPage_Title);
+                                         Write(Strings.EnqueuedJobsPage_Title);
 
             
             #line default

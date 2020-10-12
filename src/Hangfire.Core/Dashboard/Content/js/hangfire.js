@@ -101,8 +101,8 @@
             var now = Date.now();
 
             if (this._succeeded !== null && this._failed !== null && (now - this._last < this._pollInterval * 2)) {
-                var succeeded = newSucceeded - this._succeeded;
-                var failed = newFailed - this._failed;
+                var succeeded = Math.max(newSucceeded - this._succeeded, 0);
+                var failed = Math.max(newFailed - this._failed, 0);
 
                 this._chart.data.datasets[0].data.push({ x: new Date(), y: succeeded });
                 this._chart.data.datasets[1].data.push({ x: new Date(), y: failed });   

@@ -259,6 +259,126 @@ namespace Hangfire.SqlServer.Tests
         [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
+        public void CreateExpiredJob_CanCreateParametersWithNonNullValues(bool useBatching)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string> { { "Key1", "Value1" } },
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql
+                    .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Equal("Value1", parameters["Key1"]);
+            }, useBatching);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void CreateExpiredJob_CanCreateTwoParametersWithNonNullValues(bool useBatching)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string> { { "Key1", "Value1" }, { "Key2", "Value2" } },
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql
+                    .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Equal("Value1", parameters["Key1"]);
+                Assert.Equal("Value2", parameters["Key2"]);
+            }, useBatching);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void CreateExpiredJob_CanCreateThreeParametersWithNonNullValues(bool useBatching)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string> { { "Key1", "Value1" }, { "Key2", "Value2" }, { "Key3", "Value3" } },
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql
+                    .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Equal("Value1", parameters["Key1"]);
+                Assert.Equal("Value2", parameters["Key2"]);
+                Assert.Equal("Value3", parameters["Key3"]);
+            }, useBatching);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void CreateExpiredJob_CanCreateFourParametersWithNonNullValues(bool useBatching)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string> { { "Key1", "Value1" }, { "Key2", "Value2" }, { "Key3", "Value3" }, { "Key4", "Value4" } },
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql
+                    .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Equal("Value1", parameters["Key1"]);
+                Assert.Equal("Value2", parameters["Key2"]);
+                Assert.Equal("Value3", parameters["Key3"]);
+                Assert.Equal("Value4", parameters["Key4"]);
+            }, useBatching);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void CreateExpiredJob_CanCreateManyParametersWithNonNullValues(bool useBatching)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string> { { "Key1", "Value1" }, { "Key2", "Value2" }, { "Key3", "Value3" }, { "Key4", "Value4" }, { "Key5", "Value5" } },
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql
+                    .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Equal("Value1", parameters["Key1"]);
+                Assert.Equal("Value2", parameters["Key2"]);
+                Assert.Equal("Value3", parameters["Key3"]);
+                Assert.Equal("Value4", parameters["Key4"]);
+                Assert.Equal("Value5", parameters["Key5"]);
+            }, useBatching);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
         public void CreateExpiredJob_CanCreateParametersWithNullValues(bool useBatching)
         {
             UseConnections((sql, connection) =>
@@ -304,7 +424,7 @@ namespace Hangfire.SqlServer.Tests
         [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
-        public void CreateExpiredJob_CanCreateMultipleParametersWithNullValues(bool useBatching)
+        public void CreateExpiredJob_CanCreateThreeParametersWithNullValues(bool useBatching)
         {
             UseConnections((sql, connection) =>
             {
@@ -322,6 +442,57 @@ namespace Hangfire.SqlServer.Tests
                 Assert.Equal(null, parameters["Key1"]);
                 Assert.Equal(null, parameters["Key2"]);
                 Assert.Equal(null, parameters["Key3"]);
+            }, useBatching);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void CreateExpiredJob_CanCreateFourParametersWithNullValues(bool useBatching)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string> { { "Key1", null }, { "Key2", null }, { "Key3", null }, { "Key4", null } },
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql
+                    .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Equal(null, parameters["Key1"]);
+                Assert.Equal(null, parameters["Key2"]);
+                Assert.Equal(null, parameters["Key3"]);
+                Assert.Equal(null, parameters["Key4"]);
+            }, useBatching);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void CreateExpiredJob_CanCreateManyParametersWithNullValues(bool useBatching)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string> { { "Key1", null }, { "Key2", null }, { "Key3", null }, { "Key4", null }, { "Key5", null } },
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql
+                    .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Equal(null, parameters["Key1"]);
+                Assert.Equal(null, parameters["Key2"]);
+                Assert.Equal(null, parameters["Key3"]);
+                Assert.Equal(null, parameters["Key4"]);
+                Assert.Equal(null, parameters["Key5"]);
             }, useBatching);
         }
 
@@ -605,6 +776,83 @@ select scope_identity() as Id";
 
                 Assert.Equal((string) null, parameter.Value);
             });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void SetJobParameter_WithIgnoreDupKeyOption_InsertsNonExistingValue(bool useBatching)
+        {
+            try
+            {
+                UseConnections((sql, connection) =>
+                {
+                    sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[JobParameter] REBUILD WITH (IGNORE_DUP_KEY = ON)");
+
+                    string jobId = sql.Query($@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt) values ('', '', getutcdate())
+select scope_identity() as Id").Single().Id.ToString();
+
+                    connection.SetJobParameter(jobId, "Name", "Value");
+
+                    var parameter = sql.Query(
+                        $"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @jobId and Name = N'Name'",
+                        new { jobId }).Single();
+
+                    Assert.Equal("Value", parameter.Value);
+                }, useBatching);
+            }
+            finally
+            {
+                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[JobParameter] REBUILD WITH (IGNORE_DUP_KEY = OFF)"));
+            }
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void SetJobParameter_WithIgnoreDupKeyOption_UpdatesExistingValue_WhenIgnoreDupKeyOptionIsSet(bool setIgnoreDupKey)
+        {
+            try
+            {
+                UseConnections((sql, connection) =>
+                {
+                    sql.Execute("SET XACT_ABORT ON");
+                    var onOrOff = setIgnoreDupKey ? "ON" : "OFF";
+                    sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[JobParameter] REBUILD WITH (IGNORE_DUP_KEY = {onOrOff})");
+
+                    string jobId1 = sql.Query($@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt) values ('', '', getutcdate())
+select scope_identity() as Id").Single().Id.ToString();
+
+                    string jobId2 = sql.Query($@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt) values ('', '', getutcdate())
+select scope_identity() as Id").Single().Id.ToString();
+
+                    sql.Execute(
+                        $@"insert into [{Constants.DefaultSchema}].[JobParameter] (JobId, Name, Value) values
+(@jobId1, N'Name1', N'Value1'),
+(@jobId1, N'Name2', N'Value1'),
+(@jobId2, N'Name1', N'Value1')", new { jobId1, jobId2 });
+
+                    connection.SetJobParameter(jobId1, "Name1", "Value2");
+
+                    var parameters1 = sql.Query(
+                        $"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @jobId1",
+                        new { jobId1 }).ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                    Assert.Equal("Value2", parameters1["Name1"]);
+                    Assert.Equal("Value1", parameters1["Name2"]);
+
+                    var parameters2 = sql.Query(
+                        $"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @jobId2",
+                        new { jobId2 }).ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                    Assert.Equal("Value1", parameters2["Name1"]);
+                });
+            }
+            finally
+            {
+                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[JobParameter] REBUILD WITH (IGNORE_DUP_KEY = OFF)"));
+            }
         }
 
         [Fact, CleanDatabase]
@@ -1002,6 +1250,20 @@ values (@key, 0.0, @value)";
             });
         }
 
+        [Fact, CleanDatabase]
+        public void SetRangeInHash_ThrowsSqlException_WhenKeyIsTooLong()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<SqlException>(
+                    () => connection.SetRangeInHash(
+                    "123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_12345",
+                    new Dictionary<string, string> { { "field", "value" } }));
+
+                Assert.Contains("data would be truncated", exception.Message);
+            });
+        }
+
         [Theory, CleanDatabase]
         [InlineData(true)]
         [InlineData(false)]
@@ -1059,6 +1321,74 @@ values (@key, 0.0, @value)";
                 var result = sql.QuerySingle<string>($"select APPLOCK_MODE( 'public' , 'HangFire:Hash:Lock' , 'Session' )");
                 Assert.Equal("NoLock", result);
             });
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void SetRangeInHash_WithIgnoreDupKeyOption_InsertsNonExistingValue(bool useBatching)
+        {
+            try
+            {
+                UseConnections((sql, connection) =>
+                {
+                    sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = ON)");
+
+                    connection.SetRangeInHash("some-hash", new Dictionary<string, string>
+                    {
+                        { "key", "value" }
+                    });
+
+                    var result = sql
+                        .Query($"select * from [{Constants.DefaultSchema}].Hash where [Key] = N'some-hash'")
+                        .ToDictionary(x => (string)x.Field, x => (string)x.Value);
+
+                    Assert.Equal("value", result["key"]);
+                }, useBatching);
+            }
+            finally
+            {
+                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = OFF)"));
+            }
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(true), InlineData(false)]
+        public void SetRangeInHash_WithIgnoreDupKeyOption_UpdatesExistingValue_WhenIgnoreDupKeyOptionIsSet(bool setIgnoreDupKey)
+        {
+            try
+            {
+                UseConnections((sql, connection) =>
+                {
+                    var onOrOff = setIgnoreDupKey ? "ON" : "OFF";
+                    sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = {onOrOff})");
+                    sql.Execute($@"insert into [{Constants.DefaultSchema}].Hash([Key], Field, Value) VALUES
+(N'some-hash', N'key1', N'value1'),
+(N'some-hash', N'key2', N'value1'),
+(N'othr-hash', N'key1', N'value1')");
+
+                    connection.SetRangeInHash("some-hash", new Dictionary<string, string>
+                    {
+                        { "key1", "value2" }
+                    });
+
+                    var someResult = sql
+                        .Query($"select * from [{Constants.DefaultSchema}].Hash where [Key] = N'some-hash'")
+                        .ToDictionary(x => (string)x.Field, x => (string)x.Value);
+
+                    Assert.Equal("value2", someResult["key1"]);
+                    Assert.Equal("value1", someResult["key2"]);
+
+                    var othrResult = sql
+                        .Query($"select * from [{Constants.DefaultSchema}].Hash where [Key] = N'othr-hash'")
+                        .ToDictionary(x => (string)x.Field, x => (string)x.Value);
+
+                    Assert.Equal("value1", othrResult["key1"]);
+                });
+            }
+            finally
+            {
+                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = OFF)"));
+            }
         }
 
         [Fact, CleanDatabase]

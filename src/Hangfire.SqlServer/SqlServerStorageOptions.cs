@@ -123,5 +123,13 @@ namespace Hangfire.SqlServer
         public bool UseRecommendedIsolationLevel { get; set; }
         public bool EnableHeavyMigrations { get; set; }
         public bool UseFineGrainedLocks { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether IGNORE_DUP_OPTION was applied to [Hash] and [Set] tables and so MERGE
+        /// statements can be replaced by much more efficient INSERT/UPDATE pair. This option allows
+        /// to avoid deadlocks related to SERIALIZABLE-level range locks without introducing transient
+        /// errors due to concurrency.
+        /// </summary>
+        public bool UseIgnoreDupKeyOption { get; set; }
     }
 }
