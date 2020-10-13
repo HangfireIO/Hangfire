@@ -21,6 +21,12 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.16
+
+Hangfire.SqlServer
+
+• Fixed – Blocking problems when using multiple storages with the same queue names in the same process (appeared in 1.7.9).
+
 1.7.15
 
 Hangfire.Core
