@@ -40,7 +40,8 @@ namespace Hangfire.SqlServer
         private static readonly TimeSpan LongPollingThreshold = TimeSpan.FromSeconds(1);
         private static readonly int PollingQuantumMs = 1000;
         private static readonly int MinPollingDelayMs = 50;
-        private static readonly ConcurrentDictionary<string, SemaphoreSlim> Semaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
+        private static readonly ConcurrentDictionary<Tuple<SqlServerStorage, string>, SemaphoreSlim> Semaphores =
+            new ConcurrentDictionary<Tuple<SqlServerStorage, string>, SemaphoreSlim>();
 
         private readonly SqlServerStorage _storage;
         private readonly SqlServerStorageOptions _options;
@@ -93,7 +94,7 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
 
             var useLongPolling = false;
             var queuesString = String.Join("_", queues.OrderBy(x => x));
-            var semaphore = Semaphores.GetOrAdd(queuesString, new SemaphoreSlim(initialCount: 1));
+            var semaphore = Semaphores.GetOrAdd(Tuple.Create(_storage, queuesString), new SemaphoreSlim(initialCount: 1));
 
             var pollingDelayMs = Math.Min(
                 Math.Max((int)_options.QueuePollInterval.TotalMilliseconds, MinPollingDelayMs),
