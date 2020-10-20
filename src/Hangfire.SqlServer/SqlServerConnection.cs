@@ -300,7 +300,9 @@ begin try
   if @@ROWCOUNT = 0 insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value);
 end try
 begin catch
-  IF ERROR_NUMBER() not in (2601, 2627) throw;
+  declare @em nvarchar(4000), @es int, @est int;
+  select @em=error_message(),@es=error_severity(),@est=error_state();
+  IF ERROR_NUMBER() not in (2601, 2627) raiserror(@em, @es, @est);
   update [{_storage.SchemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
 end catch";
 
@@ -373,7 +375,9 @@ begin try
   if @@ROWCOUNT = 0 update [{_storage.SchemaName}].Hash set Value = @value where [Key] = @key and Field = @field;
 end try
 begin catch
-  IF ERROR_NUMBER() not in (2601, 2627) throw;
+  declare @em nvarchar(4000), @es int, @est int;
+  select @em=error_message(),@es=error_severity(),@est=error_state();
+  IF ERROR_NUMBER() not in (2601, 2627) raiserror(@em, @es, @est);
   update [{_storage.SchemaName}].Hash set Value = @value where [Key] = @key and Field = @field;
 end catch";
 
