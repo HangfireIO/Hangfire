@@ -165,6 +165,11 @@ namespace Hangfire.SqlServer
 
             try
             {
+                if (_connectionString == null)
+                {
+                    return "SQL Server (custom)";
+                }
+
                 var parts = _connectionString.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(x => x.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries))
                     .Select(x => new { Key = x[0].Trim(), Value = x[1].Trim() })
