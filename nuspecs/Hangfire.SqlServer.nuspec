@@ -16,6 +16,10 @@
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.18
+• Added – `SqlServerStorageOptions.DeleteExpiredBatchSize` option to remove more expired records in a single pass.
+• Fixed – Don't throw from `SqlServerStorage.ToString` method when using custom factory or existing connection.
+
 1.7.17
 • Fixed – SqlException "Incorrect syntax near 'throw'" after upgrading to 1.7.15 when using SQL Server 2008 or 2008R2.
 
