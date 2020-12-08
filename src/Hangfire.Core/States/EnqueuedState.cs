@@ -73,12 +73,12 @@ namespace Hangfire.States
         public const string DefaultQueue = "default";
 
         /// <summary>
-        /// Represents the name of the <i>Enqueued</i> state. This field is read-only.
+        /// Represents the name of the <i>Enqueued</i> state. This is constant value.
         /// </summary>
         /// <remarks>
         /// The value of this field is <c>"Enqueued"</c>.
         /// </remarks>
-        public static readonly string StateName = "Enqueued";
+        public const string StateName = "Enqueued";
 
         private string _queue;
 
