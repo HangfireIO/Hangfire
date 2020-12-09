@@ -253,7 +253,7 @@
     <value>Status</value>
   </data>
   <data name="JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;Der Job wurde anscheinend abgebrochen&lt;/strong&gt; - er wird vom Server verarbeitet &lt;code&gt;{0}&lt;/code&gt;, welcher sich vor mehr als 1 Minute gemeldet hat. Es wird nach dem Unsichtbarkeits-Timeout automatisch wiederholt. Alternativ kann der Job kann auch manuell in die Warteschlange stellen oder löschen.</value>
+    <value>&lt;strong&gt;Der Job wurde anscheinend abgebrochen&lt;/strong&gt; - er wird vom Server verarbeitet &lt;code&gt;{0}&lt;/code&gt;, welcher sich vor mehr als 1 Minute gemeldet hat. Es wird nach dem Timeout automatisch wiederholt. Alternativ kann der Job kann auch manuell in die Warteschlange gestellt oder löscht werden.</value>
   </data>
   <data name="JobDetailsPage_JobExpired" xml:space="preserve">
     <value>Der Warteschlangen Job '{0}' ist abgelaufen oder wurde auf dem Server nicht gefunden.</value>
@@ -412,7 +412,7 @@
     <value>Verarbeiten...</value>
   </data>
   <data name="JobsSidebarMenu_Scheduled" xml:space="preserve">
-    <value>Geplant </value>
+    <value>Geplant</value>
   </data>
   <data name="JobsSidebarMenu_Succeeded" xml:space="preserve">
     <value>Erfolgreich</value>
