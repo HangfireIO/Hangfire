@@ -253,13 +253,13 @@
     <value>Status</value>
   </data>
   <data name="JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt; Der Job wurde anscheinend abgebrochen &lt;/ strong&gt; - er wird vom Server verarbeitet &lt;code&gt; {0} &lt;/ code&gt;, welcher sich vor mehr als 1 Minute gemeldet hat. Es wird nach dem Unsichtbarkeits-Timeout automatisch wiederholt. Alternativ kann der Job kann auch manuell in die Warteschlange stellen oder löschen.</value>
+    <value>&lt;strong&gt;Der Job wurde anscheinend abgebrochen&lt;/strong&gt; - er wird vom Server verarbeitet &lt;code&gt;{0}&lt;/code&gt;, welcher sich vor mehr als 1 Minute gemeldet hat. Es wird nach dem Unsichtbarkeits-Timeout automatisch wiederholt. Alternativ kann der Job kann auch manuell in die Warteschlange stellen oder löschen.</value>
   </data>
   <data name="JobDetailsPage_JobExpired" xml:space="preserve">
     <value>Der Warteschlangen Job '{0}' ist abgelaufen oder wurde auf dem Server nicht gefunden.</value>
   </data>
   <data name="JobDetailsPage_JobFinished_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt; Der Job ist beendet &lt;/ strong&gt;. Er wird automatisch entfernt &lt;em&gt; &lt;abbr data-moment = "{0}"&gt; {1} &lt;/ abbr&gt; &lt;/ em&gt;.</value>
+    <value>&lt;strong&gt;Der Job ist beendet&lt;/strong&gt;. Er wird automatisch entfernt &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;.</value>
   </data>
   <data name="JobDetailsPage_JobId" xml:space="preserve">
     <value>Job ID</value>
