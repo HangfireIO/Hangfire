@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
@@ -2130,7 +2131,7 @@ values (@jobId, @name, @value)";
             Assert.Equal(initialJob.Type, deserializedJob.Type);
         }
 
-        private void UseConnections(Action<SqlConnection, SqlServerConnection> action, bool useBatching = false)
+        private void UseConnections(Action<DbConnection, SqlServerConnection> action, bool useBatching = false)
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
             {

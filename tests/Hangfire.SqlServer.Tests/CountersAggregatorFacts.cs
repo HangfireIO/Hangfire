@@ -1,6 +1,7 @@
 ﻿extern alias ReferencedDapper;
 
 using System;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
@@ -35,12 +36,12 @@ values ('key', 1, @expireAt)";
             }
         }
 
-        private static SqlConnection CreateConnection()
+        private static DbConnection CreateConnection()
         {
             return ConnectionUtils.CreateConnection();
         }
 
-        private static CountersAggregator CreateAggregator(SqlConnection connection)
+        private static CountersAggregator CreateAggregator(DbConnection connection)
         {
             var storage = new SqlServerStorage(connection);
             return new CountersAggregator(storage, TimeSpan.Zero);

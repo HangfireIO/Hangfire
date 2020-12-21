@@ -1,6 +1,7 @@
 ﻿extern alias ReferencedDapper;
 
 using System;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
@@ -166,7 +167,7 @@ values ('key', 'field', '', @expireAt)";
             }
         }
 
-        private static void CreateExpirationEntry(SqlConnection connection, DateTime? expireAt)
+        private static void CreateExpirationEntry(DbConnection connection, DateTime? expireAt)
         {
             var insertSql = $@"
 insert into [{Constants.DefaultSchema}].AggregatedCounter ([Key], [Value], [ExpireAt])
@@ -175,19 +176,19 @@ values (N'key', 1, @expireAt)";
             connection.Execute(insertSql, new { expireAt });
         }
 
-        private static bool IsEntryExpired(SqlConnection connection)
+        private static bool IsEntryExpired(DbConnection connection)
         {
             var count = connection.Query<int>(
                     $"select count(*) from [{Constants.DefaultSchema}].AggregatedCounter where [Key] = N'key'").Single();
             return count == 0;
         }
 
-        private SqlConnection CreateConnection()
+        private DbConnection CreateConnection()
         {
             return ConnectionUtils.CreateConnection();
         }
 
-        private ExpirationManager CreateManager(SqlConnection connection)
+        private ExpirationManager CreateManager(DbConnection connection)
         {
             var storage = new SqlServerStorage(connection);
             return new ExpirationManager(storage, TimeSpan.Zero);

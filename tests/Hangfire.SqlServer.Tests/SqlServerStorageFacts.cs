@@ -57,7 +57,7 @@ namespace Hangfire.SqlServer.Tests
         [Fact]
         public void Ctor_ThrowsAnException_WhenOptionsValueIsNull_WithConnectionFactory()
         {
-            Func<DbConnection> connectionFactory = ConnectionUtils.CreateConnection;
+            Func<DbConnection> connectionFactory = () => ConnectionUtils.CreateConnection();
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new SqlServerStorage(connectionFactory, null));
 

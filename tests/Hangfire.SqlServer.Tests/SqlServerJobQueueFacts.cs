@@ -1,6 +1,7 @@
 ﻿extern alias ReferencedDapper;
 
 using System;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
@@ -605,13 +606,13 @@ values (scope_identity(), @queue)";
 
         public static void Sample(string arg1, string arg2) { }
 
-        private static SqlServerJobQueue CreateJobQueue(SqlConnection connection, TimeSpan? invisibilityTimeout)
+        private static SqlServerJobQueue CreateJobQueue(DbConnection connection, TimeSpan? invisibilityTimeout)
         {
             var storage = new SqlServerStorage(connection);
             return new SqlServerJobQueue(storage, new SqlServerStorageOptions { SlidingInvisibilityTimeout = invisibilityTimeout });
         }
 
-        private static void UseConnection(Action<SqlConnection> action)
+        private static void UseConnection(Action<DbConnection> action)
         {
             using (var connection = ConnectionUtils.CreateConnection())
             {
