@@ -26,9 +26,8 @@ namespace Hangfire.Server
         private static readonly TimeSpan CheckForShutdownTimerInterval = TimeSpan.FromSeconds(1);
         private static readonly CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
 
-        private static int _isInitialized;
-
 #if !NETSTANDARD1_3
+        private static int _isInitialized;
         private static IDisposable _checkForShutdownTimer;
         private static Func<string> _shutdownReasonFunc;
         private static Func<bool> _checkConfigChangedFunc;
@@ -36,10 +35,13 @@ namespace Hangfire.Server
 
         public static CancellationToken GetShutdownToken()
         {
+#if !NETSTANDARD1_3
             EnsureInitialized();
+#endif
             return CancellationTokenSource.Token;
         }
 
+#if !NETSTANDARD1_3
         private static void EnsureInitialized()
         {
             if (Interlocked.Exchange(ref _isInitialized, 1) != 0) return;
@@ -82,9 +84,7 @@ namespace Hangfire.Server
                 // But nevertheless it may be useful to have it for older versions.
                 InitializeMgdHasConfigChanged();
 
-#if !NETSTANDARD1_3
                 _checkForShutdownTimer = new Timer(CheckForAppDomainShutdown, null, CheckForShutdownTimerInterval, CheckForShutdownTimerInterval);
-#endif
             }
             catch (Exception ex)
             {
@@ -127,7 +127,6 @@ namespace Hangfire.Server
 
         private static void RegisterForStopListeningEvent()
         {
-#if !NETSTANDARD1_3
             try
             {
                 var hostingEnvironmentType = Type.GetType("System.Web.Hosting.HostingEnvironment, System.Web, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a", false);
@@ -143,7 +142,6 @@ namespace Hangfire.Server
             {
                 Logger.DebugException("Unable to initialize HostingEnvironment.StopListening shutdown trigger", ex);
             }
-#endif
         }
 
         private static void StopListening(object sender, EventArgs e)
@@ -153,7 +151,6 @@ namespace Hangfire.Server
 
         private static void InitializeShutdownReason()
         {
-#if !NETSTANDARD1_3
             try
             {
                 var hostingEnvironment = Type.GetType("System.Web.Hosting.HostingEnvironment, System.Web, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a", false);
@@ -189,12 +186,10 @@ namespace Hangfire.Server
             {
                 Logger.DebugException("Unable to initialize HostingEnvironment.ShutdownReason shutdown trigger", ex);
             }
-#endif
         }
 
         private static void InitializeMgdHasConfigChanged()
         {
-#if !NETSTANDARD1_3
             try
             {
                 var type = Type.GetType("System.Web.Hosting.UnsafeIISMethods, System.Web, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a", false);
@@ -211,7 +206,7 @@ namespace Hangfire.Server
             {
                 Logger.DebugException("Unable to initialize UnsafeIISMethods.MgdHasConfigChanged shutdown trigger", ex);
             }
-#endif
         }
+#endif
     }
 }
