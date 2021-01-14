@@ -209,12 +209,17 @@ $@"insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values 
         {
             if (id == null) throw new ArgumentNullException(nameof(id));
 
+            if (!long.TryParse(id, out var parsedId))
+            {
+                return null;
+            }
+
             string sql =
 $@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.SchemaName}].Job with (readcommittedlock, forceseek) where Id = @id";
 
             return _storage.UseConnection(_dedicatedConnection, connection =>
             {
-                var jobData = connection.Query<SqlJob>(sql, new { id = long.Parse(id) }, commandTimeout: _storage.CommandTimeout)
+                var jobData = connection.Query<SqlJob>(sql, new { id = parsedId }, commandTimeout: _storage.CommandTimeout)
                     .SingleOrDefault();
 
                 if (jobData == null) return null;
@@ -253,6 +258,11 @@ $@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.Schema
         {
             if (jobId == null) throw new ArgumentNullException(nameof(jobId));
 
+            if (!long.TryParse(jobId, out var parsedId))
+            {
+                return null;
+            }
+
             string sql = 
 $@"select s.Name, s.Reason, s.Data
 from [{_storage.SchemaName}].State s with (readcommittedlock, forceseek)
@@ -261,7 +271,7 @@ where j.Id = @jobId";
 
             return _storage.UseConnection(_dedicatedConnection, connection =>
             {
-                var sqlState = connection.Query<SqlState>(sql, new { jobId = long.Parse(jobId) }, commandTimeout: _storage.CommandTimeout).SingleOrDefault();
+                var sqlState = connection.Query<SqlState>(sql, new { jobId = parsedId }, commandTimeout: _storage.CommandTimeout).SingleOrDefault();
                 if (sqlState == null)
                 {
                     return null;
@@ -320,9 +330,14 @@ end catch";
             if (id == null) throw new ArgumentNullException(nameof(id));
             if (name == null) throw new ArgumentNullException(nameof(name));
 
+            if (!long.TryParse(id, out var parsedId))
+            {
+                return null;
+            }
+
             return _storage.UseConnection(_dedicatedConnection, connection => connection.ExecuteScalar<string>(
                 $@"select top (1) Value from [{_storage.SchemaName}].JobParameter with (readcommittedlock, forceseek) where JobId = @id and Name = @name",
-                new { id = long.Parse(id), name = name },
+                new { id = parsedId, name = name },
                 commandTimeout: _storage.CommandTimeout));
         }
 

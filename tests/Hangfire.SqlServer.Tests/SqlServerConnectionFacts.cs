@@ -548,6 +548,17 @@ namespace Hangfire.SqlServer.Tests
                 Assert.Null(result);
             }, useMicrosoftDataSqlClient);
         }
+        
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetJobData_ReturnsNull_WhenIdentifierCanNotBeParsedAsLong(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetJobData("some-non-long-id");
+                Assert.Null(result);
+            }, useMicrosoftDataSqlClient);
+        }
 
         [Theory, CleanDatabase]
         [InlineData(false), InlineData(true)]
@@ -599,6 +610,17 @@ select scope_identity() as Id";
             UseConnection(connection =>
             {
                 var result = connection.GetStateData("1");
+                Assert.Null(result);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetStateData_ReturnsNull_WhenIdentifierCanNotBeParsedAsLong(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetStateData("some-non-long-id");
                 Assert.Null(result);
             }, useMicrosoftDataSqlClient);
         }
@@ -916,6 +938,17 @@ select scope_identity() as Id").Single().Id.ToString();
             {
                 var value = connection.GetJobParameter("1", "hello");
                 Assert.Null(value);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetParameter_ReturnsNull_WhenJobIdCanNotBeParsedAsLong(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetJobParameter("some-non-long-id", "name");
+                Assert.Null(result);
             }, useMicrosoftDataSqlClient);
         }
 
