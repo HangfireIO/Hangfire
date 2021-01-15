@@ -167,7 +167,7 @@ In order to give the community time to respond and upgrade we strongly urge you 
 License
 --------
 
-Copyright © 2013-2020 Sergey Odinokov.
+Copyright © 2013-2021 Sergey Odinokov.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
