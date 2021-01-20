@@ -61,9 +61,10 @@
     })();
 
     hangfire.RealtimeGraph = (function() {
-        function RealtimeGraph(element, succeeded, failed, succeededStr, failedStr, pollInterval) {
+        function RealtimeGraph(element, succeeded, failed, deleted, succeededStr, failedStr, deletedStr, pollInterval) {
             this._succeeded = succeeded;
             this._failed = failed;
+            this._deleted = deleted;
             this._last = Date.now();
             this._pollInterval = pollInterval;
             
@@ -72,7 +73,8 @@
                 data: {
                     datasets: [
                         { label: succeededStr, borderColor: '#62B35F', backgroundColor: '#6FCD6D' },
-                        { label: failedStr, borderColor: '#BB4847', backgroundColor: '#D55251' }
+                        { label: failedStr, borderColor: '#BB4847', backgroundColor: '#D55251' },
+                        { label: deletedStr, borderColor: '#777777', backgroundColor: '#919191' }
                     ]
                 },
                 options: {
@@ -98,20 +100,24 @@
         RealtimeGraph.prototype.appendHistory = function (statistics) {
             var newSucceeded = parseInt(statistics["succeeded:count"].intValue);
             var newFailed = parseInt(statistics["failed:count"].intValue);
+            var newDeleted = parseInt(statistics["deleted:count"].intValue);
             var now = Date.now();
 
             if (this._succeeded !== null && this._failed !== null && (now - this._last < this._pollInterval * 2)) {
                 var succeeded = Math.max(newSucceeded - this._succeeded, 0);
                 var failed = Math.max(newFailed - this._failed, 0);
+                var deleted = Math.max(newDeleted - this._deleted, 0);
 
-                this._chart.data.datasets[0].data.push({ x: new Date(), y: succeeded });
-                this._chart.data.datasets[1].data.push({ x: new Date(), y: failed });   
+                this._chart.data.datasets[0].data.push({ x: now, y: succeeded });
+                this._chart.data.datasets[1].data.push({ x: now, y: failed });
+                this._chart.data.datasets[2].data.push({ x: now, y: deleted });
                 
                 this._chart.update();
             }
             
             this._succeeded = newSucceeded;
             this._failed = newFailed;
+            this._deleted = newDeleted;
             this._last = now;
         };
 
@@ -232,10 +238,12 @@
             if (realtimeElement) {
                 var succeeded = parseInt($(realtimeElement).data('succeeded'));
                 var failed = parseInt($(realtimeElement).data('failed'));
+                var deleted = parseInt($(realtimeElement).data('deleted'));
 
                 var succeededStr = $(realtimeElement).data('succeeded-string');
                 var failedStr = $(realtimeElement).data('failed-string');
-                var realtimeGraph = new Hangfire.RealtimeGraph(realtimeElement, succeeded, failed, succeededStr, failedStr, pollInterval);
+                var deletedStr = $(realtimeElement).data('deleted-string');
+                var realtimeGraph = new Hangfire.RealtimeGraph(realtimeElement, succeeded, failed, deleted, succeededStr, failedStr, deletedStr, pollInterval);
 
                 this._poller.addListener(function (data) {
                     realtimeGraph.appendHistory(data);

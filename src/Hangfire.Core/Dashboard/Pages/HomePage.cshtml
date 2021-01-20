@@ -41,12 +41,14 @@
             </div>
         }
         <h3>@Strings.HomePage_RealtimeGraph</h3>
-        <canvas width="1140" height="250" id="realtimeGraph" data-succeeded="@Statistics.Succeeded" data-failed="@Statistics.Failed"
+        <canvas width="1140" height="250" id="realtimeGraph" data-succeeded="@Statistics.Succeeded" data-failed="@Statistics.Failed" data-deleted="@Statistics.Deleted"
              data-succeeded-string="@Strings.HomePage_GraphHover_Succeeded"
-             data-failed-string="@Strings.HomePage_GraphHover_Failed"></canvas>
+             data-failed-string="@Strings.HomePage_GraphHover_Failed"
+             data-deleted-string="@Strings.JobsSidebarMenu_Deleted"></canvas>
         <div style="display: none;">
             <span data-metric="succeeded:count"></span>
             <span data-metric="failed:count"></span>
+            <span data-metric="deleted:count"></span>
         </div>
 
         <h3>
