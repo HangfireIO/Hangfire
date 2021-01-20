@@ -365,6 +365,7 @@ select sum(s.[Value]) from (
 ) as s;
 
 select count(*) from [{0}].[Set] with (nolock, forceseek) where [Key] = N'recurring-jobs';
+select count(*) from [{0}].[Set] with (nolock, forceseek) where [Key] = N'retries';
                 ", _storage.SchemaName);
 
             var statistics = UseConnection(connection =>
@@ -383,6 +384,7 @@ select count(*) from [{0}].[Set] with (nolock, forceseek) where [Key] = N'recurr
                     stats.Deleted = multi.ReadSingleOrDefault<long?>() ?? 0;
 
                     stats.Recurring = multi.ReadSingle<int>();
+                    stats.Retries = multi.ReadSingle<int>();
                 }
                 return stats;
             });
