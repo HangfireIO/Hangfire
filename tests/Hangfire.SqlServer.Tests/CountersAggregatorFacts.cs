@@ -1,7 +1,7 @@
 ﻿extern alias ReferencedDapper;
 
 using System;
-using System.Data.SqlClient;
+using System.Data.Common;
 using System.Linq;
 using System.Threading;
 using ReferencedDapper::Dapper;
@@ -11,14 +11,15 @@ namespace Hangfire.SqlServer.Tests
 {
     public class CountersAggregatorFacts
     {
-        [Fact, CleanDatabase]
-        public void CountersAggregatorExecutesProperly()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void CountersAggregatorExecutesProperly(bool useMicrosoftDataSqlClient)
         {
             var createSql = $@"
 insert into [{Constants.DefaultSchema}].Counter ([Key], [Value], ExpireAt) 
 values ('key', 1, @expireAt)";
 
-            using (var connection = CreateConnection())
+            using (var connection = CreateConnection(useMicrosoftDataSqlClient))
             {
                 // Arrange
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddHours(1) });
@@ -35,12 +36,12 @@ values ('key', 1, @expireAt)";
             }
         }
 
-        private static SqlConnection CreateConnection()
+        private static DbConnection CreateConnection(bool useMicrosoftDataSqlClient)
         {
-            return ConnectionUtils.CreateConnection();
+            return ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient);
         }
 
-        private static CountersAggregator CreateAggregator(SqlConnection connection)
+        private static CountersAggregator CreateAggregator(DbConnection connection)
         {
             var storage = new SqlServerStorage(connection);
             return new CountersAggregator(storage, TimeSpan.Zero);

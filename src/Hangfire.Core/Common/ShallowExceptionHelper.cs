@@ -27,7 +27,10 @@ namespace Hangfire.Common
 
         public static void PreserveOriginalStackTrace(this Exception exception)
         {
-            exception?.Data.Add(DataKey, exception.StackTrace);
+            if (exception != null && !exception.Data.Contains(DataKey))
+            {
+                exception.Data.Add(DataKey, exception.StackTrace);
+            }
         }
 
         public static string ToStringWithOriginalStackTrace([NotNull] this Exception exception, int? numLines)

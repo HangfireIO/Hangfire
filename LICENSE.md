@@ -1,7 +1,7 @@
 License
 ========
 
-Copyright © 2013-2020 Sergey Odinokov.
+Copyright © 2013-2021 Sergey Odinokov.
 
 Hangfire software is an open-source software that is multi-licensed under the terms of the licenses listed in this file. Recipients may choose the terms under which they are want to use or distribute the software, when all the preconditions of a chosen license are satisfied.
 

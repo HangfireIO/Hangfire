@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.Common;
 using System.Data.SqlClient;
 
 namespace Hangfire.SqlServer.Tests
@@ -35,9 +36,14 @@ namespace Hangfire.SqlServer.Tests
                    ?? DefaultConnectionStringTemplate;
         }
 
-        public static SqlConnection CreateConnection()
+        public static DbConnection CreateConnection(bool microsoftDataSqlClient)
         {
-            var connection = new SqlConnection(GetConnectionString());
+            var connection =
+#if !NET452
+                microsoftDataSqlClient ? (DbConnection)new Microsoft.Data.SqlClient.SqlConnection(GetConnectionString()) :
+#endif
+                new SqlConnection(GetConnectionString());
+
             connection.Open();
 
             return connection;

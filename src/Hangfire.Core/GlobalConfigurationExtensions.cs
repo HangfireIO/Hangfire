@@ -285,6 +285,17 @@ namespace Hangfire
             return configuration;
         }
 
+        public static IGlobalConfiguration UseMaxArgumentSizeToRender(
+            [NotNull] this IGlobalConfiguration configuration,
+            int size)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (size < 0) throw new ArgumentOutOfRangeException(nameof(size), "Must be a positive value");
+
+            JobMethodCallRenderer.MaxArgumentToRenderSize = size;
+            return configuration;
+        }
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static IGlobalConfiguration<T> Use<T>(
             [NotNull] this IGlobalConfiguration configuration, T entry,
