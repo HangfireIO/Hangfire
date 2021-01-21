@@ -55,11 +55,16 @@ namespace Hangfire
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.AppendFormat("{0}: {1}", Type, Message);
+            sb.Append(Type.FullName);
+            sb.Append(": ");
+            sb.Append(Message);
+
             if (InnerException != null)
             {
-                sb.AppendFormat(" ---> {0}", InnerException);
+                sb.Append(" ---> ");
+                sb.Append(InnerException.ToString());
             }
+            else sb.Append("\n");
 
             return sb.ToString();
         }
