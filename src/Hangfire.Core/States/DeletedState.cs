@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Storage;
 using Newtonsoft.Json;
@@ -64,14 +65,14 @@ namespace Hangfire.States
         /// <summary>
         /// Initializes a new instance of the <see cref="DeletedState"/> class.
         /// </summary>
-        public DeletedState()
+        public DeletedState() : this(null)
         {
-            DeletedAt = DateTime.UtcNow;
         }
 
-        public DeletedState(ExceptionInfo exceptionInfo)
+        public DeletedState([CanBeNull] ExceptionInfo exceptionInfo)
         {
             ExceptionInfo = exceptionInfo;
+            DeletedAt = DateTime.UtcNow;
         }
 
         [JsonProperty("Ex", NullValueHandling = NullValueHandling.Ignore)]
@@ -132,15 +133,27 @@ namespace Hangfire.States
         ///         <term><see cref="JobHelper.DeserializeDateTime"/></term>
         ///         <description>Please see the <see cref="DeletedAt"/> property.</description>
         ///     </item>
+        ///     <item>
+        ///         <term><c>Exception</c></term>
+        ///         <term><see cref="ExceptionInfo"/></term>
+        ///         <term><see cref="SerializationHelper.Deserialize{T}(string, SerializationOption)"/> with <see cref="SerializationOption.Internal"/> option.</term>
+        ///         <description>Can be absent or null. Please see the <see cref="Exception"/> property.</description>
+        ///     </item>
         /// </list>
         /// </remarks>
         public Dictionary<string, string> SerializeData()
         {
-            return new Dictionary<string, string>
+            var result = new Dictionary<string, string>
             {
                 { "DeletedAt", JobHelper.SerializeDateTime(DeletedAt) },
-                { "Exception", SerializationHelper.Serialize(ExceptionInfo) }
             };
+
+            if (ExceptionInfo != null)
+            {
+                result.Add("Exception", SerializationHelper.Serialize(ExceptionInfo, SerializationOption.Internal));
+            }
+
+            return result;
         }
 
         internal class Handler : IStateHandler
