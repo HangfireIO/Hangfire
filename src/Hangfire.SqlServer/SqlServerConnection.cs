@@ -106,7 +106,7 @@ values (@invocationData, @arguments, @createdAt, @expireAt)";
 
             var parametersArray = parameters.ToArray();
 
-            if (parametersArray.Length <= 2)
+            if (parametersArray.Length <= 4)
             {
                 if (parametersArray.Length == 1)
                 {
@@ -133,6 +133,40 @@ commit tran;";
                     queryParameters.Add("@value1", parametersArray[0].Value, DbType.String, size: -1);
                     queryParameters.Add("@name2", parametersArray[1].Key, DbType.String, size: 40);
                     queryParameters.Add("@value2", parametersArray[1].Value, DbType.String, size: -1);
+                }
+                else if (parametersArray.Length == 3)
+                {
+                    queryString = $@"
+set xact_abort on; set nocount on; declare @jobId bigint;
+begin tran;
+insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) values (@invocationData, @arguments, @createdAt, @expireAt);
+select @jobId = scope_identity(); select @jobId;
+insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name1, @value1), (@jobId, @name2, @value2), (@jobId, @name3, @value3);
+commit tran;";
+                    queryParameters.Add("@name1", parametersArray[0].Key, DbType.String, size: 40);
+                    queryParameters.Add("@value1", parametersArray[0].Value, DbType.String, size: -1);
+                    queryParameters.Add("@name2", parametersArray[1].Key, DbType.String, size: 40);
+                    queryParameters.Add("@value2", parametersArray[1].Value, DbType.String, size: -1);
+                    queryParameters.Add("@name3", parametersArray[2].Key, DbType.String, size: 40);
+                    queryParameters.Add("@value3", parametersArray[2].Value, DbType.String, size: -1);
+                }
+                else if (parametersArray.Length == 4)
+                {
+                    queryString = $@"
+set xact_abort on; set nocount on; declare @jobId bigint;
+begin tran;
+insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) values (@invocationData, @arguments, @createdAt, @expireAt);
+select @jobId = scope_identity(); select @jobId;
+insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name1, @value1), (@jobId, @name2, @value2), (@jobId, @name3, @value3), (@jobId, @name4, @value4);
+commit tran;";
+                    queryParameters.Add("@name1", parametersArray[0].Key, DbType.String, size: 40);
+                    queryParameters.Add("@value1", parametersArray[0].Value, DbType.String, size: -1);
+                    queryParameters.Add("@name2", parametersArray[1].Key, DbType.String, size: 40);
+                    queryParameters.Add("@value2", parametersArray[1].Value, DbType.String, size: -1);
+                    queryParameters.Add("@name3", parametersArray[2].Key, DbType.String, size: 40);
+                    queryParameters.Add("@value3", parametersArray[2].Value, DbType.String, size: -1);
+                    queryParameters.Add("@name4", parametersArray[3].Key, DbType.String, size: 40);
+                    queryParameters.Add("@value4", parametersArray[3].Value, DbType.String, size: -1);
                 }
 
                 return _storage.UseConnection(_dedicatedConnection, connection => connection
@@ -175,12 +209,17 @@ $@"insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values 
         {
             if (id == null) throw new ArgumentNullException(nameof(id));
 
+            if (!long.TryParse(id, out var parsedId))
+            {
+                return null;
+            }
+
             string sql =
 $@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.SchemaName}].Job with (readcommittedlock, forceseek) where Id = @id";
 
             return _storage.UseConnection(_dedicatedConnection, connection =>
             {
-                var jobData = connection.Query<SqlJob>(sql, new { id = long.Parse(id) }, commandTimeout: _storage.CommandTimeout)
+                var jobData = connection.Query<SqlJob>(sql, new { id = parsedId }, commandTimeout: _storage.CommandTimeout)
                     .SingleOrDefault();
 
                 if (jobData == null) return null;
@@ -219,6 +258,11 @@ $@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.Schema
         {
             if (jobId == null) throw new ArgumentNullException(nameof(jobId));
 
+            if (!long.TryParse(jobId, out var parsedId))
+            {
+                return null;
+            }
+
             string sql = 
 $@"select s.Name, s.Reason, s.Data
 from [{_storage.SchemaName}].State s with (readcommittedlock, forceseek)
@@ -227,7 +271,7 @@ where j.Id = @jobId";
 
             return _storage.UseConnection(_dedicatedConnection, connection =>
             {
-                var sqlState = connection.Query<SqlState>(sql, new { jobId = long.Parse(jobId) }, commandTimeout: _storage.CommandTimeout).SingleOrDefault();
+                var sqlState = connection.Query<SqlState>(sql, new { jobId = parsedId }, commandTimeout: _storage.CommandTimeout).SingleOrDefault();
                 if (sqlState == null)
                 {
                     return null;
@@ -251,14 +295,31 @@ where j.Id = @jobId";
             if (id == null) throw new ArgumentNullException(nameof(id));
             if (name == null) throw new ArgumentNullException(nameof(name));
 
+            // First updated is required for older schema versions (5 and below), where
+            // [IX_HangFire_JobParameter_JobIdAndName] index wasn't declared as unique,
+            // to make our query resistant to (no matter what schema we are using):
+            // 
+            // https://github.com/HangfireIO/Hangfire/issues/1743 (deadlocks)
+            // https://github.com/HangfireIO/Hangfire/issues/1741 (duplicate entries)
+            // https://github.com/HangfireIO/Hangfire/issues/1693#issuecomment-697976133 (records aren't updated)
+
+            var query = $@"
+set xact_abort off;
+begin try
+  update [{_storage.SchemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
+  if @@ROWCOUNT = 0 insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value);
+end try
+begin catch
+  declare @em nvarchar(4000), @es int, @est int;
+  select @em=error_message(),@es=error_severity(),@est=error_state();
+  IF ERROR_NUMBER() not in (2601, 2627) raiserror(@em, @es, @est);
+  update [{_storage.SchemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
+end catch";
+
             _storage.UseConnection(_dedicatedConnection, connection =>
             {
                 connection.Execute(
-$@";merge [{_storage.SchemaName}].JobParameter with (holdlock, forceseek) as Target
-using (VALUES (@jobId, @name, @value)) as Source (JobId, Name, Value) 
-on Target.JobId = Source.JobId AND Target.Name = Source.Name
-when matched then update set Value = Source.Value
-when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.Name, Source.Value);",
+                    query,
                     new { jobId = long.Parse(id), name, value },
                     commandTimeout: _storage.CommandTimeout);
             });
@@ -269,9 +330,14 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
             if (id == null) throw new ArgumentNullException(nameof(id));
             if (name == null) throw new ArgumentNullException(nameof(name));
 
+            if (!long.TryParse(id, out var parsedId))
+            {
+                return null;
+            }
+
             return _storage.UseConnection(_dedicatedConnection, connection => connection.ExecuteScalar<string>(
                 $@"select top (1) Value from [{_storage.SchemaName}].JobParameter with (readcommittedlock, forceseek) where JobId = @id and Name = @name",
-                new { id = long.Parse(id), name = name },
+                new { id = parsedId, name = name },
                 commandTimeout: _storage.CommandTimeout));
         }
 
@@ -317,12 +383,18 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
 
-            var sql =
-$@";merge [{_storage.SchemaName}].Hash with (holdlock, forceseek) as Target
-using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
-on Target.[Key] = Source.[Key] and Target.Field = Source.Field
-when matched then update set Value = Source.Value
-when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
+            var sql = $@"
+set xact_abort off;
+begin try
+  insert into [{_storage.SchemaName}].Hash ([Key], Field, Value) values (@key, @field, @value);
+  if @@ROWCOUNT = 0 update [{_storage.SchemaName}].Hash set Value = @value where [Key] = @key and Field = @field;
+end try
+begin catch
+  declare @em nvarchar(4000), @es int, @est int;
+  select @em=error_message(),@es=error_severity(),@est=error_state();
+  IF ERROR_NUMBER() not in (2601, 2627) raiserror(@em, @es, @est);
+  update [{_storage.SchemaName}].Hash set Value = @value where [Key] = @key and Field = @field;
+end catch";
 
             var lockResourceKey = $"{_storage.SchemaName}:Hash:Lock";
 
@@ -340,7 +412,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
                     foreach (var keyValuePair in keyValuePairs)
                     {
                         commandBatch.Append(sql,
-                            new SqlCommandBatchParameter("@key", DbType.String, 100) { Value = key },
+                            new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                             new SqlCommandBatchParameter("@field", DbType.String, 100) { Value = keyValuePair.Key },
                             new SqlCommandBatchParameter("@value", DbType.String, -1) { Value = (object) keyValuePair.Value ?? DBNull.Value });
                     }

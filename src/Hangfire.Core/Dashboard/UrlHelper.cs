@@ -43,12 +43,14 @@ namespace Hangfire.Dashboard
 
         public string To(string relativePath)
         {
-            return
+            return _context.Options.PrefixPath +
+                   (
 #if FEATURE_OWIN
-                _owinContext?.Request.PathBase.Value ??
+                       _owinContext?.Request.PathBase.Value ??
 #endif
-                _context.Request.PathBase
-                + relativePath;
+                       _context.Request.PathBase
+                       + relativePath
+                   );
         }
 
         public string Home()

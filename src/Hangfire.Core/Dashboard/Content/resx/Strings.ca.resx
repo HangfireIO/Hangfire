@@ -118,434 +118,403 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AwaitingJobsPage_ContinuationsWarning_Text" xml:space="preserve">
-    <value>Don't worry, continuations are working as expected. But your current job storage does not support some queries required to show this page. Please try to update your storage or wait until the full command set is implemented.</value>
+    <value>Les continuacions funcionen correctament, però el teu sistema d'emmagatzematge de tasques actual no suporta algunes consultes necessàries per a mostrar aquesta pàgina. Actualitzeu el vostre sistema d'emmagatzematge de tasques o espereu que aquest suporti aquesta funcionalitat</value>
   </data>
   <data name="AwaitingJobsPage_ContinuationsWarning_Title" xml:space="preserve">
-    <value>Continuations are working, but this page can't be displayed</value>
+    <value>Les continuacions funcionen, però aquesta pàgina no es pot mostrar.</value>
   </data>
   <data name="AwaitingJobsPage_NoJobs" xml:space="preserve">
-    <value>No jobs found in awaiting state.</value>
+    <value>No s'han trobat tasques en espera</value>
   </data>
   <data name="AwaitingJobsPage_Table_Options" xml:space="preserve">
-    <value>Options</value>
+    <value>Opcions</value>
   </data>
   <data name="AwaitingJobsPage_Table_Parent" xml:space="preserve">
-    <value>Parent</value>
+    <value>Pare</value>
+    <comment>Fuzzy</comment>
   </data>
   <data name="AwaitingJobsPage_Title" xml:space="preserve">
-    <value>Awaiting Jobs</value>
+    <value>Tasques en espera</value>
   </data>
   <data name="Common_Created" xml:space="preserve">
-    <value>Created</value>
+    <value>Creat</value>
   </data>
   <data name="Common_Delete" xml:space="preserve">
-    <value>Delete</value>
+    <value>Eliminar</value>
   </data>
   <data name="Common_DeleteConfirm" xml:space="preserve">
-    <value>Do you really want to DELETE ALL selected jobs?</value>
+    <value>¿Esteu segur que voleu ELIMINAR TOTES les tasques seleccionades?</value>
   </data>
   <data name="Common_Deleting" xml:space="preserve">
-    <value>Deleting...</value>
+    <value>Eliminant...</value>
   </data>
   <data name="Common_DeleteSelected" xml:space="preserve">
-    <value>Delete selected</value>
+    <value>Eliminar seleccionats</value>
   </data>
   <data name="Common_EnqueueButton_Text" xml:space="preserve">
-    <value>Enqueue jobs</value>
+    <value>Posar tasques a la cua</value>
   </data>
   <data name="Common_Enqueueing" xml:space="preserve">
-    <value>Enqueueing...</value>
+    <value>Posant a la cua...</value>
   </data>
   <data name="Common_Fetched" xml:space="preserve">
-    <value>Fetched</value>
+    <value>Obtingut</value>
+    <comment>Fuzzy</comment>
   </data>
   <data name="Common_Id" xml:space="preserve">
     <value>Id</value>
   </data>
   <data name="Common_Job" xml:space="preserve">
-    <value>Job</value>
+    <value>Tasca</value>
   </data>
   <data name="Common_JobExpired" xml:space="preserve">
-    <value>Job expired.</value>
+    <value>Tasca expirada</value>
   </data>
   <data name="Common_JobStateChanged_Text" xml:space="preserve">
-    <value>Job's state has been changed while fetching data.</value>
+    <value>L'estat de la tasca ha canviat mentre s'obtenia informació.</value>
+    <comment>Fuzzy</comment>
   </data>
   <data name="Common_LessDetails" xml:space="preserve">
-    <value>Fewer details...</value>
+    <value>Menys detalls</value>
   </data>
   <data name="Common_MoreDetails" xml:space="preserve">
-    <value>More details...</value>
+    <value>Més detalls</value>
   </data>
   <data name="Common_NotAvailable" xml:space="preserve">
-    <value>N/A</value>
+    <value>N/D</value>
   </data>
   <data name="Common_PeriodDay" xml:space="preserve">
-    <value>Day</value>
+    <value>Dia</value>
   </data>
   <data name="Common_PeriodWeek" xml:space="preserve">
-    <value>Week</value>
+    <value>Setmana</value>
   </data>
   <data name="Common_Reason" xml:space="preserve">
-    <value>Reason</value>
+    <value>Raó</value>
   </data>
   <data name="Common_RequeueJobs" xml:space="preserve">
-    <value>Requeue jobs</value>
+    <value>Tornar a posar les tasques a la cua</value>
+    <comment>Fuzzy</comment>
   </data>
   <data name="Common_Retry" xml:space="preserve">
-    <value>Retry</value>
+    <value>Tornar a intentar</value>
   </data>
   <data name="Common_Server" xml:space="preserve">
-    <value>Server</value>
+    <value>Servidor</value>
   </data>
   <data name="Common_State" xml:space="preserve">
-    <value>State</value>
+    <value>Estat</value>
   </data>
   <data name="Common_Unknown" xml:space="preserve">
-    <value>Unknown</value>
+    <value>Desconegut</value>
   </data>
   <data name="DeletedJobsPage_NoJobs" xml:space="preserve">
-    <value>No deleted jobs found.</value>
+    <value>No s'han trobat tasques eliminades.</value>
   </data>
   <data name="DeletedJobsPage_Table_Deleted" xml:space="preserve">
-    <value>Deleted</value>
+    <value>Eliminat</value>
   </data>
   <data name="DeletedJobsPage_Title" xml:space="preserve">
-    <value>Deleted Jobs</value>
+    <value>Tasques eliminades</value>
   </data>
   <data name="EnqueuedJobsPage_NoJobs" xml:space="preserve">
-    <value>The queue is empty.</value>
+    <value>La cua esta buida.</value>
   </data>
   <data name="EnqueuedJobsPage_Title" xml:space="preserve">
-    <value>Enqueued jobs</value>
+    <value>Tasques a la cua</value>
   </data>
   <data name="FailedJobsPage_FailedJobsNotExpire_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;Failed jobs do not become expired&lt;/strong&gt; to allow you to re-queue them without any
-                time pressure. You should re-queue or delete them manually, or apply &lt;code&gt;AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)&lt;/code&gt;
-                attribute to delete them automatically.</value>
+    <value>&lt;strong&gt;Les tasques fallides no expiren&lt;/strong&gt; per a permetre-us tornar a afegir-les a la cua sense cap pressió. Podeu afegir-les de nou a la cua, eliminar-les manualment o aplicar l'atribut &lt;code&gt;AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)&lt;/code&gt; per a eliminar-les automàticament.</value>
   </data>
   <data name="FailedJobsPage_NoJobs" xml:space="preserve">
-    <value>You have no failed jobs at the moment.</value>
+    <value>No hi han tasques amb errors.</value>
   </data>
   <data name="FailedJobsPage_Table_Failed" xml:space="preserve">
-    <value>Failed</value>
+    <value>Amb errors</value>
   </data>
   <data name="FailedJobsPage_Title" xml:space="preserve">
-    <value>Failed Jobs</value>
+    <value>Tasques amb errors</value>
   </data>
   <data name="FetchedJobsPage_NoJobs" xml:space="preserve">
-    <value>The queue is empty.</value>
+    <value>La cua és buida</value>
   </data>
   <data name="FetchedJobsPage_Title" xml:space="preserve">
-    <value>Fetched jobs</value>
+    <value>Tasques obtingudes</value>
+    <comment>Fuzzy</comment>
   </data>
   <data name="HomePage_HistoryGraph" xml:space="preserve">
-    <value>History graph</value>
+    <value>Gràfic històric</value>
   </data>
   <data name="HomePage_RealtimeGraph" xml:space="preserve">
-    <value>Realtime graph</value>
+    <value>Gràfic en temps real</value>
   </data>
   <data name="HomePage_Title" xml:space="preserve">
-    <value>Overview</value>
+    <value>Panell</value>
+    <comment>Fuzzy</comment>
   </data>
   <data name="JobDetailsPage_Created" xml:space="preserve">
-    <value>Created</value>
+    <value>Creat</value>
   </data>
   <data name="JobDetailsPage_DeleteConfirm" xml:space="preserve">
-    <value>Do you really want to delete this job?</value>
+    <value>¿Esteu segur que voleu eliminar aquesta tasca?</value>
   </data>
   <data name="JobDetailsPage_State" xml:space="preserve">
-    <value>State</value>
+    <value>Estat</value>
   </data>
   <data name="JobDetailsPage_JobAbortedNotActive_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;The job was aborted&lt;/strong&gt; – it is processed by server
-                        &lt;code&gt;{0}&lt;/code&gt; which is not in the 
-                        &lt;a href="{1}"&gt;active servers&lt;/a&gt; list for now.
-                        It will be retried automatically after invisibility timeout, but you can
-                        also re-queue or delete it manually.</value>
+    <value>&lt;strong&gt;La tasca ha estat avortada&lt;/strong&gt; - ha estat processada pel servidor &lt;code&gt;{0}&lt;/code&gt; que no és a la llista de &lt;a href="{1}"&gt;servidors actius&lt;/a&gt; per ara. Serà recuperat automàticament després del període d'invisibilitat, però podeu tornar-la a posar en la cua o eliminar-la manualment.</value>
   </data>
   <data name="JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;Looks like the job was aborted&lt;/strong&gt; – it is processed by server
-                        &lt;code&gt;{0}&lt;/code&gt;, which reported its heartbeat more than 1 minute ago.
-                        It will be retried automatically after invisibility timeout, but you can
-                        also re-queue or delete it manually.</value>
+    <value>&lt;strong&gt;La tasca ha estat avortada&lt;/strong&gt; - ha estat processada pel servido &lt;code&gt;{0}&lt;/code&gt; que ha reportat un batec fa més d'un minut. Serà recuperat automàticament després del període d'invisibilitat, però podeu tornar-la a posar en la cua o eliminar-la manualment.</value>
   </data>
   <data name="JobDetailsPage_JobExpired" xml:space="preserve">
-    <value>Background job '{0}' has expired or could not be found on the server.</value>
+    <value>La tasca amb id '{0}' ha expirat o no s'ha trobat al servidor</value>
   </data>
   <data name="JobDetailsPage_JobFinished_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;The job is finished&lt;/strong&gt;.
-                    It will be removed automatically &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;.</value>
+    <value>&lt;strong&gt;La tasca ha finalitzat&lt;/strong&gt;. S'eliminarà automàticament en &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;</value>
   </data>
   <data name="JobDetailsPage_JobId" xml:space="preserve">
-    <value>Job ID</value>
+    <value>ID Tasca</value>
   </data>
   <data name="JobDetailsPage_Requeue" xml:space="preserve">
-    <value>Requeue</value>
+    <value>Tornar a posar a la cua</value>
+    <comment>Fuzzy</comment>
   </data>
   <data name="LayoutPage_Back" xml:space="preserve">
-    <value>Back to site</value>
+    <value>Tornar</value>
   </data>
   <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
-    <value>Generated: {0}ms</value>
+    <value>Generat: {0}ms</value>
   </data>
   <data name="LayoutPage_Footer_Time" xml:space="preserve">
-    <value>Time:</value>
+    <value>Hora:</value>
   </data>
   <data name="Paginator_Next" xml:space="preserve">
-    <value>Next</value>
+    <value>Següent</value>
   </data>
   <data name="Paginator_Prev" xml:space="preserve">
-    <value>Prev</value>
+    <value>Anterior</value>
   </data>
   <data name="Paginator_TotalItems" xml:space="preserve">
-    <value>Total items</value>
+    <value>Total elements</value>
   </data>
   <data name="PerPageSelector_ItemsPerPage" xml:space="preserve">
-    <value>Items per page</value>
+    <value>Elements per pàgina</value>
   </data>
   <data name="ProcessingJobsPage_Aborted" xml:space="preserve">
-    <value>Looks like the job was aborted</value>
+    <value>Sembla que la tasca ha estat cancel·lada</value>
   </data>
   <data name="ProcessingJobsPage_NoJobs" xml:space="preserve">
-    <value>No jobs are being processed right now.</value>
+    <value>No hi han tasques en procés.</value>
   </data>
   <data name="ProcessingJobsPage_Table_Started" xml:space="preserve">
-    <value>Started</value>
+    <value>Iniciat</value>
   </data>
   <data name="ProcessingJobsPage_Title" xml:space="preserve">
-    <value>Processing Jobs</value>
+    <value>Tasques en procés</value>
   </data>
   <data name="QueuesPage_NoJobs" xml:space="preserve">
-    <value>No jobs queued.</value>
+    <value>No hi han tasques a la cua.</value>
   </data>
   <data name="QueuesPage_NoQueues" xml:space="preserve">
-    <value>No queued jobs found. Try to enqueue a job.</value>
+    <value>No s'han trobat tasques a la cua. Proveu a posar alguna.</value>
   </data>
   <data name="QueuesPage_Table_Length" xml:space="preserve">
-    <value>Length</value>
+    <value>Longitud</value>
   </data>
   <data name="QueuesPage_Table_NextsJobs" xml:space="preserve">
-    <value>Next jobs</value>
+    <value>Properes tasques</value>
   </data>
   <data name="QueuesPage_Table_Queue" xml:space="preserve">
-    <value>Queue</value>
+    <value>Cua</value>
   </data>
   <data name="QueuesPage_Title" xml:space="preserve">
-    <value>Queues</value>
+    <value>Cues</value>
   </data>
   <data name="RecurringJobsPage_Canceled" xml:space="preserve">
-    <value>Canceled</value>
+    <value>Cancel·lat</value>
   </data>
   <data name="RecurringJobsPage_NoJobs" xml:space="preserve">
-    <value>No recurring jobs found.</value>
+    <value>No s'han trobat tasques recurrents</value>
   </data>
   <data name="RecurringJobsPage_Table_Cron" xml:space="preserve">
     <value>Cron</value>
   </data>
   <data name="RecurringJobsPage_Table_LastExecution" xml:space="preserve">
-    <value>Last execution</value>
+    <value>Darrera execució</value>
   </data>
   <data name="RecurringJobsPage_Table_NextExecution" xml:space="preserve">
-    <value>Next execution</value>
+    <value>Propera execució</value>
   </data>
   <data name="RecurringJobsPage_Table_TimeZone" xml:space="preserve">
-    <value>Time zone</value>
+    <value>Zona horària</value>
   </data>
   <data name="RecurringJobsPage_Title" xml:space="preserve">
-    <value>Recurring jobs</value>
+    <value>Tasques recurrents</value>
   </data>
   <data name="RecurringJobsPage_Triggering" xml:space="preserve">
-    <value>Triggering...</value>
+    <value>Activant...</value>
   </data>
   <data name="RecurringJobsPage_TriggerNow" xml:space="preserve">
-    <value>Trigger now</value>
+    <value>Activar ara</value>
   </data>
   <data name="RetriesPage_NoJobs" xml:space="preserve">
-    <value>All is OK – you have no retries.</value>
+    <value>Tot va bé - no hi ha cap reintent.</value>
   </data>
   <data name="RetriesPage_Title" xml:space="preserve">
-    <value>Retries</value>
+    <value>Reintents</value>
   </data>
   <data name="RetriesPage_Warning_Html" xml:space="preserve">
-    <value>&lt;h4&gt;Retries are working, but this page can't be displayed&lt;/h4&gt;
+    <value>&lt;h4&gt;Els reintents estan funcionant, però aquesta pàgina no es pot mostrar&lt;/h4&gt;
         &lt;p&gt;
-            Don't worry, retries are working as expected. Your current job storage does not support
-            some queries required to show this page. Please try to update your storage or wait until
-            the full command set is implemented.
+            No us preocupeu, els reintents funcionen como haurien, però el teu sistema d'emmagatzematge de tasques actual no suporta algunes consultes necessàries per a mostrar aquesta pàgina. Actualitzeu el vostre sistema d'emmagatzematge o espereu fins que aquest suporti aquesta funcionalitat
         &lt;/p&gt;
         &lt;p&gt;
-            Please go to the &lt;a href="{0}"&gt;Scheduled jobs&lt;/a&gt; page to see all the
-            scheduled jobs including retries.
-        &lt;/p&gt;</value>
+           Visiteu la pàgina &lt;a href="{0}"&gt;Tasques programades&lt;/a&gt; per a veure totes les tasques programades, inclosos els reintents.
+        &lt;/p&gt; </value>
   </data>
   <data name="ScheduledJobsPage_EnqueueNow" xml:space="preserve">
-    <value>Enqueue now</value>
+    <value>Posar a la cua ara</value>
   </data>
   <data name="ScheduledJobsPage_NoJobs" xml:space="preserve">
-    <value>There are no scheduled jobs.</value>
+    <value>No hi han tasques programades.</value>
   </data>
   <data name="ScheduledJobsPage_Table_Enqueue" xml:space="preserve">
-    <value>Enqueue</value>
+    <value>Posar a la cua</value>
   </data>
   <data name="ScheduledJobsPage_Table_Scheduled" xml:space="preserve">
-    <value>Scheduled</value>
+    <value>Programades</value>
   </data>
   <data name="ScheduledJobsPage_Title" xml:space="preserve">
-    <value>Scheduled Jobs</value>
+    <value>Tasques programades</value>
   </data>
   <data name="ServersPage_NoServers" xml:space="preserve">
-    <value>There are no active servers. Background tasks will not be processed.</value>
+    <value>No hi ha cap servidor actiu. Les tasques en segon pla no seran processades.</value>
   </data>
   <data name="ServersPage_Table_Heartbeat" xml:space="preserve">
-    <value>Heartbeat</value>
+    <value>Batec</value>
+    <comment>Fuzzy</comment>
   </data>
   <data name="ServersPage_Table_Name" xml:space="preserve">
-    <value>Name</value>
+    <value>Nom</value>
   </data>
   <data name="ServersPage_Table_Queues" xml:space="preserve">
-    <value>Queues</value>
+    <value>Cues</value>
   </data>
   <data name="ServersPage_Table_Started" xml:space="preserve">
-    <value>Started</value>
+    <value>Iniciada</value>
   </data>
   <data name="ServersPage_Table_Workers" xml:space="preserve">
-    <value>Workers</value>
+    <value>Treballadors</value>
+    <comment>Fuzzy</comment>
   </data>
   <data name="ServersPage_Title" xml:space="preserve">
-    <value>Servers</value>
+    <value>Servidors</value>
   </data>
   <data name="SucceededJobsPage_NoJobs" xml:space="preserve">
-    <value>No succeeded jobs found.</value>
+    <value>No s'han trobat tasques completades</value>
   </data>
   <data name="SucceededJobsPage_Table_Succeeded" xml:space="preserve">
-    <value>Succeeded</value>
+    <value>Completades</value>
   </data>
   <data name="SucceededJobsPage_Table_TotalDuration" xml:space="preserve">
-    <value>Total Duration</value>
+    <value>Durada total</value>
   </data>
   <data name="SucceededJobsPage_Title" xml:space="preserve">
-    <value>Succeeded Jobs</value>
+    <value>Tasques completades</value>
   </data>
   <data name="JobsSidebarMenu_Awaiting" xml:space="preserve">
-    <value>Awaiting</value>
+    <value>A l'espera</value>
   </data>
   <data name="JobsSidebarMenu_Deleted" xml:space="preserve">
-    <value>Deleted</value>
+    <value>Eliminat</value>
   </data>
   <data name="JobsSidebarMenu_Failed" xml:space="preserve">
-    <value>Failed</value>
+    <value>Amb errors</value>
   </data>
   <data name="JobsSidebarMenu_Processing" xml:space="preserve">
-    <value>Processing</value>
+    <value>Processant</value>
   </data>
   <data name="JobsSidebarMenu_Scheduled" xml:space="preserve">
-    <value>Scheduled</value>
+    <value>Programades</value>
   </data>
   <data name="JobsSidebarMenu_Succeeded" xml:space="preserve">
-    <value>Succeeded</value>
+    <value>Completades</value>
   </data>
   <data name="NavigationMenu_Jobs" xml:space="preserve">
-    <value>Jobs</value>
+    <value>Tasques</value>
   </data>
   <data name="NavigationMenu_RecurringJobs" xml:space="preserve">
-    <value>Recurring Jobs</value>
+    <value>Tasques recurrents</value>
   </data>
   <data name="NavigationMenu_Retries" xml:space="preserve">
-    <value>Retries</value>
+    <value>Reintents</value>
   </data>
   <data name="NavigationMenu_Servers" xml:space="preserve">
-    <value>Servers</value>
+    <value>Servidors</value>
   </data>
   <data name="Common_CannotFindTargetMethod" xml:space="preserve">
-    <value>Can not find the target method.</value>
+    <value>No es pot trobar el mètode destí</value>
+    <comment>Fuzzy</comment>
   </data>
   <data name="Common_Enqueued" xml:space="preserve">
-    <value>Enqueued</value>
+    <value>A la cua</value>
   </data>
   <data name="Common_NoState" xml:space="preserve">
-    <value>No state</value>
+    <value>Sense estat</value>
   </data>
   <data name="JobsSidebarMenu_Enqueued" xml:space="preserve">
-    <value>Enqueued</value>
+    <value>A la cua</value>
   </data>
   <data name="Metrics_ActiveConnections" xml:space="preserve">
-    <value>Active Connections</value>
+    <value>Connexions actives</value>
   </data>
   <data name="Metrics_DeletedJobs" xml:space="preserve">
-    <value>Deleted Jobs</value>
+    <value>Tasques eliminades</value>
   </data>
   <data name="Metrics_FailedJobs" xml:space="preserve">
-    <value>Failed Jobs</value>
+    <value>Tasques fallides</value>
   </data>
   <data name="Metrics_ProcessingJobs" xml:space="preserve">
-    <value>Processing Jobs</value>
+    <value>Tasques en procés</value>
   </data>
   <data name="Metrics_RecurringJobs" xml:space="preserve">
-    <value>Recurring Jobs</value>
+    <value>Tasques recurrents</value>
   </data>
   <data name="Metrics_Retries" xml:space="preserve">
-    <value>Retries</value>
+    <value>Reintents</value>
   </data>
   <data name="Metrics_ScheduledJobs" xml:space="preserve">
-    <value>Scheduled Jobs</value>
+    <value>Tasques programades</value>
   </data>
   <data name="Metrics_Servers" xml:space="preserve">
-    <value>Servers</value>
+    <value>Servidors</value>
   </data>
   <data name="Metrics_SucceededJobs" xml:space="preserve">
-    <value>Succeeded Jobs</value>
+    <value>Tasques completades</value>
   </data>
   <data name="Metrics_TotalConnections" xml:space="preserve">
-    <value>Total Connections</value>
+    <value>Connexions totals</value>
   </data>
   <data name="Common_Condition" xml:space="preserve">
-    <value>Condition</value>
+    <value>Condició</value>
   </data>
   <data name="Common_Continuations" xml:space="preserve">
-    <value>Continuations</value>
+    <value>Continuacions</value>
   </data>
   <data name="Metrics_AwaitingCount" xml:space="preserve">
-    <value>Awaiting</value>
+    <value>A l'espera</value>
   </data>
   <data name="Metrics_EnqueuedCountOrNull" xml:space="preserve">
-    <value>Enqueued</value>
+    <value>A la cua</value>
   </data>
   <data name="Metrics_EnqueuedQueuesCount" xml:space="preserve">
-    <value>Enqueued / Queues</value>
-  </data>
-  <data name="Metrics_FailedCountOrNull" xml:space="preserve">
-    <value>{0} failed job(s) found. Retry or delete them manually.</value>
+    <value>A la cua / Cues</value>
   </data>
   <data name="HomePage_GraphHover_Failed" xml:space="preserve">
-    <value>Failed</value>
+    <value>Amb errors</value>
   </data>
   <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
-    <value>Succeeded</value>
-  </data>
-  <data name="Common_Disabled" xml:space="preserve">
-    <value>Disabled</value>
-  </data>
-  <data name="RecurringJobsPage_RecurringJobDisabled_Tooltip" xml:space="preserve">
-    <value>Cron expression is invalid or don't have any occurrences over the next 100 years</value>
-  </data>
-  <data name="ServersPage_Note_Text" xml:space="preserve">
-    <value>Some of the servers don't have heartbeat reported within the last minute and may be aborted. If they don't report heartbeat in the near future, they will be removed automatically after timeout is exceeded, no manual action is required.
-                    Incomplete background jobs running on those servers will be re-queued automatically, but you can speed up the process by checking the &lt;a href="{0}"&gt;Processing Jobs&lt;/a&gt; page.</value>
-  </data>
-  <data name="ServersPage_Note_Title" xml:space="preserve">
-    <value>Aborted servers will be removed automatically</value>
-  </data>
-  <data name="ServersPage_Active" xml:space="preserve">
-    <value>Active</value>
-  </data>
-  <data name="ServersPage_Possibly_Aborted" xml:space="preserve">
-    <value>Possibly aborted</value>
-  </data>
-  <data name="Common_Error" xml:space="preserve">
-    <value>Error</value>
-  </data>
-  <data name="JobDetailsPage_Parameters" xml:space="preserve">
-    <value>Parameters</value>
+    <value>Completats</value>
   </data>
 </root>

@@ -281,7 +281,7 @@ namespace Hangfire.Dashboard
         public NonEscapedString QueueLabel(string queue)
         {
             var label = queue != null 
-                ? $"<a class=\"text-uppercase\" href=\"{HtmlEncode(_page.Url.Queue(queue))}\">{HtmlEncode(queue)}</a>" 
+                ? $"<a href=\"{HtmlEncode(_page.Url.Queue(queue))}\">{HtmlEncode(queue)}</a>" 
                 : $"<span class=\"label label-danger\"><i>{HtmlEncode(Strings.Common_Unknown)}</i></span>";
 
             return new NonEscapedString(label);

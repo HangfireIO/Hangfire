@@ -165,6 +165,11 @@ namespace Hangfire.SqlServer
 
             try
             {
+                if (_connectionString == null)
+                {
+                    return "SQL Server (custom)";
+                }
+
                 var parts = _connectionString.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(x => x.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries))
                     .Select(x => new { Key = x[0].Trim(), Value = x[1].Trim() })
@@ -267,8 +272,37 @@ namespace Hangfire.SqlServer
             {
                 using (var transaction = connection.BeginTransaction(isolationLevel ?? IsolationLevel.ReadCommitted))
                 {
-                    var result = func(connection, transaction);
-                    transaction.Commit();
+                    T result;
+
+                    try
+                    {
+                        result = func(connection, transaction);
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        // It is possible that XACT_ABORT option is set, and in this
+                        // case transaction will be aborted automatically on server.
+                        // Some older SqlClient implementations throw InvalidOperationException
+                        // when trying to rollback such an aborted transaction, so we
+                        // try to handle this case.
+                        //
+                        // It's also possible that our connection is broken, so this
+                        // check is useful even when XACT_ABORT option wasn't set.
+                        if (transaction.Connection != null)
+                        {
+                            // Don't rely on implicit rollback when calling the Dispose
+                            // method, because some implementations may throw the
+                            // NullReferenceException, although it's prohibited to throw
+                            // any exception from a Dispose method, according to the
+                            // .NET Framework Design Guidelines:
+                            // https://github.com/dotnet/efcore/issues/12864
+                            // https://github.com/HangfireIO/Hangfire/issues/1494
+                            transaction.Rollback();
+                        }
+
+                        throw;
+                    }
 
                     return result;
                 }

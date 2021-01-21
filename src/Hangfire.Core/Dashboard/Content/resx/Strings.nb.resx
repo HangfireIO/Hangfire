@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,79 +26,79 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
           <xsd:element name="metadata">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
               </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="assembly">
             <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
             </xsd:complexType>
           </xsd:element>
         </xsd:choice>
@@ -118,434 +118,434 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AwaitingJobsPage_ContinuationsWarning_Text" xml:space="preserve">
-    <value>Don't worry, continuations are working as expected. But your current job storage does not support some queries required to show this page. Please try to update your storage or wait until the full command set is implemented.</value>
+    <value>Ikke bekymre deg, fortsettelser fungerer som forventet, men din nåværende jobblagring mangler støtte for noen spørringer som er nødvendige for å vise denne siden. Prøv å oppdatere lagringen eller vent til hele kommandosettet er implementert.</value>
   </data>
   <data name="AwaitingJobsPage_ContinuationsWarning_Title" xml:space="preserve">
-    <value>Continuations are working, but this page can't be displayed</value>
+    <value>Fortsettelser fungerer, men denne siden kan ikke vises</value>
   </data>
   <data name="AwaitingJobsPage_NoJobs" xml:space="preserve">
-    <value>No jobs found in awaiting state.</value>
+    <value>Ingen ventende jobber funnet.</value>
   </data>
   <data name="AwaitingJobsPage_Table_Options" xml:space="preserve">
-    <value>Options</value>
+    <value>Alternativer</value>
   </data>
   <data name="AwaitingJobsPage_Table_Parent" xml:space="preserve">
-    <value>Parent</value>
+    <value>Forelder</value>
   </data>
   <data name="AwaitingJobsPage_Title" xml:space="preserve">
-    <value>Awaiting Jobs</value>
+    <value>Ventende Jobber</value>
   </data>
   <data name="Common_Created" xml:space="preserve">
-    <value>Created</value>
+    <value>Opprettet</value>
   </data>
   <data name="Common_Delete" xml:space="preserve">
-    <value>Delete</value>
+    <value>Slett</value>
   </data>
   <data name="Common_DeleteConfirm" xml:space="preserve">
-    <value>Do you really want to DELETE ALL selected jobs?</value>
+    <value>Ønsker du virkelig å slette de valgte jobbene?</value>
   </data>
   <data name="Common_Deleting" xml:space="preserve">
-    <value>Deleting...</value>
+    <value>Sletter...</value>
   </data>
   <data name="Common_DeleteSelected" xml:space="preserve">
-    <value>Delete selected</value>
+    <value>Slett valgte</value>
   </data>
   <data name="Common_EnqueueButton_Text" xml:space="preserve">
-    <value>Enqueue jobs</value>
+    <value>Sett jobber i kø</value>
   </data>
   <data name="Common_Enqueueing" xml:space="preserve">
-    <value>Enqueueing...</value>
+    <value>Setter i kø...</value>
   </data>
   <data name="Common_Fetched" xml:space="preserve">
-    <value>Fetched</value>
+    <value>Hentet</value>
   </data>
   <data name="Common_Id" xml:space="preserve">
     <value>Id</value>
   </data>
   <data name="Common_Job" xml:space="preserve">
-    <value>Job</value>
+    <value>Jobb</value>
   </data>
   <data name="Common_JobExpired" xml:space="preserve">
-    <value>Job expired.</value>
+    <value>Jobben har utløpt.</value>
   </data>
   <data name="Common_JobStateChanged_Text" xml:space="preserve">
-    <value>Job's state has been changed while fetching data.</value>
+    <value>Jobbens tilstand har blitt endret under uthenting av data.</value>
   </data>
   <data name="Common_LessDetails" xml:space="preserve">
-    <value>Fewer details...</value>
+    <value>Færre detaljer...</value>
   </data>
   <data name="Common_MoreDetails" xml:space="preserve">
-    <value>More details...</value>
+    <value>Flere detaljer...</value>
   </data>
   <data name="Common_NotAvailable" xml:space="preserve">
     <value>N/A</value>
   </data>
   <data name="Common_PeriodDay" xml:space="preserve">
-    <value>Day</value>
+    <value>Dag</value>
   </data>
   <data name="Common_PeriodWeek" xml:space="preserve">
-    <value>Week</value>
+    <value>Uke</value>
   </data>
   <data name="Common_Reason" xml:space="preserve">
-    <value>Reason</value>
+    <value>Årsak</value>
   </data>
   <data name="Common_RequeueJobs" xml:space="preserve">
-    <value>Requeue jobs</value>
+    <value>Sett jobber tilbake i kø</value>
   </data>
   <data name="Common_Retry" xml:space="preserve">
-    <value>Retry</value>
+    <value>Kjør på nytt</value>
   </data>
   <data name="Common_Server" xml:space="preserve">
     <value>Server</value>
   </data>
   <data name="Common_State" xml:space="preserve">
-    <value>State</value>
+    <value>Tilstand</value>
   </data>
   <data name="Common_Unknown" xml:space="preserve">
-    <value>Unknown</value>
+    <value>Ukjent</value>
   </data>
   <data name="DeletedJobsPage_NoJobs" xml:space="preserve">
-    <value>No deleted jobs found.</value>
+    <value>Ingen slettede jobber funnet.</value>
   </data>
   <data name="DeletedJobsPage_Table_Deleted" xml:space="preserve">
-    <value>Deleted</value>
+    <value>Slettet</value>
   </data>
   <data name="DeletedJobsPage_Title" xml:space="preserve">
-    <value>Deleted Jobs</value>
+    <value>Slettede Jobber</value>
   </data>
   <data name="EnqueuedJobsPage_NoJobs" xml:space="preserve">
-    <value>The queue is empty.</value>
+    <value>Køen er tom.</value>
   </data>
   <data name="EnqueuedJobsPage_Title" xml:space="preserve">
-    <value>Enqueued jobs</value>
+    <value>Jobber i kø</value>
   </data>
   <data name="FailedJobsPage_FailedJobsNotExpire_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;Failed jobs do not become expired&lt;/strong&gt; to allow you to re-queue them without any
-                time pressure. You should re-queue or delete them manually, or apply &lt;code&gt;AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)&lt;/code&gt;
-                attribute to delete them automatically.</value>
+    <value>&lt;strong&gt;Mislykkede jobber utløper ikke&lt;/strong&gt; for å la deg å sette dem tilbake i køen uten
+                tidspress. Du bør sette dem tilbake i køen, slette dem manuelt eller bruke &lt;code&gt;AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)&lt;/code&gt;
+                -attributtet for å slette dem automatisk.</value>
   </data>
   <data name="FailedJobsPage_NoJobs" xml:space="preserve">
-    <value>You have no failed jobs at the moment.</value>
+    <value>Du har ingen mislykkede jobber for øyeblikket.</value>
   </data>
   <data name="FailedJobsPage_Table_Failed" xml:space="preserve">
-    <value>Failed</value>
+    <value>Mislykket</value>
   </data>
   <data name="FailedJobsPage_Title" xml:space="preserve">
-    <value>Failed Jobs</value>
+    <value>Mislykkede Jobber</value>
   </data>
   <data name="FetchedJobsPage_NoJobs" xml:space="preserve">
-    <value>The queue is empty.</value>
+    <value>Køen er tom.</value>
   </data>
   <data name="FetchedJobsPage_Title" xml:space="preserve">
-    <value>Fetched jobs</value>
+    <value>Hentede jobber</value>
   </data>
   <data name="HomePage_HistoryGraph" xml:space="preserve">
-    <value>History graph</value>
+    <value>Historisk graf</value>
   </data>
   <data name="HomePage_RealtimeGraph" xml:space="preserve">
-    <value>Realtime graph</value>
+    <value>Sanntidsgraf</value>
   </data>
   <data name="HomePage_Title" xml:space="preserve">
-    <value>Overview</value>
+    <value>Oversikt</value>
   </data>
   <data name="JobDetailsPage_Created" xml:space="preserve">
-    <value>Created</value>
+    <value>Opprettet</value>
   </data>
   <data name="JobDetailsPage_DeleteConfirm" xml:space="preserve">
-    <value>Do you really want to delete this job?</value>
+    <value>Ønsker du virkelig å slette denne jobben?</value>
   </data>
   <data name="JobDetailsPage_State" xml:space="preserve">
-    <value>State</value>
+    <value>Tilstand</value>
   </data>
   <data name="JobDetailsPage_JobAbortedNotActive_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;The job was aborted&lt;/strong&gt; – it is processed by server
-                        &lt;code&gt;{0}&lt;/code&gt; which is not in the 
-                        &lt;a href="{1}"&gt;active servers&lt;/a&gt; list for now.
-                        It will be retried automatically after invisibility timeout, but you can
-                        also re-queue or delete it manually.</value>
+    <value>&lt;strong&gt;Jobben ble avbrutt&lt;/strong&gt; – den blir behandlet av server
+                        &lt;code&gt;{0}&lt;/code&gt; som ikke er i
+                        &lt;a href="{1}"&gt;aktive servere&lt;/a&gt;-listen nå.
+                        Den blir hentet automatisk etter usynlighetstid, men du kan også sette den tilbake i køen
+                        eller slette den manuelt.</value>
   </data>
   <data name="JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;Looks like the job was aborted&lt;/strong&gt; – it is processed by server
-                        &lt;code&gt;{0}&lt;/code&gt;, which reported its heartbeat more than 1 minute ago.
-                        It will be retried automatically after invisibility timeout, but you can
-                        also re-queue or delete it manually.</value>
+    <value>&lt;strong&gt;Ser ut som jobben ble avbrutt&lt;/strong&gt; - den blir behandlet av server
+                        &lt;code&gt;{0}&lt;/code&gt; som rapporterte om livstegn for over ett minutt siden.
+                        Den vil bli hentet automatisk etter usynlighetstid, men du kan også
+                        sette den tilbake i køen eller slette den manuelt.</value>
   </data>
   <data name="JobDetailsPage_JobExpired" xml:space="preserve">
-    <value>Background job '{0}' has expired or could not be found on the server.</value>
+    <value>Bakgrunnsjobben '{0}' har utløpt eller finnes ikke på serveren.</value>
   </data>
   <data name="JobDetailsPage_JobFinished_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;The job is finished&lt;/strong&gt;.
-                    It will be removed automatically &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;.</value>
+    <value>&lt;strong&gt;Jobben er utført&lt;/strong&gt;.
+                    Den vil bli fjernet automatisk &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;.</value>
   </data>
   <data name="JobDetailsPage_JobId" xml:space="preserve">
-    <value>Job ID</value>
+    <value>Jobb ID</value>
   </data>
   <data name="JobDetailsPage_Requeue" xml:space="preserve">
-    <value>Requeue</value>
+    <value>Sett tilbake i kø</value>
   </data>
   <data name="LayoutPage_Back" xml:space="preserve">
-    <value>Back to site</value>
+    <value>Tilbake til siden</value>
   </data>
   <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
-    <value>Generated: {0}ms</value>
+    <value>Generert på {0}ms</value>
   </data>
   <data name="LayoutPage_Footer_Time" xml:space="preserve">
-    <value>Time:</value>
+    <value>Tidspunkt:</value>
   </data>
   <data name="Paginator_Next" xml:space="preserve">
-    <value>Next</value>
+    <value>Neste</value>
   </data>
   <data name="Paginator_Prev" xml:space="preserve">
-    <value>Prev</value>
+    <value>Forrige</value>
   </data>
   <data name="Paginator_TotalItems" xml:space="preserve">
-    <value>Total items</value>
+    <value>Totalt antall</value>
   </data>
   <data name="PerPageSelector_ItemsPerPage" xml:space="preserve">
-    <value>Items per page</value>
+    <value>Antall per side</value>
   </data>
   <data name="ProcessingJobsPage_Aborted" xml:space="preserve">
-    <value>Looks like the job was aborted</value>
+    <value>Det ser ut som at jobben ble avbrutt</value>
   </data>
   <data name="ProcessingJobsPage_NoJobs" xml:space="preserve">
-    <value>No jobs are being processed right now.</value>
+    <value>Ingen jobber blir behandlet akkurat nå.</value>
   </data>
   <data name="ProcessingJobsPage_Table_Started" xml:space="preserve">
-    <value>Started</value>
+    <value>Startet</value>
   </data>
   <data name="ProcessingJobsPage_Title" xml:space="preserve">
-    <value>Processing Jobs</value>
+    <value>Jobber til Behandling</value>
   </data>
   <data name="QueuesPage_NoJobs" xml:space="preserve">
-    <value>No jobs queued.</value>
+    <value>Ingen jobber har bltt lagt i kø.</value>
   </data>
   <data name="QueuesPage_NoQueues" xml:space="preserve">
-    <value>No queued jobs found. Try to enqueue a job.</value>
+    <value>Ingen jobber har blitt lagt i køen. Prøv å sett en jobb i kø.</value>
   </data>
   <data name="QueuesPage_Table_Length" xml:space="preserve">
-    <value>Length</value>
+    <value>Lengde</value>
   </data>
   <data name="QueuesPage_Table_NextsJobs" xml:space="preserve">
-    <value>Next jobs</value>
+    <value>Neste jobber</value>
   </data>
   <data name="QueuesPage_Table_Queue" xml:space="preserve">
-    <value>Queue</value>
+    <value>Kø</value>
   </data>
   <data name="QueuesPage_Title" xml:space="preserve">
-    <value>Queues</value>
+    <value>Køer</value>
   </data>
   <data name="RecurringJobsPage_Canceled" xml:space="preserve">
-    <value>Canceled</value>
+    <value>Avbrutt</value>
   </data>
   <data name="RecurringJobsPage_NoJobs" xml:space="preserve">
-    <value>No recurring jobs found.</value>
+    <value>Ingen gjentakende jobber funnet.</value>
   </data>
   <data name="RecurringJobsPage_Table_Cron" xml:space="preserve">
     <value>Cron</value>
   </data>
   <data name="RecurringJobsPage_Table_LastExecution" xml:space="preserve">
-    <value>Last execution</value>
+    <value>Siste kjøring</value>
   </data>
   <data name="RecurringJobsPage_Table_NextExecution" xml:space="preserve">
-    <value>Next execution</value>
+    <value>Neste kjøring</value>
   </data>
   <data name="RecurringJobsPage_Table_TimeZone" xml:space="preserve">
-    <value>Time zone</value>
+    <value>Tidssone</value>
   </data>
   <data name="RecurringJobsPage_Title" xml:space="preserve">
-    <value>Recurring jobs</value>
+    <value>Gjentakende jobber</value>
   </data>
   <data name="RecurringJobsPage_Triggering" xml:space="preserve">
-    <value>Triggering...</value>
+    <value>Kjører...</value>
   </data>
   <data name="RecurringJobsPage_TriggerNow" xml:space="preserve">
-    <value>Trigger now</value>
+    <value>Kjør nå</value>
   </data>
   <data name="RetriesPage_NoJobs" xml:space="preserve">
-    <value>All is OK – you have no retries.</value>
+    <value>Alt er OK – ingen jobber har blitt gjenforsøkt.</value>
   </data>
   <data name="RetriesPage_Title" xml:space="preserve">
-    <value>Retries</value>
+    <value>Gjenforsøk</value>
   </data>
   <data name="RetriesPage_Warning_Html" xml:space="preserve">
-    <value>&lt;h4&gt;Retries are working, but this page can't be displayed&lt;/h4&gt;
+    <value>&lt;h4&gt;Gjenforsøk virker, men denne siden kan ikke vises&lt;/h4&gt;
         &lt;p&gt;
-            Don't worry, retries are working as expected. Your current job storage does not support
-            some queries required to show this page. Please try to update your storage or wait until
-            the full command set is implemented.
+            Ikke bekymre deg, gjenforsøk av jobber fungerer som forventet. Din nåværende jobblagring mangler støtte
+            for noen spørringer som er nødvendig for å vise denne siden. Prøv å oppdatere lagringen eller vent til
+            hele kommandosettet er implementert.
         &lt;/p&gt;
         &lt;p&gt;
-            Please go to the &lt;a href="{0}"&gt;Scheduled jobs&lt;/a&gt; page to see all the
-            scheduled jobs including retries.
+            Vennligst gå til &lt;a href="{0}"&gt;Planlagte Jobber&lt;/a&gt; for å se alle
+            planlagte jobber, inkludert gjenforsøk.
         &lt;/p&gt;</value>
   </data>
   <data name="ScheduledJobsPage_EnqueueNow" xml:space="preserve">
-    <value>Enqueue now</value>
+    <value>Sett i kø nå</value>
   </data>
   <data name="ScheduledJobsPage_NoJobs" xml:space="preserve">
-    <value>There are no scheduled jobs.</value>
+    <value>Det er ingen planlagte jobber.</value>
   </data>
   <data name="ScheduledJobsPage_Table_Enqueue" xml:space="preserve">
-    <value>Enqueue</value>
+    <value>Sett i kø</value>
   </data>
   <data name="ScheduledJobsPage_Table_Scheduled" xml:space="preserve">
-    <value>Scheduled</value>
+    <value>Planlagt</value>
   </data>
   <data name="ScheduledJobsPage_Title" xml:space="preserve">
-    <value>Scheduled Jobs</value>
+    <value>Planlagte Jobber</value>
   </data>
   <data name="ServersPage_NoServers" xml:space="preserve">
-    <value>There are no active servers. Background tasks will not be processed.</value>
+    <value>Det er ingen aktive servere. Bakgrunnsjobber vil ikke bli behandlet.</value>
   </data>
   <data name="ServersPage_Table_Heartbeat" xml:space="preserve">
-    <value>Heartbeat</value>
+    <value>Siste livstegn</value>
   </data>
   <data name="ServersPage_Table_Name" xml:space="preserve">
-    <value>Name</value>
+    <value>Navn</value>
   </data>
   <data name="ServersPage_Table_Queues" xml:space="preserve">
-    <value>Queues</value>
+    <value>Køer</value>
   </data>
   <data name="ServersPage_Table_Started" xml:space="preserve">
-    <value>Started</value>
+    <value>Startet</value>
   </data>
   <data name="ServersPage_Table_Workers" xml:space="preserve">
-    <value>Workers</value>
+    <value>Arbeidere</value>
   </data>
   <data name="ServersPage_Title" xml:space="preserve">
-    <value>Servers</value>
+    <value>Servere</value>
   </data>
   <data name="SucceededJobsPage_NoJobs" xml:space="preserve">
-    <value>No succeeded jobs found.</value>
+    <value>Ingen vellykkede jobber funnet.</value>
   </data>
   <data name="SucceededJobsPage_Table_Succeeded" xml:space="preserve">
-    <value>Succeeded</value>
+    <value>Vellykkede</value>
   </data>
   <data name="SucceededJobsPage_Table_TotalDuration" xml:space="preserve">
-    <value>Total Duration</value>
+    <value>Total Varighet</value>
   </data>
   <data name="SucceededJobsPage_Title" xml:space="preserve">
-    <value>Succeeded Jobs</value>
+    <value>Vellykkede Jobber</value>
   </data>
   <data name="JobsSidebarMenu_Awaiting" xml:space="preserve">
-    <value>Awaiting</value>
+    <value>Venter</value>
   </data>
   <data name="JobsSidebarMenu_Deleted" xml:space="preserve">
-    <value>Deleted</value>
+    <value>Slettet</value>
   </data>
   <data name="JobsSidebarMenu_Failed" xml:space="preserve">
-    <value>Failed</value>
+    <value>Mislykket</value>
   </data>
   <data name="JobsSidebarMenu_Processing" xml:space="preserve">
-    <value>Processing</value>
+    <value>Til Behandling</value>
   </data>
   <data name="JobsSidebarMenu_Scheduled" xml:space="preserve">
-    <value>Scheduled</value>
+    <value>Planlagt</value>
   </data>
   <data name="JobsSidebarMenu_Succeeded" xml:space="preserve">
-    <value>Succeeded</value>
+    <value>Vellykkede</value>
   </data>
   <data name="NavigationMenu_Jobs" xml:space="preserve">
-    <value>Jobs</value>
+    <value>Jobber</value>
   </data>
   <data name="NavigationMenu_RecurringJobs" xml:space="preserve">
-    <value>Recurring Jobs</value>
+    <value>Gjentakende Jobber</value>
   </data>
   <data name="NavigationMenu_Retries" xml:space="preserve">
-    <value>Retries</value>
+    <value>Gjenforsøk</value>
   </data>
   <data name="NavigationMenu_Servers" xml:space="preserve">
-    <value>Servers</value>
+    <value>Servere</value>
   </data>
   <data name="Common_CannotFindTargetMethod" xml:space="preserve">
-    <value>Can not find the target method.</value>
+    <value>Kan ikke finne målmetoden.</value>
   </data>
   <data name="Common_Enqueued" xml:space="preserve">
-    <value>Enqueued</value>
+    <value>Satt i kø</value>
   </data>
   <data name="Common_NoState" xml:space="preserve">
-    <value>No state</value>
+    <value>Ingen tilstand</value>
   </data>
   <data name="JobsSidebarMenu_Enqueued" xml:space="preserve">
-    <value>Enqueued</value>
+    <value>Satt i kø</value>
   </data>
   <data name="Metrics_ActiveConnections" xml:space="preserve">
-    <value>Active Connections</value>
+    <value>Antall aktive tilkoblinger</value>
   </data>
   <data name="Metrics_DeletedJobs" xml:space="preserve">
-    <value>Deleted Jobs</value>
+    <value>Slettede Jobber</value>
   </data>
   <data name="Metrics_FailedJobs" xml:space="preserve">
-    <value>Failed Jobs</value>
+    <value>Mislykkede Jobber</value>
   </data>
   <data name="Metrics_ProcessingJobs" xml:space="preserve">
-    <value>Processing Jobs</value>
+    <value>Jobber til Behandling</value>
   </data>
   <data name="Metrics_RecurringJobs" xml:space="preserve">
-    <value>Recurring Jobs</value>
+    <value>Gjentakende Jobber</value>
   </data>
   <data name="Metrics_Retries" xml:space="preserve">
-    <value>Retries</value>
+    <value>Gjenforsøk</value>
   </data>
   <data name="Metrics_ScheduledJobs" xml:space="preserve">
-    <value>Scheduled Jobs</value>
+    <value>Planlagte Jobber</value>
   </data>
   <data name="Metrics_Servers" xml:space="preserve">
-    <value>Servers</value>
+    <value>Servere</value>
   </data>
   <data name="Metrics_SucceededJobs" xml:space="preserve">
-    <value>Succeeded Jobs</value>
+    <value>Vellykkede Jobber</value>
   </data>
   <data name="Metrics_TotalConnections" xml:space="preserve">
-    <value>Total Connections</value>
+    <value>Totalt antall tilkoblinger</value>
   </data>
   <data name="Common_Condition" xml:space="preserve">
-    <value>Condition</value>
+    <value>Betingelse</value>
   </data>
   <data name="Common_Continuations" xml:space="preserve">
-    <value>Continuations</value>
+    <value>Fortsettelser</value>
   </data>
   <data name="Metrics_AwaitingCount" xml:space="preserve">
-    <value>Awaiting</value>
+    <value>Venter</value>
   </data>
   <data name="Metrics_EnqueuedCountOrNull" xml:space="preserve">
-    <value>Enqueued</value>
+    <value>Satt i kø</value>
   </data>
   <data name="Metrics_EnqueuedQueuesCount" xml:space="preserve">
-    <value>Enqueued / Queues</value>
+    <value>Satt i kø / Køer</value>
   </data>
   <data name="Metrics_FailedCountOrNull" xml:space="preserve">
-    <value>{0} failed job(s) found. Retry or delete them manually.</value>
+    <value>{0} mislykkede jobber funnet. Sett dem tilbake i køen eller slett dem manuelt.</value>
   </data>
   <data name="HomePage_GraphHover_Failed" xml:space="preserve">
-    <value>Failed</value>
+    <value>Mislykket</value>
   </data>
   <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
-    <value>Succeeded</value>
+    <value>Vellykkede</value>
   </data>
   <data name="Common_Disabled" xml:space="preserve">
-    <value>Disabled</value>
+    <value>Deaktivert</value>
   </data>
   <data name="RecurringJobsPage_RecurringJobDisabled_Tooltip" xml:space="preserve">
-    <value>Cron expression is invalid or don't have any occurrences over the next 100 years</value>
+    <value>Cron-uttrykket er ugyldig eller har ingen forekomster i løpet av de neste 100 årene</value>
   </data>
   <data name="ServersPage_Note_Text" xml:space="preserve">
-    <value>Some of the servers don't have heartbeat reported within the last minute and may be aborted. If they don't report heartbeat in the near future, they will be removed automatically after timeout is exceeded, no manual action is required.
-                    Incomplete background jobs running on those servers will be re-queued automatically, but you can speed up the process by checking the &lt;a href="{0}"&gt;Processing Jobs&lt;/a&gt; page.</value>
+    <value>Noen av serverne har ikke rapportert livstegn i løpet av det siste minuttet og kan bli avbrutt. Hvis ikke de rapporterer livstegn i nær fremtid, vil de automatisk bli fjernet etter et tidsavbrudd. Det kreves ingen manuell handling.
+                    Ufullstendige bakgrunnsjobber som kjører på disse serverne vil bli satt i kø på nytt automatisk, men du kan fremskynde prosessen ved å sjekke &lt;a href="{0}"&gt;Jobber til Behandling&lt;/a&gt;.</value>
   </data>
   <data name="ServersPage_Note_Title" xml:space="preserve">
-    <value>Aborted servers will be removed automatically</value>
+    <value>Avbrutte servere fjernes automatisk</value>
   </data>
   <data name="ServersPage_Active" xml:space="preserve">
-    <value>Active</value>
+    <value>Aktive</value>
   </data>
   <data name="ServersPage_Possibly_Aborted" xml:space="preserve">
-    <value>Possibly aborted</value>
+    <value>Muligens avbrutt</value>
   </data>
   <data name="Common_Error" xml:space="preserve">
-    <value>Error</value>
+    <value>Feil</value>
   </data>
   <data name="JobDetailsPage_Parameters" xml:space="preserve">
-    <value>Parameters</value>
+    <value>Parametere</value>
   </data>
 </root>

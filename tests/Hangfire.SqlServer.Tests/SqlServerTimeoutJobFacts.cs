@@ -25,8 +25,9 @@ namespace Hangfire.SqlServer.Tests
             Assert.Equal("storage", exception.ParamName);
         }
 
-        [Fact, CleanDatabase]
-        public void Ctor_ThrowsAnException_WhenJobIdIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Ctor_ThrowsAnException_WhenJobIdIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection((sql, storage) =>
             {
@@ -34,11 +35,12 @@ namespace Hangfire.SqlServer.Tests
                     () => new SqlServerTimeoutJob(storage, 1, null, Queue, FetchedAt));
 
                 Assert.Equal("jobId", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Ctor_ThrowsAnException_WhenQueueIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Ctor_ThrowsAnException_WhenQueueIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection((sql, storage) =>
             {
@@ -46,11 +48,12 @@ namespace Hangfire.SqlServer.Tests
                     () => new SqlServerTimeoutJob(storage, 1, JobId, null, FetchedAt));
 
                 Assert.Equal("queue", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Ctor_CorrectlySets_AllInstanceProperties()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Ctor_CorrectlySets_AllInstanceProperties(bool useMicrosoftDataSqlClient)
         {
             UseConnection((sql, storage) =>
             {
@@ -61,11 +64,12 @@ namespace Hangfire.SqlServer.Tests
                     Assert.Equal(Queue, fetchedJob.Queue);
                     Assert.Equal(FetchedAt, fetchedJob.FetchedAt);
                 }
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void RemoveFromQueue_ReallyDeletesTheJobFromTheQueue()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void RemoveFromQueue_ReallyDeletesTheJobFromTheQueue(bool useMicrosoftDataSqlClient)
         {
             UseConnection((sql, storage) =>
             {
@@ -73,6 +77,8 @@ namespace Hangfire.SqlServer.Tests
                 var id = CreateJobQueueRecord(sql, "1", "default", FetchedAt);
                 using (var processingJob = new SqlServerTimeoutJob(storage, id, "1", "default", FetchedAt))
                 {
+                    processingJob.DisposeTimer();
+
                     // Act
                     processingJob.RemoveFromQueue();
 
@@ -80,11 +86,12 @@ namespace Hangfire.SqlServer.Tests
                     var count = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].JobQueue").Single();
                     Assert.Equal(0, count);
                 }
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void RemoveFromQueue_DoesNotDelete_UnrelatedJobs()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void RemoveFromQueue_DoesNotDelete_UnrelatedJobs(bool useMicrosoftDataSqlClient)
         {
             UseConnection((sql, storage) =>
             {
@@ -95,6 +102,8 @@ namespace Hangfire.SqlServer.Tests
 
                 using (var fetchedJob = new SqlServerTimeoutJob(storage, 999, "1", "default", FetchedAt))
                 {
+                    fetchedJob.DisposeTimer();
+
                     // Act
                     fetchedJob.RemoveFromQueue();
 
@@ -102,11 +111,12 @@ namespace Hangfire.SqlServer.Tests
                     var count = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].JobQueue").Single();
                     Assert.Equal(3, count);
                 }
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Requeue_SetsFetchedAtValueToNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Requeue_SetsFetchedAtValueToNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection((sql, storage) =>
             {
@@ -114,6 +124,8 @@ namespace Hangfire.SqlServer.Tests
                 var id = CreateJobQueueRecord(sql, "1", "default", FetchedAt);
                 using (var processingJob = new SqlServerTimeoutJob(storage, id, "1", "default", FetchedAt))
                 {
+                    processingJob.DisposeTimer();
+
                     // Act
                     processingJob.Requeue();
 
@@ -121,11 +133,12 @@ namespace Hangfire.SqlServer.Tests
                     var record = sql.Query($"select * from [{Constants.DefaultSchema}].JobQueue").Single();
                     Assert.Null(record.FetchedAt);
                 }
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Timer_UpdatesFetchedAtColumn()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Timer_UpdatesFetchedAtColumn(bool useMicrosoftDataSqlClient)
         {
             UseConnection((sql, storage) =>
             {
@@ -134,6 +147,7 @@ namespace Hangfire.SqlServer.Tests
                 using (var processingJob = new SqlServerTimeoutJob(storage, id, "1", "default", FetchedAt))
                 {
                     Thread.Sleep(TimeSpan.FromSeconds(10));
+                    processingJob.DisposeTimer();
 
                     var record = sql.Query($"select * from [{Constants.DefaultSchema}].JobQueue").Single();
 
@@ -142,11 +156,12 @@ namespace Hangfire.SqlServer.Tests
                     var now = DateTime.UtcNow;
                     Assert.True(now.AddSeconds(-5) < record.FetchedAt, (now - record.FetchedAt).ToString());
                 }
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void RemoveFromQueue_AfterTimer_RemovesJobFromTheQueue()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void RemoveFromQueue_AfterTimer_RemovesJobFromTheQueue(bool useMicrosoftDataSqlClient)
         {
             UseConnection((sql, storage) =>
             {
@@ -155,6 +170,7 @@ namespace Hangfire.SqlServer.Tests
                 using (var processingJob = new SqlServerTimeoutJob(storage, id, "1", "default", FetchedAt))
                 {
                     Thread.Sleep(TimeSpan.FromSeconds(10));
+                    processingJob.DisposeTimer();
 
                     // Act
                     processingJob.RemoveFromQueue();
@@ -163,11 +179,12 @@ namespace Hangfire.SqlServer.Tests
                     var count = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].JobQueue").Single();
                     Assert.Equal(0, count);
                 }
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void RequeueQueue_AfterTimer_SetsFetchedAtValueToNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void RequeueQueue_AfterTimer_SetsFetchedAtValueToNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection((sql, storage) =>
             {
@@ -176,6 +193,7 @@ namespace Hangfire.SqlServer.Tests
                 using (var processingJob = new SqlServerTimeoutJob(storage, id, "1", "default", FetchedAt))
                 {
                     Thread.Sleep(TimeSpan.FromSeconds(10));
+                    processingJob.DisposeTimer();
 
                     // Act
                     processingJob.Requeue();
@@ -184,11 +202,12 @@ namespace Hangfire.SqlServer.Tests
                     var record = sql.Query($"select * from [{Constants.DefaultSchema}].JobQueue").Single();
                     Assert.Null(record.FetchedAt);
                 }
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Dispose_SetsFetchedAtValueToNull_IfThereWereNoCallsToComplete()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dispose_SetsFetchedAtValueToNull_IfThereWereNoCallsToComplete(bool useMicrosoftDataSqlClient)
         {
             UseConnection((sql, storage) =>
             {
@@ -203,7 +222,7 @@ namespace Hangfire.SqlServer.Tests
                     var record = sql.Query($"select * from [{Constants.DefaultSchema}].JobQueue").Single();
                     Assert.Null(record.FetchedAt);
                 }
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         private static int CreateJobQueueRecord(IDbConnection connection, string jobId, string queue, DateTime? fetchedAt)
@@ -216,9 +235,9 @@ select scope_identity() as Id";
             return (int)connection.Query(arrangeSql, new { id = jobId, queue, fetchedAt }).Single().Id;
         }
 
-        private static void UseConnection(Action<IDbConnection, SqlServerStorage> action)
+        private static void UseConnection(Action<IDbConnection, SqlServerStorage> action, bool useMicrosoftDataSqlClient)
         {
-            using (var connection = ConnectionUtils.CreateConnection())
+            using (var connection = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient))
             {
                 var storage = new SqlServerStorage(
                     connection,

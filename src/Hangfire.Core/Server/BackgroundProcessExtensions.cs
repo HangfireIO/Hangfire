@@ -136,7 +136,7 @@ namespace Hangfire.Server
             int threadCount,
             [NotNull] string threadName,
             [NotNull] ThreadStart threadStart,
-            [CanBeNull] Action<Thread> threadConfig)
+            [CanBeNull] Action<Thread> threadConfig = null)
         {
             if (threadName == null) throw new ArgumentNullException(nameof(threadName));
             if (threadStart == null) throw new ArgumentNullException(nameof(threadStart));

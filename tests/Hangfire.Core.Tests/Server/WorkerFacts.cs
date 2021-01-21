@@ -120,7 +120,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_MovesAJobToTheFailedState_WhenStateChangerThrowsAnException()
+        public void Execute_MovesAJobToTheFailedState_WithFiltersDisabled_WhenStateChangerThrowsAnException()
         {
             _stateChanger
                 .Setup(x => x.ChangeState(It.Is<StateChangeContext>(y => y.NewState.Name != FailedState.StateName)))
@@ -130,7 +130,9 @@ namespace Hangfire.Core.Tests.Server
 
             worker.Execute(_context.Object);
 
-            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(y => y.NewState.Name == FailedState.StateName)));
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(y =>
+                y.NewState.Name == FailedState.StateName &&
+                y.DisableFilters == true)));
 
             _fetchedJob.Verify(x => x.RemoveFromQueue(), Times.Once);
             _fetchedJob.Verify(x => x.Requeue(), Times.Never);
@@ -183,6 +185,17 @@ namespace Hangfire.Core.Tests.Server
                 ctx.NewState is ProcessingState &&
                 ctx.ExpectedStates.ElementAt(0) == EnqueuedState.StateName &&
                 ctx.ExpectedStates.ElementAt(1) == ProcessingState.StateName)));
+        }
+
+        [Fact]
+        public void Execute_DoesNotDisableFilters_DuringNormalOperation()
+        {
+            var worker = CreateWorker();
+
+            worker.Execute(_context.Object);
+
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.DisableFilters == false)));
         }
 
         [Fact]
@@ -286,6 +299,20 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void Execute_PassesCustomData_BetweenContexts_OnSucceededStateTransition()
+        {
+            var worker = CreateWorker();
+            _performer.Setup(x => x.Perform(It.IsNotNull<PerformContext>()))
+                .Callback<PerformContext>(ctx => ctx.Items.Add("Key", "Value"));
+
+            worker.Execute(_context.Object);
+
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.NewState is SucceededState &&
+                ctx.CustomData["Key"].Equals("Value"))));
+        }
+
+        [Fact]
         public void Execute_MovesJob_ToFailedState_IfThereWasInternalException()
         {
             // Arrange
@@ -303,7 +330,23 @@ namespace Hangfire.Core.Tests.Server
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.BackgroundJobId == JobId &&
                 ctx.NewState is FailedState &&
-                ((FailedState) ctx.NewState).Exception == exception)));
+                ((FailedState) ctx.NewState).Exception == exception &&
+                ctx.DisableFilters == false)));
+        }
+
+        [Fact]
+        public void Execute_DoesNotPassCustomData_BetweenContexts_OnFailedStateTransition()
+        {
+            var worker = CreateWorker();
+            _performer.Setup(x => x.Perform(It.IsNotNull<PerformContext>()))
+                .Callback<PerformContext>(ctx => ctx.Items.Add("Key", "Value"))
+                .Throws<Exception>();
+
+            worker.Execute(_context.Object);
+
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.NewState is FailedState &&
+                ctx.CustomData == null)));
         }
 
         [Fact]
@@ -323,7 +366,8 @@ namespace Hangfire.Core.Tests.Server
             // Assert
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.BackgroundJobId == JobId &&
-                ctx.NewState is FailedState)));
+                ctx.NewState is FailedState &&
+                ctx.DisableFilters == false)));
         }
 
         [Fact]
@@ -340,7 +384,8 @@ namespace Hangfire.Core.Tests.Server
 
             // Assert
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
-                ctx.NewState is FailedState)));
+                ctx.NewState is FailedState &&
+                ctx.DisableFilters == false)));
         }
 
         private Worker CreateWorker(int maxStateChangeAttempts = 10)

@@ -166,7 +166,7 @@ namespace Hangfire.Core.Tests.Processing
         [Fact]
         public void WaitOne_ReturnsFalseImmediately_WhenNotSignaled_AndTimeoutIsZero()
         {
-             var result = TaskExtensions.WaitOne(_mre, TimeSpan.Zero, _cts.Token);
+             var result = TaskExtensions.WaitOne(_mre, TimeSpan.Zero, CancellationToken.None);
 
              Assert.False(result);
         }
@@ -175,7 +175,7 @@ namespace Hangfire.Core.Tests.Processing
         public void WaitOne_WaitsAndReturnsFalse_WhenNotSignaled_AndNonNullTimeout()
         {
             var sw = Stopwatch.StartNew();
-            var result = TaskExtensions.WaitOne(_mre, TimeSpan.FromMilliseconds(100), _cts.Token);
+            var result = TaskExtensions.WaitOne(_mre, TimeSpan.FromMilliseconds(100), CancellationToken.None);
             sw.Stop();
 
             Assert.False(result);

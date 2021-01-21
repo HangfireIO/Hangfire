@@ -1,5 +1,5 @@
 // This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright Â© 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -115,6 +115,7 @@ namespace Hangfire.Server
                             connection, 
                             fetchedJob, 
                             processingState, 
+                            null,
                             new[] { EnqueuedState.StateName, ProcessingState.StateName },
                             linkedCts.Token,
                             context.StoppingToken);
@@ -135,12 +136,20 @@ namespace Hangfire.Server
                     // it was performed to guarantee that it was performed AT LEAST once.
                     // It will be re-queued after the JobTimeout was expired.
 
-                    var state = PerformJob(context, connection, fetchedJob.JobId);
+                    var state = PerformJob(context, connection, fetchedJob.JobId, out var customData);
 
                     if (state != null)
                     {
                         // Ignore return value, because we should not do anything when current state is not Processing.
-                        TryChangeState(context, connection, fetchedJob, state, new[] { ProcessingState.StateName }, CancellationToken.None, context.ShutdownToken);
+                        TryChangeState(
+                            context,
+                            connection,
+                            fetchedJob,
+                            state,
+                            customData,
+                            new[] { ProcessingState.StateName },
+                            CancellationToken.None,
+                            context.ShutdownToken);
                     }
 
                     // Checkpoint #4. The job was performed, and it is in the one
@@ -177,6 +186,7 @@ namespace Hangfire.Server
             IStorageConnection connection, 
             IFetchedJob fetchedJob,
             IState state,
+            IReadOnlyDictionary<string, object> customData,
             string[] expectedStates,
             CancellationToken initializeToken,
             CancellationToken abortToken)
@@ -195,8 +205,10 @@ namespace Hangfire.Server
                         fetchedJob.JobId,
                         state,
                         expectedStates,
+                        disableFilters: false,
                         initializeToken,
-                        _profiler));
+                        _profiler,
+                        customData));
                 }
                 catch (Exception ex)
                 {
@@ -221,6 +233,7 @@ namespace Hangfire.Server
                 fetchedJob.JobId,
                 new FailedState(exception) { Reason = $"Failed to change state to a '{state.Name}' one due to an exception after {_maxStateChangeAttempts} retry attempts" },
                 expectedStates,
+                disableFilters: true,
                 initializeToken,
                 _profiler));
         }
@@ -237,8 +250,14 @@ namespace Hangfire.Server
             }
         }
 
-        private IState PerformJob(BackgroundProcessContext context, IStorageConnection connection, string jobId)
+        private IState PerformJob(
+            BackgroundProcessContext context,
+            IStorageConnection connection,
+            string jobId,
+            out IReadOnlyDictionary<string, object> customData)
         {
+            customData = null;
+
             try
             {
                 var jobData = connection.GetJobData(jobId);
@@ -265,6 +284,7 @@ namespace Hangfire.Server
                     var result = _performer.Perform(performContext);
                     duration.Stop();
 
+                    customData = new Dictionary<string, object>(performContext.Items);
                     return new SucceededState(result, (long) latency, duration.ElapsedMilliseconds);
                 }
             }

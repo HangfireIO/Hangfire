@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,435 +117,406 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Common_Created" xml:space="preserve">
+    <value>Erstellt</value>
+  </data>
   <data name="AwaitingJobsPage_ContinuationsWarning_Text" xml:space="preserve">
-    <value>Don't worry, continuations are working as expected. But your current job storage does not support some queries required to show this page. Please try to update your storage or wait until the full command set is implemented.</value>
+    <value>Keine Sorge, die Ausführungen funktionieren wie erwartet. Die aktuelle Job Speicherung unterstützt jedoch einige Abfragen welche zum Anzeigen dieser Seite erforderlich sind NICHT. Bitte versuchen den Speicher zu aktualisieren oder warten bis der vollständige Ablauf implementiert ist.</value>
   </data>
   <data name="AwaitingJobsPage_ContinuationsWarning_Title" xml:space="preserve">
-    <value>Continuations are working, but this page can't be displayed</value>
+    <value>Weitere Ausführungen funktionieren. Nur diese Seite kann nicht angezeigt werden</value>
   </data>
   <data name="AwaitingJobsPage_NoJobs" xml:space="preserve">
-    <value>No jobs found in awaiting state.</value>
+    <value>Keine Jobs im wartenden Zustand gefunden.</value>
   </data>
   <data name="AwaitingJobsPage_Table_Options" xml:space="preserve">
-    <value>Options</value>
+    <value>Optionen</value>
   </data>
   <data name="AwaitingJobsPage_Table_Parent" xml:space="preserve">
-    <value>Parent</value>
+    <value>Eltern</value>
   </data>
   <data name="AwaitingJobsPage_Title" xml:space="preserve">
-    <value>Awaiting Jobs</value>
-  </data>
-  <data name="Common_Created" xml:space="preserve">
-    <value>Created</value>
+    <value>Warten auf Jobs</value>
   </data>
   <data name="Common_Delete" xml:space="preserve">
-    <value>Delete</value>
+    <value>Löschen</value>
   </data>
   <data name="Common_DeleteConfirm" xml:space="preserve">
-    <value>Do you really want to DELETE ALL selected jobs?</value>
+    <value>Wirklich ALLE ausgewählten Jobs LÖSCHEN?</value>
   </data>
   <data name="Common_Deleting" xml:space="preserve">
-    <value>Deleting...</value>
+    <value>Löschen...</value>
   </data>
   <data name="Common_DeleteSelected" xml:space="preserve">
-    <value>Delete selected</value>
+    <value>Ausgewählte löschen</value>
   </data>
   <data name="Common_EnqueueButton_Text" xml:space="preserve">
-    <value>Enqueue jobs</value>
+    <value>In die Warteschlange</value>
   </data>
   <data name="Common_Enqueueing" xml:space="preserve">
-    <value>Enqueueing...</value>
+    <value>Warteschlange abarbeiten...</value>
   </data>
   <data name="Common_Fetched" xml:space="preserve">
-    <value>Fetched</value>
+    <value>Abgerufen</value>
   </data>
   <data name="Common_Id" xml:space="preserve">
-    <value>Id</value>
+    <value>ID</value>
   </data>
   <data name="Common_Job" xml:space="preserve">
     <value>Job</value>
   </data>
   <data name="Common_JobExpired" xml:space="preserve">
-    <value>Job expired.</value>
+    <value>Job abgelaufen.</value>
   </data>
   <data name="Common_JobStateChanged_Text" xml:space="preserve">
-    <value>Job's state has been changed while fetching data.</value>
+    <value>Der Jobstatus wurde beim Abrufen von Daten geändert.</value>
   </data>
   <data name="Common_LessDetails" xml:space="preserve">
-    <value>Fewer details...</value>
+    <value>Weniger Details...</value>
   </data>
   <data name="Common_MoreDetails" xml:space="preserve">
-    <value>More details...</value>
+    <value>Weitere Details...</value>
   </data>
   <data name="Common_NotAvailable" xml:space="preserve">
     <value>N/A</value>
   </data>
   <data name="Common_PeriodDay" xml:space="preserve">
-    <value>Day</value>
+    <value>Tag</value>
   </data>
   <data name="Common_PeriodWeek" xml:space="preserve">
-    <value>Week</value>
+    <value>Woche</value>
   </data>
   <data name="Common_Reason" xml:space="preserve">
-    <value>Reason</value>
+    <value>Grund</value>
   </data>
   <data name="Common_RequeueJobs" xml:space="preserve">
-    <value>Requeue jobs</value>
+    <value>Wieder in die Warteschlange</value>
   </data>
   <data name="Common_Retry" xml:space="preserve">
-    <value>Retry</value>
+    <value>Wiederholen</value>
   </data>
   <data name="Common_Server" xml:space="preserve">
     <value>Server</value>
   </data>
   <data name="Common_State" xml:space="preserve">
-    <value>State</value>
+    <value>Status</value>
   </data>
   <data name="Common_Unknown" xml:space="preserve">
-    <value>Unknown</value>
+    <value>Unbekannt</value>
   </data>
   <data name="DeletedJobsPage_NoJobs" xml:space="preserve">
-    <value>No deleted jobs found.</value>
+    <value>Keine gelöschten Jobs gefunden.</value>
   </data>
   <data name="DeletedJobsPage_Table_Deleted" xml:space="preserve">
-    <value>Deleted</value>
+    <value>Gelöscht</value>
   </data>
   <data name="DeletedJobsPage_Title" xml:space="preserve">
-    <value>Deleted Jobs</value>
+    <value>Gelöschte Jobs</value>
   </data>
   <data name="EnqueuedJobsPage_NoJobs" xml:space="preserve">
-    <value>The queue is empty.</value>
+    <value>Die Warteschlange ist leer.</value>
   </data>
   <data name="EnqueuedJobsPage_Title" xml:space="preserve">
-    <value>Enqueued jobs</value>
-  </data>
-  <data name="FailedJobsPage_FailedJobsNotExpire_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;Failed jobs do not become expired&lt;/strong&gt; to allow you to re-queue them without any
-                time pressure. You should re-queue or delete them manually, or apply &lt;code&gt;AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)&lt;/code&gt;
-                attribute to delete them automatically.</value>
+    <value>Jobs in Warteschlange</value>
   </data>
   <data name="FailedJobsPage_NoJobs" xml:space="preserve">
-    <value>You have no failed jobs at the moment.</value>
+    <value>Zur Zeit gibt es keine fehlgeschlagenen Jobs.</value>
   </data>
   <data name="FailedJobsPage_Table_Failed" xml:space="preserve">
-    <value>Failed</value>
+    <value>Fehler</value>
   </data>
   <data name="FailedJobsPage_Title" xml:space="preserve">
-    <value>Failed Jobs</value>
+    <value>Fehlerhafte Jobs</value>
   </data>
   <data name="FetchedJobsPage_NoJobs" xml:space="preserve">
-    <value>The queue is empty.</value>
+    <value>Die Warteschlange ist leer.</value>
   </data>
   <data name="FetchedJobsPage_Title" xml:space="preserve">
-    <value>Fetched jobs</value>
+    <value>Jobs abgerufen</value>
   </data>
   <data name="HomePage_HistoryGraph" xml:space="preserve">
-    <value>History graph</value>
+    <value>Zeigt für jede CPU-Auslastung ein Verlaufsdiagramm an.</value>
   </data>
   <data name="HomePage_RealtimeGraph" xml:space="preserve">
-    <value>Realtime graph</value>
+    <value>Echtzeitdiagramm</value>
   </data>
   <data name="HomePage_Title" xml:space="preserve">
-    <value>Overview</value>
+    <value>Übersicht</value>
   </data>
   <data name="JobDetailsPage_Created" xml:space="preserve">
-    <value>Created</value>
+    <value>Erstellt</value>
   </data>
   <data name="JobDetailsPage_DeleteConfirm" xml:space="preserve">
-    <value>Do you really want to delete this job?</value>
+    <value>Möchten Sie diesen Job wirklich löschen?</value>
   </data>
   <data name="JobDetailsPage_State" xml:space="preserve">
-    <value>State</value>
-  </data>
-  <data name="JobDetailsPage_JobAbortedNotActive_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;The job was aborted&lt;/strong&gt; – it is processed by server
-                        &lt;code&gt;{0}&lt;/code&gt; which is not in the 
-                        &lt;a href="{1}"&gt;active servers&lt;/a&gt; list for now.
-                        It will be retried automatically after invisibility timeout, but you can
-                        also re-queue or delete it manually.</value>
+    <value>Status</value>
   </data>
   <data name="JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;Looks like the job was aborted&lt;/strong&gt; – it is processed by server
-                        &lt;code&gt;{0}&lt;/code&gt;, which reported its heartbeat more than 1 minute ago.
-                        It will be retried automatically after invisibility timeout, but you can
-                        also re-queue or delete it manually.</value>
+    <value>&lt;strong&gt;Der Job wurde anscheinend abgebrochen&lt;/strong&gt; - er wird vom Server verarbeitet &lt;code&gt;{0}&lt;/code&gt;, welcher sich vor mehr als 1 Minute gemeldet hat. Es wird nach dem Timeout automatisch wiederholt. Alternativ kann der Job kann auch manuell in die Warteschlange gestellt oder löscht werden.</value>
   </data>
   <data name="JobDetailsPage_JobExpired" xml:space="preserve">
-    <value>Background job '{0}' has expired or could not be found on the server.</value>
+    <value>Der Warteschlangen Job '{0}' ist abgelaufen oder wurde auf dem Server nicht gefunden.</value>
   </data>
   <data name="JobDetailsPage_JobFinished_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;The job is finished&lt;/strong&gt;.
-                    It will be removed automatically &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;.</value>
+    <value>&lt;strong&gt;Der Job ist beendet&lt;/strong&gt;. Er wird automatisch entfernt &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;.</value>
   </data>
   <data name="JobDetailsPage_JobId" xml:space="preserve">
     <value>Job ID</value>
   </data>
   <data name="JobDetailsPage_Requeue" xml:space="preserve">
-    <value>Requeue</value>
+    <value>Erneut in Warteschlange einreihen</value>
   </data>
   <data name="LayoutPage_Back" xml:space="preserve">
-    <value>Back to site</value>
+    <value>Zurück zur Website</value>
   </data>
   <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
-    <value>Generated: {0}ms</value>
+    <value>Generiert: {0} ms</value>
   </data>
   <data name="LayoutPage_Footer_Time" xml:space="preserve">
-    <value>Time:</value>
+    <value>Zeit:</value>
   </data>
   <data name="Paginator_Next" xml:space="preserve">
-    <value>Next</value>
+    <value>Weiter</value>
   </data>
   <data name="Paginator_Prev" xml:space="preserve">
-    <value>Prev</value>
+    <value>Zurück</value>
   </data>
   <data name="Paginator_TotalItems" xml:space="preserve">
-    <value>Total items</value>
+    <value>Gesamtzahl der Elemente</value>
   </data>
   <data name="PerPageSelector_ItemsPerPage" xml:space="preserve">
-    <value>Items per page</value>
+    <value>Elemente pro Seite</value>
   </data>
   <data name="ProcessingJobsPage_Aborted" xml:space="preserve">
-    <value>Looks like the job was aborted</value>
+    <value>Der Job wurde anscheinend abgebrochen</value>
   </data>
   <data name="ProcessingJobsPage_NoJobs" xml:space="preserve">
-    <value>No jobs are being processed right now.</value>
+    <value>Derzeit werden keine Jobs verarbeitet.</value>
   </data>
   <data name="ProcessingJobsPage_Table_Started" xml:space="preserve">
-    <value>Started</value>
+    <value>Gestartet</value>
   </data>
   <data name="ProcessingJobsPage_Title" xml:space="preserve">
-    <value>Processing Jobs</value>
+    <value>Jobs bearbeiten</value>
   </data>
   <data name="QueuesPage_NoJobs" xml:space="preserve">
-    <value>No jobs queued.</value>
+    <value>Keine Jobs in der Warteschlange.</value>
   </data>
   <data name="QueuesPage_NoQueues" xml:space="preserve">
-    <value>No queued jobs found. Try to enqueue a job.</value>
+    <value>Es wurden keine Jobs in der Warteschlange gefunden. Versuche einen Job in die Warteschlange zu stellen.</value>
   </data>
   <data name="QueuesPage_Table_Length" xml:space="preserve">
-    <value>Length</value>
+    <value>Länge</value>
   </data>
   <data name="QueuesPage_Table_NextsJobs" xml:space="preserve">
-    <value>Next jobs</value>
+    <value>Nächster Job</value>
   </data>
   <data name="QueuesPage_Table_Queue" xml:space="preserve">
-    <value>Queue</value>
+    <value>Warteschlange</value>
   </data>
   <data name="QueuesPage_Title" xml:space="preserve">
-    <value>Queues</value>
+    <value>Warteschlangen</value>
   </data>
   <data name="RecurringJobsPage_Canceled" xml:space="preserve">
-    <value>Canceled</value>
+    <value>Abgebrochen</value>
   </data>
   <data name="RecurringJobsPage_NoJobs" xml:space="preserve">
-    <value>No recurring jobs found.</value>
+    <value>Keine wiederkehrenden Jobs gefunden.</value>
   </data>
   <data name="RecurringJobsPage_Table_Cron" xml:space="preserve">
-    <value>Cron</value>
+    <value>CRON-Ausdruck</value>
   </data>
   <data name="RecurringJobsPage_Table_LastExecution" xml:space="preserve">
-    <value>Last execution</value>
+    <value>Zeitpunkt der letzten Ausführung</value>
   </data>
   <data name="RecurringJobsPage_Table_NextExecution" xml:space="preserve">
-    <value>Next execution</value>
+    <value>Nächste Ausführung</value>
   </data>
   <data name="RecurringJobsPage_Table_TimeZone" xml:space="preserve">
-    <value>Time zone</value>
+    <value>Zeitzone</value>
   </data>
   <data name="RecurringJobsPage_Title" xml:space="preserve">
-    <value>Recurring jobs</value>
+    <value>Wiederholte Jobs</value>
   </data>
   <data name="RecurringJobsPage_Triggering" xml:space="preserve">
-    <value>Triggering...</value>
+    <value>Auslöser</value>
   </data>
   <data name="RecurringJobsPage_TriggerNow" xml:space="preserve">
-    <value>Trigger now</value>
+    <value>Jetzt auslösen</value>
   </data>
   <data name="RetriesPage_NoJobs" xml:space="preserve">
-    <value>All is OK – you have no retries.</value>
+    <value>Ausführung abgeschlossen - Wiederholungsversuche notwendig.</value>
   </data>
   <data name="RetriesPage_Title" xml:space="preserve">
-    <value>Retries</value>
-  </data>
-  <data name="RetriesPage_Warning_Html" xml:space="preserve">
-    <value>&lt;h4&gt;Retries are working, but this page can't be displayed&lt;/h4&gt;
-        &lt;p&gt;
-            Don't worry, retries are working as expected. Your current job storage does not support
-            some queries required to show this page. Please try to update your storage or wait until
-            the full command set is implemented.
-        &lt;/p&gt;
-        &lt;p&gt;
-            Please go to the &lt;a href="{0}"&gt;Scheduled jobs&lt;/a&gt; page to see all the
-            scheduled jobs including retries.
-        &lt;/p&gt;</value>
+    <value>Erneute Versuche</value>
   </data>
   <data name="ScheduledJobsPage_EnqueueNow" xml:space="preserve">
-    <value>Enqueue now</value>
+    <value>Jetzt in Warteschlange einfügen</value>
   </data>
   <data name="ScheduledJobsPage_NoJobs" xml:space="preserve">
-    <value>There are no scheduled jobs.</value>
+    <value>Es sind keine Jobs geplant.</value>
   </data>
   <data name="ScheduledJobsPage_Table_Enqueue" xml:space="preserve">
-    <value>Enqueue</value>
+    <value>In der Warteschlange </value>
   </data>
   <data name="ScheduledJobsPage_Table_Scheduled" xml:space="preserve">
-    <value>Scheduled</value>
+    <value>Geplant </value>
   </data>
   <data name="ScheduledJobsPage_Title" xml:space="preserve">
-    <value>Scheduled Jobs</value>
+    <value>Geplante Jobs</value>
   </data>
   <data name="ServersPage_NoServers" xml:space="preserve">
-    <value>There are no active servers. Background tasks will not be processed.</value>
+    <value>Es sind keine Server aktiv. Warteschlange kann nicht nicht verarbeitet werden.</value>
   </data>
   <data name="ServersPage_Table_Heartbeat" xml:space="preserve">
-    <value>Heartbeat</value>
+    <value>Rückmeldung</value>
   </data>
   <data name="ServersPage_Table_Name" xml:space="preserve">
     <value>Name</value>
   </data>
   <data name="ServersPage_Table_Queues" xml:space="preserve">
-    <value>Queues</value>
+    <value>Warteschlangen</value>
   </data>
   <data name="ServersPage_Table_Started" xml:space="preserve">
-    <value>Started</value>
+    <value>Gestartet</value>
   </data>
   <data name="ServersPage_Table_Workers" xml:space="preserve">
-    <value>Workers</value>
+    <value>Worker</value>
   </data>
   <data name="ServersPage_Title" xml:space="preserve">
-    <value>Servers</value>
+    <value>Server</value>
   </data>
   <data name="SucceededJobsPage_NoJobs" xml:space="preserve">
-    <value>No succeeded jobs found.</value>
+    <value>Es wurden keine erfolgreichen Jobs gefunden.</value>
   </data>
   <data name="SucceededJobsPage_Table_Succeeded" xml:space="preserve">
-    <value>Succeeded</value>
+    <value>Erfolgreich</value>
   </data>
   <data name="SucceededJobsPage_Table_TotalDuration" xml:space="preserve">
-    <value>Total Duration</value>
+    <value>Gesamtdauer</value>
   </data>
   <data name="SucceededJobsPage_Title" xml:space="preserve">
-    <value>Succeeded Jobs</value>
+    <value>Erfolgreiche Jobs</value>
   </data>
   <data name="JobsSidebarMenu_Awaiting" xml:space="preserve">
-    <value>Awaiting</value>
+    <value>Warten</value>
   </data>
   <data name="JobsSidebarMenu_Deleted" xml:space="preserve">
-    <value>Deleted</value>
+    <value>Gelöscht</value>
   </data>
   <data name="JobsSidebarMenu_Failed" xml:space="preserve">
-    <value>Failed</value>
+    <value>Fehler</value>
   </data>
   <data name="JobsSidebarMenu_Processing" xml:space="preserve">
-    <value>Processing</value>
+    <value>Verarbeiten...</value>
   </data>
   <data name="JobsSidebarMenu_Scheduled" xml:space="preserve">
-    <value>Scheduled</value>
+    <value>Geplant</value>
   </data>
   <data name="JobsSidebarMenu_Succeeded" xml:space="preserve">
-    <value>Succeeded</value>
+    <value>Erfolgreich</value>
   </data>
   <data name="NavigationMenu_Jobs" xml:space="preserve">
-    <value>Jobs</value>
+    <value>Aufträge</value>
   </data>
   <data name="NavigationMenu_RecurringJobs" xml:space="preserve">
-    <value>Recurring Jobs</value>
+    <value>Wiederholte Auftrage</value>
   </data>
   <data name="NavigationMenu_Retries" xml:space="preserve">
-    <value>Retries</value>
+    <value>Erneute Versuche</value>
   </data>
   <data name="NavigationMenu_Servers" xml:space="preserve">
-    <value>Servers</value>
+    <value>Server</value>
   </data>
   <data name="Common_CannotFindTargetMethod" xml:space="preserve">
-    <value>Can not find the target method.</value>
+    <value>Die Zielmethode konnte nicht gefunden wurde. </value>
   </data>
   <data name="Common_Enqueued" xml:space="preserve">
-    <value>Enqueued</value>
+    <value>Zeit in Warteschlange</value>
   </data>
   <data name="Common_NoState" xml:space="preserve">
-    <value>No state</value>
+    <value>Kein Zustand</value>
   </data>
   <data name="JobsSidebarMenu_Enqueued" xml:space="preserve">
-    <value>Enqueued</value>
+    <value>Zeit in Warteschlange</value>
   </data>
   <data name="Metrics_ActiveConnections" xml:space="preserve">
-    <value>Active Connections</value>
+    <value>Aktive Verbindungen</value>
   </data>
   <data name="Metrics_DeletedJobs" xml:space="preserve">
-    <value>Deleted Jobs</value>
+    <value>Gelöschte Jobs</value>
   </data>
   <data name="Metrics_FailedJobs" xml:space="preserve">
-    <value>Failed Jobs</value>
+    <value>Fehlerhafte Aufträge</value>
   </data>
   <data name="Metrics_ProcessingJobs" xml:space="preserve">
-    <value>Processing Jobs</value>
+    <value>Warehouseverarbeitungsaufträge werden aktualisiert.</value>
   </data>
   <data name="Metrics_RecurringJobs" xml:space="preserve">
-    <value>Recurring Jobs</value>
+    <value>Wiederholte Auftrage</value>
   </data>
   <data name="Metrics_Retries" xml:space="preserve">
-    <value>Retries</value>
+    <value>Erneute Versuche</value>
   </data>
   <data name="Metrics_ScheduledJobs" xml:space="preserve">
-    <value>Scheduled Jobs</value>
+    <value>Geplante Aufträge</value>
   </data>
   <data name="Metrics_Servers" xml:space="preserve">
-    <value>Servers</value>
+    <value>Server</value>
   </data>
   <data name="Metrics_SucceededJobs" xml:space="preserve">
-    <value>Succeeded Jobs</value>
+    <value>Erfolgreiche Jobs</value>
   </data>
   <data name="Metrics_TotalConnections" xml:space="preserve">
-    <value>Total Connections</value>
+    <value>Verbindungen gesamt</value>
   </data>
   <data name="Common_Condition" xml:space="preserve">
-    <value>Condition</value>
+    <value>Bedingung</value>
   </data>
   <data name="Common_Continuations" xml:space="preserve">
-    <value>Continuations</value>
+    <value>Ausführungen</value>
   </data>
   <data name="Metrics_AwaitingCount" xml:space="preserve">
-    <value>Awaiting</value>
+    <value>Warten</value>
   </data>
   <data name="Metrics_EnqueuedCountOrNull" xml:space="preserve">
-    <value>Enqueued</value>
+    <value>in Warteschlange</value>
   </data>
   <data name="Metrics_EnqueuedQueuesCount" xml:space="preserve">
-    <value>Enqueued / Queues</value>
+    <value>Warteschlangen</value>
   </data>
   <data name="Metrics_FailedCountOrNull" xml:space="preserve">
-    <value>{0} failed job(s) found. Retry or delete them manually.</value>
+    <value>{0} fehlgeschlagene Jobs gefunden. Manuell wiederholen oder löschen erforderlich.</value>
   </data>
   <data name="HomePage_GraphHover_Failed" xml:space="preserve">
-    <value>Failed</value>
+    <value>Fehler</value>
   </data>
   <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
-    <value>Succeeded</value>
+    <value>Erfolgreich</value>
   </data>
   <data name="Common_Disabled" xml:space="preserve">
-    <value>Disabled</value>
+    <value>Deaktiviert</value>
   </data>
   <data name="RecurringJobsPage_RecurringJobDisabled_Tooltip" xml:space="preserve">
-    <value>Cron expression is invalid or don't have any occurrences over the next 100 years</value>
+    <value>Cron Ausdruck ist ungültig</value>
   </data>
   <data name="ServersPage_Note_Text" xml:space="preserve">
-    <value>Some of the servers don't have heartbeat reported within the last minute and may be aborted. If they don't report heartbeat in the near future, they will be removed automatically after timeout is exceeded, no manual action is required.
-                    Incomplete background jobs running on those servers will be re-queued automatically, but you can speed up the process by checking the &lt;a href="{0}"&gt;Processing Jobs&lt;/a&gt; page.</value>
+    <value>Einige der Server haben innerhalb der letzten Minute keine Rückmeldung zurück gemeldet und werden möglicherweise abgebrochen. Wenn die Server in naher Zukunft keine Rückmeldung geben, werden sie automatisch entfernt, nachdem das Zeitlimit überschritten wurde. Es sind keine manuellen Maßnahmen erforderlich.</value>
   </data>
   <data name="ServersPage_Note_Title" xml:space="preserve">
-    <value>Aborted servers will be removed automatically</value>
+    <value>Nicht aktive Server werden automatisch entfernt</value>
   </data>
   <data name="ServersPage_Active" xml:space="preserve">
-    <value>Active</value>
+    <value>Aktiv</value>
   </data>
   <data name="ServersPage_Possibly_Aborted" xml:space="preserve">
-    <value>Possibly aborted</value>
+    <value>Möglicherweise abgebrochen</value>
   </data>
   <data name="Common_Error" xml:space="preserve">
-    <value>Error</value>
+    <value>Fehler</value>
   </data>
   <data name="JobDetailsPage_Parameters" xml:space="preserve">
-    <value>Parameters</value>
+    <value>Parameter</value>
   </data>
 </root>

@@ -43,6 +43,7 @@ namespace Hangfire.States
             Transaction = applyContext.Transaction;
             CurrentState = applyContext.OldStateName;
             Profiler = applyContext.Profiler;
+            CustomData = applyContext.CustomData?.ToDictionary(x => x.Key, x => x.Value);
         }
         
         public override BackgroundJob BackgroundJob { get; }
@@ -59,7 +60,7 @@ namespace Hangfire.States
         [NotNull]
         public IState CandidateState
         {
-            get { return _candidateState; }
+            get => _candidateState;
             set
             {
                 if (value == null)
@@ -76,13 +77,16 @@ namespace Hangfire.States
         }
 
         [CanBeNull]
-        public string CurrentState { get; private set; }
+        public string CurrentState { get; }
 
         [NotNull]
         public IState[] TraversedStates => _traversedStates.ToArray();
 
         [NotNull]
         internal IProfiler Profiler { get; }
+
+        [CanBeNull]
+        public IDictionary<string, object> CustomData { get; }
 
         public void SetJobParameter<T>(string name, T value)
         {
