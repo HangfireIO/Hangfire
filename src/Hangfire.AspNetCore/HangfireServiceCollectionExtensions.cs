@@ -139,6 +139,24 @@ namespace Hangfire
 
             return services;
         }
+        
+        public static IServiceCollection AddHangfireServer(
+            [NotNull] this IServiceCollection services,
+            [NotNull] Action<IServiceProvider, BackgroundJobServerOptions> optionsAction)
+        {
+            if (services == null) throw new ArgumentNullException(nameof(services));
+            if (optionsAction == null) throw new ArgumentNullException(nameof(optionsAction));
+
+            services.AddTransient<IHostedService, BackgroundJobServerHostedService>(provider =>
+            {
+                var options = new BackgroundJobServerOptions();
+                optionsAction(provider, options);
+
+                return CreateBackgroundJobServerHostedService(provider, options);
+            });
+
+            return services;
+        }
 
         public static IServiceCollection AddHangfireServer([NotNull] this IServiceCollection services)
         {
