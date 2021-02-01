@@ -52,6 +52,7 @@ namespace Hangfire
 #endif
 
         public IEnumerable<IDashboardAuthorizationFilter> Authorization { get; set; }
+        public IEnumerable<IDashboardAsyncAuthorizationFilter> AsyncAuthorization { get; set; }
 
         public Func<DashboardContext, bool> IsReadOnlyFunc { get; set; }
         
