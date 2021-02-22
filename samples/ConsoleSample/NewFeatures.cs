@@ -18,7 +18,7 @@ namespace ConsoleSample
 
         public static void CatchExceptional([FromException] ExceptionInfo exception)
         {
-            if (exception.Type != typeof(OperationCanceledException))
+            if (!exception.Type.Contains("OperationCanceledException"))
             {
                 // Background method threw an exception.
             }

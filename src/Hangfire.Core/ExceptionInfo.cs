@@ -15,7 +15,9 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.ComponentModel;
 using System.Text;
+using Hangfire.Common;
 using Newtonsoft.Json;
 
 namespace Hangfire
@@ -27,7 +29,7 @@ namespace Hangfire
             if (exception == null) throw new ArgumentNullException(nameof(exception));
 
             Message = exception.Message;
-            Type = exception.GetType();
+            Type = TypeHelper.CurrentTypeSerializer(exception.GetType());
 
             if (exception.InnerException != null)
             {
@@ -36,15 +38,15 @@ namespace Hangfire
         }
 
         [JsonConstructor]
-        public ExceptionInfo(Type type, string message, ExceptionInfo innerException)
+        public ExceptionInfo(string type, string message, ExceptionInfo innerException)
         {
             Type = type;
             Message = message;
             InnerException = innerException;
         }
 
-        [JsonProperty("t")]
-        public Type Type { get; }
+        [JsonProperty("e")]
+        public string Type { get; }
 
         [JsonProperty("m", NullValueHandling = NullValueHandling.Ignore)]
         public string Message { get; }
@@ -55,16 +57,16 @@ namespace Hangfire
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.Append(Type.FullName);
+            var commaIndex = Type.IndexOf(',');
+            sb.Append(commaIndex >= 0 ? Type.Substring(0, commaIndex) : Type);
             sb.Append(": ");
             sb.Append(Message);
 
             if (InnerException != null)
             {
                 sb.Append(" ---> ");
-                sb.Append(InnerException.ToString());
+                sb.AppendLine(InnerException.ToString());
             }
-            else sb.Append("\n");
 
             return sb.ToString();
         }
