@@ -18,7 +18,7 @@ SET NOCOUNT ON
 SET XACT_ABORT ON
 DECLARE @TARGET_SCHEMA_VERSION INT;
 DECLARE @DISABLE_HEAVY_MIGRATIONS BIT;
-SET @TARGET_SCHEMA_VERSION = 7;
+SET @TARGET_SCHEMA_VERSION = 8;
 --SET @DISABLE_HEAVY_MIGRATIONS = 1;
 
 PRINT 'Installing Hangfire SQL objects...';
@@ -670,15 +670,82 @@ BEGIN
 	SET @CURRENT_SCHEMA_VERSION = 7;
 END
 
-/*IF @CURRENT_SCHEMA_VERSION = 7
+IF @CURRENT_SCHEMA_VERSION = 7 AND @DISABLE_HEAVY_MIGRATIONS = 1
+BEGIN
+	PRINT 'Migration process STOPPED at schema version ' + CAST(@CURRENT_SCHEMA_VERSION AS NVARCHAR) +
+		'. WILL NOT upgrade to schema version ' + CAST(@TARGET_SCHEMA_VERSION AS NVARCHAR) +
+		', because @DISABLE_HEAVY_MIGRATIONS option is set.';
+END
+ELSE IF @CURRENT_SCHEMA_VERSION = 7
 BEGIN
 	PRINT 'Installing schema version 8';
 
-	 Insert migration here
-	-- TODO: Increase Server.ServerId column length to 200, add IGNORE_DUP_KEY for [Set] and [Hash] tables
-	-- TODO: Add clustered index for [AggregatedCounter] table
+	ALTER TABLE [$(HangFireSchema)].[Server] ALTER COLUMN [Id] NVARCHAR (200) NOT NULL;
+	PRINT 'Modified [$(HangFireSchema)].[Server].[Id] length to 200';
+
+	-- Nothing complicated - we just collecting all the secondary indexes and primary key names to delete them.
+	-- We should expect nothing here, because custom columns and indexes can be applied for the [Counter] table
+	-- to make replication work on Microsoft Azure, like in the issue below.
+	-- https://github.com/HangfireIO/Hangfire/issues/1500
+	DECLARE @dropIndexSql2 NVARCHAR(MAX) = N'';
+	SELECT @dropIndexSql2 += N'DROP INDEX ' + QUOTENAME(SCHEMA_NAME(o.[schema_id])) + '.' + QUOTENAME(o.name) + '.' + QUOTENAME(i.name) + ';'
+	FROM sys.indexes AS i
+	INNER JOIN sys.tables AS o
+	ON i.[object_id] = o.[object_id]
+	WHERE i.is_primary_key = 0
+	AND i.index_id <> 0
+	AND o.is_ms_shipped = 0
+	AND SCHEMA_NAME(o.[schema_id]) = '$(HangFireSchema)'
+	AND o.name = 'Counter';
+
+	SELECT @dropIndexSql2 += N'ALTER TABLE' + QUOTENAME(SCHEMA_NAME(o.[schema_id])) + '.' + QUOTENAME(o.name) + ' DROP CONSTRAINT ' + QUOTENAME(c.name) + ';'
+	FROM sys.key_constraints c
+	INNER JOIN sys.tables AS o
+	ON c.[parent_object_id] = o.[object_id]
+	WHERE o.is_ms_shipped = 0
+	AND SCHEMA_NAME(o.[schema_id]) = '$(HangFireSchema)'
+	AND o.name = 'Counter'
+
+	EXEC sp_executesql @dropIndexSql2;
+	PRINT 'Dropped all indexes on the [$(HangFireSchema)].[Counter] table';
+
+	-- [Counter].[Id] column can already be added to make replication work as written above, so we will re-create it
+	-- to ensure it is in the expected format.
+	PRINT 'Checking for existence of the [$(HangFireSchema)].[Counter].[Id] column';
+	IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Counter' AND COLUMN_NAME = 'Id' AND TABLE_SCHEMA='$(HangFireSchema)')
+	BEGIN
+		ALTER TABLE [$(HangFireSchema)].[Counter] DROP COLUMN [Id];
+		PRINT 'Dropped [$(HangFireSchema)].[Counter].[Id] column';
+	END
+
+	ALTER TABLE [$(HangFireSchema)].[Counter] ADD [Id] BIGINT IDENTITY(1, 1);
+	PRINT 'Created [$(HangFireSchema)].[Counter].[Id] column';
+
+	ALTER TABLE [$(HangFireSchema)].[Counter] ADD  CONSTRAINT [PK_HangFire_Counter] PRIMARY KEY CLUSTERED (
+		[Key] ASC,
+		[Id] ASC
+	);
+	PRINT 'Created clustered primary key PK_HangFire_Counter ([Key], [Id])';
+
+	-- SqlServerStorageOptions.UseIgnoreDupKeyOption will yield much better results with INSERT/UPDATE operators
+	-- instead of MERGE for [Set] and [Hash] tables. This change is also compatible with older clients, since
+	-- MERGE operator is used there, so those clients are forward-compatible with these changes.
+	ALTER TABLE [$(HangFireSchema)].[Set] REBUILD WITH (IGNORE_DUP_KEY = ON);
+	PRINT 'Enabled IGNORE_DUP_KEY option for [$(HangFireSchema)].[Set] table';
+
+	ALTER TABLE [$(HangFireSchema)].[Hash] REBUILD WITH (IGNORE_DUP_KEY = ON);
+	PRINT 'Enabled IGNORE_DUP_KEY option for [$(HangFireSchema)].[Hash] table';
 
 	SET @CURRENT_SCHEMA_VERSION = 8;
+END
+
+/*IF @CURRENT_SCHEMA_VERSION = 8
+BEGIN
+	PRINT 'Installing schema version 9';
+
+	 Insert migration here
+
+	SET @CURRENT_SCHEMA_VERSION = 9;
 END*/
 
 UPDATE [$(HangFireSchema)].[Schema] SET [Version] = @CURRENT_SCHEMA_VERSION

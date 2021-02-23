@@ -28,7 +28,7 @@ namespace Hangfire.SqlServer
         [Obsolete("This field is unused and will be removed in 2.0.0.")]
         public static readonly int RequiredSchemaVersion = 5;
 
-        public static readonly int LatestSchemaVersion = 7;
+        public static readonly int LatestSchemaVersion = 8;
 
         public static void Install(DbConnection connection)
         {
