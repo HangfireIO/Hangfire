@@ -486,5 +486,29 @@ where dbid = db_id(@name) and status != 'background'";
                     return new Metric(value);
                 });
             });
+
+        public static readonly DashboardMetric SchemaVersion = new DashboardMetric(
+            "sqlserver:schema",
+            "Metrics_SQLServer_SchemaVersion",
+            page =>
+            {
+                var sqlStorage = page.Storage as SqlServerStorage;
+                if (sqlStorage == null) return new Metric("???");
+
+                return sqlStorage.UseConnection(null, connection =>
+                {
+                    var sqlQuery = $@"select top(1) [Version] from [{sqlStorage.SchemaName}].[Schema]";
+                    var value = connection.Query<int>(sqlQuery).Single();
+
+                    return new Metric(value)
+                    {
+                        Style = value < SqlServerObjectsInstaller.LatestSchemaVersion
+                            ? MetricStyle.Warning
+                            : value == SqlServerObjectsInstaller.LatestSchemaVersion
+                                ? MetricStyle.Success
+                                : MetricStyle.Default
+                    };
+                });
+            });
     }
 }

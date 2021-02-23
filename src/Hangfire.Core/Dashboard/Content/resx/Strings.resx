@@ -548,4 +548,7 @@
   <data name="JobDetailsPage_Parameters" xml:space="preserve">
     <value>Parameters</value>
   </data>
+  <data name="Metrics_SQLServer_SchemaVersion" xml:space="preserve">
+    <value>Schema Version</value>
+  </data>
 </root>
