@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Hangfire;
 using Hangfire.Common;
 using Hangfire.SqlServer;
+using Hangfire.States;
 using Microsoft.Owin.Hosting;
 
 namespace ConsoleSample
@@ -189,10 +190,10 @@ namespace ConsoleSample
                     if (command.StartsWith("delete", StringComparison.OrdinalIgnoreCase))
                     {
                         var workCount = int.Parse(command.Substring(7));
+                        var client = new BackgroundJobClient();
                         for (var i = 0; i < workCount; i++)
                         {
-                            var jobId = BackgroundJob.Enqueue<Services>(x => x.EmptyDefault());
-                            BackgroundJob.Delete(jobId);
+                            client.Create<Services>(x => x.EmptyDefault(), new DeletedState(new ExceptionInfo(new OperationCanceledException())));
                         }
                     }
 
