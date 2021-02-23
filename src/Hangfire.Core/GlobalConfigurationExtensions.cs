@@ -184,6 +184,22 @@ namespace Hangfire
             return configuration;
         }
 
+        public static IGlobalConfiguration UseDashboardMetrics(
+            [NotNull] this IGlobalConfiguration configuration,
+            [NotNull] params DashboardMetric[] metrics)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (metrics == null) throw new ArgumentNullException(nameof(metrics));
+
+            foreach (var metric in metrics)
+            {
+                DashboardMetrics.AddMetric(metric);
+                HomePage.Metrics.Add(metric);
+            }
+
+            return configuration;
+        }
+
         public static IGlobalConfiguration UseTypeResolver(
             [NotNull] this IGlobalConfiguration configuration,
             [CanBeNull] Func<string, Type> typeResolver)

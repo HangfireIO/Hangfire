@@ -20,6 +20,7 @@ namespace ConsoleSample
                 .UseIgnoredAssemblyVersionTypeResolver()
                 .UseRecommendedSerializerSettings()
                 .UseResultsInContinuations()
+                .UseDashboardMetrics(SqlServerStorage.SchemaVersion, SqlServerStorage.TotalConnections)
                 .UseSqlServerStorage(@"Server=.\;Database=Hangfire.Sample;Trusted_Connection=True;", new SqlServerStorageOptions
                 {
                     CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
