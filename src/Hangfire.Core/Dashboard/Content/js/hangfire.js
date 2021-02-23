@@ -72,9 +72,9 @@
                 type: 'line',
                 data: {
                     datasets: [
-                        { label: succeededStr, borderColor: '#62B35F', backgroundColor: '#6FCD6D' },
-                        { label: failedStr, borderColor: '#BB4847', backgroundColor: '#D55251' },
-                        { label: deletedStr, borderColor: '#777777', backgroundColor: '#919191' }
+                        { label: failedStr,  /*borderColor: '#BB4847', */backgroundColor: '#D55251', borderWidth: 2 },
+                        { label: deletedStr, /*borderColor: '#777777', */backgroundColor: '#919191', borderWidth: 2 },
+                        { label: succeededStr, borderColor: '#62B35F',   backgroundColor: '#6FCD6D' },
                     ]
                 },
                 options: {
@@ -98,26 +98,26 @@
         }
 
         RealtimeGraph.prototype.appendHistory = function (statistics) {
-            var newSucceeded = parseInt(statistics["succeeded:count"].intValue);
             var newFailed = parseInt(statistics["failed:count"].intValue);
             var newDeleted = parseInt(statistics["deleted:count"].intValue);
+            var newSucceeded = parseInt(statistics["succeeded:count"].intValue);
             var now = Date.now();
 
-            if (this._succeeded !== null && this._failed !== null && (now - this._last < this._pollInterval * 2)) {
-                var succeeded = Math.max(newSucceeded - this._succeeded, 0);
+            if (this._succeeded !== null && this._failed !== null && this._deleted !== null && (now - this._last < this._pollInterval * 2)) {
                 var failed = Math.max(newFailed - this._failed, 0);
                 var deleted = Math.max(newDeleted - this._deleted, 0);
+                var succeeded = Math.max(newSucceeded - this._succeeded, 0);
 
-                this._chart.data.datasets[0].data.push({ x: now, y: succeeded });
-                this._chart.data.datasets[1].data.push({ x: now, y: failed });
-                this._chart.data.datasets[2].data.push({ x: now, y: deleted });
+                this._chart.data.datasets[0].data.push({ x: now, y: failed });
+                this._chart.data.datasets[1].data.push({ x: now, y: deleted });
+                this._chart.data.datasets[2].data.push({ x: now, y: succeeded });
                 
                 this._chart.update();
             }
             
-            this._succeeded = newSucceeded;
             this._failed = newFailed;
             this._deleted = newDeleted;
+            this._succeeded = newSucceeded;
             this._last = now;
         };
 
