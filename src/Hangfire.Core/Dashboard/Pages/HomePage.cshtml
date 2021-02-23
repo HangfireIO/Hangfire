@@ -4,12 +4,14 @@
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @using Hangfire.Dashboard.Resources
+@using Hangfire.Storage
 @using Newtonsoft.Json
 @inherits RazorPage
 @{
     Layout = new LayoutPage(Strings.HomePage_Title);
     IDictionary<DateTime, long> succeeded = null;
     IDictionary<DateTime, long> failed = null;
+    IDictionary<DateTime, long> deleted = null;
 
     var period = Query("period") ?? "day";
 
@@ -18,11 +20,19 @@
     {
         succeeded = monitor.SucceededByDatesCount();
         failed = monitor.FailedByDatesCount();
+        if (monitor is JobStorageMonitor jobStorageMonitor)
+        {
+            deleted = jobStorageMonitor.DeletedByDatesCount();
+        }
     }
     else if ("day".Equals(period, StringComparison.OrdinalIgnoreCase))
     {
         succeeded = monitor.HourlySucceededJobs();
         failed = monitor.HourlyFailedJobs();
+        if (monitor is JobStorageMonitor jobStorageMonitor)
+        {
+            deleted = jobStorageMonitor.HourlyDeletedJobs();
+        }
     }
 }
 
@@ -64,8 +74,10 @@
             <canvas width="1140" height="250" id="historyGraph"
                  data-succeeded="@JsonConvert.SerializeObject(succeeded)"
                  data-failed="@JsonConvert.SerializeObject(failed)"
+                 data-deleted="@(deleted != null ? JsonConvert.SerializeObject(deleted) : String.Empty)"
                  data-succeeded-string="@Strings.HomePage_GraphHover_Succeeded"
                  data-failed-string="@Strings.HomePage_GraphHover_Failed"
+                 data-deleted-string="@Strings.JobsSidebarMenu_Deleted"
                  data-period="@period">
             </canvas>
         }

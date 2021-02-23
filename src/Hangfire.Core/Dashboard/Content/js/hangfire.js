@@ -125,7 +125,7 @@
     })();
 
     hangfire.HistoryGraph = (function() {
-        function HistoryGraph(element, succeeded, failed, succeededStr, failedStr) {
+        function HistoryGraph(element, succeeded, failed, deleted, succeededStr, failedStr, deletedStr) {
             var timeOptions = $(element).data('period') === 'week'
                 ? { unit: 'day', tooltipFormat: 'LL', displayFormats: { day: 'll' } }
                 : { unit: 'hour', tooltipFormat: 'LLL', displayFormats: { hour: 'LT', day: 'll' } };
@@ -134,8 +134,9 @@
                 type: 'line',
                 data: {
                     datasets: [
-                        { label: succeededStr, borderColor: '#62B35F', backgroundColor: '#6FCD6D', data: succeeded },
-                        { label: failedStr, borderColor: '#BB4847', backgroundColor: '#D55251', data: failed }
+                        { label: failedStr,  /*borderColor: '#BB4847', */backgroundColor: '#D55251', data: failed,  borderWidth: 2 },
+                        { label: deletedStr, /*borderColor: '#777777', */backgroundColor: '#919191', data: deleted, borderWidth: 2 },
+                        { label: succeededStr, borderColor: '#62B35F',   backgroundColor: '#6FCD6D', data: succeeded },
                     ]
                 },
                 options: {
@@ -272,11 +273,13 @@
 
                 var succeeded = createSeries($(historyElement).data("succeeded"));
                 var failed = createSeries($(historyElement).data("failed"));
+                var deleted = createSeries($(historyElement).data("deleted"));
 
                 var succeededStr = $(historyElement).data('succeeded-string');
                 var failedStr = $(historyElement).data('failed-string');
+                var deletedStr = $(historyElement).data('deleted-string');
 
-                return new Hangfire.HistoryGraph(historyElement, succeeded, failed, succeededStr, failedStr);
+                return new Hangfire.HistoryGraph(historyElement, succeeded, failed, deleted, succeededStr, failedStr, deletedStr);
             }
 
             return null;
