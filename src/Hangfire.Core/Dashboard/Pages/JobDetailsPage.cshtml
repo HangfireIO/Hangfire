@@ -14,6 +14,7 @@
 @{
     var monitor = Storage.GetMonitoringApi();
     var job = monitor.JobDetails(JobId);
+    var dto = new JobDetailsRendererDto(this, JobId, job);
     
     string title = null;
 
@@ -119,11 +120,6 @@
                 </table>
             }
 
-            foreach (var renderer in JobDetailsRenderer.Renderers)
-            {
-                @renderer(this, job)
-            }
-
             if (job.Properties.TryGetValue("Continuations", out var serializedContinuations))
             {
                 var continuations = ContinuationsSupportAttribute.DeserializeContinuations(serializedContinuations);
@@ -170,6 +166,20 @@
                             </tbody>
                         </table>
                     </div>
+                }
+            }
+
+            foreach (var renderer in JobDetailsRenderer.GetRenderers())
+            {
+                try
+                {
+                    @renderer.Item2(dto)
+                }
+                catch (Exception ex)
+                {
+                    <h4 class="exception-type">@ex.GetType().Name</h4>
+                    <p class="text-muted">@ex.Message</p>
+                    <pre class="stack-trace">@Html.StackTrace(ex.StackTrace)</pre>
                 }
             }
 

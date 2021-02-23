@@ -17,16 +17,9 @@
 using System;
 using System.Collections.Generic;
 using Hangfire.Dashboard.Resources;
-using Hangfire.Storage.Monitoring;
 
 namespace Hangfire.Dashboard
 {
-    public static class JobDetailsRenderer
-    {
-        public static readonly List<Func<RazorPage, JobDetailsDto, NonEscapedString>> Renderers = 
-            new List<Func<RazorPage, JobDetailsDto, NonEscapedString>>();
-    }
-
     public static class NavigationMenu
     {
         public static readonly List<Func<RazorPage, MenuItem>> Items = new List<Func<RazorPage, MenuItem>>();

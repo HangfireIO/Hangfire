@@ -22,6 +22,7 @@ using Hangfire.Dashboard;
 using Hangfire.Dashboard.Pages;
 using Hangfire.Logging;
 using Hangfire.Logging.LogProviders;
+using Hangfire.Storage.Monitoring;
 using Newtonsoft.Json;
 
 namespace Hangfire
@@ -196,6 +197,19 @@ namespace Hangfire
                 DashboardMetrics.AddMetric(metric);
                 HomePage.Metrics.Add(metric);
             }
+
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseJobDetailsRenderer(
+            [NotNull] this IGlobalConfiguration configuration,
+            int order,
+            [NotNull] Func<JobDetailsRendererDto, NonEscapedString> renderer)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (renderer == null) throw new ArgumentNullException(nameof(renderer));
+
+            JobDetailsRenderer.AddRenderer(order, renderer);
 
             return configuration;
         }

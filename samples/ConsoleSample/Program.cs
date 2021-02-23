@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
 using Hangfire.Common;
+using Hangfire.Dashboard;
 using Hangfire.SqlServer;
 using Hangfire.States;
 using Microsoft.Owin.Hosting;
@@ -22,6 +23,8 @@ namespace ConsoleSample
                 .UseRecommendedSerializerSettings()
                 .UseResultsInContinuations()
                 .UseDashboardMetrics(SqlServerStorage.SchemaVersion, SqlServerStorage.TotalConnections)
+                .UseJobDetailsRenderer(10, dto => throw new InvalidOperationException())
+                .UseJobDetailsRenderer(10, dto => new NonEscapedString("<h4>Hello, world!</h4>"))
                 .UseSqlServerStorage(@"Server=.\;Database=Hangfire.Sample;Trusted_Connection=True;", new SqlServerStorageOptions
                 {
                     CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
