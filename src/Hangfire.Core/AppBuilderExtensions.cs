@@ -133,8 +133,8 @@ namespace Hangfire
     {
         // Prevent GC to collect background processing servers in hosts that do
         // not support shutdown notifications.
-        private static readonly ConcurrentBag<BackgroundJobServer> Servers
-            = new ConcurrentBag<BackgroundJobServer>();
+        private static readonly ConcurrentBag<IBackgroundProcessingServer> Servers
+            = new ConcurrentBag<IBackgroundProcessingServer>();
 
         /// <summary>
         /// Creates a new instance of the <see cref="BackgroundJobServer"/> class
@@ -292,7 +292,33 @@ namespace Hangfire
             if (options == null) throw new ArgumentNullException(nameof(options));
             if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
 
-            var server = new BackgroundJobServer(options, storage, additionalProcesses);
+            return UseHangfireServer(builder, new BackgroundJobServer(options, storage, additionalProcesses));
+        }
+
+        /// <summary>
+        /// Registers the given custom instance of the <see cref="IBackgroundProcessingServer"/>
+        /// interface for disposal on application shutdown.
+        /// </summary>
+        /// 
+        /// <param name="builder">OWIN application builder.</param>
+        /// <param name="server">Custom background processing server instance.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="server"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">
+        /// OWIN environment does not contain the application shutdown cancellation token.
+        /// </exception>
+        /// 
+        /// <remarks>
+        /// Please see <see cref="AppBuilderExtensions"/> for details and examples.
+        /// </remarks>
+        public static IAppBuilder UseHangfireServer(
+            [NotNull] this IAppBuilder builder,
+            [NotNull] IBackgroundProcessingServer server)
+        {
+            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            if (server == null) throw new ArgumentNullException(nameof(server));
+
             Servers.Add(server);
 
             var context = new OwinContext(builder.Properties);

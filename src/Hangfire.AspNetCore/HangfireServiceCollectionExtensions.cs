@@ -153,6 +153,19 @@ namespace Hangfire
             return services;
         }
 
+        public static IServiceCollection AddHangfireServer(
+            [NotNull] this IServiceCollection services,
+            [NotNull] Func<IServiceProvider, IBackgroundProcessingServer> implementationFactory)
+        {
+            if (services == null) throw new ArgumentNullException(nameof(services));
+            if (implementationFactory == null) throw new ArgumentNullException(nameof(implementationFactory));
+
+            services.AddTransient<IHostedService, BackgroundProcessingServerHostedService>(
+                provider => new BackgroundProcessingServerHostedService(implementationFactory(provider)));
+
+            return services;
+        }
+
         private static BackgroundJobServerHostedService CreateBackgroundJobServerHostedService(
             IServiceProvider provider,
             BackgroundJobServerOptions options)
