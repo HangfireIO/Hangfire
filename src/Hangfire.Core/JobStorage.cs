@@ -77,6 +77,11 @@ namespace Hangfire
 
         public abstract IStorageConnection GetConnection();
 
+        public virtual IStorageConnection GetReadOnlyConnection()
+        {
+            return GetConnection();
+        }
+
 #pragma warning disable 618
         public virtual IEnumerable<IServerComponent> GetComponents()
         {
