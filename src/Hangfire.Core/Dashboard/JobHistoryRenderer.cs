@@ -41,7 +41,7 @@ namespace Hangfire.Dashboard
             Register(ProcessingState.StateName, ProcessingRenderer);
             Register(EnqueuedState.StateName, EnqueuedRenderer);
             Register(ScheduledState.StateName, ScheduledRenderer);
-            Register(DeletedState.StateName, NullRenderer);
+            Register(DeletedState.StateName, DeletedRenderer);
             Register(AwaitingState.StateName, AwaitingRenderer);
 
             BackgroundStateColors.Add(EnqueuedState.StateName, "#F5F5F5");
@@ -273,6 +273,21 @@ namespace Hangfire.Dashboard
             builder.Append("</dl>");
 
             return new NonEscapedString(builder.ToString());
+        }
+        
+        private static NonEscapedString DeletedRenderer(HtmlHelper html, IDictionary<string, string> stateData)
+        {
+            if (stateData.TryGetValue("Exception", out var exception))
+            {
+                var exceptionInfo = SerializationHelper.Deserialize<ExceptionInfo>(exception);
+                if (exceptionInfo != null)
+                {
+                    return new NonEscapedString(
+                        $"<h4 class=\"exception-type\">{html.HtmlEncode(exceptionInfo.Type)}</h4><p class=\"text-muted\">{html.HtmlEncode(exceptionInfo.Message)}</p>");
+                }
+            }
+
+            return null;
         }
     }
 }
