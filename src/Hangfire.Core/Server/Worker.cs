@@ -285,7 +285,9 @@ namespace Hangfire.Server
                     duration.Stop();
 
                     customData = new Dictionary<string, object>(performContext.Items);
-                    return new SucceededState(result, (long) latency, duration.ElapsedMilliseconds);
+                    return !performContext.Items.TryGetValue(BackgroundJobPerformer.ContextCanceledKey, out var filter) 
+                        ? (IState)new SucceededState(result, (long) latency, duration.ElapsedMilliseconds)
+                        : new DeletedState { Reason = $"Invocation canceled by filter {filter}" };
                 }
             }
             catch (JobAbortedException)
