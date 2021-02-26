@@ -121,5 +121,10 @@ namespace Hangfire.Storage
         {
             throw new NotSupportedException();
         }
+
+        public virtual DateTime GetCurrentDateTime()
+        {
+            throw new NotSupportedException();
+        } 
     }
 }
