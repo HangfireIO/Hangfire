@@ -57,6 +57,8 @@ namespace Hangfire.States
     /// <threadsafety static="true" instance="false" />
     public class FailedState : IState
     {
+        internal static int? MaxLinesInExceptionDetails = 100;
+
         /// <summary>
         /// Represents the name of the <i>Failed</i> state. This field is read-only.
         /// </summary>
@@ -169,7 +171,7 @@ namespace Hangfire.States
                 { "FailedAt", JobHelper.SerializeDateTime(FailedAt) },
                 { "ExceptionType", Exception.GetType().FullName },
                 { "ExceptionMessage", Exception.Message },
-                { "ExceptionDetails", Exception.ToStringWithOriginalStackTrace() }
+                { "ExceptionDetails", Exception.ToStringWithOriginalStackTrace(MaxLinesInExceptionDetails) }
             };
         }
     }

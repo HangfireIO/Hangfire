@@ -36,7 +36,7 @@ namespace Hangfire.SqlServer
         // appears, when ~5000 locks were taken, but this number is a subject of version).
         // Note, that lock escalation may also happen during the cascade deletions for
         // State (3-5 rows/job usually) and JobParameters (2-3 rows/job usually) tables.
-        private const int NumberOfRecordsInSinglePass = 1000;
+        private const int DefaultNumberOfRecordsInSinglePass = 1000;
         
         private static readonly string[] ProcessedTables =
         {
@@ -61,6 +61,12 @@ namespace Hangfire.SqlServer
 
         public void Execute(CancellationToken cancellationToken)
         {
+            var numberOfRecordsInSinglePass = _storage.Options.DeleteExpiredBatchSize;
+            if (numberOfRecordsInSinglePass <= 0 || numberOfRecordsInSinglePass > 100_000)
+            {
+                numberOfRecordsInSinglePass = DefaultNumberOfRecordsInSinglePass;
+            }
+
             foreach (var table in ProcessedTables)
             {
                 _logger.Debug($"Removing outdated records from the '{table}' table...");
@@ -74,9 +80,10 @@ namespace Hangfire.SqlServer
                         affected = ExecuteNonQuery(
                             connection,
                             GetExpireQuery(_storage.SchemaName, table),
+                            numberOfRecordsInSinglePass,
                             cancellationToken);
 
-                    } while (affected == NumberOfRecordsInSinglePass);
+                    } while (affected == numberOfRecordsInSinglePass);
                 });
 
                 _logger.Trace($"Outdated records removed from the '{table}' table.");
@@ -135,6 +142,7 @@ option (loop join, optimize for (@count = 20000));";
         private static int ExecuteNonQuery(
             DbConnection connection,
             string commandText,
+            int numberOfRecordsInSinglePass,
             CancellationToken cancellationToken)
         {
             using (var command = connection.CreateCommand())
@@ -144,7 +152,7 @@ option (loop join, optimize for (@count = 20000));";
 
                 var countParameter = command.CreateParameter();
                 countParameter.ParameterName = "@count";
-                countParameter.Value = NumberOfRecordsInSinglePass;
+                countParameter.Value = numberOfRecordsInSinglePass;
 
                 var nowParameter = command.CreateParameter();
                 nowParameter.ParameterName = "@now";
@@ -159,7 +167,7 @@ option (loop join, optimize for (@count = 20000));";
                     {
                         return command.ExecuteNonQuery();
                     }
-                    catch (DbException) when (cancellationToken.IsCancellationRequested)
+                    catch (DbException ex) when (cancellationToken.IsCancellationRequested || ex.Message.Contains("Lock request time out period exceeded"))
                     {
                         // Exception was triggered due to the Cancel method call, ignoring
                         return 0;

@@ -45,6 +45,7 @@ namespace Hangfire.SqlServer
             TransactionTimeout = TimeSpan.FromMinutes(1);
             DisableGlobalLocks = false;
             UsePageLocksOnDequeue = false;
+            DeleteExpiredBatchSize = -1;
         }
 
         [Obsolete("TransactionIsolationLevel option is deprecated, please set UseRecommendedIsolationLevel instead. Will be removed in 2.0.0.")]
@@ -123,5 +124,20 @@ namespace Hangfire.SqlServer
         public bool UseRecommendedIsolationLevel { get; set; }
         public bool EnableHeavyMigrations { get; set; }
         public bool UseFineGrainedLocks { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether IGNORE_DUP_OPTION was applied to [Hash] and [Set] tables and so MERGE
+        /// statements can be replaced by much more efficient INSERT/UPDATE pair. This option allows
+        /// to avoid deadlocks related to SERIALIZABLE-level range locks without introducing transient
+        /// errors due to concurrency.
+        /// </summary>
+        public bool UseIgnoreDupKeyOption { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of records deleted in a single batch in expiration manager. Default
+        /// value is 1000, but it can be configured to a higher one when processing throughput is high
+        /// enough, so expiration manager becomes the bottleneck.
+        /// </summary>
+        public int DeleteExpiredBatchSize { get; set; }
     }
 }

@@ -7,6 +7,7 @@
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
     <projectUrl>https://www.hangfire.io/</projectUrl>
+    <repository type="git" url="https://github.com/HangfireIO/Hangfire.git" />
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <summary>An easy way to perform fire-and-forget, delayed and recurring tasks inside ASP.NET applications. No Windows Service required.</summary>
@@ -15,11 +16,98 @@ An easy and reliable way to perform fire-and-forget, delayed and recurring, long
 Backed by Redis, SQL Server, SQL Azure or MSMQ. This is a .NET alternative to Sidekiq, Resque and Celery.
 https://www.hangfire.io/
     </description>
-    <copyright>Copyright © 2013-2020 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013-2021 Sergey Odinokov</copyright>
     <tags>Hangfire AspNet MVC AspNetCore SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
+
+1.7.19
+
+Hangfire.Core
+
+• Added – German (Deutsch) Dashboard UI localization (by @d-oit).
+• Added – `IGlobalConfiguration.UseMaxArgumentSizeToRender` method to avoid "VALUE TOO BIG" messages.
+• Changed – Remove "readonly" keyword from the `JobMethodCallRenderer.MaxArgumentToRenderSize` field to support .NET 5.0.
+• Fixed – Race condition in `AspNetShutdownDetector` leads to `NullReferenceException` (by @jr01).
+• Fixed – Avoid ArgumentException: Item has already been added when preserving an original exception.
+• Project – Add repository link to nuspec files (by @jeremyhayes).
+
+Hangfire.SqlServer
+
+• Fixed – Return `null` instead of throwing FormatException when job id can't be parsed.
+• Project – Run the entire Hangfire.SqlServer test suite against the new Microsoft.Data.SqlClient package.
+
+1.7.18
+
+Hangfire.SqlServer
+
+• Added – `SqlServerStorageOptions.DeleteExpiredBatchSize` option to remove more expired records in a single pass.
+• Fixed – Don't throw from `SqlServerStorage.ToString` method when using custom factory or existing connection.
+
+1.7.17
+
+Hangfire.SqlServer
+
+• Fixed – SqlException "Incorrect syntax near 'throw'" after upgrading to 1.7.15 when using SQL Server 2008 or 2008R2.
+
+1.7.16
+
+Hangfire.SqlServer
+
+• Fixed – Blocking problems when using multiple storages with the same queue names in the same process (appeared in 1.7.9).
+
+1.7.15
+
+Hangfire.Core
+
+• Added – `IGlobalConfiguration.UseMaxLinesInExceptionDetails` option to cap the size of stack traces.
+• Changed – Only the first 100 lines of a stack trace will be preserved now by default in Failed state.
+• Fixed – Don't let exceptions with huge stack traces take up too much storage space.
+
+Hangfire.SqlServer
+
+• Fixed – Avoid deadlocks when using the `SetJobParameter` method without introducing issues for older schemas.
+• Fixed – Remove duplicate sorting in the `SqlServerMonitoringApi.GetJobs` method which is used by a lot of queries.
+
+1.7.14
+
+Hangfire.SqlServer
+
+• Fixed – Duplicate entries in the `JobParameters` table after upgrading to version 1.7.13.
+• Fixed – Extensive retries on a method that has a retry attribute after upgrading to 1.7.13.
+• Fixed – "ArgumentException: An item with the same key has already been added. Key: RetryCount" in `SqlServerMonitoringApi`.
+
+1.7.13
+
+Hangfire.Core
+
+• Added – Catalan translation for Dashboard UI (based on Spanish translation, by @agausachs).
+• Added – Support for configuring recommended serializer settings via callback (by @Yaevh).
+• Fixed – Use correct wording for job parameters in Job Details page, add it to resources.
+• Fixed – Don't push negative points to the realtime graph in dashboard.
+• Fixed – Don't depend on history collection type returned from Storage API.
+• Project – Execute tests one by one to ensure exit code isn't being lost (by @willchis).
+
+Hangfire.SqlServer
+
+• Added – `UseIgnoreDupKeyOption` for SQL Server storage configuration (changes to [Set] and [Hash] tables required).
+• Fixed – Don't truncate too long keys silently, throw exceptions instead.
+• Fixed – Add missing null checks for methods in the `SqlServerWriteOnlyTransaction` class.
+• Fixed – Change `holdlock` hint to `xlock` in `merge` statements in transaction to prevent deadlocks.
+• Fixed – Don't rethrow "Lock request time out period exceeded" exceptions from expiration manager.
+• Fixed – Increase [Server].[Id] column's length to 200 for new installations.
+
+1.7.12
+
+Hangfire.Core
+
+• Added – Display actual job payload and exception message on job details page when could find the method.
+• Added – French translation for Dashboard UI (by @PaulARoy).
+• Added – Expose IStorageConnection.GetRecurringJobs(IEnumerable ids) to public.
+• Changed – Bump thread priority in heartbeat process for constrained environments.
+• Changed – Display job properties in a dedicated row in job details page.
+• Fixed – Avoid storage round-trip when displaying continuations on job details page.
 
 1.7.11
 

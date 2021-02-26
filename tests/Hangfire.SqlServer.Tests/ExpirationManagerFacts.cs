@@ -1,7 +1,7 @@
 ﻿extern alias ReferencedDapper;
 
 using System;
-using System.Data.SqlClient;
+using System.Data.Common;
 using System.Linq;
 using System.Threading;
 using ReferencedDapper::Dapper;
@@ -19,10 +19,11 @@ namespace Hangfire.SqlServer.Tests
             Assert.Throws<ArgumentNullException>(() => new ExpirationManager(null, TimeSpan.Zero));
         }
 
-        [Fact, CleanDatabase]
-        public void Execute_RemovesOutdatedRecords()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Execute_RemovesOutdatedRecords(bool useMicrosoftDataSqlClient)
         {
-            using (var connection = CreateConnection())
+            using (var connection = CreateConnection(useMicrosoftDataSqlClient))
             {
                 CreateExpirationEntry(connection, DateTime.UtcNow.AddMonths(-1));
                 var manager = CreateManager(connection);
@@ -33,10 +34,11 @@ namespace Hangfire.SqlServer.Tests
             }
         }
 
-        [Fact, CleanDatabase]
-        public void Execute_DoesNotRemoveEntries_WithNoExpirationTimeSet()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Execute_DoesNotRemoveEntries_WithNoExpirationTimeSet(bool useMicrosoftDataSqlClient)
         {
-            using (var connection = CreateConnection())
+            using (var connection = CreateConnection(useMicrosoftDataSqlClient))
             {
                 CreateExpirationEntry(connection, null);
                 var manager = CreateManager(connection);
@@ -47,10 +49,11 @@ namespace Hangfire.SqlServer.Tests
             }
         }
 
-        [Fact, CleanDatabase]
-        public void Execute_DoesNotRemoveEntries_WithFreshExpirationTime()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Execute_DoesNotRemoveEntries_WithFreshExpirationTime(bool useMicrosoftDataSqlClient)
         {
-            using (var connection = CreateConnection())
+            using (var connection = CreateConnection(useMicrosoftDataSqlClient))
             {
                 CreateExpirationEntry(connection, DateTime.UtcNow.AddMonths(1));
                 var manager = CreateManager(connection);
@@ -61,10 +64,11 @@ namespace Hangfire.SqlServer.Tests
             }
         }
 
-        [Fact, CleanDatabase]
-        public void Execute_Processes_AggregatedCounterTable()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Execute_Processes_AggregatedCounterTable(bool useMicrosoftDataSqlClient)
         {
-            using (var connection = CreateConnection())
+            using (var connection = CreateConnection(useMicrosoftDataSqlClient))
             {
                 // Arrange
                 var createSql = $@"
@@ -82,10 +86,11 @@ values ('key', 1, @expireAt)";
             }
         }
 
-        [Fact, CleanDatabase]
-        public void Execute_Processes_JobTable()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Execute_Processes_JobTable(bool useMicrosoftDataSqlClient)
         {
-            using (var connection = CreateConnection())
+            using (var connection = CreateConnection(useMicrosoftDataSqlClient))
             {
                 // Arrange
                 var createSql = $@"
@@ -103,10 +108,11 @@ values ('', '', getutcdate(), @expireAt)";
             }
         }
 
-        [Fact, CleanDatabase]
-        public void Execute_Processes_ListTable()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Execute_Processes_ListTable(bool useMicrosoftDataSqlClient)
         {
-            using (var connection = CreateConnection())
+            using (var connection = CreateConnection(useMicrosoftDataSqlClient))
             {
                 // Arrange
                 var createSql = $@"
@@ -124,10 +130,11 @@ values ('key', @expireAt)";
             }
         }
 
-        [Fact, CleanDatabase]
-        public void Execute_Processes_SetTable()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Execute_Processes_SetTable(bool useMicrosoftDataSqlClient)
         {
-            using (var connection = CreateConnection())
+            using (var connection = CreateConnection(useMicrosoftDataSqlClient))
             {
                 // Arrange
                 var createSql = $@"
@@ -145,10 +152,11 @@ values ('key', 0, '', @expireAt)";
             }
         }
 
-        [Fact, CleanDatabase]
-        public void Execute_Processes_HashTable()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Execute_Processes_HashTable(bool useMicrosoftDataSqlClient)
         {
-            using (var connection = CreateConnection())
+            using (var connection = CreateConnection(useMicrosoftDataSqlClient))
             {
                 // Arrange
                 var createSql = $@"
@@ -166,7 +174,7 @@ values ('key', 'field', '', @expireAt)";
             }
         }
 
-        private static void CreateExpirationEntry(SqlConnection connection, DateTime? expireAt)
+        private static void CreateExpirationEntry(DbConnection connection, DateTime? expireAt)
         {
             var insertSql = $@"
 insert into [{Constants.DefaultSchema}].AggregatedCounter ([Key], [Value], [ExpireAt])
@@ -175,19 +183,19 @@ values (N'key', 1, @expireAt)";
             connection.Execute(insertSql, new { expireAt });
         }
 
-        private static bool IsEntryExpired(SqlConnection connection)
+        private static bool IsEntryExpired(DbConnection connection)
         {
             var count = connection.Query<int>(
                     $"select count(*) from [{Constants.DefaultSchema}].AggregatedCounter where [Key] = N'key'").Single();
             return count == 0;
         }
 
-        private SqlConnection CreateConnection()
+        private DbConnection CreateConnection(bool useMicrosoftDataSqlClient)
         {
-            return ConnectionUtils.CreateConnection();
+            return ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient);
         }
 
-        private ExpirationManager CreateManager(SqlConnection connection)
+        private ExpirationManager CreateManager(DbConnection connection)
         {
             var storage = new SqlServerStorage(connection);
             return new ExpirationManager(storage, TimeSpan.Zero);

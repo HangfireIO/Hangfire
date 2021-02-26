@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.IO;
 using System.Text;
 using Hangfire.Annotations;
 
@@ -26,15 +27,22 @@ namespace Hangfire.Common
 
         public static void PreserveOriginalStackTrace(this Exception exception)
         {
-            exception?.Data.Add(DataKey, exception.StackTrace);
+            if (exception != null && !exception.Data.Contains(DataKey))
+            {
+                exception.Data.Add(DataKey, exception.StackTrace);
+            }
         }
 
-        public static string ToStringWithOriginalStackTrace([NotNull] this Exception exception)
+        public static string ToStringWithOriginalStackTrace([NotNull] this Exception exception, int? numLines)
         {
             if (exception == null) throw new ArgumentNullException(nameof(exception));
 
-            if (!exception.Data.Contains(DataKey)) return exception.ToString();
-            return ToStringHelper(exception, false);
+            if (!exception.Data.Contains(DataKey))
+            {
+                return GetFirstLines(exception.ToString(), numLines);
+            }
+
+            return GetFirstLines(ToStringHelper(exception, false), numLines);
         }
 
         private static string ToStringHelper(Exception exception, bool isInner)
@@ -61,6 +69,28 @@ namespace Hangfire.Common
             if (isInner) sb.Append("   --- End of inner exception stack trace ---\n");
 
             return sb.ToString();
+        }
+
+        private static string GetFirstLines(string text, int? numLines)
+        {
+            if (text == null) return null;
+            if (!numLines.HasValue || numLines.Value <= 0) return text;
+
+            using (var reader = new StringReader(text))
+            {
+                var builder = new StringBuilder();
+
+                while (numLines-- > 0)
+                {
+                    var line = reader.ReadLine();
+                    if (line == null) break;
+
+                    if (builder.Length > 0) builder.AppendLine();
+                    builder.Append(line);
+                }
+
+                return builder.ToString();
+            }
         }
     }
 }

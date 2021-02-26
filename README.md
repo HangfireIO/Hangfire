@@ -159,10 +159,15 @@ Hangfire uses [psake](https://github.com/psake/psake) build automation tool. All
 
 Razor templates are compiled upon save with the [Razor Generator Visual Studio extension](https://marketplace.visualstudio.com/items?itemName=DavidEbbo.RazorGenerator).  You will need this installed if you want to modify the Dashboard UI.
 
+Reporting security issues 
+--------------------------
+
+In order to give the community time to respond and upgrade we strongly urge you report all security issues privately. Please email us at [security@hangfire.io](mailto:security@hangfire.io) with details and we will respond ASAP. Security issues always take precedence over bug fixes and feature work. We can and do mark releases as "urgent" if they contain serious security fixes. 
+
 License
 --------
 
-Copyright © 2013-2016 Sergey Odinokov.
+Copyright © 2013-2021 Sergey Odinokov.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by

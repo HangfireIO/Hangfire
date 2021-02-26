@@ -283,37 +283,22 @@ a:hover .label-hover {
     color: rgb(128, 128, 128);
 }
 
-.job-snippet-properties {
-    max-width: 200px;
-    padding-left: 5px;
-}
-
-.job-snippet-properties dl {
-    margin: 0;
-}
-
-.job-snippet-properties dl dt {
-    color: #999;
-    text-shadow: 0 1px white;
-    font-weight: normal;
-}
-
-.job-snippet-properties dl dd {
-    margin-left: 0;
-    margin-bottom: 5px;
-}
-
 .job-snippet-properties pre {
-    background-color: white;
+    background-color: inherit;
     -webkit-box-shadow: none;
     -ms-box-shadow: none;
     padding: 2px 4px;
     border: none;
     margin: 0;
+    overflow: hidden;
 }
 
 .job-snippet-properties code {
-    color: black;
+    color: rgb(163, 21, 21);
+}
+
+.alert-warning .table td {
+    border-color: rgb(229, 220, 195);
 }
 
 .state-card {

@@ -7,6 +7,7 @@
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
     <projectUrl>https://www.hangfire.io/</projectUrl>
+    <repository type="git" url="https://github.com/HangfireIO/Hangfire.git" />
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>SQL Server 2008+ (including Express), SQL Server LocalDB and SQL Azure storage support for Hangfire (background job system for ASP.NET applications).</description>
@@ -15,6 +16,37 @@
     <releaseNotes>https://www.hangfire.io/blog/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
+
+1.7.19
+• Fixed – Return `null` instead of throwing FormatException when job id can't be parsed.
+• Project – Run the entire Hangfire.SqlServer test suite against the new Microsoft.Data.SqlClient package.
+
+1.7.18
+• Added – `SqlServerStorageOptions.DeleteExpiredBatchSize` option to remove more expired records in a single pass.
+• Fixed – Don't throw from `SqlServerStorage.ToString` method when using custom factory or existing connection.
+
+1.7.17
+• Fixed – SqlException "Incorrect syntax near 'throw'" after upgrading to 1.7.15 when using SQL Server 2008 or 2008R2.
+
+1.7.16
+• Fixed – Blocking problems when using multiple storages with the same queue names in the same process (appeared in 1.7.9).
+
+1.7.15
+• Fixed – Avoid deadlocks when using the `SetJobParameter` method without introducing issues for older schemas.
+• Fixed – Remove duplicate sorting in the `SqlServerMonitoringApi.GetJobs` method which is used by a lot of queries.
+
+1.7.14
+• Fixed – Duplicate entries in the `JobParameters` table after upgrading to version 1.7.13.
+• Fixed – Extensive retries on a method that has a retry attribute after upgrading to 1.7.13.
+• Fixed – "ArgumentException: An item with the same key has already been added. Key: RetryCount" in `SqlServerMonitoringApi`.
+
+1.7.13
+• Added – `UseIgnoreDupKeyOption` for SQL Server storage configuration (changes to [Set] and [Hash] tables required).
+• Fixed – Don't truncate too long keys silently, throw exceptions instead.
+• Fixed – Add missing null checks for methods in the `SqlServerWriteOnlyTransaction` class.
+• Fixed – Change `holdlock` hint to `xlock` in `merge` statements in transaction to prevent deadlocks.
+• Fixed – Don't rethrow "Lock request time out period exceeded" exceptions from expiration manager.
+• Fixed – Increase [Server].[Id] column's length to 200 for new installations.
 
 1.7.10
 • Changed – Use `XACT_ABORT` option for `ExpirationManager` queries.

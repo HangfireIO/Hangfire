@@ -7,6 +7,7 @@
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
     <projectUrl>https://www.hangfire.io/</projectUrl>
+    <repository type="git" url="https://github.com/HangfireIO/Hangfire.git" />
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <summary>An easy way to perform fire-and-forget, delayed and recurring tasks inside ASP.NET applications. No Windows Service required.</summary>
@@ -15,11 +16,40 @@ An easy and reliable way to perform fire-and-forget, delayed and recurring, long
 Backed by Redis, SQL Server, SQL Azure or MSMQ. This is a .NET alternative to Sidekiq, Resque and Celery.
 https://www.hangfire.io/
     </description>
-    <copyright>Copyright © 2013-2020 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013-2021 Sergey Odinokov</copyright>
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
+
+1.7.19
+• Added – German (Deutsch) Dashboard UI localization (by @d-oit).
+• Added – `IGlobalConfiguration.UseMaxArgumentSizeToRender` method to avoid "VALUE TOO BIG" messages.
+• Changed – Remove "readonly" keyword from the `JobMethodCallRenderer.MaxArgumentToRenderSize` field to support .NET 5.0.
+• Fixed – Race condition in `AspNetShutdownDetector` leads to `NullReferenceException` (by @jr01).
+• Fixed – Avoid ArgumentException: Item has already been added when preserving an original exception.
+• Project – Add repository link to nuspec files (by @jeremyhayes).
+
+1.7.15
+• Added – `IGlobalConfiguration.UseMaxLinesInExceptionDetails` option to cap the size of stack traces.
+• Changed – Only the first 100 lines of a stack trace will be preserved now by default in Failed state.
+• Fixed – Don't let exceptions with huge stack traces take up too much storage space.
+
+1.7.13
+• Added – Catalan translation for Dashboard UI (based on Spanish translation, by @agausachs).
+• Added – Support for configuring recommended serializer settings via callback (by @Yaevh).
+• Fixed – Use correct wording for job parameters in Job Details page, add it to resources.
+• Fixed – Don't push negative points to the realtime graph in dashboard.
+• Fixed – Don't depend on history collection type returned from Storage API.
+• Project – Execute tests one by one to ensure exit code isn't being lost (by @willchis).
+
+1.7.12
+• Added – Display actual job payload and exception message on job details page when could find the method.
+• Added – French translation for Dashboard UI (by @PaulARoy).
+• Added – Expose IStorageConnection.GetRecurringJobs(IEnumerable ids) to public.
+• Changed – Bump thread priority in heartbeat process for constrained environments.
+• Changed – Display job properties in a dedicated row in job details page.
+• Fixed – Avoid storage round-trip when displaying continuations on job details page.
 
 1.7.11
 • Added – Display recurring job exceptions directly in the Dashboard UI.

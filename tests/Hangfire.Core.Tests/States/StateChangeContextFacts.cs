@@ -96,6 +96,7 @@ namespace Hangfire.Core.Tests.States
                     JobId,
                     _newState.Object,
                     null,
+                    false,
                     CancellationToken.None,
                     null));
 
@@ -171,6 +172,7 @@ namespace Hangfire.Core.Tests.States
                 JobId,
                 _newState.Object,
                 _expectedStates,
+                false,
                 _token,
                 _profiler.Object,
                 _customData);
@@ -180,6 +182,7 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(JobId, context.BackgroundJobId);
             Assert.Same(_newState.Object, context.NewState);
             Assert.Equal(_expectedStates, context.ExpectedStates);
+            Assert.False(context.DisableFilters);
             Assert.Equal(_token, context.CancellationToken);
             Assert.Same(_profiler.Object, context.Profiler);
             Assert.Same(_customData, context.CustomData);

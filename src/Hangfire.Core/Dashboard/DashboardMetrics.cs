@@ -84,15 +84,23 @@ namespace Hangfire.Dashboard
             page =>
             {
                 long retryCount;
-                using (var connection = page.Storage.GetConnection())
-                {
-                    var storageConnection = connection as JobStorageConnection;
-                    if (storageConnection == null)
-                    {
-                        return null;
-                    }
 
-                    retryCount = storageConnection.GetSetCount("retries");
+                if (page.Statistics.Retries.HasValue)
+                {
+                    retryCount = page.Statistics.Retries.Value;
+                }
+                else
+                {
+                    using (var connection = page.Storage.GetConnection())
+                    {
+                        var storageConnection = connection as JobStorageConnection;
+                        if (storageConnection == null)
+                        {
+                            return null;
+                        }
+
+                        retryCount = storageConnection.GetSetCount("retries");
+                    }
                 }
 
                 return new Metric(retryCount)

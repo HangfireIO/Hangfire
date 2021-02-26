@@ -234,7 +234,7 @@ namespace Hangfire
         }
 
         /// <summary>
-        /// These settings is used to serialize user data like arguments or parameters.
+        /// These settings are used to serialize user data like arguments or parameters.
         /// You can use <see cref="SerializationHelper.Serialize{T}(T, SerializationOption)"/> with <see cref="SerializationOption.User"/> option
         /// to serialize with specified settings
         /// </summary>
@@ -251,9 +251,19 @@ namespace Hangfire
         public static IGlobalConfiguration UseRecommendedSerializerSettings(
             [NotNull] this IGlobalConfiguration configuration)
         {
+            return UseRecommendedSerializerSettings(configuration, null);
+        }
+
+        public static IGlobalConfiguration UseRecommendedSerializerSettings(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] Action<JsonSerializerSettings> settingsConfiguration)
+        {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
-            SerializationHelper.SetUserSerializerSettings(SerializationHelper.GetInternalSettings());
+            var settings = SerializationHelper.GetInternalSettings();
+            settingsConfiguration?.Invoke(settings);
+
+            SerializationHelper.SetUserSerializerSettings(settings);
             return configuration;
         }
 
@@ -262,6 +272,28 @@ namespace Hangfire
             return configuration
                 .UseFilter(new JobParameterInjectionFilter())
                 .UseFilter(new ContinuationsSupportAttribute(pushResults: true));
+        }
+
+        public static IGlobalConfiguration UseMaxLinesInExceptionDetails(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] int? numberOfLines)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (numberOfLines.HasValue && numberOfLines.Value <= 1) throw new ArgumentOutOfRangeException(nameof(numberOfLines), "Must be either a positive value larger than 1; or a null value.");
+
+            States.FailedState.MaxLinesInExceptionDetails = numberOfLines;
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseMaxArgumentSizeToRender(
+            [NotNull] this IGlobalConfiguration configuration,
+            int size)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (size < 0) throw new ArgumentOutOfRangeException(nameof(size), "Must be a positive value");
+
+            JobMethodCallRenderer.MaxArgumentToRenderSize = size;
+            return configuration;
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]

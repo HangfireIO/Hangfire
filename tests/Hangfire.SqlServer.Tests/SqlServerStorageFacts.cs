@@ -34,10 +34,11 @@ namespace Hangfire.SqlServer.Tests
             Assert.Equal("options", exception.ParamName);
         }
 
-        [Fact, CleanDatabase]
-        public void Ctor_CanCreateSqlServerStorage_WithExistingConnection()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Ctor_CanCreateSqlServerStorage_WithExistingConnection(bool useMicrosoftDataSqlClient)
         {
-            var connection = ConnectionUtils.CreateConnection();
+            var connection = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient);
             var storage = new SqlServerStorage(connection);
 
             Assert.NotNull(storage);
@@ -54,10 +55,11 @@ namespace Hangfire.SqlServer.Tests
             Assert.Equal("connectionFactory", exception.ParamName);
         }
 
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenOptionsValueIsNull_WithConnectionFactory()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Ctor_ThrowsAnException_WhenOptionsValueIsNull_WithConnectionFactory(bool useMicrosoftDataSqlClient)
         {
-            Func<DbConnection> connectionFactory = ConnectionUtils.CreateConnection;
+            Func<DbConnection> connectionFactory = () => ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient);
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new SqlServerStorage(connectionFactory, null));
 

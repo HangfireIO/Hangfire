@@ -48,13 +48,15 @@ namespace Hangfire.Common
 
         public class CancellationEvent : IDisposable
         {
+            private static readonly Action<object> SetEventCallback = SetEvent;
+
             private readonly ManualResetEvent _mre;
             private CancellationTokenRegistration _registration;
 
             public CancellationEvent(CancellationToken cancellationToken)
             {
                 _mre = new ManualResetEvent(false);
-                _registration = cancellationToken.Register(SetEvent, _mre);
+                _registration = cancellationToken.Register(SetEventCallback, _mre);
             }
 
             public EventWaitHandle WaitHandle => _mre;
