@@ -85,5 +85,15 @@ namespace Hangfire.Storage
         {
             throw new NotSupportedException();
         }
+
+        public virtual void AcquireDistributedLock([NotNull] string resource, TimeSpan timeout)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual void RemoveFromQueue([NotNull] IFetchedJob fetchedJob)
+        {
+            throw new NotSupportedException();
+        }
     }
 }
