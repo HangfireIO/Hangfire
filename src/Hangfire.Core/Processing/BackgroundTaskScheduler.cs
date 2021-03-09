@@ -139,13 +139,17 @@ namespace Hangfire.Processing
             // In most cases anything stored in AsyncLocal is also not thread
             // safe and if it's a mutable object it means concurrent threads can
             // be modifying it which also may cause unwanted side affects.
+#if !NETSTANDARD1_3
             using (ExecutionContext.SuppressFlow())
             {
+#endif
                 foreach (var thread in _threads)
                 {
                     thread.Start();
                 }
-            }            
+#if !NETSTANDARD1_3
+            }
+#endif
 
             _ourThreadIds = new HashSet<int>(_threads.Select(x => x.ManagedThreadId));
         }
