@@ -131,10 +131,21 @@ namespace Hangfire.Processing
                 throw new ArgumentException("All the threads should be non-null and in the ThreadState.Unstarted state.", nameof(threadFactory));
             }
 
-            foreach (var thread in _threads)
+            // Prevent flowing the Execution Context to background threads.
+            // Without this, it means values from AsyncLocal and CallContext
+            // will flow/leak into background threads which should be avoided
+            // because it may inadvertently be capturing some ambient contexts
+            // like DbContext, etc... which can have unwanted side affects.
+            // In most cases anything stored in AsyncLocal is also not thread
+            // safe and if it's a mutable object it means concurrent threads can
+            // be modifying it which also may cause unwanted side affects.
+            using (ExecutionContext.SuppressFlow())
             {
-                thread.Start();
-            }
+                foreach (var thread in _threads)
+                {
+                    thread.Start();
+                }
+            }            
 
             _ourThreadIds = new HashSet<int>(_threads.Select(x => x.ManagedThreadId));
         }
