@@ -148,5 +148,11 @@ namespace Hangfire.SqlServer
         /// is expected, since transaction commit requires an explicit Commit request to be sent. 
         /// </summary>
         public bool UseTransactionalAcknowledge { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to prefer to use the new Microsoft.Data.SqlClient package instead of the
+        /// System.Data.SqlClient when available (e.g. package is referenced).
+        /// </summary>
+        public bool PreferMicrosoftDataSqlClient { get; set; }
     }
 }

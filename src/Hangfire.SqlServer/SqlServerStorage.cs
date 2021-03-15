@@ -44,6 +44,7 @@ namespace Hangfire.SqlServer
         private readonly SqlServerStorageOptions _options;
         private readonly string _connectionString;
         private string _escapedSchemaName;
+        private Type _microsoftDataSqlClientType;
 
         public SqlServerStorage(string nameOrConnectionString)
             : this(nameOrConnectionString, new SqlServerStorageOptions())
@@ -68,7 +69,7 @@ namespace Hangfire.SqlServer
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             _connectionString = GetConnectionString(nameOrConnectionString);
-            _connectionFactory = () => new SqlConnection(_connectionString);
+            _connectionFactory = DefaultConnectionFactory;
             _options = options;
 
             Initialize();
@@ -362,10 +363,22 @@ namespace Hangfire.SqlServer
                 connection.Dispose();
             }
         }
+        
+        private DbConnection DefaultConnectionFactory()
+        {
+            if (_options.PreferMicrosoftDataSqlClient)
+            {
+                var connection = Activator.CreateInstance(_microsoftDataSqlClientType, new object[] { _connectionString });
+                if (connection is DbConnection dbConnection) return dbConnection;
+            }
+
+            return new SqlConnection(_connectionString);
+        }
 
         private void Initialize()
         {
             _escapedSchemaName = _options.SchemaName.Replace("]", "]]");
+            _microsoftDataSqlClientType = Type.GetType("Microsoft.Data.SqlClient.SqlConnection, Microsoft.Data.SqlClient", throwOnError: false);
 
             if (_options.PrepareSchemaIfNecessary)
             {
