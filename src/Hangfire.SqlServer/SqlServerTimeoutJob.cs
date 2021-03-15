@@ -17,6 +17,7 @@ namespace Hangfire.SqlServer
         private bool _disposed;
         private bool _removedFromQueue;
         private bool _requeued;
+        private SqlServerWriteOnlyTransaction _transaction;
 
         public SqlServerTimeoutJob(
             [NotNull] SqlServerStorage storage,
@@ -55,6 +56,7 @@ namespace Hangfire.SqlServer
         {
             lock (_syncRoot)
             {
+                if (_transaction != null && _transaction.Committed) return;
                 if (!FetchedAt.HasValue) return;
 
                 _storage.UseConnection(null, connection =>
@@ -73,6 +75,8 @@ namespace Hangfire.SqlServer
         {
             lock (_syncRoot)
             {
+                if (_transaction != null && _transaction.Committed) return;
+
                 if (!FetchedAt.HasValue) return;
 
                 _storage.UseConnection(null, connection =>
@@ -97,10 +101,18 @@ namespace Hangfire.SqlServer
 
             lock (_syncRoot)
             {
-                if (!_removedFromQueue && !_requeued)
+                if (!_removedFromQueue && !_requeued && (_transaction == null || !_transaction.Committed))
                 {
                     Requeue();
                 }
+            }
+        }
+
+        internal void SetTransaction(SqlServerWriteOnlyTransaction transaction)
+        {
+            lock (_syncRoot)
+            {
+                _transaction = transaction;
             }
         }
 
@@ -109,7 +121,7 @@ namespace Hangfire.SqlServer
             _timer?.Dispose();
         }
 
-        private string GetTableHints()
+        internal string GetTableHints()
         {
             if (_storage.Options.UsePageLocksOnDequeue)
             {
@@ -126,6 +138,7 @@ namespace Hangfire.SqlServer
                 if (!FetchedAt.HasValue) return;
 
                 if (_requeued || _removedFromQueue) return;
+                if (_transaction != null && _transaction.Committed) return;
 
                 try
                 {

@@ -46,6 +46,7 @@ namespace Hangfire.SqlServer
             DisableGlobalLocks = false;
             UsePageLocksOnDequeue = false;
             DeleteExpiredBatchSize = -1;
+            UseTransactionalAcknowledge = false;
         }
 
         [Obsolete("TransactionIsolationLevel option is deprecated, please set UseRecommendedIsolationLevel instead. Will be removed in 2.0.0.")]
@@ -139,5 +140,13 @@ namespace Hangfire.SqlServer
         /// enough, so expiration manager becomes the bottleneck.
         /// </summary>
         public int DeleteExpiredBatchSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to enable experimental feature of transactional acknowledge of completed
+        /// background jobs. In this case there will be less requests sent to SQL Server and better handling
+        /// of data loss when asynchronous replication is used. But additional blocking on the JobQueue table
+        /// is expected, since transaction commit requires an explicit Commit request to be sent. 
+        /// </summary>
+        public bool UseTransactionalAcknowledge { get; set; }
     }
 }

@@ -159,6 +159,21 @@ namespace Hangfire.SqlServer
             logger.Info($"Using the following options for SQL Server job storage: Queue poll interval: {_options.QueuePollInterval}.");
         }
 
+        public override bool HasFeature(string featureId)
+        {
+            if (featureId == null) throw new ArgumentNullException(nameof(featureId));
+
+            if (_options.UseTransactionalAcknowledge &&
+                featureId.StartsWith(Worker.TransactionalAcknowledgePrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return featureId.Equals(
+                    Worker.TransactionalAcknowledgePrefix + nameof(SqlServerTimeoutJob),
+                    StringComparison.OrdinalIgnoreCase);
+            }
+
+            return base.HasFeature(featureId);
+        }
+
         public override string ToString()
         {
             const string canNotParseMessage = "<Connection string can not be parsed>";
