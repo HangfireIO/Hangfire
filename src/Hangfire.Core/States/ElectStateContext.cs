@@ -32,6 +32,11 @@ namespace Hangfire.States
         private IState _candidateState;
 
         public ElectStateContext([NotNull] ApplyStateContext applyContext)
+            : this(applyContext, null)
+        {
+        }
+
+        public ElectStateContext([NotNull] ApplyStateContext applyContext, IStateMachine stateMachine)
         {
             if (applyContext == null) throw new ArgumentNullException(nameof(applyContext));
             
@@ -44,6 +49,7 @@ namespace Hangfire.States
             CurrentState = applyContext.OldStateName;
             Profiler = applyContext.Profiler;
             CustomData = applyContext.CustomData?.ToDictionary(x => x.Key, x => x.Value);
+            StateMachine = stateMachine;
         }
         
         public override BackgroundJob BackgroundJob { get; }
@@ -87,6 +93,9 @@ namespace Hangfire.States
 
         [CanBeNull]
         public IDictionary<string, object> CustomData { get; }
+        
+        [CanBeNull]
+        public IStateMachine StateMachine { get; private set; }
 
         public void SetJobParameter<T>(string name, T value)
         {

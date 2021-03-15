@@ -34,6 +34,7 @@ namespace Hangfire.Client
         {
             Items = context.Items;
             Parameters = context.Parameters;
+            Factory = context.Factory;
         }
 
         public CreateContext(
@@ -97,5 +98,8 @@ namespace Hangfire.Client
 
         [NotNull]
         internal IProfiler Profiler { get; }
+        
+        [CanBeNull]
+        public IBackgroundJobFactory Factory { get; internal set; }
     }
 }

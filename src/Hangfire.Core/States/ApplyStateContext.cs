@@ -31,6 +31,7 @@ namespace Hangfire.States
             [NotNull] ElectStateContext context)
             : this(context.Storage, context.Connection, transaction, context.BackgroundJob, context.CandidateState, context.CurrentState, context.Profiler, context.CustomData != null ? new Dictionary<string, object>(context.CustomData) : null)
         {
+            StateMachine = context.StateMachine;
             // TODO: Add explicit JobExpirationTimeout parameter in 2.0, because it's unclear it isn't preserved
         }
 
@@ -90,5 +91,8 @@ namespace Hangfire.States
 
         [CanBeNull]
         public IReadOnlyDictionary<string, object> CustomData { get; }
+
+        [CanBeNull]
+        public IStateMachine StateMachine { get; private set; }
     }
 }

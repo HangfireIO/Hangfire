@@ -75,6 +75,7 @@ namespace Hangfire.Server
 
             try
             {
+                context.Performer = this;
                 return PerformJobWithFilters(context, filterInfo.ServerFilters);
             }
             catch (JobAbortedException)
@@ -97,6 +98,10 @@ namespace Hangfire.Server
                 {
                     throw;
                 }
+            }
+            finally
+            {
+                context.Performer = null;
             }
 
             return null;

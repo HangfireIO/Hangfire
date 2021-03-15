@@ -33,6 +33,7 @@ namespace Hangfire.Server
             : this(context.Storage, context.Connection, context.BackgroundJob, context.CancellationToken, context.Profiler)
         {
             Items = context.Items;
+            Performer = context.Performer;
         }
 
         [Obsolete("Please use PerformContext(JobStorage, IStorageConnection, BackgroundJob, IJobCancellationToken) overload instead. Will be removed in 2.0.0.")]
@@ -100,6 +101,9 @@ namespace Hangfire.Server
         
         [NotNull]
         internal IProfiler Profiler { get; }
+        
+        [CanBeNull]
+        public IBackgroundJobPerformer Performer { get; internal set; }
 
         public void SetJobParameter(string name, object value)
         {
