@@ -736,6 +736,18 @@ BEGIN
 	ALTER TABLE [$(HangFireSchema)].[Hash] REBUILD WITH (IGNORE_DUP_KEY = ON);
 	PRINT 'Enabled IGNORE_DUP_KEY option for [$(HangFireSchema)].[Hash] table';
 
+	ALTER TABLE [$(HangFireSchema)].[JobQueue] DROP CONSTRAINT [PK_HangFire_JobQueue];
+	PRINT 'Dropped constraint [PK_HangFire_JobQueue] to modify the [$(HangFireSchema)].[JobQueue].[Id] column';
+
+	ALTER TABLE [$(HangFireSchema)].[JobQueue] ALTER COLUMN [Id] BIGINT NOT NULL;
+	PRINT 'Changed [$(HangFireSchema)].[JobQueue].[Id] column type to BIGINT';
+
+	ALTER TABLE [$(HangFireSchema)].[JobQueue] ADD CONSTRAINT [PK_HangFire_JobQueue] PRIMARY KEY CLUSTERED (
+		[Queue] ASC,
+		[Id] ASC
+	);
+	PRINT 'Re-created constraint [PK_HangFire_JobQueue]';
+
 	SET @CURRENT_SCHEMA_VERSION = 8;
 END
 
