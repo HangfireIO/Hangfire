@@ -719,18 +719,20 @@ order by [Id] desc";
                         }
                     }
                 }
-
-                if (_lockedResources.Count == 0)
-                {
-                    _storage.ReleaseConnection(_dedicatedConnection);
-                    _dedicatedConnection = null;
-                }
             }
             catch (Exception)
             {
                 if (!onDisposing)
                 {
                     throw;
+                }
+            }
+            finally
+            {
+                if (_lockedResources.Count == 0)
+                {
+                    _storage.ReleaseConnection(_dedicatedConnection);
+                    _dedicatedConnection = null;
                 }
             }
         }
