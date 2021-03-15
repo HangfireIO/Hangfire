@@ -51,7 +51,21 @@ namespace Hangfire.States
             [NotNull] IState newState,
             [CanBeNull] IEnumerable<string> expectedStates,
             CancellationToken cancellationToken)
-        : this(storage, connection, backgroundJobId, newState, expectedStates, false, cancellationToken, EmptyProfiler.Instance)
+        : this(storage, connection, backgroundJobId, newState, expectedStates, false, null, cancellationToken, EmptyProfiler.Instance)
+        {
+        }
+
+        internal StateChangeContext(
+            [NotNull] JobStorage storage,
+            [NotNull] IStorageConnection connection,
+            [NotNull] string backgroundJobId,
+            [NotNull] IState newState,
+            [CanBeNull] IEnumerable<string> expectedStates,
+            bool disableFilters,
+            CancellationToken cancellationToken,
+            [NotNull] IProfiler profiler,
+            [CanBeNull] IReadOnlyDictionary<string, object> customData = null) 
+            : this(storage, connection, backgroundJobId, newState, expectedStates, disableFilters, null, cancellationToken, profiler, customData)
         {
         }
 
@@ -62,6 +76,7 @@ namespace Hangfire.States
             [NotNull] IState newState, 
             [CanBeNull] IEnumerable<string> expectedStates,
             bool disableFilters,
+            [CanBeNull] IFetchedJob completeJob,
             CancellationToken cancellationToken,
             [NotNull] IProfiler profiler,
             [CanBeNull] IReadOnlyDictionary<string, object> customData = null)
@@ -75,6 +90,7 @@ namespace Hangfire.States
             CancellationToken = cancellationToken;
             Profiler = profiler ?? throw new ArgumentNullException(nameof(profiler));
             CustomData = customData;
+            CompleteJob = completeJob;
         }
 
         public JobStorage Storage { get; }
@@ -86,5 +102,8 @@ namespace Hangfire.States
         public CancellationToken CancellationToken { get; }
         internal IProfiler Profiler { get; }
         public IReadOnlyDictionary<string, object> CustomData { get; }
+
+        [CanBeNull]
+        public IFetchedJob CompleteJob { get; }
     }
 }

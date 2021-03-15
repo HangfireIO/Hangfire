@@ -42,6 +42,8 @@ namespace Hangfire.Server
     /// <seealso cref="EnqueuedState"/>
     public class Worker : IBackgroundProcess
     {
+        public static readonly string TransactionalAcknowledgePrefix = "TransactionalAcknowledge:";
+        
         private readonly TimeSpan _jobInitializationWaitTimeout;
         private readonly int _maxStateChangeAttempts;
 
@@ -113,10 +115,11 @@ namespace Hangfire.Server
                         var appliedState = TryChangeState(
                             context, 
                             connection, 
-                            fetchedJob, 
+                            fetchedJob.JobId, 
                             processingState, 
                             null,
                             new[] { EnqueuedState.StateName, ProcessingState.StateName },
+                            null,
                             linkedCts.Token,
                             context.StoppingToken);
 
@@ -137,6 +140,7 @@ namespace Hangfire.Server
                     // It will be re-queued after the JobTimeout was expired.
 
                     var state = PerformJob(context, connection, fetchedJob.JobId, out var customData);
+                    var transactionalAck = context.Storage.HasFeature(TransactionalAcknowledgePrefix + fetchedJob.GetType().Name);
 
                     if (state != null)
                     {
@@ -144,10 +148,11 @@ namespace Hangfire.Server
                         TryChangeState(
                             context,
                             connection,
-                            fetchedJob,
+                            fetchedJob.JobId,
                             state,
                             customData,
                             new[] { ProcessingState.StateName },
+                            transactionalAck ? fetchedJob : null,
                             CancellationToken.None,
                             context.ShutdownToken);
                     }
@@ -184,10 +189,11 @@ namespace Hangfire.Server
         private IState TryChangeState(
             BackgroundProcessContext context, 
             IStorageConnection connection, 
-            IFetchedJob fetchedJob,
+            string jobId,
             IState state,
             IReadOnlyDictionary<string, object> customData,
             string[] expectedStates,
+            IFetchedJob completeJob,
             CancellationToken initializeToken,
             CancellationToken abortToken)
         {
@@ -202,10 +208,11 @@ namespace Hangfire.Server
                     return _stateChanger.ChangeState(new StateChangeContext(
                         context.Storage,
                         connection,
-                        fetchedJob.JobId,
+                        jobId,
                         state,
                         expectedStates,
                         disableFilters: false,
+                        completeJob,
                         initializeToken,
                         _profiler,
                         customData));
@@ -230,10 +237,11 @@ namespace Hangfire.Server
             return _stateChanger.ChangeState(new StateChangeContext(
                 context.Storage,
                 connection,
-                fetchedJob.JobId,
+                jobId,
                 new FailedState(exception) { Reason = $"Failed to change state to a '{state.Name}' one due to an exception after {_maxStateChangeAttempts} retry attempts" },
                 expectedStates,
                 disableFilters: true,
+                completeJob,
                 initializeToken,
                 _profiler));
         }

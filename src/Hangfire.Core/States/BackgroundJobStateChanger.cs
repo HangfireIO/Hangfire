@@ -117,6 +117,18 @@ namespace Hangfire.States
                     var stateMachine = context.DisableFilters ? _innerStateMachine : _stateMachine;
                     var appliedState = stateMachine.ApplyState(applyContext);
 
+                    if (context.CompleteJob != null)
+                    {
+                        if (transaction is JobStorageTransaction jobStorageTransaction)
+                        {
+                            jobStorageTransaction.RemoveFromQueue(context.CompleteJob);
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException("Storage transaction class must inherit the " + nameof(JobStorageTransaction) + " class to use transactional acknowledge");
+                        }
+                    }
+
                     transaction.Commit();
 
                     return appliedState;
