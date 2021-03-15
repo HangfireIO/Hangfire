@@ -105,7 +105,6 @@ namespace Hangfire.States
                         stateToApply,
                         jobData.State,
                         context.Profiler,
-                        this,
                         context.CustomData);
 
                     // State changing process can fail due to an exception in state filters themselves,
