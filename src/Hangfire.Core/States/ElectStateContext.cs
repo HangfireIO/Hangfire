@@ -50,6 +50,7 @@ namespace Hangfire.States
             Profiler = applyContext.Profiler;
             CustomData = applyContext.CustomData?.ToDictionary(x => x.Key, x => x.Value);
             StateMachine = stateMachine;
+            StateChanger = applyContext.StateChanger;
         }
         
         public override BackgroundJob BackgroundJob { get; }
@@ -96,6 +97,9 @@ namespace Hangfire.States
         
         [CanBeNull]
         public IStateMachine StateMachine { get; private set; }
+
+        [CanBeNull]
+        public IBackgroundJobStateChanger StateChanger { get; private set; }
 
         public void SetJobParameter<T>(string name, T value)
         {
