@@ -36,7 +36,7 @@ namespace Hangfire.States
         {
         }
 
-        public ElectStateContext([NotNull] ApplyStateContext applyContext, IStateMachine stateMachine)
+        public ElectStateContext([NotNull] ApplyStateContext applyContext, [CanBeNull] StateMachine stateMachine)
         {
             if (applyContext == null) throw new ArgumentNullException(nameof(applyContext));
             
@@ -95,7 +95,7 @@ namespace Hangfire.States
         public IDictionary<string, object> CustomData { get; }
         
         [CanBeNull]
-        public IStateMachine StateMachine { get; private set; }
+        public StateMachine StateMachine { get; }
 
         public void SetJobParameter<T>(string name, T value)
         {
