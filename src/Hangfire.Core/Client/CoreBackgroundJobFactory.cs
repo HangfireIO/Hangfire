@@ -110,7 +110,8 @@ namespace Hangfire.Client
                             backgroundJob,
                             context.InitialState,
                             oldStateName: null,
-                            profiler: context.Profiler);
+                            context.Profiler,
+                            StateMachine);
 
                         StateMachine.ApplyState(applyContext);
 

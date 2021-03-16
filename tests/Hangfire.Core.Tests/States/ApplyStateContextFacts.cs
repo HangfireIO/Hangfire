@@ -21,6 +21,7 @@ namespace Hangfire.Core.Tests.States
         private readonly Mock<IWriteOnlyTransaction> _transaction;
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IProfiler> _profiler;
+        private readonly Mock<IStateMachine> _stateMachine;
         private readonly Mock<IReadOnlyDictionary<string, object>> _customData;
 
         public ApplyStateContextFacts()
@@ -32,6 +33,7 @@ namespace Hangfire.Core.Tests.States
             _newState = new Mock<IState>();
             _newState.Setup(x => x.Name).Returns(NewState);
             _profiler = new Mock<IProfiler>();
+            _stateMachine = new Mock<IStateMachine>();
             _customData = new Mock<IReadOnlyDictionary<string, object>>();
         }
 
@@ -94,7 +96,8 @@ namespace Hangfire.Core.Tests.States
                     _backgroundJob.Object,
                     _newState.Object,
                     OldState,
-                    null));
+                    null,
+                    _stateMachine.Object));
 
             Assert.Equal("profiler", exception.ParamName);
         }
@@ -130,6 +133,7 @@ namespace Hangfire.Core.Tests.States
                 _newState.Object,
                 OldState,
                 _profiler.Object,
+                _stateMachine.Object,
                 _customData.Object);
 
             Assert.Same(_storage.Object, context.Storage);
@@ -139,6 +143,7 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(OldState, context.OldStateName);
             Assert.Same(_newState.Object, context.NewState);
             Assert.Equal(_storage.Object.JobExpirationTimeout, context.JobExpirationTimeout);
+            Assert.Same(_stateMachine.Object, context.StateMachine);
             Assert.Same(_customData.Object, context.CustomData);
         }
 

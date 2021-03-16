@@ -159,7 +159,8 @@ namespace Hangfire
                 backgroundJob,
                 state,
                 null,
-                profiler));
+                profiler,
+                stateMachine));
         }
     }
 }
