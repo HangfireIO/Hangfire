@@ -26,8 +26,6 @@ namespace Hangfire.States
     public class BackgroundJobStateChanger : IBackgroundJobStateChanger
     {
         private static readonly TimeSpan JobLockTimeout = TimeSpan.FromMinutes(15);
-
-        private readonly IStateMachine _innerStateMachine;
         private readonly StateMachine _stateMachine;
 
         public BackgroundJobStateChanger()
@@ -36,13 +34,20 @@ namespace Hangfire.States
         }
 
         public BackgroundJobStateChanger([NotNull] IJobFilterProvider filterProvider)
-            : this(filterProvider, new CoreStateMachine())
+            : this(new StateMachine(filterProvider, new CoreStateMachine()))
         {
+        }
+
+        public BackgroundJobStateChanger([NotNull] StateMachine stateMachine)
+        {
+            _stateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
         }
 
         internal BackgroundJobStateChanger([NotNull] IJobFilterProvider filterProvider, [NotNull] IStateMachine stateMachine)
         {
-            _innerStateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
+            if (filterProvider == null) throw new ArgumentNullException(nameof(filterProvider));
+            if (stateMachine == null) throw new ArgumentNullException(nameof(stateMachine));
+
             _stateMachine = new StateMachine(filterProvider, stateMachine);
         }
         
@@ -114,7 +119,7 @@ namespace Hangfire.States
                     // In this case all the filters are ignored, which may lead to confusion, so it's
                     // highly recommended to use the DisableFilters property only when changing state
                     // to the FailedState.
-                    var stateMachine = context.DisableFilters ? _innerStateMachine : _stateMachine;
+                    var stateMachine = context.DisableFilters ? _stateMachine.InnerStateMachine : _stateMachine;
                     var appliedState = stateMachine.ApplyState(applyContext);
 
                     if (context.CompleteJob != null)

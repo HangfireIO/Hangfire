@@ -84,7 +84,7 @@ namespace Hangfire.Core.Tests.States
         public void Ctor_ThrowsAnException_WhenFilterProviderIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundJobStateChanger(null));
+                () => new BackgroundJobStateChanger((IJobFilterProvider)null));
 
             Assert.Equal("filterProvider", exception.ParamName);
         }

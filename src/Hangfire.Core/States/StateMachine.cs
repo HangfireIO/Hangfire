@@ -43,6 +43,8 @@ namespace Hangfire.States
             _innerStateMachine = innerStateMachine;
         }
 
+        public IStateMachine InnerStateMachine => _innerStateMachine;
+
         public IState ApplyState(ApplyStateContext initialContext)
         {
             if (initialContext == null) throw new ArgumentNullException(nameof(initialContext));
