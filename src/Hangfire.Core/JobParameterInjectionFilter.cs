@@ -43,7 +43,7 @@ namespace Hangfire
                 var parameterType = parameters[index].ParameterType;
                 var parameterName = attribute.ParameterName;
 
-                if (String.IsNullOrEmpty(parameterName) || argumentsArray[index] != null) continue;
+                if (String.IsNullOrEmpty(parameterName) || argumentsArray[index] != default) continue;
 
                 var serialized = context.Connection.GetJobParameter(context.BackgroundJob.Id, parameterName);
                 if (serialized == null) continue;
