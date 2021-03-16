@@ -44,10 +44,10 @@ namespace ConsoleSample
             NewFeatures.Test(throwException: false);
 
             var job1 = BackgroundJob.Enqueue<Services>(x => x.WriteIndex(0));
-            var job2 = BackgroundJob.ContinueJobWith<Services>(job1, x => x.WriteIndex(null));
-            var job3 = BackgroundJob.ContinueJobWith<Services>(job2, x => x.WriteIndex(null));
-            var job4 = BackgroundJob.ContinueJobWith<Services>(job3, x => x.WriteIndex(null));
-            var job5 = BackgroundJob.ContinueJobWith<Services>(job4, x => x.WriteIndex(null));
+            var job2 = BackgroundJob.ContinueJobWith<Services>(job1, x => x.WriteIndex(default));
+            var job3 = BackgroundJob.ContinueJobWith<Services>(job2, x => x.WriteIndex(default));
+            var job4 = BackgroundJob.ContinueJobWith<Services>(job3, x => x.WriteIndex(default));
+            var job5 = BackgroundJob.ContinueJobWith<Services>(job4, x => x.WriteIndex(default));
 
             RecurringJob.AddOrUpdate("seconds", () => Console.WriteLine("Hello, seconds!"), "*/15 * * * * *");
             RecurringJob.AddOrUpdate(() => Console.WriteLine("Hello, world!"), Cron.Minutely);
