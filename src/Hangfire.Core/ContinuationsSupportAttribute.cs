@@ -163,12 +163,20 @@ namespace Hangfire
 
                     if (_pushResults && startImmediately)
                     {
-                        if (currentState.Data.TryGetValue("Result", out var antecedentResult))
+                        if (SucceededState.StateName.Equals(currentState.Name, StringComparison.OrdinalIgnoreCase))
                         {
-                            context.Connection.SetJobParameter(context.BackgroundJob.Id, "AntecedentResult", antecedentResult);
+                            if (currentState.Data.TryGetValue("Result", out var antecedentResult))
+                            {
+                                context.Connection.SetJobParameter(context.BackgroundJob.Id, "AntecedentResult", antecedentResult);
+                            }
                         }
-                        else if (currentState.Data.TryGetValue("Exception", out var antecedentException))
+                        else if (DeletedState.StateName.Equals(currentState.Name, StringComparison.OrdinalIgnoreCase))
                         {
+                            if (!currentState.Data.TryGetValue("Exception", out var antecedentException))
+                            {
+                                antecedentException = JobParameterInjectionFilter.DefaultException;
+                            }
+                            
                             context.Connection.SetJobParameter(context.BackgroundJob.Id, "AntecedentException", antecedentException);
                         }
                     }
@@ -204,8 +212,6 @@ namespace Hangfire
                 if (currentState.Name != AwaitingState.StateName) continue;
 
                 IState nextState;
-
-                //if (context.CandidateState is SucceededState && )
 
                 if (continuation.Options.HasFlag(JobContinuationOptions.OnlyOnSucceededState) &&
                     context.CandidateState.Name != SucceededState.StateName)
