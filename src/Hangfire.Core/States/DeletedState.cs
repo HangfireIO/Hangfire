@@ -152,7 +152,7 @@ namespace Hangfire.States
 
             if (ExceptionInfo != null)
             {
-                result.Add("Exception", SerializationHelper.Serialize(ExceptionInfo, SerializationOption.Internal));
+                result.Add("Exception", SerializationHelper.Serialize(ExceptionInfo, SerializationOption.User));
             }
 
             return result;
