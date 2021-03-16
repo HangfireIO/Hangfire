@@ -127,7 +127,7 @@
     <value>Nenhuma tarefa pendente foi encontrada</value>
   </data>
   <data name="AwaitingJobsPage_Table_Options" xml:space="preserve">
-    <value>Opcoes</value>
+    <value>Opções</value>
   </data>
   <data name="AwaitingJobsPage_Table_Parent" xml:space="preserve">
     <value>Pai</value>
@@ -299,7 +299,7 @@
     <value>Total de elementos</value>
   </data>
   <data name="PerPageSelector_ItemsPerPage" xml:space="preserve">
-    <value>Items por página</value>
+    <value>Itens por página</value>
   </data>
   <data name="ProcessingJobsPage_Aborted" xml:space="preserve">
     <value>Tarefas canceladas</value>
@@ -380,7 +380,7 @@
     <value>Não há tarefas agendadas.</value>
   </data>
   <data name="ScheduledJobsPage_Table_Enqueue" xml:space="preserve">
-    <value>Enfileiradao</value>
+    <value>Enfileirado</value>
   </data>
   <data name="ScheduledJobsPage_Table_Scheduled" xml:space="preserve">
     <value>Agendado</value>
@@ -396,7 +396,7 @@
     <comment>Fuzzy</comment>
   </data>
   <data name="ServersPage_Table_Name" xml:space="preserve">
-    <value>Nombre</value>
+    <value>Nome</value>
   </data>
   <data name="ServersPage_Table_Queues" xml:space="preserve">
     <value>Filas</value>
