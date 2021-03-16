@@ -59,7 +59,18 @@ namespace Hangfire.States
             // execution of this method. To guarantee this behavior, we are
             // using distributed application locks and rely on fact, that
             // any state transitions will be made only within a such lock.
-            using (context.Connection.AcquireDistributedJobLock(context.BackgroundJobId, JobLockTimeout))
+            IDisposable distributedLock = null;
+
+            if (context.Transaction != null)
+            {
+                context.Transaction.AcquireDistributedJobLock(context.BackgroundJobId, JobLockTimeout);
+            }
+            else
+            {
+                distributedLock = context.Connection.AcquireDistributedJobLock(context.BackgroundJobId, JobLockTimeout);
+            }
+
+            using (distributedLock)
             {
                 var jobData = GetJobData(context);
 
@@ -100,7 +111,20 @@ namespace Hangfire.States
                     }
                 }
 
-                using (var transaction = context.Connection.CreateWriteTransaction())
+                IWriteOnlyTransaction transaction;
+                IDisposable disposableTransaction;
+
+                if (context.Transaction == null)
+                {
+                    disposableTransaction = transaction = context.Connection.CreateWriteTransaction();
+                }
+                else
+                {
+                    transaction = context.Transaction;
+                    disposableTransaction = null;
+                }
+
+                using (disposableTransaction)
                 {
                     var applyContext = new ApplyStateContext(
                         context.Storage,
@@ -110,6 +134,7 @@ namespace Hangfire.States
                         stateToApply,
                         jobData.State,
                         context.Profiler,
+                        _stateMachine,
                         context.CustomData);
 
                     // State changing process can fail due to an exception in state filters themselves,

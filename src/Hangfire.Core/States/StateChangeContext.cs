@@ -51,7 +51,19 @@ namespace Hangfire.States
             [NotNull] IState newState,
             [CanBeNull] IEnumerable<string> expectedStates,
             CancellationToken cancellationToken)
-        : this(storage, connection, backgroundJobId, newState, expectedStates, false, null, cancellationToken, EmptyProfiler.Instance)
+        : this(storage, connection, null, backgroundJobId, newState, expectedStates, false, null, cancellationToken, EmptyProfiler.Instance)
+        {
+        }
+
+        public StateChangeContext(
+            [NotNull] JobStorage storage,
+            [NotNull] IStorageConnection connection,
+            [CanBeNull] JobStorageTransaction transaction,
+            [NotNull] string backgroundJobId,
+            [NotNull] IState newState,
+            [CanBeNull] IEnumerable<string> expectedStates,
+            CancellationToken cancellationToken)
+            : this(storage, connection, transaction, backgroundJobId, newState, expectedStates, false, null, cancellationToken, EmptyProfiler.Instance)
         {
         }
 
@@ -65,13 +77,14 @@ namespace Hangfire.States
             CancellationToken cancellationToken,
             [NotNull] IProfiler profiler,
             [CanBeNull] IReadOnlyDictionary<string, object> customData = null) 
-            : this(storage, connection, backgroundJobId, newState, expectedStates, disableFilters, null, cancellationToken, profiler, customData)
+            : this(storage, connection, null, backgroundJobId, newState, expectedStates, disableFilters, null, cancellationToken, profiler, customData)
         {
         }
 
         internal StateChangeContext(
             [NotNull] JobStorage storage, 
             [NotNull] IStorageConnection connection,
+            [CanBeNull] JobStorageTransaction transaction,
             [NotNull] string backgroundJobId, 
             [NotNull] IState newState, 
             [CanBeNull] IEnumerable<string> expectedStates,
@@ -83,6 +96,7 @@ namespace Hangfire.States
         {
             Storage = storage ?? throw new ArgumentNullException(nameof(storage));
             Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            Transaction = transaction;
             BackgroundJobId = backgroundJobId ?? throw new ArgumentNullException(nameof(backgroundJobId));
             NewState = newState ?? throw new ArgumentNullException(nameof(newState));
             ExpectedStates = expectedStates;
@@ -93,14 +107,31 @@ namespace Hangfire.States
             CompleteJob = completeJob;
         }
 
+        [NotNull]
         public JobStorage Storage { get; }
+
+        [NotNull]
         public IStorageConnection Connection { get; }
+
+        [CanBeNull]
+        public JobStorageTransaction Transaction { get; }
+
+        [NotNull]
         public string BackgroundJobId { get; }
+
+        [NotNull]
         public IState NewState { get; }
+
+        [CanBeNull]
         public IEnumerable<string> ExpectedStates { get; }
+        
         public bool DisableFilters { get; }
         public CancellationToken CancellationToken { get; }
+
+        [NotNull]
         internal IProfiler Profiler { get; }
+
+        [CanBeNull]
         public IReadOnlyDictionary<string, object> CustomData { get; }
 
         [CanBeNull]

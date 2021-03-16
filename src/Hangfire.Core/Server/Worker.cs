@@ -208,6 +208,7 @@ namespace Hangfire.Server
                     return _stateChanger.ChangeState(new StateChangeContext(
                         context.Storage,
                         connection,
+                        null,
                         jobId,
                         state,
                         expectedStates,
@@ -237,6 +238,7 @@ namespace Hangfire.Server
             return _stateChanger.ChangeState(new StateChangeContext(
                 context.Storage,
                 connection,
+                null,
                 jobId,
                 new FailedState(exception) { Reason = $"Failed to change state to a '{state.Name}' one due to an exception after {_maxStateChangeAttempts} retry attempts" },
                 expectedStates,
