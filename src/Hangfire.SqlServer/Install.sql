@@ -680,8 +680,14 @@ ELSE IF @CURRENT_SCHEMA_VERSION = 7
 BEGIN
 	PRINT 'Installing schema version 8';
 
+	ALTER TABLE [$(HangFireSchema)].[Server] DROP CONSTRAINT [PK_HangFire_Server]
+	PRINT 'Dropped constraint [PK_HangFire_Server] to modify the [HangFire].[Server].[Id] column';
+
 	ALTER TABLE [$(HangFireSchema)].[Server] ALTER COLUMN [Id] NVARCHAR (200) NOT NULL;
 	PRINT 'Modified [$(HangFireSchema)].[Server].[Id] length to 200';
+
+	ALTER TABLE [$(HangFireSchema)].[Server] ADD  CONSTRAINT [PK_HangFire_Server] PRIMARY KEY CLUSTERED ([Id] ASC);
+	PRINT 'Re-created constraint [PK_HangFire_Server]';
 
 	-- Nothing complicated - we just collecting all the secondary indexes and primary key names to delete them.
 	-- We should expect nothing here, because custom columns and indexes can be applied for the [Counter] table
