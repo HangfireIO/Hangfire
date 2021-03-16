@@ -5,26 +5,27 @@ namespace ConsoleSample
 {
     public static class NewFeatures
     {
-        [AutomaticRetry(Attempts = 1, OnAttemptsExceeded = AttemptsExceededAction.Delete)]
-        public static void TryExceptional()
+        [AutomaticRetry(Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Delete)]
+        public static bool TryExceptional(bool throwException)
         {
-            throw new InvalidOperationException();
+            if (throwException) throw new InvalidOperationException();
+            return true;
         }
 
-        public static void Continuation([FromResult] object result)
+        public static void Continuation([FromResult] bool result)
         {
-            // Background job execution succeeded, and optional result was returned.
+            Console.WriteLine("Success continuation, result: " + result);
         }
 
         public static void CatchExceptional([FromException] ExceptionInfo exception)
         {
-            if (!exception.Type.Contains("OperationCanceledException"))
+            if (exception.Type.Contains("OperationCanceledException"))
             {
-                // Background method threw an exception.
+                Console.WriteLine("Failure continuation: Operation was canceled");
             }
             else
             {
-                // Execution was canceled – someone clicked the "Delete" button, etc.
+                Console.WriteLine("Failure continuation: " + exception);
             }
         }
 
@@ -32,33 +33,34 @@ namespace ConsoleSample
         {
             if (exception == null)
             {
-                // Succeeded
+                Console.WriteLine("Finally clause, after success");
             }
             else
             {
-                // An exception has been thrown, or execution was canceled.
+                Console.WriteLine("Finally clause, after failure: " + exception);
             }
         }
 
-        public static void FinallyExceptional2([FromResult] object result, [FromException] ExceptionInfo exception)
+        public static void FinallyExceptional2([FromResult] bool result, [FromException] ExceptionInfo exception)
         {
             if (exception == null)
             {
-                // Succeeded, result can be used if antecedent method returns something.
+                Console.WriteLine("Finally clause 2, after success: " + result);
             }
             else
             {
-                // An exception has been thrown, or execution was canceled.
+                Console.WriteLine("Finally clause 2, after failure: " + exception);
             }
         }
 
-        public static void Test()
+        public static void Test(bool throwException)
         {
-            var exceptionalId = BackgroundJob.Enqueue(() => TryExceptional());
+            var exceptionalId = BackgroundJob.Enqueue(() => TryExceptional(throwException));
 
-            BackgroundJob.ContinueJobWith(exceptionalId, () => Continuation(null), JobContinuationOptions.OnlyOnSucceededState);
-            BackgroundJob.ContinueJobWith(exceptionalId, () => CatchExceptional(null), JobContinuationOptions.OnlyOnDeletedState);
-            BackgroundJob.ContinueJobWith(exceptionalId, () => FinallyExceptional(null), JobContinuationOptions.OnAnyFinishedState);
+            BackgroundJob.ContinueJobWith(exceptionalId, () => Continuation(default), JobContinuationOptions.OnlyOnSucceededState);
+            BackgroundJob.ContinueJobWith(exceptionalId, () => CatchExceptional(default), JobContinuationOptions.OnlyOnDeletedState);
+            BackgroundJob.ContinueJobWith(exceptionalId, () => FinallyExceptional(default), JobContinuationOptions.OnAnyFinishedState);
+            BackgroundJob.ContinueJobWith(exceptionalId, () => FinallyExceptional2(default, default), JobContinuationOptions.OnAnyFinishedState);
         }
     }
 }

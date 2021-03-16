@@ -41,7 +41,7 @@ namespace ConsoleSample
             var backgroundJobs = new BackgroundJobClient();
             backgroundJobs.RetryAttempts = 5;
 
-            
+            NewFeatures.Test(throwException: false);
 
             var job1 = BackgroundJob.Enqueue<Services>(x => x.WriteIndex(0));
             var job2 = BackgroundJob.ContinueJobWith<Services>(job1, x => x.WriteIndex(null));
