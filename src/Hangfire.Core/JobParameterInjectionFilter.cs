@@ -18,11 +18,14 @@ using System;
 using System.Reflection;
 using Hangfire.Common;
 using Hangfire.Server;
+using Hangfire.States;
 
 namespace Hangfire
 {
     public class JobParameterInjectionFilter : IServerFilter
     {
+        internal static readonly string DefaultException = "OCE";
+
         public void OnPerforming(PerformingContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
@@ -45,7 +48,18 @@ namespace Hangfire
                 var serialized = context.Connection.GetJobParameter(context.BackgroundJob.Id, parameterName);
                 if (serialized == null) continue;
 
-                argumentsArray[index] = SerializationHelper.Deserialize(serialized, parameterType, SerializationOption.User);
+                object deserialized;
+
+                if (parameterType == typeof(ExceptionInfo) && DefaultException.Equals(serialized, StringComparison.Ordinal))
+                {
+                    deserialized = new ExceptionInfo(DeletedState.DefaultException);
+                }
+                else
+                {
+                    deserialized = SerializationHelper.Deserialize(serialized, parameterType, SerializationOption.User);
+                }
+
+                argumentsArray[index] = deserialized;
             }
         }
 

@@ -54,6 +54,8 @@ namespace Hangfire.States
     /// <threadsafety static="true" instance="false" />
     public class DeletedState : IState
     {
+        public static readonly Exception DefaultException = new OperationCanceledException();
+
         /// <summary>
         /// Represents the name of the <i>Deleted</i> state. This field is read-only.
         /// </summary>

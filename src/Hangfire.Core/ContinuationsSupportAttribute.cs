@@ -249,7 +249,10 @@ namespace Hangfire
                 else if (context.CandidateState is DeletedState)
                 {
                     var serializedData = context.CandidateState.SerializeData();
-                    serializedData.TryGetValue("Exception", out antecedentException);
+                    if (!serializedData.TryGetValue("Exception", out antecedentException))
+                    {
+                        antecedentException = JobParameterInjectionFilter.DefaultException;
+                    }
                 }
             }
 
