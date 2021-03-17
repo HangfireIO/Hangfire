@@ -130,7 +130,7 @@ namespace Hangfire.States
                         context.Storage,
                         context.Connection,
                         transaction,
-                        new BackgroundJob(context.BackgroundJobId, jobData.Job, jobData.CreatedAt),
+                        new BackgroundJob(context.BackgroundJobId, jobData.Job, jobData.CreatedAt, jobData.ParametersSnapshot),
                         stateToApply,
                         jobData.State,
                         context.Profiler,

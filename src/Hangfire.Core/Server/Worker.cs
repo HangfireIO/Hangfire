@@ -282,7 +282,7 @@ namespace Hangfire.Server
 
                 jobData.EnsureLoaded();
 
-                var backgroundJob = new BackgroundJob(jobId, jobData.Job, jobData.CreatedAt);
+                var backgroundJob = new BackgroundJob(jobId, jobData.Job, jobData.CreatedAt, jobData.ParametersSnapshot);
 
                 using (var jobToken = new ServerJobCancellationToken(connection, jobId, context.ServerId, context.ExecutionId.ToString(), context.StoppedToken))
                 {

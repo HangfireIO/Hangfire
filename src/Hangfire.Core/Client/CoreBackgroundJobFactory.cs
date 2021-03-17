@@ -81,7 +81,7 @@ namespace Hangfire.Client
                 return null;
             }
 
-            var backgroundJob = new BackgroundJob(jobId, context.Job, createdAt);
+            var backgroundJob = new BackgroundJob(jobId, context.Job, createdAt, parameters);
 
             if (context.InitialState != null)
             {
