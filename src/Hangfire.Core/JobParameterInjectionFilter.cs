@@ -43,20 +43,21 @@ namespace Hangfire
                 var parameterType = parameters[index].ParameterType;
                 var parameterName = attribute.ParameterName;
 
-                if (String.IsNullOrEmpty(parameterName) || argumentsArray[index] != default) continue;
+                if (String.IsNullOrEmpty(parameterName)) continue;
 
                 var serialized = context.Connection.GetJobParameter(context.BackgroundJob.Id, parameterName);
-                if (serialized == null) continue;
+                var deserialized = (object)null;
 
-                object deserialized;
-
-                if (parameterType == typeof(ExceptionInfo) && DefaultException.Equals(serialized, StringComparison.Ordinal))
+                if (serialized != null)
                 {
-                    deserialized = new ExceptionInfo(DeletedState.DefaultException);
-                }
-                else
-                {
-                    deserialized = SerializationHelper.Deserialize(serialized, parameterType, SerializationOption.User);
+                    if (parameterType == typeof(ExceptionInfo) && DefaultException.Equals(serialized, StringComparison.Ordinal))
+                    {
+                        deserialized = new ExceptionInfo(DeletedState.DefaultException);
+                    }
+                    else
+                    {
+                        deserialized = SerializationHelper.Deserialize(serialized, parameterType, SerializationOption.User);
+                    }
                 }
 
                 argumentsArray[index] = deserialized;

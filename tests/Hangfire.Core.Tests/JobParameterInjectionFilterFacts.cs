@@ -61,9 +61,21 @@ namespace Hangfire.Core.Tests
 
             Assert.Equal("Hello!", _context.BackgroundJob.Job.Args[0]);
         }
+        
+        [Fact]
+        public void OnPerforming_RewritesValueTypeParameters_DecoratedWithASpecialAttribute_ThatHaveDefaultValue()
+        {
+            _context.BackgroundJob.Job = Job.FromExpression(() => Decorated(default(int)));
+            _context.Connection.Setup(x => x.GetJobParameter(_context.BackgroundJob.Id, "Result123")).Returns("12345");
+            var filter = CreateFilter();
+
+            filter.OnPerforming(CreatePerformingContext());
+
+            Assert.Equal(12345, _context.BackgroundJob.Job.Args[0]);
+        }
 
         [Fact]
-        public void OnPerforming_DoesNotModifyParameters_ThatDoNotHaveNullValue()
+        public void OnPerforming_RewritesParameters_ThatDoNotHaveNullValue()
         {
             _context.BackgroundJob.Job = Job.FromExpression(() => Decorated("NonNull"));
             _context.Connection.Setup(x => x.GetJobParameter(_context.BackgroundJob.Id, "Result123")).Returns("\"Hello!\"");
@@ -71,37 +83,25 @@ namespace Hangfire.Core.Tests
 
             filter.OnPerforming(CreatePerformingContext());
 
-            Assert.Equal("NonNull", _context.BackgroundJob.Job.Args[0]);
+            Assert.Equal("Hello!", _context.BackgroundJob.Job.Args[0]);
         }
 
         [Fact]
-        public void OnPerforming_DoesNotModifyValueTypeParameters_DecoratedWithASpecialAttribute_ThatHaveDefaultValue()
-        {
-            _context.BackgroundJob.Job = Job.FromExpression(() => Decorated(default(int)));
-            _context.Connection.Setup(x => x.GetJobParameter(_context.BackgroundJob.Id, "Result123")).Returns("123");
-            var filter = CreateFilter();
-
-            filter.OnPerforming(CreatePerformingContext());
-
-            Assert.Equal(0, _context.BackgroundJob.Job.Args[0]);
-        }
-
-        [Fact]
-        public void OnPerforming_DoesNotModifyValueTypeParameters_DecoratedWithASpecialAttribute_ThatHaveNonDefaultValue()
+        public void OnPerforming_RewritesValueTypeParameters_DecoratedWithASpecialAttribute_ThatHaveNonDefaultValue()
         {
             _context.BackgroundJob.Job = Job.FromExpression(() => Decorated(123456));
-            _context.Connection.Setup(x => x.GetJobParameter(_context.BackgroundJob.Id, "Result123")).Returns("123");
+            _context.Connection.Setup(x => x.GetJobParameter(_context.BackgroundJob.Id, "Result123")).Returns("54321");
             var filter = CreateFilter();
 
             filter.OnPerforming(CreatePerformingContext());
 
-            Assert.Equal(123456, _context.BackgroundJob.Job.Args[0]);
+            Assert.Equal(54321, _context.BackgroundJob.Job.Args[0]);
         }
 
         [Fact]
-        public void OnPerforming_DoesNotModifyValue_WhenJobParameterIsNull()
+        public void OnPerforming_RewritesTheValueWithNull_WhenJobParameterIsNull()
         {
-            _context.BackgroundJob.Job = Job.FromExpression(() => Decorated(null));
+            _context.BackgroundJob.Job = Job.FromExpression(() => Decorated(123456));
             _context.Connection.Setup(x => x.GetJobParameter(_context.BackgroundJob.Id, "Result123")).Returns<string>(null);
             var filter = CreateFilter();
 
