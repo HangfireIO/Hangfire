@@ -22,433 +22,55 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
-1.7.19
+1.8.0-beta1
 
 Hangfire.Core
 
-• Added – German (Deutsch) Dashboard UI localization (by @d-oit).
-• Added – `IGlobalConfiguration.UseMaxArgumentSizeToRender` method to avoid "VALUE TOO BIG" messages.
-• Changed – Remove "readonly" keyword from the `JobMethodCallRenderer.MaxArgumentToRenderSize` field to support .NET 5.0.
-• Fixed – Race condition in `AspNetShutdownDetector` leads to `NullReferenceException` (by @jr01).
-• Fixed – Avoid ArgumentException: Item has already been added when preserving an original exception.
-• Project – Add repository link to nuspec files (by @jeremyhayes).
+• Added – Display deleted jobs in the Realtime and History graphs when supported by storage.
+• Added – `DeletedState` now have the persisted `Exception` property.
+• Added – `JobContinuationOptions.OnlyOnDeletedState` to create continuations after a failure.
+• Added – `Exception` job parameter is passed to continuation when `UseResultsInContinuations` method is used.
+• Added – `FromExceptionAttribute` to deal with an antecedent exception in a background job continuation.
+• Added – Passing job parameters in job creation phase (by @brian-knoll-micronetonline).
+• Added – Allow to filter exception types in `AutomaticRetryAttribute` by using the new `OnlyOn` property.
+• Added – `IBackgroundProcess.UseBackgroundPool` now allows to pass thread configuration logic.
+• Added – `IGlobalConfiguration.UseJobDetailsRenderer` method for custom renderers.
+• Added – `BackgroundJobServerOptions.WorkerThreadConfigurationAction` option
+• Added – Allow to pass custom data to `ApplyStateContext` and `ElectStateContext` instances.
+• Added – Preserve custom data dictionary between the entire filter chain.
+• Added – Fetch "Retries" metric with other statistics when supported by storage
+• Added – `IGlobalConfiguration.UseDashboardMetrics` extension method to pass multiple metrics at once.
+• Added – State renderer for the `DeletedState` to display its new exception property.
+• Added – Virtual `JobStorage.GetReadOnlyConnection` method intended to return `JobStorageConnection` for replicas.
+• Added – Virtual `JobStorage.HasFeature` method for querying optional features.
+• Added – Optional `GetSetCount` and `GetUtcDateTime` methods for the `JobStorageConnection` class.
+• Added – Optional `AcquireDistributedLock` and `RemoveFromQueue` methods for the `JobStorageTransaction` class.
+• Added – Support for transactional acknowledge using new storage method for better handling some data loss scenarios.
+• Added – `Factory`, `StateMachine` and `Performer` properties to context classes to avoid injecting services.
+• Added – Allow to pass transaction to background job state changer when new methods implemented.
+• Added – Optional `ParametersSnapshot` property for `BackgroundJob` and `JobData` classes to minimize roundtrips in future.
+• Changed – Use the `AttemptsExceededAction.Delete` option by default in the global automatic retry filter.
+• Changed – Move job to the `DeletedState` instead of `SucceededState` when its invocation was canceled by a filter.
+• Changed – `FromParameterAttribute`-based logic now always overwrites arguments, even with non-null values.
+• Changed – Improved display of real-time chart with more accents on failed and deleted jobs.
+• Changed – Ignore some members when serializing a `JobFilterAttribute` instance to decrease size
+• Changed – `ServerHeartbeatProcess` now uses `ThreadPriority.AboveNormal` to prioritize heartbeats.
+• Fixed – Correction on brazilian portuguese translations (by @Prestini).
 
 Hangfire.SqlServer
 
-• Fixed – Return `null` instead of throwing FormatException when job id can't be parsed.
-• Project – Run the entire Hangfire.SqlServer test suite against the new Microsoft.Data.SqlClient package.
+• Added – Recommended Schema 8 migration.
+• Added – `SqlServerStorageOptions.PreferMicrosoftDataSqlClient` option to use the corresponding package.
+• Added – `SqlServerStorage.SchemaVersion` metric for Dashboard UI.
+• Added – Implement optional experimental transactional acknowledge for SQL Server (`UseTransactionalAcknowledge` option).
+• Changed – Sliding invisibility timeout-based fetching method is now used by default with 5 minute timeout.
+• Fixed – HangFire.JobQueue.Id column type to BIGINT in the new migration
+• Fixed – Ensure connection is released when exception is thrown when during lock release.
 
-1.7.18
+Hangfire.NetCore and Hangfire.AspNetCore
 
-Hangfire.SqlServer
+• Added – `IApplicationBuilder.UseHangfireServer` that accepts custom factory for `IBackgroundProcessingServer`.
 
-• Added – `SqlServerStorageOptions.DeleteExpiredBatchSize` option to remove more expired records in a single pass.
-• Fixed – Don't throw from `SqlServerStorage.ToString` method when using custom factory or existing connection.
-
-1.7.17
-
-Hangfire.SqlServer
-
-• Fixed – SqlException "Incorrect syntax near 'throw'" after upgrading to 1.7.15 when using SQL Server 2008 or 2008R2.
-
-1.7.16
-
-Hangfire.SqlServer
-
-• Fixed – Blocking problems when using multiple storages with the same queue names in the same process (appeared in 1.7.9).
-
-1.7.15
-
-Hangfire.Core
-
-• Added – `IGlobalConfiguration.UseMaxLinesInExceptionDetails` option to cap the size of stack traces.
-• Changed – Only the first 100 lines of a stack trace will be preserved now by default in Failed state.
-• Fixed – Don't let exceptions with huge stack traces take up too much storage space.
-
-Hangfire.SqlServer
-
-• Fixed – Avoid deadlocks when using the `SetJobParameter` method without introducing issues for older schemas.
-• Fixed – Remove duplicate sorting in the `SqlServerMonitoringApi.GetJobs` method which is used by a lot of queries.
-
-1.7.14
-
-Hangfire.SqlServer
-
-• Fixed – Duplicate entries in the `JobParameters` table after upgrading to version 1.7.13.
-• Fixed – Extensive retries on a method that has a retry attribute after upgrading to 1.7.13.
-• Fixed – "ArgumentException: An item with the same key has already been added. Key: RetryCount" in `SqlServerMonitoringApi`.
-
-1.7.13
-
-Hangfire.Core
-
-• Added – Catalan translation for Dashboard UI (based on Spanish translation, by @agausachs).
-• Added – Support for configuring recommended serializer settings via callback (by @Yaevh).
-• Fixed – Use correct wording for job parameters in Job Details page, add it to resources.
-• Fixed – Don't push negative points to the realtime graph in dashboard.
-• Fixed – Don't depend on history collection type returned from Storage API.
-• Project – Execute tests one by one to ensure exit code isn't being lost (by @willchis).
-
-Hangfire.SqlServer
-
-• Added – `UseIgnoreDupKeyOption` for SQL Server storage configuration (changes to [Set] and [Hash] tables required).
-• Fixed – Don't truncate too long keys silently, throw exceptions instead.
-• Fixed – Add missing null checks for methods in the `SqlServerWriteOnlyTransaction` class.
-• Fixed – Change `holdlock` hint to `xlock` in `merge` statements in transaction to prevent deadlocks.
-• Fixed – Don't rethrow "Lock request time out period exceeded" exceptions from expiration manager.
-• Fixed – Increase [Server].[Id] column's length to 200 for new installations.
-
-1.7.12
-
-Hangfire.Core
-
-• Added – Display actual job payload and exception message on job details page when could find the method.
-• Added – French translation for Dashboard UI (by @PaulARoy).
-• Added – Expose IStorageConnection.GetRecurringJobs(IEnumerable ids) to public.
-• Changed – Bump thread priority in heartbeat process for constrained environments.
-• Changed – Display job properties in a dedicated row in job details page.
-• Fixed – Avoid storage round-trip when displaying continuations on job details page.
-
-1.7.11
-
-Hangfire.Core
-
-• Added – Display recurring job exceptions directly in the Dashboard UI.
-• Added – Add built-in support for reliable shutdown detection of ASP.NET apps.
-• Changed – Unify exception handling in recurring job scheduler.
-• Changed – Internal feature to perform state changes without calling any filters.
-• Changed – Decrease the number of retry attempts for recurring jobs to 5.
-• Fixed – Let workers to ignore any state change filters when all previous attempts to call them failed.
-• Fixed – Don't let `RecurringJobScheduler` to stall the pipeline when extension filters throw an exception.
-• Fixed – Don't let `DelayedJobScheduler` to stall the pipeline when state filters throw an exception.
-• Fixed – `JobLoadException` when new methods deployed, caused by overlapped recycles in ASP.NET applications.
-• Fixed – Configuration changes aren't taken into account, caused by overlapped recycles in ASP.NET.
-• Fixed – Zombie servers shown on the "Servers" page that aren't stopped automatically unless app pool is recycled.
-• Fixed – Pass the whole exception to the `Error` field of a recurring job.
-• Fixed – Re-schedule recurring jobs with unsupported versions, instead of stopping the pipeline.
-• Fixed – Don't stumble over non-existing recurring jobs in a scheduler.
-• Fixed – Add another check before removing non-existing jobs from delayed jobs to avoid race conditions.
-• Fixed – Avoid throwing `NullReferenceException` instead of `InvalidOperationException` when deserializing a job.
-• Fixed – Don't transform queue names to upper case in the Dashboard UI.
-
-1.7.10
-
-Hangfire.Core
-
-• Added – Farsi translation for Dashboard UI (by @sepehr1101).
-• Added – Portuguese translation for Dashboard UI (by @GeErghon).
-• Added – `PrefixPath` in `DashboardOptions` (by @shenjielx).
-• Added – Allow `PageUrl` to be overridden by subclass (by @brendonparker).
-
-Hangfire.SqlServer
-
-• Changed – Use `XACT_ABORT` option for `ExpirationManager` queries.
-• Changed – Don't rely on implicit rollback when disposing transactions.
-• Fixed – `NullReferenceException` in logs thrown from `SqlInternalTransaction.Rollback` method.
-
-1.7.9
-
-Hangfire.Core
-
-• Fixed – Additional Chinese translation for Dashboard UI (by @brookqin).
-• Fixed – Added `null` checks for expired failed jobs in Dashboard UI (by @ppkale1995-cimpress).
-• Fixed – Add word break to definition lists for state cards in Dashboard UI.
-• Fixed – Render long recurring job identifiers correctly in Dashboard UI.
-
-Hangfire.SqlServer
-
-• Changed – Implement long polling fetch for sub-second polling delays without `sp_getapplock`.
-• Fixed – Don't leak `DbConnection` instance when an exception occurs during its opening.
-• Fixed – Can not obtain connection from the pool exception after database was offline.
-• Fixed – High number of waits in SQL Server when Hangfire Servers are idle.
-
-Documentation
-
-• Changed – Update "Making ASP.NET Applications Always Running" for .NET Core (by @unionthugface).
-• Fixed – Fix typo in the README.md file (by @tawfikkh).
-
-1.7.8
-
-Hangfire.Core
-
-• Added – `IGlobalConfiguration.UseResultsInContinuations` method to globally enable results for continuations.
-• Added – Ability to push antecedent job's result to continuations via job parameters with `ContinuationsSupport`.
-• Added – `JobParameterInjectionFilter` server filter to inject job parameters as arguments.
-• Added – Allow to specify a custom thread factory in `UseBackgroundPool` methods.
-• Changed – Add retry attempts for recurring jobs instead of immediately disabling them.
-• Fixed – `CultureInfo.InvariantCulture` is now restored properly in background jobs.
-• Fixed – Recurring jobs aren't triggered early after changing their cron expressions.
-• Fixed – Don't trigger recurring job when it can't be scheduled due to errors.
-• Fixed – Argument with a `null` value is skipped when displaying job arguments in Dashboard UI.
-• Fixed – Add a workaround for resolving `System.Diagnostics.Debug` type in .NET Core 3.0.
-• Deprecated – Deprecate the `JobActivatorScope.InnerScope` property as it wasn't implemented.
-
-Hangfire.SqlServer
-
-• Added – Support for Microsoft.Data.SqlClient package when using a custom connection factory (Part II).
-• Fixed – Remove `System.Data.SqlClient` dependency from `SqlCommandBatch` and `ExpirationManager`.
-
-Hangfire.AspNetCore
-
-• Added – `IAppBuilder.MapHangfireDashboard` method for ASP.NET Core 3.0 endpoint routing (by @kendaleiv).
-• Changed – Add explicit `netcoreapp3.0` target with "Microsoft.AspNetCore.App" framework reference (by @stebueh).
-
-Hangfire.NetCore
-
-• Changed – Add explicit `netcoreapp3.0` target with reference to "3.0.0" packages.
-
-Documentation
-
-• Added – Making ASP.NET Core application always running on IIS (by @bamotav).
-• Fixed – Small typo on the "Getting Started in ASP.NET Core applications" page (by @msynk).
-• Fixed – Small spelling correction in "Throttling &amp; Rate Limiters" (by @Bert-R).
-• Fixed – Small typo in the "Sending Email" tutorial (by @nabeelvalley).
-• Fixed – Correct spelling of 'prerequisites' in README.md (by @lgirvin).
-
-1.7.7
-
-Hangfire.Core
-
-• Changed – Produce a trace log message with details when updating a recurring job.
-• Changed – Return early from `CoreBackgroundJobFactory.Create` when storage returns `null`.
-• Project – Minor changes for the `Readme.md` file (by @231293).
-• Project – Add `netcoreapp3.0` target framework for Hangfire.Core.Tests.
-• Project – Add support for MSBuild 15.0 (VS 2019) when building `*.cshtml` files.
-
-Dashboard UI
-
-• Added – Allow modification of the Dashboard UI title (by @tbertenshaw).
-• Added – Support for HTML tags on the Dashboard UI title (by @caioproiete).
-• Added – Buttons for 1,000 and 5,000 items per page in dashboard.
-• Added – Links to previous/next pages to the top of the dashboard page.
-• Changed – Expose the `RazorPage.Context` property as a public member.
-• Fixed – Supplementary Chinese translation (by @mccj).
-• Fixed – Don't update real-time chart when too much time passed since the last update.
-
-Hangfire.SqlServer
-
-• Added – Add support for Microsoft.Data.SqlClient package when using custom connection factory (Part I).
-• Added – Add `UseFineGrainedLocks` option to avoid deadlocks in some theoretical cases.
-• Added – Add missing overload for `UseSqlServerStorage` with connection factory parameter only.
-• Added – Expose the SqlServerObjectsInstaller.GetInstallScript method (by @altso).
-• Fixed – Make command batching working on .NET Core when using System.Data.SqlClient 4.7.0 and higher.
-• Fixed – Permit dash characters (`-`) in schema names (by @kendaleiv).
-• Fixed – Escape square bracket characters in schema names.
-• Project – Add support for `netcoreapp3.0` target in Hangfire.SqlServer.Tests.
-• Project – Take schema name from constant in Hangfire.SqlServer.Tests (by @kendaleiv).
-• Project – Make Hangfire.SqlServer.Tests work on Linux in Travis CI environment.
-
-Hangfire.AspNetCore
-
-• Fixed – Add missing `AddHangfireServer` method for .NET Framework 4.6.1 and higher (by @danstur).
-
-1.7.6
-
-Hangfire.Core
-
-• Changed – Add support for dash characters (`-`) in queue names (by @caioproiete).
-• Fixed – Show actual error in Dashboard UI when recurring job can't be scheduled.
-• Fixed – Ensure backward compatibility when JSON payloads are serialized with field names only.
-• Fixed – Non-awaited continuations can bring down the whole app when `TaskScheduler` is set to `null`.
-• Fixed – Timeout value is not respected in some cases in the `WaitOneAsync` method.
-
-1.7.5
-
-Hangfire.Core
-
-• Fixed – Show error message when there's an error loading the statistics in Dashboard UI (by @prochnowc).
-• Fixed – Properly handle recurring jobs with null or empty 'Job' field.
-• Fixed – Disable recurring job when we can't schedule it due to an error.
-• Fixed – Use `LazyThreadSafetyMode.PublicationOnly` to avoid caching "JobStorage.Current is null" exceptions.
-
-Hangfire.AspNetCore &amp; Hangfire.NetCore
-
-• Fixed – Add missing overload for the `AddHangfireServer` method with "options" action.
-
-1.7.4
-
-Hangfire.Core
-
-• Added – `BackgroundJobClient.RetryAttempts` property to make job creation resilient to transient exceptions.
-• Added – Dashboard localization support in `pt-BR` (by @candidodmv).
-• Changed – Protect background dispatchers from moving from stopped state to non-stopped one.
-• Changed – Unify `WaitOne` and `WaitOneAsync` methods with timeout and cancellation token for `WaitHandle` class.
-• Fixed – Don't hide an original fatal exception occurred in dispatchers in some cases.
-• Fixed – Dashboard UI to display "await" keyword on all task-like methods.
-• Fixed – Display links properly in an informational message on the Servers page in Dashboard UI.
-• Fixed – Wait for the heartbeat process before shutting down a server.
-
-Hangfire.SqlServer
-
-• Fixed – Potential deadlocks cause by suboptimal queries when using `SlidingInvisibilityTimeout` fetching.
-• Fixed – Prevent zero delays between fetch retry attempts when lock acquisition failed without blocking.
-• Fixed – Specify float precision explicitly for the `Score` column in the `AddToSet` method.
-
-1.7.3
-
-Hangfire.Core
-
-• SECURITY – Use `HtmlEncode` in all remaining places in Dashboard UI to prevent XSS attacks.
-
-• Added – Added Dutch language, and updated missing translation on "Servers" page (by @r-win).
-• Added – `Cron.Never` method for adding manual recurring jobs that never fire (by @michaltalaga).
-• Fixed – Add missing `AddOrUpdate` extension methods for the `IRecurringJobManager` interface.
-• Deprecated – Unused `HtmlHelper.FormatProperties` method is now obsolete.
-
-Hangfire.SqlServer
-
-• Fixed – Wrong error message in migration script, when @CurrentSchemaVersion has a NULL value (by @penenkel).
-
-1.7.2
-
-Hangfire.Core
-
-• Added – `DashboardOptions.TimeZoneResolver` property to handle custom time zone resolvers in Dashboard UI.
-• Fixed – `RecurringJob.AddOrUpdate` method is now able to update a broken recurring job.
-• Fixed – Recurring job scheduler now properly handles recurring jobs whose job method or time zone is wrong.
-• Fixed – Don't throw an exception on Recurring Jobs page when time zone can't be resolved.
-
-Hangfire.AspNetCore &amp; Hangfire.NetCore
-
-• Added – Automatically resolve `ITimeZoneResolver` service for the `DashboardOptions.TimeZoneResolver` property.
-• Fixed – Allow to resolve `IJobFilterProvider` service from the `AddHangfire` method.
-
-Hangfire.SqlServer
-
-• Fixed – Occasional "DataException: Error parsing column" error when using blocking fetch.
-
-1.7.1
-
-Hangfire.Core
-
-• Added – `DashboardOptions.IgnoreAntiforgeryToken` property to disable token validation in Dashboard UI.
-• Added – Display hints regarding server status on Servers page in Dashboard UI.
-• Added – Highlight recurring jobs with no next execution in Dashboard UI.
-• Added – Show actual error in Dashboard UI when recurring job has an invalid Cron expression.
-• Fixed – `InvalidOperationException` when `AllowSynchronousIO` option isn't set in ASP.NET Core 3.0.
-• Fixed – Set `NextExecution` value to `null` when existing recurring job has an invalid Cron expression.
-• Fixed – Make dashboard charts to be more culture-specific to use correct time format.
-• Fixed – Obsolete `UseSerializationSettings` comment now contains correct method name (by @PaitoAnderson).
-• Project – `resx` files now re-generated automatically when building a project.
-
-Hangfire.NetCore
-
-• Added – Worker Service host support for .NET Core without unnecessary dependencies to ASP.NET Core.
-
-Hangfire.SqlServer
-
-• Changed – Use blocking fetch implementation only for sub-second polling intervals.
-• Fixed – Don't fail with an exception when can't connect to MSSQL instance during start-up.
-• Fixed – Don't access the `JobQueue` table when using blocking query and don't have results.
-
-1.7.0
-
-Hangfire.Core
-
-• Added – Full .NET Core 2.0 support by explicitly targeting .NET Standard 2.0.
-• Added – `IGlobalConfiguration.SetDataCompatibilityLevel` to enable rolling upgrades from version 1.6.
-• Added – `IGlobalConfiguration.UseRecommendedSerializerSettings` method for new installations.
-• Added – Assemblies now loaded automatically when resolving a type when using default type resolver.
-• Added – Custom `TaskScheduler` can now be specified in `BackgroundJobServerOptions` for workers.
-• Added – `IdempotentCompletionAttribute` filter to enforce strict order for continuations.
-• Added – `IBackgroundJobClient.ContinueJobWith` methods to replace `ContinueWith` ones in future for clarity.
-• Added – `JobStorage.LinearizableReads` virtual property to avoid unnecessary waits in state changer.
-• Added – Allow async methods to run their continuations on worker thread by disabling `TaskScheduler`.
-• Added – Multi-stage shutdown to wait for graceful completion before starting to abort jobs.
-• Added – Asynchronous checks for job cancellation, `IJobCancellationToken` can be replaced with `CancellationToken` (by @pieceofsummer).
-• Added – Possibility to create millions of recurring jobs without stressing the scheduler.
-• Added – Second-based recurring jobs are fully supported now with 6-part cron expressions.
-• Added – Support for custom `TimeZoneInfo` resolvers in recurring jobs for interoperability purposes.
-• Added – Package now explicitly targets .NET Standard 2.0, and .NET Framework 4.6 target added as well.
-• Added – Type roundtrip support between .NET Core and .NET Framework for most common types.
-• Added – Allow to specify queue names based on job arguments with `QueueAttribute` via patterns.
-• Added – `PerformContext.Storage` property to allow server filters to spawn connections.
-• Added – `GetFirstByLowestScoreFromSet` connection method overload that returns multiple items (by @cdschneider).
-• Added – Entry point for custom job naming strategies available for dashboard (by @pieceofsummer).
-• Added – `JobDisplayNameAttribute` class for displaying jobs in dashboard, available on .NET Core (by @pieceofsummer).
-• Added – Support for async jobs returning ValueTask&lt;T&gt; (by @pieceofsummer).
-• Added – Support for asynchronous background processes, opens the road toward async storage.
-• Added – Circuit breaker pattern for background processes to reduce the logging pressure.
-• Added – Processing server is now able to detect it was expired, and restart itself with the new id.
-• Added – Ability to use custom delays for automatic retries of a background job.
-• Added – `ThreadAbortException` and `ThreadInterruptedException` handling to keep the background process running.
-• Added – Support for complex Cron expressions, including the `L`, `W`, `#` characters.
-• Added – `JobActivator.BeginScope` method overload with the full `PerformContext` (by @jeroenvervaeke).
-• Added – Support for read-only view for dashboard (by @mikechamberlain).
-• Added – Storage property to control the job expiration time (by @rsilvanet).
-• Added – Decrease the size of serialized type payloads and remove version information.
-• Changed – Make `TaskScheduler.Default` the default scheduler for async jobs to avoid breaking changes.
-• Changed – Split serializer setting to Internal and User scopes to isolate them (Version_170 Switch).
-• Changed – Don't allow to affect internal serialization even by `JsonConvert.DefaultSettings` (Version_170 Switch).
-• Changed – Share the same type binder between Hangfire itself and Newtonsoft.Json (Version_170 Switch).
-• Changed – Use more compact representation of dates when using `SerializeDateTime` (Version_170 Switch).
-• Changed – Stop using special case for `DateTime` argument serialization (Version_170 Switch).
-• Changed – Don't serialize unused `AwaitingState.Expiration` field (Version_170 Switch).
-• Changed – Specify parameter type when serializing arguments to allow using `TypeNameHandling.Auto` option.
-• Changed – Use case sensitive search when resolving a type as by default in .NET.
-• Changed – Make `SucceededState` constructor public to allow state serialization.
-• Changed – Add `IBackgroundJobFactory.StateMachine` property (breaking change for low level API).
-• Changed – Replace Rickshaw with Chart.js to have beautiful charts with less headache.
-• Changed – `DelayedJobScheduler` is able to use the new storage method to query multiple jobs at once.
-• Changed – `RecurringJobScheduler` now uses index-based checks to fetch only those jobs that should be scheduled.
-• Fixed – Worker now logs an error, when all the state change attempts failed due to an exception.
-• Fixed – Don't serialize arguments multiple times when showing job details in dashboard.
-• Fixed – `DateTimeOffset` conversion error when it was serialized with `TypeConverter`.
-• Fixed – Remove duplicate of argument deserialization code for obsolete `Job` class methods.
-• Fixed – Decorate all the exceptions with the `SerializableAttribute`.
-• Fixed – `ArgumentNullException` when job class contains method with non-resolvable generic arguments.
-• Fixed – "Failed to initialize CoreCLR" error, by removing reference to `Microsoft.NETCore.Portable.Compatibility`.
-• Fixed – Possible race conditions in `RecurringJobScheduler` that may lead to job duplicates.
-• Fixed – Configuration inconsistency introduced in 1.6.18 leading to issues with custom `JobActivator`.
-• Fixed – Triggering the recurring task doesn't update its last execution time.
-• Fixed – Recurring job which don't have next execution (intentionally or not) don't cause exception.
-• Fixed – Dashboard recurring jobs sorting is random (now it's based on next execution time).
-• Fixed – Performance problems with huge amount of recurring jobs.
-• Fixed – `NextExecution` field of a recurring job has delay in value getting set.
-• Fixed – Dashboard graphs have improper sizing.
-• Fixed – Server disappears from the list, but still performing the background processing.
-• Fixed – Logging is too aggressive on transient errors.
-• Fixed – Daylight saving time transitions now handled perfectly in recurring jobs thanks to Cronos.
-• Fixed – Confusing Cron scheduling, when both day-of-week and day-of-month fields set.
-• Project – Add `DataCompatibilityRangeFact` and `DataCompatibilityRangeTheory` classes for compatibility checks.
-• Project – Reduce test execution time by removing unnecessary waits.
-
-Hangfire.AspNetCore
-
-• Added – Full .NET Core 2.0 support by explicitly targeting .NET Standard 2.0.
-• Added – An overloaded AddHangfire method with `IServiceProvider` parameter (by @ericgreenmix and @denis-ivanov).
-• Added – `BackgroundJobServerHostedService` class based on `IHostedService` interface.
-• Added – `IServiceCollection.AddHangfireServer` method to register the server during configuration.
-• Changed – Custom services for factory, performer and state changer interfaces will be picked up only when all of them registered.
-
-Hangfire.SqlServer
-
-• Added – Full .NET Core 2.0 support by explicitly targeting .NET Standard 2.0.
-• Added – `Schema 7` migration to fix the `IX_HangFire_Set_Score` index to include the `Key` column.
-• Added – `Schema 6` migration with less indexes, better physical layout and `bigint` support (disabled by default).
-• Added – Blocking fetch support for sliding expiration-based fetch to avoid excessive polling.
-• Added – `SqlServerStorageOptions.EnableHeavyMigrations` switch to automatically install even heavy migrations.
-• Added – `SqlServerStorageOptions.DisableGlobalLocks` property to avoid custom locking scheme.
-• Added – `SqlServerStorageOptions.UsePageLocksOnDequeue` property to use less CPU consuming fetch.
-• Added – Callback method to allow to open the database with impersonation (by @BjoernHund).
-• Added – `SqlServerStorageOptions.UseRecommendedIsolationLevel` option to set the minimum possible level.
-• Changed – Identity columns either converted to the `bigint` type, or entirely removed.
-• Changed – Clustered indexes were organized according to the access patterns of their tables.
-• Changed – Most of secondary indexes were either removed or made filtered.
-• Changed – Optimize sliding-expiration-based fetching to use even less CPU time.
-• Changed – Use write reordering and fine-grained locking scheme to improve parallelism.
-• Changed – Monitoring API doesn't check state data to see state transition time.
-• Changed – Allow to use zero-based poll interval when sliding invisibility timeout.
-• Changed – Short paths for the `CreateExpiredJob` method to avoid some round-trips.
-• Changed – Set `SqlParameter` types explicitly to not to duplicate query plans.
-• Changed – Batch support for `AddToQueue` method when default provider is used.
-• Changed – Check `FetchedAt` has expected value to prevent prolonging others' work.
-• Changed – Use more recent Dapper 1.50.7 on all platforms except .NET Framework 4.5.
-• Changed – Dapper package is internalized now even on .NET Core to avoid possible conflicts.
-• Fixed – Avoid unnecessary waits in state changer when job was already expired.
-• Fixed – Cannot resolve the collation conflict in `CountersAggregator`.
-• Fixed – Background processing stops when identity columns exceed the `Int32.MaxValue`.
-• Fixed – Slowdown of scheduled jobs due to the missing index on the `[Set]` table.
     </releaseNotes>
     <dependencies>
       <group targetFramework="net45">
