@@ -547,6 +547,9 @@ BEGIN
 	ALTER TABLE [HangFire].[JobQueue] ALTER COLUMN [JobId] BIGINT NOT NULL;
 	PRINT 'Modified [JobQueue].[JobId] type to BIGINT';
 
+	ALTER TABLE [HangFire].[JobQueue] ALTER COLUMN [Id] BIGINT NOT NULL;
+	PRINT 'Modified [JobQueue].[Id] type to BIGINT';
+
 	ALTER TABLE [HangFire].[State] ALTER COLUMN [Id] BIGINT NOT NULL;
 	PRINT 'Modified [State].[Id] type to BIGINT';
 
