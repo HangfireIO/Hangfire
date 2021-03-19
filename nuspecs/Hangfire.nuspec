@@ -20,8 +20,6 @@ https://www.hangfire.io/
     <tags>Hangfire AspNet MVC AspNetCore SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
-Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
-
 1.8.0-beta1
 
 Hangfire.Core
@@ -55,16 +53,14 @@ Hangfire.Core
 • Changed – Improved display of real-time chart with more accents on failed and deleted jobs.
 • Changed – Ignore some members when serializing a `JobFilterAttribute` instance to decrease size
 • Changed – `ServerHeartbeatProcess` now uses `ThreadPriority.AboveNormal` to prioritize heartbeats.
-• Fixed – Correction on brazilian portuguese translations (by @Prestini).
 
 Hangfire.SqlServer
 
-• Added – Recommended Schema 8 migration.
+• Added – Recommended Schema 8 migration with fixed `JobQueue.Id` column to use `bigint` type.
 • Added – `SqlServerStorageOptions.PreferMicrosoftDataSqlClient` option to use the corresponding package.
 • Added – `SqlServerStorage.SchemaVersion` metric for Dashboard UI.
 • Added – Implement optional experimental transactional acknowledge for SQL Server (`UseTransactionalAcknowledge` option).
 • Changed – Sliding invisibility timeout-based fetching method is now used by default with 5 minute timeout.
-• Fixed – HangFire.JobQueue.Id column type to BIGINT in the new migration
 • Fixed – Ensure connection is released when exception is thrown when during lock release.
 
 Hangfire.NetCore and Hangfire.AspNetCore
