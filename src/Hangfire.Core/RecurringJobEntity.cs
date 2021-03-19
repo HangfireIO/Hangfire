@@ -229,7 +229,11 @@ namespace Hangfire
                 result.Add("LastExecution", serializedLastExecution ?? String.Empty);
             }
 
-            TryGetNextExecution(result.ContainsKey("Cron"), out nextExecution, out _);
+            var timeZoneChanged = !TimeZone.Id.Equals(_recurringJob.ContainsKey("TimeZoneId")
+                ? _recurringJob["TimeZoneId"]
+                : TimeZoneInfo.Utc.Id);
+
+            TryGetNextExecution(result.ContainsKey("Cron") || timeZoneChanged, out nextExecution, out _);
             var serializedNextExecution = nextExecution.HasValue ? JobHelper.SerializeDateTime(nextExecution.Value) : null;
 
             if ((_recurringJob.ContainsKey("NextExecution") ? _recurringJob["NextExecution"] : null) !=
