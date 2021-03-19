@@ -172,6 +172,11 @@ namespace Hangfire.SqlServer
                     StringComparison.OrdinalIgnoreCase);
             }
 
+            if ("BatchedGetFirstByLowestScoreFromSet".Equals(featureId, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
             return base.HasFeature(featureId);
         }
 

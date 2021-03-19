@@ -188,7 +188,7 @@ namespace Hangfire.Server
             {
                 var jobsProcessed = 0;
 
-                if (IsBatchingAvailable(connection))
+                if (IsBatchingAvailable(context.Storage, connection))
                 {
                     var now = _nowFactory();
                     var timestamp = JobHelper.ToTimestamp(now);
@@ -393,8 +393,10 @@ namespace Hangfire.Server
             return default;
         }
 
-        private bool IsBatchingAvailable(IStorageConnection connection)
+        private bool IsBatchingAvailable(JobStorage storage, IStorageConnection connection)
         {
+            if (storage.HasFeature("BatchedGetFirstByLowestScoreFromSet")) return true;
+
             return _isBatchingAvailableCache.GetOrAdd(
                 connection.GetType(),
                 type =>

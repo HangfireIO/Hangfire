@@ -150,7 +150,7 @@ namespace Hangfire.Server
             {
                 var jobsProcessed = 0;
 
-                if (IsBatchingAvailable(connection))
+                if (IsBatchingAvailable(context.Storage, connection))
                 {
                     var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
                     var jobIds = ((JobStorageConnection)connection).GetFirstByLowestScoreFromSet("schedule", 0, timestamp, BatchSize);
@@ -253,8 +253,11 @@ namespace Hangfire.Server
                 _profiler));
         }
 
-        private bool IsBatchingAvailable(IStorageConnection connection)
+        // TODO Use new HasFeature method if available to avoid exceptions
+        private bool IsBatchingAvailable(JobStorage storage, IStorageConnection connection)
         {
+            if (storage.HasFeature("BatchedGetFirstByLowestScoreFromSet")) return true;
+
             return _isBatchingAvailableCache.GetOrAdd(
                 connection.GetType(),
                 type =>
