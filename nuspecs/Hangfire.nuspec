@@ -22,6 +22,28 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.20
+
+Hangfire.Core
+
+• Added – Norwegian translations (by @khellang).
+• Fixed – Correction on brazilian portuguese translations (by @Prestini).
+• Fixed – Changing time zone of recurring job without changing cron expression causes immediate execution.
+
+Hangfire.SqlServer
+
+Please see https://www.hangfire.io/blog/2021/03/19/hangfire-1.7.20.html for details, manual changes
+required for those who already migrated to Schema 6 and 7. This problem will be also fixed in a new
+migration in Hangfire 1.8.0.
+
+• Fixed – `Schema 6` migration now fixes problem that prevents 2,147,483,648th job from being enqueued.
+
+Hangfire.NetCore and Hangfire.AspNetCore
+
+• Added – An overload for `AddHangfireServer` utilizing `IServiceProvider` (by @penenkel).
+• Added – `IBackgroundJobClientFactory` and `IRecurringJobManagerFactory` interfaces to fix the following bug.
+• Fixed – Dashboard UI is unable to 'requeue' job on other then default `JobStorage`.
+
 1.7.19
 
 Hangfire.Core
