@@ -29,7 +29,6 @@ Hangfire.Core
 • Added – `JobContinuationOptions.OnlyOnDeletedState` to create continuations after a failure.
 • Added – `Exception` job parameter is passed to continuation when `UseResultsInContinuations` method is used.
 • Added – `FromExceptionAttribute` to deal with an antecedent exception in a background job continuation.
-• Added – Passing job parameters in job creation phase (by @brian-knoll-micronetonline).
 • Added – Allow to filter exception types in `AutomaticRetryAttribute` by using the new `OnlyOn` property.
 • Added – `IBackgroundProcess.UseBackgroundPool` now allows to pass thread configuration logic.
 • Added – `IGlobalConfiguration.UseJobDetailsRenderer` method for custom renderers.
