@@ -540,7 +540,7 @@ WriteLiteral("</th>\r\n                            </tr>\r\n                    
                             {
                                 JobData jobData;
 
-                                using (var connection = Storage.GetConnection())
+                                using (var connection = Storage.GetReadOnlyConnection())
                                 {
                                     jobData = connection.GetJobData(continuation.JobId);
                                 }
