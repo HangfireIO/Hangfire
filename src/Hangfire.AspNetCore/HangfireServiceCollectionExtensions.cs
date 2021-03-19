@@ -53,35 +53,16 @@ namespace Hangfire
             services.TryAddSingleton(_ => DashboardRoutes.Routes);
             services.TryAddSingleton<IJobFilterProvider>(_ => JobFilterProviders.Providers);
             services.TryAddSingleton<ITimeZoneResolver>(_ => new DefaultTimeZoneResolver());
+            
+            services.TryAddSingleton(x => new DefaultClientManagerFactory(x));
+            services.TryAddSingletonChecked<IBackgroundJobClientFactory>(x => x.GetService<DefaultClientManagerFactory>());
+            services.TryAddSingletonChecked<IRecurringJobManagerFactory>(x => x.GetService<DefaultClientManagerFactory>());
 
-            services.TryAddSingletonChecked<IBackgroundJobClient>(x =>
-            {
-                if (GetInternalServices(x, out var factory, out var stateChanger, out _))
-                {
-                    return new BackgroundJobClient(x.GetRequiredService<JobStorage>(), factory, stateChanger);
-                }
+            services.TryAddSingletonChecked(x => x
+                .GetService<IBackgroundJobClientFactory>().GetClient(x.GetService<JobStorage>()));
 
-                return new BackgroundJobClient(
-                    x.GetRequiredService<JobStorage>(),
-                    x.GetRequiredService<IJobFilterProvider>());
-            });
-
-            services.TryAddSingletonChecked<IRecurringJobManager>(x =>
-            {
-                if (GetInternalServices(x, out var factory, out _, out _))
-                {
-                    return new RecurringJobManager(
-                        x.GetRequiredService<JobStorage>(),
-                        factory,
-                        x.GetRequiredService<ITimeZoneResolver>());
-                }
-
-                return new RecurringJobManager(
-                    x.GetRequiredService<JobStorage>(),
-                    x.GetRequiredService<IJobFilterProvider>(),
-                    x.GetRequiredService<ITimeZoneResolver>());
-            });
-
+            services.TryAddSingletonChecked(x => x
+                .GetService<IRecurringJobManagerFactory>().GetManager(x.GetService<JobStorage>()));
 
             // IGlobalConfiguration serves as a marker indicating that Hangfire's services 
             // were added to the service container (checked by IApplicationBuilder extensions).
@@ -133,6 +114,24 @@ namespace Hangfire
             {
                 var options = new BackgroundJobServerOptions();
                 optionsAction(options);
+
+                return CreateBackgroundJobServerHostedService(provider, options);
+            });
+
+            return services;
+        }
+        
+        public static IServiceCollection AddHangfireServer(
+            [NotNull] this IServiceCollection services,
+            [NotNull] Action<IServiceProvider, BackgroundJobServerOptions> optionsAction)
+        {
+            if (services == null) throw new ArgumentNullException(nameof(services));
+            if (optionsAction == null) throw new ArgumentNullException(nameof(optionsAction));
+
+            services.AddTransient<IHostedService, BackgroundJobServerHostedService>(provider =>
+            {
+                var options = new BackgroundJobServerOptions();
+                optionsAction(provider, options);
 
                 return CreateBackgroundJobServerHostedService(provider, options);
             });

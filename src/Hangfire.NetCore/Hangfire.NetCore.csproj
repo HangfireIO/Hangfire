@@ -15,6 +15,9 @@
     <Compile Include="..\Hangfire.AspNetCore\BackgroundJobServerHostedService.cs" Link="BackgroundJobServerHostedService.cs" />
     <Compile Include="..\Hangfire.AspNetCore\BackgroundProcessingServerHostedService.cs" Link="BackgroundProcessingServerHostedService.cs" />
     <Compile Include="..\Hangfire.AspNetCore\HangfireServiceCollectionExtensions.cs" Link="HangfireServiceCollectionExtensions.cs" />
+    <Compile Include="..\Hangfire.AspNetCore\IBackgroundJobClientFactory.cs" Link="IBackgroundJobClientFactory.cs" />
+    <Compile Include="..\Hangfire.AspNetCore\IRecurringJobManagerFactory.cs" Link="IRecurringJobManagerFactory.cs" />
+    <Compile Include="..\Hangfire.AspNetCore\DefaultClientManagerFactory.cs" Link="DefaultClientManagerFactory.cs" />
     <Compile Include="..\SharedAssemblyInfo.cs" Link="Properties\SharedAssemblyInfo.cs" />
   </ItemGroup>
   
