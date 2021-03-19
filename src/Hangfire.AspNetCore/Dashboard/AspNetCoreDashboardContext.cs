@@ -30,9 +30,7 @@ namespace Hangfire.Dashboard
             [NotNull] HttpContext httpContext) 
             : base(storage, options)
         {
-            if (httpContext == null) throw new ArgumentNullException(nameof(httpContext));
-
-            HttpContext = httpContext;
+            HttpContext = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
             Request = new AspNetCoreDashboardRequest(httpContext);
             Response = new AspNetCoreDashboardResponse(httpContext);
 
@@ -53,11 +51,23 @@ namespace Hangfire.Dashboard
 
         public override IBackgroundJobClient GetBackgroundJobClient()
         {
+            var factory = HttpContext.RequestServices.GetService<IBackgroundJobClientFactory>();
+            if (factory != null)
+            {
+                return factory.GetClient(Storage);
+            }
+
             return HttpContext.RequestServices.GetService<IBackgroundJobClient>() ?? base.GetBackgroundJobClient();
         }
 
         public override IRecurringJobManager GetRecurringJobManager()
         {
+            var factory = HttpContext.RequestServices.GetService<IRecurringJobManagerFactory>();
+            if (factory != null)
+            {
+                return factory.GetManager(Storage);
+            }
+
             return HttpContext.RequestServices.GetService<IRecurringJobManager>() ?? base.GetRecurringJobManager();
         }
     }
