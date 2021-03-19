@@ -15,6 +15,11 @@
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.7.20
+• Added – An overload for `AddHangfireServer` utilizing `IServiceProvider` (by @penenkel).
+• Added – `IBackgroundJobClientFactory` and `IRecurringJobManagerFactory` interfaces to fix the following bug.
+• Fixed – Dashboard UI is unable to 'requeue' job on other then default `JobStorage`.
+
 1.7.8
 • Added – `IAppBuilder.MapHangfireDashboard` method for ASP.NET Core 3.0 endpoint routing (by @kendaleiv).
 • Changed – Add explicit `netcoreapp3.0` target with "Microsoft.AspNetCore.App" framework reference (by @stebueh).

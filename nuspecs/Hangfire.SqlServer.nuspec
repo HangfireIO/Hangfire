@@ -17,6 +17,14 @@
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.20
+
+Please see https://www.hangfire.io/blog/2021/03/19/hangfire-1.7.20.html for details, manual changes
+required for those who already migrated to Schema 6 and 7. This problem will be also fixed in a new
+migration in Hangfire 1.8.0.
+
+• Fixed – `Schema 6` migration now fixes problem that prevents 2,147,483,648th job from being enqueued.
+
 1.7.19
 • Fixed – Return `null` instead of throwing FormatException when job id can't be parsed.
 • Project – Run the entire Hangfire.SqlServer test suite against the new Microsoft.Data.SqlClient package.

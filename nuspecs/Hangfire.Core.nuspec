@@ -22,6 +22,11 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.20
+• Added – Norwegian translations (by @khellang).
+• Fixed – Correction on brazilian portuguese translations (by @Prestini).
+• Fixed – Changing time zone of recurring job without changing cron expression causes immediate execution.
+
 1.7.19
 • Added – German (Deutsch) Dashboard UI localization (by @d-oit).
 • Added – `IGlobalConfiguration.UseMaxArgumentSizeToRender` method to avoid "VALUE TOO BIG" messages.
