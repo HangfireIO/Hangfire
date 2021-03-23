@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
+using Hangfire.Common;
 using Hangfire.States;
 
 namespace Hangfire.Storage
