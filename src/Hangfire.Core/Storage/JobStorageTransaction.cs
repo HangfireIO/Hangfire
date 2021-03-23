@@ -95,5 +95,10 @@ namespace Hangfire.Storage
         {
             throw new NotSupportedException();
         }
+        
+        public virtual void SetJobParameter([NotNull] string jobId, [NotNull] string name, [CanBeNull] string value)
+        {
+            throw new NotSupportedException();
+        }
     }
 }
