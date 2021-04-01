@@ -32,7 +32,7 @@ namespace Hangfire.SqlServer
 
         public SqlServerStorageOptions()
         {
-            QueuePollInterval = TimeSpan.FromSeconds(15);
+            QueuePollInterval = TimeSpan.Zero;
             SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5);
 #pragma warning disable 618
             InvisibilityTimeout = TimeSpan.FromMinutes(30);
