@@ -1,4 +1,4 @@
-﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
+@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
 @using System
 @using System.Collections.Generic
 @using System.Linq
@@ -97,7 +97,7 @@
                         {
                             <tr>
                                 <td style="width: 15%;">@parameter.Key.Substring(4)</td>
-                                <td><pre><code>@parameter.Value</code></pre></td>
+                                <td><pre><code>@Html.HtmlEncodePretty(parameter.Value)</code></pre></td>
                             </tr>
                         }
                     </table>
