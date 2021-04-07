@@ -196,7 +196,7 @@ namespace Hangfire.Dashboard
             if (stateData.ContainsKey("Result") && !String.IsNullOrWhiteSpace(stateData["Result"]))
             {
                 var result = stateData["Result"];
-                builder.Append($"<dt>Result:</dt><dd>{html.HtmlEncode(result)}</dd>");
+                builder.Append($"<dt>Result:</dt><dd>{html.HtmlEncodePretty(result)}</dd>");
 
                 itemsAdded = true;
             }

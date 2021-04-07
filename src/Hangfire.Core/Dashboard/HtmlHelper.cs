@@ -350,5 +350,17 @@ namespace Hangfire.Dashboard
         {
             return WebUtility.HtmlEncode(text);
         }
+
+        public string HtmlEncodePretty(string text)
+        {
+            try
+            {
+                return HtmlEncode(SerializationHelper.Deserialize<string>(text, SerializationOption.User)).Replace("\n", "<br/>");
+            }
+            catch (Exception)
+            {
+                return HtmlEncode(text);
+            }
+        }
     }
 }

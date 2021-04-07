@@ -400,7 +400,7 @@ WriteLiteral("</td>\r\n                                <td><pre><code>");
 
             
             #line 104 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                          Write(parameter.Value);
+                                          Write(Html.HtmlEncodePretty(parameter.Value));
 
             
             #line default
