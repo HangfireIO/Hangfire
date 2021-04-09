@@ -46,10 +46,10 @@ namespace Hangfire
                 if (String.IsNullOrEmpty(parameterName)) continue;
 
                 var serialized = context.Connection.GetJobParameter(context.BackgroundJob.Id, parameterName);
-                var deserialized = (object)null;
-
                 if (serialized != null)
                 {
+                    object deserialized;
+
                     if (parameterType == typeof(ExceptionInfo) && DefaultException.Equals(serialized, StringComparison.Ordinal))
                     {
                         deserialized = new ExceptionInfo(DeletedState.DefaultException);
@@ -58,9 +58,9 @@ namespace Hangfire
                     {
                         deserialized = SerializationHelper.Deserialize(serialized, parameterType, SerializationOption.User);
                     }
-                }
 
-                argumentsArray[index] = deserialized;
+                    argumentsArray[index] = deserialized;
+                }
             }
         }
 

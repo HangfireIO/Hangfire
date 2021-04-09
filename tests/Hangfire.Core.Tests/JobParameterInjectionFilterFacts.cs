@@ -99,7 +99,19 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void OnPerforming_RewritesTheValueWithNull_WhenJobParameterIsNull()
+        public void OnPerforming_DoesNotRewriteDefaultValueWithNull_WhenJobParameterIsNull()
+        {
+            _context.BackgroundJob.Job = Job.FromExpression(() => Decorated(0));
+            _context.Connection.Setup(x => x.GetJobParameter(_context.BackgroundJob.Id, "Result123")).Returns<string>(null);
+            var filter = CreateFilter();
+
+            filter.OnPerforming(CreatePerformingContext());
+
+            Assert.Equal(0, _context.BackgroundJob.Job.Args[0]);
+        }
+
+        [Fact]
+        public void OnPerforming_DoesNotRewriteNonDefaultValueWithNull_WhenJobParameterIsNull()
         {
             _context.BackgroundJob.Job = Job.FromExpression(() => Decorated(123456));
             _context.Connection.Setup(x => x.GetJobParameter(_context.BackgroundJob.Id, "Result123")).Returns<string>(null);
@@ -107,7 +119,7 @@ namespace Hangfire.Core.Tests
 
             filter.OnPerforming(CreatePerformingContext());
 
-            Assert.Null(_context.BackgroundJob.Job.Args[0]);
+            Assert.Equal(123456, _context.BackgroundJob.Job.Args[0]);
         }
 
         [Fact]
