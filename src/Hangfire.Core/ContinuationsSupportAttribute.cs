@@ -158,8 +158,7 @@ namespace Hangfire
 
                 if (currentState != null && _knownFinalStates.Contains(currentState.Name))
                 {
-                    var startImmediately = !awaitingState.Options.HasFlag(JobContinuationOptions.OnlyOnSucceededState) ||
-                        currentState.Name == SucceededState.StateName;
+                    var startImmediately = ShouldStartContinuation(currentState.Name, awaitingState.Options);
 
                     if (_pushResults && startImmediately)
                     {
@@ -213,8 +212,7 @@ namespace Hangfire
 
                 IState nextState;
 
-                if (continuation.Options.HasFlag(JobContinuationOptions.OnlyOnSucceededState) &&
-                    context.CandidateState.Name != SucceededState.StateName)
+                if (!ShouldStartContinuation(context.CandidateState.Name, continuation.Options))
                 {
                     nextState = new DeletedState { Reason = "Continuation condition was not met" };
                 }
@@ -328,6 +326,21 @@ namespace Hangfire
             }
 
             return currentState;
+        }
+
+        private bool ShouldStartContinuation(string antecedentStateName, JobContinuationOptions options)
+        {
+            switch (options)
+            {
+                case JobContinuationOptions.OnlyOnSucceededState:
+                    return SucceededState.StateName.Equals(antecedentStateName, StringComparison.OrdinalIgnoreCase);
+                case JobContinuationOptions.OnlyOnDeletedState:
+                    return DeletedState.StateName.Equals(antecedentStateName, StringComparison.OrdinalIgnoreCase);
+                case JobContinuationOptions.OnAnyFinishedState:
+                    return _knownFinalStates.Contains(antecedentStateName);
+                default:
+                    throw new NotSupportedException("Unknown continuation options: " + options);
+            }
         }
 
         private static void SetContinuations(
