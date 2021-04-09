@@ -26,7 +26,6 @@ namespace Hangfire.Dashboard
         {
             "jquery-2.2.4.min.js",
             "bootstrap.min.js",
-            "moment.min.js",
             "moment-with-locales.min.js",
             "Chart.min.js",
             "chartjs-plugin-streaming.min.js",
