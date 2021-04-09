@@ -58,27 +58,27 @@ namespace Hangfire.Dashboard
                 GetContentFolderNamespace("css"),
                 Stylesheets));
 
-            Routes.Add("/fonts/glyphicons-halflings-regular/eot", new EmbeddedResourceDispatcher(
+            Routes.Add("/fonts/glyphicons-halflings-regular.eot", new EmbeddedResourceDispatcher(
                 "application/vnd.ms-fontobject",
                 GetExecutingAssembly(),
                 GetContentResourceName("fonts", "glyphicons-halflings-regular.eot")));
 
-            Routes.Add("/fonts/glyphicons-halflings-regular/svg", new EmbeddedResourceDispatcher(
+            Routes.Add("/fonts/glyphicons-halflings-regular.svg", new EmbeddedResourceDispatcher(
                 "image/svg+xml",
                 GetExecutingAssembly(),
                 GetContentResourceName("fonts", "glyphicons-halflings-regular.svg")));
 
-            Routes.Add("/fonts/glyphicons-halflings-regular/ttf", new EmbeddedResourceDispatcher(
+            Routes.Add("/fonts/glyphicons-halflings-regular.ttf", new EmbeddedResourceDispatcher(
                 "application/octet-stream",
                 GetExecutingAssembly(),
                 GetContentResourceName("fonts", "glyphicons-halflings-regular.ttf")));
 
-            Routes.Add("/fonts/glyphicons-halflings-regular/woff", new EmbeddedResourceDispatcher(
+            Routes.Add("/fonts/glyphicons-halflings-regular.woff", new EmbeddedResourceDispatcher(
                 "font/woff",
                 GetExecutingAssembly(),
                 GetContentResourceName("fonts", "glyphicons-halflings-regular.woff")));
 
-            Routes.Add("/fonts/glyphicons-halflings-regular/woff2", new EmbeddedResourceDispatcher(
+            Routes.Add("/fonts/glyphicons-halflings-regular.woff2", new EmbeddedResourceDispatcher(
                 "font/woff2",
                 GetExecutingAssembly(),
                 GetContentResourceName("fonts", "glyphicons-halflings-regular.woff2")));
