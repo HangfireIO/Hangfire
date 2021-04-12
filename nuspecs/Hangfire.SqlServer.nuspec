@@ -15,6 +15,9 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.8.0-beta2
+• Changed – Set default value for the `QueuePollInterval` option to `TimeSpan.Zero`.
+
 1.8.0-beta1
 • Added – Recommended Schema 8 migration with fixed `JobQueue.Id` column to use `bigint` type.
 • Added – `SqlServerStorageOptions.PreferMicrosoftDataSqlClient` option to use the corresponding package.

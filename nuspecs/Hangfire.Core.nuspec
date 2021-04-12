@@ -20,6 +20,13 @@ https://www.hangfire.io/
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.8.0-beta2
+• Added – `CreateJob` method to the `JobStorageTransaction` abstract class.
+• Added – `SetJobParameter` method to the `JobStorageTransaction` abstract class.
+• Added – Allow to pass parameters when creating a job (by @brian-knoll-micronetonline).
+• Fixed – Don't overwrite existing argument values with null job parameters when using `FromParameter` attribute.
+• Fixed – Job continuation mistakenly started when using the new `OnlyOnDeletedState` option.
+
 1.8.0-beta1
 • Added – Display deleted jobs in the Realtime and History graphs when supported by storage.
 • Added – `DeletedState` now have the persisted `Exception` property.
