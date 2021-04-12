@@ -22,6 +22,21 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.21
+
+Hangfire.Core
+
+• Changed – Upgrade jQuery from 2.1.4 to 2.2.4 in Dashboard UI.
+• Changed – Upgrade Bootstrap from 3.3.5 to 3.3.7 in Dashboard UI.
+• Changed – Upgrade Moment.js to 2.29.1 in Dashboard UI.
+• Project – Update RazorGenerator.MsBuild package from 2.4.7 to version 2.5.0.
+• Project – Update 7-Zip.CommandLine package from 9.20.0 to version 18.1.0.
+
+Hangfire.SqlServer
+
+• Fixed – Ensure connection is released when exception is thrown when during lock release.
+• Fixed – "A network-related or instance-specific error" when using `DisableConcurrentExecution` for long-running jobs.
+
 1.7.20
 
 Hangfire.Core
