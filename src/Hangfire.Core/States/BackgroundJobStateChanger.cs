@@ -123,6 +123,8 @@ namespace Hangfire.States
                     transaction = context.Transaction;
                     disposableTransaction = null;
                 }
+                
+                var backgroundJob = new BackgroundJob(context.BackgroundJobId, jobData.Job, jobData.CreatedAt, jobData.ParametersSnapshot);
 
                 using (disposableTransaction)
                 {
@@ -130,7 +132,7 @@ namespace Hangfire.States
                         context.Storage,
                         context.Connection,
                         transaction,
-                        new BackgroundJob(context.BackgroundJobId, jobData.Job, jobData.CreatedAt, jobData.ParametersSnapshot),
+                        backgroundJob,
                         stateToApply,
                         jobData.State,
                         context.Profiler,
@@ -161,6 +163,7 @@ namespace Hangfire.States
 
                     transaction.Commit();
 
+                    context.ProcessedJob = backgroundJob;
                     return appliedState;
                 }
             }

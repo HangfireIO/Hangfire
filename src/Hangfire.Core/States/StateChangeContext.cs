@@ -136,5 +136,8 @@ namespace Hangfire.States
 
         [CanBeNull]
         public IFetchedJob CompleteJob { get; }
+        
+        [CanBeNull]
+        public BackgroundJob ProcessedJob { get; set; }
     }
 }

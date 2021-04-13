@@ -105,6 +105,8 @@ namespace Hangfire.Server
 
                 try
                 {
+                    BackgroundJob backgroundJob = null;
+
                     using (var timeoutCts = new CancellationTokenSource(_jobInitializationWaitTimeout))
                     using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
                         context.StoppingToken,
@@ -120,6 +122,7 @@ namespace Hangfire.Server
                             null,
                             new[] { EnqueuedState.StateName, ProcessingState.StateName },
                             null,
+                            out backgroundJob,
                             linkedCts.Token,
                             context.StoppingToken);
 
@@ -139,7 +142,7 @@ namespace Hangfire.Server
                     // it was performed to guarantee that it was performed AT LEAST once.
                     // It will be re-queued after the JobTimeout was expired.
 
-                    var state = PerformJob(context, connection, fetchedJob.JobId, out var customData);
+                    var state = PerformJob(context, connection, fetchedJob.JobId, backgroundJob, out var customData);
                     var transactionalAck = context.Storage.HasFeature(TransactionalAcknowledgePrefix + fetchedJob.GetType().Name);
 
                     if (state != null)
@@ -153,6 +156,7 @@ namespace Hangfire.Server
                             customData,
                             new[] { ProcessingState.StateName },
                             transactionalAck ? fetchedJob : null,
+                            out _,
                             CancellationToken.None,
                             context.ShutdownToken);
                     }
@@ -194,6 +198,7 @@ namespace Hangfire.Server
             IReadOnlyDictionary<string, object> customData,
             string[] expectedStates,
             IFetchedJob completeJob,
+            out BackgroundJob backgroundJob,
             CancellationToken initializeToken,
             CancellationToken abortToken)
         {
@@ -205,7 +210,7 @@ namespace Hangfire.Server
             {
                 try
                 {
-                    return _stateChanger.ChangeState(new StateChangeContext(
+                    var stateChangeContext = new StateChangeContext(
                         context.Storage,
                         connection,
                         null,
@@ -216,7 +221,12 @@ namespace Hangfire.Server
                         completeJob,
                         initializeToken,
                         _profiler,
-                        customData));
+                        customData);
+
+                    var resultingState = _stateChanger.ChangeState(stateChangeContext);
+
+                    backgroundJob = stateChangeContext.ProcessedJob;
+                    return resultingState;
                 }
                 catch (Exception ex)
                 {
@@ -235,7 +245,7 @@ namespace Hangfire.Server
                 $"{_maxStateChangeAttempts} state change attempt(s) failed due to an exception, moving job to the FailedState",
                 exception);
 
-            return _stateChanger.ChangeState(new StateChangeContext(
+            var failedStateContext = new StateChangeContext(
                 context.Storage,
                 connection,
                 null,
@@ -245,7 +255,11 @@ namespace Hangfire.Server
                 disableFilters: true,
                 completeJob,
                 initializeToken,
-                _profiler));
+                _profiler);
+
+            var failedResult = _stateChanger.ChangeState(failedStateContext);
+            backgroundJob = failedStateContext.ProcessedJob;
+            return failedResult;
         }
 
         private void Requeue(IFetchedJob fetchedJob)
@@ -264,31 +278,34 @@ namespace Hangfire.Server
             BackgroundProcessContext context,
             IStorageConnection connection,
             string jobId,
+            BackgroundJob backgroundJob,
             out IReadOnlyDictionary<string, object> customData)
         {
             customData = null;
 
             try
             {
-                var jobData = connection.GetJobData(jobId);
-                if (jobData == null)
+                if (backgroundJob == null)
                 {
-                    // Job expired just after moving to a processing state. This is an
-                    // unreal scenario, but shit happens. Returning null instead of throwing
-                    // an exception and rescuing from en-queueing a poisoned jobId back
-                    // to a queue.
-                    return null;
+                    var jobData = connection.GetJobData(jobId);
+                    if (jobData == null)
+                    {
+                        // Job expired just after moving to a processing state. This is an
+                        // unreal scenario, but shit happens. Returning null instead of throwing
+                        // an exception and rescuing from en-queueing a poisoned jobId back
+                        // to a queue.
+                        return null;
+                    }
+
+                    jobData.EnsureLoaded();
+                    backgroundJob = new BackgroundJob(jobId, jobData.Job, jobData.CreatedAt, jobData.ParametersSnapshot);
                 }
 
-                jobData.EnsureLoaded();
-
-                var backgroundJob = new BackgroundJob(jobId, jobData.Job, jobData.CreatedAt, jobData.ParametersSnapshot);
-
-                using (var jobToken = new ServerJobCancellationToken(connection, jobId, context.ServerId, context.ExecutionId.ToString(), context.StoppedToken))
+                using (var jobToken = new ServerJobCancellationToken(connection, backgroundJob.Id, context.ServerId, context.ExecutionId.ToString(), context.StoppedToken))
                 {
                     var performContext = new PerformContext(context.Storage, connection, backgroundJob, jobToken, _profiler);
 
-                    var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
+                    var latency = (DateTime.UtcNow - backgroundJob.CreatedAt).TotalMilliseconds;
                     var duration = Stopwatch.StartNew();
 
                     var result = _performer.Perform(performContext);
