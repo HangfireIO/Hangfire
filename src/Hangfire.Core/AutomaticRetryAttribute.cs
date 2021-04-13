@@ -226,7 +226,7 @@ namespace Hangfire
                 if (!satisfied) return;
             }
 
-            var retryAttempt = context.GetJobParameter<int>("RetryCount") + 1;
+            var retryAttempt = context.GetJobParameter<int>("RetryCount", allowStale: true) + 1;
 
             if (retryAttempt <= Attempts)
             {

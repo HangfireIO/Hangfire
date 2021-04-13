@@ -129,7 +129,7 @@ namespace Hangfire
             // multiple threads add continuation to the same parent job.
             using (connection.AcquireDistributedJobLock(parentId, AddJobLockTimeout))
             {
-                var continuations = GetContinuations(connection, parentId);
+                var continuations = GetContinuations(context, parentId);
 
                 // Continuation may be already added. This may happen, when outer transaction
                 // was failed after adding a continuation last time, since the addition is
@@ -191,7 +191,7 @@ namespace Hangfire
         {
             // The following lines are executed inside a distributed job lock,
             // so it is safe to get continuation list here.
-            var continuations = GetContinuations(context.Connection, context.BackgroundJob.Id);
+            var continuations = GetContinuations(context, null);
             var nextStates = new Dictionary<string, IState>();
 
             // Getting continuation data for all continuations – state they are waiting 
@@ -356,9 +356,23 @@ namespace Hangfire
             connection.SetJobParameter(jobId, "Continuations", SerializationHelper.Serialize(continuations));
         }
 
-        private static List<Continuation> GetContinuations(IStorageConnection connection, string jobId)
+        private static List<Continuation> GetContinuations(ElectStateContext context, string jobId)
         {
-            return DeserializeContinuations(connection.GetJobParameter(jobId, "Continuations"));
+            // We are altering continuation list only when its background job is locked,
+            // and parameter snapshot is obtained only when background job is locked, so
+            // it's safe to use cached list when possible.
+            string serialized;
+
+            if (String.IsNullOrEmpty(jobId) && context.BackgroundJob.ParametersSnapshot != null)
+            {
+                context.BackgroundJob.ParametersSnapshot.TryGetValue("Continuations", out serialized);
+            }
+            else
+            {
+                serialized = context.Connection.GetJobParameter(jobId ?? context.BackgroundJob.Id, "Continuations");
+            }
+            
+            return DeserializeContinuations(serialized);
         }
 
         void IApplyStateFilter.OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)

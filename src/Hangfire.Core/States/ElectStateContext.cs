@@ -97,16 +97,38 @@ namespace Hangfire.States
         [CanBeNull]
         public StateMachine StateMachine { get; }
 
-        public void SetJobParameter<T>(string name, T value)
+        public void SetJobParameter<T>([NotNull] string name, T value)
         {
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
             Connection.SetJobParameter(BackgroundJob.Id, name, SerializationHelper.Serialize(value, SerializationOption.User));
         }
 
-        public T GetJobParameter<T>(string name)
+        public T GetJobParameter<T>([NotNull] string name) => GetJobParameter<T>(name, allowStale: false);
+
+        public T GetJobParameter<T>([NotNull] string name, bool allowStale)
         {
-            return SerializationHelper.Deserialize<T>(
-                Connection.GetJobParameter(BackgroundJob.Id, name),
-                SerializationOption.User);
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+
+            string value;
+
+            if (allowStale && BackgroundJob.ParametersSnapshot != null)
+            {
+                BackgroundJob.ParametersSnapshot.TryGetValue(name, out value);
+            }
+            else
+            {
+                try
+                {
+                    value = Connection.GetJobParameter(BackgroundJob.Id, name);
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException(
+                        $"Could not get a value of the job parameter `{name}`. See inner exception for details.", ex);
+                }
+            }
+
+            return SerializationHelper.Deserialize<T>(value, SerializationOption.User);
         }
     }
 }
