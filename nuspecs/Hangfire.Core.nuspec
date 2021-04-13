@@ -22,6 +22,9 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.22
+• Fixed – Fonts-related regression in Dashboard UI after upgrading Bootstrap in 1.7.21.
+
 1.7.21
 • Changed – Upgrade jQuery from 2.1.4 to 2.2.4 in Dashboard UI.
 • Changed – Upgrade Bootstrap from 3.3.5 to 3.3.7 in Dashboard UI.
