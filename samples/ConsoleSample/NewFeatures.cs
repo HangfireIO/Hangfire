@@ -59,7 +59,7 @@ namespace ConsoleSample
 
             BackgroundJob.ContinueJobWith(exceptionalId, () => Continuation(default), JobContinuationOptions.OnlyOnSucceededState);
             BackgroundJob.ContinueJobWith(exceptionalId, () => CatchExceptional(default), JobContinuationOptions.OnlyOnDeletedState);
-            BackgroundJob.ContinueJobWith(exceptionalId, () => FinallyExceptional(default), JobContinuationOptions.OnAnyFinishedState);
+            BackgroundJob.ContinueJobWith(exceptionalId, () => FinallyExceptional(default), JobContinuationOptions.OnlyOnSucceededState | JobContinuationOptions.OnlyOnDeletedState);
             BackgroundJob.ContinueJobWith(exceptionalId, () => FinallyExceptional2(default, default), JobContinuationOptions.OnAnyFinishedState);
         }
     }

@@ -330,17 +330,24 @@ namespace Hangfire
 
         private bool ShouldStartContinuation(string antecedentStateName, JobContinuationOptions options)
         {
-            switch (options)
+            if (options == JobContinuationOptions.OnAnyFinishedState)
             {
-                case JobContinuationOptions.OnlyOnSucceededState:
-                    return SucceededState.StateName.Equals(antecedentStateName, StringComparison.OrdinalIgnoreCase);
-                case JobContinuationOptions.OnlyOnDeletedState:
-                    return DeletedState.StateName.Equals(antecedentStateName, StringComparison.OrdinalIgnoreCase);
-                case JobContinuationOptions.OnAnyFinishedState:
-                    return _knownFinalStates.Contains(antecedentStateName);
-                default:
-                    throw new NotSupportedException("Unknown continuation options: " + options);
+                return _knownFinalStates.Contains(antecedentStateName);
             }
+
+            if (options.HasFlag(JobContinuationOptions.OnlyOnSucceededState) &&
+                SucceededState.StateName.Equals(antecedentStateName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (options.HasFlag(JobContinuationOptions.OnlyOnDeletedState) &&
+                DeletedState.StateName.Equals(antecedentStateName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private static void SetContinuations(

@@ -31,7 +31,6 @@ namespace ConsoleSample
                     QueuePollInterval = TimeSpan.Zero,
                     SlidingInvisibilityTimeout = TimeSpan.FromMinutes(1),
                     UseRecommendedIsolationLevel = true,
-                    UsePageLocksOnDequeue = true,
                     DisableGlobalLocks = true,
                     EnableHeavyMigrations = true
                 });
@@ -42,6 +41,7 @@ namespace ConsoleSample
             backgroundJobs.RetryAttempts = 5;
 
             NewFeatures.Test(throwException: false);
+            NewFeatures.Test(throwException: true);
 
             var job1 = BackgroundJob.Enqueue<Services>(x => x.WriteIndex(0));
             var job2 = BackgroundJob.ContinueJobWith<Services>(job1, x => x.WriteIndex(default));
