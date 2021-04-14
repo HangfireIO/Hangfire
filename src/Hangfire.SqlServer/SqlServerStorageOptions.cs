@@ -48,6 +48,7 @@ namespace Hangfire.SqlServer
             DeleteExpiredBatchSize = -1;
             UseTransactionalAcknowledge = false;
             UseRecommendedIsolationLevel = true;
+            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5);
         }
 
         [Obsolete("TransactionIsolationLevel option is deprecated, please set UseRecommendedIsolationLevel instead. Will be removed in 2.0.0.")]
