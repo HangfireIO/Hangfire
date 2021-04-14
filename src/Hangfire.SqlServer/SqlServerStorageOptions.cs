@@ -47,6 +47,7 @@ namespace Hangfire.SqlServer
             UsePageLocksOnDequeue = false;
             DeleteExpiredBatchSize = -1;
             UseTransactionalAcknowledge = false;
+            UseRecommendedIsolationLevel = true;
         }
 
         [Obsolete("TransactionIsolationLevel option is deprecated, please set UseRecommendedIsolationLevel instead. Will be removed in 2.0.0.")]
