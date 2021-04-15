@@ -21,9 +21,14 @@ https://www.hangfire.io/
     <releaseNotes>https://www.hangfire.io/blog/
 
 1.8.0-beta2
+• Added – `MisfireHandlingMode.Strict` to create job for each missed recurring job occurrence.
+• Added – Allow to pass parameters when creating a job (by @brian-knoll-micronetonline).
+• Added – Make it possible to use specify multiple `JobContinuationOptions` for a continuation.
 • Added – `CreateJob` method to the `JobStorageTransaction` abstract class.
 • Added – `SetJobParameter` method to the `JobStorageTransaction` abstract class.
-• Added – Allow to pass parameters when creating a job (by @brian-knoll-micronetonline).
+• Changed – Allow to query job parameters without roundtrip when supported by a storage.
+• Changed – Turn `JobContinuationOptions` enum into flags while still possible.
+• Changed – Avoid storage roundtrip to query job data in worker, take data from previous state change.
 • Fixed – Don't overwrite existing argument values with null job parameters when using `FromParameter` attribute.
 • Fixed – Job continuation mistakenly started when using the new `OnlyOnDeletedState` option.
 
