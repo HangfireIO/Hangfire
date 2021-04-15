@@ -29,6 +29,7 @@ namespace Hangfire
         {
             TimeZone = TimeZoneInfo.Utc;
             QueueName = EnqueuedState.DefaultQueue;
+            MisfireHandling = MisfireHandlingMode.Relaxed;
         }
 
         [NotNull]
@@ -53,5 +54,7 @@ namespace Hangfire
                 _queueName = value;
             }
         }
+
+        public MisfireHandlingMode MisfireHandling { get; set; }
     }
 }
