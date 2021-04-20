@@ -19,12 +19,6 @@ os: Visual Studio 2019
 environment:
   BuildEnvironment: appveyor
   Hangfire_SqlServer_ConnectionStringTemplate: Server=.\SQL2017;Database={0};User Id=sa;Password=Password12!
-  COVERALLS_REPO_TOKEN: 
-    secure: oE4uB475V9hPzKmm+ZRP+1BacnMFOE98a/2tVeFieYJi5BbYG6X3VM+p6vKIQZdd
-  COVERITY_TOKEN:
-    secure: r3yBqxgALySnCK9W6uiStqoadsqYtrWQolzxGDVKF74=
-  COVERITY_EMAIL:
-    secure: wf51HXCiUYxuTe+eo3uQOxqyptSLrH4IEqq0958Rmx8=
 
 # enable service required for tests
 services:
