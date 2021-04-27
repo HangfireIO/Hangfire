@@ -14,7 +14,7 @@
 @{
     var monitor = Storage.GetMonitoringApi();
     var job = monitor.JobDetails(JobId);
-    var dto = new JobDetailsRendererDto(this, JobId, job);
+    var dto = job != null ? new JobDetailsRendererDto(this, JobId, job) : null;
     
     string title = null;
 
@@ -169,17 +169,20 @@
                 }
             }
 
-            foreach (var renderer in JobDetailsRenderer.GetRenderers())
+            if (dto != null)
             {
-                try
+                foreach (var renderer in JobDetailsRenderer.GetRenderers())
                 {
-                    @renderer.Item2(dto)
-                }
-                catch (Exception ex)
-                {
-                    <h4 class="exception-type">@ex.GetType().Name</h4>
-                    <p class="text-muted">@ex.Message</p>
-                    <pre class="stack-trace">@Html.StackTrace(ex.StackTrace)</pre>
+                    try
+                    {
+                        @renderer.Item2(dto)
+                    }
+                    catch (Exception ex)
+                    {
+                        <h4 class="exception-type">@ex.GetType().Name</h4>
+                        <p class="text-muted">@ex.Message</p>
+                        <pre class="stack-trace">@Html.StackTrace(ex.StackTrace)</pre>
+                    }
                 }
             }
 
