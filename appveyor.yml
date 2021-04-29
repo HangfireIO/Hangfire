@@ -19,12 +19,6 @@ os: Visual Studio 2015
 environment:
   BuildEnvironment: appveyor
   Hangfire_SqlServer_ConnectionStringTemplate: Server=.\SQL2008R2SP2;Database={0};User Id=sa;Password=Password12!
-  COVERALLS_REPO_TOKEN: 
-    secure: oE4uB475V9hPzKmm+ZRP+1BacnMFOE98a/2tVeFieYJi5BbYG6X3VM+p6vKIQZdd
-  COVERITY_TOKEN:
-    secure: r3yBqxgALySnCK9W6uiStqoadsqYtrWQolzxGDVKF74=
-  COVERITY_EMAIL:
-    secure: wf51HXCiUYxuTe+eo3uQOxqyptSLrH4IEqq0958Rmx8=
 
 # enable service required for tests
 services:
@@ -47,11 +41,6 @@ cache:
 build_script:
   - build.bat ci
 
-after_build:
-  - "SET PATH=C:\\Python34;C:\\Python34\\Scripts;%PATH%"
-  - pip install codecov
-  - codecov -f coverage.xml
-
 #---------------------------------#
 #       tests configuration       #
 #---------------------------------#
@@ -71,24 +60,8 @@ artifacts:
 #---------------------------------#
 
 deploy:
-  - provider: GitHub
-    auth_token:
-      secure: Kx+tJBMfq/OK7sMpvQDdigFOIIfzYkVmIHxNQetanQdIA5Mb8zm/VhAkrId4x5zW
-    artifact: /.*\.zip/
-    draft: true
-    on:
-      appveyor_repo_tag: true
-
   - provider: NuGet
     api_key: 
       secure: 8BQmcR1hP9MoxvrmXJKMtlRyX6LI36H9ZTU8fSEetvzMGCl1PUlXKZRUGq+GVMja
     on:
       appveyor_repo_tag: true
-
-notifications:
-  - provider: Slack
-    incoming_webhook:
-      secure: bqJhjmwwsSMJ/8imZJBOOtwbsNF51p24M8HZlIx1+asIHHUhXWHrP9vkuOPK3OnqNopmloLOOBoaEpYAkClkDuEC61a5Go5NY9KSSB9UMjk=
-    on_build_success: false
-    on_build_failure: true
-    on_build_status_changed: true
