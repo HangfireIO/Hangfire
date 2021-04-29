@@ -24,9 +24,9 @@ namespace Hangfire.Server
     {
         private static readonly ILog Logger = LogProvider.GetLogger(typeof(AspNetShutdownDetector));
         private static readonly TimeSpan CheckForShutdownTimerInterval = TimeSpan.FromSeconds(1);
+        private static readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
         private static int _isInitialized;
-        private static CancellationTokenSource _cts;
         private static IDisposable _checkForShutdownTimer;
 
         private static Func<string> _shutdownReasonFunc;
@@ -44,8 +44,6 @@ namespace Hangfire.Server
 
             try
             {
-                _cts = new CancellationTokenSource();
-
                 // Normally when ASP.NET is stopping our web application, IRegisteredObject.Stop
                 // method is called for all the registered objects, and it is the recommended
                 // way for handling shutdowns when we have some custom background threads.
