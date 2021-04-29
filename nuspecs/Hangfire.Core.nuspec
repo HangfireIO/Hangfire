@@ -14,6 +14,10 @@
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.6.30
+Backported from 1.7.19:
+• Fixed – Race condition in `AspNetShutdownDetector` leads to `NullReferenceException` (by @jr01).
+
 1.6.29
 Backported from 1.7:
 • Added – Add built-in support for reliable shutdown detection of ASP.NET apps.

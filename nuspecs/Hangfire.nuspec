@@ -19,6 +19,19 @@ https://www.hangfire.io/
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.6.30
+
+Hangfire.Core
+
+Backported from 1.7.19:
+• Fixed – Race condition in `AspNetShutdownDetector` leads to `NullReferenceException` (by @jr01).
+
+Hangfire.SqlServer
+
+Backported from 1.7.21:
+• Fixed – Ensure connection is released when exception is thrown when during lock release.
+• Fixed – "A network-related or instance-specific error" when using `DisableConcurrentExecution` for long-running jobs.
+
 1.6.29
 
 Hangfire.Core

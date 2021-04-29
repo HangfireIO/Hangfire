@@ -14,6 +14,11 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.6.30
+Backported from 1.7.21:
+• Fixed – Ensure connection is released when exception is thrown when during lock release.
+• Fixed – "A network-related or instance-specific error" when using `DisableConcurrentExecution` for long-running jobs.
+
 1.6.28
 Backported from 1.7:
 • Fixed – Don't leak a `DbConnection` instance when an exception occurs while trying to open it.
