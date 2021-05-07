@@ -66,6 +66,11 @@ namespace Hangfire.Storage
             throw new NotSupportedException();
         }
 
+        public virtual bool SetContains([NotNull] string key, [NotNull] string value)
+        {
+            throw new NotSupportedException();
+        }
+
         public virtual List<string> GetRangeFromSet([NotNull] string key, int startingFrom, int endingAt)
         {
             throw new NotSupportedException();
