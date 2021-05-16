@@ -23,9 +23,15 @@ namespace Hangfire.Server
 #endif
     public class JobPerformanceException : Exception
     {
-        public JobPerformanceException(string message, Exception innerException)
+        public JobPerformanceException(string message, Exception innerException, string jobId = null)
             : base(message, innerException)
         {
+	        JobId = jobId;
         }
+
+        /// <summary>
+        /// The Background Job Id of the Job instance this exception has been raised for
+        /// </summary>
+        public string JobId { get; private set; }
     }
 }

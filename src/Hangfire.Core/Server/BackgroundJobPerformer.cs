@@ -140,7 +140,7 @@ namespace Hangfire.Server
             {
                 CoreBackgroundJobPerformer.HandleJobPerformanceException(
                     filterException,
-                    preContext.CancellationToken);
+                    preContext.CancellationToken, preContext.BackgroundJob);
                 throw;
             }
             
@@ -173,7 +173,7 @@ namespace Hangfire.Server
                 {
                     CoreBackgroundJobPerformer.HandleJobPerformanceException(
                         filterException,
-                        postContext.CancellationToken);
+                        postContext.CancellationToken, postContext.BackgroundJob);
 
                     throw;
                 }
@@ -197,7 +197,7 @@ namespace Hangfire.Server
                 {
                     CoreBackgroundJobPerformer.HandleJobPerformanceException(
                         filterException,
-                        postContext.CancellationToken);
+                        postContext.CancellationToken, postContext.BackgroundJob);
 
                     throw;
                 }
