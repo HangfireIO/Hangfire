@@ -121,6 +121,8 @@ namespace Hangfire.Storage
 
         public static InvocationData DeserializePayload(string payload)
         {
+            if (payload == null) throw new ArgumentNullException(nameof(payload));
+
             JobPayload jobPayload = null;
             Exception exception = null;
 

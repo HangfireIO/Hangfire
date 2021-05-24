@@ -843,6 +843,15 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal("Hello ", job.Args[0]);
         }
 
+        [Fact]
+        public void DeserializePayload_ThrowsAnException_WhenPayloadIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => InvocationData.DeserializePayload(null));
+
+            Assert.Equal("payload", exception.ParamName);
+        }
+
         // https://github.com/HangfireIO/Hangfire/issues/1470
         [DataCompatibilityRangeFact, CleanSerializerSettings]
         public void DeserializePayload_CanHandleFieldBasedSerialization_OfInvocationDataClass()
