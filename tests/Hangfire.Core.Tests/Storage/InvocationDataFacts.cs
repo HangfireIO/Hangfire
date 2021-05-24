@@ -814,11 +814,11 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(typeof(InvocationDataFacts), job.Type);
             Assert.Equal(2, job.Args.Count);
 
-            Assert.Equal(typeof(List<string>), job.Args[0].GetType());
+            Assert.Equal(typeof(List<string>), job.Args[0]?.GetType());
             Assert.Equal("one", (job.Args[0] as List<string>)?[0]);
             Assert.Equal("two", (job.Args[0] as List<string>)?[1]);
 
-            Assert.Equal(typeof(SomeClass), job.Args[1].GetType());
+            Assert.Equal(typeof(SomeClass), job.Args[1]?.GetType());
             Assert.Equal("value", (job.Args[1] as SomeClass)?.StringValue);
             Assert.Equal(0, (job.Args[1] as SomeClass)?.DefaultValue);
             Assert.Equal(null, (job.Args[1] as SomeClass)?.NullObject);
