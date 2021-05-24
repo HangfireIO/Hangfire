@@ -141,7 +141,7 @@ namespace Hangfire.Dashboard
                         var renderedItems = new List<string>();
 
                         // ReSharper disable once LoopCanBeConvertedToQuery
-                        foreach (var item in (IEnumerable)argumentValue)
+                        foreach (var item in argumentValue as IEnumerable)
                         {
                             var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
                             renderedItems.Add(argumentRenderer.Render(isJson, item?.ToString(),
