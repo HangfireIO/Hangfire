@@ -23,10 +23,15 @@ namespace Hangfire.Server
 #endif
     public class JobPerformanceException : Exception
     {
-        public JobPerformanceException(string message, Exception innerException, string jobId = null)
+        public JobPerformanceException(string message, Exception innerException)
+            : this(message, innerException, null)
+        {
+        }
+    
+        public JobPerformanceException(string message, Exception innerException, string jobId)
             : base(message, innerException)
         {
-	        JobId = jobId;
+            JobId = jobId;
         }
 
         /// <summary>
