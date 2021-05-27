@@ -23,12 +23,8 @@ matrix:
 
 # https://travis-ci.community/t/docker-hub-you-have-reached-your-pull-rate-limit/10517/11
 before_install:
-  - if hash docker 2>/dev/null;
-    then
-      echo 'DOCKER_OPTS="$DOCKER_OPTS --registry-mirror=https://mirror.gcr.io"'
-      sudo systemctl daemon-reload
-      sudo service docker restart
-    fi
+  - echo 'DOCKER_OPTS="$DOCKER_OPTS --registry-mirror=https://mirror.gcr.io"'
+  - sudo service docker restart
 
 before_script:
   - if hash docker 2>/dev/null;
