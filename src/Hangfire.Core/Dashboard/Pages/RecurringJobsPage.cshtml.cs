@@ -465,8 +465,8 @@ WriteLiteral("                                    <td class=\"word-break width-1
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                                    <td class=\"min-width\">\r\n              " +
-"                          ");
+WriteLiteral("</td>\r\n                                    <td style=\"min-width: 125px\" class=\"mi" +
+"n-width\">\r\n                                        ");
 
 
 
@@ -530,7 +530,7 @@ WriteLiteral("                                        <code title=\"");
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n");
+WriteLiteral("\" class=\"cron-badge\">\r\n");
 
 
             
@@ -574,12 +574,12 @@ WriteLiteral("\r\n                                        </code>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                                            <code>");
+WriteLiteral("                                            <code class=\"cron-badge\">");
 
 
             
             #line 152 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                             Write(job.Cron);
+                                                                Write(job.Cron);
 
             
             #line default
@@ -595,7 +595,7 @@ WriteLiteral("</code>\r\n");
             #line default
             #line hidden
 WriteLiteral("                                    </td>\r\n                                    <t" +
-"d style=\"word-break: break-word;\">\r\n");
+"d>\r\n");
 
 
             
