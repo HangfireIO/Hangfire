@@ -57,14 +57,6 @@ artifacts:
 #---------------------------------#
 
 deploy:
-  - provider: GitHub
-    auth_token:
-      secure: Kx+tJBMfq/OK7sMpvQDdigFOIIfzYkVmIHxNQetanQdIA5Mb8zm/VhAkrId4x5zW
-    artifact: /.*\.zip/
-    draft: true
-    on:
-      appveyor_repo_tag: true
-
   - provider: NuGet
     skip_symbols: true
     api_key: 
