@@ -22,6 +22,23 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.23
+
+Hangfire.Core
+
+• Added – `JobId` property to `JobPerformanceException` for error logging purposes.
+• Fixed – `JsonSerializationException` when using `IdempotentCompletionAttribute`.
+• Fixed – Unreported yet corner case related to daylight time transition by upgrading Cronos to 0.7.1.
+• Fixed – Dashboard issue: recurring job table doesn't handle very long cron strings.
+• Fixed – Add missing argument-is-null check for the `DeserializePayload` method.
+• Project – Replace deprecated `PerformContext` ctor usage to avoid alerts in SonarQube.
+• Project – Avoid possible `NullReferenceException` in tests to fix alerts in Fortify analyser.
+• Project – Release connections properly in tests to fix alerts in Fortify analyser.
+
+Hangfire.SqlServer
+
+• Fixed – `NotImplementedException` in `Transaction.EnlistPromotableSinglePhase` when running on Mono.
+
 1.7.22
 
 Hangfire.Core
