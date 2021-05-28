@@ -37,12 +37,12 @@ namespace Hangfire
             {
                 if (context.CandidateState is ProcessingState || context.CandidateState.IsFinal)
                 {
-                    context.CandidateState = SerializationHelper.Deserialize<IState>(serializedState);
+                    context.CandidateState = SerializationHelper.Deserialize<IState>(serializedState, SerializationOption.TypedInternal);
                 }
             }
             else if (context.CandidateState.IsFinal)
             {
-                context.SetJobParameter("Completion", SerializationHelper.Serialize(context.CandidateState));
+                context.SetJobParameter("Completion", SerializationHelper.Serialize(context.CandidateState, SerializationOption.TypedInternal));
             }
         }
     }
