@@ -121,12 +121,18 @@ namespace Hangfire.Storage
 
         public static InvocationData DeserializePayload(string payload)
         {
+            if (payload == null) throw new ArgumentNullException(nameof(payload));
+
             JobPayload jobPayload = null;
             Exception exception = null;
 
             try
             {
                 jobPayload = SerializationHelper.Deserialize<JobPayload>(payload);
+                if (jobPayload == null)
+                {
+                    throw new InvalidOperationException("Deserialize<JobPayload> returned `null` for a non-null payload.");
+                }
             }
             catch (Exception ex)
             {
@@ -143,6 +149,10 @@ namespace Hangfire.Storage
             }
 
             var data = SerializationHelper.Deserialize<InvocationData>(payload);
+            if (data == null)
+            {
+                throw new InvalidOperationException("Deserialize<InvocationData> returned `null` for a non-null payload.");
+            }
 
             if (data.Type == null || data.Method == null)
             {

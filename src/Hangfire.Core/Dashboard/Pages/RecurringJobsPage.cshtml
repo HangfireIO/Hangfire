@@ -104,7 +104,7 @@
                                         </td>
                                     }
                                     <td class="word-break width-15">@job.Id</td>
-                                    <td class="min-width">
+                                    <td style="min-width: 125px" class="min-width">
                                         @* ReSharper disable once EmptyGeneralCatchClause *@
                                         @{
                                             string cronDescription = null;
@@ -139,7 +139,7 @@
 
                                         @if (cronDescription != null)
                                         {
-                                        <code title="@cronDescription">
+                                        <code title="@cronDescription" class="cron-badge">
                                             @if (cronError)
                                             {
                                                 <span class="glyphicon glyphicon-exclamation-sign"></span>
@@ -149,10 +149,10 @@
                                         }
                                         else
                                         {
-                                            <code>@job.Cron</code>
+                                            <code class="cron-badge">@job.Cron</code>
                                         }
                                     </td>
-                                    <td style="word-break: break-word;">
+                                    <td>
                                         @if (!String.IsNullOrWhiteSpace(job.TimeZoneId))
                                         {
                                             string displayName;

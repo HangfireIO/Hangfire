@@ -38,10 +38,11 @@ namespace Hangfire.SqlServer.Tests
         [InlineData(false), InlineData(true)]
         public void Ctor_CanCreateSqlServerStorage_WithExistingConnection(bool useMicrosoftDataSqlClient)
         {
-            var connection = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient);
-            var storage = new SqlServerStorage(connection);
-
-            Assert.NotNull(storage);
+            using (var connection = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient))
+            {
+                var storage = new SqlServerStorage(connection);
+                Assert.NotNull(storage);
+            }
         }
 
         [Fact]

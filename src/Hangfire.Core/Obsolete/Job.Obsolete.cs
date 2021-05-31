@@ -125,7 +125,7 @@ namespace Hangfire.Common
             }
             catch (TargetInvocationException ex)
             {
-                CoreBackgroundJobPerformer.HandleJobPerformanceException(ex.InnerException, cancellationToken);
+                CoreBackgroundJobPerformer.HandleJobPerformanceException(ex.InnerException, cancellationToken, null);
                 throw;
             }
         }

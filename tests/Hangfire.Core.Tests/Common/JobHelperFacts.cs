@@ -208,6 +208,7 @@ namespace Hangfire.Core.Tests.Common
         public void FromJson_WithObjectType_DecodesFromJsonString()
         {
             var result = (ClassA)JobHelper.FromJson(@"{ ""PropertyA"": ""hello"" }", typeof(ClassA));
+            Assert.NotNull(result);
             Assert.Equal("hello", result.PropertyA);
         }
 
@@ -292,6 +293,8 @@ namespace Hangfire.Core.Tests.Common
                 });
 
                 var result = (ClassA)JobHelper.FromJson(@"{ ""$type"": ""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"", ""propertyA"":""A"" }", typeof(IClass));
+
+                Assert.NotNull(result);
                 Assert.Equal("A", result.PropertyA);
             }
             finally

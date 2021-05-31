@@ -534,3 +534,12 @@ div.metric-null {
         width: 262.5px;
     }
 }
+
+/* Recurring Jobs Page */
+
+.cron-badge {
+    display: inline-block;
+    max-width: 125px;
+    white-space: normal;
+    word-break: break-word;
+}

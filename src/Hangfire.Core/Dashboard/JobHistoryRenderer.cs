@@ -256,7 +256,7 @@ namespace Hangfire.Dashboard
             {
                 var nextState = SerializationHelper.Deserialize<IState>(stateData["NextState"], SerializationOption.TypedInternal);
 
-                builder.Append($"<dt>Next State</dt><dd>{helper.StateLabel(nextState.Name)}</dd>");
+                builder.Append($"<dt>Next State</dt><dd>{helper.StateLabel(nextState?.Name ?? "(no state)")}</dd>");
             }
 
             if (stateData.ContainsKey("Options"))
