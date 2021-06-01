@@ -83,6 +83,7 @@ namespace Hangfire.SqlServer
                 connection,
                 from, count,
                 ProcessingState.StateName,
+                descending: false,
                 (sqlJob, job, invocationData, loadException, stateData) => new ProcessingJobDto
                 {
                     Job = job,
@@ -100,6 +101,7 @@ namespace Hangfire.SqlServer
                 connection,
                 from, count,
                 ScheduledState.StateName,
+                descending: false,
                 (sqlJob, job, invocationData, loadException, stateData) => new ScheduledJobDto
                 {
                     Job = job,
@@ -170,6 +172,7 @@ namespace Hangfire.SqlServer
                 from,
                 count,
                 FailedState.StateName,
+                descending: true,
                 (sqlJob, job, invocationData, loadException, stateData) => new FailedJobDto
                 {
                     Job = job,
@@ -191,6 +194,7 @@ namespace Hangfire.SqlServer
                 from,
                 count,
                 SucceededState.StateName,
+                descending: true,
                 (sqlJob, job, invocationData, loadException, stateData) => new SucceededJobDto
                 {
                     Job = job,
@@ -212,6 +216,7 @@ namespace Hangfire.SqlServer
                 from,
                 count,
                 DeletedState.StateName,
+                descending: true,
                 (sqlJob, job, invocationData, loadException, stateData) => new DeletedJobDto
                 {
                     Job = job,
@@ -563,12 +568,14 @@ where j.Id in @jobIds";
             int from,
             int count,
             string stateName,
+            bool descending,
             Func<SqlJob, Job, InvocationData, JobLoadException, SafeDictionary<string, string>, TDto> selector)
         {
+            string order = descending ? "desc" : "asc";
             string jobsSql = 
 $@";with cte as 
 (
-  select j.Id, row_number() over (order by j.Id desc) as row_num
+  select j.Id, row_number() over (order by j.Id {order}) as row_num
   from [{_storage.SchemaName}].Job j with (nolock, forceseek)
   where j.StateName = @stateName
 )
