@@ -112,9 +112,9 @@ namespace Hangfire.Dashboard
             "enqueued:count-or-null",
             "Metrics_EnqueuedCountOrNull",
             page => page.Statistics.Enqueued > 0 || page.Statistics.Failed == 0
-                ? new Metric(page.Statistics.Enqueued)
+                ? new Metric(page.Statistics.Enqueued > 0 ? page.Statistics.Enqueued : page.Statistics.Scheduled)
                 {
-                    Style = page.Statistics.Enqueued > 0 ? MetricStyle.Info : MetricStyle.Default,
+                    Style = page.Statistics.Enqueued + page.Statistics.Scheduled > 0 ? MetricStyle.Info : MetricStyle.Default,
                     Highlighted = page.Statistics.Enqueued > 0 && page.Statistics.Failed == 0
                 }
                 : null);
