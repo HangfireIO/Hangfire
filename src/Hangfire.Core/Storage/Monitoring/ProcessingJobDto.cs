@@ -27,6 +27,8 @@ namespace Hangfire.Storage.Monitoring
         }
 
         public Job Job { get; set; }
+        public JobLoadException LoadException { get; set; }
+        public InvocationData InvocationData { get; set; }
         public bool InProcessingState { get; set; }
         public string ServerId { get; set; }
         public DateTime? StartedAt { get; set; }

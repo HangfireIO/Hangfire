@@ -24,6 +24,7 @@ namespace Hangfire.Storage
     {
         public string State { get; set; }
         public Job Job { get; set; }
+        public InvocationData InvocationData { get; set; }
         public DateTime CreatedAt { get; set; }
         public IReadOnlyDictionary<string, string> ParametersSnapshot { get; set; }
 
