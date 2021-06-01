@@ -131,7 +131,7 @@ Core
 
 Dashboard UI
 • Added – Allow modification of the Dashboard UI title (by @tbertenshaw).
-• Added – Support for HTML tags on the Dashboard UI title (by @caioproiete).
+• Added – Support for HTML tags on the Dashboard UI title (by @augustoproiete).
 • Added – Buttons for 1,000 and 5,000 items per page in dashboard.
 • Added – Links to previous/next pages to the top of the dashboard page.
 • Changed – Expose the `RazorPage.Context` property as a public member.
@@ -139,7 +139,7 @@ Dashboard UI
 • Fixed – Don't update real-time chart when too much time passed since the last update.
 
 1.7.6
-• Changed – Add support for dash characters (`-`) in queue names (by @caioproiete).
+• Changed – Add support for dash characters (`-`) in queue names (by @augustoproiete).
 • Fixed – Show actual error in Dashboard UI when recurring job can't be scheduled.
 • Fixed – Ensure backward compatibility when JSON payloads are serialized with field names only.
 • Fixed – Non-awaited continuations can bring down the whole app when `TaskScheduler` is set to `null`.
