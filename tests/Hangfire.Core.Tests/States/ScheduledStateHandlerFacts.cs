@@ -44,9 +44,34 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
-        public void Unapply_ShouldRemoveTheJob_FromTheScheduledSet()
+        public void Apply_ShouldAddJob_ToTheScheduleSet_PrependedWithACorrespondingQueue()
+        {
+            _context.NewStateObject = new ScheduledState(TimeSpan.Zero) { Queue = "default" };
+            var handler = new ScheduledState.Handler();
+
+            handler.Apply(_context.Object, _transaction.Object);
+
+            _transaction.Verify(x => x.AddToSet(
+                "schedule",
+                "default:" + JobId,
+                It.IsAny<double>()));
+        }
+
+        [Fact]
+        public void Unapply_ShouldRemoveTheJobId_FromTheScheduledSet()
         {
             var handler = new ScheduledState.Handler();
+            handler.Unapply(_context.Object, _transaction.Object);
+
+            _transaction.Verify(x => x.RemoveFromSet("schedule", JobId));
+        }
+
+        [Fact]
+        public void Unapply_ShouldRemoveTheJobId_FromTheScheduleSet_RegardlessOfQueuePropertyValue()
+        {
+            _context.NewStateObject = new ScheduledState(TimeSpan.Zero) { Queue = "critical" };
+            var handler = new ScheduledState.Handler();
+
             handler.Unapply(_context.Object, _transaction.Object);
 
             _transaction.Verify(x => x.RemoveFromSet("schedule", JobId));

@@ -120,7 +120,7 @@ namespace Hangfire.Server
                             fetchedJob.JobId, 
                             processingState, 
                             null,
-                            new[] { EnqueuedState.StateName, ProcessingState.StateName },
+                            new[] { EnqueuedState.StateName, ScheduledState.StateName, ProcessingState.StateName },
                             null,
                             out backgroundJob,
                             linkedCts.Token,

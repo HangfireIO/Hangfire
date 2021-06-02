@@ -59,6 +59,8 @@ namespace Hangfire.States
         /// </remarks>
         public static readonly string StateName = "Scheduled";
 
+        private string _queue;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledState"/> class
         /// with the specified <i>time interval</i> after which a job should be moved to
@@ -83,6 +85,21 @@ namespace Hangfire.States
         {
             EnqueueAt = enqueueAt;
             ScheduledAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Gets or sets a target queue that will be used by <see cref="DelayedJobScheduler"/> to
+        /// schedule the work item to.
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string Queue
+        {
+            get => _queue;
+            set
+            {
+                if (value != null) EnqueuedState.ValidateQueueName(nameof(value), value);
+                _queue = value;
+            }
         }
 
         /// <summary>
@@ -152,30 +169,46 @@ namespace Hangfire.States
         ///         <term><see cref="JobHelper.DeserializeDateTime"/></term>
         ///         <description>Please see the <see cref="ScheduledAt"/> property.</description>
         ///     </item>
+        ///     <item>
+        ///         <term><c>Queue</c></term>
+        ///         <term><see cref="String"/></term>
+        ///         <term><i>None</i></term>
+        ///         <description>Please see the <see cref="Queue"/> property.</description>
+        ///     </item>
         /// </list>
         /// </remarks>
         public Dictionary<string, string> SerializeData()
         {
-            return new Dictionary<string, string>
+            var result = new Dictionary<string, string>
             {
                 { "EnqueueAt", JobHelper.SerializeDateTime(EnqueueAt) },
                 { "ScheduledAt", JobHelper.SerializeDateTime(ScheduledAt) }
             };
+
+            if (Queue != null)
+            {
+                result.Add("Queue", Queue);
+            }
+
+            return result;
         }
 
         internal class Handler : IStateHandler
         {
             public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
-                var scheduledState = context.NewState as ScheduledState;
-                if (scheduledState == null)
+                if (!(context.NewState is ScheduledState scheduledState))
                 {
                     throw new InvalidOperationException(
                         $"`{typeof (Handler).FullName}` state handler can be registered only for the Scheduled state.");
                 }
 
-                var timestamp = JobHelper.ToTimestamp(scheduledState.EnqueueAt);
-                transaction.AddToSet("schedule", context.BackgroundJob.Id, timestamp);
+                transaction.AddToSet(
+                    "schedule",
+                    scheduledState.Queue == null
+                        ? context.BackgroundJob.Id
+                        : scheduledState.Queue + ':' + context.BackgroundJob.Id,
+                    JobHelper.ToTimestamp(scheduledState.EnqueueAt));
             }
 
             public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)

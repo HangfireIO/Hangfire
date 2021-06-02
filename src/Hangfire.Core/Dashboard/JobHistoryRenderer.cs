@@ -236,9 +236,20 @@ namespace Hangfire.Dashboard
         private static NonEscapedString ScheduledRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
         {
             var enqueueAt = JobHelper.DeserializeDateTime(stateData["EnqueueAt"]);
+            stateData.TryGetValue("Queue", out var queue);
 
-            return new NonEscapedString(
-                $"<dl class=\"dl-horizontal\"><dt>Enqueue at:</dt><dd data-moment=\"{helper.HtmlEncode(JobHelper.ToTimestamp(enqueueAt).ToString(CultureInfo.InvariantCulture))}\">{helper.HtmlEncode(enqueueAt.ToString(CultureInfo.CurrentUICulture))}</dd></dl>");
+            var sb = new StringBuilder();
+            sb.Append("<dl class=\"dl-horizontal\">");
+            sb.Append($"<dt>Enqueue at:</dt><dd data-moment=\"{helper.HtmlEncode(JobHelper.ToTimestamp(enqueueAt).ToString(CultureInfo.InvariantCulture))}\">{helper.HtmlEncode(enqueueAt.ToString(CultureInfo.CurrentUICulture))}</dd>");
+
+            if (!String.IsNullOrWhiteSpace(queue))
+            {
+                sb.Append($"<dt>Queue:</dt><dd>{helper.QueueLabel(queue)}</dd>");
+            }
+
+            sb.Append("</dl>");
+
+            return new NonEscapedString(sb.ToString());
         }
 
         private static NonEscapedString AwaitingRenderer(HtmlHelper helper, IDictionary<string, string> stateData)

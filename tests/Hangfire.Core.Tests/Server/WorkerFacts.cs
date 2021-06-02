@@ -175,7 +175,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_ProcessesOnlyJobs_InEnqueuedAndProcessingState()
+        public void Execute_ProcessesOnlyJobs_InEnqueued_Scheduled_AndProcessingStates()
         {
             var worker = CreateWorker();
 
@@ -184,7 +184,9 @@ namespace Hangfire.Core.Tests.Server
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.NewState is ProcessingState &&
                 ctx.ExpectedStates.ElementAt(0) == EnqueuedState.StateName &&
-                ctx.ExpectedStates.ElementAt(1) == ProcessingState.StateName)));
+                ctx.ExpectedStates.ElementAt(1) == ScheduledState.StateName &&
+                ctx.ExpectedStates.ElementAt(2) == ProcessingState.StateName &&
+                ctx.ExpectedStates.Count() == 3)));
         }
 
         [Fact]
