@@ -100,6 +100,7 @@ namespace Hangfire
         private AttemptsExceededAction _onAttemptsExceeded;
         private bool _logEvents;
         private Type[] _onlyOn;
+        private string _queue;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AutomaticRetryAttribute"/>
@@ -197,6 +198,16 @@ namespace Hangfire
         {
             get { lock (_lockObject) { return _onlyOn; } }
             set { lock (_lockObject) { _onlyOn = value; } }
+        }
+
+        public string Queue
+        {
+            get { lock (_lockObject) { return _queue; } }
+            set
+            {
+                if (value != null) EnqueuedState.ValidateQueueName(nameof(value), value);
+                lock (_lockObject) { _queue = value; }
+            }
         }
 
         /// <inheritdoc />
@@ -303,8 +314,8 @@ namespace Hangfire
             var reason = $"Retry attempt {retryAttempt} of {Attempts}: {exceptionMessage}";
 
             context.CandidateState = delay == TimeSpan.Zero
-                ? (IState)new EnqueuedState { Reason = reason }
-                : new ScheduledState(delay) { Reason = reason };
+                ? (IState)new EnqueuedState { Queue = Queue ?? EnqueuedState.DefaultQueue, Reason = reason }
+                : new ScheduledState(delay) { Queue = Queue, Reason = reason };
 
             if (LogEvents)
             {
