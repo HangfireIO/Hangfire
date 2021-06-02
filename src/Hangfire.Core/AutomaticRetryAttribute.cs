@@ -205,7 +205,6 @@ namespace Hangfire
             get { lock (_lockObject) { return _queue; } }
             set
             {
-                if (value != null) EnqueuedState.ValidateQueueName(nameof(value), value);
                 lock (_lockObject) { _queue = value; }
             }
         }
@@ -312,10 +311,11 @@ namespace Hangfire
             // schedule the job to run again later.
             
             var reason = $"Retry attempt {retryAttempt} of {Attempts}: {exceptionMessage}";
+            var queue = Queue != null ? String.Format(Queue, context.BackgroundJob.Job.Args.ToArray()) : null;
 
             context.CandidateState = delay == TimeSpan.Zero
-                ? (IState)new EnqueuedState { Queue = Queue ?? EnqueuedState.DefaultQueue, Reason = reason }
-                : new ScheduledState(delay) { Queue = Queue, Reason = reason };
+                ? (IState)new EnqueuedState { Queue = queue ?? EnqueuedState.DefaultQueue, Reason = reason }
+                : new ScheduledState(delay) { Queue = queue, Reason = reason };
 
             if (LogEvents)
             {
