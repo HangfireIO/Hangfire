@@ -268,29 +268,25 @@ WriteLiteral("\r\n                                    </a>\r\n                  
             
             #line default
             #line hidden
-WriteLiteral(@"                    </div>
-                    <!--/.nav-collapse -->
-                </div>
-            </div>
-
-            <!-- Begin page content -->
-            <div class=""container"" style=""margin-bottom: 20px;"">
-                <!-- Error alert when polling fails -->
-                ");
+WriteLiteral("                    </div>\r\n                    <!--/.nav-collapse -->\r\n         " +
+"       </div>\r\n                <!-- Error alert when polling fails -->\r\n        " +
+"        ");
 
 
             
-            #line 66 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 62 "..\..\Dashboard\Pages\LayoutPage.cshtml"
            Write(Html.RenderPartial(new ErrorAlert()));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n\r\n                ");
+WriteLiteral("\r\n            </div>\r\n\r\n            <!-- Begin page content -->\r\n            <div" +
+" class=\"container js-page-container\" style=\"margin-bottom: 20px;\">\r\n            " +
+"    ");
 
 
             
-            #line 68 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 67 "..\..\Dashboard\Pages\LayoutPage.cshtml"
            Write(RenderBody());
 
             
@@ -308,7 +304,7 @@ WriteLiteral(@"
 
 
             
-            #line 76 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 75 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                                                                           Write($"{version.Major}.{version.Minor}.{version.Build}");
 
             
@@ -318,7 +314,7 @@ WriteLiteral("\r\n                        </a>\r\n                    </li>\r\n"
 
 
             
-            #line 79 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 78 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                      if(DashboardOptions.DisplayStorageConnectionString){
 
             
@@ -328,7 +324,7 @@ WriteLiteral("                    <li>");
 
 
             
-            #line 80 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 79 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(Storage);
 
             
@@ -338,7 +334,7 @@ WriteLiteral("</li>\r\n");
 
 
             
-            #line 81 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 80 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                     }
 
             
@@ -348,7 +344,7 @@ WriteLiteral("                    <li>");
 
 
             
-            #line 82 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 81 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(Strings.LayoutPage_Footer_Time);
 
             
@@ -358,7 +354,7 @@ WriteLiteral(" ");
 
 
             
-            #line 82 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 81 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                    Write(Html.LocalTime(DateTime.UtcNow));
 
             
@@ -368,7 +364,7 @@ WriteLiteral("</li>\r\n                    <li>");
 
 
             
-            #line 83 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 82 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(String.Format(Strings.LayoutPage_Footer_Generatedms, GenerationTime.Elapsed.TotalMilliseconds.ToString("N")));
 
             
@@ -379,7 +375,7 @@ WriteLiteral("</li>\r\n                </ul>\r\n            </div>\r\n        </
 
 
             
-            #line 89 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 88 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                            Write(DashboardOptions.StatsPollingInterval);
 
             
@@ -389,7 +385,7 @@ WriteLiteral("\"\r\n             data-pollurl=\"");
 
 
             
-            #line 90 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 89 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                        Write(Url.To("/stats"));
 
             
@@ -399,7 +395,7 @@ WriteLiteral("\">\r\n        </div>\r\n\r\n        <script src=\"");
 
 
             
-            #line 93 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 92 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                 Write(Url.To($"/js{version.Major}{version.Minor}{version.Build}0"));
 
             

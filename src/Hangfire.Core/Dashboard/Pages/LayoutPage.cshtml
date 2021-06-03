@@ -58,13 +58,12 @@
                     </div>
                     <!--/.nav-collapse -->
                 </div>
+                <!-- Error alert when polling fails -->
+                @Html.RenderPartial(new ErrorAlert())
             </div>
 
             <!-- Begin page content -->
-            <div class="container" style="margin-bottom: 20px;">
-                <!-- Error alert when polling fails -->
-                @Html.RenderPartial(new ErrorAlert())
-
+            <div class="container js-page-container" style="margin-bottom: 20px;">
                 @RenderBody()
             </div>
         </div>
