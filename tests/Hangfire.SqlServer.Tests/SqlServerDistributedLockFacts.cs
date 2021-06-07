@@ -5,7 +5,6 @@ using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using System.Transactions;
 using ReferencedDapper::Dapper;
 using Hangfire.Storage;
 using Xunit;
@@ -114,7 +113,7 @@ namespace Hangfire.SqlServer.Tests
             }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase(IsolationLevel.Unspecified)]
+        [Fact, CleanDatabase]
         public void DistributedLocks_AreReEntrant_FromTheSameThread_OnTheSameResource()
         {
             var storage = new SqlServerStorage(ConnectionUtils.GetConnectionString());
@@ -126,7 +125,7 @@ namespace Hangfire.SqlServer.Tests
             }
         }
 
-        [Fact, CleanDatabase(IsolationLevel.Unspecified)]
+        [Fact, CleanDatabase]
         public void InnerDistributedLock_DoesNotConsumeADatabaseConnection()
         {
             // Arrange
