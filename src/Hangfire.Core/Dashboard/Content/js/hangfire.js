@@ -17,7 +17,13 @@
         ErrorAlert.prototype.show = function() {
             this._errorAlertTitle.html(this._title);
             this._errorAlertMessage.html(this._message);
-            $('#errorAlert').slideDown('fast');
+
+            $('#errorAlert').show();
+            var alertHeight = $('#errorAlert').outerHeight();
+            $('#errorAlert').hide();
+
+            $('#errorAlert').slideDown("fast");
+            $('.js-page-container').animate({ 'margin-top': alertHeight + 'px' }, "fast");
         };
 
         return ErrorAlert;
