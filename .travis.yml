@@ -29,8 +29,6 @@ before_script:
         export Hangfire_SqlServer_ConnectionStringTemplate="Server=tcp:127.0.0.1,1433;Database={0};User Id=sa;Password=Password12!";
     fi
 
-# Run the build script
-# Add tests for MSSQL in Mono when https://github.com/mono/mono/issues/16440 is fixed
 script:
   - if hash mono 2>/dev/null; 
     then
@@ -38,6 +36,10 @@ script:
         travis_retry nuget restore Hangfire.sln;
         msbuild /p:Configuration=Release /verbosity:minimal Hangfire.sln;
         mono ./packages/xunit.runner.console.2.2.0/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/net452/Hangfire.Core.Tests.dll;
+        if hash docker 2>/dev/null;
+        then
+            mono ./packages/xunit.runner.console.2.2.0/tools/xunit.console.exe ./tests/Hangfire.SqlServer.Tests/bin/Release/net452/Hangfire.SqlServer.Tests.dll;
+        fi
     else
         set -e;
         dotnet test -c Release -f netcoreapp3.1 tests/Hangfire.Core.Tests/Hangfire.Core.Tests.csproj;

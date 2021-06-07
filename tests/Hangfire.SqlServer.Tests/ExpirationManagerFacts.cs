@@ -26,7 +26,7 @@ namespace Hangfire.SqlServer.Tests
             using (var connection = CreateConnection(useMicrosoftDataSqlClient))
             {
                 CreateExpirationEntry(connection, DateTime.UtcNow.AddMonths(-1));
-                var manager = CreateManager(connection);
+                var manager = CreateManager(useMicrosoftDataSqlClient);
 
                 manager.Execute(_cts.Token);
 
@@ -41,7 +41,7 @@ namespace Hangfire.SqlServer.Tests
             using (var connection = CreateConnection(useMicrosoftDataSqlClient))
             {
                 CreateExpirationEntry(connection, null);
-                var manager = CreateManager(connection);
+                var manager = CreateManager(useMicrosoftDataSqlClient);
 
                 manager.Execute(_cts.Token);
 
@@ -56,7 +56,7 @@ namespace Hangfire.SqlServer.Tests
             using (var connection = CreateConnection(useMicrosoftDataSqlClient))
             {
                 CreateExpirationEntry(connection, DateTime.UtcNow.AddMonths(1));
-                var manager = CreateManager(connection);
+                var manager = CreateManager(useMicrosoftDataSqlClient);
 
                 manager.Execute(_cts.Token);
 
@@ -76,7 +76,7 @@ insert into [{Constants.DefaultSchema}].AggregatedCounter ([Key], [Value], Expir
 values ('key', 1, @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
-                var manager = CreateManager(connection);
+                var manager = CreateManager(useMicrosoftDataSqlClient);
 
                 // Act
                 manager.Execute(_cts.Token);
@@ -98,7 +98,7 @@ insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedA
 values ('', '', getutcdate(), @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
-                var manager = CreateManager(connection);
+                var manager = CreateManager(useMicrosoftDataSqlClient);
 
                 // Act
                 manager.Execute(_cts.Token);
@@ -120,7 +120,7 @@ insert into [{Constants.DefaultSchema}].List ([Key], ExpireAt)
 values ('key', @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
-                var manager = CreateManager(connection);
+                var manager = CreateManager(useMicrosoftDataSqlClient);
 
                 // Act
                 manager.Execute(_cts.Token);
@@ -142,7 +142,7 @@ insert into [{Constants.DefaultSchema}].[Set] ([Key], [Score], [Value], ExpireAt
 values ('key', 0, '', @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
-                var manager = CreateManager(connection);
+                var manager = CreateManager(useMicrosoftDataSqlClient);
 
                 // Act
                 manager.Execute(_cts.Token);
@@ -164,7 +164,7 @@ insert into [{Constants.DefaultSchema}].Hash ([Key], [Field], [Value], ExpireAt)
 values ('key', 'field', '', @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
-                var manager = CreateManager(connection);
+                var manager = CreateManager(useMicrosoftDataSqlClient);
 
                 // Act
                 manager.Execute(_cts.Token);
@@ -195,9 +195,9 @@ values (N'key', 1, @expireAt)";
             return ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient);
         }
 
-        private ExpirationManager CreateManager(DbConnection connection)
+        private ExpirationManager CreateManager(bool useMicrosoftDataSqlClient)
         {
-            var storage = new SqlServerStorage(connection);
+            var storage = new SqlServerStorage(() => ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient));
             return new ExpirationManager(storage, TimeSpan.Zero);
         }
     }
