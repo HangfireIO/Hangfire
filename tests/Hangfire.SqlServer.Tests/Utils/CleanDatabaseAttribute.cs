@@ -4,7 +4,6 @@ using System;
 using System.Data.SqlClient;
 using System.Reflection;
 using System.Threading;
-using System.Transactions;
 using ReferencedDapper::Dapper;
 using Xunit.Sdk;
 
@@ -15,14 +14,8 @@ namespace Hangfire.SqlServer.Tests
         private static readonly object GlobalLock = new object();
         private static bool _sqlObjectInstalled;
         
-        private readonly IsolationLevel _isolationLevel;
-
-        private TransactionScope _transaction;
-        
-        public CleanDatabaseAttribute(
-            IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
+        public CleanDatabaseAttribute()
         {
-            _isolationLevel = isolationLevel;
         }
 
         public override void Before(MethodInfo methodUnderTest)
@@ -35,25 +28,26 @@ namespace Hangfire.SqlServer.Tests
                 _sqlObjectInstalled = true;
             }
 
-            if (_isolationLevel != IsolationLevel.Unspecified)
+            using (var connection = new SqlConnection(
+                ConnectionUtils.GetConnectionString()))
             {
-                _transaction = new TransactionScope(
-                    TransactionScopeOption.RequiresNew,
-                    new TransactionOptions { IsolationLevel = _isolationLevel });
+                connection.Execute(@"
+truncate table [HangFire].[AggregatedCounter];
+truncate table [HangFire].[Counter];
+truncate table [HangFire].[Hash];
+delete from [HangFire].[Job];
+dbcc checkident('HangFire.Job', RESEED, 0);
+truncate table [HangFire].[List];
+truncate table [HangFire].[JobQueue];
+truncate table [HangFire].[Set];
+truncate table [HangFire].[Server];
+");
             }
         }
 
         public override void After(MethodInfo methodUnderTest)
         {
-            try
-            {
-                _transaction?.Dispose();
-            }
-            finally
-            {
-                Monitor.Exit(GlobalLock);
-            }
-            
+            Monitor.Exit(GlobalLock);
         }
 
         private static void CreateAndInitializeDatabaseIfNotExists()

@@ -113,13 +113,14 @@ select scope_identity() as Id;";
                 var queue = CreateJobQueue(connection, invisibilityTimeout: null);
 
                 // Act
-                var payload = (SqlServerTransactionJob)queue.Dequeue(
+                using (var payload = (SqlServerTransactionJob) queue.Dequeue(
                     DefaultQueues,
-                    CreateTimingOutCancellationToken());
-
-                // Assert
-                Assert.Equal("1", payload.JobId);
-                Assert.Equal("default", payload.Queue);
+                    CreateTimingOutCancellationToken()))
+                {
+                    // Assert
+                    Assert.Equal("1", payload.JobId);
+                    Assert.Equal("default", payload.Queue);
+                }
             }, useMicrosoftDataSqlClient);
         }
 
@@ -142,12 +143,13 @@ select scope_identity() as Id;";
                 var queue = CreateJobQueue(connection, invisibilityTimeout: null);
 
                 // Act
-                var payload = (SqlServerTransactionJob)queue.Dequeue(
+                using (var payload = (SqlServerTransactionJob) queue.Dequeue(
                     DefaultQueues,
-                    CreateTimingOutCancellationToken());
-
-                // Assert
-                Assert.Equal((int.MaxValue + 1L).ToString(), payload.JobId);
+                    CreateTimingOutCancellationToken()))
+                {
+                    // Assert
+                    Assert.Equal((int.MaxValue + 1L).ToString(), payload.JobId);
+                }
             }, useMicrosoftDataSqlClient);
         }
 
@@ -170,15 +172,19 @@ values (scope_identity(), @queue)";
                 var queue = CreateJobQueue(connection, invisibilityTimeout: null);
 
                 // Act
-                var payload = queue.Dequeue(
+                using (var payload = queue.Dequeue(
                     DefaultQueues,
-                    CreateTimingOutCancellationToken());
+                    CreateTimingOutCancellationToken()))
+                {
+                    // Assert
+                    Assert.NotNull(payload);
 
-                // Assert
-                Assert.NotNull(payload);
-
-                var jobInQueue = connection.Query($"select * from [{Constants.DefaultSchema}].JobQueue").SingleOrDefault();
-                Assert.Null(jobInQueue);
+                    UseConnection(connection2 =>
+                    {
+                        var jobInQueue = connection2.Query($"select * from [{Constants.DefaultSchema}].JobQueue with (readpast)").SingleOrDefault();
+                        Assert.Null(jobInQueue);
+                    }, useMicrosoftDataSqlClient);
+                }
             }, useMicrosoftDataSqlClient);
         }
 
@@ -207,12 +213,13 @@ values (scope_identity(), @queue, @fetchedAt)";
                 var queue = CreateJobQueue(connection, invisibilityTimeout: null);
 
                 // Act
-                var payload = queue.Dequeue(
+                using (var payload = queue.Dequeue(
                     DefaultQueues,
-                    CreateTimingOutCancellationToken());
-
-                // Assert
-                Assert.NotEmpty(payload.JobId);
+                    CreateTimingOutCancellationToken()))
+                {
+                    // Assert
+                    Assert.NotEmpty(payload.JobId);
+                }
             }, useMicrosoftDataSqlClient);
         }
 
@@ -239,16 +246,20 @@ values (scope_identity(), @queue)";
                 var queue = CreateJobQueue(connection, invisibilityTimeout: null);
 
                 // Act
-                var payload = queue.Dequeue(
+                using (var payload = queue.Dequeue(
                     DefaultQueues,
-                    CreateTimingOutCancellationToken());
+                    CreateTimingOutCancellationToken()))
+                {
+                    // Assert
+                    UseConnection(connection2 =>
+                    {
+                        var otherJobFetchedAt = connection2.Query<DateTime?>(
+                            $"select FetchedAt from [{Constants.DefaultSchema}].JobQueue with (readpast) where JobId != @id",
+                            new { id = payload.JobId }).Single();
 
-                // Assert
-                var otherJobFetchedAt = connection.Query<DateTime?>(
-                    $"select FetchedAt from [{Constants.DefaultSchema}].JobQueue where JobId != @id",
-                    new { id = payload.JobId }).Single();
-
-                Assert.Null(otherJobFetchedAt);
+                        Assert.Null(otherJobFetchedAt);
+                    }, useMicrosoftDataSqlClient);
+                }
             }, useMicrosoftDataSqlClient);
         }
 
@@ -299,19 +310,23 @@ values (scope_identity(), @queue)";
 
                 var queue = CreateJobQueue(connection, invisibilityTimeout: null);
 
-                var critical = (SqlServerTransactionJob)queue.Dequeue(
+                using (var critical = (SqlServerTransactionJob) queue.Dequeue(
                     new[] { "critical", "default" },
-                    CreateTimingOutCancellationToken());
+                    CreateTimingOutCancellationToken()))
+                {
+                    Assert.NotNull(critical.JobId);
+                    Assert.Equal("critical", critical.Queue);
+                    critical.RemoveFromQueue();
+                }
 
-                Assert.NotNull(critical.JobId);
-                Assert.Equal("critical", critical.Queue);
-
-                var @default = (SqlServerTransactionJob)queue.Dequeue(
+                using (var @default = (SqlServerTransactionJob) queue.Dequeue(
                     new[] { "critical", "default" },
-                    CreateTimingOutCancellationToken());
-
-                Assert.NotNull(@default.JobId);
-                Assert.Equal("default", @default.Queue);
+                    CreateTimingOutCancellationToken()))
+                {
+                    Assert.NotNull(@default.JobId);
+                    Assert.Equal("default", @default.Queue);
+                    @default.RemoveFromQueue();
+                }
             }, useMicrosoftDataSqlClient);
         }
 

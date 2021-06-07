@@ -76,7 +76,7 @@ namespace Hangfire.SqlServer.Tests
             Assert.Same(connection.Object, storage.CreateAndOpenConnection());
         }
 
-        [Fact, CleanDatabase(isolationLevel: IsolationLevel.ReadUncommitted)]
+        [Fact, CleanDatabase]
         public void GetMonitoringApi_ReturnsNonNullInstance()
         {
             var storage = CreateStorage();
