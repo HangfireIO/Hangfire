@@ -237,12 +237,12 @@ select scope_identity() as Id";
 
         private static void UseConnection(Action<IDbConnection, SqlServerStorage> action, bool useMicrosoftDataSqlClient)
         {
+            var storage = new SqlServerStorage(
+                () => ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient),
+                new SqlServerStorageOptions { SlidingInvisibilityTimeout = TimeSpan.FromSeconds(10) });
+
             using (var connection = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient))
             {
-                var storage = new SqlServerStorage(
-                    connection,
-                    new SqlServerStorageOptions { SlidingInvisibilityTimeout = TimeSpan.FromSeconds(10) });
-
                 action(connection, storage);
             }
         }

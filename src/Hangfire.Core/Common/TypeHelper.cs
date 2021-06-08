@@ -24,7 +24,7 @@ using System.Threading;
 
 namespace Hangfire.Common
 {
-    internal class TypeHelper
+    public class TypeHelper
     {
         private static readonly ConcurrentDictionary<Type, string> TypeSerializerCache = new ConcurrentDictionary<Type, string>();
 

@@ -22,6 +22,16 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.23
+• Added – `JobId` property to `JobPerformanceException` for error logging purposes (by @Plasma).
+• Fixed – `JsonSerializationException` when using `IdempotentCompletionAttribute`.
+• Fixed – Unreported yet corner case related to daylight time transition by upgrading Cronos to 0.7.1 (by @aidmsu).
+• Fixed – Dashboard issue: recurring job table doesn't handle very long cron strings.
+• Fixed – Add missing argument-is-null check for the `DeserializePayload` method.
+• Project – Replace deprecated `PerformContext` ctor usage to avoid alerts in SonarQube (by @kumaheiyama).
+• Project – Avoid possible `NullReferenceException` in tests to fix alerts in Fortify analyser.
+• Project – Release connections properly in tests to fix alerts in Fortify analyser.
+
 1.7.22
 • Fixed – Fonts-related regression in Dashboard UI after upgrading Bootstrap in 1.7.21.
 
@@ -121,7 +131,7 @@ Core
 
 Dashboard UI
 • Added – Allow modification of the Dashboard UI title (by @tbertenshaw).
-• Added – Support for HTML tags on the Dashboard UI title (by @caioproiete).
+• Added – Support for HTML tags on the Dashboard UI title (by @augustoproiete).
 • Added – Buttons for 1,000 and 5,000 items per page in dashboard.
 • Added – Links to previous/next pages to the top of the dashboard page.
 • Changed – Expose the `RazorPage.Context` property as a public member.
@@ -129,7 +139,7 @@ Dashboard UI
 • Fixed – Don't update real-time chart when too much time passed since the last update.
 
 1.7.6
-• Changed – Add support for dash characters (`-`) in queue names (by @caioproiete).
+• Changed – Add support for dash characters (`-`) in queue names (by @augustoproiete).
 • Fixed – Show actual error in Dashboard UI when recurring job can't be scheduled.
 • Fixed – Ensure backward compatibility when JSON payloads are serialized with field names only.
 • Fixed – Non-awaited continuations can bring down the whole app when `TaskScheduler` is set to `null`.

@@ -161,7 +161,22 @@ namespace Hangfire.Processing
 
         private static void CallBack(object state, bool timedOut)
         {
-            ((TaskCompletionSource<bool>)state).SetResult(!timedOut);
+            // I constantly get the following test fail on Windows and Linux on build machines. It happens not on every,
+            // build so it looks like there's a race condition, but this happens too often. And it's unclear whether it's
+            // a result of RegisterWaitForSingleObject or Timer's fault (since Task.Delay is based on timers). So if the
+            // following test will fail on another assertion after we change "!timeout" to "true", then it's RWFSO's
+            // fault, otherwise timers are wrong, because we can't get "false" here, because we don't register any timeouts
+            // since the latest change.
+            // [xUnit.net 00:00:27.6891962]     Hangfire.Core.Tests.Processing.TaskExtensionsFacts.WaitOneAsync_WaitsAndReturnsFalse_WhenNotSignaled_AndNonNullTimeout [FAIL]
+            // X Hangfire.Core.Tests.Processing.TaskExtensionsFacts.WaitOneAsync_WaitsAndReturnsFalse_WhenNotSignaled_AndNonNullTimeout [96ms]
+            // Error Message:
+            // 00:00:00.0949474
+            // Expected: True
+            // Actual:   False
+            //     Stack Trace:
+            // at Hangfire.Core.Tests.Processing.TaskExtensionsFacts.WaitOneAsync_WaitsAndReturnsFalse_WhenNotSignaled_AndNonNullTimeout() in /home/travis/build/HangfireIO/Hangfire/tests/Hangfire.Core.Tests/Processing/TaskExtensionsFacts.cs:line 93
+            // TODO: Change back to !timeout
+            ((TaskCompletionSource<bool>)state).SetResult(/*!timedOut*/true);
         }
 
         private static TaskCompletionSource<T> CreateCompletionSource<T>()

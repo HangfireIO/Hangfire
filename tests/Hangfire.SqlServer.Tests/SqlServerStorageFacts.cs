@@ -2,7 +2,6 @@
 using System;
 using System.Data.Common;
 using System.Linq;
-using System.Transactions;
 using Xunit;
 
 namespace Hangfire.SqlServer.Tests
@@ -76,7 +75,7 @@ namespace Hangfire.SqlServer.Tests
             Assert.Same(connection.Object, storage.CreateAndOpenConnection());
         }
 
-        [Fact, CleanDatabase(isolationLevel: IsolationLevel.ReadUncommitted)]
+        [Fact, CleanDatabase]
         public void GetMonitoringApi_ReturnsNonNullInstance()
         {
             var storage = CreateStorage();

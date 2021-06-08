@@ -89,8 +89,10 @@ namespace Hangfire.SqlServer.Tests
         {
             UseConnection(connection =>
             {
-                var @lock = connection.AcquireDistributedLock("1", TimeSpan.FromSeconds(1));
-                Assert.NotNull(@lock);
+                using (var @lock = connection.AcquireDistributedLock("1", TimeSpan.FromSeconds(1)))
+                {
+                    Assert.NotNull(@lock);
+                }
             }, useMicrosoftDataSqlClient);
         }
 
@@ -111,8 +113,11 @@ namespace Hangfire.SqlServer.Tests
         [InlineData(false), InlineData(true)]
         public void AcquireDistributedLock_AcquiresExclusiveApplicationLock_OnSession(bool useMicrosoftDataSqlClient)
         {
-            UseConnections((sql, connection) =>
+            using (var sql = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient))
             {
+                var storage = new SqlServerStorage(sql);
+
+                using (var connection = new SqlServerConnection(storage))
                 using (connection.AcquireDistributedLock("hello", TimeSpan.FromMinutes(5)))
                 {
                     var lockMode = sql.Query<string>(
@@ -120,7 +125,7 @@ namespace Hangfire.SqlServer.Tests
 
                     Assert.Equal("Exclusive", lockMode);
                 }
-            }, useBatching: false, useMicrosoftDataSqlClient);
+            }
         }
 
         [Theory, CleanDatabase]
@@ -2274,7 +2279,10 @@ values (@jobId, @name, @value)";
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient))
             {
-                var storage = new SqlServerStorage(sqlConnection, new SqlServerStorageOptions { CommandBatchMaxTimeout = useBatching ? TimeSpan.FromMinutes(1) : (TimeSpan?)null });
+                var storage = new SqlServerStorage(
+                    () => ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient),
+                    new SqlServerStorageOptions { CommandBatchMaxTimeout = useBatching ? TimeSpan.FromMinutes(1) : (TimeSpan?)null });
+
                 using (var connection = new SqlServerConnection(storage))
                 {
                     action(sqlConnection, connection);
@@ -2284,15 +2292,12 @@ values (@jobId, @name, @value)";
 
         private void UseConnection(Action<SqlServerConnection> action, bool useMicrosoftDataSqlClient)
         {
-            using (var sql = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient))
-            {
-                var storage = new Mock<SqlServerStorage>(sql);
-                storage.Setup(x => x.QueueProviders).Returns(_providers);
+            var storage = new Mock<SqlServerStorage>((Func<DbConnection>)(() => ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient)));
+            storage.Setup(x => x.QueueProviders).Returns(_providers);
 
-                using (var connection = new SqlServerConnection(storage.Object))
-                {
-                    action(connection);
-                }
+            using (var connection = new SqlServerConnection(storage.Object))
+            {
+                action(connection);
             }
         }
 
