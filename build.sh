@@ -1,18 +1,7 @@
 #!/bin/bash
 
 set -e;
-
-if hash mono 2>/dev/null; 
-then
-  nuget install .nuget/packages.config -OutputDirectory packages;
-  nuget restore Hangfire.sln;
-  msbuild /p:Configuration=Release /verbosity:minimal Hangfire.sln;
-  mono ./packages/xunit.runner.console.2.2.0/tools/xunit.console.exe ./tests/Hangfire.Core.Tests/bin/Release/net452/Hangfire.Core.Tests.dll;
-  if hash sqlcmd 2>/dev/null;
-  then
-    mono ./packages/xunit.runner.console.2.2.0/tools/xunit.console.exe ./tests/Hangfire.SqlServer.Tests/bin/Release/net452/Hangfire.SqlServer.Tests.dll;
-  fi
-fi
+export Hangfire_SqlServer_ConnectionStringTemplate="Server=tcp:127.0.0.1,1433;Database={0};User Id=sa;Password=Password12!";
 
 if hash dotnet 2>/dev/null; 
 then
