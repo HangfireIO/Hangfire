@@ -92,6 +92,7 @@ namespace Hangfire.SqlServer
                     InProcessingState = ProcessingState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
                     ServerId = stateData.ContainsKey("ServerId") ? stateData["ServerId"] : stateData["ServerName"],
                     StartedAt = sqlJob.StateChanged,
+                    StateData = stateData
                 }));
         }
 
@@ -109,7 +110,8 @@ namespace Hangfire.SqlServer
                     InvocationData = invocationData,
                     InScheduledState = ScheduledState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
                     EnqueueAt = JobHelper.DeserializeNullableDateTime(stateData["EnqueueAt"]) ?? DateTime.MinValue,
-                    ScheduledAt = sqlJob.StateChanged
+                    ScheduledAt = sqlJob.StateChanged,
+                    StateData = stateData
                 }));
         }
 
@@ -183,7 +185,8 @@ namespace Hangfire.SqlServer
                     ExceptionDetails = stateData["ExceptionDetails"],
                     ExceptionMessage = stateData["ExceptionMessage"],
                     ExceptionType = stateData["ExceptionType"],
-                    FailedAt = sqlJob.StateChanged
+                    FailedAt = sqlJob.StateChanged,
+                    StateData = stateData
                 }));
         }
 
@@ -205,7 +208,8 @@ namespace Hangfire.SqlServer
                     TotalDuration = stateData.ContainsKey("PerformanceDuration") && stateData.ContainsKey("Latency")
                         ? (long?)long.Parse(stateData["PerformanceDuration"]) + (long?)long.Parse(stateData["Latency"])
                         : null,
-                    SucceededAt = sqlJob.StateChanged
+                    SucceededAt = sqlJob.StateChanged,
+                    StateData = stateData
                 }));
         }
 
@@ -223,7 +227,8 @@ namespace Hangfire.SqlServer
                     LoadException = loadException,
                     InvocationData = invocationData,
                     InDeletedState = DeletedState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
-                    DeletedAt = sqlJob.StateChanged
+                    DeletedAt = sqlJob.StateChanged,
+                    StateData = stateData
                 }));
         }
 
@@ -524,7 +529,8 @@ where j.Id in @jobIds";
                     InEnqueuedState = EnqueuedState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
                     EnqueuedAt = EnqueuedState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase)
                         ? sqlJob.StateChanged
-                        : null
+                        : null,
+                    StateData = stateData
                 });
         }
 

@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using Hangfire.Common;
 
 namespace Hangfire.Storage.Monitoring
@@ -35,5 +36,6 @@ namespace Hangfire.Storage.Monitoring
         public string ExceptionMessage { get; set; }
         public string ExceptionDetails { get; set; }
         public bool InFailedState { get; set; }
+        public IDictionary<string, string> StateData { get; set; }
     }
 }
