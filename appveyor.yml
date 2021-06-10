@@ -12,7 +12,6 @@ version: 1.7.23-build-0{build}
 image:
   - Visual Studio 2019
   - Ubuntu
-  - macOS
 
 #---------------------------------#
 #    environment configuration    #
