@@ -83,15 +83,16 @@ namespace Hangfire.Core.Tests.Processing
         [Fact]
         public async Task WaitOneAsync_WaitsAndReturnsFalse_WhenNotSignaled_AndNonNullTimeout()
         {
-            using var mre = new ManualResetEvent(false);
+            using (var mre = new ManualResetEvent(false))
+            {
+                var sw = Stopwatch.StartNew();
+                var result = await TaskExtensions.WaitOneAsync(mre, TimeSpan.FromMilliseconds(100), CancellationToken.None);
+                sw.Stop();
 
-            var sw = Stopwatch.StartNew();
-            var result = await TaskExtensions.WaitOneAsync(mre, TimeSpan.FromMilliseconds(100), CancellationToken.None);
-            sw.Stop();
-
-            Assert.False(result, "result != false");
-            Assert.False(mre.WaitOne(TimeSpan.Zero), "mre is signaled");
-            Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(95), sw.Elapsed.ToString());
+                Assert.False(result, "result != false");
+                Assert.False(mre.WaitOne(TimeSpan.Zero), "mre is signaled");
+                Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(95), sw.Elapsed.ToString());
+            }
         }
 
         [Fact]
@@ -175,15 +176,16 @@ namespace Hangfire.Core.Tests.Processing
         [Fact]
         public void WaitOne_WaitsAndReturnsFalse_WhenNotSignaled_AndNonNullTimeout()
         {
-            using var mre = new ManualResetEvent(false);
+            using (var mre = new ManualResetEvent(false))
+            {
+                var sw = Stopwatch.StartNew();
+                var result = TaskExtensions.WaitOne(mre, TimeSpan.FromMilliseconds(100), CancellationToken.None);
+                sw.Stop();
 
-            var sw = Stopwatch.StartNew();
-            var result = TaskExtensions.WaitOne(mre, TimeSpan.FromMilliseconds(100), CancellationToken.None);
-            sw.Stop();
-
-            Assert.False(result, "result != false");
-            Assert.False(mre.WaitOne(TimeSpan.Zero), "mre is signaled");
-            Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(95), sw.Elapsed.ToString());
+                Assert.False(result, "result != false");
+                Assert.False(mre.WaitOne(TimeSpan.Zero), "mre is signaled");
+                Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(95), sw.Elapsed.ToString());
+            }
         }
 
         [Fact]
