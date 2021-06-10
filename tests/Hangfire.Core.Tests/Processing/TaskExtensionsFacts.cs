@@ -83,13 +83,14 @@ namespace Hangfire.Core.Tests.Processing
         [Fact]
         public async Task WaitOneAsync_WaitsAndReturnsFalse_WhenNotSignaled_AndNonNullTimeout()
         {
+            using var mre = new ManualResetEvent(false);
+
             var sw = Stopwatch.StartNew();
-            var result = await TaskExtensions.WaitOneAsync(_mre, TimeSpan.FromMilliseconds(100), _cts.Token);
+            var result = await TaskExtensions.WaitOneAsync(mre, TimeSpan.FromMilliseconds(100), CancellationToken.None);
             sw.Stop();
 
             Assert.False(result, "result != false");
-            Assert.False(_cts.Token.IsCancellationRequested, "IsCancellationRequested != false");
-            Assert.False(_mre.WaitOne(TimeSpan.Zero), "_mre is signaled");
+            Assert.False(mre.WaitOne(TimeSpan.Zero), "mre is signaled");
             Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(95), sw.Elapsed.ToString());
         }
 
@@ -174,11 +175,14 @@ namespace Hangfire.Core.Tests.Processing
         [Fact]
         public void WaitOne_WaitsAndReturnsFalse_WhenNotSignaled_AndNonNullTimeout()
         {
+            using var mre = new ManualResetEvent(false);
+
             var sw = Stopwatch.StartNew();
-            var result = TaskExtensions.WaitOne(_mre, TimeSpan.FromMilliseconds(100), CancellationToken.None);
+            var result = TaskExtensions.WaitOne(mre, TimeSpan.FromMilliseconds(100), CancellationToken.None);
             sw.Stop();
 
-            Assert.False(result);
+            Assert.False(result, "result != false");
+            Assert.False(mre.WaitOne(TimeSpan.Zero), "mre is signaled");
             Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(95), sw.Elapsed.ToString());
         }
 
