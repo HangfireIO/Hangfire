@@ -4,8 +4,8 @@ set -e;
 if hash docker 2>/dev/null;
 then
   echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin;
-  sudo docker run --name=mssql2017 -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=Password12!' -p 1433:1433 -d microsoft/mssql-server-linux:2017-latest;
-  export Hangfire_SqlServer_ConnectionStringTemplate="Server=tcp:127.0.0.1,1433;Database={0};User Id=sa;Password=Password12!";
+  sudo docker run --name=mssql2017 -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=Password12!' -p 1434:1433 -d microsoft/mssql-server-linux:2017-latest;
+  export Hangfire_SqlServer_ConnectionStringTemplate="Server=tcp:127.0.0.1,1434;Database={0};User Id=sa;Password=Password12!";
 fi
 
 if hash mono 2>/dev/null; 
