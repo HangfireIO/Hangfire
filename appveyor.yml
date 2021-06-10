@@ -42,7 +42,7 @@ shallow_clone: true
 
 # to run your custom scripts instead of automatic MSBuild
 build_script:
-  - ps: build.bat ci
+  - ps: ./build.bat ci
   - sh: ./build.sh
 
 #---------------------------------#
