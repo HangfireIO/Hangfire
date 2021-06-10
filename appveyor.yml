@@ -40,8 +40,10 @@ shallow_clone: true
 #       build configuration       #
 #---------------------------------#
 
-# to run your custom scripts instead of automatic MSBuild
+# Installing MSMQ manually to avoid "Cannot initialize 'msmq' service handler" error
 build_script:
+  - ps: Import-Module ServerManager
+  - ps: Add-WindowsFeature MSMQ
   - ps: ./build.bat ci
   - sh: ./build.sh
 
