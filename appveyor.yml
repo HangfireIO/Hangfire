@@ -9,7 +9,9 @@
 # Don't edit manually! Use `build.bat version` command instead!
 version: 1.8.0-build-0{build}
 
-os: Visual Studio 2019
+image:
+  - Visual Studio 2019
+  - Ubuntu
 
 #---------------------------------#
 #    environment configuration    #
@@ -19,11 +21,14 @@ os: Visual Studio 2019
 environment:
   BuildEnvironment: appveyor
   Hangfire_SqlServer_ConnectionStringTemplate: Server=.\SQL2017;Database={0};User Id=sa;Password=Password12!
+  DOCKER_USERNAME:
+    secure: BDjid/SqKs9YCA39j55dIg==
+  DOCKER_PASSWORD:
+    secure: 5QtoskttMBDkXfFyFZSLhZIlUfsDUDgkCS9jy7rUM6ROPeRytpzEdkIXA5UNNV9K
 
 # enable service required for tests
 services:
   - mssql2017
-  - msmq
 
 pull_requests:
   do_not_increment_build_number: true
@@ -34,9 +39,11 @@ shallow_clone: true
 #       build configuration       #
 #---------------------------------#
 
-# to run your custom scripts instead of automatic MSBuild
+# Installing MSMQ manually to avoid "Cannot initialize 'msmq' service handler" error
 build_script:
-  - build.bat ci
+  - cmd: powershell Import-Module ServerManager; Add-WindowsFeature MSMQ; net start msmq
+  - cmd: ./build.bat ci
+  - sh: chmod +x build.sh; ./build.sh
 
 #---------------------------------#
 #       tests configuration       #
