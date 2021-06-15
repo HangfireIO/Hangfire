@@ -337,7 +337,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_PassesCustomData_BetweenContexts_OnFailedStateTransition()
+        public void Execute_DoesNotPassCustomData_BetweenContexts_OnFailedStateTransition()
         {
             var worker = CreateWorker();
             _performer.Setup(x => x.Perform(It.IsNotNull<PerformContext>()))
@@ -348,7 +348,7 @@ namespace Hangfire.Core.Tests.Server
 
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.NewState is FailedState &&
-                ctx.CustomData != null && (string) ctx.CustomData["Key"] == "Value")));
+                ctx.CustomData == null)));
         }
 
         [Fact]

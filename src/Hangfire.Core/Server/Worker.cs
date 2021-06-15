@@ -106,7 +106,6 @@ namespace Hangfire.Server
                 try
                 {
                     BackgroundJob backgroundJob = null;
-                    var customData = new Dictionary<string, object>();
 
                     using (var timeoutCts = new CancellationTokenSource(_jobInitializationWaitTimeout))
                     using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
@@ -120,7 +119,7 @@ namespace Hangfire.Server
                             connection, 
                             fetchedJob.JobId, 
                             processingState, 
-                            customData,
+                            null,
                             new[] { EnqueuedState.StateName, ScheduledState.StateName, ProcessingState.StateName },
                             null,
                             out backgroundJob,
@@ -143,7 +142,7 @@ namespace Hangfire.Server
                     // it was performed to guarantee that it was performed AT LEAST once.
                     // It will be re-queued after the JobTimeout was expired.
 
-                    var state = PerformJob(context, connection, fetchedJob.JobId, backgroundJob, customData);
+                    var state = PerformJob(context, connection, fetchedJob.JobId, backgroundJob, out var customData);
                     var transactionalAck = context.Storage.HasFeature(TransactionalAcknowledgePrefix + fetchedJob.GetType().Name);
 
                     if (state != null)
@@ -256,8 +255,7 @@ namespace Hangfire.Server
                 disableFilters: true,
                 completeJob,
                 initializeToken,
-                _profiler,
-                customData);
+                _profiler);
 
             var failedResult = _stateChanger.ChangeState(failedStateContext);
             backgroundJob = failedStateContext.ProcessedJob;
@@ -281,8 +279,10 @@ namespace Hangfire.Server
             IStorageConnection connection,
             string jobId,
             BackgroundJob backgroundJob,
-            IDictionary<string, object> customData)
+            out IReadOnlyDictionary<string, object> customData)
         {
+            customData = null;
+
             try
             {
                 if (backgroundJob == null)
@@ -303,7 +303,7 @@ namespace Hangfire.Server
 
                 using (var jobToken = new ServerJobCancellationToken(connection, backgroundJob.Id, context.ServerId, context.ExecutionId.ToString(), context.StoppedToken))
                 {
-                    var performContext = new PerformContext(context.Storage, connection, backgroundJob, jobToken, _profiler, customData);
+                    var performContext = new PerformContext(context.Storage, connection, backgroundJob, jobToken, _profiler);
 
                     var latency = (DateTime.UtcNow - backgroundJob.CreatedAt).TotalMilliseconds;
                     var duration = Stopwatch.StartNew();
