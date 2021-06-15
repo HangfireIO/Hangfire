@@ -246,7 +246,8 @@ namespace Hangfire.Server
                         new [] { ScheduledState.StateName },
                         disableFilters: false,
                         context.StoppingToken,
-                        _profiler));
+                        _profiler,
+                        context.ServerId));
 
                     if (appliedState == null && connection.GetJobData(jobId) == null)
                     {
@@ -287,14 +288,15 @@ namespace Hangfire.Server
                 context.Storage,
                 connection,
                 jobId,
-                new FailedState(exception)
+                new FailedState(exception, context.ServerId)
                 {
                     Reason = $"Failed to change state to the '{EnqueuedState.StateName}' one due to an exception after {MaxStateChangeAttempts} retry attempts"
                 },
                 new[] { ScheduledState.StateName },
                 disableFilters: true,
                 context.StoppingToken,
-                _profiler));
+                _profiler,
+                context.ServerId));
         }
 
         // TODO Use new HasFeature method if available to avoid exceptions

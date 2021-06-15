@@ -221,6 +221,7 @@ namespace Hangfire.Server
                         completeJob,
                         initializeToken,
                         _profiler,
+                        context.ServerId,
                         customData);
 
                     var resultingState = _stateChanger.ChangeState(stateChangeContext);
@@ -250,12 +251,13 @@ namespace Hangfire.Server
                 connection,
                 null,
                 jobId,
-                new FailedState(exception) { Reason = $"Failed to change state to a '{state.Name}' one due to an exception after {_maxStateChangeAttempts} retry attempts" },
+                new FailedState(exception, context.ServerId) { Reason = $"Failed to change state to a '{state.Name}' one due to an exception after {_maxStateChangeAttempts} retry attempts" },
                 expectedStates,
                 disableFilters: true,
                 completeJob,
                 initializeToken,
-                _profiler);
+                _profiler,
+                context.ServerId);
 
             var failedResult = _stateChanger.ChangeState(failedStateContext);
             backgroundJob = failedStateContext.ProcessedJob;
@@ -326,7 +328,7 @@ namespace Hangfire.Server
             }
             catch (JobPerformanceException ex)
             {
-                return new FailedState(ex.InnerException)
+                return new FailedState(ex.InnerException, context.ServerId)
                 {
                     Reason = ex.Message
                 };
@@ -338,7 +340,7 @@ namespace Hangfire.Server
                     throw;
                 }
 
-                return new FailedState(ex)
+                return new FailedState(ex, context.ServerId)
                 {
                     Reason = "An exception occurred during processing of a background job."
                 };

@@ -104,7 +104,7 @@ namespace Hangfire.States
                     // will not.
                     if (!stateToApply.IgnoreJobLoadException)
                     {
-                        stateToApply = new FailedState(ex.InnerException)
+                        stateToApply = new FailedState(ex.InnerException, context.ServerId)
                         {
                             Reason = $"Can not change the state to '{stateToApply.Name}': target method was not found."
                         };

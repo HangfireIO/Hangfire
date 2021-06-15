@@ -98,6 +98,7 @@ namespace Hangfire.Core.Tests.States
                     null,
                     false,
                     CancellationToken.None,
+                    null,
                     null));
 
             Assert.Equal("profiler", exception.ParamName);
@@ -175,6 +176,7 @@ namespace Hangfire.Core.Tests.States
                 false,
                 _token,
                 _profiler.Object,
+                "some-server",
                 _customData);
 
             Assert.Same(_storage.Object, context.Storage);
@@ -185,6 +187,7 @@ namespace Hangfire.Core.Tests.States
             Assert.False(context.DisableFilters);
             Assert.Equal(_token, context.CancellationToken);
             Assert.Same(_profiler.Object, context.Profiler);
+            Assert.Equal("some-server", context.ServerId);
             Assert.Same(_customData, context.CustomData);
         }
     }
