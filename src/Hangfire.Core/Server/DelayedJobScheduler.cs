@@ -151,9 +151,13 @@ namespace Hangfire.Server
             {
                 var jobsProcessed = 0;
 
+                var now = !context.Storage.HasFeature("Connection.GetUtcDateTime")
+                    ? DateTime.UtcNow
+                    : ((JobStorageConnection)connection).GetUtcDateTime();
+
                 if (IsBatchingAvailable(context.Storage, connection))
                 {
-                    var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
+                    var timestamp = JobHelper.ToTimestamp(now);
                     var entries = ((JobStorageConnection)connection).GetFirstByLowestScoreFromSet("schedule", 0, timestamp, BatchSize);
                     var toBeEnqueued = new List<Tuple<string, int>>();
 
@@ -191,7 +195,7 @@ namespace Hangfire.Server
                     {
                         if (context.IsStopping) break;
 
-                        var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
+                        var timestamp = JobHelper.ToTimestamp(now);
 
                         var entry = connection.GetFirstByLowestScoreFromSet("schedule", 0, timestamp);
                         if (entry == null) break;

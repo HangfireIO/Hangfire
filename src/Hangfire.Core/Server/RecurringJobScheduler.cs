@@ -188,9 +188,12 @@ namespace Hangfire.Server
             {
                 var jobsProcessed = 0;
 
+                var now = !context.Storage.HasFeature("Connection.GetUtcDateTime")
+                    ? _nowFactory()
+                    : ((JobStorageConnection)connection).GetUtcDateTime();
+
                 if (IsBatchingAvailable(context.Storage, connection))
                 {
-                    var now = _nowFactory();
                     var timestamp = JobHelper.ToTimestamp(now);
                     var recurringJobIds = ((JobStorageConnection)connection).GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp, BatchSize);
 
@@ -211,7 +214,6 @@ namespace Hangfire.Server
                     {
                         if (context.IsStopping) break;
 
-                        var now = _nowFactory();
                         var timestamp = JobHelper.ToTimestamp(now);
 
                         var recurringJobId = connection.GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp);
