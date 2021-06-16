@@ -127,6 +127,16 @@ namespace Hangfire.SqlServer.Tests
             Assert.Contains(typeof(ExpirationManager), componentTypes);
         }
 
+        [Fact, CleanDatabase]
+        public void HasFeature_Connection_GetUtcDateTime_ReturnsTrue()
+        {
+            var storage = CreateStorage();
+
+            var result = storage.HasFeature("Connection.GetUtcDateTime");
+
+            Assert.True(result);
+        }
+
         private SqlServerStorage CreateStorage()
         {
             return new SqlServerStorage(

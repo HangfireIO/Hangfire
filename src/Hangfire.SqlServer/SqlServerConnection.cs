@@ -669,6 +669,12 @@ order by [Id] desc";
             return _storage.UseConnection(_dedicatedConnection, connection => connection.Query<string>(query, new { key = key }, commandTimeout: _storage.CommandTimeout).ToList());
         }
 
+        public override DateTime GetUtcDateTime()
+        {
+            return _storage.UseConnection(_dedicatedConnection, connection =>
+                connection.ExecuteScalar<DateTime>("SELECT SYSUTCDATETIME()"));
+        }
+
         private DbConnection _dedicatedConnection;
 
         private IDisposable AcquireLock(string resource, TimeSpan timeout)

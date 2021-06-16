@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using ReferencedDapper::Dapper;
@@ -2235,6 +2236,20 @@ values (@jobId, @name, @value)";
 
                 Assert.Equal("value", value);
             }, useBatching: false, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetUtcDateTime_ReturnsCurrentUtcDateTime(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var dateTime = connection.GetUtcDateTime();
+                var currentDateTime = DateTime.UtcNow;
+
+                Assert.True(currentDateTime.AddMinutes(-1) < dateTime, dateTime.ToString(CultureInfo.CurrentCulture));
+                Assert.True(dateTime < currentDateTime.AddMinutes(1), dateTime.ToString(CultureInfo.CurrentCulture));
+            }, useMicrosoftDataSqlClient);
         }
 
         [Fact, CleanSerializerSettings]
