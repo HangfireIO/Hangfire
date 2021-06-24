@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Linq;
 
 namespace Hangfire
 {
@@ -51,26 +52,17 @@ namespace Hangfire
         public static IEndpointConventionBuilder MapHangfireDashboardWithAuthorizationPolicy(
             [NotNull] this IEndpointRouteBuilder endpoints,
             [NotNull] string authorizationPolicyName,
+            [NotNull] string pattern = "/hangfire",
             [CanBeNull] DashboardOptions options = null,
             [CanBeNull] JobStorage storage = null)
         {
-            return MapHangfireDashboardWithAuthorizationPolicy(endpoints, authorizationPolicyName, "/hangfire", options, storage);
-        }
+            if (endpoints == null) throw new ArgumentNullException(nameof(endpoints));
+            if (authorizationPolicyName == null) throw new ArgumentNullException(nameof(authorizationPolicyName));
 
-        public static IEndpointConventionBuilder MapHangfireDashboardWithAuthorizationPolicy(
-            [NotNull] this IEndpointRouteBuilder endpoints,
-            [NotNull] string authorizationPolicyName,
-            [NotNull] string pattern,
-            [CanBeNull] DashboardOptions options = null,
-            [CanBeNull] JobStorage storage = null)
-        {
-            if (options == null)
-            {
-                options = new DashboardOptions()
-                {
-                    Authorization = new List<IDashboardAuthorizationFilter>() // We don't require the default LocalHost only filter since we provide our own policy
-                };
-            }
+            options = options ?? new DashboardOptions();
+
+            // We don't require the default LocalRequestsOnlyAuthorizationFilter since we provide our own policy
+            options.Authorization = Enumerable.Empty<IDashboardAuthorizationFilter>();
 
             return endpoints
                 .MapHangfireDashboard(pattern, options, storage)
