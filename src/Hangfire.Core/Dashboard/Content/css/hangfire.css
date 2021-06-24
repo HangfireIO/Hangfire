@@ -304,6 +304,8 @@ a:hover .label-hover {
 .alert-fixed {
     border-radius: 0;
     margin-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
 }
 
 .state-card {
