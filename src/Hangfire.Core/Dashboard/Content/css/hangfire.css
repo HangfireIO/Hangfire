@@ -306,6 +306,8 @@ a:hover .label-hover {
     margin-bottom: -1px;
     padding-left: 0;
     padding-right: 0;
+    border-left: none;
+    border-right: none;
 }
 
 .state-card {
