@@ -63,6 +63,7 @@ namespace Hangfire
 
             // We don't require the default LocalRequestsOnlyAuthorizationFilter since we provide our own policy
             options.Authorization = Enumerable.Empty<IDashboardAuthorizationFilter>();
+            options.AsyncAuthorization = Enumerable.Empty<IDashboardAsyncAuthorizationFilter>();
 
             return endpoints
                 .MapHangfireDashboard(pattern, options, storage)
