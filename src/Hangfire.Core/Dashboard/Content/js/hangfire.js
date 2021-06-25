@@ -23,7 +23,7 @@
             $('#errorAlert').hide();
 
             $('#errorAlert').slideDown("fast");
-            $('.js-page-container').animate({ 'margin-top': alertHeight + 'px' }, "fast");
+            $('.js-page-container').animate({ 'padding-top': alertHeight + 'px' }, "fast");
         };
 
         return ErrorAlert;
