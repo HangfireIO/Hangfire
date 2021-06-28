@@ -34,6 +34,7 @@ Hangfire.Core
 • Fixed – Make the `TypeHelper` class public instead of internal to use it outside.
 
 Hangfire.SqlServer
+
 • Project – Stop using `TransactionScope` class in tests, re-create database instead.
 • Project – Make it possible to run SQL Server tests on Mono on Linux.
 
