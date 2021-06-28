@@ -15,6 +15,10 @@
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.7.24
+• Added – Support for async auth methods via the `DashboardOptions.AsyncAuthorization` property (by @rosenbjerg).
+• Added – Authorization policy support via the new `MapHangfireDashboardWithAuthorizationPolicy` method (by @dasiths).
+
 1.7.20
 • Added – An overload for `AddHangfireServer` utilizing `IServiceProvider` (by @penenkel).
 • Added – `IBackgroundJobClientFactory` and `IRecurringJobManagerFactory` interfaces to fix the following bug.
