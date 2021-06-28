@@ -35,6 +35,7 @@ Hangfire.Core
 
 Hangfire.SqlServer
 
+• Changed – Don't use the `readcommittedlock` table hint when not required.
 • Project – Stop using `TransactionScope` class in tests, re-create database instead.
 • Project – Make it possible to run SQL Server tests on Mono on Linux.
 

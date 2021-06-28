@@ -18,6 +18,7 @@
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
 1.7.24
+• Changed – Don't use the `readcommittedlock` table hint when not required.
 • Project – Stop using `TransactionScope` class in tests, re-create database instead.
 • Project – Make it possible to run SQL Server tests on Mono on Linux.
 
