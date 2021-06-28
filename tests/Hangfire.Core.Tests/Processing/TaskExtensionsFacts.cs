@@ -179,10 +179,9 @@ namespace Hangfire.Core.Tests.Processing
             using (var mre = new ManualResetEvent(false))
             {
                 var sw = Stopwatch.StartNew();
-                var result = TaskExtensions.WaitOne(mre, TimeSpan.FromMilliseconds(100), CancellationToken.None, out var waitResult);
+                var result = TaskExtensions.WaitOne(mre, TimeSpan.FromMilliseconds(100), CancellationToken.None);
                 sw.Stop();
 
-                Assert.Equal(WaitHandle.WaitTimeout, waitResult);
                 Assert.False(result, "result != false");
                 Assert.False(mre.WaitOne(TimeSpan.Zero), "mre is signaled");
                 Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(95), sw.Elapsed.ToString());
