@@ -29,6 +29,11 @@ namespace Hangfire.Processing
 
         public static bool WaitOne([NotNull] this WaitHandle waitHandle, TimeSpan timeout, CancellationToken token)
         {
+            return WaitOne(waitHandle, timeout, token, out _);
+        }
+
+        internal static bool WaitOne([NotNull] this WaitHandle waitHandle, TimeSpan timeout, CancellationToken token, out int waitResult)
+        {
             if (waitHandle == null) throw new ArgumentNullException(nameof(waitHandle));
             if (timeout < Timeout.InfiniteTimeSpan) throw new ArgumentOutOfRangeException(nameof(timeout));
 
@@ -37,7 +42,7 @@ namespace Hangfire.Processing
             using (var ev = token.GetCancellationEvent())
             {
                 var waitHandles = new[] { waitHandle, ev.WaitHandle };
-                var waitResult = WaitHandle.WaitAny(waitHandles, timeout);
+                waitResult = WaitHandle.WaitAny(waitHandles, timeout);
 
                 if (waitResult == 0)
                 {
