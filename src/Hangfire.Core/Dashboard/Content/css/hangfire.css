@@ -7,8 +7,8 @@ html, body {
 }
 
 body {
-    /* 75px to make the container go all the way to the bottom of the topbar */
-    padding-top: 75px;
+    /* 70px to make the container go all the way to the bottom of the topbar */
+    padding-top: 70px;
 }
 
 /* Wrapper for page content to push down footer */
@@ -554,10 +554,6 @@ div.metric-null {
 }
 
 /* Full width styles */
-
-body {
-    padding-top: 70px
-}
 
 @media (min-width: 768px) {
     body {
