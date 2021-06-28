@@ -133,8 +133,8 @@ namespace Hangfire
     {
         // Prevent GC to collect background processing servers in hosts that do
         // not support shutdown notifications. Dictionary is used as a Set.
-        private static readonly ConcurrentDictionary<BackgroundJobServer, object> Servers
-            = new ConcurrentDictionary<BackgroundJobServer, object>();
+        private static readonly ConcurrentDictionary<IBackgroundProcessingServer, object> Servers
+            = new ConcurrentDictionary<IBackgroundProcessingServer, object>();
 
         /// <summary>
         /// Creates a new instance of the <see cref="BackgroundJobServer"/> class
