@@ -22,6 +22,28 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.24
+
+Hangfire.Core
+
+• Added – Support for async auth methods via the `DashboardOptions.AsyncAuthorization` property (by @rosenbjerg).
+• Fixed – Error alert in Dashboard UI is now correctly shown when sidebar is present (by @danillewin).
+• Fixed – Reference an empty favicon in Dashboard UI to prevent backend 404s (by @dan2468).
+• Fixed – Back-to-site link text in Dashboard UI is now hidden on small screens (by @danillewin).
+• Fixed – Avoid memory leak in the `AppBuilderExtensions` class (by @LordJZ).
+• Fixed – Make the `TypeHelper` class public instead of internal to use it outside.
+
+Hangfire.SqlServer
+
+• Changed – Don't use the `readcommittedlock` table hint when not required.
+• Project – Stop using `TransactionScope` class in tests, re-create database instead.
+• Project – Make it possible to run SQL Server tests on Mono on Linux.
+
+Hangfire.AspNetCore
+
+• Added – Support for async auth methods via the `DashboardOptions.AsyncAuthorization` property (by @rosenbjerg).
+• Added – Authorization policy support via the new `MapHangfireDashboardWithAuthorizationPolicy` method (by @dasiths).
+
 1.7.23
 
 Hangfire.Core

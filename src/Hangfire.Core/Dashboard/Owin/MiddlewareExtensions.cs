@@ -70,7 +70,7 @@ namespace Hangfire.Dashboard
 
             return
                 next =>
-                env =>
+                async env =>
                 {
                     var owinContext = new OwinContext(env);
                     var context = new OwinDashboardContext(storage, options, env);
@@ -87,44 +87,57 @@ namespace Hangfire.Dashboard
                         if (options.AuthorizationFilters.Any(filter => !filter.Authorize(owinContext.Environment)))
 #pragma warning restore 618
                         {
-                            return Unauthorized(owinContext);
+                            owinContext.Response.StatusCode = GetUnauthorizedStatusCode(owinContext);
+                            return;
                         }
                     }
                     else
                     {
-                        if (options.Authorization.Any(filter => !filter.Authorize(context)))
+                        // ReSharper disable once LoopCanBeConvertedToQuery
+                        foreach (var filter in options.Authorization)
                         {
-                            return Unauthorized(owinContext);
+                            if (!filter.Authorize(context))
+                            {
+                                owinContext.Response.StatusCode = GetUnauthorizedStatusCode(owinContext);
+                                return;
+                            }
+                        }
+
+                        foreach (var filter in options.AsyncAuthorization)
+                        {
+                            if (!await filter.AuthorizeAsync(context))
+                            {
+                                owinContext.Response.StatusCode = GetUnauthorizedStatusCode(owinContext);
+                                return;
+                            }
                         }
                     }
 
                     if (!options.IgnoreAntiforgeryToken && antiforgery != null && !antiforgery.ValidateRequest(env))
                     {
-                        return Unauthorized(owinContext);
+                        owinContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                        return;
                     }
 
                     var findResult = routes.FindDispatcher(owinContext.Request.Path.Value);
 
                     if (findResult == null)
                     {
-                        return next(env);
+                        await next(env);
+                        return;
                     }
 
                     context.UriMatch = findResult.Item2;
 
-                    return findResult.Item1.Dispatch(context);
+                    await findResult.Item1.Dispatch(context);
                 };
         }
 
-        private static Task Unauthorized(IOwinContext owinContext)
+        private static int GetUnauthorizedStatusCode(IOwinContext owinContext)
         {
-            var isAuthenticated = owinContext.Authentication?.User?.Identity?.IsAuthenticated;
-
-            owinContext.Response.StatusCode = isAuthenticated == true
+            return owinContext.Authentication?.User?.Identity?.IsAuthenticated == true
                 ? (int)HttpStatusCode.Forbidden
                 : (int)HttpStatusCode.Unauthorized;
-
-            return Task.FromResult(0);
         }
     }
 }

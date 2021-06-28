@@ -28,6 +28,7 @@ namespace Hangfire
             AppPath = "/";
             PrefixPath = string.Empty;
             Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
+            AsyncAuthorization = new IDashboardAsyncAuthorizationFilter[0];
             IsReadOnlyFunc = _ => false;
             StatsPollingInterval = 2000;
             DisplayStorageConnectionString = true;
@@ -52,6 +53,7 @@ namespace Hangfire
 #endif
 
         public IEnumerable<IDashboardAuthorizationFilter> Authorization { get; set; }
+        public IEnumerable<IDashboardAsyncAuthorizationFilter> AsyncAuthorization { get; set; }
 
         public Func<DashboardContext, bool> IsReadOnlyFunc { get; set; }
         
