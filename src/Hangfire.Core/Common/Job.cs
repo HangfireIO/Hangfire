@@ -23,6 +23,7 @@ using Hangfire.Annotations;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Hangfire.States;
 
 namespace Hangfire.Common
 {
@@ -174,6 +175,11 @@ namespace Hangfire.Common
             if (args == null) throw new ArgumentNullException(nameof(args));
             
             Validate(type, nameof(type), method, nameof(method), args.Length, nameof(args));
+
+            if (queue != null)
+            {
+                EnqueuedState.ValidateQueueName(nameof(queue), queue);
+            }
 
             Type = type;
             Method = method;

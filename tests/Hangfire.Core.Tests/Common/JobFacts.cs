@@ -45,32 +45,40 @@ namespace Hangfire.Core.Tests.Common
         [Fact]
         public void Ctor_ThrowsAnException_WhenTheTypeIsNull()
         {
-            Assert.Throws<ArgumentNullException>(
+            var exception = Assert.Throws<ArgumentNullException>(
                 // ReSharper disable once AssignNullToNotNullAttribute
                 () => new Job(null, _method, _arguments));
+
+            Assert.Equal("type", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenTheMethodIsNull()
         {
-            Assert.Throws<ArgumentNullException>(
+            var exception = Assert.Throws<ArgumentNullException>(
                 // ReSharper disable once AssignNullToNotNullAttribute
                 () => new Job(_type, null, _arguments));
+
+            Assert.Equal("method", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenTheTypeDoesNotContainTheGivenMethod()
         {
-            Assert.Throws<ArgumentException>(
+            var exception = Assert.Throws<ArgumentException>(
                 () => new Job(typeof(Job), _method, _arguments));
+
+            Assert.Equal("type", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenArgumentsArrayIsNull()
         {
-            Assert.Throws<ArgumentNullException>(
+            var exception = Assert.Throws<ArgumentNullException>(
                 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new Job(_type, _method, null));
+                () => new Job(_type, _method, (object[])null));
+
+            Assert.Equal("args", exception.ParamName);
         }
 
         [Fact]
@@ -78,6 +86,15 @@ namespace Hangfire.Core.Tests.Common
         {
             var job = new Job(_type, _method, _arguments, null);
             Assert.NotNull(job);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenQueueValidationFails()
+        {
+            var exception = Assert.Throws<ArgumentException>(
+                () => new Job(_type, _method, _arguments, "&^*%"));
+
+            Assert.Equal("queue", exception.ParamName);
         }
 
         [Fact]
