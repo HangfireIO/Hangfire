@@ -168,13 +168,13 @@ namespace Hangfire.Common
         /// </exception>
         /// <exception cref="ArgumentException">Parameter/argument count mismatch.</exception>
         /// <exception cref="NotSupportedException"><paramref name="method"/> is not supported.</exception>
-        public Job([NotNull] Type type, [NotNull] MethodInfo method, [NotNull] object[] args, [CanBeNull] string queue)
+        public Job([NotNull] Type type, [NotNull] MethodInfo method, [NotNull] IReadOnlyList<object> args, [CanBeNull] string queue)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
             if (method == null) throw new ArgumentNullException(nameof(method));
             if (args == null) throw new ArgumentNullException(nameof(args));
             
-            Validate(type, nameof(type), method, nameof(method), args.Length, nameof(args));
+            Validate(type, nameof(type), method, nameof(method), args.Count, nameof(args));
 
             if (queue != null)
             {
