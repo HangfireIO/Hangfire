@@ -46,7 +46,6 @@ namespace Hangfire
     /// BackgroundJob.Enqueue<ErrorService>(x => x.ReportFatal("Really bad thing!"));
     /// 
     /// ]]></example>
-    [Obsolete("Please specify target queue name directly instead. Will be removed in 2.0.0.")]
     public sealed class QueueAttribute : JobFilterAttribute, IElectStateFilter
     {
         /// <summary>
