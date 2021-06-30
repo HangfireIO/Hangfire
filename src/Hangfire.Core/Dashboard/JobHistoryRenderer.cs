@@ -230,7 +230,7 @@ namespace Hangfire.Dashboard
 
         private static NonEscapedString EnqueuedRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
         {
-            if (!EnqueuedState.DefaultQueue.Equals(stateData["Queue"]))
+            if (!EnqueuedState.DefaultQueue.Equals(stateData["Queue"], StringComparison.OrdinalIgnoreCase))
             {
                 return new NonEscapedString(
                     $"<dl class=\"dl-horizontal\"><dt>Queue:</dt><dd>{helper.QueueLabel(stateData["Queue"])}</dd></dl>");
