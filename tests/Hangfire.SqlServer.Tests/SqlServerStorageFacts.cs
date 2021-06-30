@@ -137,6 +137,16 @@ namespace Hangfire.SqlServer.Tests
             Assert.True(result);
         }
 
+        [Fact, CleanDatabase]
+        public void HasFeature_Job_Queue_ReturnsTrue()
+        {
+            var storage = CreateStorage();
+
+            var result = storage.HasFeature("Job.Queue");
+
+            Assert.True(result);
+        }
+
         private SqlServerStorage CreateStorage()
         {
             return new SqlServerStorage(

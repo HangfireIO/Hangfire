@@ -100,7 +100,6 @@ namespace Hangfire
         private AttemptsExceededAction _onAttemptsExceeded;
         private bool _logEvents;
         private Type[] _onlyOn;
-        private string _queue;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AutomaticRetryAttribute"/>
@@ -198,15 +197,6 @@ namespace Hangfire
         {
             get { lock (_lockObject) { return _onlyOn; } }
             set { lock (_lockObject) { _onlyOn = value; } }
-        }
-
-        public string Queue
-        {
-            get { lock (_lockObject) { return _queue; } }
-            set
-            {
-                lock (_lockObject) { _queue = value; }
-            }
         }
 
         /// <inheritdoc />
@@ -311,11 +301,10 @@ namespace Hangfire
             // schedule the job to run again later.
             
             var reason = $"Retry attempt {retryAttempt} of {Attempts}: {exceptionMessage}";
-            var queue = Queue != null ? String.Format(Queue, context.BackgroundJob.Job.Args.ToArray()) : null;
 
             context.CandidateState = delay == TimeSpan.Zero
-                ? (IState)new EnqueuedState { Queue = queue ?? EnqueuedState.DefaultQueue, Reason = reason }
-                : new ScheduledState(delay) { Queue = queue, Reason = reason };
+                ? (IState)new EnqueuedState { Reason = reason }
+                : new ScheduledState(delay) { Reason = reason };
 
             if (LogEvents)
             {

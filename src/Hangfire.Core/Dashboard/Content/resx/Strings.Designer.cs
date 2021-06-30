@@ -595,7 +595,7 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Job ID.
+        ///   Looks up a localized string similar to Id.
         /// </summary>
         public static string JobDetailsPage_JobId {
             get {

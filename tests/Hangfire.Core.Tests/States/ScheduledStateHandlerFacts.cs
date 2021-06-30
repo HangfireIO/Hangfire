@@ -44,16 +44,27 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
-        public void Apply_ShouldAddJob_ToTheScheduleSet_PrependedWithACorrespondingQueue()
+        public void Apply_WithJobAndQueueSpecified_ThrowsAnException_WhenRequiredFeatureNotSupported()
         {
-            _context.NewStateObject = new ScheduledState(TimeSpan.Zero) { Queue = "default" };
+            _context.BackgroundJob.Job = Job.FromExpression(() => BackgroundJobMock.SomeMethod(), "critical");
+            var handler = new ScheduledState.Handler();
+
+            Assert.Throws<NotSupportedException>(
+                () => handler.Apply(_context.Object, _transaction.Object));
+        }
+
+        [Fact]
+        public void Apply_ShouldAddJob_WithQueueSpecified_ToTheScheduleSet_WithQueuePrepended()
+        {
+            _context.Storage.Setup(x => x.HasFeature("Job.Queue")).Returns(true);
+            _context.BackgroundJob.Job = Job.FromExpression(() => BackgroundJobMock.SomeMethod(), "critical");
             var handler = new ScheduledState.Handler();
 
             handler.Apply(_context.Object, _transaction.Object);
 
             _transaction.Verify(x => x.AddToSet(
                 "schedule",
-                "default:" + JobId,
+                "critical:" + JobId,
                 It.IsAny<double>()));
         }
 
@@ -67,14 +78,25 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
-        public void Unapply_ShouldRemoveTheJobId_FromTheScheduleSet_RegardlessOfQueuePropertyValue()
+        public void Unapply_WithJobAndQueueSpecified_ThrowsAnException_WhenRequiredFeatureNotSupported()
         {
-            _context.NewStateObject = new ScheduledState(TimeSpan.Zero) { Queue = "critical" };
+            _context.BackgroundJob.Job = Job.FromExpression(() => BackgroundJobMock.SomeMethod(), "critical");
+            var handler = new ScheduledState.Handler();
+
+            Assert.Throws<NotSupportedException>(
+                () => handler.Unapply(_context.Object, _transaction.Object));
+        }
+
+        [Fact]
+        public void Unapply_WithJob_WithQueueSpecified_ShouldRemoveTheJobId_FromTheScheduleSet_PrependedWithQueueName()
+        {
+            _context.Storage.Setup(x => x.HasFeature("Job.Queue")).Returns(true);
+            _context.BackgroundJob.Job = Job.FromExpression(() => BackgroundJobMock.SomeMethod(), "critical");
             var handler = new ScheduledState.Handler();
 
             handler.Unapply(_context.Object, _transaction.Object);
 
-            _transaction.Verify(x => x.RemoveFromSet("schedule", JobId));
+            _transaction.Verify(x => x.RemoveFromSet("schedule", $"critical:{JobId}"));
         }
 
         [Fact]

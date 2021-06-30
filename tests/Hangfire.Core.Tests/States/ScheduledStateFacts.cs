@@ -32,13 +32,6 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
-        public void Ctor_SetsQueueToNull_ByDefault()
-        {
-            var state = new ScheduledState(TimeSpan.Zero);
-            Assert.Null(state.Queue);
-        }
-
-        [Fact]
         public void SerializeData_ReturnsCorrectData()
         {
             var state = new ScheduledState(new DateTime(2012, 12, 12));
@@ -60,16 +53,6 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
-        public void SerializeData_ContainsQueueKey_WhenItIsAssigned()
-        {
-            var state = new ScheduledState(TimeSpan.Zero) { Queue = "critical" };
-
-            var data = state.SerializeData();
-
-            Assert.Equal("critical", data["Queue"]);
-        }
-
-        [Fact]
         public void IsFinal_ReturnsFalse()
         {
             var state = new ScheduledState(DateTime.UtcNow);
@@ -82,46 +65,6 @@ namespace Hangfire.Core.Tests.States
         {
             var state = new ScheduledState(DateTime.UtcNow);
             Assert.False(state.IgnoreJobLoadException);
-        }
-
-        [Fact]
-        public void Queue_Set_DoesNotThrow_WhenQueueIsSetToNull()
-        {
-            var state = new ScheduledState(TimeSpan.Zero)
-            {
-                Queue = null
-            };
-
-            Assert.Null(state.Queue);
-        }
-
-        [Fact]
-        public void Queue_CanNotBeSet_ToAnEmptyValue()
-        {
-            Assert.ThrowsAny<ArgumentException>(() => new ScheduledState(TimeSpan.Zero)
-            {
-                Queue = String.Empty
-            });
-        }
-
-        [Fact]
-        public void Queue_Set_IsValidated()
-        {
-            Assert.Throws<ArgumentException>(() => new ScheduledState(TimeSpan.Zero)
-            {
-                Queue = "&^%"
-            });
-        }
-
-        [Fact]
-        public void Queue_Get_ReturnsTheCorrectValue()
-        {
-            var state = new ScheduledState(TimeSpan.Zero)
-            {
-                Queue = "critical"
-            };
-
-            Assert.Equal("critical", state.Queue);
         }
 
         [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
@@ -150,17 +93,6 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(
                 "{\"$type\":\"Hangfire.States.ScheduledState, Hangfire.Core\",\"EnqueueAt\":" + convertedDateTime + "}",
                 serialized);
-        }
-
-        [DataCompatibilityRangeFact]
-        public void JsonSerialize_ReturnsCorrectValue_ForQueue_Property()
-        {
-            var state = new ScheduledState(DateTime.UtcNow) { Queue = "default" };
-
-            var serialized = SerializationHelper.Serialize<IState>(state, SerializationOption.TypedInternal);
-
-            Assert.StartsWith("{\"$type\":\"Hangfire.States.ScheduledState", serialized);
-            Assert.Contains("\"Queue\":\"default\"", serialized);
         }
     }
 }
