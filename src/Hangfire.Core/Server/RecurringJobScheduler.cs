@@ -188,9 +188,11 @@ namespace Hangfire.Server
             {
                 var jobsProcessed = 0;
 
-                var now = !context.Storage.HasFeature("Connection.GetUtcDateTime")
-                    ? _nowFactory()
-                    : ((JobStorageConnection)connection).GetUtcDateTime();
+                var now = DateTime.SpecifyKind(
+                    !context.Storage.HasFeature("Connection.GetUtcDateTime")
+                        ? _nowFactory()
+                        : ((JobStorageConnection)connection).GetUtcDateTime(),
+                    DateTimeKind.Utc);
 
                 if (IsBatchingAvailable(context.Storage, connection))
                 {
