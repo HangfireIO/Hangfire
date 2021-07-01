@@ -2247,6 +2247,7 @@ values (@jobId, @name, @value)";
                 var dateTime = connection.GetUtcDateTime();
                 var currentDateTime = DateTime.UtcNow;
 
+                Assert.Equal(DateTimeKind.Utc, dateTime.Kind);
                 Assert.True(currentDateTime.AddMinutes(-1) < dateTime, dateTime.ToString(CultureInfo.CurrentCulture));
                 Assert.True(dateTime < currentDateTime.AddMinutes(1), dateTime.ToString(CultureInfo.CurrentCulture));
             }, useMicrosoftDataSqlClient);

@@ -672,7 +672,7 @@ order by [Id] desc";
         public override DateTime GetUtcDateTime()
         {
             return _storage.UseConnection(_dedicatedConnection, connection =>
-                connection.ExecuteScalar<DateTime>("SELECT SYSUTCDATETIME()"));
+                DateTime.SpecifyKind(connection.ExecuteScalar<DateTime>("SELECT SYSUTCDATETIME()"), DateTimeKind.Utc));
         }
 
         private DbConnection _dedicatedConnection;
