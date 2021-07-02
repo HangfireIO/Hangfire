@@ -86,8 +86,7 @@ namespace Hangfire
         /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
         public static string Enqueue([NotNull, InstantHandle] Expression<Action> methodCall)
         {
-            var client = ClientFactory();
-            return client.Enqueue(methodCall);
+            return ClientFactory().Enqueue(methodCall);
         }
 
         /// <summary>
@@ -104,8 +103,7 @@ namespace Hangfire
         /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
         public static string Enqueue([NotNull, InstantHandle] Expression<Func<Task>> methodCall)
         {
-            var client = ClientFactory();
-            return client.Enqueue(methodCall);
+            return ClientFactory().Enqueue(methodCall);
         }
 
         /// <summary>
@@ -122,8 +120,7 @@ namespace Hangfire
         /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
         public static string Enqueue<T>([NotNull, InstantHandle] Expression<Action<T>> methodCall)
         {
-            var client = ClientFactory();
-            return client.Enqueue(methodCall);
+            return ClientFactory().Enqueue(methodCall);
         }
 
         /// <summary>
@@ -140,8 +137,7 @@ namespace Hangfire
         /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
         public static string Enqueue<T>([NotNull, InstantHandle] Expression<Func<T, Task>> methodCall)
         {
-            var client = ClientFactory();
-            return client.Enqueue(methodCall);
+            return ClientFactory().Enqueue(methodCall);
         }
 
         /// <summary>
@@ -156,8 +152,7 @@ namespace Hangfire
             [NotNull, InstantHandle] Expression<Action> methodCall, 
             TimeSpan delay)
         {
-            var client = ClientFactory();
-            return client.Schedule(methodCall, delay);
+            return ClientFactory().Schedule(methodCall, delay);
         }
 
         /// <summary>
@@ -172,8 +167,7 @@ namespace Hangfire
             [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             TimeSpan delay)
         {
-            var client = ClientFactory();
-            return client.Schedule(methodCall, delay);
+            return ClientFactory().Schedule(methodCall, delay);
         }
 
         /// <summary>
@@ -188,8 +182,7 @@ namespace Hangfire
             [NotNull, InstantHandle] Expression<Action> methodCall, 
             DateTimeOffset enqueueAt)
         {
-            var client = ClientFactory();
-            return client.Schedule(methodCall, enqueueAt);
+            return ClientFactory().Schedule(methodCall, enqueueAt);
         }
 
         /// <summary>
@@ -204,8 +197,7 @@ namespace Hangfire
             [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             DateTimeOffset enqueueAt)
         {
-            var client = ClientFactory();
-            return client.Schedule(methodCall, enqueueAt);
+            return ClientFactory().Schedule(methodCall, enqueueAt);
         }
 
         /// <summary>
@@ -221,8 +213,7 @@ namespace Hangfire
             [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
             TimeSpan delay)
         {
-            var client = ClientFactory();
-            return client.Schedule(methodCall, delay);
+            return ClientFactory().Schedule(methodCall, delay);
         }
 
         /// <summary>
@@ -238,8 +229,7 @@ namespace Hangfire
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             TimeSpan delay)
         {
-            var client = ClientFactory();
-            return client.Schedule(methodCall, delay);
+            return ClientFactory().Schedule(methodCall, delay);
         }
 
         /// <summary>
@@ -255,8 +245,7 @@ namespace Hangfire
             [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
             DateTimeOffset enqueueAt)
         {
-            var client = ClientFactory();
-            return client.Schedule(methodCall, enqueueAt);
+            return ClientFactory().Schedule(methodCall, enqueueAt);
         }
 
         /// <summary>
@@ -272,8 +261,7 @@ namespace Hangfire
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             DateTimeOffset enqueueAt)
         {
-            var client = ClientFactory();
-            return client.Schedule(methodCall, enqueueAt);
+            return ClientFactory().Schedule(methodCall, enqueueAt);
         }
 
         /// <summary>
@@ -286,8 +274,7 @@ namespace Hangfire
         /// <returns>True on a successfull state transition, false otherwise.</returns>
         public static bool Delete([NotNull] string jobId)
         {
-            var client = ClientFactory();
-            return client.Delete(jobId);
+            return ClientFactory().Delete(jobId);
         }
 
         /// <summary>
@@ -302,8 +289,7 @@ namespace Hangfire
         /// <returns>True, if state change succeeded, otherwise false.</returns>
         public static bool Delete([NotNull] string jobId, [CanBeNull] string fromState)
         {
-            var client = ClientFactory();
-            return client.Delete(jobId, fromState);
+            return ClientFactory().Delete(jobId, fromState);
         }
         
         /// <summary>
@@ -315,8 +301,7 @@ namespace Hangfire
         /// <returns>True, if state change succeeded, otherwise false.</returns>
         public static bool Requeue([NotNull] string jobId)
         {
-            var client = ClientFactory();
-            return client.Requeue(jobId);
+            return ClientFactory().Requeue(jobId);
         }
 
         /// <summary>
@@ -331,8 +316,7 @@ namespace Hangfire
         /// <returns>True, if state change succeeded, otherwise false.</returns>
         public static bool Requeue([NotNull] string jobId, [CanBeNull] string fromState)
         {
-            var client = ClientFactory();
-            return client.Requeue(jobId, fromState);
+            return ClientFactory().Requeue(jobId, fromState);
         }
 
         /// <summary>
@@ -361,8 +345,7 @@ namespace Hangfire
             [NotNull] string parentId,
             [NotNull, InstantHandle] Expression<Action> methodCall)
         {
-            var client = ClientFactory();
-            return client.ContinueJobWith(parentId, methodCall);
+            return ClientFactory().ContinueJobWith(parentId, methodCall);
         }
 
         /// <summary>
@@ -391,8 +374,7 @@ namespace Hangfire
             [NotNull] string parentId,
             [NotNull, InstantHandle] Expression<Action<T>> methodCall)
         {
-            var client = ClientFactory();
-            return client.ContinueJobWith(parentId, methodCall);
+            return ClientFactory().ContinueJobWith(parentId, methodCall);
         }
 
         /// <summary>
@@ -423,8 +405,7 @@ namespace Hangfire
             [NotNull, InstantHandle] Expression<Action> methodCall,
             JobContinuationOptions options)
         {
-            var client = ClientFactory();
-            return client.ContinueJobWith(parentId, methodCall, options);
+            return ClientFactory().ContinueJobWith(parentId, methodCall, options);
         }
 
         /// <summary>
@@ -457,8 +438,7 @@ namespace Hangfire
             [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             JobContinuationOptions options = JobContinuationOptions.OnlyOnSucceededState)
         {
-            var client = ClientFactory();
-            return client.ContinueJobWith(parentId, methodCall, options: options);
+            return ClientFactory().ContinueJobWith(parentId, methodCall, options: options);
         }
 
         /// <summary>
@@ -489,8 +469,7 @@ namespace Hangfire
             [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             JobContinuationOptions options)
         {
-            var client = ClientFactory();
-            return client.ContinueJobWith(parentId, methodCall, options);
+            return ClientFactory().ContinueJobWith(parentId, methodCall, options);
         }
 
         /// <summary>
@@ -523,8 +502,7 @@ namespace Hangfire
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             JobContinuationOptions options = JobContinuationOptions.OnlyOnSucceededState)
         {
-            var client = ClientFactory();
-            return client.ContinueJobWith(parentId, methodCall, options: options);
+            return ClientFactory().ContinueJobWith(parentId, methodCall, options: options);
         }
     }
 }
