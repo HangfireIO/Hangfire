@@ -91,7 +91,7 @@ namespace Hangfire.Core.Tests.Processing
 
                 Assert.False(result, "result != false");
                 Assert.False(mre.WaitOne(TimeSpan.Zero), "mre is signaled");
-                Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(450), sw.Elapsed.ToString());
+                Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(450), $"Elapsed: {sw.Elapsed.TotalMilliseconds} ms, Expected: 450 ms");
             }
         }
 
@@ -110,7 +110,7 @@ namespace Hangfire.Core.Tests.Processing
 #else
             Assert.NotNull(exception);
 #endif
-            Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(450), sw.Elapsed.ToString());
+            Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(450), $"Elapsed: {sw.Elapsed.TotalMilliseconds} ms, Expected: 450 ms");
         }
 
         [Fact]
@@ -184,7 +184,7 @@ namespace Hangfire.Core.Tests.Processing
 
                 Assert.False(result, "result != false");
                 Assert.False(mre.WaitOne(TimeSpan.Zero), "mre is signaled");
-                Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(450), sw.Elapsed.ToString());
+                Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(450), $"Elapsed: {sw.Elapsed.TotalMilliseconds} ms, Expected: 450 ms");
             }
         }
 
@@ -203,7 +203,7 @@ namespace Hangfire.Core.Tests.Processing
 #else
             Assert.NotNull(exception);
 #endif
-            Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(450), sw.Elapsed.ToString());
+            Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(450), $"Elapsed: {sw.Elapsed.TotalMilliseconds} ms, Expected: 450 ms");
         }
     }
 }
