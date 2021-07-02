@@ -44,19 +44,27 @@ namespace ConsoleSample
             NewFeatures.Test(throwException: true);
 
             var job1 = BackgroundJob.Enqueue<Services>(x => x.WriteIndex(0));
-            var job2 = BackgroundJob.ContinueJobWith<Services>(job1, x => x.WriteIndex(default));
-            var job3 = BackgroundJob.ContinueJobWith<Services>(job2, x => x.WriteIndex(default));
-            var job4 = BackgroundJob.ContinueJobWith<Services>(job3, x => x.WriteIndex(default));
-            var job5 = BackgroundJob.ContinueJobWith<Services>(job4, x => x.WriteIndex(default));
+            var job2 = BackgroundJob.ContinueJobWith<Services>(job1, "default",  x => x.WriteIndex(default));
+            var job3 = BackgroundJob.ContinueJobWith<Services>(job2, "critical", x => x.WriteIndex(default));
+            var job4 = BackgroundJob.ContinueJobWith<Services>(job3, "default",  x => x.WriteIndex(default));
+            var job5 = BackgroundJob.ContinueJobWith<Services>(job4, "critical", x => x.WriteIndex(default));
 
             RecurringJob.AddOrUpdate("seconds", () => Console.WriteLine("Hello, seconds!"), "*/15 * * * * *");
-            RecurringJob.AddOrUpdate(() => Console.WriteLine("Hello, world!"), Cron.Minutely);
+            RecurringJob.AddOrUpdate("Console.WriteLine", () => Console.WriteLine("Hello, world!"), Cron.Minutely);
             RecurringJob.AddOrUpdate("hourly", () => Console.WriteLine("Hello"), "25 15 * * *");
             RecurringJob.AddOrUpdate("neverfires", () => Console.WriteLine("Can only be triggered"), "0 0 31 2 *");
 
-            RecurringJob.AddOrUpdate("Hawaiian", () => Console.WriteLine("Hawaiian"), "15 08 * * *", TimeZoneInfo.FindSystemTimeZoneById("Hawaiian Standard Time"));
-            RecurringJob.AddOrUpdate("UTC", () => Console.WriteLine("UTC"), "15 18 * * *");
-            RecurringJob.AddOrUpdate("Russian", () => Console.WriteLine("Russian"), "15 21 * * *", TimeZoneInfo.Local);
+            RecurringJob.AddOrUpdate("Hawaiian", () => Console.WriteLine("Hawaiian"), "15 08 * * *", new RecurringJobOptions
+            {
+                TimeZone = TimeZoneInfo.FindSystemTimeZoneById("Hawaiian Standard Time")
+            });
+
+            RecurringJob.AddOrUpdate("UTC", "critical", () => Console.WriteLine("UTC"), "15 18 * * *");
+
+            RecurringJob.AddOrUpdate("Russian", () => Console.WriteLine("Russian"), "15 21 * * *", new RecurringJobOptions
+            {
+                TimeZone = TimeZoneInfo.Local
+            });
 
             using (WebApp.Start<Startup>("http://localhost:12345"))
             {
@@ -181,7 +189,7 @@ namespace ConsoleSample
                     {
                         var seconds = int.Parse(command.Substring(2));
                         var number = count++;
-                        BackgroundJob.Schedule<Services>(x => x.Random(number), TimeSpan.FromSeconds(seconds));
+                        BackgroundJob.Schedule<Services>("default", x => x.Random(number), TimeSpan.FromSeconds(seconds));
                     }
 
                     if (command.StartsWith("cancelable", StringComparison.OrdinalIgnoreCase))
@@ -207,14 +215,9 @@ namespace ConsoleSample
                             var workCount = int.Parse(command.Substring(5));
                             Parallel.For(0, workCount, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, i =>
                             {
-                                if (i % 2 == 0)
-                                {
-                                    BackgroundJob.Enqueue<Services>(x => x.EmptyCritical());
-                                }
-                                else
-                                {
-                                    BackgroundJob.Enqueue<Services>(x => x.EmptyDefault());
-                                }
+                                BackgroundJob.Enqueue<Services>(
+                                    i % 2 == 0 ? "critical" : "default",
+                                    x => x.EmptyDefault());
                             });
                             Console.WriteLine("Jobs enqueued.");
                         }
