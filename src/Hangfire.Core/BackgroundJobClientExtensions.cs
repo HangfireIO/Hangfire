@@ -46,7 +46,6 @@ namespace Hangfire
             [NotNull, InstantHandle] Expression<Action> methodCall)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
-
             return client.Create(methodCall, new EnqueuedState());
         }
 
@@ -65,7 +64,6 @@ namespace Hangfire
             [NotNull, InstantHandle] Expression<Func<Task>> methodCall)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
-
             return client.Create(methodCall, new EnqueuedState());
         }
 
@@ -85,7 +83,6 @@ namespace Hangfire
             [NotNull, InstantHandle] Expression<Action<T>> methodCall)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
-
             return client.Create(methodCall, new EnqueuedState());
         }
 
@@ -105,7 +102,6 @@ namespace Hangfire
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
-
             return client.Create(methodCall, new EnqueuedState());
         }
 
@@ -123,7 +119,6 @@ namespace Hangfire
             TimeSpan delay)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
-
             return client.Create(methodCall, new ScheduledState(delay));
         }
 
@@ -141,7 +136,6 @@ namespace Hangfire
             TimeSpan delay)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
-
             return client.Create(methodCall, new ScheduledState(delay));
         }
 
@@ -159,7 +153,6 @@ namespace Hangfire
             DateTimeOffset enqueueAt)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
-
             return client.Create(methodCall, new ScheduledState(enqueueAt.UtcDateTime));
         }
 
@@ -177,7 +170,6 @@ namespace Hangfire
             DateTimeOffset enqueueAt)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
-
             return client.Create(methodCall, new ScheduledState(enqueueAt.UtcDateTime));
         }
 
@@ -197,7 +189,6 @@ namespace Hangfire
             TimeSpan delay)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
-
             return client.Create(methodCall, new ScheduledState(delay));
         }
 
@@ -217,7 +208,6 @@ namespace Hangfire
             TimeSpan delay)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
-
             return client.Create(methodCall, new ScheduledState(delay));
         }
 
@@ -236,7 +226,6 @@ namespace Hangfire
             DateTimeOffset enqueueAt)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
-
             return client.Create(methodCall, new ScheduledState(enqueueAt.UtcDateTime));
         }
 
@@ -255,7 +244,6 @@ namespace Hangfire
             DateTimeOffset enqueueAt)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
-
             return client.Create(methodCall, new ScheduledState(enqueueAt.UtcDateTime));
         }
 
@@ -788,7 +776,7 @@ namespace Hangfire
             if (client == null) throw new ArgumentNullException(nameof(client));
 
             var state = new AwaitingState(parentId, nextState, options);
-            return client.Create(Job.FromExpression(methodCall), state);
+            return client.Create(methodCall, state);
         }
 
         /// <summary>
@@ -834,7 +822,7 @@ namespace Hangfire
             if (client == null) throw new ArgumentNullException(nameof(client));
 
             var state = new AwaitingState(parentId, nextState ?? new EnqueuedState(), options);
-            return client.Create(Job.FromExpression(methodCall), state);
+            return client.Create(methodCall, state);
         }
 
         /// <summary>
@@ -876,7 +864,7 @@ namespace Hangfire
             if (client == null) throw new ArgumentNullException(nameof(client));
 
             var state = new AwaitingState(parentId, nextState, options);
-            return client.Create(Job.FromExpression(methodCall), state);
+            return client.Create(methodCall, state);
         }
 
         /// <summary>
@@ -922,7 +910,7 @@ namespace Hangfire
             if (client == null) throw new ArgumentNullException(nameof(client));
 
             var state = new AwaitingState(parentId, nextState ?? new EnqueuedState(), options);
-            return client.Create(Job.FromExpression(methodCall), state);
+            return client.Create(methodCall, state);
         }
     }
 }
