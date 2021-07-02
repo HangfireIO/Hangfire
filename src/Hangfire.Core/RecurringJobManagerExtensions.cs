@@ -171,10 +171,6 @@ namespace Hangfire
             [NotNull] RecurringJobOptions options)
         {
             if (manager == null) throw new ArgumentNullException(nameof(manager));
-            if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
-            if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
-            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
-            if (options == null) throw new ArgumentNullException(nameof(options));
 
             var job = Job.FromExpression(methodCall);
             manager.AddOrUpdate(recurringJobId, job, cronExpression, options);
@@ -215,10 +211,6 @@ namespace Hangfire
             [NotNull] RecurringJobOptions options)
         {
             if (manager == null) throw new ArgumentNullException(nameof(manager));
-            if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
-            if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
-            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
-            if (options == null) throw new ArgumentNullException(nameof(options));
 
             var job = Job.FromExpression(methodCall);
             manager.AddOrUpdate(recurringJobId, job, cronExpression, options);
@@ -325,10 +317,6 @@ namespace Hangfire
             [NotNull] RecurringJobOptions options)
         {
             if (manager == null) throw new ArgumentNullException(nameof(manager));
-            if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
-            if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
-            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
-            if (options == null) throw new ArgumentNullException(nameof(options));
 
             var job = Job.FromExpression(methodCall);
             manager.AddOrUpdate(recurringJobId, job, cronExpression, options);
@@ -369,10 +357,6 @@ namespace Hangfire
             [NotNull] RecurringJobOptions options)
         {
             if (manager == null) throw new ArgumentNullException(nameof(manager));
-            if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
-            if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
-            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
-            if (options == null) throw new ArgumentNullException(nameof(options));
 
             var job = Job.FromExpression(methodCall);
             manager.AddOrUpdate(recurringJobId, job, cronExpression, options);
