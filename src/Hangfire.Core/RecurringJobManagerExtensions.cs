@@ -212,7 +212,7 @@ namespace Hangfire
         public static void AddOrUpdate<T>(
             [NotNull] this IRecurringJobManager manager,
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull] Expression<Action<T>> methodCall,
             [NotNull] string cronExpression)
         {
             AddOrUpdate(manager, recurringJobId, methodCall, cronExpression, new RecurringJobOptions());
@@ -366,7 +366,7 @@ namespace Hangfire
         public static void AddOrUpdate<T>(
             [NotNull] this IRecurringJobManager manager,
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull] Expression<Func<T, Task>> methodCall,
             [NotNull] string cronExpression)
         {
             AddOrUpdate(manager, recurringJobId, methodCall, cronExpression, new RecurringJobOptions());
