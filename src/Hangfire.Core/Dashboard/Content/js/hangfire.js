@@ -67,9 +67,10 @@
     })();
 
     hangfire.RealtimeGraph = (function() {
-        function RealtimeGraph(element, succeeded, failed, succeededStr, failedStr, pollInterval) {
+        function RealtimeGraph(element, succeeded, failed, deleted, succeededStr, failedStr, deletedStr, pollInterval) {
             this._succeeded = succeeded;
             this._failed = failed;
+            this._deleted = deleted;
             this._last = Date.now();
             this._pollInterval = pollInterval;
             
@@ -77,8 +78,9 @@
                 type: 'line',
                 data: {
                     datasets: [
-                        { label: succeededStr, borderColor: '#62B35F', backgroundColor: '#6FCD6D' },
-                        { label: failedStr, borderColor: '#BB4847', backgroundColor: '#D55251' }
+                        { label: failedStr,  /*borderColor: '#BB4847', */backgroundColor: '#D55251', borderWidth: 2 },
+                        { label: deletedStr, /*borderColor: '#777777', */backgroundColor: '#919191', borderWidth: 2 },
+                        { label: succeededStr, borderColor: '#62B35F',   backgroundColor: '#6FCD6D' },
                     ]
                 },
                 options: {
@@ -102,22 +104,26 @@
         }
 
         RealtimeGraph.prototype.appendHistory = function (statistics) {
-            var newSucceeded = parseInt(statistics["succeeded:count"].intValue);
             var newFailed = parseInt(statistics["failed:count"].intValue);
+            var newDeleted = parseInt(statistics["deleted:count"].intValue);
+            var newSucceeded = parseInt(statistics["succeeded:count"].intValue);
             var now = Date.now();
 
-            if (this._succeeded !== null && this._failed !== null && (now - this._last < this._pollInterval * 2)) {
-                var succeeded = Math.max(newSucceeded - this._succeeded, 0);
+            if (this._succeeded !== null && this._failed !== null && this._deleted !== null && (now - this._last < this._pollInterval * 2)) {
                 var failed = Math.max(newFailed - this._failed, 0);
+                var deleted = Math.max(newDeleted - this._deleted, 0);
+                var succeeded = Math.max(newSucceeded - this._succeeded, 0);
 
-                this._chart.data.datasets[0].data.push({ x: new Date(), y: succeeded });
-                this._chart.data.datasets[1].data.push({ x: new Date(), y: failed });   
+                this._chart.data.datasets[0].data.push({ x: now, y: failed });
+                this._chart.data.datasets[1].data.push({ x: now, y: deleted });
+                this._chart.data.datasets[2].data.push({ x: now, y: succeeded });
                 
                 this._chart.update();
             }
             
-            this._succeeded = newSucceeded;
             this._failed = newFailed;
+            this._deleted = newDeleted;
+            this._succeeded = newSucceeded;
             this._last = now;
         };
 
@@ -125,7 +131,7 @@
     })();
 
     hangfire.HistoryGraph = (function() {
-        function HistoryGraph(element, succeeded, failed, succeededStr, failedStr) {
+        function HistoryGraph(element, succeeded, failed, deleted, succeededStr, failedStr, deletedStr) {
             var timeOptions = $(element).data('period') === 'week'
                 ? { unit: 'day', tooltipFormat: 'LL', displayFormats: { day: 'll' } }
                 : { unit: 'hour', tooltipFormat: 'LLL', displayFormats: { hour: 'LT', day: 'll' } };
@@ -134,8 +140,9 @@
                 type: 'line',
                 data: {
                     datasets: [
-                        { label: succeededStr, borderColor: '#62B35F', backgroundColor: '#6FCD6D', data: succeeded },
-                        { label: failedStr, borderColor: '#BB4847', backgroundColor: '#D55251', data: failed }
+                        { label: failedStr,  /*borderColor: '#BB4847', */backgroundColor: '#D55251', data: failed,  borderWidth: 2 },
+                        { label: deletedStr, /*borderColor: '#777777', */backgroundColor: '#919191', data: deleted, borderWidth: 2 },
+                        { label: succeededStr, borderColor: '#62B35F',   backgroundColor: '#6FCD6D', data: succeeded },
                     ]
                 },
                 options: {
@@ -238,10 +245,12 @@
             if (realtimeElement) {
                 var succeeded = parseInt($(realtimeElement).data('succeeded'));
                 var failed = parseInt($(realtimeElement).data('failed'));
+                var deleted = parseInt($(realtimeElement).data('deleted'));
 
                 var succeededStr = $(realtimeElement).data('succeeded-string');
                 var failedStr = $(realtimeElement).data('failed-string');
-                var realtimeGraph = new Hangfire.RealtimeGraph(realtimeElement, succeeded, failed, succeededStr, failedStr, pollInterval);
+                var deletedStr = $(realtimeElement).data('deleted-string');
+                var realtimeGraph = new Hangfire.RealtimeGraph(realtimeElement, succeeded, failed, deleted, succeededStr, failedStr, deletedStr, pollInterval);
 
                 this._poller.addListener(function (data) {
                     realtimeGraph.appendHistory(data);
@@ -270,11 +279,13 @@
 
                 var succeeded = createSeries($(historyElement).data("succeeded"));
                 var failed = createSeries($(historyElement).data("failed"));
+                var deleted = createSeries($(historyElement).data("deleted"));
 
                 var succeededStr = $(historyElement).data('succeeded-string');
                 var failedStr = $(historyElement).data('failed-string');
+                var deletedStr = $(historyElement).data('deleted-string');
 
-                return new Hangfire.HistoryGraph(historyElement, succeeded, failed, succeededStr, failedStr);
+                return new Hangfire.HistoryGraph(historyElement, succeeded, failed, deleted, succeededStr, failedStr, deletedStr);
             }
 
             return null;

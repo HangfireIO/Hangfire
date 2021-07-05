@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
 
 namespace Hangfire.Core.Tests
 {
-    class ApplyStateContextMock
+    public class ApplyStateContextMock
     {
         private readonly Lazy<ApplyStateContext> _context;
 
@@ -18,6 +20,7 @@ namespace Hangfire.Core.Tests
             NewState = new Mock<IState>();
             OldStateName = null;
             JobExpirationTimeout = TimeSpan.FromMinutes(1);
+            StateMachine = new Mock<IStateMachine>();
 
             _context = new Lazy<ApplyStateContext>(
                 () => new ApplyStateContext(
@@ -26,7 +29,10 @@ namespace Hangfire.Core.Tests
                     Transaction.Object,
                     BackgroundJob.Object,
                     NewStateObject ?? NewState.Object,
-                    OldStateName)
+                    OldStateName,
+                    EmptyProfiler.Instance,
+                    StateMachine.Object,
+                    CustomData)
                 {
                     JobExpirationTimeout = JobExpirationTimeout
                 });
@@ -39,7 +45,9 @@ namespace Hangfire.Core.Tests
         public IState NewStateObject { get; set; }
         public Mock<IState> NewState { get; set; }
         public string OldStateName { get; set; }
-        public TimeSpan JobExpirationTimeout { get; set; } 
+        public TimeSpan JobExpirationTimeout { get; set; }
+        public Mock<IStateMachine> StateMachine { get; set; } 
+        public IReadOnlyDictionary<string, object> CustomData { get; set; }
 
         public ApplyStateContext Object => _context.Value;
     }

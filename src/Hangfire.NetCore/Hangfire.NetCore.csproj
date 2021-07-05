@@ -13,6 +13,7 @@
     <Compile Include="..\Hangfire.AspNetCore\AspNetCore\AspNetCoreLog.cs" Link="AspNetCore\AspNetCoreLog.cs" />
     <Compile Include="..\Hangfire.AspNetCore\AspNetCore\AspNetCoreLogProvider.cs" Link="AspNetCore\AspNetCoreLogProvider.cs" />
     <Compile Include="..\Hangfire.AspNetCore\BackgroundJobServerHostedService.cs" Link="BackgroundJobServerHostedService.cs" />
+    <Compile Include="..\Hangfire.AspNetCore\BackgroundProcessingServerHostedService.cs" Link="BackgroundProcessingServerHostedService.cs" />
     <Compile Include="..\Hangfire.AspNetCore\HangfireServiceCollectionExtensions.cs" Link="HangfireServiceCollectionExtensions.cs" />
     <Compile Include="..\Hangfire.AspNetCore\IBackgroundJobClientFactory.cs" Link="IBackgroundJobClientFactory.cs" />
     <Compile Include="..\Hangfire.AspNetCore\IRecurringJobManagerFactory.cs" Link="IRecurringJobManagerFactory.cs" />

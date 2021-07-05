@@ -129,7 +129,7 @@ namespace Hangfire
             // multiple threads add continuation to the same parent job.
             using (connection.AcquireDistributedJobLock(parentId, AddJobLockTimeout))
             {
-                var continuations = GetContinuations(connection, parentId);
+                var continuations = GetContinuations(context, parentId);
 
                 // Continuation may be already added. This may happen, when outer transaction
                 // was failed after adding a continuation last time, since the addition is
@@ -158,12 +158,26 @@ namespace Hangfire
 
                 if (currentState != null && _knownFinalStates.Contains(currentState.Name))
                 {
-                    var startImmediately = !awaitingState.Options.HasFlag(JobContinuationOptions.OnlyOnSucceededState) ||
-                        currentState.Name == SucceededState.StateName;
+                    var startImmediately = ShouldStartContinuation(currentState.Name, awaitingState.Options);
 
-                    if (_pushResults && currentState.Data.TryGetValue("Result", out var antecedentResult))
+                    if (_pushResults && startImmediately)
                     {
-                        context.Connection.SetJobParameter(context.BackgroundJob.Id, "AntecedentResult", antecedentResult);
+                        if (SucceededState.StateName.Equals(currentState.Name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (currentState.Data.TryGetValue("Result", out var antecedentResult))
+                            {
+                                context.Connection.SetJobParameter(context.BackgroundJob.Id, "AntecedentResult", antecedentResult);
+                            }
+                        }
+                        else if (DeletedState.StateName.Equals(currentState.Name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (!currentState.Data.TryGetValue("Exception", out var antecedentException))
+                            {
+                                antecedentException = JobParameterInjectionFilter.DefaultException;
+                            }
+                            
+                            context.Connection.SetJobParameter(context.BackgroundJob.Id, "AntecedentException", antecedentException);
+                        }
                     }
 
                     context.CandidateState = startImmediately
@@ -177,7 +191,7 @@ namespace Hangfire
         {
             // The following lines are executed inside a distributed job lock,
             // so it is safe to get continuation list here.
-            var continuations = GetContinuations(context.Connection, context.BackgroundJob.Id);
+            var continuations = GetContinuations(context, null);
             var nextStates = new Dictionary<string, IState>();
 
             // Getting continuation data for all continuations – state they are waiting 
@@ -198,8 +212,7 @@ namespace Hangfire
 
                 IState nextState;
 
-                if (continuation.Options.HasFlag(JobContinuationOptions.OnlyOnSucceededState) &&
-                    context.CandidateState.Name != SucceededState.StateName)
+                if (!ShouldStartContinuation(context.CandidateState.Name, continuation.Options))
                 {
                     nextState = new DeletedState { Reason = "Continuation condition was not met" };
                 }
@@ -228,11 +241,23 @@ namespace Hangfire
             }
             
             string antecedentResult = null;
+            string antecedentException = null;
 
             if (_pushResults)
             {
-                var serializedData = context.CandidateState.SerializeData();
-                serializedData.TryGetValue("Result", out antecedentResult);
+                if (context.CandidateState is SucceededState)
+                {
+                    var serializedData = context.CandidateState.SerializeData();
+                    serializedData.TryGetValue("Result", out antecedentResult);
+                }
+                else if (context.CandidateState is DeletedState)
+                {
+                    var serializedData = context.CandidateState.SerializeData();
+                    if (!serializedData.TryGetValue("Exception", out antecedentException))
+                    {
+                        antecedentException = JobParameterInjectionFilter.DefaultException;
+                    }
+                }
             }
 
             foreach (var tuple in nextStates)
@@ -240,6 +265,11 @@ namespace Hangfire
                 if (antecedentResult != null)
                 {
                     context.Connection.SetJobParameter(tuple.Key, "AntecedentResult", antecedentResult);
+                }
+
+                if (antecedentException != null)
+                {
+                    context.Connection.SetJobParameter(tuple.Key, "AntecedentException", antecedentException);
                 }
 
                 _stateChanger.ChangeState(new StateChangeContext(
@@ -298,15 +328,51 @@ namespace Hangfire
             return currentState;
         }
 
+        private bool ShouldStartContinuation(string antecedentStateName, JobContinuationOptions options)
+        {
+            if (options == JobContinuationOptions.OnAnyFinishedState)
+            {
+                return _knownFinalStates.Contains(antecedentStateName);
+            }
+
+            if (options.HasFlag(JobContinuationOptions.OnlyOnSucceededState) &&
+                SucceededState.StateName.Equals(antecedentStateName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (options.HasFlag(JobContinuationOptions.OnlyOnDeletedState) &&
+                DeletedState.StateName.Equals(antecedentStateName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         private static void SetContinuations(
             IStorageConnection connection, string jobId, List<Continuation> continuations)
         {
             connection.SetJobParameter(jobId, "Continuations", SerializationHelper.Serialize(continuations));
         }
 
-        private static List<Continuation> GetContinuations(IStorageConnection connection, string jobId)
+        private static List<Continuation> GetContinuations(ElectStateContext context, string jobId)
         {
-            return DeserializeContinuations(connection.GetJobParameter(jobId, "Continuations"));
+            // We are altering continuation list only when its background job is locked,
+            // and parameter snapshot is obtained only when background job is locked, so
+            // it's safe to use cached list when possible.
+            string serialized;
+
+            if (String.IsNullOrEmpty(jobId) && context.BackgroundJob.ParametersSnapshot != null)
+            {
+                context.BackgroundJob.ParametersSnapshot.TryGetValue("Continuations", out serialized);
+            }
+            else
+            {
+                serialized = context.Connection.GetJobParameter(jobId ?? context.BackgroundJob.Id, "Continuations");
+            }
+            
+            return DeserializeContinuations(serialized);
         }
 
         void IApplyStateFilter.OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)

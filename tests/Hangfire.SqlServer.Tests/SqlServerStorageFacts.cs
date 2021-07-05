@@ -94,6 +94,29 @@ namespace Hangfire.SqlServer.Tests
         }
 
         [Fact, CleanDatabase]
+        public void UseConnection_UsesSystemDataSqlClient_ByDefault()
+        {
+            var storage = CreateStorage();
+            storage.UseConnection(null, connection =>
+            {
+                Assert.IsType<System.Data.SqlClient.SqlConnection>(connection);
+            });
+        }
+
+#if !NET452
+        [Fact, CleanDatabase]
+        public void UseConnection_UsesMicrosoftDataSqlClient_WhenCorrespondingOptionIsSet()
+        {
+            _options.PreferMicrosoftDataSqlClient = true;
+            var storage = CreateStorage();
+            storage.UseConnection(null, connection =>
+            {
+                Assert.IsType<Microsoft.Data.SqlClient.SqlConnection>(connection);
+            });
+        }
+#endif
+
+        [Fact, CleanDatabase]
         public void GetComponents_ReturnsAllNeededComponents()
         {
             var storage = CreateStorage();

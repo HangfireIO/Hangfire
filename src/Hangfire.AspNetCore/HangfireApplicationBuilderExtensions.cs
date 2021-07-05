@@ -68,11 +68,7 @@ namespace Hangfire
             HangfireServiceCollectionExtensions.ThrowIfNotConfigured(app.ApplicationServices);
 
             var services = app.ApplicationServices;
-#if NETCOREAPP3_0
-            var lifetime = services.GetRequiredService<IHostApplicationLifetime>();
-#else
-            var lifetime = services.GetRequiredService<IApplicationLifetime>();
-#endif
+
             storage = storage ?? services.GetRequiredService<JobStorage>();
             options = options ?? services.GetService<BackgroundJobServerOptions>() ?? new BackgroundJobServerOptions();
             additionalProcesses = additionalProcesses ?? services.GetServices<IBackgroundProcess>();
@@ -81,16 +77,42 @@ namespace Hangfire
             options.FilterProvider = options.FilterProvider ?? services.GetService<IJobFilterProvider>();
             options.TimeZoneResolver = options.TimeZoneResolver ?? services.GetService<ITimeZoneResolver>();
 
-            var server = HangfireServiceCollectionExtensions.GetInternalServices(services, out var factory, out var stateChanger, out var performer)
+            services.RegisterHangfireServer(HangfireServiceCollectionExtensions.GetInternalServices(services, out var factory, out var stateChanger, out var performer)
 #pragma warning disable 618
                 ? new BackgroundJobServer(options, storage, additionalProcesses, null, null, factory, performer, stateChanger)
 #pragma warning restore 618
-                : new BackgroundJobServer(options, storage, additionalProcesses);
-
-            lifetime.ApplicationStopping.Register(() => server.SendStop());
-            lifetime.ApplicationStopped.Register(() => server.Dispose());
+                : new BackgroundJobServer(options, storage, additionalProcesses));
 
             return app;
+        }
+
+        public static IApplicationBuilder UseHangfireServer(
+            [NotNull] this IApplicationBuilder app,
+            [NotNull] Func<IBackgroundProcessingServer> serverFactory)
+        {
+            if (app == null) throw new ArgumentNullException(nameof(app));
+            if (serverFactory == null) throw new ArgumentNullException(nameof(serverFactory));
+
+            HangfireServiceCollectionExtensions.ThrowIfNotConfigured(app.ApplicationServices);
+            app.ApplicationServices.RegisterHangfireServer(serverFactory());
+
+            return app;
+        }
+
+        public static IServiceProvider RegisterHangfireServer(
+            [NotNull] this IServiceProvider services,
+            [NotNull] IBackgroundProcessingServer server)
+        {
+#if NETCOREAPP3_0
+            var lifetime = services.GetRequiredService<IHostApplicationLifetime>();
+#else
+            var lifetime = services.GetRequiredService<IApplicationLifetime>();
+#endif
+
+            lifetime.ApplicationStopping.Register(server.SendStop);
+            lifetime.ApplicationStopped.Register(server.Dispose);
+
+            return services;
         }
     }
 }

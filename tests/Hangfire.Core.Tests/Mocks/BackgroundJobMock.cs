@@ -3,7 +3,7 @@ using Hangfire.Common;
 
 namespace Hangfire.Core.Tests
 {
-    class BackgroundJobMock
+    public class BackgroundJobMock
     {
         private readonly Lazy<BackgroundJob> _object;
 

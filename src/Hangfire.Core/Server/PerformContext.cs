@@ -33,6 +33,7 @@ namespace Hangfire.Server
             : this(context.Storage, context.Connection, context.BackgroundJob, context.CancellationToken, context.Profiler)
         {
             Items = context.Items;
+            Performer = context.Performer;
         }
 
         [Obsolete("Please use PerformContext(JobStorage, IStorageConnection, BackgroundJob, IJobCancellationToken) overload instead. Will be removed in 2.0.0.")]
@@ -60,16 +61,11 @@ namespace Hangfire.Server
             [NotNull] IJobCancellationToken cancellationToken,
             [NotNull] IProfiler profiler)
         {
-            if (connection == null) throw new ArgumentNullException(nameof(connection));
-            if (backgroundJob == null) throw new ArgumentNullException(nameof(backgroundJob));
-            if (cancellationToken == null) throw new ArgumentNullException(nameof(cancellationToken));
-            if (profiler == null) throw new ArgumentNullException(nameof(profiler));
-
             Storage = storage;
-            Connection = connection;
-            BackgroundJob = backgroundJob;
-            CancellationToken = cancellationToken;
-            Profiler = profiler;
+            Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            BackgroundJob = backgroundJob ?? throw new ArgumentNullException(nameof(backgroundJob));
+            CancellationToken = cancellationToken ?? throw new ArgumentNullException(nameof(cancellationToken));
+            Profiler = profiler ?? throw new ArgumentNullException(nameof(profiler));
 
             Items = new Dictionary<string, object>();
         }
@@ -105,21 +101,37 @@ namespace Hangfire.Server
         
         [NotNull]
         internal IProfiler Profiler { get; }
+        
+        [CanBeNull]
+        public IBackgroundJobPerformer Performer { get; internal set; }
 
-        public void SetJobParameter(string name, object value)
+        public void SetJobParameter([NotNull] string name, object value)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
             Connection.SetJobParameter(BackgroundJob.Id, name, SerializationHelper.Serialize(value, SerializationOption.User));
         }
 
-        public T GetJobParameter<T>(string name)
+        public T GetJobParameter<T>([NotNull] string name) => GetJobParameter<T>(name, allowStale: false);
+
+        public T GetJobParameter<T>([NotNull] string name, bool allowStale)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
             try
             {
-                return SerializationHelper.Deserialize<T>(Connection.GetJobParameter(BackgroundJob.Id, name), SerializationOption.User);
+                string value;
+
+                if (allowStale && BackgroundJob.ParametersSnapshot != null)
+                {
+                    BackgroundJob.ParametersSnapshot.TryGetValue(name, out value);
+                }
+                else
+                {
+                    value = Connection.GetJobParameter(BackgroundJob.Id, name);                
+                }
+
+                return SerializationHelper.Deserialize<T>(value, SerializationOption.User);
             }
             catch (Exception ex)
             {

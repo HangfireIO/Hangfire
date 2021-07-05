@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
+using Hangfire.Common;
+using Hangfire.Dashboard;
 using Hangfire.SqlServer;
+using Hangfire.States;
 using Microsoft.Owin.Hosting;
 
 namespace ConsoleSample
@@ -16,27 +19,35 @@ namespace ConsoleSample
                 .UseColouredConsoleLogProvider()
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                 .UseSimpleAssemblyNameTypeSerializer()
+                .UseIgnoredAssemblyVersionTypeResolver()
                 .UseRecommendedSerializerSettings()
                 .UseResultsInContinuations()
+                .UseDashboardMetrics(SqlServerStorage.SchemaVersion, SqlServerStorage.TotalConnections)
+                .UseJobDetailsRenderer(10, dto => throw new InvalidOperationException())
+                .UseJobDetailsRenderer(10, dto => new NonEscapedString("<h4>Hello, world!</h4>"))
                 .UseSqlServerStorage(@"Server=.\;Database=Hangfire.Sample;Trusted_Connection=True;", new SqlServerStorageOptions
                 {
                     CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
                     QueuePollInterval = TimeSpan.Zero,
                     SlidingInvisibilityTimeout = TimeSpan.FromMinutes(1),
                     UseRecommendedIsolationLevel = true,
-                    UsePageLocksOnDequeue = true,
                     DisableGlobalLocks = true,
                     EnableHeavyMigrations = true
                 });
 
+            Console.WriteLine(SerializationHelper.Serialize(new ExceptionInfo(new OperationCanceledException()), SerializationOption.Internal));
+
             var backgroundJobs = new BackgroundJobClient();
             backgroundJobs.RetryAttempts = 5;
 
+            NewFeatures.Test(throwException: false);
+            NewFeatures.Test(throwException: true);
+
             var job1 = BackgroundJob.Enqueue<Services>(x => x.WriteIndex(0));
-            var job2 = BackgroundJob.ContinueJobWith<Services>(job1, x => x.WriteIndex(null));
-            var job3 = BackgroundJob.ContinueJobWith<Services>(job2, x => x.WriteIndex(null));
-            var job4 = BackgroundJob.ContinueJobWith<Services>(job3, x => x.WriteIndex(null));
-            var job5 = BackgroundJob.ContinueJobWith<Services>(job4, x => x.WriteIndex(null));
+            var job2 = BackgroundJob.ContinueJobWith<Services>(job1, x => x.WriteIndex(default));
+            var job3 = BackgroundJob.ContinueJobWith<Services>(job2, x => x.WriteIndex(default));
+            var job4 = BackgroundJob.ContinueJobWith<Services>(job3, x => x.WriteIndex(default));
+            var job5 = BackgroundJob.ContinueJobWith<Services>(job4, x => x.WriteIndex(default));
 
             RecurringJob.AddOrUpdate("seconds", () => Console.WriteLine("Hello, seconds!"), "*/15 * * * * *");
             RecurringJob.AddOrUpdate(() => Console.WriteLine("Hello, world!"), Cron.Minutely);
@@ -182,10 +193,10 @@ namespace ConsoleSample
                     if (command.StartsWith("delete", StringComparison.OrdinalIgnoreCase))
                     {
                         var workCount = int.Parse(command.Substring(7));
+                        var client = new BackgroundJobClient();
                         for (var i = 0; i < workCount; i++)
                         {
-                            var jobId = BackgroundJob.Enqueue<Services>(x => x.EmptyDefault());
-                            BackgroundJob.Delete(jobId);
+                            client.Create<Services>(x => x.EmptyDefault(), new DeletedState(new ExceptionInfo(new OperationCanceledException())));
                         }
                     }
 

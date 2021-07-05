@@ -32,7 +32,7 @@ namespace Hangfire
             // of them indirectly use `GlobalJobFilters.Filters` property, 
             // and it is null, when we are using collection initializer.
             Filters.Add(new CaptureCultureAttribute());
-            Filters.Add(new AutomaticRetryAttribute());
+            Filters.Add(new AutomaticRetryAttribute { OnAttemptsExceeded = AttemptsExceededAction.Delete });
             Filters.Add(new StatisticsHistoryAttribute());
             Filters.Add(new ContinuationsSupportAttribute());
         }

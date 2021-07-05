@@ -84,15 +84,22 @@ namespace Hangfire.Dashboard
             page =>
             {
                 long retryCount;
-                using (var connection = page.Storage.GetConnection())
-                {
-                    var storageConnection = connection as JobStorageConnection;
-                    if (storageConnection == null)
-                    {
-                        return null;
-                    }
 
-                    retryCount = storageConnection.GetSetCount("retries");
+                if (page.Statistics.Retries.HasValue)
+                {
+                    retryCount = page.Statistics.Retries.Value;
+                }
+                else
+                {
+                    using (var connection = page.Storage.GetReadOnlyConnection())
+                    {
+                        if (!(connection is JobStorageConnection storageConnection))
+                        {
+                            return null;
+                        }
+
+                        retryCount = storageConnection.GetSetCount("retries");
+                    }
                 }
 
                 return new Metric(retryCount)
@@ -176,10 +183,9 @@ namespace Hangfire.Dashboard
             {
                 long awaitingCount = -1;
 
-                using (var connection = page.Storage.GetConnection())
+                using (var connection = page.Storage.GetReadOnlyConnection())
                 {
-                    var storageConnection = connection as JobStorageConnection;
-                    if (storageConnection != null)
+                    if (connection is JobStorageConnection storageConnection)
                     {
                         awaitingCount = storageConnection.GetSetCount("awaiting");
                     }

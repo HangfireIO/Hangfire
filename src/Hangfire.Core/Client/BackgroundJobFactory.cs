@@ -80,6 +80,8 @@ namespace Hangfire.Client
 
             try
             {
+                context.Factory = this;
+
                 var createdContext = CreateWithFilters(context, filterInfo.ClientFilters);
                 return createdContext.BackgroundJob;
             }
@@ -94,6 +96,10 @@ namespace Hangfire.Client
                 }
 
                 return null;
+            }
+            finally
+            {
+                context.Factory = null;
             }
         }
 

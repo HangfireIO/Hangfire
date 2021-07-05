@@ -829,6 +829,15 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Schema Version.
+        /// </summary>
+        public static string Metrics_SQLServer_SchemaVersion {
+            get {
+                return ResourceManager.GetString("Metrics_SQLServer_SchemaVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Succeeded Jobs.
         /// </summary>
         public static string Metrics_SucceededJobs {

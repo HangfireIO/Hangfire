@@ -48,6 +48,8 @@ namespace Hangfire.SqlServer
 
         private readonly SortedSet<string> _lockedResources = new SortedSet<string>();
 
+        private bool _committed;
+
         public SqlServerWriteOnlyTransaction([NotNull] SqlServerStorage storage, Func<DbConnection> dedicatedConnectionFunc)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -55,6 +57,8 @@ namespace Hangfire.SqlServer
             _storage = storage;
             _dedicatedConnectionFunc = dedicatedConnectionFunc;
         }
+
+        public bool Committed => _committed;
 
         public override void Commit()
         {
@@ -89,6 +93,8 @@ namespace Hangfire.SqlServer
                     }
                 }
             });
+
+            _committed = true;
 
             foreach (var command in _afterCommitCommandQueue)
             {
@@ -476,6 +482,29 @@ update [{_storage.SchemaName}].[List] set ExpireAt = null where [Key] = @key";
 
             AcquireListLock(key);
             AddCommand(_listCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String) { Value = key });
+        }
+
+        public override void RemoveFromQueue(IFetchedJob fetchedJob)
+        {
+            if (fetchedJob == null) throw new ArgumentNullException(nameof(fetchedJob));
+
+            if (fetchedJob is SqlServerTimeoutJob timeoutJob)
+            {
+                AddCommand(
+                    _queueCommands,
+                    timeoutJob.Queue,
+                    $"delete JQ from [{_storage.SchemaName}].JobQueue JQ with ({timeoutJob.GetTableHints()}) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
+                    new SqlCommandBatchParameter("@queue", DbType.String) { Value = timeoutJob.Queue },
+                    new SqlCommandBatchParameter("@id", DbType.Int64) { Value = timeoutJob.Id },
+                    new SqlCommandBatchParameter("@fetchedAt", DbType.DateTime) { Value = timeoutJob.FetchedAt });
+                
+                timeoutJob.SetTransaction(this);
+            }
+            else
+            {
+                throw new NotSupportedException(
+                    "Only '" + nameof(SqlServerTimeoutJob) + "' type supports transactional acknowledge, '" + fetchedJob.GetType().Name + "' given.");
+            }
         }
 
         private void AppendBatch<TKey>(
