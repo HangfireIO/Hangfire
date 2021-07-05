@@ -343,6 +343,9 @@
   <data name="RecurringJobsPage_Table_Cron" xml:space="preserve">
     <value>Cron</value>
   </data>
+  <data name="RecurringJobsPage_Table_Queue" xml:space="preserve">
+    <value>Queue</value>
+  </data>
   <data name="RecurringJobsPage_Table_LastExecution" xml:space="preserve">
     <value>Last execution</value>
   </data>
