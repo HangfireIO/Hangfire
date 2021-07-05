@@ -48,17 +48,27 @@ namespace Hangfire.Storage
         }
 
         public InvocationData(string type, string method, string parameterTypes, string arguments)
+            : this(type, method, parameterTypes, arguments, null)
+        {
+        }
+
+        [JsonConstructor]
+        public InvocationData(string type, string method, string parameterTypes, string arguments, string queue)
         {
             Type = type;
             Method = method;
             ParameterTypes = parameterTypes;
             Arguments = arguments;
+            Queue = queue;
         }
 
         public string Type { get; }
         public string Method { get; }
         public string ParameterTypes { get; }
         public string Arguments { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string Queue { get; }
 
         [Obsolete("Please use DeserializeJob() method instead. Will be removed in 2.0.0 for clarity.")]
         public Job Deserialize()
@@ -98,7 +108,7 @@ namespace Hangfire.Storage
                 var argumentsArray = SerializationHelper.Deserialize<string[]>(Arguments);
                 var arguments = DeserializeArguments(method, argumentsArray);
 
-                return new Job(type, method, arguments);
+                return new Job(type, method, arguments, Queue);
             }
             catch (Exception ex)
             {
@@ -116,7 +126,7 @@ namespace Hangfire.Storage
                 job.Method.GetParameters().Select(x => typeSerializer(x.ParameterType)).ToArray());
             var arguments = SerializationHelper.Serialize(SerializeArguments(job.Method, job.Args));
 
-            return new InvocationData(type, methodName, parameterTypes, arguments);
+            return new InvocationData(type, methodName, parameterTypes, arguments, job.Queue);
         }
 
         public static InvocationData DeserializePayload(string payload)
@@ -145,7 +155,8 @@ namespace Hangfire.Storage
                     jobPayload.TypeName,
                     jobPayload.MethodName,
                     SerializationHelper.Serialize(jobPayload.ParameterTypes),
-                    SerializationHelper.Serialize(jobPayload.Arguments));
+                    SerializationHelper.Serialize(jobPayload.Arguments),
+                    jobPayload.Queue);
             }
 
             var data = SerializationHelper.Deserialize<InvocationData>(payload);
@@ -174,12 +185,13 @@ namespace Hangfire.Storage
                     TypeName = Type,
                     MethodName = Method,
                     ParameterTypes = parameterTypes?.Length > 0 ? parameterTypes : null,
-                    Arguments = arguments?.Length > 0 ? arguments : null
+                    Arguments = arguments?.Length > 0 ? arguments : null,
+                    Queue = Queue
                 });
             }
 
             return SerializationHelper.Serialize(excludeArguments
-                ? new InvocationData(Type, Method, ParameterTypes, null)
+                ? new InvocationData(Type, Method, ParameterTypes, null, Queue)
                 : this);
         }
 
@@ -373,6 +385,9 @@ namespace Hangfire.Storage
 
             [JsonProperty("a", NullValueHandling = NullValueHandling.Ignore)]
             public string[] Arguments { get; set; }
+
+            [JsonProperty("q", NullValueHandling = NullValueHandling.Ignore)]
+            public string Queue { get; set; }
         }
     }
 }

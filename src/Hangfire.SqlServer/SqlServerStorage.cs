@@ -177,6 +177,16 @@ namespace Hangfire.SqlServer
                 return true;
             }
 
+            if ("Connection.GetUtcDateTime".Equals(featureId, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if ("Job.Queue".Equals(featureId, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
             return base.HasFeature(featureId);
         }
 

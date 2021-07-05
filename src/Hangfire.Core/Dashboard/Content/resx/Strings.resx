@@ -278,7 +278,7 @@
                     It will be removed automatically &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;.</value>
   </data>
   <data name="JobDetailsPage_JobId" xml:space="preserve">
-    <value>Job ID</value>
+    <value>Id</value>
   </data>
   <data name="JobDetailsPage_Requeue" xml:space="preserve">
     <value>Requeue</value>

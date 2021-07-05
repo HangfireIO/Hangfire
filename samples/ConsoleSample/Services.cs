@@ -33,6 +33,7 @@ namespace ConsoleSample
             await Task.Delay(TimeSpan.FromSeconds(20), cancellationToken);
         }
 
+        [Obsolete("Please use EmptyDefault method instead with `critical` queue directly")]
         [Queue("critical")]
         public async Task EmptyCritical()
         {

@@ -109,7 +109,9 @@ namespace Hangfire
                 recurringJob.Job = job;
                 recurringJob.Cron = cronExpression;
                 recurringJob.TimeZone = options.TimeZone;
+#pragma warning disable 618
                 recurringJob.Queue = options.QueueName;
+#pragma warning restore 618
                 recurringJob.MisfireHandling = options.MisfireHandling;
 
                 if (recurringJob.IsChanged(out var changedFields, out var nextExecution))

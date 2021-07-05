@@ -77,6 +77,10 @@
                 <div class="job-snippet">
                     <div class="job-snippet-code">
                         <pre><code><span class="comment">// @Strings.JobDetailsPage_JobId: @Html.JobId(JobId.ToString(), false)</span>
+@if (job.Job.Queue != null)
+{
+<span class="comment">// @Strings.QueuesPage_Table_Queue: @job.Job.Queue</span>
+}
 @JobMethodCallRenderer.Render(job.Job)
 </code></pre>
                     </div>

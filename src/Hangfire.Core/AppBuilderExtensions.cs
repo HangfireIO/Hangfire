@@ -132,9 +132,9 @@ namespace Hangfire
     public static class AppBuilderExtensions
     {
         // Prevent GC to collect background processing servers in hosts that do
-        // not support shutdown notifications.
-        private static readonly ConcurrentBag<IBackgroundProcessingServer> Servers
-            = new ConcurrentBag<IBackgroundProcessingServer>();
+        // not support shutdown notifications. Dictionary is used as a Set.
+        private static readonly ConcurrentDictionary<IBackgroundProcessingServer, object> Servers
+            = new ConcurrentDictionary<IBackgroundProcessingServer, object>();
 
         /// <summary>
         /// Creates a new instance of the <see cref="BackgroundJobServer"/> class
@@ -319,7 +319,7 @@ namespace Hangfire
             if (builder == null) throw new ArgumentNullException(nameof(builder));
             if (server == null) throw new ArgumentNullException(nameof(server));
 
-            Servers.Add(server);
+            Servers.TryAdd(server, null);
 
             var context = new OwinContext(builder.Properties);
             var token = context.Get<CancellationToken>("host.OnAppDisposing");
@@ -345,6 +345,9 @@ namespace Hangfire
             var logger = LogProvider.GetLogger(typeof(AppBuilderExtensions));
             logger.Info("Web application is shutting down via OWIN's host.OnAppDisposing callback.");
             ((IDisposable) state).Dispose();
+            var server = state as BackgroundJobServer;
+            if (server != null)
+                Servers.TryRemove(server, out _);
         }
 
         /// <summary>

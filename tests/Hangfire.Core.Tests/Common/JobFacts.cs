@@ -26,7 +26,8 @@ namespace Hangfire.Core.Tests.Common
 
         private readonly Type _type;
         private readonly MethodInfo _method;
-        private readonly string[] _arguments;
+        private readonly object[] _arguments;
+        private readonly string _queue;
         private readonly Mock<JobActivator> _activator;
         private readonly Mock<IJobCancellationToken> _token;
         
@@ -34,7 +35,8 @@ namespace Hangfire.Core.Tests.Common
         {
             _type = typeof (JobFacts);
             _method = _type.GetMethod("StaticMethod");
-            _arguments = new string[0];
+            _arguments = new object[0];
+            _queue = "critical";
 
             _activator = new Mock<JobActivator> { CallBase = true };
             _token = new Mock<IJobCancellationToken>();
@@ -43,32 +45,56 @@ namespace Hangfire.Core.Tests.Common
         [Fact]
         public void Ctor_ThrowsAnException_WhenTheTypeIsNull()
         {
-            Assert.Throws<ArgumentNullException>(
+            var exception = Assert.Throws<ArgumentNullException>(
                 // ReSharper disable once AssignNullToNotNullAttribute
                 () => new Job(null, _method, _arguments));
+
+            Assert.Equal("type", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenTheMethodIsNull()
         {
-            Assert.Throws<ArgumentNullException>(
+            var exception = Assert.Throws<ArgumentNullException>(
                 // ReSharper disable once AssignNullToNotNullAttribute
                 () => new Job(_type, null, _arguments));
+
+            Assert.Equal("method", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenTheTypeDoesNotContainTheGivenMethod()
         {
-            Assert.Throws<ArgumentException>(
+            var exception = Assert.Throws<ArgumentException>(
                 () => new Job(typeof(Job), _method, _arguments));
+
+            Assert.Equal("type", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenArgumentsArrayIsNull()
         {
-            Assert.Throws<ArgumentNullException>(
+            var exception = Assert.Throws<ArgumentNullException>(
                 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new Job(_type, _method, null));
+                () => new Job(_type, _method, (object[])null));
+
+            Assert.Equal("args", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_DoesNotThrow_WhenQueueIsNull()
+        {
+            var job = new Job(_type, _method, _arguments, null);
+            Assert.NotNull(job);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenQueueValidationFails()
+        {
+            var exception = Assert.Throws<ArgumentException>(
+                () => new Job(_type, _method, _arguments, "&^*%"));
+
+            Assert.Equal("queue", exception.ParamName);
         }
 
         [Fact]
@@ -79,6 +105,18 @@ namespace Hangfire.Core.Tests.Common
             Assert.Same(_type, job.Type);
             Assert.Same(_method, job.Method);
             Assert.True(_arguments.SequenceEqual(job.Arguments));
+            Assert.Null(job.Queue);
+        }
+
+        [Fact]
+        public void Ctor_WithQueue_InitializesAllTheProperties()
+        {
+            var job = new Job(_type, _method, _arguments, _queue);
+
+            Assert.Same(_type, job.Type);
+            Assert.Same(_method, job.Method);
+            Assert.True(_arguments.SequenceEqual(job.Args));
+            Assert.Equal(_queue, job.Queue);
         }
 
         [Fact]
@@ -117,6 +155,13 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void FromExpression_Action_DoesNotThrowAnException_WhenNullQueueProvided()
+        {
+            var job = Job.FromExpression(() => Console.WriteLine(), null);
+            Assert.NotNull(job);
+        }
+
+        [Fact]
         public void FromExpression_ThrowsAnException_WhenNewExpressionIsGiven()
         {
             Assert.Throws<ArgumentException>(
@@ -131,6 +176,17 @@ namespace Hangfire.Core.Tests.Common
 
             Assert.Equal(typeof(Console), job.Type);
             Assert.Equal("WriteLine", job.Method.Name);
+            Assert.Null(job.Queue);
+        }
+
+        [Fact]
+        public void FromExpression_ActionWithQueue_ReturnsTheJobWithQueueSet()
+        {
+            var job = Job.FromExpression(() => Console.WriteLine(), "critical");
+
+            Assert.Equal(typeof(Console), job.Type);
+            Assert.Equal("WriteLine", job.Method.Name);
+            Assert.Equal("critical", job.Queue);
         }
 
         [Fact]
@@ -143,12 +199,30 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void FromExpression_Func_DoesNotThrowAnException_WhenNullQueueProvided()
+        {
+            var job = Job.FromExpression(() => AsyncMethod(), null);
+            Assert.NotNull(job);
+        }
+
+        [Fact]
         public void FromExpression_Func_ReturnsTheJob()
         {
             var job = Job.FromExpression(() => AsyncMethod());
 
             Assert.Equal(typeof(JobFacts), job.Type);
             Assert.Equal("AsyncMethod", job.Method.Name);
+            Assert.Null(job.Queue);
+        }
+
+        [Fact]
+        public void FromExpression_FuncWithQueue_ReturnsTheJobWithQueueSet()
+        {
+            var job = Job.FromExpression(() => AsyncMethod(), "critical");
+
+            Assert.Equal(typeof(JobFacts), job.Type);
+            Assert.Equal("AsyncMethod", job.Method.Name);
+            Assert.Equal("critical", job.Queue);
         }
 
         [Fact]
@@ -204,12 +278,26 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void FromInstanceExpression_Action_DoesNotThrowAnException_WhenNullQueueIsProvided()
+        {
+            var job = Job.FromExpression<Instance>(x => x.Method(), null);
+            Assert.NotNull(job);
+        }
+
+        [Fact]
         public void FromInstanceExpression_Func_ThrowsException_WhenNullExpressionIsProvided()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => Job.FromExpression((Expression<Action<JobFacts>>)null));
+                () => Job.FromExpression((Expression<Func<JobFacts, Task>>)null));
 
             Assert.Equal("methodCall", exception.ParamName);
+        }
+
+        [Fact]
+        public void FromInstanceExpression_Func_DoesNotThrowAnException_WhenNullQueueIsProvided()
+        {
+            var job = Job.FromExpression<Instance>(x => x.FunctionReturningTask(), null);
+            Assert.NotNull(job);
         }
 
         [Fact]
@@ -227,6 +315,17 @@ namespace Hangfire.Core.Tests.Common
 
             Assert.Equal(typeof(Instance), job.Type);
             Assert.Equal("Method", job.Method.Name);
+            Assert.Null(job.Queue);
+        }
+
+        [Fact]
+        public void FromInstanceExpression_ActionWithQueue_ReturnsCorrectResultWithQueueSet()
+        {
+            var job = Job.FromExpression<Instance>(x => x.Method(), "critical");
+
+            Assert.Equal(typeof(Instance), job.Type);
+            Assert.Equal("Method", job.Method.Name);
+            Assert.Equal("critical", job.Queue);
         }
 
         [Fact]
@@ -236,6 +335,17 @@ namespace Hangfire.Core.Tests.Common
 
             Assert.Equal(typeof(Instance), job.Type);
             Assert.Equal("FunctionReturningTask", job.Method.Name);
+            Assert.Null(job.Queue);
+        }
+
+        [Fact]
+        public void FromInstanceExpression_FuncWithQueue_ReturnsCorrectResultWithQueueSet()
+        {
+            var job = Job.FromExpression<Instance>(x => x.FunctionReturningTask(), "critical");
+
+            Assert.Equal(typeof(Instance), job.Type);
+            Assert.Equal("FunctionReturningTask", job.Method.Name);
+            Assert.Equal("critical", job.Queue);
         }
 
         [Fact]

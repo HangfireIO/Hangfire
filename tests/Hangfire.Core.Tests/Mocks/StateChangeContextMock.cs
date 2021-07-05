@@ -32,6 +32,7 @@ namespace Hangfire.Core.Tests
                     DisableFilters,
                     CancellationToken,
                     EmptyProfiler.Instance,
+                    ServerId,
                     CustomData));
         }
 
@@ -42,6 +43,7 @@ namespace Hangfire.Core.Tests
         public IEnumerable<string> ExpectedStates { get; set; }
         public bool DisableFilters { get; set; }
         public CancellationToken CancellationToken { get; set; }
+        public string ServerId { get; set; }
         public IReadOnlyDictionary<string, object> CustomData { get; set; }
         
         public StateChangeContext Object => _context.Value;

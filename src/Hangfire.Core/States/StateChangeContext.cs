@@ -51,7 +51,7 @@ namespace Hangfire.States
             [NotNull] IState newState,
             [CanBeNull] IEnumerable<string> expectedStates,
             CancellationToken cancellationToken)
-        : this(storage, connection, null, backgroundJobId, newState, expectedStates, false, null, cancellationToken, EmptyProfiler.Instance)
+        : this(storage, connection, null, backgroundJobId, newState, expectedStates, false, null, cancellationToken, EmptyProfiler.Instance, null)
         {
         }
 
@@ -63,7 +63,7 @@ namespace Hangfire.States
             [NotNull] IState newState,
             [CanBeNull] IEnumerable<string> expectedStates,
             CancellationToken cancellationToken)
-            : this(storage, connection, transaction, backgroundJobId, newState, expectedStates, false, null, cancellationToken, EmptyProfiler.Instance)
+            : this(storage, connection, transaction, backgroundJobId, newState, expectedStates, false, null, cancellationToken, EmptyProfiler.Instance, null)
         {
         }
 
@@ -76,8 +76,9 @@ namespace Hangfire.States
             bool disableFilters,
             CancellationToken cancellationToken,
             [NotNull] IProfiler profiler,
+            [CanBeNull] string serverId,
             [CanBeNull] IReadOnlyDictionary<string, object> customData = null) 
-            : this(storage, connection, null, backgroundJobId, newState, expectedStates, disableFilters, null, cancellationToken, profiler, customData)
+            : this(storage, connection, null, backgroundJobId, newState, expectedStates, disableFilters, null, cancellationToken, profiler, serverId, customData)
         {
         }
 
@@ -92,6 +93,7 @@ namespace Hangfire.States
             [CanBeNull] IFetchedJob completeJob,
             CancellationToken cancellationToken,
             [NotNull] IProfiler profiler,
+            [CanBeNull] string serverId,
             [CanBeNull] IReadOnlyDictionary<string, object> customData = null)
         {
             Storage = storage ?? throw new ArgumentNullException(nameof(storage));
@@ -103,6 +105,7 @@ namespace Hangfire.States
             DisableFilters = disableFilters;
             CancellationToken = cancellationToken;
             Profiler = profiler ?? throw new ArgumentNullException(nameof(profiler));
+            ServerId = serverId;
             CustomData = customData;
             CompleteJob = completeJob;
         }
@@ -136,8 +139,11 @@ namespace Hangfire.States
 
         [CanBeNull]
         public IFetchedJob CompleteJob { get; }
-        
+
         [CanBeNull]
         public BackgroundJob ProcessedJob { get; set; }
+
+        [CanBeNull]
+        public string ServerId { get; set; }
     }
 }

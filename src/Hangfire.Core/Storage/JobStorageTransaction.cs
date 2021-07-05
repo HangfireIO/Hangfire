@@ -102,7 +102,7 @@ namespace Hangfire.Storage
             throw new NotSupportedException();
         }
         
-        public virtual string CreateJob(Job job, IDictionary<string, string> parameters, TimeSpan? expireIn)
+        public virtual string CreateJob([NotNull] Job job, [NotNull] IDictionary<string, string> parameters, TimeSpan? expireIn)
         {
             throw new NotSupportedException();
         }
