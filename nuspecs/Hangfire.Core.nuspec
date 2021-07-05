@@ -20,6 +20,27 @@ https://www.hangfire.io/
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.8.0-beta3
+• Added – Introduce the `Job.Queue` property, so jobs now can have their own queue specified.
+• Added – Method overloads to create recurring jobs directly with a custom default queue.
+• Added – Method overloads to create background jobs directly with a custom default queue.
+• Added – `IBackgroundJobClient.Create` method overloads with the new `queue` parameter.
+• Added – Experimental `JobStorageConnection.SetContains` method.
+• Added – Pass `ServerId` to `FailedState` instances to simplify the debugging on different servers.
+• Changed – Dashboard UI now have full-width layout to display more data (by @danillewin).
+• Changed – Query time from storage in recurring and delayed schedulers when supported by storage.
+• Changed – Speedup delayed jobs when custom default queue is specified by avoiding extra state transition.
+• Changed – Display scheduled job count when enqueued count is zero on the main metric.
+• Changed – Don't display queue name in state transition list when it's the `default` one.
+• Changed – Re-implement `TaskExtensions.WaitOneAsync` only with the `RegisterWaitForSingleObject` method.
+• Changed – Expose state data dictionaries in list DTOs when supported by storage.
+• Changed – Make it possible to display methods of non-loaded jobs in Dashboard UI when supported by storage.
+• Fixed – Check job details for the `null` value before passing it to renderers (regression).
+• Deprecated – `AddOrUpdate` overloads with optional params defined in the `RecurringJobManagerExtensions` class.
+• Deprecated – `AddOrUpdate` overloads with optional parameters defined in the `RecurringJob` class.
+• Deprecated – `AddOrUpdate` method overloads with no `recurringJobId` parameter.
+• Deprecated – `RecurringJobOptions.QueueName` property, new methods should be used instead.
+
 1.8.0-beta2
 • Added – `MisfireHandlingMode.Strict` to create job for each missed recurring job occurrence.
 • Added – Allow to pass parameters when creating a job (by @brian-knoll-micronetonline).

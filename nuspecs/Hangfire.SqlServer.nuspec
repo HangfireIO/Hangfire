@@ -15,6 +15,10 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.8.0-beta3
+• Added – Implement the `Connection.GetUtcDateTime` feature to make work new changes in schedulers.
+• Changed – Display scheduled and processing jobs in the ascending order in Dashboard UI.
+
 1.8.0-beta2
 • Changed – Set default value for the `QueuePollInterval` option to `TimeSpan.Zero`.
 • Changed – Use command batching by default with 5-minute maximum timeout.
