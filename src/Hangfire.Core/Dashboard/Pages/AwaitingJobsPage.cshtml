@@ -144,7 +144,7 @@
                                             @if (parentStateData != null)
                                             {
                                                 <a href="@Url.JobDetails(stateData.Data["ParentId"])">
-                                                    <span class="label label-default label-hover" style="@($"background-color: {JobHistoryRenderer.GetForegroundStateColor(parentStateData.Name)};")">
+                                                    <span class="label label-default label-hover @(parentStateData.Name != null ? $"label_state_{parentStateData.Name.ToLower()}" : null)">
                                                         @parentStateData.Name
                                                     </span>
                                                 </a>

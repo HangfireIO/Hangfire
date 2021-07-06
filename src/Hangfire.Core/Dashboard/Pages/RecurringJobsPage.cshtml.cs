@@ -930,12 +930,12 @@ WriteLiteral("                                                <a href=\"");
             #line default
             #line hidden
 WriteLiteral("\" style=\"text-decoration: none\">\r\n                                               " +
-"     <span class=\"label label-default label-hover\" style=\"");
+"     <span class=\"label label-default label-hover ");
 
 
             
             #line 230 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                                                                                     Write($"background-color: {JobHistoryRenderer.GetForegroundStateColor(job.LastJobState ?? EnqueuedState.StateName)};");
+                                                                                             Write(job.LastJobState != null ? $"label_state_{job.LastJobState.ToLower()}" : null);
 
             
             #line default

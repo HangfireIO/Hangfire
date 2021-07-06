@@ -371,6 +371,91 @@ a:hover .label-hover {
     margin-top: 0;
 }
 
+.state-card_state_enqueued {
+    border-color: #999;
+}
+
+.state-card_state_succeeded {
+    border-color: #5cb85c;
+}
+
+.state-card_state_failed {
+    border-color: #d9534f;
+}
+
+.state-card_state_processing {
+    border-color: #f0ad4e;
+}
+
+.state-card_state_scheduled {
+    border-color: #5bc0de;
+}
+
+.state-card_state_deleted {
+    border-color: #777;
+}
+
+.state-card_state_awaiting {
+    border-color: #999;
+}
+
+.state-card_state_enqueued .state-card-title {
+    color: #999;
+}
+
+.state-card_state_succeeded .state-card-title {
+    color: #5cb85c;
+}
+
+.state-card_state_failed .state-card-title {
+    color: #d9534f;
+}
+
+.state-card_state_processing .state-card-title {
+    color: #f0ad4e;
+}
+
+.state-card_state_scheduled .state-card-title {
+    color: #5bc0de;
+}
+
+.state-card_state_deleted .state-card-title {
+    color: #777;
+}
+
+.state-card_state_awaiting .state-card-title {
+    color: #999;
+}
+
+
+.state-card_state_enqueued .state-card-body {
+    background-color: #F5F5F5;
+}
+
+.state-card_state_succeeded .state-card-body {
+    background-color: #EDF7ED;
+}
+
+.state-card_state_failed .state-card-body {
+    background-color: #FAEBEA;
+}
+
+.state-card_state_processing .state-card-body {
+    background-color: #FCEFDC;
+}
+
+.state-card_state_scheduled .state-card-body {
+    background-color: #E0F3F8;
+}
+
+.state-card_state_deleted .state-card-body {
+    background-color: #ddd;
+}
+
+.state-card_state_awaiting .state-card-body {
+    background-color: #F5F5F5;
+}
+
 /* Job History styles */
 
 .job-history {
@@ -551,4 +636,34 @@ div.metric-null {
     max-width: 125px;
     white-space: normal;
     word-break: break-word;
+}
+
+/* State labels */
+
+.label_state_enqueued {
+    background-color: #999;
+}
+
+.label_state_succeeded {
+    background-color: #5cb85c;
+}
+
+.label_state_failed {
+    background-color: #d9534f;
+}
+
+.label_state_processing {
+    background-color: #f0ad4e;
+}
+
+.label_state_scheduled {
+    background-color: #5bc0de;
+}
+
+.label_state_deleted {
+    background-color: #777;
+}
+
+.label_state_awaiting {
+    background-color: #999;
 }

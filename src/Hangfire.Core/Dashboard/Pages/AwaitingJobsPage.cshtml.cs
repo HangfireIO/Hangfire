@@ -587,12 +587,12 @@ WriteLiteral("                                                <a href=\"");
             #line default
             #line hidden
 WriteLiteral("\">\r\n                                                    <span class=\"label label-" +
-"default label-hover\" style=\"");
+"default label-hover ");
 
 
             
             #line 147 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
-                                                                                                     Write($"background-color: {JobHistoryRenderer.GetForegroundStateColor(parentStateData.Name)};");
+                                                                                             Write(parentStateData.Name != null ? $"label_state_{parentStateData.Name.ToLower()}" : null);
 
             
             #line default
