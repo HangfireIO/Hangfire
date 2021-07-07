@@ -185,7 +185,8 @@ namespace Hangfire.Dashboard
                 return Raw($"<em>{HtmlEncode(Strings.Common_NoState)}</em>");
             }
 
-            return Raw($"<span class=\"label label-default label_state_{stateName}\">{HtmlEncode(stateName)}</span>");
+            var style = $"background-color: {JobHistoryRenderer.GetForegroundStateColor(stateName)};";
+            return Raw($"<span class=\"label label-default label_state_{stateName}\" style=\"{HtmlEncode(style)}\">{HtmlEncode(stateName)}</span>");
         } 
 
         public NonEscapedString JobIdLink(string jobId)

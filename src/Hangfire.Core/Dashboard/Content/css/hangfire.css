@@ -372,88 +372,87 @@ a:hover .label-hover {
 }
 
 .state-card_state_enqueued {
-    border-color: #999;
+    border-color: #999 !important;
 }
 
 .state-card_state_succeeded {
-    border-color: #5cb85c;
+    border-color: #5cb85c !important;
 }
 
 .state-card_state_failed {
-    border-color: #d9534f;
+    border-color: #d9534f !important;
 }
 
 .state-card_state_processing {
-    border-color: #f0ad4e;
+    border-color: #f0ad4e !important;
 }
 
 .state-card_state_scheduled {
-    border-color: #5bc0de;
+    border-color: #5bc0de !important;
 }
 
 .state-card_state_deleted {
-    border-color: #777;
+    border-color: #777 !important;
 }
 
 .state-card_state_awaiting {
-    border-color: #999;
+    border-color: #999 !important;
 }
 
 .state-card_state_enqueued .state-card-title {
-    color: #999;
+    color: #999 !important;
 }
 
 .state-card_state_succeeded .state-card-title {
-    color: #5cb85c;
+    color: #5cb85c !important;
 }
 
 .state-card_state_failed .state-card-title {
-    color: #d9534f;
+    color: #d9534f !important;
 }
 
 .state-card_state_processing .state-card-title {
-    color: #f0ad4e;
+    color: #f0ad4e !important;
 }
 
 .state-card_state_scheduled .state-card-title {
-    color: #5bc0de;
+    color: #5bc0de !important;
 }
 
 .state-card_state_deleted .state-card-title {
-    color: #777;
+    color: #777 !important;
 }
 
 .state-card_state_awaiting .state-card-title {
-    color: #999;
+    color: #999 !important;
 }
 
-
 .state-card_state_enqueued .state-card-body {
-    background-color: #F5F5F5;
+    background-color: #F5F5F5 !important;
 }
 
 .state-card_state_succeeded .state-card-body {
-    background-color: #EDF7ED;
+    background-color: #EDF7ED !important;
 }
 
 .state-card_state_failed .state-card-body {
-    background-color: #FAEBEA;
+    background-color: #FAEBEA !important;
 }
 
 .state-card_state_processing .state-card-body {
-    background-color: #FCEFDC;
+    background-color: #FCEFDC !important;
 }
 
 .state-card_state_scheduled .state-card-body {
-    background-color: #E0F3F8;
+    background-color: #E0F3F8 !important;
 }
 
 .state-card_state_deleted .state-card-body {
-    background-color: #ddd;
+    background-color: #ddd !important;
 }
 
 .state-card_state_awaiting .state-card-body {
-    background-color: #F5F5F5;
+    background-color: #F5F5F5 !important;
 }
 
 /* Job History styles */
@@ -641,29 +640,29 @@ div.metric-null {
 /* State labels */
 
 .label_state_enqueued {
-    background-color: #999;
+    background-color: #999 !importan !importantt;
 }
 
 .label_state_succeeded {
-    background-color: #5cb85c;
+    background-color: #5cb85c !importan !importantt;
 }
 
 .label_state_failed {
-    background-color: #d9534f;
+    background-color: #d9534f !importan !importantt;
 }
 
 .label_state_processing {
-    background-color: #f0ad4e;
+    background-color: #f0ad4e !importan !importantt;
 }
 
 .label_state_scheduled {
-    background-color: #5bc0de;
+    background-color: #5bc0de !importan !importantt;
 }
 
 .label_state_deleted {
-    background-color: #777;
+    background-color: #777 !importan !importantt;
 }
 
 .label_state_awaiting {
-    background-color: #999;
+    background-color: #999 !importan !importantt;
 }

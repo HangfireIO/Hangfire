@@ -597,6 +597,16 @@ WriteLiteral("\">\r\n                                                    <span c
             
             #line default
             #line hidden
+WriteLiteral("\" style=\"");
+
+
+            
+            #line 147 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+                                                                                                                                                                                              Write($"background-color: {JobHistoryRenderer.GetForegroundStateColor(parentStateData.Name)};");
+
+            
+            #line default
+            #line hidden
 WriteLiteral("\">\r\n                                                        ");
 
 

@@ -940,6 +940,16 @@ WriteLiteral("\" style=\"text-decoration: none\">\r\n                           
             
             #line default
             #line hidden
+WriteLiteral("\" style=\"");
+
+
+            
+            #line 230 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+                                                                                                                                                                                      Write($"background-color: {JobHistoryRenderer.GetForegroundStateColor(job.LastJobState ?? EnqueuedState.StateName)};");
+
+            
+            #line default
+            #line hidden
 WriteLiteral("\">\r\n                                                        ");
 
 
