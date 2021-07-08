@@ -954,12 +954,22 @@ WriteLiteral("\r\n            </h3>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                <div class=\"state-card\" style=\"");
+WriteLiteral("                <div class=\"state-card ");
 
 
             
             #line 227 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                           Write(index == 0 ? $"border-color: {accentColor}" : null);
+                                   Write(index == 0 ? $"state-card_state_{entry.StateName.ToLower()}" : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\" style=\"");
+
+
+            
+            #line 227 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+                                                                                                                  Write(index == 0 ? $"border-color: {accentColor}" : null);
 
             
             #line default

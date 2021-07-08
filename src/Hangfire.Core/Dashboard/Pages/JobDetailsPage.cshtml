@@ -224,7 +224,7 @@
                 var accentColor = JobHistoryRenderer.GetForegroundStateColor(entry.StateName);
                 var backgroundColor = JobHistoryRenderer.GetBackgroundStateColor(entry.StateName);
 
-                <div class="state-card" style="@(index == 0 ? $"border-color: {accentColor}" : null)">
+                <div class="state-card @(index == 0 ? $"state-card_state_{entry.StateName.ToLower()}" : null)" style="@(index == 0 ? $"border-color: {accentColor}" : null)">
                     <h4 class="state-card-title" style="@(index == 0 ? $"color: {accentColor}" : null)">
                         <small class="pull-right text-muted">
                             @if (index == job.History.Count - 1)
