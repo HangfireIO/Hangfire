@@ -26,6 +26,8 @@ namespace Hangfire.Server
 {
     public class BackgroundJobPerformer : IBackgroundJobPerformer
     {
+        internal static readonly string ContextCanceledKey = "X_HF_Canceled";
+
         private readonly IJobFilterProvider _filterProvider;
         private readonly IBackgroundJobPerformer _innerPerformer;
 
@@ -73,6 +75,7 @@ namespace Hangfire.Server
 
             try
             {
+                context.Performer = this;
                 return PerformJobWithFilters(context, filterInfo.ServerFilters);
             }
             catch (JobAbortedException)
@@ -95,6 +98,10 @@ namespace Hangfire.Server
                 {
                     throw;
                 }
+            }
+            finally
+            {
+                context.Performer = null;
             }
 
             return null;
@@ -146,6 +153,11 @@ namespace Hangfire.Server
             
             if (preContext.Canceled)
             {
+                if (!preContext.Items.ContainsKey(ContextCanceledKey))
+                {
+                    preContext.Items.Add(ContextCanceledKey, filter.GetType().Name);
+                }
+                
                 return new PerformedContext(
                     preContext, null, true, null);
             }

@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
@@ -22,6 +23,12 @@ using Hangfire.States;
 
 namespace Hangfire
 {
+    public interface IBackgroundJobClientV2 : IBackgroundJobClient
+    {
+        [CanBeNull]
+        string Create([NotNull] Job job, [NotNull] IState state, [CanBeNull] IDictionary<string, object> parameters);
+    }
+
     /// <summary>
     /// Provides methods for creating all the types of background jobs and 
     /// changing their states.

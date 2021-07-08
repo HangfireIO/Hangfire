@@ -96,7 +96,7 @@ WriteLiteral("\r\n");
     List<string> jobIds = null;
     Pager pager = null;
 
-    using (var connection = Storage.GetConnection())
+    using (var connection = Storage.GetReadOnlyConnection())
     {
         var storageConnection = connection as JobStorageConnection;
 
@@ -386,7 +386,7 @@ WriteLiteral("</th>\r\n                            </tr>\r\n                    
                                 StateData stateData;
                                 StateData parentStateData = null;
 
-                                using (var connection = Storage.GetConnection())
+                                using (var connection = Storage.GetReadOnlyConnection())
                                 {
                                     jobData = connection.GetJobData(jobId);
                                     stateData = connection.GetStateData(jobId);

@@ -51,43 +51,99 @@ namespace Hangfire.States
             [NotNull] IState newState,
             [CanBeNull] IEnumerable<string> expectedStates,
             CancellationToken cancellationToken)
-        : this(storage, connection, backgroundJobId, newState, expectedStates, false, cancellationToken, EmptyProfiler.Instance)
+        : this(storage, connection, null, backgroundJobId, newState, expectedStates, false, null, cancellationToken, EmptyProfiler.Instance, null)
+        {
+        }
+
+        public StateChangeContext(
+            [NotNull] JobStorage storage,
+            [NotNull] IStorageConnection connection,
+            [CanBeNull] JobStorageTransaction transaction,
+            [NotNull] string backgroundJobId,
+            [NotNull] IState newState,
+            [CanBeNull] IEnumerable<string> expectedStates,
+            CancellationToken cancellationToken)
+            : this(storage, connection, transaction, backgroundJobId, newState, expectedStates, false, null, cancellationToken, EmptyProfiler.Instance, null)
+        {
+        }
+
+        internal StateChangeContext(
+            [NotNull] JobStorage storage,
+            [NotNull] IStorageConnection connection,
+            [NotNull] string backgroundJobId,
+            [NotNull] IState newState,
+            [CanBeNull] IEnumerable<string> expectedStates,
+            bool disableFilters,
+            CancellationToken cancellationToken,
+            [NotNull] IProfiler profiler,
+            [CanBeNull] string serverId,
+            [CanBeNull] IReadOnlyDictionary<string, object> customData = null) 
+            : this(storage, connection, null, backgroundJobId, newState, expectedStates, disableFilters, null, cancellationToken, profiler, serverId, customData)
         {
         }
 
         internal StateChangeContext(
             [NotNull] JobStorage storage, 
             [NotNull] IStorageConnection connection,
+            [CanBeNull] JobStorageTransaction transaction,
             [NotNull] string backgroundJobId, 
             [NotNull] IState newState, 
             [CanBeNull] IEnumerable<string> expectedStates,
             bool disableFilters,
+            [CanBeNull] IFetchedJob completeJob,
             CancellationToken cancellationToken,
-            [NotNull] IProfiler profiler)
+            [NotNull] IProfiler profiler,
+            [CanBeNull] string serverId,
+            [CanBeNull] IReadOnlyDictionary<string, object> customData = null)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
-            if (connection == null) throw new ArgumentNullException(nameof(connection));
-            if (backgroundJobId == null) throw new ArgumentNullException(nameof(backgroundJobId));
-            if (newState == null) throw new ArgumentNullException(nameof(newState));
-            if (profiler == null) throw new ArgumentNullException(nameof(profiler));
-
-            Storage = storage;
-            Connection = connection;
-            BackgroundJobId = backgroundJobId;
-            NewState = newState;
+            Storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            Transaction = transaction;
+            BackgroundJobId = backgroundJobId ?? throw new ArgumentNullException(nameof(backgroundJobId));
+            NewState = newState ?? throw new ArgumentNullException(nameof(newState));
             ExpectedStates = expectedStates;
             DisableFilters = disableFilters;
             CancellationToken = cancellationToken;
-            Profiler = profiler;
+            Profiler = profiler ?? throw new ArgumentNullException(nameof(profiler));
+            ServerId = serverId;
+            CustomData = customData;
+            CompleteJob = completeJob;
         }
 
+        [NotNull]
         public JobStorage Storage { get; }
+
+        [NotNull]
         public IStorageConnection Connection { get; }
+
+        [CanBeNull]
+        public JobStorageTransaction Transaction { get; }
+
+        [NotNull]
         public string BackgroundJobId { get; }
+
+        [NotNull]
         public IState NewState { get; }
+
+        [CanBeNull]
         public IEnumerable<string> ExpectedStates { get; }
+        
         public bool DisableFilters { get; }
         public CancellationToken CancellationToken { get; }
+
+        [NotNull]
         internal IProfiler Profiler { get; }
+
+        [CanBeNull]
+        public IReadOnlyDictionary<string, object> CustomData { get; }
+
+        [CanBeNull]
+        public IFetchedJob CompleteJob { get; }
+
+        [CanBeNull]
+        public BackgroundJob ProcessedJob { get; set; }
+
+        [CanBeNull]
+        public string ServerId { get; set; }
     }
 }

@@ -15,35 +15,8 @@
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
-1.7.24
-• Added – Support for async auth methods via the `DashboardOptions.AsyncAuthorization` property (by @rosenbjerg).
-• Added – Authorization policy support via the new `MapHangfireDashboardWithAuthorizationPolicy` method (by @dasiths).
-
-1.7.20
-• Added – An overload for `AddHangfireServer` utilizing `IServiceProvider` (by @penenkel).
-• Added – `IBackgroundJobClientFactory` and `IRecurringJobManagerFactory` interfaces to fix the following bug.
-• Fixed – Dashboard UI is unable to 'requeue' job on other then default `JobStorage`.
-
-1.7.8
-• Added – `IAppBuilder.MapHangfireDashboard` method for ASP.NET Core 3.0 endpoint routing (by @kendaleiv).
-• Changed – Add explicit `netcoreapp3.0` target with "Microsoft.AspNetCore.App" framework reference (by @stebueh).
-
-1.7.7
-• Fixed – Add missing `AddHangfireServer` method for .NET Framework 4.6.1 and higher (by @danstur).
-
-1.7.5
-• Fixed – Add missing overload for the `AddHangfireServer` method with "options" action.
-
-1.7.2
-• Added – Automatically resolve `ITimeZoneResolver` service for the `DashboardOptions.TimeZoneResolver` property.
-• Fixed – Allow to resolve `IJobFilterProvider` service from the `AddHangfire` method.
-
-1.7.0
-• Added – Full .NET Core 2.0 support by explicitly targeting .NET Standard 2.0.
-• Added – An overloaded AddHangfire method with `IServiceProvider` parameter (by @ericgreenmix and @denis-ivanov).
-• Added – `BackgroundJobServerHostedService` class based on `IHostedService` interface.
-• Added – `IServiceCollection.AddHangfireServer` method to register the server during configuration.
-• Changed – Custom services for factory, performer and state changer interfaces will be picked up only when all of them registered.
+1.8.0-beta1
+• Added – `IApplicationBuilder.UseHangfireServer` that accepts custom factory for `IBackgroundProcessingServer`.
 
     </releaseNotes>
     <dependencies>

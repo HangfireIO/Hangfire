@@ -44,6 +44,7 @@ namespace Hangfire.SqlServer
         private readonly SqlServerStorageOptions _options;
         private readonly string _connectionString;
         private string _escapedSchemaName;
+        private Type _microsoftDataSqlClientType;
 
         public SqlServerStorage(string nameOrConnectionString)
             : this(nameOrConnectionString, new SqlServerStorageOptions())
@@ -68,7 +69,7 @@ namespace Hangfire.SqlServer
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             _connectionString = GetConnectionString(nameOrConnectionString);
-            _connectionFactory = () => new SqlConnection(_connectionString);
+            _connectionFactory = DefaultConnectionFactory;
             _options = options;
 
             Initialize();
@@ -157,6 +158,36 @@ namespace Hangfire.SqlServer
         public override void WriteOptionsToLog(ILog logger)
         {
             logger.Info($"Using the following options for SQL Server job storage: Queue poll interval: {_options.QueuePollInterval}.");
+        }
+
+        public override bool HasFeature(string featureId)
+        {
+            if (featureId == null) throw new ArgumentNullException(nameof(featureId));
+
+            if (_options.UseTransactionalAcknowledge &&
+                featureId.StartsWith(Worker.TransactionalAcknowledgePrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return featureId.Equals(
+                    Worker.TransactionalAcknowledgePrefix + nameof(SqlServerTimeoutJob),
+                    StringComparison.OrdinalIgnoreCase);
+            }
+
+            if ("BatchedGetFirstByLowestScoreFromSet".Equals(featureId, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if ("Connection.GetUtcDateTime".Equals(featureId, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if ("Job.Queue".Equals(featureId, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return base.HasFeature(featureId);
         }
 
         public override string ToString()
@@ -356,6 +387,17 @@ namespace Hangfire.SqlServer
                 connection.Dispose();
             }
         }
+        
+        private DbConnection DefaultConnectionFactory()
+        {
+            if (_options.PreferMicrosoftDataSqlClient)
+            {
+                var connection = Activator.CreateInstance(_microsoftDataSqlClientType, new object[] { _connectionString });
+                if (connection is DbConnection dbConnection) return dbConnection;
+            }
+
+            return new SqlConnection(_connectionString);
+        }
 
         private static bool IsRunningOnWindows()
         {
@@ -369,6 +411,7 @@ namespace Hangfire.SqlServer
         private void Initialize()
         {
             _escapedSchemaName = _options.SchemaName.Replace("]", "]]");
+            _microsoftDataSqlClientType = Type.GetType("Microsoft.Data.SqlClient.SqlConnection, Microsoft.Data.SqlClient", throwOnError: false);
 
             if (_options.PrepareSchemaIfNecessary)
             {
@@ -502,6 +545,30 @@ where dbid = db_id(@name) and status != 'background'";
                         .Single();
 
                     return new Metric(value);
+                });
+            });
+
+        public static readonly DashboardMetric SchemaVersion = new DashboardMetric(
+            "sqlserver:schema",
+            "Metrics_SQLServer_SchemaVersion",
+            page =>
+            {
+                var sqlStorage = page.Storage as SqlServerStorage;
+                if (sqlStorage == null) return new Metric("???");
+
+                return sqlStorage.UseConnection(null, connection =>
+                {
+                    var sqlQuery = $@"select top(1) [Version] from [{sqlStorage.SchemaName}].[Schema]";
+                    var value = connection.Query<int>(sqlQuery).Single();
+
+                    return new Metric(value)
+                    {
+                        Style = value < SqlServerObjectsInstaller.LatestSchemaVersion
+                            ? MetricStyle.Warning
+                            : value == SqlServerObjectsInstaller.LatestSchemaVersion
+                                ? MetricStyle.Success
+                                : MetricStyle.Default
+                    };
                 });
             });
     }

@@ -20,249 +20,68 @@ https://www.hangfire.io/
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
-Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
+1.8.0-beta3
+• Added – Introduce the `Job.Queue` property, so jobs now can have their own queue specified.
+• Added – Method overloads to create recurring jobs directly with a custom default queue.
+• Added – Method overloads to create background jobs directly with a custom default queue.
+• Added – `IBackgroundJobClient.Create` method overloads with the new `queue` parameter.
+• Added – Experimental `JobStorageConnection.SetContains` method.
+• Added – Pass `ServerId` to `FailedState` instances to simplify the debugging on different servers.
+• Changed – Dashboard UI now have full-width layout to display more data (by @danillewin).
+• Changed – Query time from storage in recurring and delayed schedulers when supported by storage.
+• Changed – Speedup delayed jobs when custom default queue is specified by avoiding extra state transition.
+• Changed – Display scheduled job count when enqueued count is zero on the main metric.
+• Changed – Don't display queue name in state transition list when it's the `default` one.
+• Changed – Re-implement `TaskExtensions.WaitOneAsync` only with the `RegisterWaitForSingleObject` method.
+• Changed – Expose state data dictionaries in list DTOs when supported by storage.
+• Changed – Make it possible to display methods of non-loaded jobs in Dashboard UI when supported by storage.
+• Fixed – Check job details for the `null` value before passing it to renderers (regression).
+• Deprecated – `AddOrUpdate` overloads with optional params defined in the `RecurringJobManagerExtensions` class.
+• Deprecated – `AddOrUpdate` overloads with optional parameters defined in the `RecurringJob` class.
+• Deprecated – `AddOrUpdate` method overloads with no `recurringJobId` parameter.
+• Deprecated – `RecurringJobOptions.QueueName` property, new methods should be used instead.
 
-1.7.24
-• Added – Support for async auth methods via the `DashboardOptions.AsyncAuthorization` property (by @rosenbjerg).
-• Fixed – Error alert in Dashboard UI is now correctly shown when sidebar is present (by @danillewin).
-• Fixed – Reference an empty favicon in Dashboard UI to prevent backend 404s (by @dan2468).
-• Fixed – Back-to-site link text in Dashboard UI is now hidden on small screens (by @danillewin).
-• Fixed – Avoid memory leak in the `AppBuilderExtensions` class (by @LordJZ).
-• Fixed – Make the `TypeHelper` class public instead of internal to use it outside.
+1.8.0-beta2
+• Added – `MisfireHandlingMode.Strict` to create job for each missed recurring job occurrence.
+• Added – Allow to pass parameters when creating a job (by @brian-knoll-micronetonline).
+• Added – Make it possible to use specify multiple `JobContinuationOptions` for a continuation.
+• Added – `CreateJob` method to the `JobStorageTransaction` abstract class.
+• Added – `SetJobParameter` method to the `JobStorageTransaction` abstract class.
+• Changed – Allow to query job parameters without roundtrip when supported by a storage.
+• Changed – Turn `JobContinuationOptions` enum into flags while still possible.
+• Changed – Avoid storage roundtrip to query job data in worker, take data from previous state change.
+• Fixed – Don't overwrite existing argument values with null job parameters when using `FromParameter` attribute.
+• Fixed – Job continuation mistakenly started when using the new `OnlyOnDeletedState` option.
 
-1.7.23
-• Added – `JobId` property to `JobPerformanceException` for error logging purposes (by @Plasma).
-• Fixed – `JsonSerializationException` when using `IdempotentCompletionAttribute`.
-• Fixed – Unreported yet corner case related to daylight time transition by upgrading Cronos to 0.7.1 (by @aidmsu).
-• Fixed – Dashboard issue: recurring job table doesn't handle very long cron strings.
-• Fixed – Add missing argument-is-null check for the `DeserializePayload` method.
-• Project – Replace deprecated `PerformContext` ctor usage to avoid alerts in SonarQube (by @kumaheiyama).
-• Project – Avoid possible `NullReferenceException` in tests to fix alerts in Fortify analyser.
-• Project – Release connections properly in tests to fix alerts in Fortify analyser.
-
-1.7.22
-• Fixed – Fonts-related regression in Dashboard UI after upgrading Bootstrap in 1.7.21.
-
-1.7.21
-• Changed – Upgrade jQuery from 2.1.4 to 2.2.4 in Dashboard UI.
-• Changed – Upgrade Bootstrap from 3.3.5 to 3.3.7 in Dashboard UI.
-• Changed – Upgrade Moment.js to 2.29.1 in Dashboard UI.
-• Project – Update RazorGenerator.MsBuild package from 2.4.7 to version 2.5.0.
-• Project – Update 7-Zip.CommandLine package from 9.20.0 to version 18.1.0.
-
-1.7.20
-• Added – Norwegian translations (by @khellang).
-• Fixed – Correction on brazilian portuguese translations (by @Prestini).
-• Fixed – Changing time zone of recurring job without changing cron expression causes immediate execution.
-
-1.7.19
-• Added – German (Deutsch) Dashboard UI localization (by @d-oit).
-• Added – `IGlobalConfiguration.UseMaxArgumentSizeToRender` method to avoid "VALUE TOO BIG" messages.
-• Changed – Remove "readonly" keyword from the `JobMethodCallRenderer.MaxArgumentToRenderSize` field to support .NET 5.0.
-• Fixed – Race condition in `AspNetShutdownDetector` leads to `NullReferenceException` (by @jr01).
-• Fixed – Avoid ArgumentException: Item has already been added when preserving an original exception.
-• Project – Add repository link to nuspec files (by @jeremyhayes).
-
-1.7.15
-• Added – `IGlobalConfiguration.UseMaxLinesInExceptionDetails` option to cap the size of stack traces.
-• Changed – Only the first 100 lines of a stack trace will be preserved now by default in Failed state.
-• Fixed – Don't let exceptions with huge stack traces take up too much storage space.
-
-1.7.13
-• Added – Catalan translation for Dashboard UI (based on Spanish translation, by @agausachs).
-• Added – Support for configuring recommended serializer settings via callback (by @Yaevh).
-• Fixed – Use correct wording for job parameters in Job Details page, add it to resources.
-• Fixed – Don't push negative points to the realtime graph in dashboard.
-• Fixed – Don't depend on history collection type returned from Storage API.
-• Project – Execute tests one by one to ensure exit code isn't being lost (by @willchis).
-
-1.7.12
-• Added – Display actual job payload and exception message on job details page when could find the method.
-• Added – French translation for Dashboard UI (by @PaulARoy).
-• Added – Expose IStorageConnection.GetRecurringJobs(IEnumerable ids) to public.
-• Changed – Bump thread priority in heartbeat process for constrained environments.
-• Changed – Display job properties in a dedicated row in job details page.
-• Fixed – Avoid storage round-trip when displaying continuations on job details page.
-
-1.7.11
-• Added – Display recurring job exceptions directly in the Dashboard UI.
-• Added – Add built-in support for reliable shutdown detection of ASP.NET apps.
-• Changed – Unify exception handling in recurring job scheduler.
-• Changed – Internal feature to perform state changes without calling any filters.
-• Changed – Decrease the number of retry attempts for recurring jobs to 5.
-• Fixed – Let workers to ignore any state change filters when all previous attempts to call them failed.
-• Fixed – Don't let `RecurringJobScheduler` to stall the pipeline when extension filters throw an exception.
-• Fixed – Don't let `DelayedJobScheduler` to stall the pipeline when state filters throw an exception.
-• Fixed – `JobLoadException` when new methods deployed, caused by overlapped recycles in ASP.NET applications.
-• Fixed – Configuration changes aren't taken into account, caused by overlapped recycles in ASP.NET.
-• Fixed – Zombie servers shown on the "Servers" page that aren't stopped automatically unless app pool is recycled.
-• Fixed – Pass the whole exception to the `Error` field of a recurring job.
-• Fixed – Re-schedule recurring jobs with unsupported versions, instead of stopping the pipeline.
-• Fixed – Don't stumble over non-existing recurring jobs in a scheduler.
-• Fixed – Add another check before removing non-existing jobs from delayed jobs to avoid race conditions.
-• Fixed – Avoid throwing `NullReferenceException` instead of `InvalidOperationException` when deserializing a job.
-• Fixed – Don't transform queue names to upper case in the Dashboard UI.
-
-1.7.10
-• Added – Farsi translation for Dashboard UI (by @sepehr1101).
-• Added – Portuguese translation for Dashboard UI (by @GeErghon).
-• Added – `PrefixPath` in `DashboardOptions` (by @shenjielx).
-• Added – Allow `PageUrl` to be overridden by subclass (by @brendonparker).
-
-1.7.9
-• Fixed – Additional Chinese translation for Dashboard UI (by @brookqin).
-• Fixed – Added `null` checks for expired failed jobs in Dashboard UI (by @ppkale1995-cimpress).
-• Fixed – Add word break to definition lists for state cards in Dashboard UI.
-• Fixed – Render long recurring job identifiers correctly in Dashboard UI.
-
-1.7.8
-• Added – `IGlobalConfiguration.UseResultsInContinuations` method to globally enable results for continuations.
-• Added – Ability to push antecedent job's result to continuations via job parameters with `ContinuationsSupport`.
-• Added – `JobParameterInjectionFilter` server filter to inject job parameters as arguments.
-• Added – Allow to specify a custom thread factory in `UseBackgroundPool` methods.
-• Changed – Add retry attempts for recurring jobs instead of immediately disabling them.
-• Fixed – `CultureInfo.InvariantCulture` is now restored properly in background jobs.
-• Fixed – Recurring jobs aren't triggered early after changing their cron expressions.
-• Fixed – Don't trigger recurring job when it can't be scheduled due to errors.
-• Fixed – Argument with a `null` value is skipped when displaying job arguments in Dashboard UI.
-• Fixed – Add a workaround for resolving `System.Diagnostics.Debug` type in .NET Core 3.0.
-• Deprecated – Deprecate the `JobActivatorScope.InnerScope` property as it wasn't implemented.
-
-1.7.7
-
-Core
-• Changed – Produce a trace log message with details when updating a recurring job.
-• Changed – Return early from `CoreBackgroundJobFactory.Create` when storage returns `null`.
-• Project – Minor changes for the `Readme.md` file (by @231293).
-• Project – Add `netcoreapp3.0` target framework for Hangfire.Core.Tests.
-• Project – Add support for MSBuild 15.0 (VS 2019) when building `*.cshtml` files.
-
-Dashboard UI
-• Added – Allow modification of the Dashboard UI title (by @tbertenshaw).
-• Added – Support for HTML tags on the Dashboard UI title (by @augustoproiete).
-• Added – Buttons for 1,000 and 5,000 items per page in dashboard.
-• Added – Links to previous/next pages to the top of the dashboard page.
-• Changed – Expose the `RazorPage.Context` property as a public member.
-• Fixed – Supplementary Chinese translation (by @mccj).
-• Fixed – Don't update real-time chart when too much time passed since the last update.
-
-1.7.6
-• Changed – Add support for dash characters (`-`) in queue names (by @augustoproiete).
-• Fixed – Show actual error in Dashboard UI when recurring job can't be scheduled.
-• Fixed – Ensure backward compatibility when JSON payloads are serialized with field names only.
-• Fixed – Non-awaited continuations can bring down the whole app when `TaskScheduler` is set to `null`.
-• Fixed – Timeout value is not respected in some cases in the `WaitOneAsync` method.
-
-1.7.5
-• Fixed – Show error message when there's an error loading the statistics in Dashboard UI (by @prochnowc).
-• Fixed – Properly handle recurring jobs with null or empty 'Job' field.
-• Fixed – Disable recurring job when we can't schedule it due to an error.
-• Fixed – Use `LazyThreadSafetyMode.PublicationOnly` to avoid caching "JobStorage.Current is null" exceptions.
-
-1.7.4
-• Added – `BackgroundJobClient.RetryAttempts` property to make job creation resilient to transient exceptions.
-• Added – Dashboard localization support in `pt-BR` (by @candidodmv).
-• Changed – Protect background dispatchers from moving from stopped state to non-stopped one.
-• Changed – Unify `WaitOne` and `WaitOneAsync` methods with timeout and cancellation token for `WaitHandle` class.
-• Fixed – Don't hide an original fatal exception occurred in dispatchers in some cases.
-• Fixed – Dashboard UI to display "await" keyword on all task-like methods.
-• Fixed – Display links properly in an informational message on the Servers page in Dashboard UI.
-• Fixed – Wait for the heartbeat process before shutting down a server.
-
-1.7.3
-
-• SECURITY – Use `HtmlEncode` in all remaining places in Dashboard UI to prevent XSS attacks.
-
-• Added – Added Dutch language, and updated missing translation on "Servers" page (by @r-win).
-• Added – `Cron.Never` method for adding manual recurring jobs that never fire (by @michaltalaga).
-• Fixed – Add missing `AddOrUpdate` extension methods for the `IRecurringJobManager` interface.
-• Deprecated – Unused `HtmlHelper.FormatProperties` method is now obsolete.
-
-1.7.2
-• Added – `DashboardOptions.TimeZoneResolver` property to handle custom time zone resolvers in Dashboard UI.
-• Fixed – `RecurringJob.AddOrUpdate` method is now able to update a broken recurring job.
-• Fixed – Recurring job scheduler now properly handles recurring jobs whose job method or time zone is wrong.
-• Fixed – Don't throw an exception on Recurring Jobs page when time zone can't be resolved.
-
-1.7.1
-• Added – `DashboardOptions.IgnoreAntiforgeryToken` property to disable token validation in Dashboard UI.
-• Added – Display hints regarding server status on Servers page in Dashboard UI.
-• Added – Highlight recurring jobs with no next execution in Dashboard UI.
-• Added – Show actual error in Dashboard UI when recurring job has an invalid Cron expression.
-• Fixed – `InvalidOperationException` when `AllowSynchronousIO` option isn't set in ASP.NET Core 3.0.
-• Fixed – Set `NextExecution` value to `null` when existing recurring job has an invalid Cron expression.
-• Fixed – Make dashboard charts to be more culture-specific to use correct time format.
-• Fixed – Obsolete `UseSerializationSettings` comment now contains correct method name (by @PaitoAnderson).
-• Project – `resx` files now re-generated automatically when building a project.
-
-1.7.0
-• Added – Full .NET Core 2.0 support by explicitly targeting .NET Standard 2.0.
-• Added – `IGlobalConfiguration.SetDataCompatibilityLevel` to enable rolling upgrades from version 1.6.
-• Added – `IGlobalConfiguration.UseRecommendedSerializerSettings` method for new installations.
-• Added – Assemblies now loaded automatically when resolving a type when using default type resolver.
-• Added – Custom `TaskScheduler` can now be specified in `BackgroundJobServerOptions` for workers.
-• Added – `IdempotentCompletionAttribute` filter to enforce strict order for continuations.
-• Added – `IBackgroundJobClient.ContinueJobWith` methods to replace `ContinueWith` ones in future for clarity.
-• Added – `JobStorage.LinearizableReads` virtual property to avoid unnecessary waits in state changer.
-• Added – Allow async methods to run their continuations on worker thread by disabling `TaskScheduler`.
-• Added – Multi-stage shutdown to wait for graceful completion before starting to abort jobs.
-• Added – Asynchronous checks for job cancellation, `IJobCancellationToken` can be replaced with `CancellationToken` (by @pieceofsummer).
-• Added – Possibility to create millions of recurring jobs without stressing the scheduler.
-• Added – Second-based recurring jobs are fully supported now with 6-part cron expressions.
-• Added – Support for custom `TimeZoneInfo` resolvers in recurring jobs for interoperability purposes.
-• Added – Package now explicitly targets .NET Standard 2.0, and .NET Framework 4.6 target added as well.
-• Added – Type roundtrip support between .NET Core and .NET Framework for most common types.
-• Added – Allow to specify queue names based on job arguments with `QueueAttribute` via patterns.
-• Added – `PerformContext.Storage` property to allow server filters to spawn connections.
-• Added – `GetFirstByLowestScoreFromSet` connection method overload that returns multiple items (by @cdschneider).
-• Added – Entry point for custom job naming strategies available for dashboard (by @pieceofsummer).
-• Added – `JobDisplayNameAttribute` class for displaying jobs in dashboard, available on .NET Core (by @pieceofsummer).
-• Added – Support for async jobs returning ValueTask&lt;T&gt; (by @pieceofsummer).
-• Added – Support for asynchronous background processes, opens the road toward async storage.
-• Added – Circuit breaker pattern for background processes to reduce the logging pressure.
-• Added – Processing server is now able to detect it was expired, and restart itself with the new id.
-• Added – Ability to use custom delays for automatic retries of a background job.
-• Added – `ThreadAbortException` and `ThreadInterruptedException` handling to keep the background process running.
-• Added – Support for complex Cron expressions, including the `L`, `W`, `#` characters.
-• Added – `JobActivator.BeginScope` method overload with the full `PerformContext` (by @jeroenvervaeke).
-• Added – Support for read-only view for dashboard (by @mikechamberlain).
-• Added – Storage property to control the job expiration time (by @rsilvanet).
-• Added – Decrease the size of serialized type payloads and remove version information.
-• Changed – Make `TaskScheduler.Default` the default scheduler for async jobs to avoid breaking changes.
-• Changed – Split serializer setting to Internal and User scopes to isolate them (Version_170 Switch).
-• Changed – Don't allow to affect internal serialization even by `JsonConvert.DefaultSettings` (Version_170 Switch).
-• Changed – Share the same type binder between Hangfire itself and Newtonsoft.Json (Version_170 Switch).
-• Changed – Use more compact representation of dates when using `SerializeDateTime` (Version_170 Switch).
-• Changed – Stop using special case for `DateTime` argument serialization (Version_170 Switch).
-• Changed – Don't serialize unused `AwaitingState.Expiration` field (Version_170 Switch).
-• Changed – Specify parameter type when serializing arguments to allow using `TypeNameHandling.Auto` option.
-• Changed – Use case sensitive search when resolving a type as by default in .NET.
-• Changed – Make `SucceededState` constructor public to allow state serialization.
-• Changed – Add `IBackgroundJobFactory.StateMachine` property (breaking change for low level API).
-• Changed – Replace Rickshaw with Chart.js to have beautiful charts with less headache.
-• Changed – `DelayedJobScheduler` is able to use the new storage method to query multiple jobs at once.
-• Changed – `RecurringJobScheduler` now uses index-based checks to fetch only those jobs that should be scheduled.
-• Fixed – Worker now logs an error, when all the state change attempts failed due to an exception.
-• Fixed – Don't serialize arguments multiple times when showing job details in dashboard.
-• Fixed – `DateTimeOffset` conversion error when it was serialized with `TypeConverter`.
-• Fixed – Remove duplicate of argument deserialization code for obsolete `Job` class methods.
-• Fixed – Decorate all the exceptions with the `SerializableAttribute`.
-• Fixed – `ArgumentNullException` when job class contains method with non-resolvable generic arguments.
-• Fixed – "Failed to initialize CoreCLR" error, by removing reference to `Microsoft.NETCore.Portable.Compatibility`.
-• Fixed – Possible race conditions in `RecurringJobScheduler` that may lead to job duplicates.
-• Fixed – Configuration inconsistency introduced in 1.6.18 leading to issues with custom `JobActivator`.
-• Fixed – Triggering the recurring task doesn't update its last execution time.
-• Fixed – Recurring job which don't have next execution (intentionally or not) don't cause exception.
-• Fixed – Dashboard recurring jobs sorting is random (now it's based on next execution time).
-• Fixed – Performance problems with huge amount of recurring jobs.
-• Fixed – `NextExecution` field of a recurring job has delay in value getting set.
-• Fixed – Dashboard graphs have improper sizing.
-• Fixed – Server disappears from the list, but still performing the background processing.
-• Fixed – Logging is too aggressive on transient errors.
-• Fixed – Daylight saving time transitions now handled perfectly in recurring jobs thanks to Cronos.
-• Fixed – Confusing Cron scheduling, when both day-of-week and day-of-month fields set.
-• Project – Add `DataCompatibilityRangeFact` and `DataCompatibilityRangeTheory` classes for compatibility checks.
-• Project – Reduce test execution time by removing unnecessary waits.
+1.8.0-beta1
+• Added – Display deleted jobs in the Realtime and History graphs when supported by storage.
+• Added – `DeletedState` now have the persisted `Exception` property.
+• Added – `JobContinuationOptions.OnlyOnDeletedState` to create continuations after a failure.
+• Added – `Exception` job parameter is passed to continuation when `UseResultsInContinuations` method is used.
+• Added – `FromExceptionAttribute` to deal with an antecedent exception in a background job continuation.
+• Added – Allow to filter exception types in `AutomaticRetryAttribute` by using the new `OnlyOn` property.
+• Added – `IBackgroundProcess.UseBackgroundPool` now allows to pass thread configuration logic.
+• Added – `IGlobalConfiguration.UseJobDetailsRenderer` method for custom renderers.
+• Added – `BackgroundJobServerOptions.WorkerThreadConfigurationAction` option
+• Added – Allow to pass custom data to `ApplyStateContext` and `ElectStateContext` instances.
+• Added – Preserve custom data dictionary between the entire filter chain.
+• Added – Fetch "Retries" metric with other statistics when supported by storage
+• Added – `IGlobalConfiguration.UseDashboardMetrics` extension method to pass multiple metrics at once.
+• Added – State renderer for the `DeletedState` to display its new exception property.
+• Added – Virtual `JobStorage.GetReadOnlyConnection` method intended to return `JobStorageConnection` for replicas.
+• Added – Virtual `JobStorage.HasFeature` method for querying optional features.
+• Added – Optional `GetSetCount` and `GetUtcDateTime` methods for the `JobStorageConnection` class.
+• Added – Optional `AcquireDistributedLock` and `RemoveFromQueue` methods for the `JobStorageTransaction` class.
+• Added – Support for transactional acknowledge using new storage method for better handling some data loss scenarios.
+• Added – `Factory`, `StateMachine` and `Performer` properties to context classes to avoid injecting services.
+• Added – Allow to pass transaction to background job state changer when new methods implemented.
+• Added – Optional `ParametersSnapshot` property for `BackgroundJob` and `JobData` classes to minimize roundtrips in future.
+• Changed – Use the `AttemptsExceededAction.Delete` option by default in the global automatic retry filter.
+• Changed – Move job to the `DeletedState` instead of `SucceededState` when its invocation was canceled by a filter.
+• Changed – `FromParameterAttribute`-based logic now always overwrites arguments, even with non-null values.
+• Changed – Improved display of real-time chart with more accents on failed and deleted jobs.
+• Changed – Ignore some members when serializing a `JobFilterAttribute` instance to decrease size
+• Changed – `ServerHeartbeatProcess` now uses `ThreadPriority.AboveNormal` to prioritize heartbeats.
     </releaseNotes>
     <dependencies>
       <group targetFramework="net45">

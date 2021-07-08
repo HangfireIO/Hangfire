@@ -32,8 +32,8 @@ namespace Hangfire.SqlServer
 
         public SqlServerStorageOptions()
         {
-            QueuePollInterval = TimeSpan.FromSeconds(15);
-            SlidingInvisibilityTimeout = null;
+            QueuePollInterval = TimeSpan.Zero;
+            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5);
 #pragma warning disable 618
             InvisibilityTimeout = TimeSpan.FromMinutes(30);
 #pragma warning restore 618
@@ -46,6 +46,9 @@ namespace Hangfire.SqlServer
             DisableGlobalLocks = false;
             UsePageLocksOnDequeue = false;
             DeleteExpiredBatchSize = -1;
+            UseTransactionalAcknowledge = false;
+            UseRecommendedIsolationLevel = true;
+            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5);
         }
 
         [Obsolete("TransactionIsolationLevel option is deprecated, please set UseRecommendedIsolationLevel instead. Will be removed in 2.0.0.")]
@@ -139,5 +142,19 @@ namespace Hangfire.SqlServer
         /// enough, so expiration manager becomes the bottleneck.
         /// </summary>
         public int DeleteExpiredBatchSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to enable experimental feature of transactional acknowledge of completed
+        /// background jobs. In this case there will be less requests sent to SQL Server and better handling
+        /// of data loss when asynchronous replication is used. But additional blocking on the JobQueue table
+        /// is expected, since transaction commit requires an explicit Commit request to be sent. 
+        /// </summary>
+        public bool UseTransactionalAcknowledge { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to prefer to use the new Microsoft.Data.SqlClient package instead of the
+        /// System.Data.SqlClient when available (e.g. package is referenced).
+        /// </summary>
+        public bool PreferMicrosoftDataSqlClient { get; set; }
     }
 }

@@ -25,4 +25,12 @@ namespace Hangfire
         {
         }
     }
+
+    [AttributeUsage(AttributeTargets.Parameter)]
+    public sealed class FromExceptionAttribute : FromParameterAttribute
+    {
+        public FromExceptionAttribute() : base("AntecedentException")
+        {
+        }
+    }
 }

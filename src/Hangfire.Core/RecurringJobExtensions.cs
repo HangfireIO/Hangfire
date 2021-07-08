@@ -115,7 +115,7 @@ namespace Hangfire
             if (profiler == null) throw new ArgumentNullException(nameof(profiler));
             if (recurringJob == null) throw new ArgumentNullException(nameof(recurringJob));
 
-            var context = new CreateContext(storage, connection, recurringJob.Job, null, profiler);
+            var context = new CreateContext(storage, connection, recurringJob.Job, null, null, profiler);
             context.Parameters["RecurringJobId"] = recurringJob.RecurringJobId;
             context.Parameters["Time"] = JobHelper.ToTimestamp(now);
 
@@ -159,7 +159,8 @@ namespace Hangfire
                 backgroundJob,
                 state,
                 null,
-                profiler));
+                profiler,
+                stateMachine));
         }
     }
 }

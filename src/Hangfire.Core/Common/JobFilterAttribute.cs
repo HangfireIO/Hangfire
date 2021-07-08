@@ -16,8 +16,10 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using Newtonsoft.Json;
 
 namespace Hangfire.Common
 {
@@ -30,8 +32,11 @@ namespace Hangfire.Common
         private static readonly ConcurrentDictionary<Type, bool> MultiuseAttributeCache = new ConcurrentDictionary<Type, bool>();
         private int _order = JobFilter.DefaultOrder;
 
+        [JsonIgnore]
         public bool AllowMultiple => AllowsMultiple(GetType());
 
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [DefaultValue(JobFilter.DefaultOrder)]
         public int Order
         {
             get { return _order; }
@@ -44,6 +49,11 @@ namespace Hangfire.Common
                 _order = value;
             }
         }
+
+#if !NETSTANDARD1_3
+        [JsonIgnore]
+        public override object TypeId => base.TypeId;
+#endif
 
         private static bool AllowsMultiple(Type attributeType)
         {

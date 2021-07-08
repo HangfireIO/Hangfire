@@ -188,9 +188,14 @@ namespace Hangfire.Server
             {
                 var jobsProcessed = 0;
 
-                if (IsBatchingAvailable(connection))
+                var now = DateTime.SpecifyKind(
+                    !context.Storage.HasFeature("Connection.GetUtcDateTime")
+                        ? _nowFactory()
+                        : ((JobStorageConnection)connection).GetUtcDateTime(),
+                    DateTimeKind.Utc);
+
+                if (IsBatchingAvailable(context.Storage, connection))
                 {
-                    var now = _nowFactory();
                     var timestamp = JobHelper.ToTimestamp(now);
                     var recurringJobIds = ((JobStorageConnection)connection).GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp, BatchSize);
 
@@ -211,7 +216,6 @@ namespace Hangfire.Server
                     {
                         if (context.IsStopping) break;
 
-                        var now = _nowFactory();
                         var timestamp = JobHelper.ToTimestamp(now);
 
                         var recurringJobId = connection.GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp);
@@ -278,29 +282,41 @@ namespace Hangfire.Server
                         throw new NotSupportedException($"Server '{context.ServerId}' can't process recurring job '{recurringJobId}' of version '{recurringJob.Version ?? 1}'. Max supported version of this server is '{MaxSupportedVersion}'.");
                     }
                     
-                    BackgroundJob backgroundJob = null;
-                    IReadOnlyDictionary<string, string> changedFields;
+                    var backgroundJobs = new List<BackgroundJob>();
 
-                    if (recurringJob.TrySchedule(out var nextExecution, out var error))
+                    DateTime? nextExecution;
+                    Exception error;
+
+                    while (recurringJob.TrySchedule(out nextExecution, out error) && nextExecution <= now)
                     {
-                        if (nextExecution.HasValue && nextExecution <= now)
-                        {
-                            backgroundJob = _factory.TriggerRecurringJob(context.Storage, connection, _profiler, recurringJob, now);
+                        var backgroundJob = _factory.TriggerRecurringJob(
+                            context.Storage,
+                            connection,
+                            _profiler,
+                            recurringJob,
+                            recurringJob.MisfireHandling == MisfireHandlingMode.Strict ? nextExecution.Value : now);
 
-                            if (String.IsNullOrEmpty(backgroundJob?.Id))
-                            {
-                                _logger.Debug($"Recurring job '{recurringJobId}' execution at '{nextExecution}' has been canceled.");
-                            }
+                        if (!String.IsNullOrEmpty(backgroundJob?.Id))
+                        {
+                            backgroundJobs.Add(backgroundJob);
+                        }
+                        else
+                        {
+                            _logger.Debug($"Recurring job '{recurringJobId}' execution at '{nextExecution}' has been canceled.");
                         }
 
-                        recurringJob.IsChanged(out changedFields, out nextExecution);
+                        if (recurringJob.MisfireHandling != MisfireHandlingMode.Strict)
+                        {
+                            break;
+                        }
                     }
-                    else
+
+                    if (error != null)
                     {
                         throw new InvalidOperationException("Recurring job can't be scheduled, see inner exception for details.", error);
                     }
 
-                    if (backgroundJob != null)
+                    foreach (var backgroundJob in backgroundJobs)
                     {
                         _factory.StateMachine.EnqueueBackgroundJob(
                             context.Storage,
@@ -312,6 +328,7 @@ namespace Hangfire.Server
                             _profiler);
                     }
 
+                    recurringJob.IsChanged(out var changedFields, out nextExecution);
                     transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
                 }
                 catch (Exception ex)
@@ -393,8 +410,10 @@ namespace Hangfire.Server
             return default;
         }
 
-        private bool IsBatchingAvailable(IStorageConnection connection)
+        private bool IsBatchingAvailable(JobStorage storage, IStorageConnection connection)
         {
+            if (storage.HasFeature("BatchedGetFirstByLowestScoreFromSet")) return true;
+
             return _isBatchingAvailableCache.GetOrAdd(
                 connection.GetType(),
                 type =>

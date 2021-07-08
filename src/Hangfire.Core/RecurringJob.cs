@@ -18,6 +18,7 @@ using System;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.States;
 
@@ -28,29 +29,54 @@ namespace Hangfire
         private static readonly Lazy<RecurringJobManager> Instance = new Lazy<RecurringJobManager>(
             () => new RecurringJobManager(), LazyThreadSafetyMode.PublicationOnly);
 
+        [Obsolete("Please use an overload with the explicit recurringJobId parameter and RecurringJobOptions instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate(
-            Expression<Action> methodCall,
-            Func<string> cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull] Expression<Action> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
             AddOrUpdate(methodCall, cronExpression(), timeZone, queue);
         }
 
+        [Obsolete("Please use an overload with the explicit recurringJobId parameter instead. Will be removed in 2.0.0.")]
+        public static void AddOrUpdate(
+            [NotNull] Expression<Action> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [NotNull] RecurringJobOptions options)
+        {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
+            AddOrUpdate(methodCall, cronExpression(), options);
+        }
+
+        [Obsolete("Please use an overload with the explicit recurringJobId parameter and RecurringJobOptions instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate<T>(
-            Expression<Action<T>> methodCall,
-            Func<string> cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
             AddOrUpdate(methodCall, cronExpression(), timeZone, queue);
         }
 
+        [Obsolete("Please use an overload with the explicit recurringJobId parameter instead. Will be removed in 2.0.0.")]
+        public static void AddOrUpdate<T>(
+            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [NotNull] RecurringJobOptions options)
+        {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
+            AddOrUpdate(methodCall, cronExpression(), options);
+        }
+
+        [Obsolete("Please use an overload with the explicit recurringJobId parameter and RecurringJobOptions instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate(
-            Expression<Action> methodCall,
-            string cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull] Expression<Action> methodCall,
+            [NotNull] string cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             var id = GetRecurringJobId(job);
@@ -58,11 +84,24 @@ namespace Hangfire
             Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
+        [Obsolete("Please use an overload with the explicit recurringJobId parameter instead. Will be removed in 2.0.0.")]
+        public static void AddOrUpdate(
+            [NotNull] Expression<Action> methodCall,
+            [NotNull] string cronExpression,
+            [NotNull] RecurringJobOptions options)
+        {
+            var job = Job.FromExpression(methodCall);
+            var id = GetRecurringJobId(job);
+
+            Instance.Value.AddOrUpdate(id, job, cronExpression, options);
+        }
+
+        [Obsolete("Please use an overload with the explicit recurringJobId parameter and RecurringJobOptions instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate<T>(
-            Expression<Action<T>> methodCall,
-            string cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull] string cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             var id = GetRecurringJobId(job);
@@ -70,71 +109,270 @@ namespace Hangfire
             Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
-        public static void AddOrUpdate(
-            string recurringJobId,
-            Expression<Action> methodCall,
-            Func<string> cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+        [Obsolete("Please use an overload with the explicit recurringJobId parameter instead. Will be removed in 2.0.0.")]
+        public static void AddOrUpdate<T>(
+            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull] string cronExpression,
+            [NotNull] RecurringJobOptions options)
         {
+            var job = Job.FromExpression(methodCall);
+            var id = GetRecurringJobId(job);
+
+            Instance.Value.AddOrUpdate(id, job, cronExpression, options);
+        }
+
+        [Obsolete("Please use AddOrUpdate(string, Expression<Action>, Func<string>, RecurringJobOptions) instead. Will be removed in 2.0.0.")]
+        public static void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Action> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
+        {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue);
+        }
+
+        public static void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Action> methodCall,
+            [NotNull] Func<string> cronExpression)
+        {
+            AddOrUpdate(recurringJobId, methodCall, cronExpression, new RecurringJobOptions());
+        }
+
+        public static void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Action> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [NotNull] RecurringJobOptions options)
+        {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), options);
+        }
+
+        public static void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] string queue,
+            [NotNull] Expression<Action> methodCall,
+            [NotNull] Func<string> cronExpression)
+        {
+            AddOrUpdate(recurringJobId, queue, methodCall, cronExpression, new RecurringJobOptions());
+        }
+
+        public static void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] string queue,
+            [NotNull] Expression<Action> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [NotNull] RecurringJobOptions options)
+        {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
+            AddOrUpdate(recurringJobId, queue, methodCall, cronExpression(), options);
+        }
+
+        [Obsolete("Please use AddOrUpdate<T>(string, Expression<Action<T>>, Func<string>, RecurringJobOptions) instead. Will be removed in 2.0.0.")]
+        public static void AddOrUpdate<T>(
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
+        {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
             AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue);
         }
 
         public static void AddOrUpdate<T>(
-            string recurringJobId,
-            Expression<Action<T>> methodCall,
-            Func<string> cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull] Func<string> cronExpression)
         {
-            AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue);
+            AddOrUpdate(recurringJobId, methodCall, cronExpression, new RecurringJobOptions());
+        }
+
+        public static void AddOrUpdate<T>(
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [NotNull] RecurringJobOptions options)
+        {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), options);
+        }
+
+        public static void AddOrUpdate<T>(
+            [NotNull] string recurringJobId,
+            [NotNull] string queue,
+            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull] Func<string> cronExpression)
+        {
+            AddOrUpdate(recurringJobId, queue, methodCall, cronExpression, new RecurringJobOptions());
+        }
+
+        public static void AddOrUpdate<T>(
+            [NotNull] string recurringJobId,
+            [NotNull] string queue,
+            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [NotNull] RecurringJobOptions options)
+        {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
+            AddOrUpdate(recurringJobId, queue, methodCall, cronExpression(), options);
+        }
+
+        [Obsolete("Please use AddOrUpdate(string, Expression<Action>, string, RecurringJobOptions) instead. Will be removed in 2.0.0.")]
+        public static void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Action> methodCall,
+            [NotNull] string cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
+        {
+            var job = Job.FromExpression(methodCall);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void AddOrUpdate(
-            string recurringJobId,
-            Expression<Action> methodCall,
-            string cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Action> methodCall,
+            [NotNull] string cronExpression)
+        {
+            AddOrUpdate(recurringJobId, methodCall, cronExpression, new RecurringJobOptions());
+        }
+
+        public static void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Action> methodCall,
+            [NotNull] string cronExpression,
+            [NotNull] RecurringJobOptions options)
+        {
+            var job = Job.FromExpression(methodCall);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
+        }
+
+        public static void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] string queue,
+            [NotNull] Expression<Action> methodCall,
+            [NotNull] string cronExpression)
+        {
+            AddOrUpdate(recurringJobId, queue, methodCall, cronExpression, new RecurringJobOptions());
+        }
+
+        public static void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] string queue,
+            [NotNull] Expression<Action> methodCall,
+            [NotNull] string cronExpression,
+            [NotNull] RecurringJobOptions options)
+        {
+            if (queue == null) throw new ArgumentNullException(nameof(queue));
+
+            var job = Job.FromExpression(methodCall, queue);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
+        }
+
+        [Obsolete("Please use AddOrUpdate<T>(string, Expression<Action<T>>, string, RecurringJobOptions) instead. Will be removed in 2.0.0.")]
+        public static void AddOrUpdate<T>(
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull] string cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void AddOrUpdate<T>(
-            string recurringJobId,
-            Expression<Action<T>> methodCall,
-            string cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull] string cronExpression)
         {
-            var job = Job.FromExpression(methodCall);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+            AddOrUpdate(recurringJobId, methodCall, cronExpression, new RecurringJobOptions());
         }
 
-        public static void AddOrUpdate(
-            Expression<Func<Task>> methodCall,
-            Func<string> cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+        public static void AddOrUpdate<T>(
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull] string cronExpression,
+            [NotNull] RecurringJobOptions options)
         {
+            var job = Job.FromExpression(methodCall);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
+        }
+
+        public static void AddOrUpdate<T>(
+            [NotNull] string recurringJobId,
+            [NotNull] string queue,
+            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull] string cronExpression)
+        {
+            AddOrUpdate(recurringJobId, queue, methodCall, cronExpression, new RecurringJobOptions());
+        }
+
+        public static void AddOrUpdate<T>(
+            [NotNull] string recurringJobId,
+            [NotNull] string queue,
+            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull] string cronExpression,
+            [NotNull] RecurringJobOptions options)
+        {
+            if (queue == null) throw new ArgumentNullException(nameof(queue));
+
+            var job = Job.FromExpression(methodCall, queue);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
+        }
+
+        [Obsolete("Please use an overload with the explicit recurringJobId parameter and RecurringJobOptions instead. Will be removed in 2.0.0.")]
+        public static void AddOrUpdate(
+            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
+        {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
             AddOrUpdate(methodCall, cronExpression(), timeZone, queue);
         }
 
-        public static void AddOrUpdate<T>(
-            Expression<Func<T, Task>> methodCall,
-            Func<string> cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+        [Obsolete("Please use an overload with the explicit recurringJobId parameter instead. Will be removed in 2.0.0.")]
+        public static void AddOrUpdate(
+            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [NotNull] RecurringJobOptions options)
         {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
+            AddOrUpdate(methodCall, cronExpression(), options);
+        }
+
+        [Obsolete("Please use an overload with the explicit recurringJobId parameter and RecurringJobOptions instead. Will be removed in 2.0.0.")]
+        public static void AddOrUpdate<T>(
+            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
+        {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
             AddOrUpdate(methodCall, cronExpression(), timeZone, queue);
         }
 
+        [Obsolete("Please use an overload with the explicit recurringJobId parameter instead. Will be removed in 2.0.0.")]
+        public static void AddOrUpdate<T>(
+            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [NotNull] RecurringJobOptions options)
+        {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
+            AddOrUpdate(methodCall, cronExpression(), options);
+        }
+
+        [Obsolete("Please use an overload with the explicit recurringJobId parameter and RecurringJobOptions instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate(
-            Expression<Func<Task>> methodCall,
-            string cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull] string cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             var id = GetRecurringJobId(job);
@@ -142,66 +380,253 @@ namespace Hangfire
             Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
+        [Obsolete("Please use an overload with the explicit recurringJobId parameter instead. Will be removed in 2.0.0.")]
+        public static void AddOrUpdate(
+            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull] string cronExpression,
+            [NotNull] RecurringJobOptions options)
+        {
+            var job = Job.FromExpression(methodCall);
+            var id = GetRecurringJobId(job);
+
+            Instance.Value.AddOrUpdate(id, job, cronExpression, options);
+        }
+
+        [Obsolete("Please use an overload with the explicit recurringJobId parameter and RecurringJobOptions instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate<T>(
-            Expression<Func<T, Task>> methodCall,
-            string cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull] string cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             var id = GetRecurringJobId(job);
 
             Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
-        
-        public static void AddOrUpdate(
-            string recurringJobId,
-            Expression<Func<Task>> methodCall,
-            Func<string> cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+
+        [Obsolete("Please use an overload with the explicit recurringJobId parameter instead. Will be removed in 2.0.0.")]
+        public static void AddOrUpdate<T>(
+            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull] string cronExpression,
+            [NotNull] RecurringJobOptions options)
         {
+            var job = Job.FromExpression(methodCall);
+            var id = GetRecurringJobId(job);
+
+            Instance.Value.AddOrUpdate(id, job, cronExpression, options);
+        }
+
+        [Obsolete("Please use AddOrUpdate(string, Expression<Func<Task>>, Func<string>, RecurringJobOptions) instead. Will be removed in 2.0.0.")]
+        public static void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
+        {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue);
+        }
+
+        public static void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull] Func<string> cronExpression)
+        {
+            AddOrUpdate(recurringJobId, methodCall, cronExpression, new RecurringJobOptions());
+        }
+
+        public static void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [NotNull] RecurringJobOptions options)
+        {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), options);
+        }
+
+        public static void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] string queue,
+            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull] Func<string> cronExpression)
+        {
+            AddOrUpdate(recurringJobId, queue, methodCall, cronExpression, new RecurringJobOptions());
+        }
+
+        public static void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] string queue,
+            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [NotNull] RecurringJobOptions options)
+        {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
+            AddOrUpdate(recurringJobId, queue, methodCall, cronExpression(), options);
+        }
+
+        [Obsolete("Please use AddOrUpdate<T>(string, Expression<Func<T, Task>>, Func<string>, RecurringJobOptions) instead. Will be removed in 2.0.0.")]
+        public static void AddOrUpdate<T>(
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
+        {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
             AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue);
         }
 
         public static void AddOrUpdate<T>(
-            string recurringJobId,
-            Expression<Func<T, Task>> methodCall,
-            Func<string> cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull] Func<string> cronExpression)
         {
-            AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue);
+            AddOrUpdate(recurringJobId, methodCall, cronExpression, new RecurringJobOptions());
+        }
+
+        public static void AddOrUpdate<T>(
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [NotNull] RecurringJobOptions options)
+        {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), options);
+        }
+
+        public static void AddOrUpdate<T>(
+            [NotNull] string recurringJobId,
+            [NotNull] string queue,
+            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull] Func<string> cronExpression)
+        {
+            AddOrUpdate(recurringJobId, queue, methodCall, cronExpression, new RecurringJobOptions());
+        }
+
+        public static void AddOrUpdate<T>(
+            [NotNull] string recurringJobId,
+            [NotNull] string queue,
+            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [NotNull] RecurringJobOptions options)
+        {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
+            AddOrUpdate(recurringJobId, queue, methodCall, cronExpression(), options);
+        }
+
+        [Obsolete("Please use AddOrUpdate(string, Expression<Func<Task>>, string, RecurringJobOptions) instead. Will be removed in 2.0.0.")]
+        public static void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull] string cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
+        {
+            var job = Job.FromExpression(methodCall);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void AddOrUpdate(
-            string recurringJobId,
-            Expression<Func<Task>> methodCall,
-            string cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull] string cronExpression)
+        {
+            AddOrUpdate(recurringJobId, methodCall, cronExpression, new RecurringJobOptions());
+        }
+
+        public static void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull] string cronExpression,
+            [NotNull] RecurringJobOptions options)
+        {
+            var job = Job.FromExpression(methodCall);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
+        }
+
+        public static void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] string queue,
+            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull] string cronExpression)
+        {
+            AddOrUpdate(recurringJobId, queue, methodCall, cronExpression, new RecurringJobOptions());
+        }
+
+        public static void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] string queue,
+            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull] string cronExpression,
+            [NotNull] RecurringJobOptions options)
+        {
+            if (queue == null) throw new ArgumentNullException(nameof(queue));
+
+            var job = Job.FromExpression(methodCall, queue);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
+        }
+
+        [Obsolete("Please use AddOrUpdate<T>(string, Expression<Func<T, Task>>, string, RecurringJobOptions) instead. Will be removed in 2.0.0.")]
+        public static void AddOrUpdate<T>(
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull] string cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void AddOrUpdate<T>(
-            string recurringJobId,
-            Expression<Func<T, Task>> methodCall,
-            string cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull] string cronExpression)
         {
-            var job = Job.FromExpression(methodCall);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
+            AddOrUpdate(recurringJobId, methodCall, cronExpression, new RecurringJobOptions());
         }
 
-        public static void RemoveIfExists(string recurringJobId)
+        public static void AddOrUpdate<T>(
+            [NotNull] string recurringJobId,
+            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull] string cronExpression,
+            [NotNull] RecurringJobOptions options)
+        {
+            var job = Job.FromExpression(methodCall);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
+        }
+
+        public static void AddOrUpdate<T>(
+            [NotNull] string recurringJobId,
+            [NotNull] string queue,
+            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull] string cronExpression)
+        {
+            AddOrUpdate(recurringJobId, queue, methodCall, cronExpression, new RecurringJobOptions());
+        }
+
+        public static void AddOrUpdate<T>(
+            [NotNull] string recurringJobId,
+            [NotNull] string queue,
+            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull] string cronExpression,
+            [NotNull] RecurringJobOptions options)
+        {
+            if (queue == null) throw new ArgumentNullException(nameof(queue));
+
+            var job = Job.FromExpression(methodCall, queue);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
+        }
+
+        public static void RemoveIfExists([NotNull] string recurringJobId)
         {
             Instance.Value.RemoveIfExists(recurringJobId);
         }
 
-        public static void Trigger(string recurringJobId)
+        public static void Trigger([NotNull] string recurringJobId)
         {
             Instance.Value.Trigger(recurringJobId);
         }

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Hangfire.Annotations;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
@@ -77,6 +78,11 @@ namespace Hangfire
 
         public abstract IStorageConnection GetConnection();
 
+        public virtual IStorageConnection GetReadOnlyConnection()
+        {
+            return GetConnection();
+        }
+
 #pragma warning disable 618
         public virtual IEnumerable<IServerComponent> GetComponents()
         {
@@ -91,6 +97,12 @@ namespace Hangfire
 
         public virtual void WriteOptionsToLog(ILog logger)
         {
+        }
+
+        public virtual bool HasFeature([NotNull] string featureId)
+        {
+            if (featureId == null) throw new ArgumentNullException(nameof(featureId));
+            return false;
         }
     }
 }

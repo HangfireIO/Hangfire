@@ -595,7 +595,7 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Job ID.
+        ///   Looks up a localized string similar to Id.
         /// </summary>
         public static string JobDetailsPage_JobId {
             get {
@@ -825,6 +825,15 @@ namespace Hangfire.Dashboard.Resources {
         public static string Metrics_Servers {
             get {
                 return ResourceManager.GetString("Metrics_Servers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Schema Version.
+        /// </summary>
+        public static string Metrics_SQLServer_SchemaVersion {
+            get {
+                return ResourceManager.GetString("Metrics_SQLServer_SchemaVersion", resourceCulture);
             }
         }
         

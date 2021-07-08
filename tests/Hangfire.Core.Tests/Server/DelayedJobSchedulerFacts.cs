@@ -85,6 +85,29 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void Execute_EnqueuesJobIdDirectly_AndRemovesItFromSchedule_WhenTargetQueueIsEncodedIntoTheSetEntry()
+        {
+            // Arrange
+            _schedule.Add("default:some-id");
+            _schedule.Add("critical:another-id");
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _transaction.Verify(x => x.AddToQueue("default", "some-id"));
+            _transaction.Verify(x => x.RemoveFromSet("schedule", "default:some-id"));
+            _transaction.Verify(x => x.AddToQueue("critical", "another-id"));
+            _transaction.Verify(x => x.RemoveFromSet("schedule", "critical:another-id"));
+
+            _transaction.Verify(x => x.Commit(), Times.Exactly(2));
+
+            _stateChanger.Verify(x => x.ChangeState(It.IsAny<StateChangeContext>()), Times.Never);
+        }
+
+        [Fact]
         public void Execute_MovesJobStateToEnqueued_UsingBatching_WhenAvailable()
         {
             // Arrange
@@ -106,6 +129,31 @@ namespace Hangfire.Core.Tests.Server
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.BackgroundJobId == "job-2" &&
                 ctx.NewState is EnqueuedState)));
+        }
+
+        [Fact]
+        public void Execute_WithBatching_EnqueuesJobIdDirectly_AndRemovesItFromSchedule_WhenTargetQueueIsEncodedIntoTheSetEntry()
+        {
+            // Arrange
+            EnableBatching();
+
+            _schedule.Add("default:some-id");
+            _schedule.Add("critical:another-id");
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _transaction.Verify(x => x.AddToQueue("default", "some-id"));
+            _transaction.Verify(x => x.AddToQueue("critical", "another-id"));
+            _transaction.Verify(x => x.RemoveFromSet("schedule", "default:some-id"));
+            _transaction.Verify(x => x.RemoveFromSet("schedule", "critical:another-id"));
+
+            _transaction.Verify(x => x.Commit(), Times.Once);
+
+            _stateChanger.Verify(x => x.ChangeState(It.IsAny<StateChangeContext>()), Times.Never);
         }
 
         [Fact]

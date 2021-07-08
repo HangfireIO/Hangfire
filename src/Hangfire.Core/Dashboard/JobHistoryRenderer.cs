@@ -41,7 +41,7 @@ namespace Hangfire.Dashboard
             Register(ProcessingState.StateName, ProcessingRenderer);
             Register(EnqueuedState.StateName, EnqueuedRenderer);
             Register(ScheduledState.StateName, ScheduledRenderer);
-            Register(DeletedState.StateName, NullRenderer);
+            Register(DeletedState.StateName, DeletedRenderer);
             Register(AwaitingState.StateName, AwaitingRenderer);
 
             BackgroundStateColors.Add(EnqueuedState.StateName, "#F5F5F5");
@@ -185,8 +185,9 @@ namespace Hangfire.Dashboard
         private static NonEscapedString FailedRenderer(HtmlHelper html, IDictionary<string, string> stateData)
         {
             var stackTrace = html.StackTrace(stateData["ExceptionDetails"]).ToString();
+            var serverId = stateData.ContainsKey("ServerId") ? $" ({html.ServerId(stateData["ServerId"])})" : null;
             return new NonEscapedString(
-                $"<h4 class=\"exception-type\">{html.HtmlEncode(stateData["ExceptionType"])}</h4><p class=\"text-muted\">{html.HtmlEncode(stateData["ExceptionMessage"])}</p><pre class=\"stack-trace\">{stackTrace}</pre>");
+                $"<h4 class=\"exception-type\">{html.HtmlEncode(stateData["ExceptionType"])}{serverId}</h4><p class=\"text-muted\">{html.HtmlEncode(stateData["ExceptionMessage"])}</p><pre class=\"stack-trace\">{stackTrace}</pre>");
         }
 
         private static NonEscapedString ProcessingRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
@@ -229,16 +230,32 @@ namespace Hangfire.Dashboard
 
         private static NonEscapedString EnqueuedRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
         {
-            return new NonEscapedString(
-                $"<dl class=\"dl-horizontal\"><dt>Queue:</dt><dd>{helper.QueueLabel(stateData["Queue"])}</dd></dl>");
+            if (!EnqueuedState.DefaultQueue.Equals(stateData["Queue"], StringComparison.OrdinalIgnoreCase))
+            {
+                return new NonEscapedString(
+                    $"<dl class=\"dl-horizontal\"><dt>Queue:</dt><dd>{helper.QueueLabel(stateData["Queue"])}</dd></dl>");
+            }
+
+            return null;
         }
 
         private static NonEscapedString ScheduledRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
         {
             var enqueueAt = JobHelper.DeserializeDateTime(stateData["EnqueueAt"]);
+            stateData.TryGetValue("Queue", out var queue);
 
-            return new NonEscapedString(
-                $"<dl class=\"dl-horizontal\"><dt>Enqueue at:</dt><dd data-moment=\"{helper.HtmlEncode(JobHelper.ToTimestamp(enqueueAt).ToString(CultureInfo.InvariantCulture))}\">{helper.HtmlEncode(enqueueAt.ToString(CultureInfo.CurrentUICulture))}</dd></dl>");
+            var sb = new StringBuilder();
+            sb.Append("<dl class=\"dl-horizontal\">");
+            sb.Append($"<dt>Enqueue at:</dt><dd data-moment=\"{helper.HtmlEncode(JobHelper.ToTimestamp(enqueueAt).ToString(CultureInfo.InvariantCulture))}\">{helper.HtmlEncode(enqueueAt.ToString(CultureInfo.CurrentUICulture))}</dd>");
+
+            if (!String.IsNullOrWhiteSpace(queue))
+            {
+                sb.Append($"<dt>Queue:</dt><dd>{helper.QueueLabel(queue)}</dd>");
+            }
+
+            sb.Append("</dl>");
+
+            return new NonEscapedString(sb.ToString());
         }
 
         private static NonEscapedString AwaitingRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
@@ -273,6 +290,21 @@ namespace Hangfire.Dashboard
             builder.Append("</dl>");
 
             return new NonEscapedString(builder.ToString());
+        }
+        
+        private static NonEscapedString DeletedRenderer(HtmlHelper html, IDictionary<string, string> stateData)
+        {
+            if (stateData.TryGetValue("Exception", out var exception))
+            {
+                var exceptionInfo = SerializationHelper.Deserialize<ExceptionInfo>(exception);
+                if (exceptionInfo != null)
+                {
+                    return new NonEscapedString(
+                        $"<h4 class=\"exception-type\">{html.HtmlEncode(exceptionInfo.Type)}</h4><p class=\"text-muted\">{html.HtmlEncode(exceptionInfo.Message)}</p>");
+                }
+            }
+
+            return null;
         }
     }
 }

@@ -143,7 +143,7 @@ namespace Hangfire.Server
         {
             return _storage.GetComponents().Select(component => new ServerProcessDispatcherBuilder(
                 component, 
-                threadStart => BackgroundProcessExtensions.DefaultThreadFactory(1, component.GetType().Name, threadStart)));
+                threadStart => BackgroundProcessExtensions.DefaultThreadFactory(1, component.GetType().Name, threadStart, null)));
         }
 
         private string GetServerId()

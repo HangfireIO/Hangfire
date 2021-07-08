@@ -22,6 +22,7 @@ using Hangfire.Dashboard;
 using Hangfire.Dashboard.Pages;
 using Hangfire.Logging;
 using Hangfire.Logging.LogProviders;
+using Hangfire.Storage.Monitoring;
 using Newtonsoft.Json;
 
 namespace Hangfire
@@ -42,13 +43,12 @@ namespace Hangfire
 
         public static IGlobalConfiguration<TStorage> WithJobExpirationTimeout<TStorage>(
             [NotNull] this IGlobalConfiguration<TStorage> configuration,
-            [NotNull] TimeSpan timeout)
+            TimeSpan timeout)
             where TStorage : JobStorage
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
-            JobStorage.Current.JobExpirationTimeout = timeout;
-
+            configuration.Entry.JobExpirationTimeout = timeout;
             return configuration;
         }
 
@@ -181,6 +181,35 @@ namespace Hangfire
 
             DashboardMetrics.AddMetric(metric);
             HomePage.Metrics.Add(metric);
+
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseDashboardMetrics(
+            [NotNull] this IGlobalConfiguration configuration,
+            [NotNull] params DashboardMetric[] metrics)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (metrics == null) throw new ArgumentNullException(nameof(metrics));
+
+            foreach (var metric in metrics)
+            {
+                DashboardMetrics.AddMetric(metric);
+                HomePage.Metrics.Add(metric);
+            }
+
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseJobDetailsRenderer(
+            [NotNull] this IGlobalConfiguration configuration,
+            int order,
+            [NotNull] Func<JobDetailsRendererDto, NonEscapedString> renderer)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (renderer == null) throw new ArgumentNullException(nameof(renderer));
+
+            JobDetailsRenderer.AddRenderer(order, renderer);
 
             return configuration;
         }

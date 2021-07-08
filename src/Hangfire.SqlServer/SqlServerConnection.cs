@@ -247,6 +247,7 @@ $@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.Schema
                 return new JobData
                 {
                     Job = job,
+                    InvocationData = invocationData,
                     State = jobData.StateName,
                     CreatedAt = jobData.CreatedAt,
                     LoadException = loadException
@@ -666,6 +667,12 @@ where [Key] = @key
 order by [Id] desc";
 
             return _storage.UseConnection(_dedicatedConnection, connection => connection.Query<string>(query, new { key = key }, commandTimeout: _storage.CommandTimeout).ToList());
+        }
+
+        public override DateTime GetUtcDateTime()
+        {
+            return _storage.UseConnection(_dedicatedConnection, connection =>
+                DateTime.SpecifyKind(connection.ExecuteScalar<DateTime>("SELECT SYSUTCDATETIME()"), DateTimeKind.Utc));
         }
 
         private DbConnection _dedicatedConnection;

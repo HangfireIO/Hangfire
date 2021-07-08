@@ -94,6 +94,29 @@ namespace Hangfire.SqlServer.Tests
         }
 
         [Fact, CleanDatabase]
+        public void UseConnection_UsesSystemDataSqlClient_ByDefault()
+        {
+            var storage = CreateStorage();
+            storage.UseConnection(null, connection =>
+            {
+                Assert.IsType<System.Data.SqlClient.SqlConnection>(connection);
+            });
+        }
+
+#if !NET452
+        [Fact, CleanDatabase]
+        public void UseConnection_UsesMicrosoftDataSqlClient_WhenCorrespondingOptionIsSet()
+        {
+            _options.PreferMicrosoftDataSqlClient = true;
+            var storage = CreateStorage();
+            storage.UseConnection(null, connection =>
+            {
+                Assert.IsType<Microsoft.Data.SqlClient.SqlConnection>(connection);
+            });
+        }
+#endif
+
+        [Fact, CleanDatabase]
         public void GetComponents_ReturnsAllNeededComponents()
         {
             var storage = CreateStorage();
@@ -102,6 +125,26 @@ namespace Hangfire.SqlServer.Tests
 
             var componentTypes = components.Select(x => x.GetType()).ToArray();
             Assert.Contains(typeof(ExpirationManager), componentTypes);
+        }
+
+        [Fact, CleanDatabase]
+        public void HasFeature_Connection_GetUtcDateTime_ReturnsTrue()
+        {
+            var storage = CreateStorage();
+
+            var result = storage.HasFeature("Connection.GetUtcDateTime");
+
+            Assert.True(result);
+        }
+
+        [Fact, CleanDatabase]
+        public void HasFeature_Job_Queue_ReturnsTrue()
+        {
+            var storage = CreateStorage();
+
+            var result = storage.HasFeature("Job.Queue");
+
+            Assert.True(result);
         }
 
         private SqlServerStorage CreateStorage()

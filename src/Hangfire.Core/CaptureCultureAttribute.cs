@@ -41,8 +41,8 @@ namespace Hangfire
 
         public void OnPerforming(PerformingContext filterContext)
         {
-            var cultureName = filterContext.GetJobParameter<string>("CurrentCulture");
-            var uiCultureName = filterContext.GetJobParameter<string>("CurrentUICulture");
+            var cultureName = filterContext.GetJobParameter<string>("CurrentCulture", allowStale: true);
+            var uiCultureName = filterContext.GetJobParameter<string>("CurrentUICulture", allowStale: true);
 
             try
             {

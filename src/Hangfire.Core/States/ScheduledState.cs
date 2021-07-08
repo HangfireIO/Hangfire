@@ -167,24 +167,43 @@ namespace Hangfire.States
         {
             public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
-                var scheduledState = context.NewState as ScheduledState;
-                if (scheduledState == null)
+                if (!(context.NewState is ScheduledState scheduledState))
                 {
                     throw new InvalidOperationException(
                         $"`{typeof (Handler).FullName}` state handler can be registered only for the Scheduled state.");
                 }
 
-                var timestamp = JobHelper.ToTimestamp(scheduledState.EnqueueAt);
-                transaction.AddToSet("schedule", context.BackgroundJob.Id, timestamp);
+                CheckJobQueueFeatureIsSupported(context);
+
+                transaction.AddToSet(
+                    "schedule",
+                    context.BackgroundJob.Job?.Queue == null
+                        ? context.BackgroundJob.Id
+                        : context.BackgroundJob.Job.Queue + ':' + context.BackgroundJob.Id,
+                    JobHelper.ToTimestamp(scheduledState.EnqueueAt));
             }
 
             public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
-                transaction.RemoveFromSet("schedule", context.BackgroundJob.Id);
+                CheckJobQueueFeatureIsSupported(context);
+
+                transaction.RemoveFromSet(
+                    "schedule",
+                    context.BackgroundJob.Job?.Queue == null
+                        ? context.BackgroundJob.Id
+                        : context.BackgroundJob.Job.Queue + ':' + context.BackgroundJob.Id);
             }
 
             // ReSharper disable once MemberHidesStaticFromOuterClass
             public string StateName => ScheduledState.StateName;
+
+            private static void CheckJobQueueFeatureIsSupported(ApplyStateContext context)
+            {
+                if (context.BackgroundJob.Job?.Queue != null && !context.Storage.HasFeature("Job.Queue"))
+                {
+                    throw new NotSupportedException("Current storage doesn't support specifying queues directly for a specific job. Please use the QueueAttribute instead.");
+                }
+            }
         }
     }
 }

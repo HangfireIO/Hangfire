@@ -640,29 +640,59 @@ div.metric-null {
 /* State labels */
 
 .label_state_enqueued {
-    background-color: #999 !importan !importantt;
+    background-color: #999 !important;
 }
 
 .label_state_succeeded {
-    background-color: #5cb85c !importan !importantt;
+    background-color: #5cb85c !important;
 }
 
 .label_state_failed {
-    background-color: #d9534f !importan !importantt;
+    background-color: #d9534f !important;
 }
 
 .label_state_processing {
-    background-color: #f0ad4e !importan !importantt;
+    background-color: #f0ad4e !important;
 }
 
 .label_state_scheduled {
-    background-color: #5bc0de !importan !importantt;
+    background-color: #5bc0de !important;
 }
 
 .label_state_deleted {
-    background-color: #777 !importan !importantt;
+    background-color: #777 !important;
 }
 
 .label_state_awaiting {
-    background-color: #999 !importan !importantt;
+    background-color: #999 !important;
+}
+
+/* Full width styles */
+
+@media (min-width: 768px) {
+    .container {
+        width: 100%;
+        padding-left: 25px;
+        padding-right: 25px;
+    }
+}
+
+@media (min-width: 992px) {
+    #wrap > .container > .row > .col-md-3 {
+        width: 251px;
+    }
+
+    #wrap > .container > .row > .col-md-9 {
+        width: calc(100% - 251px);
+    }
+}
+
+@media (min-width: 1200px) {
+    #wrap > .container > .row > .col-md-3 {
+        width: 293px;
+    }
+
+    #wrap > .container > .row > .col-md-9 {
+        width: calc(100% - 293px);
+    }
 }
