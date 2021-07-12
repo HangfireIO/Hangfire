@@ -102,7 +102,7 @@ WriteLiteral("\r\n");
 
         if (storageConnection != null)
         {
-            pager = new Pager(from, perPage, storageConnection.GetSetCount("awaiting"));
+            pager = new Pager(from, perPage > 0 ? perPage : DashboardOptions.DefaultRecordsPerPage, storageConnection.GetSetCount("awaiting"));
             jobIds = storageConnection.GetRangeFromSet("awaiting", pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
         }
     }
