@@ -143,10 +143,8 @@
                                         <td class="min-width">
                                             @if (parentStateData != null)
                                             {
-                                                <a href="@Url.JobDetails(stateData.Data["ParentId"])">
-                                                    <span class="label label-default label-hover" style="@($"background-color: {JobHistoryRenderer.GetForegroundStateColor(parentStateData.Name)};")">
-                                                        @parentStateData.Name
-                                                    </span>
+                                                <a href="@Url.JobDetails(stateData.Data["ParentId"])" style="text-decoration: none">
+                                                    @Html.StateLabel(parentStateData.Name, parentStateData.Name, hover: true)
                                                 </a>
                                             }
                                             else
