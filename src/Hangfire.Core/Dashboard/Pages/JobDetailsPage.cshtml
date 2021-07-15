@@ -223,9 +223,13 @@
             {
                 var accentColor = JobHistoryRenderer.GetForegroundStateColor(entry.StateName);
                 var backgroundColor = JobHistoryRenderer.GetBackgroundStateColor(entry.StateName);
+                var cardCss = index == 0 ? JobHistoryRenderer.GetStateCssSuffix(entry.StateName) : null;
+                var cardStyle = index == 0 && cardCss == null ? $"border-color: {accentColor}" : null;
+                var cardTitleStyle = index == 0 && cardCss == null ? $"color: {accentColor}" : null;
+                var cardBackgroundStyle = index == 0 && cardCss == null ? $"background-color: {backgroundColor}" : null;
 
-                <div class="state-card" style="@(index == 0 ? $"border-color: {accentColor}" : null)">
-                    <h4 class="state-card-title" style="@(index == 0 ? $"color: {accentColor}" : null)">
+                <div class="state-card @(cardCss != null ? "state-card-state-" + cardCss : null)" style="@cardStyle">
+                    <h4 class="state-card-title" style="@cardTitleStyle">
                         <small class="pull-right text-muted">
                             @if (index == job.History.Count - 1)
                             {
@@ -260,7 +264,7 @@
 
                     @if (rendered != null)
                     {
-                        <div class="state-card-body" style="@(index == 0 ? $"background-color: {backgroundColor}" : null)">
+                        <div class="state-card-body" style="@cardBackgroundStyle">
                             @rendered
                         </div>
                     }

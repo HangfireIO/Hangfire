@@ -227,9 +227,21 @@
                                             if (!String.IsNullOrEmpty(job.LastJobId))
                                             {
                                                 <a href="@Url.JobDetails(job.LastJobId)" style="text-decoration: none">
-                                                    <span class="label label-default label-hover" style="@($"background-color: {JobHistoryRenderer.GetForegroundStateColor(job.LastJobState ?? EnqueuedState.StateName)};")">
-                                                        @Html.RelativeTime(job.LastExecution.Value)
-                                                    </span>
+                                                    @{
+                                                        var cssSuffix = JobHistoryRenderer.GetStateCssSuffix(job.LastJobState ?? EnqueuedState.StateName);
+                                                    }
+                                                    @if (cssSuffix != null)
+                                                    {
+                                                        <span class="label label-default label-hover label-state-@cssSuffix">
+                                                            @Html.RelativeTime(job.LastExecution.Value)
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="label label-default label-hover" style="@($"background-color: {JobHistoryRenderer.GetForegroundStateColor(job.LastJobState ?? EnqueuedState.StateName)};")">
+                                                            @Html.RelativeTime(job.LastExecution.Value)
+                                                        </span>
+                                                    }
                                                 </a>
                                             }
                                             else

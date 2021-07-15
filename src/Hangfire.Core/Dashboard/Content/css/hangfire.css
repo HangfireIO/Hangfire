@@ -371,8 +371,103 @@ a:hover .label-hover {
     margin-top: 0;
 }
 
-/* Job History styles */
+.state-card-state-active {
+    border-color: #999;
+}
 
+.state-card-state-active .state-card-title {
+    color: #999;
+}
+
+.state-card-state-active .state-card-body {
+    background-color: #F5F5F5;
+}
+
+.state-card-state-success {
+    border-color: #5cb85c;
+}
+
+.state-card-state-success .state-card-title {
+    color: #5cb85c;
+}
+
+.state-card-state-success .state-card-body {
+    background-color: #EDF7ED;
+}
+
+.state-card-state-danger {
+    border-color: #d9534f;
+}
+
+.state-card-state-danger .state-card-title {
+    color: #d9534f;
+}
+
+.state-card-state-danger .state-card-body {
+    background-color: #FAEBEA;
+}
+
+.state-card-state-warning {
+    border-color: #f0ad4e;
+}
+
+.state-card-state-warning .state-card-title {
+    color: #f0ad4e;
+}
+
+.state-card-state-warning .state-card-body {
+    background-color: #FCEFDC;
+}
+
+.state-card-state-info {
+    border-color: #5bc0de;
+}
+
+.state-card-state-info .state-card-title {
+    color: #5bc0de;
+}
+
+.state-card-state-info .state-card-body {
+    background-color: #E0F3F8;
+}
+
+.state-card-state-inactive {
+    border-color: #777;
+}
+
+.state-card-state-inactive .state-card-title {
+    color: #777;
+}
+
+.state-card-state-inactive .state-card-body {
+    background-color: #ddd;
+}
+
+.label-state-active {
+    background-color: #999;
+}
+
+.label-state-success {
+    background-color: #5cb85c;
+}
+
+.label-state-danger {
+    background-color: #d9534f;
+}
+
+.label-state-warning {
+    background-color: #f0ad4e;
+}
+
+.label-state-info {
+    background-color: #5bc0de;
+}
+
+.label-state-inactive {
+    background-color: #777;
+}
+
+/* Job History styles */
 .job-history {
     margin-bottom: 10px;
     opacity: 0.8;

@@ -32,6 +32,8 @@ namespace Hangfire.Dashboard
             = new Dictionary<string, string>();
         private static readonly IDictionary<string, string> ForegroundStateColors
             = new Dictionary<string, string>();
+        private static readonly IDictionary<string, string> StateCssSuffixes
+            = new Dictionary<string, string>();
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
         static JobHistoryRenderer()
@@ -59,8 +61,17 @@ namespace Hangfire.Dashboard
             ForegroundStateColors.Add(ScheduledState.StateName, "#5bc0de");
             ForegroundStateColors.Add(DeletedState.StateName, "#777");
             ForegroundStateColors.Add(AwaitingState.StateName, "#999");
+
+            StateCssSuffixes.Add(EnqueuedState.StateName, "active");
+            StateCssSuffixes.Add(SucceededState.StateName, "success");
+            StateCssSuffixes.Add(FailedState.StateName, "danger");
+            StateCssSuffixes.Add(ProcessingState.StateName, "warning");
+            StateCssSuffixes.Add(ScheduledState.StateName, "info");
+            StateCssSuffixes.Add(DeletedState.StateName, "inactive");
+            StateCssSuffixes.Add(AwaitingState.StateName, "active");
         }
 
+        [Obsolete("Use `AddStateCssSuffix` method's logic instead. Will be removed in 2.0.0.")]
         public static void AddBackgroundStateColor(string stateName, string color)
         {
             BackgroundStateColors.Add(stateName, color);
@@ -76,6 +87,7 @@ namespace Hangfire.Dashboard
             return BackgroundStateColors[stateName];
         }
 
+        [Obsolete("Use `AddStateCssSuffix` method's logic instead. Will be removed in 2.0.0.")]
         public static void AddForegroundStateColor(string stateName, string color)
         {
             ForegroundStateColors.Add(stateName, color);
@@ -89,6 +101,21 @@ namespace Hangfire.Dashboard
             }
 
             return ForegroundStateColors[stateName];
+        }
+
+        public static void AddStateCssSuffix(string stateName, string color)
+        {
+            StateCssSuffixes.Add(stateName, color);
+        }
+
+        public static string GetStateCssSuffix(string stateName)
+        {
+            if (stateName == null || !StateCssSuffixes.TryGetValue(stateName, out var suffix))
+            {
+                return "inherit";
+            }
+
+            return suffix;
         }
 
         public static void Register(string state, Func<HtmlHelper, IDictionary<string, string>, NonEscapedString> renderer)
