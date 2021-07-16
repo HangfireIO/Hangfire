@@ -52,12 +52,12 @@ namespace Hangfire.States
     public class ScheduledState : IState
     {
         /// <summary>
-        /// Represents the name of the <i>Scheduled</i> state. This field is read-only.
+        /// Represents the name of the <i>Scheduled</i> state. This is constant value.
         /// </summary>
         /// <remarks>
         /// The value of this field is <c>"Scheduled"</c>.
         /// </remarks>
-        public static readonly string StateName = "Scheduled";
+        public const string StateName = "Scheduled";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledState"/> class

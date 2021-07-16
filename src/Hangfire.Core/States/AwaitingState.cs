@@ -41,12 +41,12 @@ namespace Hangfire.States
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromDays(365);
 
         /// <summary>
-        /// Represents the name of the <i>Awaiting</i> state. This field is read-only.
+        /// Represents the name of the <i>Awaiting</i> state. This is constant value.
         /// </summary>
         /// <remarks>
         /// The value of this field is <c>"Awaiting"</c>.
         /// </remarks>
-        public static readonly string StateName = "Awaiting";
+        public const string StateName = "Awaiting";
         
         /// <summary>
         /// Initializes a new instance of the <see cref="AwaitingState"/> class with

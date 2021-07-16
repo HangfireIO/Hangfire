@@ -60,12 +60,12 @@ namespace Hangfire.States
         internal static int? MaxLinesInExceptionDetails = 100;
 
         /// <summary>
-        /// Represents the name of the <i>Failed</i> state. This field is read-only.
+        /// Represents the name of the <i>Failed</i> state. This is constant value.
         /// </summary>
         /// <remarks>
         /// The value of this field is <c>"Failed"</c>.
         /// </remarks>
-        public static readonly string StateName = "Failed";
+        public const string StateName = "Failed";
 
         /// <summary>
         /// Initializes a new instace of the <see cref="FailedState"/> class

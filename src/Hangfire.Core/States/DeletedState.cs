@@ -54,12 +54,12 @@ namespace Hangfire.States
     public class DeletedState : IState
     {
         /// <summary>
-        /// Represents the name of the <i>Deleted</i> state. This field is read-only.
+        /// Represents the name of the <i>Deleted</i> state. This is constant value.
         /// </summary>
         /// <remarks>
         /// The value of this field is <c>"Deleted"</c>.
         /// </remarks>
-        public static readonly string StateName = "Deleted";
+        public const string StateName = "Deleted";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeletedState"/> class.

@@ -31,12 +31,12 @@ namespace Hangfire.States
     public class ProcessingState : IState
     {
         /// <summary>
-        /// Represents the name of the <i>Processing</i> state. This field is read-only.
+        /// Represents the name of the <i>Processing</i> state. This is constant value.
         /// </summary>
         /// <remarks>
         /// The value of this field is <c>"Processing"</c>.
         /// </remarks>
-        public static readonly string StateName = "Processing";
+        public const string StateName = "Processing";
 
         internal ProcessingState(string serverId, string workerId)
         {

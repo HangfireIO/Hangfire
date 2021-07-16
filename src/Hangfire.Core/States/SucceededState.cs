@@ -43,12 +43,12 @@ namespace Hangfire.States
     public class SucceededState : IState
     {
         /// <summary>
-        /// Represents the name of the <i>Succeeded</i> state. This field is read-only.
+        /// Represents the name of the <i>Succeeded</i> state. This is constant value.
         /// </summary>
         /// <remarks>
         /// The value of this field is <c>"Succeeded"</c>.
         /// </remarks>
-        public static readonly string StateName = "Succeeded";
+        public const string StateName = "Succeeded";
 
         [JsonConstructor]
         public SucceededState(object result, long latency, long performanceDuration)
