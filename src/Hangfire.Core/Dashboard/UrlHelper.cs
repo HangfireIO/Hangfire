@@ -50,7 +50,8 @@ namespace Hangfire.Dashboard
 #endif
                        _context.Request.PathBase
                        + relativePath
-                   );
+                   )
+                + _context.Request.QueryString;
         }
 
         public string Home()

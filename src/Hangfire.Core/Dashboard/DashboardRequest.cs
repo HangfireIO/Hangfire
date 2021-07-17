@@ -28,7 +28,10 @@ namespace Hangfire.Dashboard
         public abstract string LocalIpAddress { get; }
         public abstract string RemoteIpAddress { get; }
 
+        public abstract string QueryString { get; }
+
         public abstract string GetQuery(string key);
+
         public abstract Task<IList<string>> GetFormValuesAsync(string key);
     }
 }
