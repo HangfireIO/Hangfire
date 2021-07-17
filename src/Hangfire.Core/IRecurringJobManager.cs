@@ -29,5 +29,17 @@ namespace Hangfire
 
         void Trigger([NotNull] string recurringJobId);
         void RemoveIfExists([NotNull] string recurringJobId);
+
+        /// <summary>
+        /// Suspends the job from being processed. To resume call the ResumeJob method.
+        /// </summary>
+        /// <param name="jobId"></param>
+        void SuspendJob(string jobId);
+
+        /// <summary>
+        /// Resumes job processing for suspended jobs
+        /// </summary>
+        /// <param name="jobId"></param>
+        void ResumeJob(string jobId);
     }
 }

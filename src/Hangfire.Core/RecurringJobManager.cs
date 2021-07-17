@@ -15,11 +15,12 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Logging;
-using Hangfire.Profiling;
+using Hangfire.Profiling;//
 
 namespace Hangfire
 {
@@ -54,7 +55,7 @@ namespace Hangfire
         }
 
         public RecurringJobManager(
-            [NotNull] JobStorage storage, 
+            [NotNull] JobStorage storage,
             [NotNull] IJobFilterProvider filterProvider,
             [NotNull] ITimeZoneResolver timeZoneResolver)
             : this(storage, filterProvider, timeZoneResolver, () => DateTime.UtcNow)
@@ -62,8 +63,8 @@ namespace Hangfire
         }
 
         public RecurringJobManager(
-            [NotNull] JobStorage storage, 
-            [NotNull] IJobFilterProvider filterProvider, 
+            [NotNull] JobStorage storage,
+            [NotNull] IJobFilterProvider filterProvider,
             [NotNull] ITimeZoneResolver timeZoneResolver,
             [NotNull] Func<DateTime> nowFactory)
             : this(storage, new BackgroundJobFactory(filterProvider), timeZoneResolver, nowFactory)
@@ -81,7 +82,7 @@ namespace Hangfire
         }
 
         internal RecurringJobManager(
-            [NotNull] JobStorage storage, 
+            [NotNull] JobStorage storage,
             [NotNull] IBackgroundJobFactory factory,
             [NotNull] ITimeZoneResolver timeZoneResolver,
             [NotNull] Func<DateTime> nowFactory)
@@ -124,7 +125,7 @@ namespace Hangfire
                 }
             }
         }
- 
+
         private static void ValidateCronExpression(string cronExpression)
         {
             try
@@ -194,6 +195,57 @@ namespace Hangfire
                 transaction.RemoveFromSet("recurring-jobs", recurringJobId);
 
                 transaction.Commit();
+            }
+        }
+
+        public void SuspendJob(string recurringJobId)
+        {
+            if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
+
+            using (var connection = _storage.GetConnection())
+            using (connection.AcquireDistributedRecurringJobLock(recurringJobId, DefaultTimeout))
+            {
+                var now = _nowFactory();
+                var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
+                using (var transaction = connection.CreateWriteTransaction())
+                {
+                    transaction.AddToSet("paused-jobs", recurringJobId, JobHelper.ToTimestamp(DateTime.UtcNow));
+                    transaction.RemoveFromSet("recurring-jobs", recurringJobId);
+                    transaction.Commit();
+                }
+            }
+        }
+
+        public void ResumeJob(string recurringJobId)
+        {
+            if (recurringJobId == null)
+                throw new ArgumentNullException(nameof(recurringJobId));
+
+            var monitor = _storage.GetMonitoringApi();
+            var job = monitor.JobDetails(recurringJobId);
+            string jd = "";
+            if (job != null && job.Job != null)
+            {
+                foreach (var RecurringJobId in job.Properties.Where(x => x.Key == "RecurringJobId"))
+                {
+                    jd = RecurringJobId.Value;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(jd))
+                recurringJobId = jd.Replace("\"", "");
+
+            using (var connection = _storage.GetConnection())
+            {
+                using (connection.AcquireDistributedRecurringJobLock(recurringJobId, DefaultTimeout))
+                {
+                    using (var transaction = connection.CreateWriteTransaction())
+                    {
+                        transaction.RemoveFromSet("paused-jobs", recurringJobId);
+                        transaction.AddToSet("recurring-jobs", recurringJobId, JobHelper.ToTimestamp(DateTime.UtcNow));
+                        transaction.Commit();
+                    }
+                }
             }
         }
     }
