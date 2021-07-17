@@ -154,12 +154,28 @@ namespace Hangfire.Server
 
         private object InvokeOnTaskScheduler(PerformContext context, Tuple<MethodInfo, object, object[]> tuple, Func<object, Task> getTaskFunc)
         {
-            var scheduledTask = Task.Factory.StartNew(
-                InvokeSynchronously,
-                tuple,
-                CancellationToken.None,
-                TaskCreationOptions.None,
-                _taskScheduler);
+            // Prevent flowing the Execution Context to background threads.
+            // Without this, it means values from AsyncLocal and CallContext
+            // will flow/leak into background threads which should be avoided
+            // because it may inadvertently be capturing some ambient contexts
+            // like DbContext, etc... which can have unwanted side affects.
+            // In most cases anything stored in AsyncLocal is also not thread
+            // safe and if it's a mutable object it means concurrent threads can
+            // be modifying it which also may cause unwanted side affects.
+            Task<object> scheduledTask;
+#if !NETSTANDARD1_3
+            using (ExecutionContext.SuppressFlow())
+            {
+#endif
+                scheduledTask = Task.Factory.StartNew(
+                    InvokeSynchronously,
+                    tuple,
+                    CancellationToken.None,
+                    TaskCreationOptions.None,
+                    _taskScheduler);
+#if !NETSTANDARD1_3
+            }
+#endif
 
             var result = scheduledTask.GetAwaiter().GetResult();
             if (result == null) return null;

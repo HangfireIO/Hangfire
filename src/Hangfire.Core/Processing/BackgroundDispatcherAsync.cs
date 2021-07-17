@@ -59,14 +59,30 @@ namespace Hangfire.Processing
 
             _stopped = new CountdownEvent(maxConcurrency);
 
-            for (var i = 0; i < maxConcurrency; i++)
+            // Prevent flowing the Execution Context to background threads.
+            // Without this, it means values from AsyncLocal and CallContext
+            // will flow/leak into background threads which should be avoided
+            // because it may inadvertently be capturing some ambient contexts
+            // like DbContext, etc... which can have unwanted side affects.
+            // In most cases anything stored in AsyncLocal is also not thread
+            // safe and if it's a mutable object it means concurrent threads can
+            // be modifying it which also may cause unwanted side affects.
+#if !NETSTANDARD1_3
+            using (ExecutionContext.SuppressFlow())
             {
-                Task.Factory.StartNew(
-                    DispatchLoop,
-                    CancellationToken.None,
-                    TaskCreationOptions.None,
-                    _taskScheduler).Unwrap();
+#endif
+                for (var i = 0; i < maxConcurrency; i++)
+                {
+                    Task.Factory.StartNew(
+                        DispatchLoop,
+                        CancellationToken.None,
+                        TaskCreationOptions.None,
+                        _taskScheduler).Unwrap();
+                }
+#if !NETSTANDARD1_3
             }
+#endif
+            
         }
 
         public bool Wait(TimeSpan timeout)
