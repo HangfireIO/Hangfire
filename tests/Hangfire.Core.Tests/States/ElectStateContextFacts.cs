@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Hangfire.Common;
 using Hangfire.States;
 using Moq;
@@ -38,6 +39,24 @@ namespace Hangfire.Core.Tests.States
             Assert.Same(_applyContext.NewState.Object, context.CandidateState);
             Assert.Equal("State", context.CurrentState);
             Assert.Empty(context.TraversedStates);
+            Assert.Null(context.CustomData);
+        }
+
+        [Fact]
+        public void Ctor_CopiesTheCustomDataDictionary_ToAnotherInstance()
+        {
+            // Arrange
+            _applyContext.CustomData = new Dictionary<string, object>
+            {
+                { "lalala", new object() }
+            };
+
+            // Act
+            var context = CreateContext();
+
+            // Assert
+            Assert.Equal(_applyContext.CustomData, context.CustomData);
+            Assert.NotSame(_applyContext.CustomData, context.CustomData);
         }
 
         [Fact]

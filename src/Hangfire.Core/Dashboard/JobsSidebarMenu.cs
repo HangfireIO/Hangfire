@@ -68,6 +68,12 @@ namespace Hangfire.Dashboard
                 Active = page.RequestPath.StartsWith("/jobs/awaiting"),
                 Metric = DashboardMetrics.AwaitingCount
             });
+            Items.Add(page => new MenuItem(Strings.JobsSidebarMenu_Suspended, page.Url.To("/jobs/suspended"))
+            {
+                Active = page.RequestPath.StartsWith("/jobs/suspended"),
+                Metric = DashboardMetrics.SuspendedCount
+            });
+
         }
     }
 }

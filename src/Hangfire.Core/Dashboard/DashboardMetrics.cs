@@ -62,7 +62,7 @@ namespace Hangfire.Dashboard
         }
 
         public static readonly DashboardMetric ServerCount = new DashboardMetric(
-            "servers:count", 
+            "servers:count",
             "Metrics_Servers",
             page => new Metric(page.Statistics.Servers)
             {
@@ -84,15 +84,23 @@ namespace Hangfire.Dashboard
             page =>
             {
                 long retryCount;
-                using (var connection = page.Storage.GetConnection())
-                {
-                    var storageConnection = connection as JobStorageConnection;
-                    if (storageConnection == null)
-                    {
-                        return null;
-                    }
 
-                    retryCount = storageConnection.GetSetCount("retries");
+                if (page.Statistics.Retries.HasValue)
+                {
+                    retryCount = page.Statistics.Retries.Value;
+                }
+                else
+                {
+                    using (var connection = page.Storage.GetConnection())
+                    {
+                        var storageConnection = connection as JobStorageConnection;
+                        if (storageConnection == null)
+                        {
+                            return null;
+                        }
+
+                        retryCount = storageConnection.GetSetCount("retries");
+                    }
                 }
 
                 return new Metric(retryCount)
@@ -190,5 +198,26 @@ namespace Hangfire.Dashboard
                     Style = awaitingCount > 0 ? MetricStyle.Info : MetricStyle.Default
                 };
             });
+        public static readonly DashboardMetric SuspendedCount = new DashboardMetric(
+          "suspended:count",
+          "Metrics_SuspendedCount",
+          page =>
+          {
+              long suspendedCount = -1;
+
+              using (var connection = page.Storage.GetConnection())
+              {
+                  var storageConnection = connection as JobStorageConnection;
+                  if (storageConnection != null)
+                  {
+                      suspendedCount = storageConnection.GetSetCount("paused-jobs");
+                  }
+              }
+
+              return new Metric(suspendedCount)
+              {
+                  Style = suspendedCount > 0 ? MetricStyle.Info : MetricStyle.Default
+              };
+          });
     }
 }

@@ -60,16 +60,11 @@ namespace Hangfire.Server
             [NotNull] IJobCancellationToken cancellationToken,
             [NotNull] IProfiler profiler)
         {
-            if (connection == null) throw new ArgumentNullException(nameof(connection));
-            if (backgroundJob == null) throw new ArgumentNullException(nameof(backgroundJob));
-            if (cancellationToken == null) throw new ArgumentNullException(nameof(cancellationToken));
-            if (profiler == null) throw new ArgumentNullException(nameof(profiler));
-
             Storage = storage;
-            Connection = connection;
-            BackgroundJob = backgroundJob;
-            CancellationToken = cancellationToken;
-            Profiler = profiler;
+            Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            BackgroundJob = backgroundJob ?? throw new ArgumentNullException(nameof(backgroundJob));
+            CancellationToken = cancellationToken ?? throw new ArgumentNullException(nameof(cancellationToken));
+            Profiler = profiler ?? throw new ArgumentNullException(nameof(profiler));
 
             Items = new Dictionary<string, object>();
         }
