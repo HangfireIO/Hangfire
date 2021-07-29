@@ -26,6 +26,7 @@ using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.SqlServer.Entities;
 using Hangfire.Storage;
+using Hangfire.Storage.Monitoring;
 
 // ReSharper disable RedundantAnonymousTypePropertyName
 
@@ -640,6 +641,15 @@ where [Key] = @key";
             });
         }
 
+        public override JobList<FetchedJobDto> GetEnqueuedOrInProgress()
+        {
+            return null;
+            //return new JobList<FetchedJobDto>()
+            //_storage.UseConnection(_dedicatedConnection, connection => connection
+            //    .Query<string>(query, new { key = key, startingFrom = startingFrom + 1, endingAt = endingAt + 1 }, commandTimeout: _storage.CommandTimeout)
+            //    .ToList());
+        }
+
         public override List<string> GetRangeFromList(string key, int startingFrom, int endingAt)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
@@ -737,6 +747,7 @@ order by [Id] desc";
             }
         }
 
+      
         private class DisposableLock : IDisposable
         {
             private readonly SqlServerConnection _connection;

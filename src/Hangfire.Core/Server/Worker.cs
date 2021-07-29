@@ -94,6 +94,7 @@ namespace Hangfire.Server
         /// <inheritdoc />
         public void Execute(BackgroundProcessContext context)
         {
+
             if (context == null) throw new ArgumentNullException(nameof(context));
 
             using (var connection = context.Storage.GetConnection())
@@ -103,12 +104,25 @@ namespace Hangfire.Server
 
                 try
                 {
+                    string queue = "default";
+
                     using (var timeoutCts = new CancellationTokenSource(_jobInitializationWaitTimeout))
                     using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
                         context.StoppingToken,
                         timeoutCts.Token))
                     {
-                        var processingState = new ProcessingState(context.ServerId, context.ExecutionId.ToString());
+
+                     
+
+                        var statedData = connection.GetStateData(fetchedJob.JobId);
+
+
+                        if (statedData != null && statedData.Data != null && statedData.Data.ContainsKey("Queue") )
+                        {
+                            queue = statedData.Data["Queue"];
+                        }
+
+                        var processingState = new ProcessingState(context.ServerId, context.ExecutionId.ToString(), queue);
 
                         var appliedState = TryChangeState(
                             context, 
@@ -137,8 +151,21 @@ namespace Hangfire.Server
 
                     var state = PerformJob(context, connection, fetchedJob.JobId);
 
+                    queue = "default";
+
                     if (state != null)
                     {
+                        if ( state is FailedState )
+                        {
+                            var statedData = connection.GetStateData(fetchedJob.JobId);
+
+                            if (statedData != null && statedData.Data != null && statedData.Data.ContainsKey("Queue"))
+                            {
+                                queue = statedData.Data["Queue"];
+                            }
+
+                            (state as FailedState).Queue = queue;
+                        }
                         // Ignore return value, because we should not do anything when current state is not Processing.
                         TryChangeState(context, connection, fetchedJob, state, new[] { ProcessingState.StateName }, CancellationToken.None, context.ShutdownToken);
                     }
@@ -189,6 +216,8 @@ namespace Hangfire.Server
             {
                 try
                 {
+                  
+
                     return _stateChanger.ChangeState(new StateChangeContext(
                         context.Storage,
                         connection,

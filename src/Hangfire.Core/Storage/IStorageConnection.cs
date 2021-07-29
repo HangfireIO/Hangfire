@@ -20,6 +20,7 @@ using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
+using Hangfire.Storage.Monitoring;
 
 namespace Hangfire.Storage
 {
@@ -35,6 +36,8 @@ namespace Hangfire.Storage
             TimeSpan expireIn);
 
         IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken);
+
+        JobList<FetchedJobDto> GetEnqueuedOrInProgress();
 
         void SetJobParameter(string id, string name, string value);
         string GetJobParameter(string id, string name);

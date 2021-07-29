@@ -120,7 +120,7 @@ namespace Hangfire
 
             return services;
         }
-        
+
         public static IServiceCollection AddHangfireServer(
             [NotNull] this IServiceCollection services,
             [NotNull] Action<IServiceProvider, BackgroundJobServerOptions> optionsAction)

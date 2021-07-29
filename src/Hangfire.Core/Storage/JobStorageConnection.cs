@@ -20,6 +20,7 @@ using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
+using Hangfire.Storage.Monitoring;
 
 namespace Hangfire.Storage
 {
@@ -50,6 +51,8 @@ namespace Hangfire.Storage
         // Sets
         public abstract HashSet<string> GetAllItemsFromSet(string key);
         public abstract string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);
+
+        public abstract JobList<FetchedJobDto> GetEnqueuedOrInProgress();
 
         public virtual List<string> GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore, int count)
         {
@@ -116,5 +119,7 @@ namespace Hangfire.Storage
         {
             throw new NotSupportedException();
         }
+
+    
     }
 }

@@ -71,6 +71,8 @@ namespace Hangfire.States
         {
         }
 
+        public string Queue { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledState"/>
         /// class with the specified <i>date/time in UTC format</i> when a job should 
@@ -159,7 +161,8 @@ namespace Hangfire.States
             return new Dictionary<string, string>
             {
                 { "EnqueueAt", JobHelper.SerializeDateTime(EnqueueAt) },
-                { "ScheduledAt", JobHelper.SerializeDateTime(ScheduledAt) }
+                { "ScheduledAt", JobHelper.SerializeDateTime(ScheduledAt) },
+                { "Queue", Queue },
             };
         }
 

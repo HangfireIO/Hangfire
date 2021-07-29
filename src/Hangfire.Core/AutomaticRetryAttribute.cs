@@ -268,12 +268,21 @@ namespace Hangfire
 
             // If attempt number is less than max attempts, we should
             // schedule the job to run again later.
-            
+  
             var reason = $"Retry attempt {retryAttempt} of {Attempts}: {exceptionMessage}";
 
+            var statedData = context.Connection.GetStateData(context.BackgroundJob.Id);
+
+            string queue = "default";
+
+            if (statedData != null && statedData.Data != null && statedData.Data.ContainsKey("Queue"))
+            {
+                queue = statedData.Data["Queue"];
+            }
+
             context.CandidateState = delay == TimeSpan.Zero
-                ? (IState)new EnqueuedState { Reason = reason }
-                : new ScheduledState(delay) { Reason = reason };
+                ? (IState)new EnqueuedState { Reason = reason, Queue = queue }
+                : new ScheduledState(delay) { Reason = reason, Queue = queue };
 
             if (LogEvents)
             {

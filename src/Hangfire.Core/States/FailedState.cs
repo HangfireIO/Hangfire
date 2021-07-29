@@ -171,8 +171,11 @@ namespace Hangfire.States
                 { "FailedAt", JobHelper.SerializeDateTime(FailedAt) },
                 { "ExceptionType", Exception.GetType().FullName },
                 { "ExceptionMessage", Exception.Message },
-                { "ExceptionDetails", Exception.ToStringWithOriginalStackTrace(MaxLinesInExceptionDetails) }
+                { "ExceptionDetails", Exception.ToStringWithOriginalStackTrace(MaxLinesInExceptionDetails) },
+                { "Queue", Queue },
             };
         }
+
+        public string Queue { get; set; }
     }
 }

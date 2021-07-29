@@ -38,13 +38,14 @@ namespace Hangfire.States
         /// </remarks>
         public static readonly string StateName = "Processing";
 
-        internal ProcessingState(string serverId, string workerId)
+        internal ProcessingState(string serverId, string workerId, string queue)
         {
             if (String.IsNullOrWhiteSpace(serverId)) throw new ArgumentNullException(nameof(serverId));
 
             ServerId = serverId;
             StartedAt = DateTime.UtcNow;
             WorkerId = workerId;
+            Queue = queue;
         }
 
         /// <summary>
@@ -75,6 +76,8 @@ namespace Hangfire.States
         /// </remarks>
         [JsonIgnore]
         public string Name => StateName;
+
+        public string Queue { get; set; }
 
         /// <inheritdoc />
         public string Reason { get; set; }
@@ -136,7 +139,8 @@ namespace Hangfire.States
             {
                 { "StartedAt", JobHelper.SerializeDateTime(StartedAt) },
                 { "ServerId", ServerId },
-                { "WorkerId", WorkerId }
+                { "WorkerId", WorkerId },
+                { "Queue", Queue }
             };
         }
     }

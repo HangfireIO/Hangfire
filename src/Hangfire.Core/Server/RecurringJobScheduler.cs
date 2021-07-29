@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
@@ -182,13 +183,61 @@ namespace Hangfire.Server
             return GetType().Name;
         }
 
+        //private int EnqueueNextRecurringJobs(BackgroundProcessContext context)
+        //{
+        //    return UseConnectionDistributedLock(context.Storage, connection =>
+        //    {
+        //        var jobsProcessed = 0;
+
+        //        if (IsBatchingAvailable(connection))
+        //        {
+        //            var now = _nowFactory();
+        //            var timestamp = JobHelper.ToTimestamp(now);
+        //            var recurringJobIds = ((JobStorageConnection)connection).GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp, BatchSize);
+
+        //            if (recurringJobIds != null)
+        //            {
+        //                foreach (var recurringJobId in recurringJobIds)
+        //                {
+        //                    if (context.IsStopping) break;
+
+        //                    TryEnqueueBackgroundJob(context, connection, recurringJobId, now);
+        //                    jobsProcessed++;
+        //                }
+        //            }
+        //        }
+        //        else
+        //        {
+        //            for (var i = 0; i < BatchSize; i++)
+        //            {
+        //                if (context.IsStopping) break;
+
+        //                var now = _nowFactory();
+        //                var timestamp = JobHelper.ToTimestamp(now);
+
+        //                var recurringJobId = connection.GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp);
+        //                if (recurringJobId == null) break;
+
+        //                TryEnqueueBackgroundJob(context, connection, recurringJobId, now);
+        //                jobsProcessed++;
+        //            }
+        //        }
+
+        //        return jobsProcessed;
+        //    });
+        //}
+
         private int EnqueueNextRecurringJobs(BackgroundProcessContext context)
         {
             return UseConnectionDistributedLock(context.Storage, connection =>
             {
+                var runningJobs = connection.GetEnqueuedOrInProgress();
+               
                 var jobsProcessed = 0;
 
-                if (IsBatchingAvailable(connection))
+                bool isBatchinValiable = IsBatchingAvailable(connection);
+
+                if(isBatchinValiable)
                 {
                     var now = _nowFactory();
                     var timestamp = JobHelper.ToTimestamp(now);
@@ -200,8 +249,12 @@ namespace Hangfire.Server
                         {
                             if (context.IsStopping) break;
 
-                            TryEnqueueBackgroundJob(context, connection, recurringJobId, now);
-                            jobsProcessed++;
+                            if ( TryEnqueueBackgroundJobIfIsCurrentQueue(context, connection, recurringJobId, now) )
+                            {
+                                jobsProcessed++;
+                            }
+
+                         
                         }
                     }
                 }
@@ -217,20 +270,49 @@ namespace Hangfire.Server
                         var recurringJobId = connection.GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp);
                         if (recurringJobId == null) break;
 
-                        TryEnqueueBackgroundJob(context, connection, recurringJobId, now);
-                        jobsProcessed++;
+                        if ( TryEnqueueBackgroundJobIfIsCurrentQueue(context, connection, recurringJobId, now) )
+                        {
+                            jobsProcessed++;
+                        }
+
+              
                     }
                 }
+
 
                 return jobsProcessed;
             });
         }
 
-        private void TryEnqueueBackgroundJob(
+        private bool TryEnqueueBackgroundJobIfIsCurrentQueue(
             BackgroundProcessContext context,
             IStorageConnection connection,
             string recurringJobId,
             DateTime now)
+        {
+            List<string> serverQueues = new List<string>((context.Properties["Queues"] as string[]));
+
+            var currentJob = connection.GetRecurringJobs().FirstOrDefault(x => x.Id == recurringJobId);
+
+            if (currentJob != null)
+            {
+                if (serverQueues.Contains(currentJob.Queue))
+                {
+                    TryEnqueueBackgroundJob(context, connection, recurringJobId, now);
+                    
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+
+        private void TryEnqueueBackgroundJob(
+        BackgroundProcessContext context,
+        IStorageConnection connection,
+        string recurringJobId,
+        DateTime now)
         {
             using (connection.AcquireDistributedRecurringJobLock(recurringJobId, LockTimeout))
             {
@@ -302,14 +384,19 @@ namespace Hangfire.Server
 
                     if (backgroundJob != null)
                     {
-                        _factory.StateMachine.EnqueueBackgroundJob(
-                            context.Storage,
-                            connection,
-                            transaction,
-                            recurringJob,
-                            backgroundJob,
-                            "Triggered by recurring job scheduler",
-                            _profiler);
+                        List<string> serverQueues = new List<string>((context.Properties["Queues"] as string[]));
+
+                        if (serverQueues.Contains(recurringJob.Queue))
+                        {
+                            _factory.StateMachine.EnqueueBackgroundJob(
+                                context.Storage,
+                                connection,
+                                transaction,
+                                recurringJob,
+                                backgroundJob,
+                                "Triggered by recurring job scheduler",
+                                _profiler);
+                        }
                     }
 
                     transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);

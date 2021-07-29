@@ -194,11 +194,23 @@ namespace Hangfire.Server
             {
                 try
                 {
+                    string queue = "default";
+
+                    var stateDate = connection.GetStateData(jobId);
+
+                    if (stateDate != null && stateDate.Data != null)
+                    {
+                        if ( stateDate.Data.ContainsKey("Queue") )
+                        {
+                            queue = stateDate.Data["Queue"];
+                        }
+                    }
+
                     var appliedState = _stateChanger.ChangeState(new StateChangeContext(
                         context.Storage,
                         connection,
                         jobId,
-                        new EnqueuedState { Reason = $"Triggered by {ToString()}" },
+                        new EnqueuedState { Reason = $"Triggered by {ToString()}", Queue = queue },
                         new [] { ScheduledState.StateName },
                         disableFilters: false,
                         context.StoppingToken,
