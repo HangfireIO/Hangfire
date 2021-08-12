@@ -512,7 +512,7 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
             }
 
             return _storage.UseConnection(_dedicatedConnection, connection => connection.Execute(
-                $@"delete from [{_storage.SchemaName}].Server where LastHeartbeat < @timeOutAt",
+                $@"delete s from [{_storage.SchemaName}].Server s with (readpast, readcommitted) where LastHeartbeat < @timeOutAt",
                 new { timeOutAt = DateTime.UtcNow.Add(timeOut.Negate()) },
                 commandTimeout: _storage.CommandTimeout));
         }
