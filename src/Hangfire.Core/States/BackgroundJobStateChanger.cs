@@ -104,7 +104,8 @@ namespace Hangfire.States
                         new BackgroundJob(context.BackgroundJobId, jobData.Job, jobData.CreatedAt),
                         stateToApply,
                         jobData.State,
-                        context.Profiler);
+                        context.Profiler,
+                        context.CustomData);
 
                     // State changing process can fail due to an exception in state filters themselves,
                     // and DisableFilters property will cause state machine to perform a state transition

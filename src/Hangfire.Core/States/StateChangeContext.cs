@@ -63,22 +63,18 @@ namespace Hangfire.States
             [CanBeNull] IEnumerable<string> expectedStates,
             bool disableFilters,
             CancellationToken cancellationToken,
-            [NotNull] IProfiler profiler)
+            [NotNull] IProfiler profiler,
+            [CanBeNull] IReadOnlyDictionary<string, object> customData = null)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
-            if (connection == null) throw new ArgumentNullException(nameof(connection));
-            if (backgroundJobId == null) throw new ArgumentNullException(nameof(backgroundJobId));
-            if (newState == null) throw new ArgumentNullException(nameof(newState));
-            if (profiler == null) throw new ArgumentNullException(nameof(profiler));
-
-            Storage = storage;
-            Connection = connection;
-            BackgroundJobId = backgroundJobId;
-            NewState = newState;
+            Storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            BackgroundJobId = backgroundJobId ?? throw new ArgumentNullException(nameof(backgroundJobId));
+            NewState = newState ?? throw new ArgumentNullException(nameof(newState));
             ExpectedStates = expectedStates;
             DisableFilters = disableFilters;
             CancellationToken = cancellationToken;
-            Profiler = profiler;
+            Profiler = profiler ?? throw new ArgumentNullException(nameof(profiler));
+            CustomData = customData;
         }
 
         public JobStorage Storage { get; }
@@ -89,5 +85,6 @@ namespace Hangfire.States
         public bool DisableFilters { get; }
         public CancellationToken CancellationToken { get; }
         internal IProfiler Profiler { get; }
+        public IReadOnlyDictionary<string, object> CustomData { get; }
     }
 }
