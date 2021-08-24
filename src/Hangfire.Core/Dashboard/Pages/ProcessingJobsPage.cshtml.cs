@@ -529,7 +529,7 @@ WriteLiteral("                                                <span title=\"");
             
             #line default
             #line hidden
-WriteLiteral("\" class=\"glyphicon glyphicon-warning-sign\" style=\"font-size: 10px;\"></span>\r\n");
+WriteLiteral("\" class=\"glyphicon glyphicon-warning-sign glyphicon-sm\"></span>\r\n");
 
 
             

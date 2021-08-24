@@ -209,13 +209,13 @@ WriteLiteral("\"\r\n             data-failed-string=\"");
             #line default
             #line hidden
 WriteLiteral(@"""></canvas>
-        <div style=""display: none;"">
+        <div class=""display-none"">
             <span data-metric=""succeeded:count""></span>
             <span data-metric=""failed:count""></span>
         </div>
 
         <h3>
-            <div class=""btn-group pull-right"" style=""margin-top: 2px;"">
+            <div class=""btn-group pull-right margin-top-2p"">
                 <a href=""?period=day"" class=""btn btn-sm btn-default ");
 
 

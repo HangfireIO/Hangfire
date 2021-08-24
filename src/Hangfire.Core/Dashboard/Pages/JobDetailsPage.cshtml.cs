@@ -312,8 +312,8 @@ WriteLiteral("                <div class=\"alert alert-warning\">\r\n           
             #line default
             #line hidden
 WriteLiteral("</h4>\r\n                    <table class=\"table table-condensed job-snippet-proper" +
-"ties\" style=\"margin-bottom: 0;\">\r\n                        <tr>\r\n                " +
-"            <td>");
+"ties margin-bottom-0\">\r\n                        <tr>\r\n                          " +
+"  <td>");
 
 
             
@@ -344,13 +344,13 @@ WriteLiteral("</code></pre></td>\r\n                        </tr>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                            <tr>\r\n                                <td style=\"widt" +
-"h: 15%;\">");
+WriteLiteral("                            <tr>\r\n                                <td class=\"widt" +
+"h-15\">");
 
 
             
             #line 98 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                   Write(parameter.Key.Substring(4));
+                                                Write(parameter.Key.Substring(4));
 
             
             #line default
@@ -415,13 +415,13 @@ WriteLiteral("                <table class=\"table table-condensed job-snippet-p
             
             #line default
             #line hidden
-WriteLiteral("                        <tr>\r\n                            <td style=\"width: 20%; " +
-"word-break: break-all;\">");
+WriteLiteral("                        <tr>\r\n                            <td class=\"width-20 wor" +
+"d-break\">");
 
 
             
             #line 115 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                                      Write(parameter.Key);
+                                                       Write(parameter.Key);
 
             
             #line default

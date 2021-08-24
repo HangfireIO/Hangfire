@@ -87,7 +87,7 @@
 
                 <div class="alert alert-warning">
                     <h4>@Strings.Common_CannotFindTargetMethod</h4>
-                    <table class="table table-condensed job-snippet-properties" style="margin-bottom: 0;">
+                    <table class="table table-condensed job-snippet-properties margin-bottom-0">
                         <tr>
                             <td>@Strings.JobDetailsPage_JobId</td>
                             <td><pre><code>@Html.JobId(JobId, false)</code></pre></td>
@@ -95,7 +95,7 @@
                         @foreach (var parameter in dbgParameters)
                         {
                             <tr>
-                                <td style="width: 15%;">@parameter.Key.Substring(4)</td>
+                                <td class="width-15">@parameter.Key.Substring(4)</td>
                                 <td><pre><code>@parameter.Value</code></pre></td>
                             </tr>
                         }
@@ -112,7 +112,7 @@
                     @foreach (var parameter in displayParameters)
                     {
                         <tr>
-                            <td style="width: 20%; word-break: break-all;">@parameter.Key</td>
+                            <td class="width-20 word-break">@parameter.Key</td>
                             <td><pre><code>@parameter.Value</code></pre></td>
                         </tr>
                     }

@@ -35,10 +35,9 @@ WriteLiteral("\r\n");
 
 
 
-WriteLiteral("\r\n<div id=\"errorAlert\" class=\"alert alert-danger alert-fixed\" role=\"alert\" style=" +
-"\"display: none;\">\r\n    <div class=\"container\">\r\n        <strong id=\"errorAlertTi" +
-"tle\"></strong> \r\n        <span id=\"errorAlertMessage\"></span>\r\n    </div>\r\n</div" +
-">");
+WriteLiteral("\r\n<div id=\"errorAlert\" class=\"alert alert-danger alert-fixed display-none\" role=\"" +
+"alert\">\r\n    <div class=\"container\">\r\n        <strong id=\"errorAlertTitle\"></str" +
+"ong> \r\n        <span id=\"errorAlertMessage\"></span>\r\n    </div>\r\n</div>");
 
 
         }

@@ -465,8 +465,8 @@ WriteLiteral("                                    <td class=\"word-break width-1
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                                    <td style=\"min-width: 125px\" class=\"mi" +
-"n-width\">\r\n                                        ");
+WriteLiteral("</td>\r\n                                    <td class=\"min-width min-width-125p \">" +
+"\r\n                                        ");
 
 
 
@@ -929,7 +929,7 @@ WriteLiteral("                                                <a href=\"");
             
             #line default
             #line hidden
-WriteLiteral("\" style=\"text-decoration: none\">\r\n");
+WriteLiteral("\" class=\"text-decoration-none\">\r\n");
 
 
             
