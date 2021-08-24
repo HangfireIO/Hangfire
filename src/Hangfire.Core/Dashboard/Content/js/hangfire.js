@@ -77,8 +77,8 @@
                 type: 'line',
                 data: {
                     datasets: [
-                        { label: succeededStr, borderColor: '#62B35F', backgroundColor: '#6FCD6D' },
-                        { label: failedStr, borderColor: '#BB4847', backgroundColor: '#D55251' }
+                        { label: failedStr,  /*borderColor: '#BB4847', */backgroundColor: '#D55251', borderWidth: 2 },
+                        { label: succeededStr, borderColor: '#62B35F', backgroundColor: '#6FCD6D' }
                     ]
                 },
                 options: {
@@ -110,8 +110,8 @@
                 var succeeded = Math.max(newSucceeded - this._succeeded, 0);
                 var failed = Math.max(newFailed - this._failed, 0);
 
-                this._chart.data.datasets[0].data.push({ x: new Date(), y: succeeded });
-                this._chart.data.datasets[1].data.push({ x: new Date(), y: failed });   
+                this._chart.data.datasets[0].data.push({ x: new Date(), y: failed });
+                this._chart.data.datasets[1].data.push({ x: new Date(), y: succeeded });
                 
                 this._chart.update();
             }
@@ -134,8 +134,8 @@
                 type: 'line',
                 data: {
                     datasets: [
-                        { label: succeededStr, borderColor: '#62B35F', backgroundColor: '#6FCD6D', data: succeeded },
-                        { label: failedStr, borderColor: '#BB4847', backgroundColor: '#D55251', data: failed }
+                        { label: failedStr,  /*borderColor: '#BB4847', */backgroundColor: '#D55251', data: failed, borderWidth: 2 },
+                        { label: succeededStr, borderColor: '#62B35F', backgroundColor: '#6FCD6D', data: succeeded }
                     ]
                 },
                 options: {
