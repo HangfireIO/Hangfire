@@ -35,6 +35,7 @@ namespace Hangfire.Dashboard
         private static readonly string[] Stylesheets =
         {
             "bootstrap.min.css",
+            "Chart.min.css",
             "hangfire.css"
         };
 

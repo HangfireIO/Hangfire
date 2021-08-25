@@ -145,7 +145,8 @@
                     },
                     elements: { line: { tension: 0 }, point: { radius: 0 } },
                     legend: { display: false },
-                    tooltips: { mode: 'index', intersect: false }
+                    tooltips: { mode: 'index', intersect: false },
+                    plugins: { streaming: false },
                 }
             });
         }
