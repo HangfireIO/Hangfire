@@ -79,7 +79,7 @@
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.woff2" />
     <EmbeddedResource Include="Dashboard\Content\js\bootstrap.min.js" />
     <EmbeddedResource Include="Dashboard\Content\js\hangfire.js" />
-    <EmbeddedResource Include="Dashboard\Content\js\jquery-2.2.4.min.js" />
+    <EmbeddedResource Include="Dashboard\Content\js\jquery-3.6.0.min.js" />
     <EmbeddedResource Include="Dashboard\Content\js\moment-with-locales.min.js" />
     <EmbeddedResource Include="Dashboard\Content\js\Chart.min.js" />
     <EmbeddedResource Include="Dashboard\Content\js\chartjs-plugin-streaming.min.js" />
