@@ -22,6 +22,28 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.25
+
+Hangfire.Core
+
+• Changed – Upgrade Bootstrap from 3.3.7 to version 3.4.1 in Dashboard UI.
+• Changed – Upgrade Chart.js from 2.7.3 to version 2.9.4 in Dashboard UI.
+• Changed – Upgrade jQuery from 2.2.4 to version 3.6.0 in Dashboard UI.
+• Fixed – Check background job existence before adding a continuation id to job parameters.
+• Fixed – Incorrect validation for the `HeartbeatInterval` option (by @GitHubPang).
+• Fixed – Use better stacking for succeeded/failed charts in the Dashboard UI.
+• Fixed – Move explicit styles to CSS to fix possible CSP errors in Dashboard UI.
+• Fixed – Reset default sync auth filter when async one is specified in Dashboard UI.
+
+Hangfire.SqlServer
+
+• Fixed – Avoid any blocked rows when removing inactive servers from the `Server` table.
+
+Hangfire.NetCore and Hangfire.AspNetCore
+
+• Added – More overloads for the `AddHangfireServer` extension method in .NET Core.
+• Deprecated – `UseHangfireServer` method for targets where `AddHangfireServer` one is available.
+
 1.7.24
 
 Hangfire.Core

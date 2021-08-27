@@ -15,6 +15,10 @@
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.7.25
+• Added – More overloads for the `AddHangfireServer` extension method in .NET Core.
+• Deprecated – `UseHangfireServer` method for targets where `AddHangfireServer` one is available.
+
 1.7.24
 • Added – Support for async auth methods via the `DashboardOptions.AsyncAuthorization` property (by @rosenbjerg).
 • Added – Authorization policy support via the new `MapHangfireDashboardWithAuthorizationPolicy` method (by @dasiths).
