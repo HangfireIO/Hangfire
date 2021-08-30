@@ -57,6 +57,9 @@ namespace Hangfire
             return app;
         }
 
+#if NETCOREAPP3_0 || NETSTANDARD2_0 || NET461
+        [Obsolete("Please use IServiceCollection.AddHangfireServer extension method instead in the ConfigureServices method. Will be removed in 2.0.0.")]
+#endif
         public static IApplicationBuilder UseHangfireServer(
             [NotNull] this IApplicationBuilder app,
             [CanBeNull] BackgroundJobServerOptions options = null,

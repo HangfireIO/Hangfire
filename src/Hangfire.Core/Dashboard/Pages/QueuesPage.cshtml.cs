@@ -123,12 +123,12 @@ WriteLiteral("\r\n            </div>\r\n");
             #line hidden
 WriteLiteral("            <div class=\"table-responsive\">\r\n                <table class=\"table t" +
 "able-striped\">\r\n                    <thead>\r\n                        <tr>\r\n     " +
-"                       <th style=\"min-width: 200px;\">");
+"                       <th class=\"min-width-200p\">");
 
 
             
             #line 33 "..\..\Dashboard\Pages\QueuesPage.cshtml"
-                                                     Write(Strings.QueuesPage_Table_Queue);
+                                                  Write(Strings.QueuesPage_Table_Queue);
 
             
             #line default

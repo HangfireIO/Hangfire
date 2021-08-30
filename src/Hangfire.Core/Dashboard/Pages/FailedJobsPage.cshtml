@@ -112,7 +112,7 @@
                                             </div>
                                             @if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))
                                             {
-                                                <div style="color: #888;">
+                                                <div class="text-muted">
                                                     @job.Value.Reason <a class="expander" href="#">@(index == 0 ? Strings.Common_LessDetails : Strings.Common_MoreDetails)</a>
                                                 </div>
                                             }
@@ -129,10 +129,11 @@
                                 {
                                     <tr>
                                         <td colspan="2" class="failed-job-details">
-                                            <div class="expandable" style="@(index++ == 0 ? "display: block;" : null)">
-                                                @{
-                                                    var serverId = job.Value.StateData != null && job.Value.StateData.ContainsKey("ServerId") ? $" ({Html.ServerId(job.Value.StateData["ServerId"])})" : null;
-                                                }
+                                            @{
+                                                var displayCss = index++ == 0 ? "display-block" : null;
+                                                var serverId = job.Value.StateData != null && job.Value.StateData.ContainsKey("ServerId") ? $" ({Html.ServerId(job.Value.StateData["ServerId"])})" : null;
+                                            }
+                                            <div class="expandable @displayCss">
                                                 <h4>@job.Value.ExceptionType@Html.Raw(serverId)</h4>
                                                 <p class="text-muted">
                                                     @job.Value.ExceptionMessage

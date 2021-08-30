@@ -23,11 +23,16 @@ namespace Hangfire
 {
     public class DashboardOptions
     {
+        private static readonly IDashboardAuthorizationFilter[] DefaultAuthorization =
+            new[] { new LocalRequestsOnlyAuthorizationFilter() };
+
+        private IEnumerable<IDashboardAsyncAuthorizationFilter> _asyncAuthorization;
+
         public DashboardOptions()
         {
             AppPath = "/";
             PrefixPath = string.Empty;
-            Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
+            Authorization = DefaultAuthorization;
             AsyncAuthorization = new IDashboardAsyncAuthorizationFilter[0];
             IsReadOnlyFunc = _ => false;
             StatsPollingInterval = 2000;
@@ -53,7 +58,20 @@ namespace Hangfire
 #endif
 
         public IEnumerable<IDashboardAuthorizationFilter> Authorization { get; set; }
-        public IEnumerable<IDashboardAsyncAuthorizationFilter> AsyncAuthorization { get; set; }
+
+        public IEnumerable<IDashboardAsyncAuthorizationFilter> AsyncAuthorization
+        {
+            get => _asyncAuthorization;
+            set
+            {
+                _asyncAuthorization = value;
+
+                if (ReferenceEquals(Authorization, DefaultAuthorization))
+                {
+                    Authorization = new IDashboardAuthorizationFilter[0];
+                }
+            }
+        }
 
         public Func<DashboardContext, bool> IsReadOnlyFunc { get; set; }
         

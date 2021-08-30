@@ -104,7 +104,7 @@
                                         </td>
                                     }
                                     <td class="word-break width-15">@job.Id</td>
-                                    <td style="min-width: 125px" class="min-width">
+                                    <td class="min-width min-width-125p ">
                                         @* ReSharper disable once EmptyGeneralCatchClause *@
                                         @{
                                             string cronDescription = null;
@@ -226,7 +226,7 @@
                                         {
                                             if (!String.IsNullOrEmpty(job.LastJobId))
                                             {
-                                                <a href="@Url.JobDetails(job.LastJobId)" style="text-decoration: none">
+                                                <a href="@Url.JobDetails(job.LastJobId)" class="text-decoration-none">
                                                     @{
                                                         var cssSuffix = JobHistoryRenderer.GetStateCssSuffix(job.LastJobState ?? EnqueuedState.StateName);
                                                     }
