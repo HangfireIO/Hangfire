@@ -32,7 +32,7 @@ namespace Hangfire.Server
     /// <remarks>
     /// Immediately starts the processes in a background thread.
     /// Responsible for announcing/removing a server, bound to a storage.
-    /// Wraps all the processes with a infinite loop and automatic retry.
+    /// Wraps all the processes with an infinite loop and automatic retry.
     /// Executes all the processes in a single context.
     /// Uses timeout in dispose method, waits for all the components, cancel signals shutdown
     /// Contains some required processes and uses storage processes.
