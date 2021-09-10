@@ -487,7 +487,7 @@ namespace Hangfire
         /// </summary>
         /// 
         /// <param name="jobId">An identifier, that will be used to find a job.</param>
-        /// <returns>True on a successfull state transition, false otherwise.</returns>
+        /// <returns>True on a successful state transition, false otherwise.</returns>
         public static bool Delete([NotNull] string jobId)
         {
             return ClientFactory().Delete(jobId);

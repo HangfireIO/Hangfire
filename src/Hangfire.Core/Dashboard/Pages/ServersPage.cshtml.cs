@@ -259,8 +259,8 @@ WriteLiteral("\"></span>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                                        <span class=\"glyphicon\" style=\"margin-rig" +
-"ht: 14px;\"></span>\r\n");
+WriteLiteral("                                        <span class=\"glyphicon margin-right-14p\">" +
+"</span>\r\n");
 
 
             

@@ -586,8 +586,8 @@ WriteLiteral("                                                <a href=\"");
             
             #line default
             #line hidden
-WriteLiteral("\" style=\"text-decoration: none\">\r\n                                               " +
-"     ");
+WriteLiteral("\" class=\"text-decoration-none\">\r\n                                                " +
+"    ");
 
 
             
