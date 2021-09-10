@@ -284,8 +284,7 @@ WriteLiteral("                    </div>\r\n                    <!--/.nav-collap
             #line default
             #line hidden
 WriteLiteral("\r\n            </div>\r\n\r\n            <!-- Begin page content -->\r\n            <div" +
-" class=\"container js-page-container\" style=\"margin-bottom: 20px;\">\r\n            " +
-"    ");
+" class=\"container js-page-container margin-bottom-20p\">\r\n                ");
 
 
             

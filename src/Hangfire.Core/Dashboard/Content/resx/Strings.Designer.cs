@@ -423,7 +423,7 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enqueued jobs.
+        ///   Looks up a localized string similar to Enqueued Jobs.
         /// </summary>
         public static string EnqueuedJobsPage_Title {
             get {
@@ -479,7 +479,7 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Fetched jobs.
+        ///   Looks up a localized string similar to Fetched Jobs.
         /// </summary>
         public static string FetchedJobsPage_Title {
             get {
@@ -506,7 +506,7 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to History graph.
+        ///   Looks up a localized string similar to History Graph.
         /// </summary>
         public static string HomePage_HistoryGraph {
             get {
@@ -515,7 +515,7 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Realtime graph.
+        ///   Looks up a localized string similar to Realtime Graph.
         /// </summary>
         public static string HomePage_RealtimeGraph {
             get {
@@ -1081,7 +1081,7 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Recurring jobs.
+        ///   Looks up a localized string similar to Recurring Jobs.
         /// </summary>
         public static string RecurringJobsPage_Title {
             get {

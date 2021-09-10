@@ -55,14 +55,14 @@
              data-succeeded-string="@Strings.HomePage_GraphHover_Succeeded"
              data-failed-string="@Strings.HomePage_GraphHover_Failed"
              data-deleted-string="@Strings.JobsSidebarMenu_Deleted"></canvas>
-        <div style="display: none;">
+        <div class="display-none">
             <span data-metric="succeeded:count"></span>
             <span data-metric="failed:count"></span>
             <span data-metric="deleted:count"></span>
         </div>
 
         <h3>
-            <div class="btn-group pull-right" style="margin-top: 2px;">
+            <div class="btn-group pull-right margin-top-2p">
                 <a href="?period=day" class="btn btn-sm btn-default @("day".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null)">@Strings.Common_PeriodDay</a>
                 <a href="?period=week" class="btn btn-sm btn-default @("week".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null)">@Strings.Common_PeriodWeek</a>
             </div>

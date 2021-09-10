@@ -672,8 +672,8 @@ namespace Hangfire
         /// The job is not actually being deleted, this method changes only
         /// its state.
         /// 
-        /// This operation does not provides guarantee that the job will not be 
-        /// performed. If you deleting a job that is performing right now, it 
+        /// This operation does not provide guarantee that the job will not be 
+        /// performed. If you are deleting a job that is performing right now, it 
         /// will be performed anyway, despite of this call.
         /// 
         /// The method returns result of a state transition. It can be false
@@ -700,8 +700,8 @@ namespace Hangfire
         /// The job is not actually being deleted, this method changes only
         /// its state.
         /// 
-        /// This operation does not provides guarantee that the job will not be 
-        /// performed. If you deleting a job that is performing right now, it 
+        /// This operation does not provide guarantee that the job will not be 
+        /// performed. If you are deleting a job that is performing right now, it 
         /// will be performed anyway, despite of this call.
         /// 
         /// The method returns result of a state transition. It can be false

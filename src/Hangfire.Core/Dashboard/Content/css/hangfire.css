@@ -105,12 +105,28 @@ a:hover .label-hover {
     white-space: nowrap;
 }
 
+.min-width-125p {
+    min-width: 125px;
+}
+
+.min-width-200p {
+    min-width: 200px;
+}
+
 .width-15 {
     width: 15%;
 }
 
+.width-20 {
+    width: 20%;
+}
+
 .width-30 {
     width: 30%;
+}
+
+.glyphicon-sm {
+    font-size: 10px;
 }
 
 @media (max-width: 991px) {
@@ -522,6 +538,34 @@ a.job-method {
 
 .list-group .glyphicon {
     top: 2px;
+}
+
+.text-decoration-none {
+    text-decoration: none;
+}
+
+.display-none {
+    display: none;
+}
+
+.display-block {
+    display: block;
+}
+
+.margin-top-2p {
+    margin-top: 2px;
+}
+
+.margin-bottom-0 {
+    margin-bottom: 0;
+}
+
+.margin-bottom-20p {
+    margin-bottom: 20px;
+}
+
+.margin-right-14p {
+    margin-right: 14px;
 }
 
 span.metric {

@@ -109,7 +109,7 @@
                                         <td class="word-break">
                                             @if (servers.All(x => x.Name != job.Value.ServerId || x.Heartbeat < DateTime.UtcNow.AddMinutes(-1)))
                                             {
-                                                <span title="@Strings.ProcessingJobsPage_Aborted" class="glyphicon glyphicon-warning-sign" style="font-size: 10px;"></span>
+                                                <span title="@Strings.ProcessingJobsPage_Aborted" class="glyphicon glyphicon-warning-sign glyphicon-sm"></span>
                                             }
 
                                             @Html.JobNameLink(job.Key, job.Value.Job)
