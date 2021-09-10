@@ -73,6 +73,7 @@
     <EmbeddedResource Include="Dashboard\Content\css\bootstrap.min.css" />
     <EmbeddedResource Include="Dashboard\Content\css\Chart.min.css" />
     <EmbeddedResource Include="Dashboard\Content\css\hangfire.css" />
+    <EmbeddedResource Include="Dashboard\Content\css\hangfire-dark.css" />
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.eot" />
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.svg" />
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.ttf" />
