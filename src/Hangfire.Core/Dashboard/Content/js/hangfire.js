@@ -1,4 +1,64 @@
 (function (hangfire) {
+    var changeDatasetColorScheme = function(newColorScheme) {
+        this._chart.data.datasets[0].backgroundColor = COLORS[newColorScheme].failed.backgroundColor;
+        this._chart.data.datasets[0].borderColor = COLORS[newColorScheme].failed.borderColor;
+
+        this._chart.data.datasets[1].backgroundColor = COLORS[newColorScheme].deleted.backgroundColor;
+        this._chart.data.datasets[1].borderColor = COLORS[newColorScheme].deleted.borderColor;
+
+        this._chart.data.datasets[2].backgroundColor = COLORS[newColorScheme].succeeded.backgroundColor;
+        this._chart.data.datasets[2].borderColor = COLORS[newColorScheme].succeeded.borderColor;
+        
+        this._chart.options.scales.xAxes[0].gridLines.color = COLORS[newColorScheme].cartesianColor;
+        this._chart.options.scales.yAxes[0].gridLines.color = COLORS[newColorScheme].cartesianColor;
+
+        this._chart.update();
+    }
+
+    var COLORS = {
+        light: {
+            cartesianColor: '#e5e5e5',
+            failed: {
+                backgroundColor: '#D55251',
+                borderColor: null,
+            },
+            deleted: {
+                backgroundColor: '#919191',
+                borderColor: null,
+            },
+            succeeded: {
+                backgroundColor: '#6FCD6D',
+                borderColor: '#62B35F',
+            },
+        },
+        dark: {
+            cartesianColor: '#5f5f5f',
+            failed: {
+                backgroundColor: 'rgba(215, 58, 74, 0.4)',
+            },
+            deleted: {
+                backgroundColor: 'rgba(204, 204, 204, 0.4)',
+            },
+            succeeded: {
+                backgroundColor: 'rgba(87, 171, 90, 0.4)',
+                borderColor: 'rgba(87, 171, 90, 1)',
+            },
+        },
+    };
+
+    var colorScheme = "light";
+
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        colorScheme = "dark";
+    }
+
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        colorScheme = e.matches ? "dark" : "light";
+        
+        hangfire.page.realtimeGraph.changeDatasetColorScheme(colorScheme);
+        hangfire.page.historyGraph.changeDatasetColorScheme(colorScheme);
+    });
+
     hangfire.config = {
         pollInterval: $("#hangfireConfig").data("pollinterval"),
         pollUrl: $("#hangfireConfig").data("pollurl"),
@@ -78,20 +138,39 @@
                 type: 'line',
                 data: {
                     datasets: [
-                        { label: failedStr,  /*borderColor: '#BB4847', */backgroundColor: '#D55251', borderWidth: 2 },
-                        { label: deletedStr, /*borderColor: '#777777', */backgroundColor: '#919191', borderWidth: 2 },
-                        { label: succeededStr, borderColor: '#62B35F',   backgroundColor: '#6FCD6D' },
+                        { 
+                            label: failedStr,  
+                            borderColor: COLORS[colorScheme].failed.borderColor, 
+                            backgroundColor: COLORS[colorScheme].failed.backgroundColor, 
+                            borderWidth: 2 
+                        },
+                        { 
+                            label: deletedStr,
+                            borderColor: COLORS[colorScheme].deleted.borderColor, 
+                            backgroundColor: COLORS[colorScheme].deleted.backgroundColor, 
+                            borderWidth: 2 
+                        },
+                        { 
+                            label: succeededStr,
+                            borderColor: COLORS[colorScheme].succeeded.borderColor, 
+                            backgroundColor: COLORS[colorScheme].succeeded.backgroundColor 
+                        },
                     ]
                 },
                 options: {
                     scales: {
                         xAxes: [{
+                            gridLines: { color: COLORS[colorScheme].cartesianColor },
                             type: 'realtime',
                             realtime: { duration: 60 * 1000, delay: pollInterval },
                             time: { unit: 'second', tooltipFormat: 'LL LTS', displayFormats: { second: 'LTS', minute: 'LTS' } },
                             ticks: { maxRotation: 0 }
                         }],
-                        yAxes: [{ ticks: { beginAtZero: true, precision: 0, min: 0, maxTicksLimit: 6, suggestedMax: 10 }, stacked: true }]
+                        yAxes: [{
+                            gridLines: { color: COLORS[colorScheme].cartesianColor },
+                            ticks: { beginAtZero: true, precision: 0, min: 0, maxTicksLimit: 6, suggestedMax: 10 }, 
+                            stacked: true 
+                        }]
                     },
                     elements: { line: { tension: 0 }, point: { radius: 0 } },
                     animation: { duration: 0 },
@@ -127,6 +206,8 @@
             this._last = now;
         };
 
+        RealtimeGraph.prototype.changeDatasetColorScheme = changeDatasetColorScheme;
+
         return RealtimeGraph;
     })();
 
@@ -140,21 +221,41 @@
                 type: 'line',
                 data: {
                     datasets: [
-                        { label: failedStr,  /*borderColor: '#BB4847', */backgroundColor: '#D55251', data: failed,  borderWidth: 2 },
-                        { label: deletedStr, /*borderColor: '#777777', */backgroundColor: '#919191', data: deleted, borderWidth: 2 },
-                        { label: succeededStr, borderColor: '#62B35F',   backgroundColor: '#6FCD6D', data: succeeded },
+                        { 
+                            label: failedStr,  
+                            borderColor: COLORS[colorScheme].failed.borderColor, 
+                            backgroundColor: COLORS[colorScheme].failed.backgroundColor, 
+                            borderWidth: 2,
+                            data: failed,
+                        },
+                        { 
+                            label: deletedStr,
+                            borderColor: COLORS[colorScheme].deleted.borderColor, 
+                            backgroundColor: COLORS[colorScheme].deleted.backgroundColor, 
+                            borderWidth: 2,
+                            data: deleted,
+                        },
+                        { 
+                            label: succeededStr,
+                            borderColor: COLORS[colorScheme].succeeded.borderColor, 
+                            backgroundColor: COLORS[colorScheme].succeeded.backgroundColor,
+                            data: succeeded,
+                        },
                     ]
                 },
                 options: {
                     scales: {
-                        xAxes: [{ type: 'time', time: timeOptions, ticks: { maxRotation: 0 } }],
-                        yAxes: [{ ticks: { beginAtZero: true, precision: 0, maxTicksLimit: 6 }, stacked: true }]
+                        xAxes: [{ gridLines: { color: COLORS[colorScheme].cartesianColor }, type: 'time', time: timeOptions, ticks: { maxRotation: 0 } }],
+                        yAxes: [{ gridLines: { color: COLORS[colorScheme].cartesianColor }, ticks: { beginAtZero: true, precision: 0, maxTicksLimit: 6 }, stacked: true }]
                     },
                     elements: { line: { tension: 0 }, point: { radius: 0 } },
                     legend: { display: false },
                     tooltips: { mode: 'index', intersect: false }
                 }
             });
+
+            HistoryGraph.prototype.changeDatasetColorScheme = changeDatasetColorScheme;
+
         }
 
         return HistoryGraph;

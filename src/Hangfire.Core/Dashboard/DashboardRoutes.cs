@@ -35,7 +35,8 @@ namespace Hangfire.Dashboard
         private static readonly string[] Stylesheets =
         {
             "bootstrap.min.css",
-            "hangfire.css"
+            "hangfire.css",
+            "hangfire-dark.css"
         };
 
         static DashboardRoutes()
