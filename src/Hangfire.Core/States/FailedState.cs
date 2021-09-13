@@ -68,7 +68,7 @@ namespace Hangfire.States
         public static readonly string StateName = "Failed";
 
         /// <summary>
-        /// Initializes a new instace of the <see cref="FailedState"/> class
+        /// Initializes a new instance of the <see cref="FailedState"/> class
         /// with the given exception.
         /// </summary>
         /// <param name="exception">Exception that occurred during the background 

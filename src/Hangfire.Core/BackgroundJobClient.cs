@@ -147,9 +147,9 @@ namespace Hangfire
                 using (var connection = _storage.GetConnection())
                 {
                     var context = new CreateContext(_storage, connection, job, state);
-                    var backroundJob = _factory.Create(context);
+                    var backgroundJob = _factory.Create(context);
 
-                    return backroundJob?.Id;
+                    return backgroundJob?.Id;
                 }
             }
             catch (Exception ex)
