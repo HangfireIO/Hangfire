@@ -324,7 +324,7 @@ namespace Hangfire.Processing
                 {
                     // .NET Core doesn't support both Thread.Abort and Thread.ResetAbort methods.
                     // I don't see any possible cases, where thread is aborted, but nevertheless
-                    // we shouldn't hide the orignial exception.
+                    // we shouldn't hide the original exception.
                     _logger.ErrorException($"{GetExecutionLoopTemplate(executionId)} was unable to reset thread abort request due to an exception. Background execution can be prematurely stopped.", ex);
                 }
             }

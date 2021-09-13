@@ -79,7 +79,7 @@ namespace Hangfire.Common
         }
 
         /// <summary>
-        /// Determines wheither a filter is in the global filter collection.
+        /// Determines whether a filter is in the global filter collection.
         /// </summary>
         /// <param name="filter">The filter instance.</param>
         /// <returns>True if the global filter collection contains the filter, otherwise false.</returns>
