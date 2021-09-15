@@ -271,7 +271,7 @@ namespace Hangfire.Processing
             // Looks weird, but several times I was initializing the nextDelay variable
             // inside the execution loop by mistake. This lead to immediate looped invocation
             // with no delays and 100% of CPU consumption on transient exceptions, that is
-            // completely unnacceptable. So this is just a defensive technique.
+            // completely unacceptable. So this is just a defensive technique.
             initialDelay = TimeSpan.Zero;
         }
 
