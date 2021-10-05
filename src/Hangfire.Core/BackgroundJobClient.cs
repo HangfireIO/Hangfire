@@ -24,9 +24,9 @@ using Hangfire.States;
 namespace Hangfire
 {
     /// <summary>
-    /// Provides methods for creating all the types of background jobs and 
-    /// changing their states. Represents a default implementation of the 
-    /// <see cref="IBackgroundJobClient"/> interface.
+    /// Provides methods for creating background jobs and changing their states.
+    /// Represents a default implementation of the <see cref="IBackgroundJobClient"/>
+    /// interface.
     /// </summary>
     /// 
     /// <remarks>

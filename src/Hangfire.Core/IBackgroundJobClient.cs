@@ -30,8 +30,7 @@ namespace Hangfire
     }
 
     /// <summary>
-    /// Provides methods for creating all the types of background jobs and 
-    /// changing their states.
+    /// Provides methods for creating background jobs and changing their states.
     /// </summary>
     /// 
     /// <remarks>

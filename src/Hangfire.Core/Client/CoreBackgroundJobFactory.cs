@@ -92,7 +92,7 @@ namespace Hangfire.Client
                         // Normally, a distributed lock should be applied when making a retry, since
                         // it's possible to get a timeout exception, when transaction was actually
                         // committed. But since background job can't be returned to a position where
-                        // it's state is null, and since only the current thread knows the job's identifier
+                        // its state is null, and since only the current thread knows the job's identifier
                         // when its state is null, and since we shouldn't do anything when it's non-null,
                         // there will be no any race conditions.
                         var data = context.Connection.GetJobData(jobId);
