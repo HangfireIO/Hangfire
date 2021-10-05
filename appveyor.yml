@@ -67,7 +67,7 @@ deploy:
   - provider: NuGet
     skip_symbols: true
     api_key: 
-      secure: uvwcHGQKqfNR+XJ5RzSA9yTrtMCH5HWbWLeIYVnq+9kQPYmOniTiNINd9zGBhqqi
+      secure: Bmfqrlce8vKi7VkTN/2yIBWl+M4oScDVTBA3DbHovzTslO6xzvBSoBT3Wb0fmOcc
     on:
       appveyor_repo_tag: true
 
