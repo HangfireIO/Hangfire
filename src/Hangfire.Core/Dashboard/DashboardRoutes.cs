@@ -124,6 +124,9 @@ namespace Hangfire.Dashboard
             Routes.AddClientBatchCommand(
                 "/jobs/succeeded/requeue",
                 (client, jobId) => client.ChangeState(jobId, CreateEnqueuedState(), SucceededState.StateName));
+            Routes.AddClientBatchCommand(
+                "/jobs/succeeded/delete",
+                (client, jobId) => client.ChangeState(jobId, CreateDeletedState(), SucceededState.StateName));
 
             Routes.AddRazorPage("/jobs/failed", x => new FailedJobsPage());
 
