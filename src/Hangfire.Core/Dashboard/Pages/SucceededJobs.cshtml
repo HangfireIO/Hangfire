@@ -45,6 +45,16 @@
                             @Strings.Common_RequeueJobs
                         </button>
                     }
+                    @if (!IsReadOnly)
+                    {
+                        <button class="js-jobs-list-command btn btn-sm btn-default"
+                                data-url="@Url.To("/jobs/succeeded/delete")"
+                                data-loading-text="@Strings.Common_Deleting"
+                                data-confirm="@Strings.Common_DeleteConfirm">
+                            <span class="glyphicon glyphicon-remove"></span>
+                            @Strings.Common_DeleteSelected
+                        </button>
+                    }
                     @Html.PerPageSelector(pager)
                 </div>
 
