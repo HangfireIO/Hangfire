@@ -1,4 +1,5 @@
-﻿using Hangfire.Dashboard;
+﻿using System.Linq;
+using Hangfire.Dashboard;
 using Xunit;
 
 namespace Hangfire.Core.Tests.Dashboard
@@ -12,6 +13,7 @@ namespace Hangfire.Core.Tests.Dashboard
             Assert.Equal(options.AppPath, "/");
             Assert.Equal(options.PrefixPath, "");
             Assert.NotNull(options.Authorization);
+            Assert.IsType<LocalRequestsOnlyAuthorizationFilter>(options.Authorization.FirstOrDefault());
             Assert.Equal(options.StatsPollingInterval, 2000);
             Assert.Equal(options.DisplayStorageConnectionString,true);
             Assert.Equal(options.DashboardTitle, "Hangfire Dashboard");
