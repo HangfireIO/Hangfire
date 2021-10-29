@@ -32,8 +32,8 @@ namespace Hangfire
         {
             AppPath = "/";
             PrefixPath = string.Empty;
+            _asyncAuthorization = new IDashboardAsyncAuthorizationFilter[0];
             Authorization = DefaultAuthorization;
-            AsyncAuthorization = new IDashboardAsyncAuthorizationFilter[0];
             IsReadOnlyFunc = _ => false;
             StatsPollingInterval = 2000;
             DisplayStorageConnectionString = true;
