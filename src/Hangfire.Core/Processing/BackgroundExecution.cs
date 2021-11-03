@@ -336,9 +336,21 @@ namespace Hangfire.Processing
                 return;
             }
 
-            if (!exception.Data.Contains("ExecutionId"))
+            try
             {
-                exception.Data.Add("ExecutionId", executionId);
+                // Some code might cache exception object and throw the same instance
+                // from multiple threads, despite it's not recommended to do. However
+                // bad things happen, and we should have some diagnostic tools to
+                // understand what's happened and what was the original exception which
+                // is being modified.
+                if (!exception.Data.Contains("ExecutionId"))
+                {
+                    exception.Data.Add("ExecutionId", executionId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.WarnException($"Was unable to add the ExecutionId property to the exception object, please see inner exception for details. Original exception: ${exception.GetType()} (${exception.Message})", ex);
             }
 
             ToFailedState(exception, out delay);
