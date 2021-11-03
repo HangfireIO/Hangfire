@@ -17,6 +17,7 @@
 using System;
 using System.Text.RegularExpressions;
 using Hangfire.Annotations;
+using Hangfire.Common;
 
 namespace Hangfire.Dashboard
 {
@@ -54,7 +55,10 @@ namespace Hangfire.Dashboard
 
         public virtual IRecurringJobManager GetRecurringJobManager()
         {
-            return new RecurringJobManager(Storage);
+            return new RecurringJobManager(
+                Storage,
+                JobFilterProviders.Providers,
+                Options.TimeZoneResolver ?? new DefaultTimeZoneResolver());
         }
     }
 }
