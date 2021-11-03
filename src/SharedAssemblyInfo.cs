@@ -8,5 +8,5 @@ using System.Runtime.InteropServices;
 
 [assembly: ComVisible(false)]
 
-// Don't edit manually! Use `build.bat version` command instead!
-[assembly: AssemblyVersion("1.7.26")]
+// Please don't edit it manually, use the `build.bat version` command instead.
+[assembly: AssemblyVersion("1.7.27")]

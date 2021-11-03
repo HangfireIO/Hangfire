@@ -6,8 +6,8 @@
 #   - All section names are case-sensitive.
 #   - Section names should be unique on each level.
 
-# Don't edit manually! Use `build.bat version` command instead!
-version: 1.7.26-build-0{build}
+# Please don't edit it manually, use the `build.bat version` command instead.
+version: 1.7.27-build-0{build}
 
 image:
   - Visual Studio 2019
