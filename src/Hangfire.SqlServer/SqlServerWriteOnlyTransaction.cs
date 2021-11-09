@@ -493,7 +493,7 @@ update [{_storage.SchemaName}].[List] set ExpireAt = null where [Key] = @key";
                 AddCommand(
                     _queueCommands,
                     timeoutJob.Queue,
-                    $"delete JQ from [{_storage.SchemaName}].JobQueue JQ with ({timeoutJob.GetTableHints()}) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
+                    $"delete JQ from [{_storage.SchemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
                     new SqlCommandBatchParameter("@queue", DbType.String) { Value = timeoutJob.Queue },
                     new SqlCommandBatchParameter("@id", DbType.Int64) { Value = timeoutJob.Id },
                     new SqlCommandBatchParameter("@fetchedAt", DbType.DateTime) { Value = timeoutJob.FetchedAt });

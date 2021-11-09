@@ -179,7 +179,7 @@ set nocount on;set xact_abort on;set tran isolation level read committed;
 update top (1) JQ
 set FetchedAt = GETUTCDATE()
 output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
-from [{_storage.SchemaName}].JobQueue JQ with ({GetSlidingFetchTableHints()})
+from [{_storage.SchemaName}].JobQueue JQ with (forceseek, readpast, updlock, rowlock)
 where Queue in @queues and
 (FetchedAt is null or FetchedAt < DATEADD(second, @timeoutSs, GETUTCDATE()));";
         }
@@ -196,22 +196,12 @@ WHILE (SYSUTCDATETIME() < @end)
 BEGIN
 	update top (1) JQ set FetchedAt = GETUTCDATE()
 	output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
-	from [{_storage.SchemaName}].JobQueue JQ with ({GetSlidingFetchTableHints()})
+	from [{_storage.SchemaName}].JobQueue JQ with (forceseek, readpast, updlock, rowlock)
 	where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeoutSs, GETUTCDATE()));
 
 	IF @@ROWCOUNT > 0 RETURN;
 	WAITFOR DELAY @delay;
 END";
-        }
-
-        private string GetSlidingFetchTableHints()
-        {
-            if (_storage.Options.UsePageLocksOnDequeue)
-            {
-                return "forceseek, paglock, xlock";
-            }
-
-            return "forceseek, readpast, updlock, rowlock";
         }
 
         private SqlServerTransactionJob DequeueUsingTransaction(string[] queues, CancellationToken cancellationToken)

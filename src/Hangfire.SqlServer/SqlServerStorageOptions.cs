@@ -123,6 +123,8 @@ namespace Hangfire.SqlServer
 
         public Func<IDisposable> ImpersonationFunc { get; set; }
         public bool DisableGlobalLocks { get; set; }
+        
+        [Obsolete("This option is deprecated and doesn't change anything. You can safely remove it. Will be removed in 2.0.0.")]
         public bool UsePageLocksOnDequeue { get; set; }
         public bool UseRecommendedIsolationLevel { get; set; }
         public bool EnableHeavyMigrations { get; set; }
