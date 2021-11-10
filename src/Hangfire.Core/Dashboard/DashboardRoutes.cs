@@ -14,7 +14,10 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
 using System.Reflection;
+using Hangfire.Annotations;
 using Hangfire.Dashboard.Pages;
 using Hangfire.States;
 
@@ -22,67 +25,57 @@ namespace Hangfire.Dashboard
 {
     public static class DashboardRoutes
     {
-        private static readonly string[] Javascripts =
-        {
-            "jquery-3.6.0.min.js",
-            "bootstrap.min.js",
-            "moment-with-locales.min.js",
-            "Chart.min.js",
-            "chartjs-plugin-streaming.min.js",
-            "hangfire.js"
-        };
-
-        private static readonly string[] Stylesheets =
-        {
-            "bootstrap.min.css",
-            "Chart.min.css",
-            "hangfire.css",
-            "hangfire-dark.css"
-        };
+        private static readonly List<Tuple<Assembly, string>> JavaScripts = new List<Tuple<Assembly, string>>();
+        private static readonly List<Tuple<Assembly, string>> Stylesheets = new List<Tuple<Assembly, string>>();
 
         static DashboardRoutes()
         {
             Routes = new RouteCollection();
             Routes.AddRazorPage("/", x => new HomePage());
             Routes.Add("/stats", new JsonStats());
+
+            var executingAssembly = typeof(DashboardRoutes).GetTypeInfo().Assembly;
+
+            AddStylesheet(executingAssembly, GetContentResourceName("css", "bootstrap.min.css"));
+            AddStylesheet(executingAssembly, GetContentResourceName("css", "Chart.min.css"));
+            AddStylesheet(executingAssembly, GetContentResourceName("css", "hangfire.css"));
+            AddStylesheet(executingAssembly, GetContentResourceName("css", "hangfire-dark.css"));
             
+            AddJavaScript(executingAssembly, GetContentResourceName("js", "jquery-3.6.0.min.js"));
+            AddJavaScript(executingAssembly, GetContentResourceName("js", "bootstrap.min.js"));
+            AddJavaScript(executingAssembly, GetContentResourceName("js", "moment-with-locales.min.js"));
+            AddJavaScript(executingAssembly, GetContentResourceName("js", "Chart.min.js"));
+            AddJavaScript(executingAssembly, GetContentResourceName("js", "chartjs-plugin-streaming.min.js"));
+            AddJavaScript(executingAssembly, GetContentResourceName("js", "hangfire.js"));
+
             #region Embedded static content
 
-            Routes.Add("/js[0-9]+", new CombinedResourceDispatcher(
-                "application/javascript",
-                GetExecutingAssembly(),
-                GetContentFolderNamespace("js"),
-                Javascripts));
-
-            Routes.Add("/css[0-9]+", new CombinedResourceDispatcher(
-                "text/css",
-                GetExecutingAssembly(),
-                GetContentFolderNamespace("css"),
-                Stylesheets));
+            Routes.Add("/js[0-9]+", new CombinedResourceDispatcher("application/javascript", JavaScripts));
+            Routes.Add("/css[0-9]+", new CombinedResourceDispatcher("text/css", Stylesheets));
 
             Routes.Add("/fonts/glyphicons-halflings-regular/eot", new EmbeddedResourceDispatcher(
                 "application/vnd.ms-fontobject",
-                GetExecutingAssembly(),
+                executingAssembly,
                 GetContentResourceName("fonts", "glyphicons-halflings-regular.eot")));
 
             Routes.Add("/fonts/glyphicons-halflings-regular/svg", new EmbeddedResourceDispatcher(
                 "image/svg+xml",
-                GetExecutingAssembly(),
+                executingAssembly,
                 GetContentResourceName("fonts", "glyphicons-halflings-regular.svg")));
 
             Routes.Add("/fonts/glyphicons-halflings-regular/ttf", new EmbeddedResourceDispatcher(
                 "application/octet-stream",
-                GetExecutingAssembly(),
+                executingAssembly,
                 GetContentResourceName("fonts", "glyphicons-halflings-regular.ttf")));
 
             Routes.Add("/fonts/glyphicons-halflings-regular/woff", new EmbeddedResourceDispatcher(
                 "font/woff",
-                GetExecutingAssembly(),
+                executingAssembly,
                 GetContentResourceName("fonts", "glyphicons-halflings-regular.woff")));
 
             Routes.Add("/fonts/glyphicons-halflings-regular/woff2", new EmbeddedResourceDispatcher(
                 "font/woff2",
-                GetExecutingAssembly(),
+                executingAssembly,
                 GetContentResourceName("fonts", "glyphicons-halflings-regular.woff2")));
 
             #endregion
@@ -182,6 +175,28 @@ namespace Hangfire.Dashboard
 
         public static RouteCollection Routes { get; }
 
+        public static void AddStylesheet([NotNull] Assembly assembly, [NotNull] string resource)
+        {
+            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
+            if (resource == null) throw new ArgumentNullException(nameof(resource));
+
+            lock (Stylesheets)
+            {
+                Stylesheets.Add(Tuple.Create(assembly, resource));
+            }
+        }
+
+        public static void AddJavaScript([NotNull] Assembly assembly, [NotNull] string resource)
+        {
+            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
+            if (resource == null) throw new ArgumentNullException(nameof(resource));
+
+            lock (JavaScripts)
+            {
+                JavaScripts.Add(Tuple.Create(assembly, resource));
+            }
+        }
+
         internal static string GetContentFolderNamespace(string contentFolder)
         {
             return $"{typeof (DashboardRoutes).Namespace}.Content.{contentFolder}";
@@ -200,11 +215,6 @@ namespace Hangfire.Dashboard
         private static EnqueuedState CreateEnqueuedState()
         {
             return new EnqueuedState { Reason = "Triggered via Dashboard UI" };
-        }
-
-        private static Assembly GetExecutingAssembly()
-        {
-            return typeof (DashboardRoutes).GetTypeInfo().Assembly;
         }
     }
 }
