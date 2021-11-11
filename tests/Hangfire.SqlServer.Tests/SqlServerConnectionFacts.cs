@@ -893,7 +893,7 @@ select scope_identity() as Id").Single().Id.ToString();
             }
             finally
             {
-                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[JobParameter] REBUILD WITH (IGNORE_DUP_KEY = OFF)"), useBatching, useMicrosoftDataSqlClient);
+                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[JobParameter] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useBatching, useMicrosoftDataSqlClient);
             }
         }
 
@@ -942,7 +942,7 @@ select scope_identity() as Id").Single().Id.ToString();
             }
             finally
             {
-                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[JobParameter] REBUILD WITH (IGNORE_DUP_KEY = OFF)"), useBatching: false, useMicrosoftDataSqlClient);
+                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[JobParameter] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useBatching: false, useMicrosoftDataSqlClient);
             }
         }
 
@@ -1483,7 +1483,7 @@ values (@key, 0.0, @value)";
             }
             finally
             {
-                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = OFF)"), useBatching, useMicrosoftDataSqlClient);
+                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useBatching, useMicrosoftDataSqlClient);
             }
         }
 
@@ -1526,7 +1526,7 @@ values (@key, 0.0, @value)";
             }
             finally
             {
-                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = OFF)"), useBatching, useMicrosoftDataSqlClient);
+                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useBatching, useMicrosoftDataSqlClient);
             }
         }
 

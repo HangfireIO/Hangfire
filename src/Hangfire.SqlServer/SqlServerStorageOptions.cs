@@ -132,7 +132,7 @@ namespace Hangfire.SqlServer
         public bool UseFineGrainedLocks { get; set; }
 
         /// <summary>
-        /// Gets or sets whether IGNORE_DUP_OPTION was applied to [Hash] and [Set] tables and so MERGE
+        /// Gets or sets whether IGNORE_DUP_KEY was applied to [Hash] and [Set] tables and so MERGE
         /// statements can be replaced by much more efficient INSERT/UPDATE pair. This option allows
         /// to avoid deadlocks related to SERIALIZABLE-level range locks without introducing transient
         /// errors due to concurrency.
