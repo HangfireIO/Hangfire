@@ -49,6 +49,7 @@ namespace Hangfire.SqlServer
             UseTransactionalAcknowledge = false;
             UseRecommendedIsolationLevel = true;
             CommandBatchMaxTimeout = TimeSpan.FromMinutes(5);
+            TryAutoDetectSchemaDependentOptions = true;
         }
 
         [Obsolete("TransactionIsolationLevel option is deprecated, please set UseRecommendedIsolationLevel instead. Will be removed in 2.0.0.")]
@@ -158,5 +159,13 @@ namespace Hangfire.SqlServer
         /// System.Data.SqlClient when available (e.g. package is referenced).
         /// </summary>
         public bool PreferMicrosoftDataSqlClient { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to try automatically query for the current schema on application start
+        /// and enable <see cref="UseIgnoreDupKeyOption"/>, <see cref="DeleteExpiredBatchSize"/> and
+        /// <see cref="DisableGlobalLocks"/> options depending on the current schema version. When storage
+        /// is inaccessible on startup, default values will be used for those options.
+        /// </summary>
+        public bool TryAutoDetectSchemaDependentOptions { get; set; }
     }
 }

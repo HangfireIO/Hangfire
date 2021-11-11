@@ -413,7 +413,34 @@ namespace Hangfire.SqlServer
             _escapedSchemaName = _options.SchemaName.Replace("]", "]]");
             _microsoftDataSqlClientType = Type.GetType("Microsoft.Data.SqlClient.SqlConnection, Microsoft.Data.SqlClient", throwOnError: false);
 
-            if (_options.PrepareSchemaIfNecessary)
+            int? schema = null;
+
+            if (_options.TryAutoDetectSchemaDependentOptions)
+            {
+                try
+                {
+                    UseConnection(null, connection =>
+                    {
+                        schema = connection.ExecuteScalar<int>($"select top (1) [Version] from [{SchemaName}].[Schema]");
+                    });
+
+                    _options.UseRecommendedIsolationLevel = true;
+                    _options.UseIgnoreDupKeyOption = schema >= 8;
+                    _options.DisableGlobalLocks = schema >= 6;
+
+                    if (schema >= 6 && _options.DeleteExpiredBatchSize == -1)
+                    {
+                        _options.DeleteExpiredBatchSize = 50000;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var log = LogProvider.GetLogger(typeof(SqlServerStorage));
+                    log.ErrorException("Was unable to use the TryAutoDetectSchemaDependentOptions option due to an exception.", ex);
+                }
+            }
+
+            if (_options.PrepareSchemaIfNecessary && (schema == null || schema < SqlServerObjectsInstaller.LatestSchemaVersion))
             {
                 var log = LogProvider.GetLogger(typeof(SqlServerObjectsInstaller));
                 const int RetryAttempts = 3;
