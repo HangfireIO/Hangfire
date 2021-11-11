@@ -215,43 +215,51 @@ $@"insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values 
             }
 
             string sql =
-$@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.SchemaName}].Job with (readcommittedlock, forceseek) where Id = @id";
+$@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.SchemaName}].Job with (readcommittedlock, forceseek) where Id = @id
+select Name, Value from [{_storage.SchemaName}].JobParameter with (forceseek) where JobId = @id";
 
             return _storage.UseConnection(_dedicatedConnection, connection =>
             {
-                var jobData = connection.Query<SqlJob>(sql, new { id = parsedId }, commandTimeout: _storage.CommandTimeout)
-                    .SingleOrDefault();
-
-                if (jobData == null) return null;
-
-                // TODO: conversion exception could be thrown.
-                var invocationData = InvocationData.DeserializePayload(jobData.InvocationData);
-
-                if (!String.IsNullOrEmpty(jobData.Arguments))
+                using (var multi = connection.QueryMultiple(sql, new { id = parsedId }, commandTimeout: _storage.CommandTimeout))
                 {
-                    invocationData.Arguments = jobData.Arguments;
+                    var jobData = multi.Read().SingleOrDefault();
+                    if (jobData == null) return null;
+
+                    var parameters = multi.Read<JobParameter>()
+                        .GroupBy(x => x.Name)
+                        .Select(grp => grp.First())
+                        .ToDictionary(x => x.Name, x => x.Value);
+
+                    // TODO: conversion exception could be thrown.
+                    var invocationData = InvocationData.DeserializePayload(jobData.InvocationData);
+
+                    if (!String.IsNullOrEmpty(jobData.Arguments))
+                    {
+                        invocationData.Arguments = jobData.Arguments;
+                    }
+
+                    Job job = null;
+                    JobLoadException loadException = null;
+
+                    try
+                    {
+                        job = invocationData.DeserializeJob();
+                    }
+                    catch (JobLoadException ex)
+                    {
+                        loadException = ex;
+                    }
+
+                    return new JobData
+                    {
+                        Job = job,
+                        InvocationData = invocationData,
+                        State = jobData.StateName,
+                        CreatedAt = jobData.CreatedAt,
+                        LoadException = loadException,
+                        ParametersSnapshot = parameters
+                    };
                 }
-
-                Job job = null;
-                JobLoadException loadException = null;
-
-                try
-                {
-                    job = invocationData.DeserializeJob();
-                }
-                catch (JobLoadException ex)
-                {
-                    loadException = ex;
-                }
-
-                return new JobData
-                {
-                    Job = job,
-                    InvocationData = invocationData,
-                    State = jobData.StateName,
-                    CreatedAt = jobData.CreatedAt,
-                    LoadException = loadException
-                };
             });
         }
 
