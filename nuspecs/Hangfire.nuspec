@@ -20,6 +20,22 @@ https://www.hangfire.io/
     <tags>Hangfire AspNet MVC AspNetCore SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.8.0-beta4
+
+Hangfire.Core
+
+• Added – Dark mode support for Dashboard UI configurable with the `UseDarkModeSupportForDashboard` method.
+• Added – Allow to add custom JavaScript and CSS files to the Dashboard UI via the `DashboardRoutes` class.
+• Added – Ability to use custom formattable resource identifiers for the `DisableConcurrentExecutionAttribute`.
+• Changed – Increase the default value for the `BackgroundJobServerOptions.StopTimeout` to 500 ms.
+      
+Hangfire.SqlServer
+
+• Added – `TryAutoDetectSchemaDependentOptions` option to automatically enable options based on schema.
+• Changed – `GetJobData` now populates `JobData.ParametersSnapshot` property to avoid additional round-trips.
+• Changed – Polling delay when `QueuePollInterval` is set to zero now defaults to 200 ms.
+• Deprecated – `UsePageLocksOnDequeue` option is now obsolete and doesn't affect anything.
+
 1.8.0-beta3
 
 Hangfire.Core

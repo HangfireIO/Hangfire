@@ -15,6 +15,12 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.8.0-beta4
+• Added – `TryAutoDetectSchemaDependentOptions` option to automatically enable options based on schema.
+• Changed – `GetJobData` now populates `JobData.ParametersSnapshot` property to avoid additional round-trips.
+• Changed – Polling delay when `QueuePollInterval` is set to zero now defaults to 200 ms.
+• Deprecated – `UsePageLocksOnDequeue` option is now obsolete and doesn't affect anything.
+
 1.8.0-beta3
 • Added – Implement the `Connection.GetUtcDateTime` feature to make work new changes in schedulers.
 • Changed – Display scheduled and processing jobs in the ascending order in Dashboard UI.

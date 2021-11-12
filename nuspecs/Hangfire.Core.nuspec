@@ -20,6 +20,12 @@ https://www.hangfire.io/
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.8.0-beta4
+• Added – Dark mode support for Dashboard UI configurable with the `UseDarkModeSupportForDashboard` method.
+• Added – Allow to add custom JavaScript and CSS files to the Dashboard UI via the `DashboardRoutes` class.
+• Added – Ability to use custom formattable resource identifiers for the `DisableConcurrentExecutionAttribute`.
+• Changed – Increase the default value for the `BackgroundJobServerOptions.StopTimeout` to 500 ms.
+
 1.8.0-beta3
 • Added – Introduce the `Job.Queue` property, so jobs now can have their own queue specified.
 • Added – Method overloads to create recurring jobs directly with a custom default queue.
