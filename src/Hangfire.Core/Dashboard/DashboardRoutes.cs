@@ -28,6 +28,8 @@ namespace Hangfire.Dashboard
         private static readonly List<Tuple<Assembly, string>> JavaScripts = new List<Tuple<Assembly, string>>();
         private static readonly List<Tuple<Assembly, string>> Stylesheets = new List<Tuple<Assembly, string>>();
 
+        internal static bool IsDarkModeSupportEnabled = false;
+
         static DashboardRoutes()
         {
             Routes = new RouteCollection();
@@ -195,6 +197,15 @@ namespace Hangfire.Dashboard
             {
                 JavaScripts.Add(Tuple.Create(assembly, resource));
             }
+        }
+
+        internal static void AddDarkModeSupport()
+        {
+            IsDarkModeSupportEnabled = true;
+
+            AddStylesheet(
+                typeof(DashboardRoutes).GetTypeInfo().Assembly,
+                GetContentResourceName("css", "hangfire-dark.css"));
         }
 
         internal static string GetContentFolderNamespace(string contentFolder)

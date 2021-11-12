@@ -16,13 +16,13 @@
 
 using System;
 using System.ComponentModel;
+using System.Reflection;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Dashboard;
 using Hangfire.Dashboard.Pages;
 using Hangfire.Logging;
 using Hangfire.Logging.LogProviders;
-using Hangfire.Storage.Monitoring;
 using Newtonsoft.Json;
 
 namespace Hangfire
@@ -322,6 +322,16 @@ namespace Hangfire
             if (size < 0) throw new ArgumentOutOfRangeException(nameof(size), "Must be a positive value");
 
             JobMethodCallRenderer.MaxArgumentToRenderSize = size;
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseDarkModeSupportForDashboard(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            DashboardRoutes.AddDarkModeSupport();
+
             return configuration;
         }
 

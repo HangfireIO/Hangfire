@@ -46,24 +46,27 @@
         },
     };
 
-    var colorScheme = "light";
-
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        colorScheme = "dark";
-    }
-
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-        colorScheme = e.matches ? "dark" : "light";
-        
-        hangfire.page.realtimeGraph.changeDatasetColorScheme(colorScheme);
-        hangfire.page.historyGraph.changeDatasetColorScheme(colorScheme);
-    });
-
     hangfire.config = {
         pollInterval: $("#hangfireConfig").data("pollinterval"),
         pollUrl: $("#hangfireConfig").data("pollurl"),
-        locale: document.documentElement.lang
+        locale: document.documentElement.lang,
+        darkMode: $("#hangfireConfig").data("darkmode")
     };
+
+    var colorScheme = "light";
+
+    if (hangfire.config.darkMode) {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            colorScheme = "dark";
+        }
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            colorScheme = e.matches ? "dark" : "light";
+
+            hangfire.page.realtimeGraph.changeDatasetColorScheme(colorScheme);
+            hangfire.page.historyGraph.changeDatasetColorScheme(colorScheme);
+        });
+    }
 
     hangfire.ErrorAlert = (function () {
         function ErrorAlert(title, message) {

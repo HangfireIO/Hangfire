@@ -393,6 +393,16 @@ WriteLiteral("\"\r\n             data-pollurl=\"");
             
             #line default
             #line hidden
+WriteLiteral("\"\r\n             data-darkmode=\"");
+
+
+            
+            #line 93 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                        Write(DashboardRoutes.IsDarkModeSupportEnabled.ToString().ToLowerInvariant());
+
+            
+            #line default
+            #line hidden
 WriteLiteral("\">\r\n        </div>\r\n\r\n        <script src=\"");
 
 
