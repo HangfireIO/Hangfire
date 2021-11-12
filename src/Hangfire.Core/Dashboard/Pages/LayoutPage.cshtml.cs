@@ -175,7 +175,7 @@ WriteLiteral("    <link rel=\"shortcut icon\" href=\"data:image/x-icon;,\" type=
 
             
             #line 30 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(Url.To($"/css{version.Major}{version.Minor}{version.Build}0"));
+                            Write(Url.To($"/css{version.Major}{version.Minor}{version.Build}0{Math.Abs(DashboardRoutes.StylesheetsHashCode)}"));
 
             
             #line default
@@ -407,8 +407,8 @@ WriteLiteral("\">\r\n        </div>\r\n\r\n        <script src=\"");
 
 
             
-            #line 95 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                Write(Url.To($"/js{version.Major}{version.Minor}{version.Build}0"));
+            #line 96 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                Write(Url.To($"/js{version.Major}{version.Minor}{version.Build}0{Math.Abs(DashboardRoutes.JavaScriptsHashCode)}"));
 
             
             #line default

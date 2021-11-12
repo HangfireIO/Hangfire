@@ -28,6 +28,9 @@ namespace Hangfire.Dashboard
         private static readonly List<Tuple<Assembly, string>> JavaScripts = new List<Tuple<Assembly, string>>();
         private static readonly List<Tuple<Assembly, string>> Stylesheets = new List<Tuple<Assembly, string>>();
 
+        internal static volatile int JavaScriptsHashCode;
+        internal static volatile int StylesheetsHashCode;
+
         internal static bool IsDarkModeSupportEnabled = false;
 
         static DashboardRoutes()
@@ -41,8 +44,7 @@ namespace Hangfire.Dashboard
             AddStylesheet(executingAssembly, GetContentResourceName("css", "bootstrap.min.css"));
             AddStylesheet(executingAssembly, GetContentResourceName("css", "Chart.min.css"));
             AddStylesheet(executingAssembly, GetContentResourceName("css", "hangfire.css"));
-            AddStylesheet(executingAssembly, GetContentResourceName("css", "hangfire-dark.css"));
-            
+
             AddJavaScript(executingAssembly, GetContentResourceName("js", "jquery-3.6.0.min.js"));
             AddJavaScript(executingAssembly, GetContentResourceName("js", "bootstrap.min.js"));
             AddJavaScript(executingAssembly, GetContentResourceName("js", "moment-with-locales.min.js"));
@@ -185,6 +187,7 @@ namespace Hangfire.Dashboard
             lock (Stylesheets)
             {
                 Stylesheets.Add(Tuple.Create(assembly, resource));
+                StylesheetsHashCode ^= resource.GetHashCode();
             }
         }
 
@@ -196,6 +199,7 @@ namespace Hangfire.Dashboard
             lock (JavaScripts)
             {
                 JavaScripts.Add(Tuple.Create(assembly, resource));
+                JavaScriptsHashCode ^= resource.GetHashCode();
             }
         }
 
