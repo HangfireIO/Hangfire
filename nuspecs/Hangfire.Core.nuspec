@@ -20,73 +20,72 @@ https://www.hangfire.io/
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
-1.8.0-beta4
-• Added – Dark mode support for Dashboard UI configurable with the `UseDarkModeSupportForDashboard` method.
-• Added – Allow to add custom JavaScript and CSS files to the Dashboard UI via the `DashboardRoutes` class.
-• Added – Ability to use custom formattable resource identifiers for the `DisableConcurrentExecutionAttribute`.
-• Changed – Increase the default value for the `BackgroundJobServerOptions.StopTimeout` to 500 ms.
-
-1.8.0-beta3
+1.8.0
 • Added – Introduce the `Job.Queue` property, so jobs now can have their own queue specified.
-• Added – Method overloads to create recurring jobs directly with a custom default queue.
 • Added – Method overloads to create background jobs directly with a custom default queue.
+• Added – Method overloads to create recurring jobs directly with a custom default queue.
 • Added – `IBackgroundJobClient.Create` method overloads with the new `queue` parameter.
-• Added – Experimental `JobStorageConnection.SetContains` method.
+• Added – `JobContinuationOptions.OnlyOnDeletedState` to create continuations after a failure.
+• Added – Make it possible to specify multiple `JobContinuationOptions` values for a continuation.
+• Added – Ability to use custom formattable resource identifiers for the `DisableConcurrentExecution` filter.
 • Added – Pass `ServerId` to `FailedState` instances to simplify the debugging on different servers.
-• Changed – Dashboard UI now have full-width layout to display more data (by @danillewin).
+• Added – Allow to pass job parameters when creating a job (by @brian-knoll-micronetonline).
+• Added – `MisfireHandlingMode.Strict` to create job for each missed recurring job occurrence.
+• Added – `DeletedState` now have the persisted `Exception` property populated after a failure.
+• Added – `Exception` job parameter is passed to continuation when `UseResultsInContinuations` method is used.
+• Added – `FromExceptionAttribute` to deal with an antecedent exception in a background job continuation.
+• Added – Allow to filter exception types in `AutomaticRetryAttribute` by using the new `OnlyOn` property.
+• Changed – Use the `AttemptsExceededAction.Delete` option by default in the global automatic retry filter.
 • Changed – Query time from storage in recurring and delayed schedulers when supported by storage.
+• Changed – Increase the default value for the `BackgroundJobServerOptions.StopTimeout` to 500 ms.
 • Changed – Speedup delayed jobs when custom default queue is specified by avoiding extra state transition.
-• Changed – Display scheduled job count when enqueued count is zero on the main metric.
-• Changed – Don't display queue name in state transition list when it's the `default` one.
-• Changed – Re-implement `TaskExtensions.WaitOneAsync` only with the `RegisterWaitForSingleObject` method.
-• Changed – Expose state data dictionaries in list DTOs when supported by storage.
-• Changed – Make it possible to display methods of non-loaded jobs in Dashboard UI when supported by storage.
-• Fixed – Check job details for the `null` value before passing it to renderers (regression).
+• Changed – Move job to the `DeletedState` instead of `SucceededState` when its invocation was canceled by a filter.
 • Deprecated – `AddOrUpdate` overloads with optional params defined in the `RecurringJobManagerExtensions` class.
 • Deprecated – `AddOrUpdate` overloads with optional parameters defined in the `RecurringJob` class.
 • Deprecated – `AddOrUpdate` method overloads with no `recurringJobId` parameter.
 • Deprecated – `RecurringJobOptions.QueueName` property, new methods should be used instead.
 
-1.8.0-beta2
-• Added – `MisfireHandlingMode.Strict` to create job for each missed recurring job occurrence.
-• Added – Allow to pass parameters when creating a job (by @brian-knoll-micronetonline).
-• Added – Make it possible to use specify multiple `JobContinuationOptions` for a continuation.
-• Added – `CreateJob` method to the `JobStorageTransaction` abstract class.
-• Added – `SetJobParameter` method to the `JobStorageTransaction` abstract class.
-• Changed – Allow to query job parameters without roundtrip when supported by a storage.
-• Changed – Turn `JobContinuationOptions` enum into flags while still possible.
-• Changed – Avoid storage roundtrip to query job data in worker, take data from previous state change.
-• Fixed – Don't overwrite existing argument values with null job parameters when using `FromParameter` attribute.
-• Fixed – Job continuation mistakenly started when using the new `OnlyOnDeletedState` option.
-
-1.8.0-beta1
+Dashboard UI
+• Added – Dark mode support for Dashboard UI configurable with the `UseDarkModeSupportForDashboard` method (by @danillewin).
+• Added – Dashboard UI now have full-width layout to display more data (by @danillewin).
+• Added – Allow to add custom JavaScript and CSS files to the Dashboard UI via the `DashboardRoutes` class.
+• Added – `IGlobalConfiguration.UseJobDetailsRenderer` method for custom renderers for Job Details page.
 • Added – Display deleted jobs in the Realtime and History graphs when supported by storage.
-• Added – `DeletedState` now have the persisted `Exception` property.
-• Added – `JobContinuationOptions.OnlyOnDeletedState` to create continuations after a failure.
-• Added – `Exception` job parameter is passed to continuation when `UseResultsInContinuations` method is used.
-• Added – `FromExceptionAttribute` to deal with an antecedent exception in a background job continuation.
-• Added – Allow to filter exception types in `AutomaticRetryAttribute` by using the new `OnlyOn` property.
-• Added – `IBackgroundProcess.UseBackgroundPool` now allows to pass thread configuration logic.
-• Added – `IGlobalConfiguration.UseJobDetailsRenderer` method for custom renderers.
-• Added – `BackgroundJobServerOptions.WorkerThreadConfigurationAction` option
-• Added – Allow to pass custom data to `ApplyStateContext` and `ElectStateContext` instances.
-• Added – Preserve custom data dictionary between the entire filter chain.
-• Added – Fetch "Retries" metric with other statistics when supported by storage
 • Added – `IGlobalConfiguration.UseDashboardMetrics` extension method to pass multiple metrics at once.
 • Added – State renderer for the `DeletedState` to display its new exception property.
+• Changed – Make it possible to display methods of non-loaded jobs in Dashboard UI when supported by storage.
+• Changed – Improved display of real-time chart with more accents on failed and deleted jobs.
+• Changed – Don't display queue name in state transition list when it's the `default` one.
+• Changed – Display scheduled job count when enqueued count is zero on the main metric.
+
+Extensibility
+• Added – `Factory`, `StateMachine` and `Performer` properties to context classes to avoid injecting services.
+• Added – Allow to pass custom data to `ApplyStateContext` and `ElectStateContext` instances.
+• Added – Preserve custom data dictionary between the entire filter chain.
+• Added – Allow to pass transaction to background job state changer when new methods implemented.
+• Changed – Ignore some members when serializing a `JobFilterAttribute` instance to decrease payload size.
+
+Storage
 • Added – Virtual `JobStorage.GetReadOnlyConnection` method intended to return `JobStorageConnection` for replicas.
 • Added – Virtual `JobStorage.HasFeature` method for querying optional features.
 • Added – Optional `GetSetCount` and `GetUtcDateTime` methods for the `JobStorageConnection` class.
 • Added – Optional `AcquireDistributedLock` and `RemoveFromQueue` methods for the `JobStorageTransaction` class.
 • Added – Support for transactional acknowledge using new storage method for better handling some data loss scenarios.
-• Added – `Factory`, `StateMachine` and `Performer` properties to context classes to avoid injecting services.
-• Added – Allow to pass transaction to background job state changer when new methods implemented.
+• Added – `CreateJob` method to the `JobStorageTransaction` abstract class.
+• Added – `SetJobParameter` method to the `JobStorageTransaction` abstract class.
+• Added – Experimental `JobStorageConnection.SetContains` method.
 • Added – Optional `ParametersSnapshot` property for `BackgroundJob` and `JobData` classes to minimize roundtrips in future.
-• Changed – Use the `AttemptsExceededAction.Delete` option by default in the global automatic retry filter.
-• Changed – Move job to the `DeletedState` instead of `SucceededState` when its invocation was canceled by a filter.
+• Added – Fetch "Retries" metric with other statistics when supported by storage.
+• Changed – Allow to query job parameters without additional roundtrip when supported by a storage.
+• Changed – Expose state data dictionaries in list DTOs when supported by storage.
+
+Internals
+• Added – `IBackgroundProcess.UseBackgroundPool` now allows to pass thread configuration logic.
+• Added – `BackgroundJobServerOptions.WorkerThreadConfigurationAction` option for custom thread configuration.
+• Changed – Avoid storage roundtrip to query job data in worker, take data from previous state change.
 • Changed – `FromParameterAttribute`-based logic now always overwrites arguments, even with non-null values.
-• Changed – Improved display of real-time chart with more accents on failed and deleted jobs.
-• Changed – Ignore some members when serializing a `JobFilterAttribute` instance to decrease size
+• Changed – Turn `JobContinuationOptions` enum into flags while still possible.
+• Changed – Re-implement `TaskExtensions.WaitOneAsync` only with the `RegisterWaitForSingleObject` method.
 • Changed – `ServerHeartbeatProcess` now uses `ThreadPriority.AboveNormal` to prioritize heartbeats.
     </releaseNotes>
     <dependencies>

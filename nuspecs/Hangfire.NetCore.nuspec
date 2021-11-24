@@ -15,7 +15,7 @@
     <tags>hangfire netcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
-1.8.0-beta1
+1.8.0
 • Added – `IApplicationBuilder.UseHangfireServer` that accepts custom factory for `IBackgroundProcessingServer`.
 
     </releaseNotes>
