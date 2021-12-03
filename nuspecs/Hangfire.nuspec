@@ -38,6 +38,7 @@ Hangfire.Core
 • Added – `Exception` job parameter is passed to continuation when `UseResultsInContinuations` method is used.
 • Added – `FromExceptionAttribute` to deal with an antecedent exception in a background job continuation.
 • Added – Allow to filter exception types in `AutomaticRetryAttribute` by using the new `OnlyOn` property.
+• Added – Built-in `Remove` method for `JobFilterCollection` to remove global filters based on their type.
 • Changed – Use the `AttemptsExceededAction.Delete` option by default in the global automatic retry filter.
 • Changed – Query time from storage in recurring and delayed schedulers when supported by storage.
 • Changed – Increase the default value for the `BackgroundJobServerOptions.StopTimeout` to 500 ms.
