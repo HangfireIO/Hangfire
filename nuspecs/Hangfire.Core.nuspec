@@ -82,6 +82,7 @@ Storage
 Internals
 • Added – `IBackgroundProcess.UseBackgroundPool` now allows to pass thread configuration logic.
 • Added – `BackgroundJobServerOptions.WorkerThreadConfigurationAction` option for custom thread configuration.
+• Changed – Allow changing queues on the fly with custom worker configuration.
 • Changed – Avoid storage roundtrip to query job data in worker, take data from previous state change.
 • Changed – `FromParameterAttribute`-based logic now always overwrites arguments, even with non-null values.
 • Changed – Turn `JobContinuationOptions` enum into flags while still possible.
