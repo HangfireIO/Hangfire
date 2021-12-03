@@ -97,6 +97,24 @@ namespace Hangfire.Common
             _filters.RemoveAll(x => x.Instance == filter);
         }
 
+        /// <summary>
+        /// Remove all filters of the specified type with strict type matching.
+        /// </summary>
+        /// <typeparam name="T">Type of filters to remove.</typeparam>
+        public void Remove<T>()
+        {
+            Remove(typeof(T));
+        }
+
+        /// <summary>
+        /// Remove all filters of the specified type with strict type matching.
+        /// </summary>
+        /// <param name="type">Type of filters to remove.</param>
+        public void Remove(Type type)
+        {
+            _filters.RemoveAll(x => type == x.Instance.GetType());
+        }
+
         public IEnumerator<JobFilter> GetEnumerator()
         {
             return _filters.GetEnumerator();
