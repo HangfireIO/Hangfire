@@ -49,7 +49,7 @@ namespace Hangfire.Server
 
         private readonly ILog _logger = LogProvider.For<Worker>();
 
-        private readonly string[] _queues;
+        private readonly IEnumerable<string> _queues;
 
         private readonly IBackgroundJobPerformer _performer;
         private readonly IBackgroundJobStateChanger _stateChanger;
@@ -83,7 +83,7 @@ namespace Hangfire.Server
             if (performer == null) throw new ArgumentNullException(nameof(performer));
             if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
             
-            _queues = queues.ToArray();
+            _queues = queues;
             _performer = performer;
             _stateChanger = stateChanger;
 
@@ -99,7 +99,7 @@ namespace Hangfire.Server
             if (context == null) throw new ArgumentNullException(nameof(context));
 
             using (var connection = context.Storage.GetConnection())
-            using (var fetchedJob = connection.FetchNextJob(_queues, context.StoppingToken))
+            using (var fetchedJob = connection.FetchNextJob(_queues.ToArray(), context.StoppingToken))
             {
                 var requeueOnException = true;
 
