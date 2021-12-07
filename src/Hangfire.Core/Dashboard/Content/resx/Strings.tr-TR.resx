@@ -150,7 +150,7 @@
     <value>Siliniyor...</value>
   </data>
   <data name="Common_DeleteSelected" xml:space="preserve">
-    <value>Silme Seçildi</value>
+    <value>Seçilileri Sil</value>
   </data>
   <data name="Common_EnqueueButton_Text" xml:space="preserve">
     <value>Kuyruklu işler</value>
@@ -192,7 +192,7 @@
     <value>Neden</value>
   </data>
   <data name="Common_RequeueJobs" xml:space="preserve">
-    <value>Yeniden Sıralanmış işler</value>
+    <value>İşleri yeniden sıraya al</value>
   </data>
   <data name="Common_Retry" xml:space="preserve">
     <value>Tekrar</value>
@@ -325,7 +325,7 @@
     <value>Kuyruğa alınmış iş bulunamadı. Bir işi kuyruğa almaya çalışın.</value>
   </data>
   <data name="QueuesPage_Table_Length" xml:space="preserve">
-    <value>Uzunluk</value>
+    <value>Bekleyenler</value>
   </data>
   <data name="QueuesPage_Table_NextsJobs" xml:space="preserve">
     <value>Sonraki işler</value>
@@ -429,22 +429,22 @@
     <value>Başarılı işler</value>
   </data>
   <data name="JobsSidebarMenu_Awaiting" xml:space="preserve">
-    <value>Bekliyor</value>
+    <value>Beklenenler</value>
   </data>
   <data name="JobsSidebarMenu_Deleted" xml:space="preserve">
-    <value>Silindi</value>
+    <value>Silinenler</value>
   </data>
   <data name="JobsSidebarMenu_Failed" xml:space="preserve">
-    <value>Başarısız</value>
+    <value>Başarısızlar</value>
   </data>
   <data name="JobsSidebarMenu_Processing" xml:space="preserve">
-    <value>İşleniyor</value>
+    <value>İşlenenler</value>
   </data>
   <data name="JobsSidebarMenu_Scheduled" xml:space="preserve">
-    <value>Planlandı</value>
+    <value>Planlananlar</value>
   </data>
   <data name="JobsSidebarMenu_Succeeded" xml:space="preserve">
-    <value>Başarılı</value>
+    <value>Başarılılar</value>
   </data>
   <data name="NavigationMenu_Jobs" xml:space="preserve">
     <value>İşler</value>
@@ -453,7 +453,7 @@
     <value>Tekrarlayan İşler</value>
   </data>
   <data name="NavigationMenu_Retries" xml:space="preserve">
-    <value>Tekrarlayan işler</value>
+    <value>Yeniden Denenenler</value>
   </data>
   <data name="NavigationMenu_Servers" xml:space="preserve">
     <value>Sunucular</value>
@@ -468,7 +468,7 @@
     <value>Durum yok</value>
   </data>
   <data name="JobsSidebarMenu_Enqueued" xml:space="preserve">
-    <value>Sıraya Alınan</value>
+    <value>Sıradakiler</value>
   </data>
   <data name="Metrics_ActiveConnections" xml:space="preserve">
     <value>Aktif Bağlantılar</value>
@@ -486,7 +486,7 @@
     <value>Tekrarlayan İşler</value>
   </data>
   <data name="Metrics_Retries" xml:space="preserve">
-    <value>Tekrarlar</value>
+    <value>Yeniden Denenenler</value>
   </data>
   <data name="Metrics_ScheduledJobs" xml:space="preserve">
     <value>Planlanan İşler</value>
