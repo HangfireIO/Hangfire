@@ -40,8 +40,8 @@ namespace Hangfire.SqlServer
         private static readonly TimeSpan LongPollingThreshold = TimeSpan.FromSeconds(1);
         private static readonly int PollingQuantumMs = 1000;
         private static readonly int MinPollingDelayMs = 50;
-        private static readonly ConcurrentDictionary<Tuple<SqlServerStorage, string>, SemaphoreSlim> Semaphores =
-            new ConcurrentDictionary<Tuple<SqlServerStorage, string>, SemaphoreSlim>();
+        private static readonly DynamicMutex<Tuple<SqlServerStorage, string>> DynamicMutex =
+            new DynamicMutex<Tuple<SqlServerStorage, string>>();
 
         private readonly SqlServerStorage _storage;
         private readonly SqlServerStorageOptions _options;
@@ -94,7 +94,7 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
 
             var useLongPolling = false;
             var queuesString = String.Join("_", queues.OrderBy(x => x));
-            var semaphore = Semaphores.GetOrAdd(Tuple.Create(_storage, queuesString), new SemaphoreSlim(initialCount: 1));
+            var resource = Tuple.Create(_storage, queuesString);
 
             var pollingDelayMs = Math.Min(
                 Math.Max((int)_options.QueuePollInterval.TotalMilliseconds, MinPollingDelayMs),
@@ -108,9 +108,11 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
+                    var acquired = false;
+
                     try
                     {
-                        if (useLongPolling) semaphore.Wait(cancellationToken);
+                        if (useLongPolling) DynamicMutex.Wait(resource, cancellationToken, out acquired);
 
                         fetched = _storage.UseConnection(null, connection =>
                         {
@@ -140,9 +142,9 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                     }
                     finally
                     {
-                        if (useLongPolling && semaphore.CurrentCount == 0)
+                        if (acquired)
                         {
-                            semaphore.Release();
+                            DynamicMutex.Release(resource);
                         }
                     }
 
