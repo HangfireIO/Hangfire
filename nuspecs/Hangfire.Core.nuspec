@@ -22,6 +22,11 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.28
+• Fixed – Reduce the number of attempts in `BackgroundJobStateChanger` to avoid infinite loops.
+• Fixed – Typos in German translation (by @saxx).
+• Fixed – Translations in Turkish translation (by @can-zengin).
+
 1.7.27
 • Added – Turkish language support for the Dashboard UI (by @csarigul).
 • Fixed – Trigger button in the Dashboard UI doesn't respect a custom time zone resolver.

@@ -22,6 +22,20 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.28
+
+Hangfire.Core
+
+• Fixed – Reduce the number of attempts in `BackgroundJobStateChanger` to avoid infinite loops.
+• Fixed – Typos in German translation (by @saxx).
+• Fixed – Translations in Turkish translation (by @can-zengin).
+
+Hangfire.SqlServer
+
+• Fixed – Possibly fixed CPU consumption problems and high amounts of fetching queries after deploys to IIS.
+• Fixed – No more than a single long-polling query is allowed per storage instance when using sub-second polling.
+• Fixed – Don't depend on thread pool when sending heartbeats for active jobs to avoid problems when it's starved.
+
 1.7.27
 
 Hangfire.Core
