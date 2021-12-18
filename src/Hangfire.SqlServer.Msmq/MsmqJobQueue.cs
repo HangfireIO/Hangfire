@@ -1,5 +1,5 @@
 // This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright ï¿½ 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -42,9 +42,8 @@ namespace Hangfire.SqlServer.Msmq
             string jobId = null;
             var queueIndex = 0;
 
-            do
+            while (!cancellationToken.IsCancellationRequested)
             {
-                cancellationToken.ThrowIfCancellationRequested();
                 var transaction = CreateTransaction();
                 
                 try
@@ -73,7 +72,10 @@ namespace Hangfire.SqlServer.Msmq
                 }
 
                 queueIndex = (queueIndex + 1) % queues.Length;
-            } while (true);
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            return null;
         }
 
         public void Enqueue(IDbConnection connection, string queue, string jobId)

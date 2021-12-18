@@ -100,14 +100,12 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                 Math.Max((int)_options.QueuePollInterval.TotalMilliseconds, MinPollingDelayMs),
                 PollingQuantumMs);
 
-            SqlServerTimeoutJob fetched;
+            SqlServerTimeoutJob fetched = null;
 
             using (var cancellationEvent = cancellationToken.GetCancellationEvent())
             {
-                do
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-
                     var acquired = false;
 
                     try
@@ -128,7 +126,6 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                             {
                                 while (!reader.IsConsumed)
                                 {
-                                    cancellationToken.ThrowIfCancellationRequested();
                                     var fetchedJob = reader.Read<FetchedJob>().SingleOrDefault(x => x != null);
                                     if (fetchedJob != null)
                                     {
@@ -160,9 +157,10 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                     else
                     {
                         WaitHandle.WaitAny(new WaitHandle[] { cancellationEvent.WaitHandle, NewItemInQueueEvent }, _options.QueuePollInterval);
-                        cancellationToken.ThrowIfCancellationRequested();
                     }
-                } while (true);
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
             }
 
             return fetched;
@@ -228,9 +226,8 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
 
             using (var cancellationEvent = cancellationToken.GetCancellationEvent())
             {
-                do
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
                     var connection = _storage.CreateAndOpenConnection();
 
                     try
@@ -282,8 +279,10 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
                     }
 
                     WaitHandle.WaitAny(new WaitHandle[] { cancellationEvent.WaitHandle, NewItemInQueueEvent }, pollInterval);
-                    cancellationToken.ThrowIfCancellationRequested();
-                } while (true);
+                }
+                
+                cancellationToken.ThrowIfCancellationRequested();
+                return null;
             }
         }
 
