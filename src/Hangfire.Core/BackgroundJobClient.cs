@@ -137,7 +137,7 @@ namespace Hangfire
         }
 
         /// <inheritdoc />
-        public string Create(Job job, IState state)
+        public string Create(Job job, IState state, params Tuple<string, object>[] parameters)
         {
             if (job == null) throw new ArgumentNullException(nameof(job));
             if (state == null) throw new ArgumentNullException(nameof(state));
@@ -147,6 +147,11 @@ namespace Hangfire
                 using (var connection = _storage.GetConnection())
                 {
                     var context = new CreateContext(_storage, connection, job, state);
+                    foreach (var parameter in parameters)
+                    {
+                        context.Parameters[parameter.Item1] = parameter.Item2;
+                    }
+
                     var backgroundJob = _factory.Create(context);
 
                     return backgroundJob?.Id;
