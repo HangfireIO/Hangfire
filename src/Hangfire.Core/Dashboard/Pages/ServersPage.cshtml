@@ -54,17 +54,16 @@
                                 <td>
                                     @if (server.Heartbeat < now.Add(-possiblyAbortedThreshold))
                                     {
-                                        <span class="glyphicon glyphicon-alert text-danger" title="@Strings.ServersPage_Possibly_Aborted"></span>
+                                        @:<span class="glyphicon glyphicon-alert text-danger" title="@Strings.ServersPage_Possibly_Aborted"></span>&nbsp;@Html.ServerId(server.Name)
                                     }
                                     else if (server.Heartbeat < now.Add(-inconclusiveThreshold))
                                     {
-                                        <span class="glyphicon margin-right-14p"></span>
+                                        @:<span class="glyphicon margin-right-14p"></span>&nbsp;@Html.ServerId(server.Name)
                                     }
                                     else
                                     {
-                                        <span class="glyphicon glyphicon-ok text-success" title="@Strings.ServersPage_Active"></span>
+                                        @:<span class="glyphicon glyphicon-ok text-success" title="@Strings.ServersPage_Active"></span>&nbsp;@Html.ServerId(server.Name)
                                     }
-                                    @Html.ServerId(server.Name)
                                 </td>
                                 <td>@server.WorkersCount</td>
                                 <td>@Html.Raw(String.Join(", ", server.Queues.Select(Html.QueueLabel)))</td>
