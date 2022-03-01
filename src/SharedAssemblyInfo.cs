@@ -2,8 +2,8 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyProduct("Hangfire")]
-[assembly: AssemblyCompany("Sergey Odinokov")]
-[assembly: AssemblyCopyright("Copyright © 2013-2016 Sergey Odinokov")]
+[assembly: AssemblyCompany("Hangfire OÜ")]
+[assembly: AssemblyCopyright("Copyright © 2013-2022 Hangfire OÜ")]
 [assembly: AssemblyCulture("")]
 
 [assembly: ComVisible(false)]
