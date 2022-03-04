@@ -232,29 +232,41 @@ namespace Hangfire.Server
             string recurringJobId,
             DateTime now)
         {
-            using (connection.AcquireDistributedRecurringJobLock(recurringJobId, LockTimeout))
+            try
             {
-                var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
-
-                if (recurringJob == null)
+                using (connection.AcquireDistributedRecurringJobLock(recurringJobId, LockTimeout))
                 {
-                    RemoveRecurringJob(connection, recurringJobId);
-                    return;
-                }
+                    var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
 
-                Exception exception;
+                    if (recurringJob == null)
+                    {
+                        RemoveRecurringJob(connection, recurringJobId);
+                        return;
+                    }
 
-                try
-                {
-                    ScheduleRecurringJob(context, connection, recurringJobId, recurringJob, now);
-                    return;
-                }
-                catch (BackgroundJobClientException ex)
-                {
-                    exception = ex.InnerException;
-                }
+                    Exception exception;
 
-                RetryRecurringJob(connection, recurringJobId, recurringJob, exception);
+                    try
+                    {
+                        ScheduleRecurringJob(context, connection, recurringJobId, recurringJob, now);
+                        return;
+                    }
+                    catch (BackgroundJobClientException ex)
+                    {
+                        exception = ex.InnerException;
+                    }
+
+                    RetryRecurringJob(connection, recurringJobId, recurringJob, exception);
+                }
+            }
+            catch (DistributedLockTimeoutException e) when (e.Resource.EndsWith($"lock:recurring-job:{recurringJobId}"))
+            {
+                // DistributedLockTimeoutException here doesn't mean that others weren't scheduled.
+                // It just means another Hangfire server did this work.
+                _logger.Log(
+                    LogLevel.Debug,
+                    () => $@"An exception was thrown during acquiring distributed lock the {recurringJobId} resource within {LockTimeout.TotalSeconds} seconds. The recurring job has not been handled this time.",
+                    e);
             }
         }
 
