@@ -167,7 +167,7 @@ In order to give the community time to respond and upgrade we strongly urge you 
 License
 --------
 
-Copyright © 2013-2022 Hangfire OÜ.
+Copyright © 2013-2021 Sergey Odinokov.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
@@ -185,7 +185,7 @@ along with this program.  If not, see [http://www.gnu.org/licenses/](http://www.
 Legal
 ------
 
-By submitting a Pull Request, you disavow any rights or claims to any changes submitted to the Hangfire project and assign the copyright of those changes to Hangfire OÜ.
+By submitting a Pull Request, you disavow any rights or claims to any changes submitted to the Hangfire project and assign the copyright of those changes to Sergey Odinokov.
 
 If you cannot or do not want to reassign those rights (your employment contract for your employer may not allow this), you should not submit a PR. Open an issue and someone else can do the work.
 
