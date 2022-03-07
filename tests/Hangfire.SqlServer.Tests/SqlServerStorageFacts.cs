@@ -105,9 +105,9 @@ namespace Hangfire.SqlServer.Tests
 
 #if !NET452
         [Fact, CleanDatabase]
-        public void UseConnection_UsesMicrosoftDataSqlClient_WhenCorrespondingOptionIsSet()
+        public void UseConnection_UsesMicrosoftDataSqlClient_WhenSqlClientFactoryIsSet()
         {
-            _options.PreferMicrosoftDataSqlClient = true;
+            _options.SqlClientFactory = Microsoft.Data.SqlClient.SqlClientFactory.Instance;
             var storage = CreateStorage();
             storage.UseConnection(null, connection =>
             {

@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 #if FEATURE_CONFIGURATIONMANAGER
@@ -390,13 +389,9 @@ namespace Hangfire.SqlServer
         
         private DbConnection DefaultConnectionFactory()
         {
-            if (_options.PreferMicrosoftDataSqlClient)
-            {
-                var connection = Activator.CreateInstance(_microsoftDataSqlClientType, new object[] { _connectionString });
-                if (connection is DbConnection dbConnection) return dbConnection;
-            }
-
-            return new SqlConnection(_connectionString);
+            var connection = _options.SqlClientFactory.CreateConnection() ?? throw new InvalidOperationException($"The provider factory ({_options.SqlClientFactory}) returned a null DbConnection.");
+            connection.ConnectionString = _connectionString;
+            return connection;
         }
 
         private static bool IsRunningOnWindows()
