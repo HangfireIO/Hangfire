@@ -15,6 +15,8 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Data.Common;
+using System.Reflection;
 #if FEATURE_TRANSACTIONSCOPE
 using System.Transactions;
 #else
@@ -29,6 +31,7 @@ namespace Hangfire.SqlServer
         private string _schemaName;
         private TimeSpan _jobExpirationCheckInterval;
         private TimeSpan? _slidingInvisibilityTimeout;
+        private DbProviderFactory _sqlClientFactory;
 
         public SqlServerStorageOptions()
         {
@@ -50,6 +53,38 @@ namespace Hangfire.SqlServer
             UseRecommendedIsolationLevel = true;
             CommandBatchMaxTimeout = TimeSpan.FromMinutes(5);
             TryAutoDetectSchemaDependentOptions = true;
+            _sqlClientFactory = GetDefaultSqlClientFactory();
+        }
+
+        private static DbProviderFactory GetDefaultSqlClientFactory()
+        {
+            var dbProviderFactoryTypes = new[]
+            {
+                // Available in the .NET Framework GAC, requires Version + Culture + PublicKeyToken to be explicitly specified
+                "System.Data.SqlClient.SqlClientFactory, System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
+                "System.Data.SqlClient.SqlClientFactory, System.Data.SqlClient",
+                "Microsoft.Data.SqlClient.SqlClientFactory, Microsoft.Data.SqlClient",
+            };
+
+            foreach (var dbProviderFactoryType in dbProviderFactoryTypes)
+            {
+                var providerFactoryType = Type.GetType(dbProviderFactoryType, throwOnError: false);
+                if (providerFactoryType != null)
+                {
+                    var instanceField = providerFactoryType.GetField("Instance");
+                    if (instanceField == null)
+                    {
+                        continue;
+                    }
+                    var instance = (DbProviderFactory)instanceField.GetValue(null);
+                    if (instance != null)
+                    {
+                        return instance;
+                    }
+                }
+            }
+
+            return null;
         }
 
         [Obsolete("TransactionIsolationLevel option is deprecated, please set UseRecommendedIsolationLevel instead. Will be removed in 2.0.0.")]
@@ -155,10 +190,16 @@ namespace Hangfire.SqlServer
         public bool UseTransactionalAcknowledge { get; set; }
 
         /// <summary>
-        /// Gets or sets whether to prefer to use the new Microsoft.Data.SqlClient package instead of the
-        /// System.Data.SqlClient when available (e.g. package is referenced).
+        /// Gets or sets the <see cref="DbProviderFactory"/> for creating <c>SqlConnection</c> instances.
+        /// Defaults to either <c>System.Data.SqlClient.SqlClientFactory.Instance</c> or
+        /// <c>Microsoft.Data.SqlClient.SqlClientFactory</c> depending on which package reference exists
+        /// on the consuming project.
         /// </summary>
-        public bool PreferMicrosoftDataSqlClient { get; set; }
+        public DbProviderFactory SqlClientFactory
+        {
+            get => _sqlClientFactory ?? throw new InvalidOperationException("A reference to either Microsoft.Data.SqlClient or System.Data.SqlClient must exist.");
+            set => _sqlClientFactory = value ?? throw new ArgumentNullException(nameof(value));
+        }
 
         /// <summary>
         /// Gets or sets whether to try automatically query for the current schema on application start
