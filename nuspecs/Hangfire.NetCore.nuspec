@@ -8,9 +8,10 @@
     <owners>odinserj</owners>
     <projectUrl>https://www.hangfire.io/</projectUrl>
     <repository type="git" url="https://github.com/HangfireIO/Hangfire.git" />
-    <license type="expression">0BSD</license>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>.NET Core's Worker Service host support for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2019 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2022 Hangfire OÜ</copyright>
     <tags>hangfire netcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
@@ -63,6 +64,8 @@
     <file src="..\src\Hangfire.AspNetCore\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
 
     <file src="LICENSE.md" />
+    <file src="COPYING" />
+    <file src="COPYING.LESSER" />
     <file src="NOTICES" />
     <file src="LICENSE_STANDARD" />
     <file src="LICENSE_ROYALTYFREE" />
