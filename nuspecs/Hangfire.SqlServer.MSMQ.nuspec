@@ -8,8 +8,7 @@
     <owners>odinserj</owners>
     <projectUrl>https://www.hangfire.io/</projectUrl>
     <repository type="git" url="https://github.com/HangfireIO/Hangfire.git" />
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
+    <license type="expression">0BSD</license>
     <description>MSMQ queues support for SQL Server job storage implementation for Hangfire (background job system for ASP.NET applications).</description>
     <copyright>Copyright © 2014 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer MSMQ</tags>
@@ -46,8 +45,6 @@
     <file src="..\src\Hangfire.SqlServer.Msmq\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
     <file src="LICENSE.md" />
     <file src="NOTICES" />
-    <file src="COPYING" />
-    <file src="COPYING.LESSER" />
     <file src="LICENSE_STANDARD" />
     <file src="LICENSE_ROYALTYFREE" />
   </files>
