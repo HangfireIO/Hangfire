@@ -37,7 +37,7 @@ namespace Hangfire.Dashboard.Pages
         {
 
 
-WriteLiteral("\n");
+WriteLiteral("\r\n");
 
 
 
@@ -45,7 +45,7 @@ WriteLiteral("\n");
 
             
             #line 5 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
-   
+  
     var metric = DashboardMetric.Func(this);
     var className = metric == null ? "metric-null" : metric.Style.ToClassName();
     var highlighted = metric != null && metric.Highlighted ? "highlighted" : null;
@@ -54,7 +54,7 @@ WriteLiteral("\n");
             
             #line default
             #line hidden
-WriteLiteral("\n");
+WriteLiteral("\r\n");
 
 
             
@@ -75,7 +75,7 @@ WriteLiteral("<a href=\"");
             
             #line default
             #line hidden
-WriteLiteral("\" class=\"clickable-metric\">\n");
+WriteLiteral("\" class=\"clickable-metric\">\r\n");
 
 
             
@@ -105,7 +105,7 @@ WriteLiteral(" ");
             
             #line default
             #line hidden
-WriteLiteral("\">\n    <div class=\"metric-body\" data-metric=\"");
+WriteLiteral("\">\r\n    <div class=\"metric-body\" data-metric=\"");
 
 
             
@@ -115,7 +115,7 @@ WriteLiteral("\">\n    <div class=\"metric-body\" data-metric=\"");
             
             #line default
             #line hidden
-WriteLiteral("\">\n        ");
+WriteLiteral("\">\r\n        ");
 
 
             
@@ -125,7 +125,7 @@ WriteLiteral("\">\n        ");
             
             #line default
             #line hidden
-WriteLiteral("\n    </div>\n    <div class=\"metric-description\">\n        ");
+WriteLiteral("\r\n    </div>\r\n    <div class=\"metric-description\">\r\n        ");
 
 
             
@@ -135,7 +135,7 @@ WriteLiteral("\n    </div>\n    <div class=\"metric-description\">\n        ");
             
             #line default
             #line hidden
-WriteLiteral("\n    </div>\n</div>\n");
+WriteLiteral("\r\n    </div>\r\n</div>\r\n");
 
 
             
@@ -146,13 +146,12 @@ WriteLiteral("\n    </div>\n</div>\n");
             
             #line default
             #line hidden
-WriteLiteral("</a>\n");
+WriteLiteral("</a>\r\n");
 
 
             
             #line 26 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
 }
-
             
             #line default
             #line hidden
