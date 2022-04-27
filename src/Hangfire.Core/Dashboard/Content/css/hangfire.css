@@ -611,6 +611,11 @@ span.metric-default.highlighted {
     background-color: #777;
 }
 
+.clickable-metric, .clickable-metric:hover, .clickable-metric:active, .clickable-metric:visited, .clickable-metric:focus {
+    color: inherit;
+    text-decoration: none;
+}
+
 div.metric {
     border: solid 1px transparent;
     border-radius: 4px;
