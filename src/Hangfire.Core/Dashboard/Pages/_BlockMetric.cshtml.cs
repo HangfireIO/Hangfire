@@ -45,7 +45,8 @@ WriteLiteral("\n");
 
             
             #line 5 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
-   var metric = DashboardMetric.Func(this);
+   
+    var metric = DashboardMetric.Func(this);
     var className = metric == null ? "metric-null" : metric.Style.ToClassName();
     var highlighted = metric != null && metric.Highlighted ? "highlighted" : null;
  
@@ -57,7 +58,7 @@ WriteLiteral("\n");
 
 
             
-            #line 10 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
+            #line 11 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
  if (!string.IsNullOrEmpty(DashboardMetric.ClickUrl))
 {
 
@@ -68,7 +69,7 @@ WriteLiteral("<a href=\"");
 
 
             
-            #line 12 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
+            #line 13 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
       Write(DashboardMetric.ClickUrl);
 
             
@@ -78,7 +79,7 @@ WriteLiteral("\" class=\"clickable-metric\">\n");
 
 
             
-            #line 13 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
+            #line 14 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
 }
 
             
@@ -88,7 +89,7 @@ WriteLiteral("<div class=\"metric ");
 
 
             
-            #line 14 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
+            #line 15 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
               Write(className);
 
             
@@ -98,7 +99,7 @@ WriteLiteral(" ");
 
 
             
-            #line 14 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
+            #line 15 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
                          Write(highlighted);
 
             
@@ -108,7 +109,7 @@ WriteLiteral("\">\n    <div class=\"metric-body\" data-metric=\"");
 
 
             
-            #line 15 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
+            #line 16 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
                                      Write(DashboardMetric.Name);
 
             
@@ -118,7 +119,7 @@ WriteLiteral("\">\n        ");
 
 
             
-            #line 16 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
+            #line 17 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
     Write(metric?.Value);
 
             
@@ -128,7 +129,7 @@ WriteLiteral("\n    </div>\n    <div class=\"metric-description\">\n        ");
 
 
             
-            #line 19 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
+            #line 20 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
     Write(Strings.ResourceManager.GetString(DashboardMetric.Title) ?? DashboardMetric.Title);
 
             
@@ -138,7 +139,7 @@ WriteLiteral("\n    </div>\n</div>\n");
 
 
             
-            #line 22 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
+            #line 23 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
  if (!string.IsNullOrEmpty(DashboardMetric.ClickUrl))
 {
 
@@ -149,7 +150,7 @@ WriteLiteral("</a>\n");
 
 
             
-            #line 25 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
+            #line 26 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
 }
 
             
