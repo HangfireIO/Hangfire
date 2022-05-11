@@ -106,7 +106,7 @@ namespace Hangfire.Processing
                             // domain unloads.
                             if (StopRequested) break;
 
-                            if (nextDelay > TimeSpan.Zero)
+                            if (nextDelay != TimeSpan.Zero)
                             {
                                 if (!HandleDelay(executionId, nextDelay))
                                 {
@@ -193,7 +193,7 @@ namespace Hangfire.Processing
                             // domain unloads.
                             if (StopRequested) break;
 
-                            if (nextDelay > TimeSpan.Zero)
+                            if (nextDelay != TimeSpan.Zero)
                             {
                                 if (!await HandleDelayAsync(executionId, nextDelay).ConfigureAwait(true))
                                 {
@@ -297,6 +297,11 @@ namespace Hangfire.Processing
             {
                 return false;
             }
+            catch (Exception ex)
+            {
+                LogUnableWait(executionId, delay, ex);
+                return false;
+            }
         }
 
         private async Task<bool> HandleDelayAsync(Guid executionId, TimeSpan delay)
@@ -310,6 +315,16 @@ namespace Hangfire.Processing
             {
                 return false;
             }
+            catch (Exception ex)
+            {
+                LogUnableWait(executionId, delay, ex);
+                return false;
+            }
+        }
+
+        private void LogUnableWait(Guid executionId, TimeSpan delay, Exception ex)
+        {
+            _logger.FatalException($"{GetExecutionLoopTemplate(executionId)} was unable to wait for '{delay}' delay due to an exception. Execution will be stopped.", ex);
         }
 
         private void LogRetry(Guid executionId, TimeSpan delay)
