@@ -35,7 +35,7 @@ namespace Hangfire.Processing
         // one defines its own logging rules to lower the number of logged messages,
         // to not to make stress on logging subsystem with thousands of messages in
         // case of transient faults.
-        private readonly ManualResetEvent _running = new ManualResetEvent(true);
+        private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
         private Stopwatch _faultedSince;
         private Stopwatch _failedSince;
         private Stopwatch _lastException;
@@ -108,7 +108,12 @@ namespace Hangfire.Processing
 
                             if (nextDelay > TimeSpan.Zero)
                             {
-                                HandleDelay(executionId, nextDelay);
+                                if (!HandleDelay(executionId, nextDelay))
+                                {
+                                    // Inability to handle the delay means that execution was
+                                    // already stopped, so we should break the loop.
+                                    break;
+                                }
                             }
 
                             callback(executionId, state);
@@ -190,7 +195,12 @@ namespace Hangfire.Processing
 
                             if (nextDelay > TimeSpan.Zero)
                             {
-                                await HandleDelayAsync(executionId, nextDelay).ConfigureAwait(true);
+                                if (!await HandleDelayAsync(executionId, nextDelay).ConfigureAwait(true))
+                                {
+                                    // Inability to handle the delay means that execution was
+                                    // already stopped, so we should break the loop.
+                                    break;
+                                }
                             }
 
                             await callback(executionId, state).ConfigureAwait(true);
@@ -235,13 +245,15 @@ namespace Hangfire.Processing
 
         public void Dispose()
         {
-            lock (_running)
+            lock (_stopped)
             {
                 if (_disposed) return;
                 _disposed = true;
 
                 _stopRegistration.Dispose();
-                _running.Dispose();
+
+                _stopped.Set();
+                _stopped.Dispose();
             }
         }
 
@@ -274,16 +286,30 @@ namespace Hangfire.Processing
             initialDelay = TimeSpan.Zero;
         }
 
-        private void HandleDelay(Guid executionId, TimeSpan delay)
+        private bool HandleDelay(Guid executionId, TimeSpan delay)
         {
-            LogRetry(executionId, delay);
-            _running.WaitOne(delay, _stopToken);
+            try
+            {
+                LogRetry(executionId, delay);
+                return !_stopped.WaitOne(delay, _stopToken);
+            }
+            catch (ObjectDisposedException)
+            {
+                return false;
+            }
         }
 
-        private async Task HandleDelayAsync(Guid executionId, TimeSpan delay)
+        private async Task<bool> HandleDelayAsync(Guid executionId, TimeSpan delay)
         {
-            LogRetry(executionId, delay);
-            await _running.WaitOneAsync(delay, _stopToken).ConfigureAwait(true);
+            try
+            {
+                LogRetry(executionId, delay);
+                return !await _stopped.WaitOneAsync(delay, _stopToken).ConfigureAwait(true);
+            }
+            catch (ObjectDisposedException)
+            {
+                return false;
+            }
         }
 
         private void LogRetry(Guid executionId, TimeSpan delay)
@@ -372,7 +398,7 @@ namespace Hangfire.Processing
 
         private void ToRunningState()
         {
-            lock (_running)
+            lock (_stopped)
             {
                 if (_disposed) return;
 
@@ -398,20 +424,16 @@ namespace Hangfire.Processing
                 _faultedSince = null;
                 _failedSince = null;
                 _lastException = null;
-
-                _running.Set();
             }
         }
 
         private void ToFailedState(Exception exception, out TimeSpan retryDelay)
         {
-            lock (_running)
+            lock (_stopped)
             {
                 retryDelay = FallbackRetryDelay;
 
                 if (_disposed) return;
-
-                _running.Reset();
 
                 _exceptionsCount++;
                 _lastException = Stopwatch.StartNew();
