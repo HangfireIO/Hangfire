@@ -14,7 +14,9 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Data.SqlClient;
+using System.Collections.Concurrent;
+using System.Data.Common;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -22,89 +24,123 @@ namespace Hangfire.SqlServer
 {
     internal class SqlCommandSet : IDisposable
     {
-        public  static readonly bool IsAvailable;
+        private static readonly ConcurrentDictionary<Assembly, Type> SqlCommandSetType = new ConcurrentDictionary<Assembly, Type>();
+        private static readonly ConcurrentDictionary<Type, Action<object, DbConnection>> SetConnection = new ConcurrentDictionary<Type, Action<object, DbConnection>>();
+        private static readonly ConcurrentDictionary<Type, Action<object, DbTransaction>> SetTransaction = new ConcurrentDictionary<Type, Action<object, DbTransaction>>();
+        private static readonly ConcurrentDictionary<Type, Func<object, DbCommand>> GetBatchCommand = new ConcurrentDictionary<Type, Func<object, DbCommand>>();
+        private static readonly ConcurrentDictionary<Type, PropertyInfo> BatchCommandProperty = new ConcurrentDictionary<Type, PropertyInfo>();
+        private static readonly ConcurrentDictionary<Type, Action<object, DbCommand>> AppendMethod = new ConcurrentDictionary<Type, Action<object, DbCommand>>();
+        private static readonly ConcurrentDictionary<Type, Func<object, int>> ExecuteNonQueryMethod = new ConcurrentDictionary<Type, Func<object, int>>();
+        private static readonly ConcurrentDictionary<Type, Action<object>> DisposeMethod = new ConcurrentDictionary<Type, Action<object>>();
 
-        private static readonly Type SqlCommandSetType = null;
         private readonly object _instance;
 
-        private static readonly Action<object, SqlConnection> SetConnection = null;
-        private static readonly Action<object, SqlTransaction> SetTransaction = null;
-        private static readonly Func<object, SqlCommand> GetBatchCommand = null;
-        private static readonly Action<object, SqlCommand> AppendMethod = null;
-        private static readonly Func<object, int> ExecuteNonQueryMethod = null;
-        private static readonly Action<object> DisposeMethod = null;
+        private readonly Action<object, DbConnection> _setConnection;
+        private readonly Action<object, DbTransaction> _setTransaction;
+        private readonly Func<object, DbCommand> _getBatchCommand;
+        private readonly Action<object, DbCommand> _appendMethod;
+        private readonly Func<object, int> _executeNonQueryMethod;
+        private readonly Action<object> _disposeMethod;
 
-        static SqlCommandSet()
+        public SqlCommandSet(DbConnection connection)
         {
+            Type sqlCommandSetType;
             try
             {
-                var typeAssembly = typeof(SqlCommand).GetTypeInfo().Assembly;
-                var version = typeAssembly.GetName().Version;
-
-                if (Version.Parse("4.0.0.0") < version && version < Version.Parse("4.6.0.0"))
+                sqlCommandSetType = SqlCommandSetType.GetOrAdd(connection.GetType().GetTypeInfo().Assembly, sqlClientAssembly =>
                 {
-                    // .NET Core version of the System.Data.SqlClient package below 4.7.0 (which
-                    // has assembly version 4.6.0.0) doesn't properly implement the SqlCommandSet
-                    // class, throwing the following exception in run-time:
-                    // ArgumentException: Specified parameter name 'Parameter1' is not valid.
-                    // GitHub Issue: https://github.com/dotnet/corefx/issues/29391
+                    var assemblyName = sqlClientAssembly.GetName();
+                    var version = assemblyName.Version;
 
-                    IsAvailable = false;
-                    return;
-                }
+                    if (assemblyName.Name == "System.Data.SqlClient" && Version.Parse("4.0.0.0") < version && version < Version.Parse("4.6.0.0"))
+                    {
+                        // .NET Core version of the System.Data.SqlClient package below 4.7.0 (which
+                        // has assembly version 4.6.0.0) doesn't properly implement the SqlCommandSet
+                        // class, throwing the following exception in run-time:
+                        // ArgumentException: Specified parameter name 'Parameter1' is not valid.
+                        // GitHub Issue: https://github.com/dotnet/corefx/issues/29391
+                        throw new NotSupportedException(".NET Core version of the System.Data.SqlClient package below 4.7.0 (which has assembly version 4.6.0.0) doesn't properly implement the SqlCommandSet class.");
+                    }
 
-                SqlCommandSetType = typeAssembly.GetType("System.Data.SqlClient.SqlCommandSet");
+                    var type = sqlClientAssembly.GetTypes().FirstOrDefault(x => x.Name == "SqlCommandSet");
+                    if (type == null)
+                    {
+                        throw new TypeLoadException($"Could not load type 'SqlCommandSet' from assembly '{sqlClientAssembly}'.");
+                    }
 
-                if (SqlCommandSetType == null) return;
+                    return type;
+                });
 
-                var p = Expression.Parameter(typeof(object));
-                var converted = Expression.Convert(p, SqlCommandSetType);
-
-                var connectionParameter = Expression.Parameter(typeof(SqlConnection));
-                var transactionParameter = Expression.Parameter(typeof(SqlTransaction));
-                var commandParameter = Expression.Parameter(typeof(SqlCommand));
-
-                SetConnection = Expression.Lambda<Action<object, SqlConnection>>(Expression.Call(converted, "set_Connection", null, connectionParameter), p, connectionParameter).Compile();
-                SetTransaction = Expression.Lambda<Action<object, SqlTransaction>>(Expression.Call(converted, "set_Transaction", null, transactionParameter), p, transactionParameter).Compile();
-                GetBatchCommand = Expression.Lambda<Func<object, SqlCommand>>(Expression.Call(converted, "get_BatchCommand", null), p).Compile();
-                AppendMethod = Expression.Lambda<Action<object, SqlCommand>>(Expression.Call(converted, "Append", null, commandParameter), p, commandParameter).Compile();
-                ExecuteNonQueryMethod = Expression.Lambda<Func<object, int>>(Expression.Call(converted, "ExecuteNonQuery", null), p).Compile();
-                DisposeMethod = Expression.Lambda<Action<object>>(Expression.Call(converted, "Dispose", null), p).Compile();
-
-                IsAvailable = true;
+                _setConnection = SetConnection.GetOrAdd(sqlCommandSetType, type =>
+                {
+                    var p = Expression.Parameter(typeof(object));
+                    var converted = Expression.Convert(p, type);
+                    var connectionParameter = Expression.Parameter(typeof(DbConnection));
+                    var connectionProperty = type.GetProperty("Connection", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) ?? throw new MissingMemberException($"Property '{type.FullName}.Connection' not found.");
+                    return Expression.Lambda<Action<object, DbConnection>>(Expression.Assign(Expression.Property(converted, connectionProperty), Expression.Convert(connectionParameter, connectionProperty.PropertyType)), p, connectionParameter).Compile();
+                });
+                _setTransaction = SetTransaction.GetOrAdd(sqlCommandSetType, type =>
+                {
+                    var p = Expression.Parameter(typeof(object));
+                    var converted = Expression.Convert(p, type);
+                    var transactionParameter = Expression.Parameter(typeof(DbTransaction));
+                    var transactionProperty = type.GetProperty("Transaction", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) ?? throw new MissingMemberException($"Property '{type.FullName}.Transaction' not found.");
+                    return Expression.Lambda<Action<object, DbTransaction>>(Expression.Assign(Expression.Property(converted, transactionProperty), Expression.Convert(transactionParameter, transactionProperty.PropertyType)), p, transactionParameter).Compile();
+                });
+                var batchCommandProperty = BatchCommandProperty.GetOrAdd(sqlCommandSetType, type =>
+                {
+                    return type.GetProperty("BatchCommand", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) ?? throw new MissingMemberException($"Property '{type.FullName}.BatchCommand' not found.");
+                });
+                _getBatchCommand = GetBatchCommand.GetOrAdd(sqlCommandSetType, type =>
+                {
+                    var p = Expression.Parameter(typeof(object));
+                    var converted = Expression.Convert(p, type);
+                    return Expression.Lambda<Func<object, DbCommand>>(Expression.Property(converted, batchCommandProperty), p).Compile();
+                });
+                _appendMethod = AppendMethod.GetOrAdd(sqlCommandSetType, type =>
+                {
+                    var p = Expression.Parameter(typeof(object));
+                    var converted = Expression.Convert(p, type);
+                    var batchCommandParameter = Expression.Parameter(typeof(DbCommand));
+                    return Expression.Lambda<Action<object, DbCommand>>(Expression.Call(converted, "Append", null, Expression.Convert(batchCommandParameter, batchCommandProperty.PropertyType)), p, batchCommandParameter).Compile();
+                });
+                _executeNonQueryMethod = ExecuteNonQueryMethod.GetOrAdd(sqlCommandSetType, type =>
+                {
+                    var p = Expression.Parameter(typeof(object));
+                    var converted = Expression.Convert(p, type);
+                    return Expression.Lambda<Func<object, int>>(Expression.Call(converted, "ExecuteNonQuery", null), p).Compile();
+                });
+                _disposeMethod = DisposeMethod.GetOrAdd(sqlCommandSetType, type =>
+                {
+                    var p = Expression.Parameter(typeof(object));
+                    var converted = Expression.Convert(p, type);
+                    return Expression.Lambda<Action<object>>(Expression.Call(converted, "Dispose", null), p).Compile();
+                });
             }
-            catch (Exception ex) when (ex.IsCatchableExceptionType())
+            catch (Exception exception) when (exception.IsCatchableExceptionType())
             {
-                IsAvailable = false;
-            }
-        }
-
-        public SqlCommandSet()
-        {
-            if (!IsAvailable)
-            {
-                throw new PlatformNotSupportedException("SqlCommandSet is not supported on this platform, use regular commands instead");
+                throw new NotSupportedException($"SqlCommandSet for {connection.GetType().FullName} is not supported, use regular commands instead", exception);
             }
 
-            _instance = Activator.CreateInstance(SqlCommandSetType, true);
+            _instance = Activator.CreateInstance(sqlCommandSetType, true);
         }
 
-        public SqlConnection Connection
+        public DbConnection Connection
         {
-            set { SetConnection(_instance, value); }
+            set => _setConnection(_instance, value);
         }
 
-        public SqlTransaction Transaction
+        public DbTransaction Transaction
         {
-            set { SetTransaction(_instance, value); }
+            set => _setTransaction(_instance, value);
         }
 
-        public SqlCommand BatchCommand => GetBatchCommand(_instance);
+        public DbCommand BatchCommand => _getBatchCommand(_instance);
         public int CommandCount { get; private set; }
 
-        public void Append(SqlCommand command)
+        public void Append(DbCommand command)
         {
-            AppendMethod(_instance, command);
+            _appendMethod(_instance, command);
             CommandCount++;
         }
 
@@ -115,12 +151,12 @@ namespace Hangfire.SqlServer
                 return 0;
             }
 
-            return ExecuteNonQueryMethod(_instance);
+            return _executeNonQueryMethod(_instance);
         }
 
         public void Dispose()
         {
-            DisposeMethod(_instance);
+            _disposeMethod(_instance);
         }
     }
 }

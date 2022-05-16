@@ -17,7 +17,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 
 namespace Hangfire.SqlServer
 {
@@ -32,11 +31,11 @@ namespace Hangfire.SqlServer
             Connection = connection;
             Transaction = transaction;
 
-            if (connection is SqlConnection && SqlCommandSet.IsAvailable && preferBatching)
+            if (preferBatching)
             {
                 try
                 {
-                    _commandSet = new SqlCommandSet();
+                    _commandSet = new SqlCommandSet(connection);
                     _defaultTimeout = _commandSet.BatchCommand.CommandTimeout;
                 }
                 catch (Exception ex) when (ex.IsCatchableExceptionType())
@@ -77,9 +76,9 @@ namespace Hangfire.SqlServer
 
         public void Append(DbCommand command)
         {
-            if (_commandSet != null && command is SqlCommand)
+            if (_commandSet != null)
             {
-                _commandSet.Append((SqlCommand)command);
+                _commandSet.Append(command);
             }
             else
             {
@@ -91,8 +90,8 @@ namespace Hangfire.SqlServer
         {
             if (_commandSet != null && _commandSet.CommandCount > 0)
             {
-                _commandSet.Connection = Connection as SqlConnection;
-                _commandSet.Transaction = Transaction as SqlTransaction;
+                _commandSet.Connection = Connection;
+                _commandSet.Transaction = Transaction;
 
                 var batchTimeout = CommandTimeout ?? _defaultTimeout;
 
