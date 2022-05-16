@@ -177,7 +177,7 @@ namespace Hangfire.States
                 {
                     serializedResult = SerializationHelper.Serialize(Result, SerializationOption.User);
                 }
-                catch (Exception)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     serializedResult = "Can not serialize the return value";
                 }

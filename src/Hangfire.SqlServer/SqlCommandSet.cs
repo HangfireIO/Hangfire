@@ -73,7 +73,7 @@ namespace Hangfire.SqlServer
 
                 IsAvailable = true;
             }
-            catch (Exception)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 IsAvailable = false;
             }

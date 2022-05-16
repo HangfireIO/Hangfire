@@ -99,7 +99,7 @@ namespace Hangfire.Processing
             {
                 _execution.Run(_action, _state);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
 #if !NETSTANDARD1_3
                 if (!(ex is ThreadAbortException) || !AppDomainUnloadMonitor.IsUnloading)
@@ -109,7 +109,7 @@ namespace Hangfire.Processing
                     {
                         _logger.FatalException("Dispatcher is stopped due to an exception, you need to restart the server manually. Please report it to Hangfire developers.", ex);
                     }
-                    catch
+                    catch (Exception inner) when (inner.IsCatchableExceptionType())
                     {
 #if !NETSTANDARD1_3
                         Debug.WriteLine($"Dispatcher is stopped due to an exception, you need to restart the server manually. Please report it to Hangfire developers: {ex}");

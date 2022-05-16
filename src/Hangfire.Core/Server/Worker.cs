@@ -153,7 +153,7 @@ namespace Hangfire.Server
                     // Success point. No things must be done after previous command
                     // was succeeded.
                 }
-                catch (Exception)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     if (context.IsStopping)
                     {
@@ -198,7 +198,7 @@ namespace Hangfire.Server
                         initializeToken,
                         _profiler));
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     _logger.DebugException(
                         $"State change attempt {retryAttempt + 1} of {_maxStateChangeAttempts} failed due to an error, see inner exception for details", 
@@ -232,7 +232,7 @@ namespace Hangfire.Server
             {
                 fetchedJob.Requeue();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 _logger.WarnException($"Failed to immediately re-queue the background job '{fetchedJob.JobId}'. Next invocation may be delayed, if invisibility timeout is used", ex);
             }
@@ -283,7 +283,7 @@ namespace Hangfire.Server
                     Reason = ex.Message
                 };
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 if (ex is OperationCanceledException && context.IsStopped)
                 {

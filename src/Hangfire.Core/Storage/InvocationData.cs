@@ -99,7 +99,7 @@ namespace Hangfire.Storage
 
                 return new Job(type, method, arguments);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 throw new JobLoadException("Could not load the job. See inner exception for the details.", ex);
             }
@@ -133,7 +133,7 @@ namespace Hangfire.Storage
                     throw new InvalidOperationException("Deserialize<JobPayload> returned `null` for a non-null payload.");
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 exception = ex;
             }
@@ -188,14 +188,14 @@ namespace Hangfire.Storage
             {
                 return SerializationHelper.Deserialize<string[]>(ParameterTypes);
             }
-            catch (Exception outerException)
+            catch (Exception outerException) when (outerException.IsCatchableExceptionType())
             {
                 try
                 {
                     var parameterTypes = SerializationHelper.Deserialize<Type[]>(ParameterTypes);
                     return parameterTypes.Select(TypeHelper.CurrentTypeSerializer).ToArray();
                 }
-                catch (Exception)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     ExceptionDispatchInfo.Capture(outerException).Throw();
                     throw;
@@ -294,7 +294,7 @@ namespace Hangfire.Storage
 #if !NETSTANDARD1_3
             jsonException
 #endif
-            )
+            ) when (jsonException.IsCatchableExceptionType())
             {
                 if (type == typeof(object))
                 {
@@ -324,7 +324,7 @@ namespace Hangfire.Storage
 
                         value = converter.ConvertFromInvariantString(argument);
                     }
-                    catch (Exception)
+                    catch (Exception ex) when (ex.IsCatchableExceptionType())
                     {
                         ExceptionDispatchInfo.Capture(jsonException).Throw();
                         throw;

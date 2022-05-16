@@ -684,7 +684,7 @@ order by [Id] desc";
                 {
                     SqlServerDistributedLock.Acquire(_dedicatedConnection, resource, timeout);
                 }
-                catch (Exception)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     ReleaseLock(resource, lockId, true);
                     throw;
@@ -719,7 +719,7 @@ order by [Id] desc";
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 if (!onDisposing)
                 {

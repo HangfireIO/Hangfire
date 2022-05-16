@@ -206,7 +206,7 @@ namespace Hangfire.Common
             {
                 return Assembly.Load(assemblyName);
             }
-            catch (Exception)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 var shortName = new AssemblyName(assemblyName.Name);
                 if (publicKeyToken != null)

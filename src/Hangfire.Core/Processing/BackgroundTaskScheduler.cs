@@ -315,7 +315,7 @@ namespace Hangfire.Processing
                 }
             }
 #endif
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 InvokeUnhandledExceptionHandler(ex);
             }
@@ -329,7 +329,7 @@ namespace Hangfire.Processing
                 handler?.Invoke(exception);
             }
 #if !NETSTANDARD1_3
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 Trace.WriteLine("Unexpected exception caught in exception handler itself." + Environment.NewLine + ex);
             }

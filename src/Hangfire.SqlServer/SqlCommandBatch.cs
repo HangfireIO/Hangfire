@@ -39,7 +39,7 @@ namespace Hangfire.SqlServer
                     _commandSet = new SqlCommandSet();
                     _defaultTimeout = _commandSet.BatchCommand.CommandTimeout;
                 }
-                catch (Exception)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     _commandSet = null;
                 }

@@ -151,7 +151,7 @@ namespace Hangfire
                     return backgroundJob?.Id;
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 throw new BackgroundJobClientException("Background job creation failed. See inner exception for details.", ex);
             }
@@ -177,7 +177,7 @@ namespace Hangfire
                     return appliedState != null && appliedState.Name.Equals(state.Name, StringComparison.OrdinalIgnoreCase);
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 throw new BackgroundJobClientException("State change of a background job failed. See inner exception for details", ex);
             }

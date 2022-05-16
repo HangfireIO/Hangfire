@@ -203,7 +203,7 @@ namespace Hangfire.SqlServer
                     ? $"SQL Server: {builder}"
                     : canNotParseMessage;
             }
-            catch (Exception)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 return canNotParseMessage;
             }
@@ -290,7 +290,7 @@ namespace Hangfire.SqlServer
                             result = func(connection, transaction);
                             transaction.Commit();
                         }
-                        catch
+                        catch (Exception ex) when (ex.IsCatchableExceptionType())
                         {
                             // It is possible that XACT_ABORT option is set, and in this
                             // case transaction will be aborted automatically on server.
@@ -338,7 +338,7 @@ namespace Hangfire.SqlServer
 
                     return connection;
                 }
-                catch
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     ReleaseConnection(connection);
                     throw;

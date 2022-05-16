@@ -122,7 +122,7 @@ namespace Hangfire.Dashboard
                     {
                         argumentValue = SerializationHelper.Deserialize(argument, parameter.ParameterType, SerializationOption.User);
                     }
-                    catch (Exception)
+                    catch (Exception ex) when (ex.IsCatchableExceptionType())
                     {
                         // If argument value is not encoded as JSON (an old
                         // way using TypeConverter), we should display it as is.

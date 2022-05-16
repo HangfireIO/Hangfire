@@ -127,7 +127,7 @@ namespace Hangfire
             {
                 RecurringJobEntity.ParseCronExpression(cronExpression);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 throw new ArgumentException(
                     "CRON expression is invalid. Please see the inner exception for details.",

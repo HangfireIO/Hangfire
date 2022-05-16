@@ -103,7 +103,7 @@ namespace Hangfire.SqlServer
                 {
                     _connection?.Execute("SELECT 1;", transaction: _transaction);
                 }
-                catch
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     // Connection was closed. So we can't continue to send
                     // keep-alive queries. Unlike for distributed locks,

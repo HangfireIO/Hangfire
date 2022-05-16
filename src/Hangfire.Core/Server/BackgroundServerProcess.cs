@@ -199,7 +199,7 @@ namespace Hangfire.Server
                 _logger.Info($"{GetServerTemplate(context.ServerId)} successfully reported itself as stopped in {stopwatch.Elapsed.TotalMilliseconds} ms");
                 _logger.Info($"{GetServerTemplate(context.ServerId)} has been stopped in total {stoppedAt?.Elapsed.TotalMilliseconds ?? 0} ms");
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 _logger.WarnException($"{GetServerTemplate(context.ServerId)} there was an exception, server may not be removed", ex);
             }
@@ -300,7 +300,7 @@ namespace Hangfire.Server
                     name = $"{split[0]}:{split[1]}:{split[2].Substring(0, 8)}";
                 }
             }
-            catch
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 // ignored
             }

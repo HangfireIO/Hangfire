@@ -147,7 +147,7 @@ namespace Hangfire.Client
 
                     return action(attempt++);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     exceptions.Add(ex);
                     _logger.DebugException("An exception occurred while creating a background job, see inner exception for details.", ex);

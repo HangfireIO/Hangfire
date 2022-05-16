@@ -53,7 +53,7 @@ namespace Hangfire.Dashboard
 
                 GetDisplayName = Expression.Lambda<Func<object, string>>(Expression.Call(converted, "get_DisplayName", null), p).Compile();
             }
-            catch
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 // Ignoring
             }
@@ -139,7 +139,7 @@ namespace Hangfire.Dashboard
                 {
                     return jobDisplayNameAttribute.Format(_page.Context, job);
                 }
-                catch (Exception)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     return jobDisplayNameAttribute.DisplayName;
                 }
@@ -168,7 +168,7 @@ namespace Hangfire.Dashboard
                 {
                     return displayNameProvider(_page.Context, job);
                 }
-                catch
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     // Ignoring exceptions
                 }

@@ -313,7 +313,7 @@ namespace Hangfire.Server
 
                     transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     throw new BackgroundJobClientException(ex.Message, ex);
                 }
@@ -408,7 +408,7 @@ namespace Hangfire.Server
                         {
                             return true;
                         }
-                        catch (Exception)
+                        catch (Exception ex) when (ex.IsCatchableExceptionType())
                         {
                             //
                         }

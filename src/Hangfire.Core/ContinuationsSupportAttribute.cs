@@ -208,7 +208,7 @@ namespace Hangfire
                     {
                         nextState = SerializationHelper.Deserialize<IState>(currentState.Data["NextState"], SerializationOption.TypedInternal);
                     }
-                    catch (Exception ex)
+                    catch (Exception ex) when (ex.IsCatchableExceptionType())
                     {
                         nextState = new FailedState(ex)
                         {

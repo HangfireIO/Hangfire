@@ -71,7 +71,7 @@ namespace Hangfire.Common
 
                 return instance;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 throw new JobPerformanceException(
                     "An exception occurred during job activation.",
@@ -108,7 +108,7 @@ namespace Hangfire.Common
 
                 return result.ToArray();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 throw new JobPerformanceException(
                     "An exception occurred during arguments deserialization.",
@@ -138,7 +138,7 @@ namespace Hangfire.Common
                 var disposable = instance as IDisposable;
                 disposable?.Dispose();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 throw new JobPerformanceException(
                     "Job has been performed, but an exception occurred during disposal.",

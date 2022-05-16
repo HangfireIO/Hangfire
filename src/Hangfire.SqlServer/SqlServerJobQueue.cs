@@ -256,7 +256,7 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
                             transaction.Commit();
                         }
                     }
-                    catch
+                    catch (Exception ex) when (ex.IsCatchableExceptionType())
                     {
                         // Check connection isn't broken first, and that transaction
                         // can be rolled back without throwing InvalidOperationException

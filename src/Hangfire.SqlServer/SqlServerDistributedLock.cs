@@ -74,7 +74,7 @@ namespace Hangfire.SqlServer
                 {
                     Acquire(_connection, _resource, timeout);
                 }
-                catch (Exception)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     storage.ReleaseConnection(_connection);
                     throw;

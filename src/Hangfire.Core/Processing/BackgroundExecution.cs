@@ -136,7 +136,7 @@ namespace Hangfire.Processing
                             // broken on next iteration anyway.
                             break;
                         }
-                        catch (Exception ex)
+                        catch (Exception ex) when (ex.IsCatchableExceptionType())
                         {
                             HandleException(executionId, ex, out nextDelay);
                         }
@@ -223,7 +223,7 @@ namespace Hangfire.Processing
                             // broken on next iteration anyway.
                             break;
                         }
-                        catch (Exception ex)
+                        catch (Exception ex) when (ex.IsCatchableExceptionType())
                         {
                             HandleException(executionId, ex, out nextDelay);
                         }
@@ -297,7 +297,7 @@ namespace Hangfire.Processing
             {
                 return false;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 LogUnableWait(executionId, delay, ex);
                 return false;
@@ -315,7 +315,7 @@ namespace Hangfire.Processing
             {
                 return false;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 LogUnableWait(executionId, delay, ex);
                 return false;
@@ -360,7 +360,7 @@ namespace Hangfire.Processing
                 {
                     Thread.ResetAbort();
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     // .NET Core doesn't support both Thread.Abort and Thread.ResetAbort methods.
                     // I don't see any possible cases, where thread is aborted, but nevertheless
@@ -388,7 +388,7 @@ namespace Hangfire.Processing
                     exception.Data.Add("ExecutionId", executionId);
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 _logger.WarnException($"Was unable to add the ExecutionId property to the exception object, please see inner exception for details. Original exception: ${exception.GetType()} (${exception.Message})", ex);
             }

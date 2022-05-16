@@ -78,7 +78,7 @@ namespace Hangfire.Server
             {
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 // TODO: Catch only JobPerformanceException, and pass InnerException to filters in 2.0.0.
 
@@ -135,7 +135,7 @@ namespace Hangfire.Server
                     InvokeOnPerforming,
                     $"OnPerforming for {preContext.BackgroundJob.Id}");
             }
-            catch (Exception filterException)
+            catch (Exception filterException) when (filterException.IsCatchableExceptionType())
             {
                 CoreBackgroundJobPerformer.HandleJobPerformanceException(
                     filterException,
@@ -155,7 +155,7 @@ namespace Hangfire.Server
             {
                 postContext = continuation();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 wasError = true;
                 postContext = new PerformedContext(
@@ -168,7 +168,7 @@ namespace Hangfire.Server
                         InvokeOnPerformed,
                         $"OnPerformed for {postContext.BackgroundJob.Id}");
                 }
-                catch (Exception filterException)
+                catch (Exception filterException) when (filterException.IsCatchableExceptionType())
                 {
                     CoreBackgroundJobPerformer.HandleJobPerformanceException(
                         filterException,
@@ -192,7 +192,7 @@ namespace Hangfire.Server
                         InvokeOnPerformed,
                         $"OnPerformed for {postContext.BackgroundJob.Id}");
                 }
-                catch (Exception filterException)
+                catch (Exception filterException) when (filterException.IsCatchableExceptionType())
                 {
                     CoreBackgroundJobPerformer.HandleJobPerformanceException(
                         filterException,

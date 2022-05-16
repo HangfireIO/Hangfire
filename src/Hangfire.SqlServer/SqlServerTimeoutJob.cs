@@ -167,7 +167,7 @@ namespace Hangfire.SqlServer
                         _logger.Trace($"Keep-alive query for message {Id} sent");
                         Interlocked.Exchange(ref _lastHeartbeat, now);
                     }
-                    catch (Exception ex)
+                    catch (Exception ex) when (ex.IsCatchableExceptionType())
                     {
                         _logger.DebugException($"Unable to execute keep-alive query for message {Id}", ex);
                     }

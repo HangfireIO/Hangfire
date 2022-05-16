@@ -410,7 +410,7 @@ namespace Hangfire.Logging
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 Console.WriteLine(
                     "Exception occured resolving a log provider. Logging for this assembly {0} is disabled. {1}",
@@ -457,7 +457,7 @@ namespace Hangfire.Logging
                 {
                     return messageFunc();
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     Log(LogLevel.Error, () => FailedToGenerateLogMessage, ex);
                 }
@@ -1606,7 +1606,7 @@ namespace Hangfire.Logging.LogProviders
                 {
                     _errorLog.Log(error);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     Debug.Print("Error: {0}\n{1}", ex.Message, ex.StackTrace);
                 }

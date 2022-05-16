@@ -144,7 +144,7 @@ namespace Hangfire.Server
                 HandleJobPerformanceException(ex.InnerException, context.CancellationToken, context.BackgroundJob);
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 HandleJobPerformanceException(ex, context.CancellationToken, context.BackgroundJob);
                 throw;
