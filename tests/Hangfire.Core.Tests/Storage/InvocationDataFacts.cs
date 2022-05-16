@@ -536,7 +536,7 @@ namespace Hangfire.Core.Tests.Storage
         {
             var deserializedJob = new InvocationData(typeName, method, parameterTypes, serializedArgs).Deserialize();
 
-#if NETCOREAPP1_0
+#if NETCOREAPP1_0 || NETCOREAPP2_1
             Assert.Equal(job.Type.FullName, deserializedJob.Type.FullName);
             Assert.Equal(job.Method.Name, deserializedJob.Method.Name);
 #else
