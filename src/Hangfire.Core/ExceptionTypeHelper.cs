@@ -14,6 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Reflection;
 
 namespace Hangfire
 {
@@ -28,7 +29,7 @@ namespace Hangfire
             var type = e.GetType();
             return type != StackOverflowType &&
                    type != OutOfMemoryType &&
-                   !SecurityType.IsAssignableFrom(type);
+                   !SecurityType.GetTypeInfo().IsAssignableFrom(type.GetTypeInfo());
         }
     }
 }
