@@ -98,11 +98,7 @@ namespace Hangfire
 
         public void OnStateApplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
-            var awaitingState = context.NewState as AwaitingState;
-            if (awaitingState != null)
-            {
-                context.JobExpirationTimeout = awaitingState.Expiration;
-            }
+            // TODO: Remove this method and IApplyStateFilter interface in 2.0.0.
         }
 
         internal static List<Continuation> DeserializeContinuations(string serialized)
