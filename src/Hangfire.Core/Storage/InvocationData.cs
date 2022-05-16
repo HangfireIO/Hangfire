@@ -290,11 +290,7 @@ namespace Hangfire.Storage
             {
                 value = SerializationHelper.Deserialize(argument, type, SerializationOption.User);
             }
-            catch (Exception
-#if !NETSTANDARD1_3
-            jsonException
-#endif
-            ) when (jsonException.IsCatchableExceptionType())
+            catch (Exception jsonException) when (jsonException.IsCatchableExceptionType())
             {
                 if (type == typeof(object))
                 {

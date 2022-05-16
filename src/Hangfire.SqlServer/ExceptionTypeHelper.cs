@@ -20,19 +20,23 @@ namespace Hangfire.SqlServer
 {
     internal static class ExceptionTypeHelper
     {
-        private static readonly Type StackOverflowType = typeof(StackOverflowException);
         private static readonly Type OutOfMemoryType = typeof(OutOfMemoryException);
+#if !NETSTANDARD1_3
+        private static readonly Type StackOverflowType = typeof(StackOverflowException);
         private static readonly Type ThreadAbortType = typeof(System.Threading.ThreadAbortException);
         private static readonly Type AccessViolationType = typeof(AccessViolationException);
+#endif
         private static readonly Type SecurityType = typeof(System.Security.SecurityException);
  
         internal static bool IsCatchableExceptionType(this Exception e)
         {
             var type = e.GetType();
-            return type != StackOverflowType &&
-                   type != OutOfMemoryType &&
+            return type != OutOfMemoryType &&
+#if !NETSTANDARD1_3
+                   type != StackOverflowType &&
                    type != ThreadAbortType &&
                    type != AccessViolationType &&
+#endif
                    !SecurityType.GetTypeInfo().IsAssignableFrom(type.GetTypeInfo());
         }
     }

@@ -20,16 +20,21 @@ namespace Hangfire
 {
     internal static class ExceptionTypeHelper
     {
+#if !NETSTANDARD1_3
         private static readonly Type StackOverflowType = typeof(StackOverflowException);
+#endif
         private static readonly Type OutOfMemoryType = typeof(OutOfMemoryException);
         private static readonly Type SecurityType = typeof(System.Security.SecurityException);
  
         internal static bool IsCatchableExceptionType(this Exception e)
         {
             var type = e.GetType();
-            return type != StackOverflowType &&
-                   type != OutOfMemoryType &&
-                   !SecurityType.GetTypeInfo().IsAssignableFrom(type.GetTypeInfo());
+            return
+#if !NETSTANDARD1_3
+                type != StackOverflowType &&
+#endif
+                type != OutOfMemoryType &&
+                !SecurityType.GetTypeInfo().IsAssignableFrom(type.GetTypeInfo());
         }
     }
 }
