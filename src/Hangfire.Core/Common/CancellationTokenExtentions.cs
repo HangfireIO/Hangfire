@@ -14,12 +14,16 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
+using Hangfire.Logging;
 
 namespace Hangfire.Common
 {
     public static class CancellationTokenExtentions
     {
+        private static readonly ILog Logger = LogProvider.GetLogger(typeof(CancellationTokenExtentions));
+
         /// <summary>
         /// Returns a class that contains a <see cref="EventWaitHandle"/> that is set, when
         /// the given <paramref name="cancellationToken"/> is canceled. This method is based
@@ -41,7 +45,23 @@ namespace Hangfire.Common
         {
             using (var cancellationEvent = GetCancellationEvent(cancellationToken))
             {
-                return cancellationEvent.WaitHandle.WaitOne(timeout);
+                var stopwatch = Stopwatch.StartNew();
+                var waitResult = cancellationEvent.WaitHandle.WaitOne(timeout);
+                stopwatch.Stop();
+                
+                var timeoutThreshold = TimeSpan.FromMilliseconds(1000);
+                var elapsedThreshold = TimeSpan.FromMilliseconds(500);
+                var protectionTime = TimeSpan.FromSeconds(1);
+
+                if (!cancellationToken.IsCancellationRequested &&
+                    timeout >= timeoutThreshold &&
+                    stopwatch.Elapsed < elapsedThreshold)
+                {
+                    Logger.Error($"Actual wait time for non-canceled token was '{stopwatch.Elapsed}' instead of '{timeout}', using protective wait. Please report this to Hangfire developers.");
+                    Thread.Sleep(protectionTime);
+                }
+
+                return waitResult;
             }
         }
 

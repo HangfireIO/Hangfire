@@ -19,11 +19,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.Logging;
 
 namespace Hangfire.Processing
 {
     internal static class TaskExtensions
     {
+        private static readonly ILog Logger = LogProvider.GetLogger(typeof(TaskExtensions));
         private static readonly Type[] EmptyTypes = new Type[0];
 
         public static bool WaitOne([NotNull] this WaitHandle waitHandle, TimeSpan timeout, CancellationToken token)
@@ -41,6 +43,12 @@ namespace Hangfire.Processing
                 if (waitResult == 0)
                 {
                     return true;
+                }
+
+                if (waitResult == 1 && !token.IsCancellationRequested)
+                {
+                    Logger.Error("WaitHandle signaled but CancellationToken isn't canceled, using protective wait. Please report this to Hangfire developers");
+                    Thread.Sleep(TimeSpan.FromSeconds(1));
                 }
 
                 token.ThrowIfCancellationRequested();
