@@ -31,18 +31,10 @@ namespace Hangfire.Dashboard
             Func = func;
         }
 
-        public DashboardMetric(string name, string title, string clickUrl, Func<RazorPage, Metric> func)
-        {
-            Name = name;
-            Title = title;
-            ClickUrl = clickUrl;
-            Func = func;
-        }
-
         public string Name { get; }
         public Func<RazorPage, Metric> Func { get; }
 
         public string Title { get; set; }
-        public string ClickUrl { get; set; }
+        public string Url { get; set; }
     }
 }

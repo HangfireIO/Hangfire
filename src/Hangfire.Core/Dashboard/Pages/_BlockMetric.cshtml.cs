@@ -59,7 +59,7 @@ WriteLiteral("\r\n");
 
             
             #line 11 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
- if (!string.IsNullOrEmpty(DashboardMetric.ClickUrl))
+ if (!string.IsNullOrEmpty(DashboardMetric.Url))
 {
 
             
@@ -70,7 +70,7 @@ WriteLiteral("<a href=\"");
 
             
             #line 13 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
-      Write(DashboardMetric.ClickUrl);
+      Write(Html.HtmlEncode(DashboardMetric.Url));
 
             
             #line default
@@ -140,7 +140,7 @@ WriteLiteral("\r\n    </div>\r\n</div>\r\n");
 
             
             #line 23 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
- if (!string.IsNullOrEmpty(DashboardMetric.ClickUrl))
+ if (!string.IsNullOrEmpty(DashboardMetric.Url))
 {
 
             
