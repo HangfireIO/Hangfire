@@ -10,7 +10,7 @@
 version: 1.7.28-build-0{build}
 
 image:
-  - Visual Studio 2019
+  - Visual Studio 2022
   - Ubuntu
 
 #---------------------------------#
