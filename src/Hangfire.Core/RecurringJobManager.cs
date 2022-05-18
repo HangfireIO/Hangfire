@@ -138,6 +138,11 @@ namespace Hangfire
 
         public void Trigger(string recurringJobId)
         {
+            TriggerExecution(recurringJobId);
+        }
+
+        public string TriggerExecution(string recurringJobId)
+        {
             if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
 
             using (var connection = _storage.GetConnection())
@@ -146,7 +151,7 @@ namespace Hangfire
                 var now = _nowFactory();
 
                 var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
-                if (recurringJob == null) return;
+                if (recurringJob == null) return null;
 
                 if (recurringJob.Errors.Length > 0)
                 {
@@ -174,7 +179,11 @@ namespace Hangfire
                         transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
                         transaction.Commit();
                     }
+
+                    return backgroundJob?.Id;
                 }
+
+                return null;
             }
         }
 
