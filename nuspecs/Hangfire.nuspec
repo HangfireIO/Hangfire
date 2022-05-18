@@ -22,6 +22,23 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.29
+
+Hangfire.Core
+
+• Added – `RecurringJobManager.TriggerExecution` method that returns identifier of a created job.
+• Added – `GetRecurringJobIds` extension method for `JobStorageConnection` that returns only identifiers.
+• Added – `DashboardMetric.Url` property to make it possible for metrics on the Overview page to be clickable.
+• Fixed – Deserialization issues with `DateOnly` and `TimeOnly` in .NET 6.0 or other new types in CoreLib.
+• Fixed – Don't even try to catch unsafe exceptions like `OutOfMemoryException` or `StackOverflowException`.
+• Fixed – Add non-breaking space between Server Id and Status glyph on the Servers page.
+• Fixed – Problems with internal wait implementation shouldn't cause high CPU issues now, added protection and logging.
+• Fixed – Wait can't be performed now on a signaled `ManualResetEvent` instance in `BackgroundExecution`.
+
+Hangfire.SqlServer
+
+• Fixed – Command batching is now fully working for the Microsoft.Data.SqlClient package (by @0xced).
+
 1.7.28
 
 Hangfire.Core
