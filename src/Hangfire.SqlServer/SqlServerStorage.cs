@@ -43,7 +43,6 @@ namespace Hangfire.SqlServer
         private readonly SqlServerStorageOptions _options;
         private readonly string _connectionString;
         private string _escapedSchemaName;
-        private Type _microsoftDataSqlClientType;
 
         public SqlServerStorage(string nameOrConnectionString)
             : this(nameOrConnectionString, new SqlServerStorageOptions())
@@ -406,7 +405,6 @@ namespace Hangfire.SqlServer
         private void Initialize()
         {
             _escapedSchemaName = _options.SchemaName.Replace("]", "]]");
-            _microsoftDataSqlClientType = Type.GetType("Microsoft.Data.SqlClient.SqlConnection, Microsoft.Data.SqlClient", throwOnError: false);
 
             int? schema = null;
 
