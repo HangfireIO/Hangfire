@@ -8,8 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System.Reflection;
-
 namespace Hangfire.Dashboard.Resources {
     using System;
     
@@ -41,7 +39,7 @@ namespace Hangfire.Dashboard.Resources {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Hangfire.Dashboard.Content.resx.Strings", typeof(Strings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Hangfire.Dashboard.Content.resx.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -694,6 +692,15 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Suspended.
+        /// </summary>
+        public static string JobsSidebarMenu_Suspended {
+            get {
+                return ResourceManager.GetString("JobsSidebarMenu_Suspended", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Back to site.
         /// </summary>
         public static string LayoutPage_Back {
@@ -843,6 +850,15 @@ namespace Hangfire.Dashboard.Resources {
         public static string Metrics_SucceededJobs {
             get {
                 return ResourceManager.GetString("Metrics_SucceededJobs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Suspended.
+        /// </summary>
+        public static string Metrics_SuspendedCount {
+            get {
+                return ResourceManager.GetString("Metrics_SuspendedCount", resourceCulture);
             }
         }
         
@@ -1321,6 +1337,42 @@ namespace Hangfire.Dashboard.Resources {
         public static string SucceededJobsPage_Title {
             get {
                 return ResourceManager.GetString("SucceededJobsPage_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All is OK – you have no suspended..
+        /// </summary>
+        public static string SuspendedJobsPage_NoJobs {
+            get {
+                return ResourceManager.GetString("SuspendedJobsPage_NoJobs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Suspended Jobs.
+        /// </summary>
+        public static string SuspendedJobsPage_Title {
+            get {
+                return ResourceManager.GetString("SuspendedJobsPage_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;h4&gt;This page can&apos;t be displayed&lt;/h4&gt;
+        ///        &lt;p&gt;
+        ///            Don&apos;t worry, suspend is working as expected. Your current job storage does not support
+        ///            some queries required to show this page. Please try to update your storage or wait until
+        ///            the full command set is implemented.
+        ///        &lt;/p&gt;
+        ///        &lt;p&gt;
+        ///            Please go to the &lt;a href=&quot;{0}&quot;&gt;Scheduled jobs&lt;/a&gt; page to see all the
+        ///            scheduled jobs including retries.
+        ///        &lt;/p&gt;.
+        /// </summary>
+        public static string SuspendedPage_Warning_Html {
+            get {
+                return ResourceManager.GetString("SuspendedPage_Warning_Html", resourceCulture);
             }
         }
     }

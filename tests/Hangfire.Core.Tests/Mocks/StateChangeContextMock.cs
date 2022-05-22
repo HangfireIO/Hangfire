@@ -29,7 +29,6 @@ namespace Hangfire.Core.Tests
                     BackgroundJobId,
                     NewState.Object,
                     ExpectedStates,
-                    DisableFilters,
                     CancellationToken,
                     EmptyProfiler.Instance,
                     ServerId,
