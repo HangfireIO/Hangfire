@@ -67,7 +67,13 @@ namespace Hangfire.Processing
 #endif
         }
 
-        public bool StopRequested => _disposed || _stopToken.IsCancellationRequested;
+        public bool StopRequested => _disposed 
+                                     || _stopToken.IsCancellationRequested 
+                                     || Server.AspNetShutdownDetector.IsShuttingDown
+#if !NETSTANDARD1_3
+                                     || AppDomainUnloadMonitor.IsUnloading
+#endif
+        ;
 
         public void Run(Action<Guid, object> callback, object state)
         {
