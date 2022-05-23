@@ -57,7 +57,7 @@ namespace Hangfire.Common
                     timeout >= timeoutThreshold &&
                     stopwatch.Elapsed < elapsedThreshold)
                 {
-                    Logger.Error($"Actual wait time for non-canceled token was '{stopwatch.Elapsed}' instead of '{timeout}', using protective wait. Please report this to Hangfire developers.");
+                    Logger.Error($"Actual wait time for non-canceled token was '{stopwatch.Elapsed}' instead of '{timeout}', wait result: {waitResult}, using protective wait. Please report this to Hangfire developers.");
                     Thread.Sleep(protectionTime);
                 }
 
