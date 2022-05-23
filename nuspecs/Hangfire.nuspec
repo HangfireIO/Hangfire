@@ -29,6 +29,7 @@ Hangfire.Core
 • Added – `RecurringJobManager.TriggerExecution` method that returns identifier of a created job.
 • Added – `GetRecurringJobIds` extension method for `JobStorageConnection` that returns only identifiers.
 • Added – `DashboardMetric.Url` property to make it possible for metrics on the Overview page to be clickable.
+• Changed – Bump Moment.js version to 2.29.3 in Dashboard UI (by @Westat-Transportation).
 • Fixed – Deserialization issues with `DateOnly` and `TimeOnly` in .NET 6.0 or other new types in CoreLib.
 • Fixed – Don't even try to catch unsafe exceptions like `OutOfMemoryException` or `StackOverflowException`.
 • Fixed – Add non-breaking space between Server Id and Status glyph on the Servers page.
