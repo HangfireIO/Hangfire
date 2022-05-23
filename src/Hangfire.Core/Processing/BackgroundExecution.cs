@@ -127,7 +127,7 @@ namespace Hangfire.Processing
                             throw;
                         }
 #endif
-                        catch (OperationCanceledException) when (StopRequested)
+                        catch (OperationCanceledException ex) when (ex.CancellationToken.Equals(_stopToken) || StopRequested)
                         {
                             // We are catching general OCE exception without checking its CancellationToken
                             // property, because the concrete token may be different than our one, for
@@ -214,7 +214,7 @@ namespace Hangfire.Processing
                             throw;
                         }
 #endif
-                        catch (OperationCanceledException) when (StopRequested)
+                        catch (OperationCanceledException ex) when (ex.CancellationToken.Equals(_stopToken) || StopRequested)
                         {
                             // We are catching general OCE exception without checking its CancellationToken
                             // property, because the concrete token may be different than our one, for

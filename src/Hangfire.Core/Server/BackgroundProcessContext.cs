@@ -81,7 +81,7 @@ namespace Hangfire.Server
 
         public void Wait(TimeSpan timeout)
         {
-            StoppingToken.Wait(timeout);
+            StoppingToken.WaitOrThrow(timeout);
         }
     }
 }

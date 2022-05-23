@@ -37,6 +37,21 @@ namespace Hangfire.Common
 
         /// <summary>
         /// Performs a wait until the specified <paramref name="timeout"/> is elapsed or the
+        /// given cancellation token is canceled and throw <see cref="OperationCanceledException"/>
+        /// exception if wait succeeded. The wait is performed on a dedicated event
+        /// wait handle to avoid using the <see cref="CancellationToken.WaitHandle"/> property
+        /// that may lead to high CPU issues.
+        /// </summary>
+        public static void WaitOrThrow(this CancellationToken cancellationToken, TimeSpan timeout)
+        {
+            if (Wait(cancellationToken, timeout))
+            {
+                throw new OperationCanceledException(cancellationToken);
+            }
+        }
+
+        /// <summary>
+        /// Performs a wait until the specified <paramref name="timeout"/> is elapsed or the
         /// given cancellation token is canceled. The wait is performed on a dedicated event
         /// wait handle to avoid using the <see cref="CancellationToken.WaitHandle"/> property
         /// that may lead to high CPU issues.

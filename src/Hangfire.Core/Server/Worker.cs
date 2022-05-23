@@ -207,8 +207,7 @@ namespace Hangfire.Server
                     exception = ex;
                 }
 
-                abortToken.Wait(TimeSpan.FromSeconds(retryAttempt));
-                abortToken.ThrowIfCancellationRequested();
+                abortToken.WaitOrThrow(TimeSpan.FromSeconds(retryAttempt));
             }
 
             _logger.ErrorException(
