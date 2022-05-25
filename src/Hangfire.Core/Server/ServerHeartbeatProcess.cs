@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2019 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2019 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -42,8 +41,7 @@ namespace Hangfire.Server
         {
             _logger.Trace($"{BackgroundServerProcess.GetServerTemplate(context.ServerId)} waiting for {_interval} delay before sending a heartbeat");
 
-            context.ShutdownToken.Wait(_interval);
-            context.ShutdownToken.ThrowIfCancellationRequested();
+            context.ShutdownToken.WaitOrThrow(_interval);
 
             try
             {
@@ -72,7 +70,7 @@ namespace Hangfire.Server
 
                 return;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 _logger.WarnException($"{BackgroundServerProcess.GetServerTemplate(context.ServerId)} encountered an exception while sending heartbeat", ex);
 

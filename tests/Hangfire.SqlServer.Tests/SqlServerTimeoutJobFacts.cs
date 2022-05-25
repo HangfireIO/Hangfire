@@ -146,8 +146,9 @@ namespace Hangfire.SqlServer.Tests
                 var id = CreateJobQueueRecord(sql, "1", "default", FetchedAt);
                 using (var processingJob = new SqlServerTimeoutJob(storage, id, "1", "default", FetchedAt))
                 {
-                    Thread.Sleep(TimeSpan.FromSeconds(10));
                     processingJob.DisposeTimer();
+                    Thread.Sleep(TimeSpan.FromSeconds(10));
+                    processingJob.ExecuteKeepAliveQueryIfRequired();
 
                     var record = sql.Query($"select * from [{Constants.DefaultSchema}].JobQueue").Single();
 

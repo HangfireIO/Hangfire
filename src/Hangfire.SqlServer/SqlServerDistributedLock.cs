@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -75,7 +74,7 @@ namespace Hangfire.SqlServer
                 {
                     Acquire(_connection, _resource, timeout);
                 }
-                catch (Exception)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     storage.ReleaseConnection(_connection);
                     throw;

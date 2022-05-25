@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -110,7 +109,7 @@ namespace Hangfire.Storage
 
                 return new Job(type, method, arguments, Queue);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 throw new JobLoadException("Could not load the job. See inner exception for the details.", ex);
             }
@@ -144,7 +143,7 @@ namespace Hangfire.Storage
                     throw new InvalidOperationException("Deserialize<JobPayload> returned `null` for a non-null payload.");
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 exception = ex;
             }
@@ -201,14 +200,14 @@ namespace Hangfire.Storage
             {
                 return SerializationHelper.Deserialize<string[]>(ParameterTypes);
             }
-            catch (Exception outerException)
+            catch (Exception outerException) when (outerException.IsCatchableExceptionType())
             {
                 try
                 {
                     var parameterTypes = SerializationHelper.Deserialize<Type[]>(ParameterTypes);
                     return parameterTypes.Select(TypeHelper.CurrentTypeSerializer).ToArray();
                 }
-                catch (Exception)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     ExceptionDispatchInfo.Capture(outerException).Throw();
                     throw;
@@ -303,11 +302,7 @@ namespace Hangfire.Storage
             {
                 value = SerializationHelper.Deserialize(argument, type, SerializationOption.User);
             }
-            catch (Exception
-#if !NETSTANDARD1_3
-            jsonException
-#endif
-            )
+            catch (Exception jsonException) when (jsonException.IsCatchableExceptionType())
             {
                 if (type == typeof(object))
                 {
@@ -337,7 +332,7 @@ namespace Hangfire.Storage
 
                         value = converter.ConvertFromInvariantString(argument);
                     }
-                    catch (Exception)
+                    catch (Exception ex) when (ex.IsCatchableExceptionType())
                     {
                         ExceptionDispatchInfo.Capture(jsonException).Throw();
                         throw;

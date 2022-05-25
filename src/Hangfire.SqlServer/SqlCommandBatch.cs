@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright © 2017 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -39,7 +38,7 @@ namespace Hangfire.SqlServer
                     _commandSet = new SqlCommandSet(connection);
                     _defaultTimeout = _commandSet.BatchCommand.CommandTimeout;
                 }
-                catch (Exception)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     _commandSet = null;
                 }

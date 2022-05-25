@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2017 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -13,6 +12,7 @@
 // 
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
+
 #if !NETSTANDARD1_3
 using System;
 using System.Threading;

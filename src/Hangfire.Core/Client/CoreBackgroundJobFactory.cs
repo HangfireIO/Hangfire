@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -149,7 +148,7 @@ namespace Hangfire.Client
 
                     return action(attempt++);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     exceptions.Add(ex);
                     _logger.DebugException("An exception occurred while creating a background job, see inner exception for details.", ex);

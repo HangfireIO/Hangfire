@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright © 2019 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2019 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -55,7 +54,7 @@ namespace Hangfire
                     ? timeZoneResolver.GetTimeZoneById(recurringJob["TimeZoneId"])
                     : TimeZoneInfo.Utc;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 _errors.Add(ex);
             }
@@ -74,7 +73,7 @@ namespace Hangfire
 
                 Job = InvocationData.DeserializePayload(recurringJob["Job"]).DeserializeJob();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 _errors.Add(ex);
             }
@@ -323,7 +322,7 @@ namespace Hangfire
                 exception = null;
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 exception = ex;
                 nextExecution = null;

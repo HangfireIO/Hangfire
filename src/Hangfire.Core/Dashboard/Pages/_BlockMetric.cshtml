@@ -6,6 +6,11 @@
     var metric = DashboardMetric.Func(this);
     var className = metric == null ? "metric-null" : metric.Style.ToClassName();
     var highlighted = metric != null && metric.Highlighted ? "highlighted" : null;
+ }
+
+@if (!string.IsNullOrEmpty(DashboardMetric.Url))
+{
+@:<a href="@Html.HtmlEncode(DashboardMetric.Url)" class="clickable-metric">
 }
 <div class="metric @className @highlighted">
     <div class="metric-body" data-metric="@DashboardMetric.Name">
@@ -15,3 +20,7 @@
         @(Strings.ResourceManager.GetString(DashboardMetric.Title) ?? DashboardMetric.Title)
     </div>
 </div>
+@if (!string.IsNullOrEmpty(DashboardMetric.Url))
+{
+@:</a>
+}

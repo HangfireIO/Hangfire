@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -267,7 +266,7 @@ namespace Hangfire.Server
 
                     return;
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     _logger.DebugException(
                         $"State change attempt {retryAttempt + 1} of {MaxStateChangeAttempts} failed due to an error, see inner exception for details", 
@@ -276,8 +275,7 @@ namespace Hangfire.Server
                     exception = ex;
                 }
 
-                context.StoppingToken.Wait(TimeSpan.FromSeconds(retryAttempt));
-                context.StoppingToken.ThrowIfCancellationRequested();
+                context.Wait(TimeSpan.FromSeconds(retryAttempt));
             }
 
             _logger.ErrorException(
@@ -322,7 +320,7 @@ namespace Hangfire.Server
                         {
                             return true;
                         }
-                        catch (Exception)
+                        catch (Exception ex) when (ex.IsCatchableExceptionType())
                         {
                             //
                         }

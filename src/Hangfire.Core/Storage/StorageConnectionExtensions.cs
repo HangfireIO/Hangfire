@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -53,6 +52,15 @@ namespace Hangfire.Storage
             return connection.GetSetCount("recurring-jobs");
         }
 
+        public static List<string> GetRecurringJobIds(
+            [NotNull] this JobStorageConnection connection,
+            int startingFrom,
+            int endingAt)
+        {
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            return connection.GetRangeFromSet("recurring-jobs", startingFrom, endingAt);
+        }
+
         public static List<RecurringJobDto> GetRecurringJobs(
             [NotNull] this JobStorageConnection connection,
             int startingFrom,
@@ -60,7 +68,7 @@ namespace Hangfire.Storage
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
 
-            var ids = connection.GetRangeFromSet("recurring-jobs", startingFrom, endingAt);
+            var ids = connection.GetRecurringJobIds(startingFrom, endingAt);
             return GetRecurringJobDtos(connection, ids);
         }
 

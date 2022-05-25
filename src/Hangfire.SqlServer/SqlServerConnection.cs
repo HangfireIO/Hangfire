@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -700,7 +699,7 @@ order by [Id] desc";
                 {
                     SqlServerDistributedLock.Acquire(_dedicatedConnection, resource, timeout);
                 }
-                catch (Exception)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     ReleaseLock(resource, lockId, true);
                     throw;
@@ -735,7 +734,7 @@ order by [Id] desc";
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 if (!onDisposing)
                 {

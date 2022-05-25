@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -172,7 +171,7 @@ namespace Hangfire.Server
                     // Success point. No things must be done after previous command
                     // was succeeded.
                 }
-                catch (Exception)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     if (context.IsStopping)
                     {
@@ -229,7 +228,7 @@ namespace Hangfire.Server
                     backgroundJob = stateChangeContext.ProcessedJob;
                     return resultingState;
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     _logger.DebugException(
                         $"State change attempt {retryAttempt + 1} of {_maxStateChangeAttempts} failed due to an error, see inner exception for details", 
@@ -238,8 +237,7 @@ namespace Hangfire.Server
                     exception = ex;
                 }
 
-                abortToken.Wait(TimeSpan.FromSeconds(retryAttempt));
-                abortToken.ThrowIfCancellationRequested();
+                abortToken.WaitOrThrow(TimeSpan.FromSeconds(retryAttempt));
             }
 
             _logger.ErrorException(
@@ -270,7 +268,7 @@ namespace Hangfire.Server
             {
                 fetchedJob.Requeue();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 _logger.WarnException($"Failed to immediately re-queue the background job '{fetchedJob.JobId}'. Next invocation may be delayed, if invisibility timeout is used", ex);
             }
@@ -333,7 +331,7 @@ namespace Hangfire.Server
                     Reason = ex.Message
                 };
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 if (ex is OperationCanceledException && context.IsStopped)
                 {

@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2017 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -15,16 +14,19 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.Logging;
 
 namespace Hangfire.Processing
 {
     internal static class TaskExtensions
     {
+        private static readonly ILog Logger = LogProvider.GetLogger(typeof(TaskExtensions));
         private static readonly Type[] EmptyTypes = new Type[0];
         private static readonly WaitHandle InvalidWaitHandleInstance = new InvalidWaitHandle();
 
@@ -38,11 +40,26 @@ namespace Hangfire.Processing
             using (var ev = token.GetCancellationEvent())
             {
                 var waitHandles = new[] { waitHandle, ev.WaitHandle };
+
+                var stopwatch = Stopwatch.StartNew();
                 var waitResult = WaitHandle.WaitAny(waitHandles, timeout);
+                stopwatch.Stop();
+
+                var timeoutThreshold = TimeSpan.FromMilliseconds(1000);
+                var elapsedThreshold = TimeSpan.FromMilliseconds(500);
+                var protectionTime = TimeSpan.FromSeconds(1);
 
                 if (waitResult == 0)
                 {
                     return true;
+                }
+
+                if (!token.IsCancellationRequested &&
+                    timeout >= timeoutThreshold &&
+                    stopwatch.Elapsed < elapsedThreshold)
+                {
+                    Logger.Error($"Actual wait time for non-canceled token was '{stopwatch.Elapsed}' instead of '{timeout}', wait result: {waitResult}, using protective wait. Please report this to Hangfire developers.");
+                    Thread.Sleep(protectionTime);
                 }
 
                 token.ThrowIfCancellationRequested();

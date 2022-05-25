@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2015 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2015 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -145,7 +144,7 @@ namespace Hangfire.Server
                 HandleJobPerformanceException(ex.InnerException, context.CancellationToken, context.BackgroundJob);
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 HandleJobPerformanceException(ex, context.CancellationToken, context.BackgroundJob);
                 throw;

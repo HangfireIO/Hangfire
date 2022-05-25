@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -99,11 +98,7 @@ namespace Hangfire
 
         public void OnStateApplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
-            var awaitingState = context.NewState as AwaitingState;
-            if (awaitingState != null)
-            {
-                context.JobExpirationTimeout = awaitingState.Expiration;
-            }
+            // TODO: Remove this method and IApplyStateFilter interface in 2.0.0.
         }
 
         internal static List<Continuation> DeserializeContinuations(string serialized)
@@ -222,7 +217,7 @@ namespace Hangfire
                     {
                         nextState = SerializationHelper.Deserialize<IState>(currentState.Data["NextState"], SerializationOption.TypedInternal);
                     }
-                    catch (Exception ex)
+                    catch (Exception ex) when (ex.IsCatchableExceptionType())
                     {
                         nextState = new FailedState(ex)
                         {

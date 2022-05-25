@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -100,7 +99,7 @@ namespace Hangfire.States
             {
                 x.Item1.OnStateElection(x.Item2);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 ex.PreserveOriginalStackTrace();
                 throw;
@@ -113,7 +112,7 @@ namespace Hangfire.States
             {
                 x.Item1.OnStateApplied(x.Item2, x.Item2.Transaction);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 ex.PreserveOriginalStackTrace();
                 throw;
@@ -126,7 +125,7 @@ namespace Hangfire.States
             {
                 x.Item1.OnStateUnapplied(x.Item2, x.Item2.Transaction);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 ex.PreserveOriginalStackTrace();
                 throw;

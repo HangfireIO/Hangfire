@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright © 2017 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -64,9 +63,10 @@ namespace Hangfire.SqlServer
                     }
 
                     var type = sqlClientAssembly.GetTypes().FirstOrDefault(x => x.Name == "SqlCommandSet");
-
                     if (type == null)
+                    {
                         throw new TypeLoadException($"Could not load type 'SqlCommandSet' from assembly '{sqlClientAssembly}'.");
+                    }
 
                     return type;
                 });
@@ -117,7 +117,7 @@ namespace Hangfire.SqlServer
                     return Expression.Lambda<Action<object>>(Expression.Call(converted, "Dispose", null), p).Compile();
                 });
             }
-            catch (Exception exception)
+            catch (Exception exception) when (exception.IsCatchableExceptionType())
             {
                 throw new NotSupportedException($"SqlCommandSet for {connection.GetType().FullName} is not supported, use regular commands instead", exception);
             }

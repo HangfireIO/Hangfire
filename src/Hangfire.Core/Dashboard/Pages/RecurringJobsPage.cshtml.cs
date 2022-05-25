@@ -485,7 +485,7 @@ WriteLiteral("\r\n");
                                                 {
                                                     RecurringJobEntity.ParseCronExpression(job.Cron);
                                                 }
-                                                catch (Exception ex)
+                                                catch (Exception ex) when (ex.IsCatchableExceptionType())
                                                 {
                                                     cronDescription = ex.Message;
                                                     cronError = true;
@@ -610,7 +610,7 @@ WriteLiteral("                                    </td>\r\n                     
                                                 var resolver = DashboardOptions.TimeZoneResolver ?? new DefaultTimeZoneResolver();
                                                 displayName = resolver.GetTimeZoneById(job.TimeZoneId).DisplayName;
                                             }
-                                            catch (Exception ex)
+                                            catch (Exception ex) when (ex.IsCatchableExceptionType())
                                             {
                                                 displayName = null;
                                                 exception = ex;

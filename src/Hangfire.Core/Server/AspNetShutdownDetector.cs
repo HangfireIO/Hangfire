@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2020 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2020 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -40,6 +40,8 @@ namespace Hangfire.Server
 #endif
             return CancellationTokenSource.Token;
         }
+
+        public static bool IsShuttingDown => GetShutdownToken().IsCancellationRequested;
 
 #if !NETSTANDARD1_3
         private static void EnsureInitialized()
@@ -86,7 +88,7 @@ namespace Hangfire.Server
 
                 _checkForShutdownTimer = new Timer(CheckForAppDomainShutdown, null, CheckForShutdownTimerInterval, CheckForShutdownTimerInterval);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 Logger.ErrorException("Failed to initialize shutdown triggers for ASP.NET application.", ex);
             }
@@ -138,7 +140,7 @@ namespace Hangfire.Server
                 stopEvent.AddEventHandler(null, new EventHandler(StopListening));
                 Logger.Debug("HostingEnvironment.StopListening shutdown trigger initialized successfully.");
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 Logger.DebugException("Unable to initialize HostingEnvironment.StopListening shutdown trigger", ex);
             }
@@ -174,7 +176,7 @@ namespace Hangfire.Server
                             return shutdownReasonValue.ToString();
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception ex) when (ex.IsCatchableExceptionType())
                     {
                         Logger.TraceException("Unable to call the HostingEnvironment.ShutdownReason property due to an exception.", ex);
                     }
@@ -182,7 +184,7 @@ namespace Hangfire.Server
                     return null;
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 Logger.DebugException("Unable to initialize HostingEnvironment.ShutdownReason shutdown trigger", ex);
             }
@@ -202,7 +204,7 @@ namespace Hangfire.Server
 
                 Logger.Debug("UnsafeIISMethods.MgdHasConfigChanged shutdown trigger initialized successfully.");
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 Logger.DebugException("Unable to initialize UnsafeIISMethods.MgdHasConfigChanged shutdown trigger", ex);
             }

@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2019 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2019 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -164,7 +163,7 @@ namespace Hangfire.Common
                         return serializer.Deserialize(jsonReader, type);
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     // If there was an exception, we should try to deserialize the value using user-based
                     // settings, because prior to 1.7.0 they were used for almost everything. So we are saving
@@ -178,7 +177,7 @@ namespace Hangfire.Common
             {
                 return JsonConvert.DeserializeObject(value, type, GetSerializerSettings(SerializationOption.User));
             }
-            catch (Exception) when (exception != null)
+            catch (Exception ex) when (exception != null && ex.IsCatchableExceptionType())
             {
                 ExceptionDispatchInfo.Capture(exception).Throw();
                 throw;

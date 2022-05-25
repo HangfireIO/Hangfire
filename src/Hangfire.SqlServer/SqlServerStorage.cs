@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -43,6 +42,7 @@ namespace Hangfire.SqlServer
         private readonly SqlServerStorageOptions _options;
         private readonly string _connectionString;
         private string _escapedSchemaName;
+        private SqlServerHeartbeatProcess _heartbeatProcess;
 
         public SqlServerStorage(string nameOrConnectionString)
             : this(nameOrConnectionString, new SqlServerStorageOptions())
@@ -134,6 +134,7 @@ namespace Hangfire.SqlServer
         internal int? CommandBatchMaxTimeout => _options.CommandBatchMaxTimeout.HasValue ? (int)_options.CommandBatchMaxTimeout.Value.TotalSeconds : (int?)null;
         internal TimeSpan? SlidingInvisibilityTimeout => _options.SlidingInvisibilityTimeout;
         internal SqlServerStorageOptions Options => _options;
+        internal SqlServerHeartbeatProcess HeartbeatProcess => _heartbeatProcess;
 
         public override IMonitoringApi GetMonitoringApi()
         {
@@ -151,6 +152,7 @@ namespace Hangfire.SqlServer
         {
             yield return new ExpirationManager(this, _options.JobExpirationCheckInterval);
             yield return new CountersAggregator(this, _options.CountersAggregateInterval);
+            yield return _heartbeatProcess;
         }
 
         public override void WriteOptionsToLog(ILog logger)
@@ -230,7 +232,7 @@ namespace Hangfire.SqlServer
                     ? $"SQL Server: {builder}"
                     : canNotParseMessage;
             }
-            catch (Exception)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 return canNotParseMessage;
             }
@@ -317,7 +319,7 @@ namespace Hangfire.SqlServer
                             result = func(connection, transaction);
                             transaction.Commit();
                         }
-                        catch
+                        catch (Exception ex) when (ex.IsCatchableExceptionType())
                         {
                             // It is possible that XACT_ABORT option is set, and in this
                             // case transaction will be aborted automatically on server.
@@ -365,7 +367,7 @@ namespace Hangfire.SqlServer
 
                     return connection;
                 }
-                catch
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     ReleaseConnection(connection);
                     throw;
@@ -472,6 +474,7 @@ namespace Hangfire.SqlServer
             }
 
             InitializeQueueProviders();
+            _heartbeatProcess = new SqlServerHeartbeatProcess();
         }
 
         private void InitializeQueueProviders()

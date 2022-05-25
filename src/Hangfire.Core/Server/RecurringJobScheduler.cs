@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -331,7 +330,7 @@ namespace Hangfire.Server
                     recurringJob.IsChanged(out var changedFields, out nextExecution);
                     transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     throw new BackgroundJobClientException(ex.Message, ex);
                 }
@@ -428,7 +427,7 @@ namespace Hangfire.Server
                         {
                             return true;
                         }
-                        catch (Exception)
+                        catch (Exception ex) when (ex.IsCatchableExceptionType())
                         {
                             //
                         }

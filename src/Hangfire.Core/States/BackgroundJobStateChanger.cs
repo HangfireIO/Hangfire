@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -193,7 +192,12 @@ namespace Hangfire.States
             // 
             // In recent versions, Hangfire.SqlServer uses query hints to make all the
             // reads linearizable no matter what, but there may be other storages that
-            // still require this workaround.
+            // still require this workaround. So we leave this part implemented, but
+            // decrease the number of attempt from infinite to only a few, because most
+            // storages will provide linearizable reads anyway. It's better to have
+            // "hanging" job in the Processing jobs page in the Dashboard UI than use
+            // infinite loop under the hoods - the former case is better discoverable,
+            // and it's not hard to improve the storage implementation.
 
             // TODO 2.0:
             // Eliminate the need of this timeout by placing an explicit requirement to
@@ -201,9 +205,7 @@ namespace Hangfire.States
             // the operations inside a transaction; or make all the reads linearizable and
             // execute queueing operations after all the other ones in a transaction.
 
-            var firstAttempt = true;
-
-            while (true)
+            for (var retryAttempt = 0; retryAttempt < 5; retryAttempt++)
             {
                 var jobData = context.Connection.GetJobData(context.BackgroundJobId);
 
@@ -240,9 +242,10 @@ namespace Hangfire.States
                     return null;
                 }
 
-                context.CancellationToken.Wait(TimeSpan.FromMilliseconds(firstAttempt ? 0 : 100));
-                firstAttempt = false;
+                context.CancellationToken.Wait(TimeSpan.FromSeconds(retryAttempt));
             }
+
+            return null;
         }
     }
 }

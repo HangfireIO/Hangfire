@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -155,7 +154,7 @@ namespace Hangfire
                     return backgroundJob?.Id;
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 throw new BackgroundJobClientException("Background job creation failed. See inner exception for details.", ex);
             }
@@ -181,7 +180,7 @@ namespace Hangfire
                     return appliedState != null && appliedState.Name.Equals(state.Name, StringComparison.OrdinalIgnoreCase);
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 throw new BackgroundJobClientException("State change of a background job failed. See inner exception for details", ex);
             }
