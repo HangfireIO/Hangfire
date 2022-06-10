@@ -28,6 +28,7 @@ Hangfire.Core
 
 • Fixed – Don't consider `SecurityException` as a non-catchable one.
 • Fixed – Replace timer with a dedicated thread in `AspNetShutdownDetector` to avoid depending on thread pool.
+• Fixed – Better ASP.NET shutdown detection with yet another check based on internal state.
 • Fixed – Decrease `AspNetShutdownDetector`'s check intervals to detect shutdowns earlier.
 • Fixed – Don't wait for server stop on AppDomain unloads when hosting in IIS to avoid delaying them.
 
