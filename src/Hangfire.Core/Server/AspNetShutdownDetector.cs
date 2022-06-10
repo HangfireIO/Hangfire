@@ -23,7 +23,7 @@ namespace Hangfire.Server
     internal static class AspNetShutdownDetector
     {
         private static readonly ILog Logger = LogProvider.GetLogger(typeof(AspNetShutdownDetector));
-        private static readonly TimeSpan CheckForShutdownTimerInterval = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan CheckForShutdownTimerInterval = TimeSpan.FromMilliseconds(250);
         private static readonly CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
 
 #if !NETSTANDARD1_3
