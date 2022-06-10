@@ -22,6 +22,15 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.30
+
+Hangfire.Core
+
+• Fixed – Don't consider `SecurityException` as a non-catchable one.
+• Fixed – Replace timer with a dedicated thread in `AspNetShutdownDetector` to avoid depending on thread pool.
+• Fixed – Decrease `AspNetShutdownDetector`'s check intervals to detect shutdowns earlier.
+• Fixed – Don't wait for server stop on AppDomain unloads when hosting in IIS to avoid delaying them.
+
 1.7.29
 
 Hangfire.Core
