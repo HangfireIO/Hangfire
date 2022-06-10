@@ -14,6 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using Hangfire.Logging;
@@ -33,6 +34,7 @@ namespace Hangfire.Server
         private static Thread _checkForShutdownThread;
         private static Func<string> _shutdownReasonFunc;
         private static Func<bool> _checkConfigChangedFunc;
+        private static Func<bool> _disposingHttpRuntime;
 #endif
 
         public static bool IsSucceeded =>
@@ -90,11 +92,16 @@ namespace Hangfire.Server
                 // to time.
                 InitializeShutdownReason(ref _isSucceeded);
 
+                // This check is based on the HttpRuntime._disposingHttpRuntime field that's
+                // modified just before app domain is being unloaded, when new app domain was
+                // already created.
+                InitializeDisposingHttpRuntime(ref _isSucceeded);
+
                 // And the last method to check for application shutdown is implemented in
                 // SignalR and Kudu service by checking the UnsafeIISMethods.MgdHasConfigChanged
                 // method. But I was failed to find this method in the recent ASP.NET sources.
                 // But nevertheless it may be useful to have it for older versions.
-                InitializeMgdHasConfigChanged(ref _isSucceeded);
+                InitializeMgdHasConfigChanged(ref _isSucceeded);                
 
                 if (_isSucceeded)
                 {
@@ -128,6 +135,12 @@ namespace Hangfire.Server
                     if (shutdownReason != null)
                     {
                         Cancel($"HostingEnvironment.ShutdownReason: {shutdownReason}");
+                        break;
+                    }
+
+                    if (_disposingHttpRuntime != null && _disposingHttpRuntime())
+                    {
+                        Cancel("HttpRuntime._disposingHttpRuntime");
                         break;
                     }
 
@@ -243,6 +256,47 @@ namespace Hangfire.Server
             {
                 Logger.DebugException("Unable to initialize UnsafeIISMethods.MgdHasConfigChanged shutdown trigger", ex);
             }
+        }
+
+        private static void InitializeDisposingHttpRuntime(ref bool success)
+        {
+            try
+            {
+                var type = Type.GetType("System.Web.HttpRuntime, System.Web, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a", false);
+                if (type == null) return;
+
+                var theRuntimeInfo = type.GetField("_theRuntime", BindingFlags.NonPublic | BindingFlags.Static);
+                if (theRuntimeInfo == null) return;
+
+                var disposingHttpRuntimeInfo = type.GetField("_disposingHttpRuntime", BindingFlags.NonPublic | BindingFlags.Instance);
+                if (disposingHttpRuntimeInfo == null) return;
+
+                var theRuntime = CreateGetStaticFieldDelegate<object>(theRuntimeInfo);
+                var disposingHttpRuntime = CreateGetFieldDelegate<bool>(disposingHttpRuntimeInfo, type);
+
+                _disposingHttpRuntime = () => disposingHttpRuntime(theRuntime());
+
+                Logger.Debug("HttpRuntime._disposingHttpRuntime shutdown trigger initialized successfully.");
+                success = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.DebugException("Unable to initialize HttpRuntime._disposingHttpRuntime shutdown trigger", ex);
+            }
+        }
+
+        private static Func<T> CreateGetStaticFieldDelegate<T>(FieldInfo fieldInfo)
+        {
+            var fieldExp = Expression.Field(null, fieldInfo);
+            return Expression.Lambda<Func<T>>(fieldExp).Compile();
+        }
+
+        private static Func<object, T> CreateGetFieldDelegate<T>(FieldInfo fieldInfo, Type type)
+        {
+            var instExp = Expression.Parameter(typeof(object));
+            var convExp = Expression.Convert(instExp, type);
+            var fieldExp = Expression.Field(convExp, fieldInfo);
+            return Expression.Lambda<Func<object, T>>(fieldExp, instExp).Compile();
         }
 #endif
     }
