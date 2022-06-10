@@ -35,6 +35,14 @@ namespace Hangfire.Server
         private static Func<bool> _checkConfigChangedFunc;
 #endif
 
+        public static bool IsSucceeded =>
+#if !NETSTANDARD1_3
+            _isSucceeded
+#else
+            false
+#endif
+        ;
+
         public static CancellationToken GetShutdownToken()
         {
 #if !NETSTANDARD1_3
