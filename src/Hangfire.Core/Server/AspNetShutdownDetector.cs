@@ -53,7 +53,13 @@ namespace Hangfire.Server
             return CancellationTokenSource.Token;
         }
 
-        public static bool IsShuttingDown => GetShutdownToken().IsCancellationRequested;
+        public static bool DisposingHttpRuntime =>
+#if !NETSTANDARD1_3
+            _disposingHttpRuntime != null && _disposingHttpRuntime()
+#else
+            false
+#endif
+            ;
 
 #if !NETSTANDARD1_3
         private static void EnsureInitialized()

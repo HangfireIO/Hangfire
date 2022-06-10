@@ -33,7 +33,7 @@ namespace Hangfire.Processing
             }
         }
 
-        public static bool IsUnloading => Volatile.Read(ref _isUnloading);
+        public static bool IsUnloading => Volatile.Read(ref _isUnloading) || Server.AspNetShutdownDetector.DisposingHttpRuntime;
 
         private static void OnDomainUnload(object sender, EventArgs args)
         {
