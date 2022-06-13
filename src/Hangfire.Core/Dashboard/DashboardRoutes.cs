@@ -30,7 +30,7 @@ namespace Hangfire.Dashboard
         internal static volatile int JavaScriptsHashCode;
         internal static volatile int StylesheetsHashCode;
 
-        internal static bool IsDarkModeSupportEnabled = false;
+        public static bool IsDarkModeSupportEnabled = false;
 
         static DashboardRoutes()
         {
