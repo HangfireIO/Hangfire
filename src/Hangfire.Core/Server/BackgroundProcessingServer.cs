@@ -187,7 +187,11 @@ namespace Hangfire.Server
             _stoppedCts.Cancel();
             _shutdownCts.Cancel();
 
-            WaitForShutdown(_options.LastChanceTimeout);
+            if (!AspNetShutdownDetector.IsSucceeded)
+            {
+                // ASP.NET can be very sensitive to any delays during AppDomain unload.
+                WaitForShutdown(_options.LastChanceTimeout);
+            }
         }
 
         private void OnAspNetShutdown()

@@ -18,7 +18,6 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
-using Hangfire.Common;
 using Hangfire.Logging;
 using ThreadState = System.Threading.ThreadState;
 
@@ -67,13 +66,7 @@ namespace Hangfire.Processing
 #endif
         }
 
-        public bool StopRequested => _disposed 
-                                     || _stopToken.IsCancellationRequested 
-                                     || Server.AspNetShutdownDetector.IsShuttingDown
-#if !NETSTANDARD1_3
-                                     || AppDomainUnloadMonitor.IsUnloading
-#endif
-        ;
+        public bool StopRequested => _disposed || _stopToken.IsCancellationRequested;
 
         public void Run(Action<Guid, object> callback, object state)
         {
