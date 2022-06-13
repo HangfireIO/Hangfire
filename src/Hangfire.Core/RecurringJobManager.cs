@@ -26,7 +26,7 @@ namespace Hangfire
     /// Represents a recurring job manager that allows to create, update
     /// or delete recurring jobs.
     /// </summary>
-    public class RecurringJobManager : IRecurringJobManager
+    public class RecurringJobManager : IRecurringJobManager, IRecurringJobManagerV2
     {
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
@@ -91,6 +91,8 @@ namespace Hangfire
             _nowFactory = nowFactory ?? throw new ArgumentNullException(nameof(nowFactory));
         }
 
+        public JobStorage Storage => _storage;
+
         public void AddOrUpdate(string recurringJobId, Job job, string cronExpression, RecurringJobOptions options)
         {
             if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
@@ -139,12 +141,12 @@ namespace Hangfire
             }
         }
 
-        public void Trigger(string recurringJobId)
-        {
-            TriggerExecution(recurringJobId);
-        }
+        public void Trigger(string recurringJobId) => TriggerJob(recurringJobId);
 
-        public string TriggerExecution(string recurringJobId)
+        [Obsolete("Please use the `TriggerJob` method instead. Will be removed in 2.0.0.")]
+        public string TriggerExecution(string recurringJobId) => TriggerJob(recurringJobId);
+
+        public string TriggerJob(string recurringJobId)
         {
             if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
 

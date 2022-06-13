@@ -18,6 +18,15 @@ using Hangfire.Common;
 
 namespace Hangfire
 {
+    public interface IRecurringJobManagerV2 : IRecurringJobManager
+    {
+        [NotNull]
+        JobStorage Storage { get; }
+
+        [CanBeNull]
+        string TriggerJob([NotNull] string recurringJobId);
+    }
+
     public interface IRecurringJobManager
     {
         void AddOrUpdate(
