@@ -231,6 +231,31 @@ namespace Hangfire.SqlServer
                 }));
         }
 
+        public override JobList<AwaitingJobDto> AwaitingJobs(int @from, int count)
+        {
+            return UseConnection(connection => GetJobs(
+                connection,
+                from,
+                count,
+                AwaitingState.StateName,
+                descending: true,
+                (sqlJob, job, invocationData, loadException, stateData) => new AwaitingJobDto
+                {
+                    Job = job,
+                    LoadException = loadException,
+                    InvocationData = invocationData,
+                    InAwaitingState = AwaitingState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
+                    AwaitingAt = sqlJob.StateChanged,
+                    StateData = stateData
+                }));
+        }
+
+        public override long AwaitingCount()
+        {
+            return UseConnection(connection => 
+                GetNumberOfJobsByStateName(connection, AwaitingState.StateName));
+        }
+
         public override IList<QueueWithTopEnqueuedJobsDto> Queues()
         {
             var tuples = _storage.QueueProviders
