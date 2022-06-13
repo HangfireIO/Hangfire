@@ -15,13 +15,15 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
-1.8.0
+1.8.0-rc1
 • Added – Recommended Schema 8 migration with fixed `JobQueue.Id` column to use the `bigint` type.
-• Added – `SqlServerStorageOptions.PreferMicrosoftDataSqlClient` option to use the corresponding package.
+• Added – Automatic client package detection based on available types, preferring `System.Data.SqlClient` (by @0xced).
+• Added – `SqlServerStorageOptions.DbProviderFactory` option to use custom provider factory.
 • Added – `TryAutoDetectSchemaDependentOptions` option to automatically enable options based on schema.
 • Added – `SqlServerStorage.SchemaVersion` metric for Dashboard UI.
 • Added – Optional experimental transactional acknowledge for SQL Server (`UseTransactionalAcknowledge` option).
 • Added – Implement the `Connection.GetUtcDateTime` feature to make work new changes in schedulers.
+• Changed – Remove dependency on System.Data.SqlClient for Hangfire.SqlServer (by @0xced).
 • Changed – Set default value for the `QueuePollInterval` option to `TimeSpan.Zero`.
 • Changed – Polling delay when `QueuePollInterval` is set to zero now defaults to 200 ms.
 • Changed – Sliding invisibility timeout-based fetching method is now used by default with 5 minute timeout.
@@ -30,6 +32,7 @@
 • Changed – `GetJobData` now populates `JobData.ParametersSnapshot` property to avoid additional round-trips.
 • Changed – Display scheduled and processing jobs in the ascending order in Dashboard UI.
 • Deprecated – `UsePageLocksOnDequeue` option is now obsolete and doesn't affect anything.
+• Breaking – Dropped `NET45` platform target in favor of `NET451` target to support Visual Studio 2022.
     </releaseNotes>
     <dependencies>
       <group targetFramework="net451">

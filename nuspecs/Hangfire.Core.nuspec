@@ -20,7 +20,7 @@ https://www.hangfire.io/
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
-1.8.0
+1.8.0-rc1
 • Added – Introduce the `Job.Queue` property, so jobs now can have their own queue specified.
 • Added – Method overloads to create background jobs directly with a custom default queue.
 • Added – Method overloads to create recurring jobs directly with a custom default queue.
@@ -36,6 +36,7 @@ https://www.hangfire.io/
 • Added – `FromExceptionAttribute` to deal with an antecedent exception in a background job continuation.
 • Added – Allow to filter exception types in `AutomaticRetryAttribute` by using the new `OnlyOn` property.
 • Added – Built-in `Remove` method for `JobFilterCollection` to remove global filters based on their type.
+• Added – `IGlobalConfiguration.UseFilterProvider` extension method to unify the configuration.
 • Changed – Use the `AttemptsExceededAction.Delete` option by default in the global automatic retry filter.
 • Changed – Query time from storage in recurring and delayed schedulers when supported by storage.
 • Changed – Increase the default value for the `BackgroundJobServerOptions.StopTimeout` to 500 ms.
@@ -45,6 +46,7 @@ https://www.hangfire.io/
 • Deprecated – `AddOrUpdate` overloads with optional parameters defined in the `RecurringJob` class.
 • Deprecated – `AddOrUpdate` method overloads with no `recurringJobId` parameter.
 • Deprecated – `RecurringJobOptions.QueueName` property, new methods should be used instead.
+• Breaking – Dropped `NET45` platform target in favor of `NET451` target to support Visual Studio 2022.
 
 Dashboard UI
 • Added – Dark mode support for Dashboard UI configurable with the `UseDarkModeSupportForDashboard` method (by @danillewin).
@@ -77,6 +79,7 @@ Storage
 • Added – Experimental `JobStorageConnection.SetContains` method.
 • Added – Optional `ParametersSnapshot` property for `BackgroundJob` and `JobData` classes to minimize roundtrips in future.
 • Added – Fetch "Retries" metric with other statistics when supported by storage.
+• Added – `JobStorageMonitor` class with more available methods for the new features.
 • Changed – Allow to query job parameters without additional roundtrip when supported by a storage.
 • Changed – Expose state data dictionaries in list DTOs when supported by storage.
 
