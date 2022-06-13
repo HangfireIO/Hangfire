@@ -31,6 +31,7 @@ namespace Hangfire
         /// <summary>
         /// Gets a storage associated with the current background job client.
         /// </summary>
+        [NotNull]
         JobStorage Storage { get; }
 
         /// <summary>
