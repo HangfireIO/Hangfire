@@ -171,6 +171,17 @@ namespace Hangfire
             return configuration.Use(filter, x => GlobalJobFilters.Filters.Add(x));
         }
 
+        public static IGlobalConfiguration<TFilterProvider> UseFilterProvider<TFilterProvider>(
+            [NotNull] this IGlobalConfiguration configuration, 
+            [NotNull] TFilterProvider filterProvider)
+            where TFilterProvider : IJobFilterProvider
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (filterProvider == null) throw new ArgumentNullException(nameof(filterProvider));
+
+            return configuration.Use(filterProvider, x => JobFilterProviders.Providers.Add(x));
+        }
+
         public static IGlobalConfiguration UseDashboardMetric(
             [NotNull] this IGlobalConfiguration configuration,
             [NotNull] DashboardMetric metric)
