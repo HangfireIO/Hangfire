@@ -116,6 +116,9 @@ namespace Hangfire
             _factory = factory;
         }
 
+        /// <inheritdoc />
+        public JobStorage Storage => _storage;
+
         public int RetryAttempts
         {
             get
@@ -136,6 +139,7 @@ namespace Hangfire
             }
         }
 
+        /// <inheritdoc />
         public string Create(Job job, IState state) => Create(job, state, null);
 
         /// <inheritdoc />
