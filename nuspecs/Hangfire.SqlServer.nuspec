@@ -32,7 +32,7 @@
 • Deprecated – `UsePageLocksOnDequeue` option is now obsolete and doesn't affect anything.
     </releaseNotes>
     <dependencies>
-      <group targetFramework="net45">
+      <group targetFramework="net451">
         <dependency id="Hangfire.Core" version="[0.0.0]" />
       </group>
       
@@ -50,9 +50,9 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="net45\Hangfire.SqlServer.dll" target="lib\net45" />
-    <file src="net45\Hangfire.SqlServer.xml" target="lib\net45" />
-    <file src="net45\Hangfire.SqlServer.pdb" target="lib\net45" />
+    <file src="net451\Hangfire.SqlServer.dll" target="lib\net451" />
+    <file src="net451\Hangfire.SqlServer.xml" target="lib\net451" />
+    <file src="net451\Hangfire.SqlServer.pdb" target="lib\net451" />
     
     <file src="netstandard1.3\Hangfire.SqlServer.dll" target="lib\netstandard1.3" />
     <file src="netstandard1.3\Hangfire.SqlServer.xml" target="lib\netstandard1.3" />

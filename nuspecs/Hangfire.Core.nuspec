@@ -91,7 +91,7 @@ Internals
 • Changed – `ServerHeartbeatProcess` now uses `ThreadPriority.AboveNormal` to prioritize heartbeats.
     </releaseNotes>
     <dependencies>
-      <group targetFramework="net45">
+      <group targetFramework="net451">
         <dependency id="Owin" version="1.0" />
         <dependency id="Newtonsoft.Json" version="5.0.1" />
       </group>
@@ -111,11 +111,11 @@ Internals
     </dependencies>
   </metadata>
   <files>
-    <file src="net45\Hangfire.Core.dll" target="lib\net45" />
-    <file src="net45\Hangfire.Core.xml" target="lib\net45" />
-    <file src="net45\Hangfire.Core.pdb" target="lib\net45" />
+    <file src="net451\Hangfire.Core.dll" target="lib\net451" />
+    <file src="net451\Hangfire.Core.xml" target="lib\net451" />
+    <file src="net451\Hangfire.Core.pdb" target="lib\net451" />
 
-    <file src="net45\**\Hangfire.Core.resources.dll" target="lib\net45" />
+    <file src="net451\**\Hangfire.Core.resources.dll" target="lib\net451" />
 
     <file src="net46\Hangfire.Core.dll" target="lib\net46" />
     <file src="net46\Hangfire.Core.xml" target="lib\net46" />

@@ -9,9 +9,9 @@ Task Build -Depends Clean -Description "Restore all the packages and build the w
 }
 
 Task Merge -Depends Build -Description "Run ILRepack /internalize to merge required assemblies." {
-    Repack-Assembly @("Hangfire.Core", "net45") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
+    Repack-Assembly @("Hangfire.Core", "net451") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
     Repack-Assembly @("Hangfire.Core", "net46") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
-    Repack-Assembly @("Hangfire.SqlServer", "net45") @("Dapper")
+    Repack-Assembly @("Hangfire.SqlServer", "net451") @("Dapper")
     
     # Referenced packages aren't copied to the output folder in .NET Core <= 2.X. To make ILRepack run,
     # we need to copy them using the `dotnet publish` command prior to merging them. In .NET Core 3.0
@@ -42,9 +42,9 @@ Task Test -Depends Merge -Description "Run unit and integration tests against me
 }
 
 Task Collect -Depends Test -Description "Copy all artifacts to the build folder." {
-    Collect-Assembly "Hangfire.Core" "net45"
-    Collect-Assembly "Hangfire.SqlServer" "net45"
-    Collect-Assembly "Hangfire.SqlServer.Msmq" "net45"
+    Collect-Assembly "Hangfire.Core" "net451"
+    Collect-Assembly "Hangfire.SqlServer" "net451"
+    Collect-Assembly "Hangfire.SqlServer.Msmq" "net451"
     Collect-Assembly "Hangfire.AspNetCore" "net451"
 
     Collect-Assembly "Hangfire.Core" "net46"
@@ -66,7 +66,7 @@ Task Collect -Depends Test -Description "Copy all artifacts to the build folder.
     Collect-Content "content\readme.txt"
     Collect-Tool "src\Hangfire.SqlServer\DefaultInstall.sql"
 
-    Collect-Localizations "Hangfire.Core" "net45"
+    Collect-Localizations "Hangfire.Core" "net451"
     Collect-Localizations "Hangfire.Core" "net46"
     Collect-Localizations "Hangfire.Core" "netstandard1.3"
     Collect-Localizations "Hangfire.Core" "netstandard2.0"

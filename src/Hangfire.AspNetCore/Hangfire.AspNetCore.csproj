@@ -8,7 +8,7 @@
     <RootNamespace>Hangfire</RootNamespace>
   </PropertyGroup>
   
-  <PropertyGroup Condition="'$(TargetFramework)'=='net45' or '$(TargetFramework)'=='net461'">
+  <PropertyGroup Condition="'$(TargetFramework)'=='net451' or '$(TargetFramework)'=='net461'">
     <DebugType>full</DebugType>
   </PropertyGroup>
 

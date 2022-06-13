@@ -40,9 +40,9 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="net45\Hangfire.SqlServer.Msmq.dll" target="lib\net45" />
-    <file src="net45\Hangfire.SqlServer.Msmq.xml" target="lib\net45" />
-    <file src="net45\Hangfire.SqlServer.Msmq.pdb" target="lib\net45" />
+    <file src="net451\Hangfire.SqlServer.Msmq.dll" target="lib\net451" />
+    <file src="net451\Hangfire.SqlServer.Msmq.xml" target="lib\net451" />
+    <file src="net451\Hangfire.SqlServer.Msmq.pdb" target="lib\net451" />
     <file src="..\src\Hangfire.SqlServer.Msmq\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
     <file src="LICENSE.md" />
     <file src="COPYING" />

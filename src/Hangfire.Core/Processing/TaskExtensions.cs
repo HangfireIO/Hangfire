@@ -185,7 +185,7 @@ namespace Hangfire.Processing
         private static TaskCompletionSource<T> CreateCompletionSource<T>()
         {
             return new TaskCompletionSource<T>(
-#if !NET45
+#if !NET451
                 TaskCreationOptions.RunContinuationsAsynchronously
 #endif
             );
@@ -194,7 +194,7 @@ namespace Hangfire.Processing
         private static void TrySetCanceled<T>(TaskCompletionSource<T> source, CancellationToken token)
         {
             source.TrySetCanceled(
-#if !NET45
+#if !NET451
                 token
 #endif
             );

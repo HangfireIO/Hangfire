@@ -116,7 +116,7 @@ Hangfire.NetCore and Hangfire.AspNetCore
 
     </releaseNotes>
     <dependencies>
-      <group targetFramework="net45">
+      <group targetFramework="net451">
         <dependency id="Hangfire.Core" version="[0.0.0]" />
         <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
         <dependency id="Microsoft.Owin.Host.SystemWeb" version="3.0.0" />
