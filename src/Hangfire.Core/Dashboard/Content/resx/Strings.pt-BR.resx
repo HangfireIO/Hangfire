@@ -149,7 +149,7 @@
     <value>Removendo...</value>
   </data>
   <data name="Common_DeleteSelected" xml:space="preserve">
-    <value>Remover itens selecioados</value>
+    <value>Remover itens selecionados</value>
   </data>
   <data name="Common_EnqueueButton_Text" xml:space="preserve">
     <value>Colocar tarefa na fila</value>
