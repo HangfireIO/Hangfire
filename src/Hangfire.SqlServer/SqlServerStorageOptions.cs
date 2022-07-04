@@ -59,10 +59,10 @@ namespace Hangfire.SqlServer
         {
             var dbProviderFactoryTypes = new[]
             {
+                "Microsoft.Data.SqlClient.SqlClientFactory, Microsoft.Data.SqlClient",
                 // Available in the .NET Framework GAC, requires Version + Culture + PublicKeyToken to be explicitly specified
                 "System.Data.SqlClient.SqlClientFactory, System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
                 "System.Data.SqlClient.SqlClientFactory, System.Data.SqlClient",
-                "Microsoft.Data.SqlClient.SqlClientFactory, Microsoft.Data.SqlClient",
             };
 
             foreach (var dbProviderFactoryType in dbProviderFactoryTypes)
