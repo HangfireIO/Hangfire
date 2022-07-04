@@ -20,7 +20,7 @@ image:
 # environment variables
 environment:
   BuildEnvironment: appveyor
-  Hangfire_SqlServer_ConnectionStringTemplate: Server=.\SQL2017;Database={0};User Id=sa;Password=Password12!;Encrypt=False
+  Hangfire_SqlServer_ConnectionStringTemplate: Server=.\SQL2017;Database={0};User Id=sa;Password=Password12!;Encrypt=False;TrustServerCertificate=False
   DOCKER_USERNAME:
     secure: BDjid/SqKs9YCA39j55dIg==
   DOCKER_PASSWORD:
