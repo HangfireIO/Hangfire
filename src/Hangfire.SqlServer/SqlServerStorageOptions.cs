@@ -196,7 +196,8 @@ namespace Hangfire.SqlServer
         /// </summary>
         public DbProviderFactory SqlClientFactory
         {
-            get => _sqlClientFactory ?? throw new InvalidOperationException("A reference to either Microsoft.Data.SqlClient or System.Data.SqlClient must exist.");
+            get => _sqlClientFactory ?? throw new InvalidOperationException("Please add a NuGet package reference to either 'Microsoft.Data.SqlClient' or 'System.Data.SqlClient' in your application project. " +
+                                                                            "Hangfire.SqlServer supports both providers but let the consumer decide which one should be used.");
             set => _sqlClientFactory = value ?? throw new ArgumentNullException(nameof(value));
         }
 
