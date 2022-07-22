@@ -182,7 +182,7 @@ namespace Hangfire
             [CanBeNull] JobStorage storage,
             [CanBeNull] IEnumerable<IBackgroundProcess> additionalProcesses)
         {
-            services.AddTransient<IHostedService, BackgroundJobServerHostedService>(provider =>
+            services.AddSingleton<IHostedService, BackgroundJobServerHostedService>(provider =>
             {
                 var options = provider.GetService<BackgroundJobServerOptions>() ?? new BackgroundJobServerOptions();
                 return CreateBackgroundJobServerHostedService(provider, storage, additionalProcesses, options);
@@ -197,7 +197,7 @@ namespace Hangfire
             [CanBeNull] IEnumerable<IBackgroundProcess> additionalProcesses,
             [NotNull] Action<IServiceProvider, BackgroundJobServerOptions> optionsAction)
         {
-            services.AddTransient<IHostedService, BackgroundJobServerHostedService>(provider =>
+            services.AddSingleton<IHostedService, BackgroundJobServerHostedService>(provider =>
             {
                 var options = new BackgroundJobServerOptions();
                 optionsAction(provider, options);
