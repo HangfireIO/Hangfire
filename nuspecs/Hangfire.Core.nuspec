@@ -22,6 +22,15 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.31
+• Added – `RecurringJob.TriggerJob` method that returns identifier of a triggered background job.
+• Added – `RecurringJobManager.TriggerJob` as a replacement for the `TriggerExecution` method.
+• Changed – Update Moment.js library used by Dashboard UI to version 2.29.4 (by @mmitchell-w).
+• Fixed – Typos in pt-BR translation (by @gumbarros and @marcelcamargo).
+• Fixed – Added missing parameter annotations for methods of the `RecurringJob` class.
+• Deprecated – `RecurringJob.Trigger` method is now obsolete, `TriggerJob` is the replacement.
+• Deprecated – `RecurringJobManager.TriggerExecution` method is now obsolete, `TriggerJob` should be used instead.
+
 1.7.30
 • Fixed – Don't consider `SecurityException` as a non-catchable one.
 • Fixed – Replace timer with a dedicated thread in `AspNetShutdownDetector` to avoid depending on thread pool.
