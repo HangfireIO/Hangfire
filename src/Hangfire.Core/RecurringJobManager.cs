@@ -142,12 +142,12 @@ namespace Hangfire
         }
 
         [Obsolete("Please use the TriggerJob method with the same arguments instead. Will be removed in 2.0.0.")]
-        public string TriggerExecution(string recurringJobId)
+        public string TriggerExecution([NotNull] string recurringJobId)
         {
             return TriggerJob(recurringJobId);
         }
 
-        public string TriggerJob(string recurringJobId)
+        public string TriggerJob([NotNull] string recurringJobId)
         {
             if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
 
