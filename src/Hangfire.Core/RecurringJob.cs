@@ -200,9 +200,15 @@ namespace Hangfire
             Instance.Value.RemoveIfExists(recurringJobId);
         }
 
+        [Obsolete("Please use the TriggerJob method instead. Will be removed in 2.0.0.")]
         public static void Trigger(string recurringJobId)
         {
             Instance.Value.Trigger(recurringJobId);
+        }
+
+        public static string TriggerJob(string recurringJobId)
+        {
+            return Instance.Value.TriggerJob(recurringJobId);
         }
 
         private static string GetRecurringJobId(Job job)
