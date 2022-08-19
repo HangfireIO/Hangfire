@@ -17,6 +17,7 @@ using System;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.States;
 
@@ -28,28 +29,30 @@ namespace Hangfire
             () => new RecurringJobManager(), LazyThreadSafetyMode.PublicationOnly);
 
         public static void AddOrUpdate(
-            Expression<Action> methodCall,
-            Func<string> cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull, InstantHandle] Expression<Action> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
             AddOrUpdate(methodCall, cronExpression(), timeZone, queue);
         }
 
         public static void AddOrUpdate<T>(
-            Expression<Action<T>> methodCall,
-            Func<string> cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
             AddOrUpdate(methodCall, cronExpression(), timeZone, queue);
         }
 
         public static void AddOrUpdate(
-            Expression<Action> methodCall,
-            string cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull, InstantHandle] Expression<Action> methodCall,
+            [NotNull] string cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             var id = GetRecurringJobId(job);
@@ -58,10 +61,10 @@ namespace Hangfire
         }
 
         public static void AddOrUpdate<T>(
-            Expression<Action<T>> methodCall,
-            string cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
+            [NotNull] string cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             var id = GetRecurringJobId(job);
@@ -70,70 +73,74 @@ namespace Hangfire
         }
 
         public static void AddOrUpdate(
-            string recurringJobId,
-            Expression<Action> methodCall,
-            Func<string> cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull] string recurringJobId,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
             AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue);
         }
 
         public static void AddOrUpdate<T>(
-            string recurringJobId,
-            Expression<Action<T>> methodCall,
-            Func<string> cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull] string recurringJobId,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
             AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue);
         }
 
         public static void AddOrUpdate(
-            string recurringJobId,
-            Expression<Action> methodCall,
-            string cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull] string recurringJobId,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
+            [NotNull] string cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void AddOrUpdate<T>(
-            string recurringJobId,
-            Expression<Action<T>> methodCall,
-            string cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull] string recurringJobId,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
+            [NotNull] string cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void AddOrUpdate(
-            Expression<Func<Task>> methodCall,
-            Func<string> cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
             AddOrUpdate(methodCall, cronExpression(), timeZone, queue);
         }
 
         public static void AddOrUpdate<T>(
-            Expression<Func<T, Task>> methodCall,
-            Func<string> cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
             AddOrUpdate(methodCall, cronExpression(), timeZone, queue);
         }
 
         public static void AddOrUpdate(
-            Expression<Func<Task>> methodCall,
-            string cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
+            [NotNull] string cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             var id = GetRecurringJobId(job);
@@ -142,10 +149,10 @@ namespace Hangfire
         }
 
         public static void AddOrUpdate<T>(
-            Expression<Func<T, Task>> methodCall,
-            string cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
+            [NotNull] string cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             var id = GetRecurringJobId(job);
@@ -154,59 +161,61 @@ namespace Hangfire
         }
         
         public static void AddOrUpdate(
-            string recurringJobId,
-            Expression<Func<Task>> methodCall,
-            Func<string> cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull] string recurringJobId,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
             AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue);
         }
 
         public static void AddOrUpdate<T>(
-            string recurringJobId,
-            Expression<Func<T, Task>> methodCall,
-            Func<string> cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull] string recurringJobId,
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
+            [NotNull] Func<string> cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
             AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue);
         }
 
         public static void AddOrUpdate(
-            string recurringJobId,
-            Expression<Func<Task>> methodCall,
-            string cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull] string recurringJobId,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
+            [NotNull] string cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
         public static void AddOrUpdate<T>(
-            string recurringJobId,
-            Expression<Func<T, Task>> methodCall,
-            string cronExpression,
-            TimeZoneInfo timeZone = null,
-            string queue = EnqueuedState.DefaultQueue)
+            [NotNull] string recurringJobId,
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
+            [NotNull] string cronExpression,
+            [CanBeNull] TimeZoneInfo timeZone = null,
+            [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
-        public static void RemoveIfExists(string recurringJobId)
+        public static void RemoveIfExists([NotNull] string recurringJobId)
         {
             Instance.Value.RemoveIfExists(recurringJobId);
         }
 
         [Obsolete("Please use the TriggerJob method instead. Will be removed in 2.0.0.")]
-        public static void Trigger(string recurringJobId)
+        public static void Trigger([NotNull] string recurringJobId)
         {
             Instance.Value.Trigger(recurringJobId);
         }
 
-        public static string TriggerJob(string recurringJobId)
+        public static string TriggerJob([NotNull] string recurringJobId)
         {
             return Instance.Value.TriggerJob(recurringJobId);
         }
