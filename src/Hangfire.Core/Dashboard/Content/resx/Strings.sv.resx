@@ -118,7 +118,9 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AwaitingJobsPage_ContinuationsWarning_Text" xml:space="preserve">
-    <value>Don't worry, continuations are working as expected. But your current job storage does not support some queries required to show this page. Please try to update your storage or wait until the full command set is implemented.</value>
+    <value>Oroa dig inte, fortsättningar fungerar som dom ska. Din nuvarande lagring för jobb stödjer
+            inte vissa frågor som behövs för att visa den här sidan. Uppdatera till en annan lagringstyp
+            eller vänta och hoppas att den nuvarande får stöd för alla frågetyper.</value>
   </data>
   <data name="AwaitingJobsPage_ContinuationsWarning_Title" xml:space="preserve">
     <value>Fortsättningar fungerar, men den här sidan kunde inte visas</value>
