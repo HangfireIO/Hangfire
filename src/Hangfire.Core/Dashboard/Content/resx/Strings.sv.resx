@@ -223,7 +223,7 @@
   </data>
   <data name="FailedJobsPage_FailedJobsNotExpire_Warning_Html" xml:space="preserve">
     <value>&lt;strong&gt;Misslyckade jobb löper inte ut&lt;/strong&gt; så att man inte ska känna sig stressad att köa upp det igen.
-                Köa upp eller ta bort dom manuellt, eller sät följande attribut i koden för att radera dom automatiskt: &lt;code&gt;AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)&lt;/code&gt;</value>
+                Köa upp eller ta bort dom manuellt, eller sätt följande attribut i koden för att radera dom automatiskt: &lt;code&gt;AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)&lt;/code&gt;</value>
   </data>
   <data name="FailedJobsPage_NoJobs" xml:space="preserve">
     <value>Du har inga misslyckade jobb just nu.</value>
