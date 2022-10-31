@@ -31,6 +31,7 @@ namespace Hangfire
 
         public static IJobCancellationToken Null => null;
 
+        /// <inheritdoc cref="IJobCancellationToken.ThrowIfCancellationRequested" />
         public void ThrowIfCancellationRequested()
         {
             ShutdownToken.ThrowIfCancellationRequested();

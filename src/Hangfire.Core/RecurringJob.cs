@@ -30,7 +30,7 @@ namespace Hangfire
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter and RecurringJobOptions instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate(
-            [NotNull] Expression<Action> methodCall,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
             [NotNull] Func<string> cronExpression,
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
@@ -41,7 +41,7 @@ namespace Hangfire
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate(
-            [NotNull] Expression<Action> methodCall,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
             [NotNull] Func<string> cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -51,7 +51,7 @@ namespace Hangfire
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter and RecurringJobOptions instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate<T>(
-            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             [NotNull] Func<string> cronExpression,
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
@@ -62,7 +62,7 @@ namespace Hangfire
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate<T>(
-            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             [NotNull] Func<string> cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -72,7 +72,7 @@ namespace Hangfire
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter and RecurringJobOptions instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate(
-            [NotNull] Expression<Action> methodCall,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
             [NotNull] string cronExpression,
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
@@ -85,7 +85,7 @@ namespace Hangfire
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate(
-            [NotNull] Expression<Action> methodCall,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
             [NotNull] string cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -97,7 +97,7 @@ namespace Hangfire
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter and RecurringJobOptions instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate<T>(
-            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             [NotNull] string cronExpression,
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
@@ -110,7 +110,7 @@ namespace Hangfire
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate<T>(
-            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             [NotNull] string cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -123,7 +123,7 @@ namespace Hangfire
         [Obsolete("Please use AddOrUpdate(string, Expression<Action>, Func<string>, RecurringJobOptions) instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Action> methodCall,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
             [NotNull] Func<string> cronExpression,
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
@@ -134,7 +134,7 @@ namespace Hangfire
 
         public static void AddOrUpdate(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Action> methodCall,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
             [NotNull] Func<string> cronExpression)
         {
             AddOrUpdate(recurringJobId, methodCall, cronExpression, new RecurringJobOptions());
@@ -142,7 +142,7 @@ namespace Hangfire
 
         public static void AddOrUpdate(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Action> methodCall,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
             [NotNull] Func<string> cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -153,7 +153,7 @@ namespace Hangfire
         public static void AddOrUpdate(
             [NotNull] string recurringJobId,
             [NotNull] string queue,
-            [NotNull] Expression<Action> methodCall,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
             [NotNull] Func<string> cronExpression)
         {
             AddOrUpdate(recurringJobId, queue, methodCall, cronExpression, new RecurringJobOptions());
@@ -162,7 +162,7 @@ namespace Hangfire
         public static void AddOrUpdate(
             [NotNull] string recurringJobId,
             [NotNull] string queue,
-            [NotNull] Expression<Action> methodCall,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
             [NotNull] Func<string> cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -173,7 +173,7 @@ namespace Hangfire
         [Obsolete("Please use AddOrUpdate<T>(string, Expression<Action<T>>, Func<string>, RecurringJobOptions) instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate<T>(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             [NotNull] Func<string> cronExpression,
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
@@ -184,7 +184,7 @@ namespace Hangfire
 
         public static void AddOrUpdate<T>(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             [NotNull] Func<string> cronExpression)
         {
             AddOrUpdate(recurringJobId, methodCall, cronExpression, new RecurringJobOptions());
@@ -192,7 +192,7 @@ namespace Hangfire
 
         public static void AddOrUpdate<T>(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             [NotNull] Func<string> cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -203,7 +203,7 @@ namespace Hangfire
         public static void AddOrUpdate<T>(
             [NotNull] string recurringJobId,
             [NotNull] string queue,
-            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             [NotNull] Func<string> cronExpression)
         {
             AddOrUpdate(recurringJobId, queue, methodCall, cronExpression, new RecurringJobOptions());
@@ -212,7 +212,7 @@ namespace Hangfire
         public static void AddOrUpdate<T>(
             [NotNull] string recurringJobId,
             [NotNull] string queue,
-            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             [NotNull] Func<string> cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -223,7 +223,7 @@ namespace Hangfire
         [Obsolete("Please use AddOrUpdate(string, Expression<Action>, string, RecurringJobOptions) instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Action> methodCall,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
             [NotNull] string cronExpression,
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
@@ -234,7 +234,7 @@ namespace Hangfire
 
         public static void AddOrUpdate(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Action> methodCall,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
             [NotNull] string cronExpression)
         {
             AddOrUpdate(recurringJobId, methodCall, cronExpression, new RecurringJobOptions());
@@ -242,7 +242,7 @@ namespace Hangfire
 
         public static void AddOrUpdate(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Action> methodCall,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
             [NotNull] string cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -253,7 +253,7 @@ namespace Hangfire
         public static void AddOrUpdate(
             [NotNull] string recurringJobId,
             [NotNull] string queue,
-            [NotNull] Expression<Action> methodCall,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
             [NotNull] string cronExpression)
         {
             AddOrUpdate(recurringJobId, queue, methodCall, cronExpression, new RecurringJobOptions());
@@ -262,7 +262,7 @@ namespace Hangfire
         public static void AddOrUpdate(
             [NotNull] string recurringJobId,
             [NotNull] string queue,
-            [NotNull] Expression<Action> methodCall,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
             [NotNull] string cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -275,7 +275,7 @@ namespace Hangfire
         [Obsolete("Please use AddOrUpdate<T>(string, Expression<Action<T>>, string, RecurringJobOptions) instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate<T>(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             [NotNull] string cronExpression,
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
@@ -286,7 +286,7 @@ namespace Hangfire
 
         public static void AddOrUpdate<T>(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             [NotNull] string cronExpression)
         {
             AddOrUpdate(recurringJobId, methodCall, cronExpression, new RecurringJobOptions());
@@ -294,7 +294,7 @@ namespace Hangfire
 
         public static void AddOrUpdate<T>(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             [NotNull] string cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -305,7 +305,7 @@ namespace Hangfire
         public static void AddOrUpdate<T>(
             [NotNull] string recurringJobId,
             [NotNull] string queue,
-            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             [NotNull] string cronExpression)
         {
             AddOrUpdate(recurringJobId, queue, methodCall, cronExpression, new RecurringJobOptions());
@@ -314,7 +314,7 @@ namespace Hangfire
         public static void AddOrUpdate<T>(
             [NotNull] string recurringJobId,
             [NotNull] string queue,
-            [NotNull] Expression<Action<T>> methodCall,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             [NotNull] string cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -326,7 +326,7 @@ namespace Hangfire
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter and RecurringJobOptions instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate(
-            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             [NotNull] Func<string> cronExpression,
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
@@ -337,7 +337,7 @@ namespace Hangfire
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate(
-            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             [NotNull] Func<string> cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -347,7 +347,7 @@ namespace Hangfire
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter and RecurringJobOptions instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate<T>(
-            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             [NotNull] Func<string> cronExpression,
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
@@ -358,7 +358,7 @@ namespace Hangfire
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate<T>(
-            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             [NotNull] Func<string> cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -368,7 +368,7 @@ namespace Hangfire
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter and RecurringJobOptions instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate(
-            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             [NotNull] string cronExpression,
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
@@ -381,7 +381,7 @@ namespace Hangfire
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate(
-            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             [NotNull] string cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -393,7 +393,7 @@ namespace Hangfire
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter and RecurringJobOptions instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate<T>(
-            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             [NotNull] string cronExpression,
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
@@ -406,7 +406,7 @@ namespace Hangfire
 
         [Obsolete("Please use an overload with the explicit recurringJobId parameter instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate<T>(
-            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             [NotNull] string cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -419,7 +419,7 @@ namespace Hangfire
         [Obsolete("Please use AddOrUpdate(string, Expression<Func<Task>>, Func<string>, RecurringJobOptions) instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             [NotNull] Func<string> cronExpression,
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
@@ -430,7 +430,7 @@ namespace Hangfire
 
         public static void AddOrUpdate(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             [NotNull] Func<string> cronExpression)
         {
             AddOrUpdate(recurringJobId, methodCall, cronExpression, new RecurringJobOptions());
@@ -438,7 +438,7 @@ namespace Hangfire
 
         public static void AddOrUpdate(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             [NotNull] Func<string> cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -449,7 +449,7 @@ namespace Hangfire
         public static void AddOrUpdate(
             [NotNull] string recurringJobId,
             [NotNull] string queue,
-            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             [NotNull] Func<string> cronExpression)
         {
             AddOrUpdate(recurringJobId, queue, methodCall, cronExpression, new RecurringJobOptions());
@@ -458,7 +458,7 @@ namespace Hangfire
         public static void AddOrUpdate(
             [NotNull] string recurringJobId,
             [NotNull] string queue,
-            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             [NotNull] Func<string> cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -469,7 +469,7 @@ namespace Hangfire
         [Obsolete("Please use AddOrUpdate<T>(string, Expression<Func<T, Task>>, Func<string>, RecurringJobOptions) instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate<T>(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             [NotNull] Func<string> cronExpression,
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
@@ -480,7 +480,7 @@ namespace Hangfire
 
         public static void AddOrUpdate<T>(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             [NotNull] Func<string> cronExpression)
         {
             AddOrUpdate(recurringJobId, methodCall, cronExpression, new RecurringJobOptions());
@@ -488,7 +488,7 @@ namespace Hangfire
 
         public static void AddOrUpdate<T>(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             [NotNull] Func<string> cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -499,7 +499,7 @@ namespace Hangfire
         public static void AddOrUpdate<T>(
             [NotNull] string recurringJobId,
             [NotNull] string queue,
-            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             [NotNull] Func<string> cronExpression)
         {
             AddOrUpdate(recurringJobId, queue, methodCall, cronExpression, new RecurringJobOptions());
@@ -508,7 +508,7 @@ namespace Hangfire
         public static void AddOrUpdate<T>(
             [NotNull] string recurringJobId,
             [NotNull] string queue,
-            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             [NotNull] Func<string> cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -519,7 +519,7 @@ namespace Hangfire
         [Obsolete("Please use AddOrUpdate(string, Expression<Func<Task>>, string, RecurringJobOptions) instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             [NotNull] string cronExpression,
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
@@ -530,7 +530,7 @@ namespace Hangfire
 
         public static void AddOrUpdate(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             [NotNull] string cronExpression)
         {
             AddOrUpdate(recurringJobId, methodCall, cronExpression, new RecurringJobOptions());
@@ -538,7 +538,7 @@ namespace Hangfire
 
         public static void AddOrUpdate(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             [NotNull] string cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -549,7 +549,7 @@ namespace Hangfire
         public static void AddOrUpdate(
             [NotNull] string recurringJobId,
             [NotNull] string queue,
-            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             [NotNull] string cronExpression)
         {
             AddOrUpdate(recurringJobId, queue, methodCall, cronExpression, new RecurringJobOptions());
@@ -558,7 +558,7 @@ namespace Hangfire
         public static void AddOrUpdate(
             [NotNull] string recurringJobId,
             [NotNull] string queue,
-            [NotNull] Expression<Func<Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             [NotNull] string cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -571,7 +571,7 @@ namespace Hangfire
         [Obsolete("Please use AddOrUpdate<T>(string, Expression<Func<T, Task>>, string, RecurringJobOptions) instead. Will be removed in 2.0.0.")]
         public static void AddOrUpdate<T>(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             [NotNull] string cronExpression,
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
@@ -582,7 +582,7 @@ namespace Hangfire
 
         public static void AddOrUpdate<T>(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             [NotNull] string cronExpression)
         {
             AddOrUpdate(recurringJobId, methodCall, cronExpression, new RecurringJobOptions());
@@ -590,7 +590,7 @@ namespace Hangfire
 
         public static void AddOrUpdate<T>(
             [NotNull] string recurringJobId,
-            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             [NotNull] string cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -601,7 +601,7 @@ namespace Hangfire
         public static void AddOrUpdate<T>(
             [NotNull] string recurringJobId,
             [NotNull] string queue,
-            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             [NotNull] string cronExpression)
         {
             AddOrUpdate(recurringJobId, queue, methodCall, cronExpression, new RecurringJobOptions());
@@ -610,7 +610,7 @@ namespace Hangfire
         public static void AddOrUpdate<T>(
             [NotNull] string recurringJobId,
             [NotNull] string queue,
-            [NotNull] Expression<Func<T, Task>> methodCall,
+            [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             [NotNull] string cronExpression,
             [NotNull] RecurringJobOptions options)
         {
@@ -625,9 +625,15 @@ namespace Hangfire
             Instance.Value.RemoveIfExists(recurringJobId);
         }
 
+        [Obsolete("Please use the TriggerJob method instead. Will be removed in 2.0.0.")]
         public static void Trigger([NotNull] string recurringJobId)
         {
             Instance.Value.Trigger(recurringJobId);
+        }
+
+        public static string TriggerJob([NotNull] string recurringJobId)
+        {
+            return Instance.Value.TriggerJob(recurringJobId);
         }
 
         private static string GetRecurringJobId(Job job)

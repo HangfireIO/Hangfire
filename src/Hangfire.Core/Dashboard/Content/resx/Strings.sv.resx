@@ -118,403 +118,436 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AwaitingJobsPage_ContinuationsWarning_Text" xml:space="preserve">
-    <value>As continuações funcionam corretamente, mas seu sistema de armazenamento de tarefas atual não suporta algumas consultas necessárias para exibir essa página. Atualize seu sistema de armazenamento ou espere até que ele suporte essa funcionalidade</value>
+    <value>Oroa dig inte, fortsättningar fungerar som dom ska. Din nuvarande lagring för jobb stödjer
+            inte vissa frågor som behövs för att visa den här sidan. Uppdatera till en annan lagringstyp
+            eller vänta och hoppas att den nuvarande får stöd för alla frågetyper.</value>
   </data>
   <data name="AwaitingJobsPage_ContinuationsWarning_Title" xml:space="preserve">
-    <value>Continuação funciona, mas esta página não pode ser exibida.</value>
+    <value>Fortsättningar fungerar, men den här sidan kunde inte visas</value>
   </data>
   <data name="AwaitingJobsPage_NoJobs" xml:space="preserve">
-    <value>Nenhuma tarefa pendente foi encontrada</value>
+    <value>Inga jobb hittades i väntande tillstånd.</value>
   </data>
   <data name="AwaitingJobsPage_Table_Options" xml:space="preserve">
-    <value>Opções</value>
+    <value>Inställningar</value>
   </data>
   <data name="AwaitingJobsPage_Table_Parent" xml:space="preserve">
-    <value>Pai</value>
-    <comment>Fuzzy</comment>
+    <value>Förälder</value>
   </data>
   <data name="AwaitingJobsPage_Title" xml:space="preserve">
-    <value>Tarefas em espera</value>
+    <value>Väntade jobb</value>
   </data>
   <data name="Common_Created" xml:space="preserve">
-    <value>Criado</value>
+    <value>Skapad</value>
   </data>
   <data name="Common_Delete" xml:space="preserve">
-    <value>Remover</value>
+    <value>Ta bort</value>
   </data>
   <data name="Common_DeleteConfirm" xml:space="preserve">
-    <value>Tem certeza de que deseja REMOVER TODAS as tarefas selecionadas?</value>
+    <value>Vill du verkligen TA BORT ALLA valda jobb?</value>
   </data>
   <data name="Common_Deleting" xml:space="preserve">
-    <value>Removendo...</value>
+    <value>Tar bort...</value>
   </data>
   <data name="Common_DeleteSelected" xml:space="preserve">
-    <value>Remover itens selecionados</value>
+    <value>Ta bort valda</value>
   </data>
   <data name="Common_EnqueueButton_Text" xml:space="preserve">
-    <value>Colocar tarefa na fila</value>
+    <value>Köa upp jobb</value>
   </data>
   <data name="Common_Enqueueing" xml:space="preserve">
-    <value>Colocando na fila ...</value>
+    <value>Lägger till i kö...</value>
   </data>
   <data name="Common_Fetched" xml:space="preserve">
-    <value>Obtendo</value>
-    <comment>Fuzzy</comment>
+    <value>Hämtad</value>
   </data>
   <data name="Common_Id" xml:space="preserve">
     <value>Id</value>
   </data>
   <data name="Common_Job" xml:space="preserve">
-    <value>Tarefa</value>
+    <value>Jobb</value>
   </data>
   <data name="Common_JobExpired" xml:space="preserve">
-    <value>Tarefa expirada</value>
+    <value>Utgånget jobb.</value>
   </data>
   <data name="Common_JobStateChanged_Text" xml:space="preserve">
-    <value>O status da tarefa foi alterado enquanto as informações estavam sendo obtidas.</value>
-    <comment>Fuzzy</comment>
+    <value>Jobbets tillstånd ändrades medan informationen hämtades.</value>
   </data>
   <data name="Common_LessDetails" xml:space="preserve">
-    <value>Fechar detalhes</value>
+    <value>Färre detaljer...</value>
   </data>
   <data name="Common_MoreDetails" xml:space="preserve">
-    <value>Abrir detalhes</value>
+    <value>Mer detaljer...</value>
   </data>
   <data name="Common_NotAvailable" xml:space="preserve">
-    <value>Indisponível</value>
+    <value>N/A</value>
   </data>
   <data name="Common_PeriodDay" xml:space="preserve">
-    <value>Diário</value>
+    <value>Dag</value>
   </data>
   <data name="Common_PeriodWeek" xml:space="preserve">
-    <value>Semanal</value>
+    <value>Vecka</value>
   </data>
   <data name="Common_Reason" xml:space="preserve">
-    <value>Motivo</value>
+    <value>Orsak</value>
   </data>
   <data name="Common_RequeueJobs" xml:space="preserve">
-    <value>Tarefas enfileiradas</value>
-    <comment>Fuzzy</comment>
+    <value>Köa om jobb</value>
   </data>
   <data name="Common_Retry" xml:space="preserve">
-    <value>Tentar novamente</value>
+    <value>Försök igen</value>
   </data>
   <data name="Common_Server" xml:space="preserve">
-    <value>Servidor</value>
+    <value>Server</value>
   </data>
   <data name="Common_State" xml:space="preserve">
-    <value>Estado</value>
+    <value>Tillstånd</value>
   </data>
   <data name="Common_Unknown" xml:space="preserve">
-    <value>Desconhecido</value>
+    <value>Okänd</value>
   </data>
   <data name="DeletedJobsPage_NoJobs" xml:space="preserve">
-    <value>Nenhuma tarefa removida.</value>
+    <value>Inga borttagna jobb hittades.</value>
   </data>
   <data name="DeletedJobsPage_Table_Deleted" xml:space="preserve">
-    <value>Removidas</value>
+    <value>Borttaget</value>
   </data>
   <data name="DeletedJobsPage_Title" xml:space="preserve">
-    <value>Tarefas removidas</value>
+    <value>Borttagna jobb</value>
   </data>
   <data name="EnqueuedJobsPage_NoJobs" xml:space="preserve">
-    <value>A fila está vazia</value>
+    <value>Kön är tom.</value>
   </data>
   <data name="EnqueuedJobsPage_Title" xml:space="preserve">
-    <value>Tarefas enfileiradas</value>
+    <value>Köade jobb</value>
   </data>
   <data name="FailedJobsPage_FailedJobsNotExpire_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;As tarefas com falha não expiram&lt;/strong&gt; para permitir adicioná-las novamente à fila sem qualquer pressão.. Você pode adicioná-las de volta à fila, excluí-las manualmente ou aplicar o atributo &lt;code&gt;AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)&lt;/code&gt; para removê-las automaticamente..</value>
+    <value>&lt;strong&gt;Misslyckade jobb löper inte ut&lt;/strong&gt; så att man inte ska känna sig stressad att köa upp det igen.
+                Köa upp eller ta bort dom manuellt, eller sätt följande attribut i koden för att radera dom automatiskt: &lt;code&gt;AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)&lt;/code&gt;</value>
   </data>
   <data name="FailedJobsPage_NoJobs" xml:space="preserve">
-    <value>Nenhuma tarefa com falha</value>
+    <value>Du har inga misslyckade jobb just nu.</value>
   </data>
   <data name="FailedJobsPage_Table_Failed" xml:space="preserve">
-    <value>Falhas</value>
+    <value>Misslyckad</value>
   </data>
   <data name="FailedJobsPage_Title" xml:space="preserve">
-    <value>Tarefas em falha</value>
+    <value>Misslyckade jobb</value>
   </data>
   <data name="FetchedJobsPage_NoJobs" xml:space="preserve">
-    <value>A fila está vazia</value>
+    <value>Kön är tom.</value>
   </data>
   <data name="FetchedJobsPage_Title" xml:space="preserve">
-    <value>Tarefas obtidas</value>
-    <comment>Fuzzy</comment>
+    <value>Hämtade jobb</value>
   </data>
   <data name="HomePage_HistoryGraph" xml:space="preserve">
-    <value>Gráfico histórico</value>
+    <value>Historisk graf</value>
   </data>
   <data name="HomePage_RealtimeGraph" xml:space="preserve">
-    <value>Gráfico em tempo real</value>
+    <value>Realtidsgraf</value>
   </data>
   <data name="HomePage_Title" xml:space="preserve">
-    <value>Painel de monitoramento</value>
-    <comment>Fuzzy</comment>
+    <value>Översikt</value>
   </data>
   <data name="JobDetailsPage_Created" xml:space="preserve">
-    <value>Criado</value>
+    <value>Skapad</value>
   </data>
   <data name="JobDetailsPage_DeleteConfirm" xml:space="preserve">
-    <value>Tem certeza de que deseja excluir esta tarefa?</value>
+    <value>Vill du verkligen ta bort det här jobbet?</value>
   </data>
   <data name="JobDetailsPage_State" xml:space="preserve">
-    <value>Estado</value>
+    <value>Tillstånd</value>
   </data>
   <data name="JobDetailsPage_JobAbortedNotActive_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;A tarefa foi abortada&lt;/strong&gt; - foi processado pelo servidor &lt;code&gt;{0}&lt;/code&gt; que não está na lista de &lt;a href="{1}"&gt;servidores ativos&lt;/a&gt; no momento. Ele recupera automaticamente após o período de invisibilidade, mas você pode colocá-lo novamente na fila ou excluí-lo manualmente.</value>
+    <value>&lt;strong&gt;Jobbet avbröts&lt;/strong&gt; – det processades av servern
+                        &lt;code&gt;{0}&lt;/code&gt; som just nu inte är med på listan över
+                        &lt;a href="{1}"&gt;aktiva servrar&lt;/a&gt;.
+                        Det kommer att automatiskt försökas igen efter &quot;invisibility timeout&quot;, men du kan
+                        också köa upp eller ta bort det manuellt.</value>
   </data>
   <data name="JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;A tarefa foi abortada&lt;/strong&gt; - foi processado pelo servidor &lt;code&gt;{0}&lt;/code&gt; que relatou uma pulsação mais de um minuto atrás. Ele será recuperado automaticamente após o período de invisibilidade, mas você poderá colocá-lo novamente na fila ou excluí-lo manualmente.</value>
+    <value>&lt;strong&gt;Det verkar som att jobbeet avbröts&lt;/strong&gt; – det processas av servern
+                        &lt;code&gt;{0}&lt;/code&gt;, som gav sitt senaste livstecken för mer än en minut sedan.
+                        Det kommer att automatiskt försökas igen efter &quot;invisibility timeout&quot;, men du kan
+                        också köa upp eller ta bort det manuellt.</value>
   </data>
   <data name="JobDetailsPage_JobExpired" xml:space="preserve">
-    <value>A tarefa cujo ID '{0}' expirou ou não foi encontrada no servidor.</value>
+    <value>Bakgrundsjobbet '{0}' har löpt ut eller kunde inte hittas på servern.</value>
   </data>
   <data name="JobDetailsPage_JobFinished_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;A tarefa terminou&lt;/strong&gt;. Será automaticamente eliminada em &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;</value>
+    <value>&lt;strong&gt;Jobbet är färdigt&lt;/strong&gt;.
+                    Det kommer att tas bort automatiskt &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;.</value>
   </data>
   <data name="JobDetailsPage_JobId" xml:space="preserve">
-    <value>Id da Tarefa</value>
+    <value>Jobb ID</value>
   </data>
   <data name="JobDetailsPage_Requeue" xml:space="preserve">
-    <value>Coloque de volta na fila</value>
-    <comment>Fuzzy</comment>
+    <value>Köa igen</value>
   </data>
   <data name="LayoutPage_Back" xml:space="preserve">
-    <value>Voltar</value>
+    <value>Tillbaka till webbplats</value>
   </data>
   <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
-    <value>Gerado: {0} ms</value>
+    <value>Genererades på: {0}ms</value>
   </data>
   <data name="LayoutPage_Footer_Time" xml:space="preserve">
-    <value>Hora:</value>
+    <value>Tid:</value>
   </data>
   <data name="Paginator_Next" xml:space="preserve">
-    <value>Próxima</value>
+    <value>Nästa</value>
   </data>
   <data name="Paginator_Prev" xml:space="preserve">
-    <value>Anterior</value>
+    <value>Föregående</value>
   </data>
   <data name="Paginator_TotalItems" xml:space="preserve">
-    <value>Total de elementos</value>
+    <value>Totalt antal</value>
   </data>
   <data name="PerPageSelector_ItemsPerPage" xml:space="preserve">
-    <value>Itens por página</value>
+    <value>Antal per sida</value>
   </data>
   <data name="ProcessingJobsPage_Aborted" xml:space="preserve">
-    <value>Tarefas canceladas</value>
+    <value>Det verkar som att jobbet avbröts</value>
   </data>
   <data name="ProcessingJobsPage_NoJobs" xml:space="preserve">
-    <value>Não há tarefas em processamento</value>
+    <value>Inga jobb körs just nu.</value>
   </data>
   <data name="ProcessingJobsPage_Table_Started" xml:space="preserve">
-    <value>Iniciadas</value>
+    <value>Startade</value>
   </data>
   <data name="ProcessingJobsPage_Title" xml:space="preserve">
-    <value>Tarefas em processo</value>
+    <value>Processing Jobs</value>
   </data>
   <data name="QueuesPage_NoJobs" xml:space="preserve">
-    <value>Não há tarefas na fila.</value>
+    <value>Inga köade jobb.</value>
   </data>
   <data name="QueuesPage_NoQueues" xml:space="preserve">
-    <value>Nenhuma tarefa encontrada na fila.</value>
+    <value>Inga köade jobb finns. Försök med att köa upp ett jobb.</value>
   </data>
   <data name="QueuesPage_Table_Length" xml:space="preserve">
-    <value>Quantidade</value>
+    <value>Längd</value>
   </data>
   <data name="QueuesPage_Table_NextsJobs" xml:space="preserve">
-    <value>Próximas tarefas</value>
+    <value>Nästa jobb</value>
   </data>
   <data name="QueuesPage_Table_Queue" xml:space="preserve">
-    <value>Enfileirado</value>
+    <value>Kö</value>
   </data>
   <data name="QueuesPage_Title" xml:space="preserve">
-    <value>Filas</value>
+    <value>Köer</value>
   </data>
   <data name="RecurringJobsPage_Canceled" xml:space="preserve">
-    <value>Cancelado</value>
+    <value>Avbrutet</value>
   </data>
   <data name="RecurringJobsPage_NoJobs" xml:space="preserve">
-    <value>Não foram encontradas tarefas recorrentes</value>
+    <value>Inga återkommande jobb hittades.</value>
   </data>
   <data name="RecurringJobsPage_Table_Cron" xml:space="preserve">
     <value>Cron</value>
   </data>
   <data name="RecurringJobsPage_Table_LastExecution" xml:space="preserve">
-    <value>Última execução</value>
+    <value>Senaste körning</value>
   </data>
   <data name="RecurringJobsPage_Table_NextExecution" xml:space="preserve">
-    <value>Próxima execução</value>
+    <value>Nästa körning</value>
   </data>
   <data name="RecurringJobsPage_Table_TimeZone" xml:space="preserve">
-    <value>Fuso horário</value>
+    <value>Tidszon</value>
   </data>
   <data name="RecurringJobsPage_Title" xml:space="preserve">
-    <value>Tarefas recorrentes</value>
+    <value>Återkommande jobb</value>
   </data>
   <data name="RecurringJobsPage_Triggering" xml:space="preserve">
-    <value>Disparando...</value>
+    <value>Startar...</value>
   </data>
   <data name="RecurringJobsPage_TriggerNow" xml:space="preserve">
-    <value>Disparar agora</value>
+    <value>Starta nu</value>
   </data>
   <data name="RetriesPage_NoJobs" xml:space="preserve">
-    <value>Tudo está bem - não há retentativas.</value>
+    <value>Allt är OK – du har inga nya försök.</value>
   </data>
   <data name="RetriesPage_Title" xml:space="preserve">
-    <value>Retentativa</value>
+    <value>Nya försök</value>
   </data>
   <data name="RetriesPage_Warning_Html" xml:space="preserve">
-    <value>&lt;h4&gt;As tentativas estão funcionando, mas esta página não pode ser exibida&lt;/h4&gt;
+    <value>&lt;h4&gt;Nya försök fungerar, men den här sidan kan inte visas&lt;/h4&gt;
         &lt;p&gt;
-            Não se preocupe, as tentativas funcionam como deveriam, mas o sistema de armazenamento de tarefas atual não suporta algumas consultas necessárias para exibir essa página. Atualize seu sistema de armazenamento ou espere até que ele suporte essa funcionalidade
+            Oroa dig inte, nya försök fungerar som dom ska. Din nuvarande lagring för jobb stödjer
+            inte vissa frågor som behövs för att visa den här sidan. Uppdatera till en annan lagringstyp
+            eller vänta och hoppas att den nuvarande får stöd för alla frågetyper.
         &lt;/p&gt;
         &lt;p&gt;
-           Visite a página &lt;a href="{0}"&gt;Tarefas agendadas&lt;/a&gt; para ver todas as tarefas agendadas, incluindo novas tentativas.
-        &lt;/p&gt; </value>
+            Gå till &lt;a href="{0}"&gt;Schemalagda jobb&lt;/a&gt;-sidan för att se alla
+            schemalagda jobb inklusive nya försök.
+        &lt;/p&gt;</value>
   </data>
   <data name="ScheduledJobsPage_EnqueueNow" xml:space="preserve">
-    <value>Situação atual da fila</value>
+    <value>Köpa upp nu</value>
   </data>
   <data name="ScheduledJobsPage_NoJobs" xml:space="preserve">
-    <value>Não há tarefas agendadas.</value>
+    <value>Det finns inga schemalagda jobb.</value>
   </data>
   <data name="ScheduledJobsPage_Table_Enqueue" xml:space="preserve">
-    <value>Enfileirado</value>
+    <value>Köa upp</value>
   </data>
   <data name="ScheduledJobsPage_Table_Scheduled" xml:space="preserve">
-    <value>Agendado</value>
+    <value>Schemalagd</value>
   </data>
   <data name="ScheduledJobsPage_Title" xml:space="preserve">
-    <value>Tarefas agendadas</value>
+    <value>Schemalagda jobb</value>
   </data>
   <data name="ServersPage_NoServers" xml:space="preserve">
-    <value>Não há servidor ativo. As tarefas em segundo plano não serão processadas.</value>
+    <value>Det finns inga aktiva servrar. Bakgrundsjobb kommer inte att köras.</value>
   </data>
   <data name="ServersPage_Table_Heartbeat" xml:space="preserve">
-    <value>Pulsação</value>
-    <comment>Fuzzy</comment>
+    <value>Livstecken</value>
   </data>
   <data name="ServersPage_Table_Name" xml:space="preserve">
-    <value>Nome</value>
+    <value>Namn</value>
   </data>
   <data name="ServersPage_Table_Queues" xml:space="preserve">
-    <value>Filas</value>
+    <value>Köer</value>
   </data>
   <data name="ServersPage_Table_Started" xml:space="preserve">
-    <value>Iniciadas</value>
+    <value>Startade</value>
   </data>
   <data name="ServersPage_Table_Workers" xml:space="preserve">
-    <value>Serviços de execução</value>
-    <comment>Fuzzy</comment>
+    <value>Arbetare</value>
   </data>
   <data name="ServersPage_Title" xml:space="preserve">
-    <value>Servidores</value>
+    <value>Servrar</value>
   </data>
   <data name="SucceededJobsPage_NoJobs" xml:space="preserve">
-    <value>Nenhuma tarefa concluída foi encontrada</value>
+    <value>Inga lyckade jobb hittades.</value>
   </data>
   <data name="SucceededJobsPage_Table_Succeeded" xml:space="preserve">
-    <value>Concluídas</value>
+    <value>Lyckades</value>
   </data>
   <data name="SucceededJobsPage_Table_TotalDuration" xml:space="preserve">
-    <value>Duração total</value>
+    <value>Total tidsåtgång</value>
   </data>
   <data name="SucceededJobsPage_Title" xml:space="preserve">
-    <value>Tarefas concluídas</value>
+    <value>Lyckade jobb</value>
   </data>
   <data name="JobsSidebarMenu_Awaiting" xml:space="preserve">
-    <value>Aguardando</value>
+    <value>Väntar</value>
   </data>
   <data name="JobsSidebarMenu_Deleted" xml:space="preserve">
-    <value>Removidas</value>
+    <value>Borttagna</value>
   </data>
   <data name="JobsSidebarMenu_Failed" xml:space="preserve">
-    <value>Em falha</value>
+    <value>Misslyckade</value>
   </data>
   <data name="JobsSidebarMenu_Processing" xml:space="preserve">
-    <value>Processando</value>
+    <value>Kör</value>
   </data>
   <data name="JobsSidebarMenu_Scheduled" xml:space="preserve">
-    <value>Agendadas</value>
+    <value>Schemalagd</value>
   </data>
   <data name="JobsSidebarMenu_Succeeded" xml:space="preserve">
-    <value>Concluído</value>
+    <value>Lyckade</value>
   </data>
   <data name="NavigationMenu_Jobs" xml:space="preserve">
-    <value>Tarefas</value>
+    <value>Jobb</value>
   </data>
   <data name="NavigationMenu_RecurringJobs" xml:space="preserve">
-    <value>Tarefas recorrentes</value>
+    <value>Återkommande jobb</value>
   </data>
   <data name="NavigationMenu_Retries" xml:space="preserve">
-    <value>Retentativas</value>
+    <value>Antal nya försök</value>
   </data>
   <data name="NavigationMenu_Servers" xml:space="preserve">
-    <value>Servidores</value>
+    <value>Servrar</value>
   </data>
   <data name="Common_CannotFindTargetMethod" xml:space="preserve">
-    <value>O método de destino não pode ser encontrado</value>
-    <comment>Fuzzy</comment>
+    <value>Kan inte hitta målmetoden.</value>
   </data>
   <data name="Common_Enqueued" xml:space="preserve">
-    <value>Enfileiradas</value>
+    <value>Köad</value>
   </data>
   <data name="Common_NoState" xml:space="preserve">
-    <value>Sem estado</value>
+    <value>Inget tillstånd</value>
   </data>
   <data name="JobsSidebarMenu_Enqueued" xml:space="preserve">
-    <value>Enfileiradas</value>
+    <value>Köade</value>
   </data>
   <data name="Metrics_ActiveConnections" xml:space="preserve">
-    <value>Conexões ativas</value>
+    <value>Aktiva anslutningar</value>
   </data>
   <data name="Metrics_DeletedJobs" xml:space="preserve">
-    <value>Tarefas removidas</value>
+    <value>Borttagna jobb</value>
   </data>
   <data name="Metrics_FailedJobs" xml:space="preserve">
-    <value>Tarefas em falha</value>
+    <value>Misslyckade jobb</value>
   </data>
   <data name="Metrics_ProcessingJobs" xml:space="preserve">
-    <value>Tarefas em processo</value>
+    <value>Pågående jobb</value>
   </data>
   <data name="Metrics_RecurringJobs" xml:space="preserve">
-    <value>Tarefas recorrentes</value>
+    <value>Återkommande jobb</value>
   </data>
   <data name="Metrics_Retries" xml:space="preserve">
-    <value>Retentativas</value>
+    <value>Antal nya försök</value>
   </data>
   <data name="Metrics_ScheduledJobs" xml:space="preserve">
-    <value>Tarefas agendadas</value>
+    <value>Schemalagda jobb</value>
   </data>
   <data name="Metrics_Servers" xml:space="preserve">
-    <value>Servidores</value>
+    <value>Servrar</value>
   </data>
   <data name="Metrics_SucceededJobs" xml:space="preserve">
-    <value>Tarefas concluídas com sucesso</value>
+    <value>Lyckade jobb</value>
   </data>
   <data name="Metrics_TotalConnections" xml:space="preserve">
-    <value>Total de conexões</value>
+    <value>Antal anslutningar</value>
   </data>
   <data name="Common_Condition" xml:space="preserve">
-    <value>Condição</value>
+    <value>Tillstånd</value>
   </data>
   <data name="Common_Continuations" xml:space="preserve">
-    <value>Continuações</value>
+    <value>Fortsättningar</value>
   </data>
   <data name="Metrics_AwaitingCount" xml:space="preserve">
-    <value>Em espera</value>
+    <value>Väntande</value>
   </data>
   <data name="Metrics_EnqueuedCountOrNull" xml:space="preserve">
-    <value>Na fila</value>
+    <value>Köade</value>
   </data>
   <data name="Metrics_EnqueuedQueuesCount" xml:space="preserve">
-    <value>Enfileiradas / Filas</value>
+    <value>Köade / Kö</value>
+  </data>
+  <data name="Metrics_FailedCountOrNull" xml:space="preserve">
+    <value>{0} misslyckade jobb hittades. Försök igen eller ta bort dom manuellt.</value>
   </data>
   <data name="HomePage_GraphHover_Failed" xml:space="preserve">
-    <value>Com falha</value>
+    <value>Misslyckade</value>
   </data>
   <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
-    <value>Concluídos</value>
+    <value>Lyckade</value>
+  </data>
+  <data name="Common_Disabled" xml:space="preserve">
+    <value>Avtängd</value>
+  </data>
+  <data name="RecurringJobsPage_RecurringJobDisabled_Tooltip" xml:space="preserve">
+    <value>Cron-uttrycket är ogiligt eller inträffar inte dom närmaste hundra åren</value>
+  </data>
+  <data name="ServersPage_Note_Text" xml:space="preserve">
+    <value>Vissa servrar har inte gett några livstecken den senaste minuten och kan komma att avbrytas.
+            Om dom inte ger några livstecken inom en snar framtid så kommer dom att tas bort automatiskt efter en timeout.
+            Pågående bakgundsjobb på dessa servrar kommer att köras upp igen automatiskt, men du kan snabba upp processen genom att kika på sidan &lt;a href="{0}"&gt;Pågående jobb&lt;/a&gt;.</value>
+  </data>
+  <data name="ServersPage_Note_Title" xml:space="preserve">
+    <value>Avbrutna servrar kommer att tas bort automatiskt</value>
+  </data>
+  <data name="ServersPage_Active" xml:space="preserve">
+    <value>Aktiv</value>
+  </data>
+  <data name="ServersPage_Possibly_Aborted" xml:space="preserve">
+    <value>Möjligen avbrutna</value>
+  </data>
+  <data name="Common_Error" xml:space="preserve">
+    <value>Fel</value>
+  </data>
+  <data name="JobDetailsPage_Parameters" xml:space="preserve">
+    <value>Parametrar</value>
   </data>
 </root>
