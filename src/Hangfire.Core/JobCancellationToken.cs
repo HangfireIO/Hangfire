@@ -31,18 +31,7 @@ namespace Hangfire
 
         public static IJobCancellationToken Null => null;
 
-        /// <summary>
-        /// Throws a <see cref="System.OperationCanceledException">OperationCanceledException</see> if
-        /// this token has had cancellation requested.
-        /// </summary>
-        /// <remarks>
-        /// This method provides functionality equivalent to:
-        /// <code>
-        /// if (token.ShutdownToken.IsCancellationRequested)
-        ///    throw new OperationCanceledException(token);
-        /// </code>
-        /// </remarks>
-        /// <exception cref="System.OperationCanceledException">The token has had cancellation requested.</exception>
+        /// <inheritdoc cref="IJobCancellationToken.ThrowIfCancellationRequested" />
         public void ThrowIfCancellationRequested()
         {
             ShutdownToken.ThrowIfCancellationRequested();
