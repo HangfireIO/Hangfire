@@ -47,6 +47,7 @@ namespace Hangfire.Server
         public TimeSpan ServerTimeout { get; set; }
         public TimeSpan CancellationCheckInterval { get; set; }
         public string ServerName { get; set; }
+        public bool ExcludeStorageProcesses { get; set; }
 
         public Func<int, TimeSpan> RetryDelay
         {

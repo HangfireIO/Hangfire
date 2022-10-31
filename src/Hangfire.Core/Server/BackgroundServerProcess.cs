@@ -47,7 +47,10 @@ namespace Hangfire.Server
 
             var builders = new List<IBackgroundProcessDispatcherBuilder>();
             builders.AddRange(GetRequiredProcesses());
-            builders.AddRange(GetStorageComponents());
+            if (!options.ExcludeStorageProcesses)
+            {
+                builders.AddRange(GetStorageComponents());
+            }
             builders.AddRange(dispatcherBuilders);
 
             _dispatcherBuilders = builders.ToArray();
