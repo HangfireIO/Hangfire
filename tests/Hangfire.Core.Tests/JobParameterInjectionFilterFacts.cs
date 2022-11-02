@@ -162,7 +162,7 @@ namespace Hangfire.Core.Tests
         public void OnPerformed_DoesNotThrow_AnyException()
         {
             var filter = CreateFilter();
-            filter.OnPerformed(new PerformedContext(_context.Object, null, false, null));
+            filter.OnPerformed(_context.GetPerformedContext());
         }
 
         private JobParameterInjectionFilter CreateFilter()

@@ -35,5 +35,10 @@ namespace Hangfire.Core.Tests
         {
             return new PerformingContext(Object);
         }
+
+        public PerformedContext GetPerformedContext(object result = null, bool canceled = false, Exception exception = null)
+        {
+            return new PerformedContext(Object, result, canceled, exception);
+        }
     }
 }
