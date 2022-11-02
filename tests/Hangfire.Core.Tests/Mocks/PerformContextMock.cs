@@ -30,5 +30,10 @@ namespace Hangfire.Core.Tests
         public static void SomeMethod()
         {
         }
+
+        public PerformingContext GetPerformingContext()
+        {
+            return new PerformingContext(Object);
+        }
     }
 }
