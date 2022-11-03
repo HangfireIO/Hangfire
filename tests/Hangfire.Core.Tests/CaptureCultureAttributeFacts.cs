@@ -72,7 +72,25 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void OnPerforming_DoesNotSetAnything_WhenJobParametersMissing()
+        public void OnPerforming_UsesTheSameCultureForUI_WhenCultureIsSetButUICultureIsMissing()
+        {
+            // Arrange
+            _perform.Connection
+                .Setup(x => x.GetJobParameter(_perform.BackgroundJob.Id, "CurrentUICulture"))
+                .Returns((string)null);
+
+            var attribute = new CaptureCultureAttribute();
+
+            // Act
+            attribute.OnPerforming(_perform.GetPerformingContext());
+
+            // Assert
+            Assert.Equal(_culture, CultureInfo.CurrentCulture);
+            Assert.Equal(_culture, CultureInfo.CurrentUICulture);
+        }
+
+        [Fact]
+        public void OnPerforming_DoesNotSetAnything_WhenBothJobParametersMissing()
         {
             // Arrange
             _perform.Connection
