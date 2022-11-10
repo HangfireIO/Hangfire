@@ -113,7 +113,35 @@
                     {
                         <tr>
                             <td class="width-20 word-break">@parameter.Key</td>
-                            <td><pre><code>@parameter.Value</code></pre></td>
+
+                            @{ string parameterUrl = null; }
+
+                            @if (parameter.Key == "BatchId")
+                            {
+                                Guid? batchId = null;
+                                try
+                                {
+                                    batchId = SerializationHelper.Deserialize<Guid>(parameter.Value, SerializationOption.User);
+                                }
+                                catch
+                                {
+                                    // ignore
+                                }
+
+                                if (batchId != null)
+                                {
+                                    parameterUrl = Url.To("/batches/" + batchId.Value.ToString("D"));
+                                }
+                            }
+
+                            @if (parameterUrl != null)
+                            {
+                                <td><a href="@parameterUrl"><pre><code>@parameter.Value</code></pre></a></td>
+                            }
+                            else
+                            {
+                                <td><pre><code>@parameter.Value</code></pre></td>
+                            }
                         </tr>
                     }
                 </table>
