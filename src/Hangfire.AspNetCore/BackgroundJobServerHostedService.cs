@@ -80,7 +80,7 @@ namespace Hangfire
         public Task StopAsync(CancellationToken cancellationToken)
         {
             _processingServer?.SendStop();
-            return _processingServer?.WaitForShutdownAsync(cancellationToken);
+            return _processingServer?.WaitForShutdownAsync(cancellationToken) ?? Task.CompletedTask;
         }
 
         public void Dispose()
