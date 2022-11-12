@@ -1,0 +1,553 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AwaitingJobsPage_ContinuationsWarning_Text" xml:space="preserve">
+    <value>Не хвилюйтеся, продовження (.ContinueWith) працюють належним чином. Але ваше поточне сховище завдань не підтримує деякі запити, необхідні для показу цієї сторінки. Спробуйте оновити сховище або зачекайте, доки буде реалізовано повний набір команд.</value>
+  </data>
+  <data name="AwaitingJobsPage_ContinuationsWarning_Title" xml:space="preserve">
+    <value>Продовження (.ContinueWith) працюють, але ця сторінка не може бути відображена.</value>
+  </data>
+  <data name="AwaitingJobsPage_NoJobs" xml:space="preserve">
+    <value>Не знайдено завдань у стані очікування.</value>
+  </data>
+  <data name="AwaitingJobsPage_Table_Options" xml:space="preserve">
+    <value>Опції</value>
+  </data>
+  <data name="AwaitingJobsPage_Table_Parent" xml:space="preserve">
+    <value>Батьківське завдання</value>
+  </data>
+  <data name="AwaitingJobsPage_Title" xml:space="preserve">
+    <value>Очікувані Завдання</value>
+  </data>
+  <data name="Common_Created" xml:space="preserve">
+    <value>Створене</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Видалене</value>
+  </data>
+  <data name="Common_DeleteConfirm" xml:space="preserve">
+    <value>Ви дійсно хочете ВИДАЛИТИ ВСІ вибрані завдання?</value>
+  </data>
+  <data name="Common_Deleting" xml:space="preserve">
+    <value>Видалення...</value>
+  </data>
+  <data name="Common_DeleteSelected" xml:space="preserve">
+    <value>Видалити вибране</value>
+  </data>
+  <data name="Common_EnqueueButton_Text" xml:space="preserve">
+    <value>Помістити завдання в чергу</value>
+  </data>
+  <data name="Common_Enqueueing" xml:space="preserve">
+    <value>Переміщення в чергу...</value>
+  </data>
+  <data name="Common_Fetched" xml:space="preserve">
+    <value>Отримане</value>
+  </data>
+  <data name="Common_Id" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="Common_Job" xml:space="preserve">
+    <value>Завдання</value>
+  </data>
+  <data name="Common_JobExpired" xml:space="preserve">
+    <value>Термін завдання вийшов.</value>
+  </data>
+  <data name="Common_JobStateChanged_Text" xml:space="preserve">
+    <value>Під час отримання даних стан завдання було змінено.</value>
+  </data>
+  <data name="Common_LessDetails" xml:space="preserve">
+    <value>Менше деталей...</value>
+  </data>
+  <data name="Common_MoreDetails" xml:space="preserve">
+    <value>Детальніше...</value>
+  </data>
+  <data name="Common_NotAvailable" xml:space="preserve">
+    <value>н/д</value>
+  </data>
+  <data name="Common_PeriodDay" xml:space="preserve">
+    <value>День</value>
+  </data>
+  <data name="Common_PeriodWeek" xml:space="preserve">
+    <value>Тиждень</value>
+  </data>
+  <data name="Common_Reason" xml:space="preserve">
+    <value>Причина</value>
+  </data>
+  <data name="Common_RequeueJobs" xml:space="preserve">
+    <value>Перезапустити завдання</value>
+  </data>
+  <data name="Common_Retry" xml:space="preserve">
+    <value>Спробувати знову</value>
+  </data>
+  <data name="Common_Server" xml:space="preserve">
+    <value>Сервер</value>
+  </data>
+  <data name="Common_State" xml:space="preserve">
+    <value>Стан</value>
+  </data>
+  <data name="Common_Unknown" xml:space="preserve">
+    <value>Невідоме</value>
+  </data>
+  <data name="DeletedJobsPage_NoJobs" xml:space="preserve">
+    <value>Видалених завдань не знайдено.</value>
+  </data>
+  <data name="DeletedJobsPage_Table_Deleted" xml:space="preserve">
+    <value>Видалені</value>
+  </data>
+  <data name="DeletedJobsPage_Title" xml:space="preserve">
+    <value>Видалені Завдання</value>
+  </data>
+  <data name="EnqueuedJobsPage_NoJobs" xml:space="preserve">
+    <value>Черга порожня.</value>
+  </data>
+  <data name="EnqueuedJobsPage_Title" xml:space="preserve">
+    <value>Завдання в черзі</value>
+  </data>
+  <data name="FailedJobsPage_FailedJobsNotExpire_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;Невдалі завдання не стають простроченими&lt;/strong&gt; щоб повторно поставити їх у чергу без будь-якого 
+	тиску часу. Ви маєте їх або повторно поставити у чергу вручну, або видалити, або можете застосувати &lt;code&gt;AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)&lt;/code&gt;
+                атрибут для їх автоматичного видалення.</value>
+  </data>
+  <data name="FailedJobsPage_NoJobs" xml:space="preserve">
+    <value>На даний момент у вас немає невдалих завдань.</value>
+  </data>
+  <data name="FailedJobsPage_Table_Failed" xml:space="preserve">
+    <value>Невдалі</value>
+  </data>
+  <data name="FailedJobsPage_Title" xml:space="preserve">
+    <value>Невдалі Завдання</value>
+  </data>
+  <data name="FetchedJobsPage_NoJobs" xml:space="preserve">
+    <value>Черга порожня.</value>
+  </data>
+  <data name="FetchedJobsPage_Title" xml:space="preserve">
+    <value>Отримані Завдання</value>
+  </data>
+  <data name="HomePage_HistoryGraph" xml:space="preserve">
+    <value>Графік Історії</value>
+  </data>
+  <data name="HomePage_RealtimeGraph" xml:space="preserve">
+    <value>Графік Реального часу</value>
+  </data>
+  <data name="HomePage_Title" xml:space="preserve">
+    <value>Огляд</value>
+  </data>
+  <data name="JobDetailsPage_Created" xml:space="preserve">
+    <value>Створене</value>
+  </data>
+  <data name="JobDetailsPage_DeleteConfirm" xml:space="preserve">
+    <value>Ви дійсно хочете видалити це завдання?</value>
+  </data>
+  <data name="JobDetailsPage_State" xml:space="preserve">
+    <value>Стан</value>
+  </data>
+  <data name="JobDetailsPage_JobAbortedNotActive_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;Завдання перервано&lt;/strong&gt; – воно обробляється сервером
+                        &lt;code&gt;{0}&lt;/code&gt; якого на даний момент немає в списку 
+                        &lt;a href="{1}"&gt;активних серверів. &lt;/a&gt;
+                        Повторна спроба буде виконана автоматично після закінчення часу невидимості, 
+						але ви також можете повторно поставити завдання в чергу вручну або видалити його.</value>
+  </data>
+  <data name="JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;Схоже, завдання було перервано&lt;/strong&gt; – воно обробляється сервером 
+                        &lt;code&gt;{0}&lt;/code&gt;, який повідомив про свою роботу більше 1 хвилини тому. 
+                        Повторна спроба буде виконана автоматично після закінчення часу невидимості, 
+						але ви також можете повторно поставити завдання в чергу вручну або видалити його.</value>
+  </data>
+  <data name="JobDetailsPage_JobExpired" xml:space="preserve">
+    <value>Термін фонового завдання '{0}' вийшов або його не вдалося знайти на сервері.</value>
+  </data>
+  <data name="JobDetailsPage_JobFinished_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;Завдання завершено&lt;/strong&gt;.
+                    Його буде видалено автоматично &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;.</value>
+  </data>
+  <data name="JobDetailsPage_JobId" xml:space="preserve">
+    <value>ID Завдання</value>
+  </data>
+  <data name="JobDetailsPage_Requeue" xml:space="preserve">
+    <value>Перезапустити</value>
+  </data>
+  <data name="LayoutPage_Back" xml:space="preserve">
+    <value>Повернутися на сайт</value>
+  </data>
+  <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
+    <value>Згенеровано за: {0}ms</value>
+  </data>
+  <data name="LayoutPage_Footer_Time" xml:space="preserve">
+    <value>Час:</value>
+  </data>
+  <data name="Paginator_Next" xml:space="preserve">
+    <value>Наступна</value>
+  </data>
+  <data name="Paginator_Prev" xml:space="preserve">
+    <value>Попередня</value>
+  </data>
+  <data name="Paginator_TotalItems" xml:space="preserve">
+    <value>Всього завдань</value>
+  </data>
+  <data name="PerPageSelector_ItemsPerPage" xml:space="preserve">
+    <value>Завдань на сторінці</value>
+  </data>
+  <data name="ProcessingJobsPage_Aborted" xml:space="preserve">
+    <value>Схоже, завдання було перервано</value>
+  </data>
+  <data name="ProcessingJobsPage_NoJobs" xml:space="preserve">
+    <value>Зараз не виконується жодна робота.</value>
+  </data>
+  <data name="ProcessingJobsPage_Table_Started" xml:space="preserve">
+    <value>Розпочаті</value>
+  </data>
+  <data name="ProcessingJobsPage_Title" xml:space="preserve">
+    <value>Завдання в процесі</value>
+  </data>
+  <data name="QueuesPage_NoJobs" xml:space="preserve">
+    <value>Немає завдань у черзі.</value>
+  </data>
+  <data name="QueuesPage_NoQueues" xml:space="preserve">
+    <value>Не знайдено завдань в черзі. Спробуйте помістити завдання в чергу.</value>
+  </data>
+  <data name="QueuesPage_Table_Length" xml:space="preserve">
+    <value>Довжина</value>
+  </data>
+  <data name="QueuesPage_Table_NextsJobs" xml:space="preserve">
+    <value>Наступні завдання</value>
+  </data>
+  <data name="QueuesPage_Table_Queue" xml:space="preserve">
+    <value>Черга</value>
+  </data>
+  <data name="QueuesPage_Title" xml:space="preserve">
+    <value>Черги</value>
+  </data>
+  <data name="RecurringJobsPage_Canceled" xml:space="preserve">
+    <value>Скасовано</value>
+  </data>
+  <data name="RecurringJobsPage_NoJobs" xml:space="preserve">
+    <value>Не знайдено повторюваних завдань.</value>
+  </data>
+  <data name="RecurringJobsPage_Table_Cron" xml:space="preserve">
+    <value>Cron</value>
+  </data>
+  <data name="RecurringJobsPage_Table_LastExecution" xml:space="preserve">
+    <value>Останнє виконання</value>
+  </data>
+  <data name="RecurringJobsPage_Table_NextExecution" xml:space="preserve">
+    <value>Наступне виконання</value>
+  </data>
+  <data name="RecurringJobsPage_Table_TimeZone" xml:space="preserve">
+    <value>Часовий пояс</value>
+  </data>
+  <data name="RecurringJobsPage_Title" xml:space="preserve">
+    <value>Повторювані Завдання</value>
+  </data>
+  <data name="RecurringJobsPage_Triggering" xml:space="preserve">
+    <value>Запуск...</value>
+  </data>
+  <data name="RecurringJobsPage_TriggerNow" xml:space="preserve">
+    <value>Запустити зараз</value>
+  </data>
+  <data name="RetriesPage_NoJobs" xml:space="preserve">
+    <value>Все гаразд – у вас немає повторних спроб виконання завдань.</value>
+  </data>
+  <data name="RetriesPage_Title" xml:space="preserve">
+    <value>Повтори завдань</value>
+  </data>
+   Ваше поточне сховище завдань не підтримується
+             
+  <data name="RetriesPage_Warning_Html" xml:space="preserve">
+    <value>&lt;h4&gt;Повторні спроби виконання завдань працюють, але цю сторінку не можна відобразити&lt;/h4&gt;
+        &lt;p&gt;
+            Не хвилюйтеся, повторні спроби працюють належним чином. Ваше поточне сховище завдань не підтримує 
+            деякі запити, необхідні для відображення цієї сторінки. Будь ласка, спробуйте оновити сховище або зачекайте, поки 
+            буде реалізовано повний набір команд.
+        &lt;/p&gt;
+        &lt;p&gt;
+            Будь ласка, перейдіть до &lt;a href="{0}"&gt;сторінки Запланованих завдань&lt;/a&gt;, щоб побачити їх усіх, 
+            включаючи повторні спроби.
+        &lt;/p&gt;</value>
+  </data>
+  <data name="ScheduledJobsPage_EnqueueNow" xml:space="preserve">
+    <value>Помістити в чергу зараз</value>
+  </data>
+  <data name="ScheduledJobsPage_NoJobs" xml:space="preserve">
+    <value>Запланованих робіт немає.</value>
+  </data>
+  <data name="ScheduledJobsPage_Table_Enqueue" xml:space="preserve">
+    <value>Помістити в чергу</value>
+  </data>
+  <data name="ScheduledJobsPage_Table_Scheduled" xml:space="preserve">
+    <value>Заплановані</value>
+  </data>
+  <data name="ScheduledJobsPage_Title" xml:space="preserve">
+    <value>Заплановані Завдання</value>
+  </data>
+  <data name="ServersPage_NoServers" xml:space="preserve">
+    <value>There are no active servers. Background tasks will not be processed.</value>
+  </data>
+  <data name="ServersPage_Table_Heartbeat" xml:space="preserve">
+    <value>Heartbeat</value>
+  </data>
+  <data name="ServersPage_Table_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ServersPage_Table_Queues" xml:space="preserve">
+    <value>Queues</value>
+  </data>
+  <data name="ServersPage_Table_Started" xml:space="preserve">
+    <value>Started</value>
+  </data>
+  <data name="ServersPage_Table_Workers" xml:space="preserve">
+    <value>Workers</value>
+  </data>
+  <data name="ServersPage_Title" xml:space="preserve">
+    <value>Servers</value>
+  </data>
+  <data name="SucceededJobsPage_NoJobs" xml:space="preserve">
+    <value>No succeeded jobs found.</value>
+  </data>
+  <data name="SucceededJobsPage_Table_Succeeded" xml:space="preserve">
+    <value>Succeeded</value>
+  </data>
+  <data name="SucceededJobsPage_Table_TotalDuration" xml:space="preserve">
+    <value>Total Duration</value>
+  </data>
+  <data name="SucceededJobsPage_Title" xml:space="preserve">
+    <value>Succeeded Jobs</value>
+  </data>
+  <data name="JobsSidebarMenu_Awaiting" xml:space="preserve">
+    <value>Awaiting</value>
+  </data>
+  <data name="JobsSidebarMenu_Deleted" xml:space="preserve">
+    <value>Deleted</value>
+  </data>
+  <data name="JobsSidebarMenu_Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="JobsSidebarMenu_Processing" xml:space="preserve">
+    <value>Processing</value>
+  </data>
+  <data name="JobsSidebarMenu_Scheduled" xml:space="preserve">
+    <value>Scheduled</value>
+  </data>
+  <data name="JobsSidebarMenu_Succeeded" xml:space="preserve">
+    <value>Succeeded</value>
+  </data>
+  <data name="NavigationMenu_Jobs" xml:space="preserve">
+    <value>Jobs</value>
+  </data>
+  <data name="NavigationMenu_RecurringJobs" xml:space="preserve">
+    <value>Recurring Jobs</value>
+  </data>
+  <data name="NavigationMenu_Retries" xml:space="preserve">
+    <value>Retries</value>
+  </data>
+  <data name="NavigationMenu_Servers" xml:space="preserve">
+    <value>Servers</value>
+  </data>
+  <data name="Common_CannotFindTargetMethod" xml:space="preserve">
+    <value>Can not find the target method.</value>
+  </data>
+  <data name="Common_Enqueued" xml:space="preserve">
+    <value>Enqueued</value>
+  </data>
+  <data name="Common_NoState" xml:space="preserve">
+    <value>No state</value>
+  </data>
+  <data name="JobsSidebarMenu_Enqueued" xml:space="preserve">
+    <value>Enqueued</value>
+  </data>
+  <data name="Metrics_ActiveConnections" xml:space="preserve">
+    <value>Active Connections</value>
+  </data>
+  <data name="Metrics_DeletedJobs" xml:space="preserve">
+    <value>Deleted Jobs</value>
+  </data>
+  <data name="Metrics_FailedJobs" xml:space="preserve">
+    <value>Failed Jobs</value>
+  </data>
+  <data name="Metrics_ProcessingJobs" xml:space="preserve">
+    <value>Processing Jobs</value>
+  </data>
+  <data name="Metrics_RecurringJobs" xml:space="preserve">
+    <value>Recurring Jobs</value>
+  </data>
+  <data name="Metrics_Retries" xml:space="preserve">
+    <value>Retries</value>
+  </data>
+  <data name="Metrics_ScheduledJobs" xml:space="preserve">
+    <value>Scheduled Jobs</value>
+  </data>
+  <data name="Metrics_Servers" xml:space="preserve">
+    <value>Servers</value>
+  </data>
+  <data name="Metrics_SucceededJobs" xml:space="preserve">
+    <value>Succeeded Jobs</value>
+  </data>
+  <data name="Metrics_TotalConnections" xml:space="preserve">
+    <value>Total Connections</value>
+  </data>
+  <data name="Common_Condition" xml:space="preserve">
+    <value>Condition</value>
+  </data>
+  <data name="Common_Continuations" xml:space="preserve">
+    <value>Continuations</value>
+  </data>
+  <data name="Metrics_AwaitingCount" xml:space="preserve">
+    <value>Awaiting</value>
+  </data>
+  <data name="Metrics_EnqueuedCountOrNull" xml:space="preserve">
+    <value>Enqueued</value>
+  </data>
+  <data name="Metrics_EnqueuedQueuesCount" xml:space="preserve">
+    <value>Enqueued / Queues</value>
+  </data>
+  <data name="Metrics_FailedCountOrNull" xml:space="preserve">
+    <value>{0} failed job(s) found. Retry or delete them manually.</value>
+  </data>
+  <data name="HomePage_GraphHover_Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
+    <value>Succeeded</value>
+  </data>
+  <data name="Common_Disabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="RecurringJobsPage_RecurringJobDisabled_Tooltip" xml:space="preserve">
+    <value>Cron expression is invalid or don't have any occurrences over the next 100 years</value>
+  </data>
+  <data name="ServersPage_Note_Text" xml:space="preserve">
+    <value>Some of the servers don't have heartbeat reported within the last minute and may be aborted. If they don't report heartbeat in the near future, they will be removed automatically after timeout is exceeded, no manual action is required.
+                    Incomplete background jobs running on those servers will be re-queued automatically, but you can speed up the process by checking the &lt;a href="{0}"&gt;Processing Jobs&lt;/a&gt; page.</value>
+  </data>
+  <data name="ServersPage_Note_Title" xml:space="preserve">
+    <value>Aborted servers will be removed automatically</value>
+  </data>
+  <data name="ServersPage_Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="ServersPage_Possibly_Aborted" xml:space="preserve">
+    <value>Possibly aborted</value>
+  </data>
+  <data name="Common_Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="JobDetailsPage_Parameters" xml:space="preserve">
+    <value>Parameters</value>
+  </data>
+</root>
