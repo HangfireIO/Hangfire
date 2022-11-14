@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
@@ -17,7 +18,7 @@ namespace ConsoleSample
         {
             GlobalConfiguration.Configuration
                 .UseColouredConsoleLogProvider()
-                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseIgnoredAssemblyVersionTypeResolver()
                 .UseRecommendedSerializerSettings()
@@ -25,13 +26,9 @@ namespace ConsoleSample
                 .UseDashboardMetrics(SqlServerStorage.SchemaVersion, SqlServerStorage.TotalConnections)
                 .UseJobDetailsRenderer(10, dto => throw new InvalidOperationException())
                 .UseJobDetailsRenderer(10, dto => new NonEscapedString("<h4>Hello, world!</h4>"))
+                .UseDefaultCulture(CultureInfo.CurrentCulture)
                 .UseSqlServerStorage(@"Server=.\;Database=Hangfire.Sample;Trusted_Connection=True;", new SqlServerStorageOptions
                 {
-                    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-                    QueuePollInterval = TimeSpan.Zero,
-                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(1),
-                    UseRecommendedIsolationLevel = true,
-                    DisableGlobalLocks = true,
                     EnableHeavyMigrations = true
                 });
 
