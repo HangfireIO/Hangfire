@@ -910,6 +910,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(null, (job.Args[1] as SomeClass)?.NullObject);
         }
 
+#if !NET452 && !NET461
         [DataCompatibilityRangeFact, CleanSerializerSettings]
         public void DeserializeJob_CanPreviousFormat_WhenTypeNameHandlingOptionIsSetToAll()
         {
@@ -928,6 +929,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal("WriteLine", job.Method.Name);
             Assert.Equal("Hello ", job.Args[0]);
         }
+#endif
 
         [Fact]
         public void DeserializePayload_ThrowsAnException_WhenPayloadIsNull()

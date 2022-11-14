@@ -128,6 +128,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(initialObject.PropertyA, resultingObject.PropertyA);
         }
 
+#if !NET452 && !NET461
         [DataCompatibilityRangeFact, CleanSerializerSettings]
         public void Serialize_JsonDefaultSettingsAffectResult_WhenOptionIs_User()
         {
@@ -223,6 +224,7 @@ namespace Hangfire.Core.Tests.Common
 
             Assert.Equal(@"{""$type"":""Hangfire.Core.Tests.Common.SerializationHelperFacts+ClassB, Hangfire.Core.Tests"",""StringValue"":""B"",""DateTimeValue"":""1961-04-12T00:00:00""}", result);
         }
+#endif
 
         [DataCompatibilityRangeFact, CleanSerializerSettings]
         public void Serialize_WithSpecifiedType_DoesNotIncludeTypeProperty_WhenItEqualsToDeclared_AndTypeNameHandlingAutoIsUsed()
@@ -312,10 +314,9 @@ namespace Hangfire.Core.Tests.Common
                 DefaultValueHandling = DefaultValueHandling.Ignore,
                 Binder = new CustomSerializerBinder(),
                 DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
-                DateFormatString = "ddMMyyyy"
             });
 
-            var json = "{\"$type\":\"HANGFIRE.CORE.TESTS.COMMON.SERIALIZATIONHELPERFACTS+CLASSB, someAssembly\",\"StringValue\":\"B\",\"DateTimeValue\":\"12041961\"}";
+            var json = "{\"$type\":\"HANGFIRE.CORE.TESTS.COMMON.SERIALIZATIONHELPERFACTS+CLASSB, mscorlib\",\"StringValue\":\"B\",\"DateTimeValue\":\"\\/Date(1356044400000)\\/\"}";
 
             var value = SerializationHelper.Deserialize(json, typeof(ClassB));
 
@@ -323,7 +324,7 @@ namespace Hangfire.Core.Tests.Common
 
             Assert.NotNull(obj);
             Assert.Equal("B", obj.StringValue);
-            Assert.Equal(new DateTime(1961, 04, 12), obj.DateTimeValue);
+            Assert.Equal(new DateTime(2012, 12, 20, 23, 00, 00, DateTimeKind.Utc), obj.DateTimeValue);
         }
 
         [DataCompatibilityRangeFact, CleanSerializerSettings]
@@ -414,7 +415,9 @@ namespace Hangfire.Core.Tests.Common
             var serializerSettings = SerializationHelper.GetInternalSettings();
 
             Assert.Equal(TypeNameHandling.Auto, serializerSettings.TypeNameHandling);
+#if !NET452 && !NET461 && !NETCOREAPP1_0
             Assert.Equal(TypeNameAssemblyFormatHandling.Simple, serializerSettings.TypeNameAssemblyFormatHandling);
+#endif
             Assert.Equal(DefaultValueHandling.IgnoreAndPopulate, serializerSettings.DefaultValueHandling);
             Assert.Equal(NullValueHandling.Ignore, serializerSettings.NullValueHandling);
             Assert.True(serializerSettings.CheckAdditionalContent);
