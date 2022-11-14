@@ -93,7 +93,7 @@ namespace Hangfire.SqlServer.Tests
             }
         }
 
-#if NET452
+#if NET452 || NET461
         [Fact, CleanDatabase]
         public void UseConnection_UsesSystemDataSqlClient_ByDefault_OnNet452Only()
         {
