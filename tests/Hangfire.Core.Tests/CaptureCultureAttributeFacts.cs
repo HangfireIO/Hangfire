@@ -28,7 +28,25 @@ namespace Hangfire.Core.Tests
                 .Setup(x => x.GetJobParameter(_perform.BackgroundJob.Id, "CurrentUICulture"))
                 .Returns($"\"{_uiCulture.Name}\"");
         }
-        
+
+        [Fact]
+        public void Ctor_SetsDefaultCulturesToNull_ByDefault()
+        {
+            var attribute = new CaptureCultureAttribute();
+
+            Assert.Null(attribute.DefaultCultureName);
+            Assert.Null(attribute.DefaultUICultureName);
+        }
+
+        [Fact]
+        public void Ctor_AllowsToUseNulls_AsDefaultCultureValues()
+        {
+            var attribute = new CaptureCultureAttribute(null, null);
+
+            Assert.Null(attribute.DefaultCultureName);
+            Assert.Null(attribute.DefaultUICultureName);
+        }
+
         [Fact]
         public void OnCreating_SetsCultureRelated_Parameters()
         {
@@ -90,7 +108,72 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void OnPerforming_DoesNotSetAnything_WhenBothJobParametersMissing()
+        public void OnPerforming_UsesDefaultCultures_WhenCorrespondingJobParametersAreMissing()
+        {
+            // Arrange
+            _perform.Connection
+                .Setup(x => x.GetJobParameter(_perform.BackgroundJob.Id, "CurrentCulture"))
+                .Returns((string)null);
+
+            _perform.Connection
+                .Setup(x => x.GetJobParameter(_perform.BackgroundJob.Id, "CurrentUICulture"))
+                .Returns((string)null);
+
+            var attribute = new CaptureCultureAttribute("en-US", "en-UK");
+
+            // Act
+            attribute.OnPerforming(_perform.GetPerformingContext());
+
+            // Assert
+            Assert.Equal("en-US", CultureInfo.CurrentCulture.Name);
+            Assert.Equal("en-UK", CultureInfo.CurrentUICulture.Name);
+        }
+
+        [Fact]
+        public void OnPerforming_UsesTheSameDefaultCultures_WhenCorrespondingJobParametersAreMissing_AndOnlyOneIsSpecified()
+        {
+            // Arrange
+            _perform.Connection
+                .Setup(x => x.GetJobParameter(_perform.BackgroundJob.Id, "CurrentCulture"))
+                .Returns((string)null);
+
+            _perform.Connection
+                .Setup(x => x.GetJobParameter(_perform.BackgroundJob.Id, "CurrentUICulture"))
+                .Returns((string)null);
+
+            var attribute = new CaptureCultureAttribute("en-US");
+
+            // Act
+            attribute.OnPerforming(_perform.GetPerformingContext());
+
+            // Assert
+            Assert.Equal("en-US", CultureInfo.CurrentCulture.Name);
+            Assert.Equal("en-US", CultureInfo.CurrentUICulture.Name);
+        }
+
+        [Fact]
+        public void OnPerforming_DoesNotUseDefaultCultureAsDefaultUICulture_WhenCorrespondingJobParametersAreMissing_AndExplicitNullValueIsUsed()
+        {
+            // Arrange
+            _perform.Connection
+                .Setup(x => x.GetJobParameter(_perform.BackgroundJob.Id, "CurrentCulture"))
+                .Returns((string)null);
+
+            _perform.Connection
+                .Setup(x => x.GetJobParameter(_perform.BackgroundJob.Id, "CurrentUICulture"))
+                .Returns((string)null);
+
+            var attribute = new CaptureCultureAttribute("en-US", null);
+
+            // Act
+            attribute.OnPerforming(_perform.GetPerformingContext());
+
+            // Assert
+            Assert.Equal(CultureInfo.InvariantCulture, CultureInfo.CurrentUICulture);
+        }
+
+        [Fact]
+        public void OnPerforming_DoesNotSetAnything_WhenBothJobParametersMissing_AndDefaultCulturesNotSet()
         {
             // Arrange
             _perform.Connection

@@ -15,6 +15,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Reflection;
 using Hangfire.Annotations;
 using Hangfire.Common;
@@ -343,6 +344,23 @@ namespace Hangfire
             DashboardRoutes.AddDarkModeSupport();
 
             return configuration;
+        }
+
+        public static IGlobalConfiguration UseDefaultCulture(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] CultureInfo culture)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseFilter(new CaptureCultureAttribute(culture?.Name));
+        }
+
+        public static IGlobalConfiguration UseDefaultCulture(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] CultureInfo culture,
+            [CanBeNull] CultureInfo uiCulture)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseFilter(new CaptureCultureAttribute(culture?.Name, uiCulture?.Name));
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]

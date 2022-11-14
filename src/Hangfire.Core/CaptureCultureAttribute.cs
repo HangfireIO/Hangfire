@@ -15,6 +15,7 @@
 
 using System;
 using System.Globalization;
+using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Logging;
@@ -25,6 +26,26 @@ namespace Hangfire
     public sealed class CaptureCultureAttribute : JobFilterAttribute, IClientFilter, IServerFilter
     {
         private readonly ILog _logger = LogProvider.GetLogger(typeof(CaptureCultureAttribute));
+
+        public CaptureCultureAttribute() : this(null)
+        {
+        }
+
+        public CaptureCultureAttribute([CanBeNull] string defaultCultureName) : this(defaultCultureName, defaultCultureName)
+        {
+        }
+
+        public CaptureCultureAttribute([CanBeNull] string defaultCultureName, [CanBeNull] string defaultUICultureName)
+        {
+            DefaultCultureName = defaultCultureName;
+            DefaultUICultureName = defaultUICultureName;
+        }
+
+        [CanBeNull]
+        public string DefaultCultureName { get; }
+
+        [CanBeNull]
+        public string DefaultUICultureName { get; }
 
         public void OnCreating(CreatingContext context)
         {
@@ -42,6 +63,9 @@ namespace Hangfire
         {
             var cultureName = context.GetJobParameter<string>("CurrentCulture", allowStale: true);
             var uiCultureName = context.GetJobParameter<string>("CurrentUICulture", allowStale: true) ?? cultureName;
+
+            cultureName = cultureName ?? DefaultCultureName;
+            uiCultureName = uiCultureName ?? DefaultUICultureName;
 
             try
             {
