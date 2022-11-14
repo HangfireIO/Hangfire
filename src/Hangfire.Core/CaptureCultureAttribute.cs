@@ -51,8 +51,28 @@ namespace Hangfire
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
 
-            context.SetJobParameter("CurrentCulture", CultureInfo.CurrentCulture.Name);
-            context.SetJobParameter("CurrentUICulture", CultureInfo.CurrentUICulture.Name);
+            var currentCulture = CultureInfo.CurrentCulture;
+            var currentUICulture = CultureInfo.CurrentUICulture;
+
+            if (GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_180) &&
+                currentCulture.Name.Equals(DefaultCultureName, StringComparison.Ordinal))
+            {
+                // Don't set the 'CurrentCulture' job parameter when it's equal to the default one
+            }
+            else
+            {
+                context.SetJobParameter("CurrentCulture", currentCulture.Name);
+            }
+
+            if (GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_180) &&
+                (currentUICulture.Equals(currentCulture) || currentUICulture.Name.Equals(DefaultUICultureName, StringComparison.Ordinal)))
+            {
+                // Don't set the 'CurrentUICulture' job parameter when it's equal to the default one
+            }
+            else
+            {
+                context.SetJobParameter("CurrentUICulture", currentUICulture.Name);
+            }
         }
 
         public void OnCreated(CreatedContext context)

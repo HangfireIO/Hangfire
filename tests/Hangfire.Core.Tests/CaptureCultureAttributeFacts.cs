@@ -47,7 +47,7 @@ namespace Hangfire.Core.Tests
             Assert.Null(attribute.DefaultUICultureName);
         }
 
-        [Fact]
+        [DataCompatibilityRangeFact]
         public void OnCreating_SetsCultureRelated_Parameters()
         {
             // Arrange
@@ -61,6 +61,72 @@ namespace Hangfire.Core.Tests
             // Assert
             Assert.Equal(_context.Object.Parameters["CurrentCulture"], _culture.Name);
             Assert.Equal(_context.Object.Parameters["CurrentUICulture"], _uiCulture.Name);
+        }
+
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_180)]
+        public void OnCreating_ExplicitlySetsUICultureName_EvenWhenItIsEqualToTheCultureNameOne_WithCompatibilityVersion170AndBelow()
+        {
+            // Arrange
+            var attribute = new CaptureCultureAttribute();
+            SetCurrentCulture(_culture);
+            SetCurrentUICulture(_culture);
+
+            // Act
+            attribute.OnCreating(_context.GetCreatingContext());
+
+            // Assert
+            Assert.Equal(_context.Object.Parameters["CurrentCulture"], _culture.Name);
+            Assert.Equal(_context.Object.Parameters["CurrentUICulture"], _culture.Name);
+        }
+
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_180)]
+        public void OnCreating_DoesNotSetUICultureName_WhenItIsEqualToTheCultureNameOne_WithCompatibilityVersion180AndAbove()
+        {
+            // Arrange
+            var attribute = new CaptureCultureAttribute();
+            SetCurrentCulture(_culture);
+            SetCurrentUICulture(_culture);
+
+            // Act
+            attribute.OnCreating(_context.GetCreatingContext());
+
+            // Assert
+            Assert.Equal(_context.Object.Parameters["CurrentCulture"], _culture.Name);
+            Assert.False(_context.Object.Parameters.ContainsKey("CurrentUICulture"));
+        }
+
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_180)]
+        public void OnCreating_SetsCultureNames_EvenWhenTheyEqualToTheDefaultOnes_WithCompatibilityVersion170AndBelow()
+        {
+            // Arrange
+            SetCurrentCulture(_culture);
+            SetCurrentUICulture(_uiCulture);
+
+            var attribute = new CaptureCultureAttribute(_culture.Name, _uiCulture.Name);
+
+            // Act
+            attribute.OnCreating(_context.GetCreatingContext());
+
+            // Assert
+            Assert.Equal(_context.Object.Parameters["CurrentCulture"], _culture.Name);
+            Assert.Equal(_context.Object.Parameters["CurrentUICulture"], _uiCulture.Name);
+        }
+
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_180)]
+        public void OnCreating_DoesNotSetCultureNames_WhenTheyEqualToTheDefaultOnes_WithCompatibilityVersion180AndAbove()
+        {
+            // Arrange
+            SetCurrentCulture(_culture);
+            SetCurrentUICulture(_uiCulture);
+
+            var attribute = new CaptureCultureAttribute(_culture.Name, _uiCulture.Name);
+
+            // Act
+            attribute.OnCreating(_context.GetCreatingContext());
+
+            // Assert
+            Assert.False(_context.Object.Parameters.ContainsKey("CurrentCulture"));
+            Assert.False(_context.Object.Parameters.ContainsKey("CurrentUICulture"));
         }
 
         [Fact]
