@@ -185,14 +185,14 @@ namespace Hangfire.Core.Tests
                 .Setup(x => x.GetJobParameter(_perform.BackgroundJob.Id, "CurrentUICulture"))
                 .Returns((string)null);
 
-            var attribute = new CaptureCultureAttribute("en-US", "en-UK");
+            var attribute = new CaptureCultureAttribute("en-US", "en-GB");
 
             // Act
             attribute.OnPerforming(_perform.GetPerformingContext());
 
             // Assert
             Assert.Equal("en-US", CultureInfo.CurrentCulture.Name);
-            Assert.Equal("en-UK", CultureInfo.CurrentUICulture.Name);
+            Assert.Equal("en-GB", CultureInfo.CurrentUICulture.Name);
         }
 
         [Fact]
