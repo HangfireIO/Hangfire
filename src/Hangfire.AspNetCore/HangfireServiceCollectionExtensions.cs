@@ -225,10 +225,18 @@ namespace Hangfire
 
             GetInternalServices(provider, out var factory, out var stateChanger, out var performer);
 
+#if NETCOREAPP3_0_OR_GREATER
+            var lifetime = provider.GetService<IHostApplicationLifetime>();
+#endif
+
 #pragma warning disable 618
             return new BackgroundJobServerHostedService(
 #pragma warning restore 618
-                storage, options, additionalProcesses, factory, performer, stateChanger);
+                storage, options, additionalProcesses, factory, performer, stateChanger
+#if NETCOREAPP3_0_OR_GREATER
+                , lifetime
+#endif
+                );
         }
 #endif
 
