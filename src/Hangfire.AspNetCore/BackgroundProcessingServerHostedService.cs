@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-#if NETCOREAPP3_0 || NETSTANDARD2_0 || NET461
+#if !NET451 && !NETSTANDARD1_3
 
 using System;
 using System.Threading;

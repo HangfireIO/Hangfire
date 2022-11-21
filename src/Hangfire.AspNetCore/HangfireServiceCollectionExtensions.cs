@@ -25,7 +25,7 @@ using Hangfire.States;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-#if NETCOREAPP3_0 || NETSTANDARD2_0 || NET461
+#if !NET451 && !NETSTANDARD1_3
 using Microsoft.Extensions.Hosting;
 #endif
 
@@ -102,7 +102,7 @@ namespace Hangfire
             return services;
         }
 
-#if NETCOREAPP3_0 || NETSTANDARD2_0 || NET461
+#if !NET451 && !NETSTANDARD1_3
         public static IServiceCollection AddHangfireServer(
             [NotNull] this IServiceCollection services,
             [NotNull] Action<BackgroundJobServerOptions> optionsAction)
@@ -238,7 +238,7 @@ namespace Hangfire
 
             GetInternalServices(provider, out var factory, out var stateChanger, out var performer);
 
-#if NETCOREAPP3_0_OR_GREATER
+#if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
             var lifetime = provider.GetService<IHostApplicationLifetime>();
 #endif
 
@@ -246,7 +246,7 @@ namespace Hangfire
             return new BackgroundJobServerHostedService(
 #pragma warning restore 618
                 storage, options, additionalProcesses, factory, performer, stateChanger
-#if NETCOREAPP3_0_OR_GREATER
+#if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
                 , lifetime
 #endif
                 );

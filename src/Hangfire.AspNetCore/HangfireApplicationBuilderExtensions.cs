@@ -19,7 +19,7 @@ using Hangfire.Annotations;
 using Hangfire.Dashboard;
 using Hangfire.Server;
 using Microsoft.AspNetCore.Builder;
-#if NETCOREAPP3_0
+#if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
 using Microsoft.Extensions.Hosting;
 #else
 using Microsoft.AspNetCore.Hosting;
@@ -56,7 +56,7 @@ namespace Hangfire
             return app;
         }
 
-#if NETCOREAPP3_0 || NETSTANDARD2_0 || NET461
+#if !NET451 && !NETSTANDARD1_3
         [Obsolete("Please use IServiceCollection.AddHangfireServer extension method instead in the ConfigureServices method. Will be removed in 2.0.0.")]
 #endif
         public static IApplicationBuilder UseHangfireServer(
@@ -105,7 +105,7 @@ namespace Hangfire
             [NotNull] this IServiceProvider services,
             [NotNull] IBackgroundProcessingServer server)
         {
-#if NETCOREAPP3_0
+#if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
             var lifetime = services.GetRequiredService<IHostApplicationLifetime>();
 #else
             var lifetime = services.GetRequiredService<IApplicationLifetime>();

@@ -26,7 +26,7 @@
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="2.0.0" />
         <dependency id="Hangfire.Core" version="[0.0.0]" />
       </group>
-      <group targetFramework="netcoreapp3.0">
+      <group targetFramework="netstandard2.1">
         <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="3.0.0" />
         <dependency id="Microsoft.Extensions.Hosting.Abstractions" version="3.0.0" />
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="3.0.0" />
@@ -39,9 +39,9 @@
     <file src="netstandard2.0\Hangfire.NetCore.xml" target="lib\netstandard2.0" />
     <file src="netstandard2.0\Hangfire.NetCore.pdb" target="lib\netstandard2.0" />
 
-    <file src="netcoreapp3.0\Hangfire.NetCore.dll" target="lib\netcoreapp3.0" />
-    <file src="netcoreapp3.0\Hangfire.NetCore.xml" target="lib\netcoreapp3.0" />
-    <file src="netcoreapp3.0\Hangfire.NetCore.pdb" target="lib\netcoreapp3.0" />
+    <file src="netstandard2.1\Hangfire.NetCore.dll" target="lib\netstandard2.1" />
+    <file src="netstandard2.1\Hangfire.NetCore.xml" target="lib\netstandard2.1" />
+    <file src="netstandard2.1\Hangfire.NetCore.pdb" target="lib\netstandard2.1" />
     
     <file src="..\src\Hangfire.AspNetCore\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
 
