@@ -22,6 +22,21 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.32
+
+Hangfire.Core
+      
+• Added – First version of Swedish translation of the Dashboard UI (by @karl-sjogren).
+• Changed – More detailed message for exception when `JobStorage.Current` is not initialized.
+• Changed – Make `TypeHelperSerializationBinder` class public to use it from custom serializer settings.
+• Fixed – Small typos in French resources for the Dashboard UI (by @agriffard).
+• Fixed – Document the exception for the `IJobCancellationToken` interface method (by @judah4).
+
+Hangfire.NetCore and Hangfire.AspNetCore
+
+• Changed – Wait for application to be ready before starting the server when using `AddHangfireServer`.
+• Fixed – Do not return `null` as result of `StopAsync` in hosted service implementation (by @tomaszek92).
+
 1.7.31
 
 Hangfire.Core
@@ -34,7 +49,7 @@ Hangfire.Core
 • Deprecated – `RecurringJob.Trigger` method is now obsolete, `TriggerJob` is the replacement.
 • Deprecated – `RecurringJobManager.TriggerExecution` method is now obsolete, `TriggerJob` should be used instead.
 
-      1.7.30
+1.7.30
 
 Hangfire.Core
 

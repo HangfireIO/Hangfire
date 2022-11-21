@@ -22,6 +22,13 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.32
+• Added – First version of Swedish translation of the Dashboard UI (by @karl-sjogren).
+• Changed – More detailed message for exception when `JobStorage.Current` is not initialized.
+• Changed – Make `TypeHelperSerializationBinder` class public to use it from custom serializer settings.
+• Fixed – Small typos in French resources for the Dashboard UI (by @agriffard).
+• Fixed – Document the exception for the `IJobCancellationToken` interface method (by @judah4).
+
 1.7.31
 • Added – `RecurringJob.TriggerJob` method that returns identifier of a triggered background job.
 • Added – `RecurringJobManager.TriggerJob` as a replacement for the `TriggerExecution` method.
