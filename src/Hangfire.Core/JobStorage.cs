@@ -39,7 +39,14 @@ namespace Hangfire
                 {
                     if (_current == null)
                     {
-                        throw new InvalidOperationException("JobStorage.Current property value has not been initialized. You must set it before using Hangfire Client or Server API.");
+                        throw new InvalidOperationException(
+                            "Current JobStorage instance has not been initialized yet. You must set it before using Hangfire Client or Server API. " +
+#if NET45 || NET46
+                            "For NET Framework applications please use GlobalConfiguration.UseXXXStorage method, where XXX is the storage type, like `UseSqlServerStorage`."
+#else
+                            "For .NET Core applications please call the `IServiceCollection.AddHangfire` extension method from Hangfire.NetCore or Hangfire.AspNetCore package depending on your application type when configuring the services and ensure service-based APIs are used instead of static ones, like `IBackgroundJobClient` instead of `BackgroundJob` and `IRecurringJobManager` instead of `RecurringJob`."
+#endif
+                            );
                     }
 
                     return _current;

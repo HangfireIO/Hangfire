@@ -31,6 +31,9 @@ namespace Hangfire
         private readonly BackgroundJobServerOptions _options;
         private readonly JobStorage _storage;
         private readonly IEnumerable<IBackgroundProcess> _additionalProcesses;
+#if NETCOREAPP3_0_OR_GREATER
+        private readonly IHostApplicationLifetime _hostApplicationLifetime;
+#endif
         private readonly IBackgroundJobFactory _factory;
         private readonly IBackgroundJobPerformer _performer;
         private readonly IBackgroundJobStateChanger _stateChanger;
@@ -47,6 +50,20 @@ namespace Hangfire
         {
         }
 
+#if NETCOREAPP3_0_OR_GREATER
+        public BackgroundJobServerHostedService(
+            [NotNull] JobStorage storage,
+            [NotNull] BackgroundJobServerOptions options,
+            [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
+            [CanBeNull] IHostApplicationLifetime hostApplicationLifetime)
+#pragma warning disable 618
+            : this(storage, options, additionalProcesses, null, null, null, hostApplicationLifetime)
+#pragma warning restore 618
+        {
+        }
+#endif
+
+#if NETCOREAPP3_0_OR_GREATER
         [Obsolete("This constructor uses an obsolete constructor overload of the BackgroundJobServer type that will be removed in 2.0.0.")]
         public BackgroundJobServerHostedService(
             [NotNull] JobStorage storage,
@@ -55,6 +72,24 @@ namespace Hangfire
             [CanBeNull] IBackgroundJobFactory factory,
             [CanBeNull] IBackgroundJobPerformer performer,
             [CanBeNull] IBackgroundJobStateChanger stateChanger)
+            : this(storage, options, additionalProcesses, factory, performer, stateChanger, null)
+        {
+        }
+#endif
+
+        [Obsolete("This constructor uses an obsolete constructor overload of the BackgroundJobServer type that will be removed in 2.0.0.")]
+        public BackgroundJobServerHostedService(
+            [NotNull] JobStorage storage,
+            [NotNull] BackgroundJobServerOptions options,
+            [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
+            [CanBeNull] IBackgroundJobFactory factory,
+            [CanBeNull] IBackgroundJobPerformer performer,
+            [CanBeNull] IBackgroundJobStateChanger stateChanger
+#if NETCOREAPP3_0_OR_GREATER
+            ,
+            [CanBeNull] IHostApplicationLifetime hostApplicationLifetime
+#endif
+            )
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
@@ -64,15 +99,25 @@ namespace Hangfire
             _factory = factory;
             _performer = performer;
             _stateChanger = stateChanger;
+
+#if NETCOREAPP3_0_OR_GREATER
+            _hostApplicationLifetime = hostApplicationLifetime;
+#endif
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _processingServer = _factory != null && _performer != null && _stateChanger != null
-#pragma warning disable 618
-                ? new BackgroundJobServer(_options, _storage, _additionalProcesses, null, null, _factory, _performer, _stateChanger)
-#pragma warning restore 618
-                : new BackgroundJobServer(_options, _storage, _additionalProcesses);
+#if NETCOREAPP3_0_OR_GREATER
+            if (_hostApplicationLifetime != null)
+            {
+                // https://github.com/HangfireIO/Hangfire/issues/2117
+                _hostApplicationLifetime.ApplicationStarted.Register(InitializeProcessingServer);
+            }
+            else
+#endif
+            {
+                InitializeProcessingServer();                
+            }
 
             return Task.CompletedTask;
         }
@@ -80,12 +125,22 @@ namespace Hangfire
         public Task StopAsync(CancellationToken cancellationToken)
         {
             _processingServer?.SendStop();
-            return _processingServer?.WaitForShutdownAsync(cancellationToken);
+            return _processingServer?.WaitForShutdownAsync(cancellationToken) ?? Task.CompletedTask;
         }
 
         public void Dispose()
         {
             _processingServer?.Dispose();
+        }
+        
+        private void InitializeProcessingServer()
+        {
+            _processingServer = _factory != null && _performer != null && _stateChanger != null
+#pragma warning disable 618
+                ? new BackgroundJobServer(_options, _storage, _additionalProcesses, null, null, _factory, _performer,
+                    _stateChanger)
+#pragma warning restore 618
+                : new BackgroundJobServer(_options, _storage, _additionalProcesses);
         }
     }
 }
