@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net452;netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net452;net461;netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
     <NoWarn>0618</NoWarn>
   </PropertyGroup>
   
@@ -10,15 +10,14 @@
     <PackageReference Include="xunit" Version="2.2.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
     <PackageReference Include="Moq" Version="4.10.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)'!='net452'">
+  <ItemGroup Condition="'$(TargetFramework)'!='net452' and '$(TargetFramework)'!='net461'">
     <PackageReference Include="Dapper" Version="2.0.4" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="1.1.0" />
   </ItemGroup>
   
-  <ItemGroup Condition="'$(TargetFramework)'=='net452'">
+  <ItemGroup Condition="'$(TargetFramework)'=='net452' or '$(TargetFramework)'=='net461'">
     <PackageReference Include="Dapper" Version="1.50.7" />
   </ItemGroup>
 
@@ -28,6 +27,14 @@
 
   <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp3.1'">
     <PackageReference Include="System.Data.SqlClient" Version="4.7.0" />    
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net452' or '$(TargetFramework)'=='net461'">
+    <PackageReference Include="Newtonsoft.Json" Version="5.0.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp2.1' or '$(TargetFramework)'=='netcoreapp3.1'">
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
   </ItemGroup>
 
   <ItemGroup>

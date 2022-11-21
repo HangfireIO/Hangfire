@@ -39,7 +39,7 @@ namespace Hangfire.SqlServer.Tests
         public static DbConnection CreateConnection(bool microsoftDataSqlClient)
         {
             var connection =
-#if !NET452
+#if !NET452 && !NET461
                 microsoftDataSqlClient ? (DbConnection)new Microsoft.Data.SqlClient.SqlConnection(GetConnectionString()) :
 #endif
                 new SqlConnection(GetConnectionString());
