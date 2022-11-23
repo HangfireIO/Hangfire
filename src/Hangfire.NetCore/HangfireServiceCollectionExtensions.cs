@@ -253,7 +253,7 @@ namespace Hangfire
         }
 #endif
 
-        internal static bool GetInternalServices(
+        public static bool GetInternalServices(
             IServiceProvider provider,
             out IBackgroundJobFactory factory,
             out IBackgroundJobStateChanger stateChanger,
@@ -291,7 +291,7 @@ namespace Hangfire
             });
         }
 
-        internal static void ThrowIfNotConfigured(IServiceProvider serviceProvider)
+        public static void ThrowIfNotConfigured(IServiceProvider serviceProvider)
         {
             var configuration = serviceProvider.GetService<IGlobalConfiguration>();
             if (configuration == null)

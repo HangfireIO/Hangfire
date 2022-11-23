@@ -45,12 +45,14 @@ Task Collect -Depends Test -Description "Copy all artifacts to the build folder.
     Collect-Assembly "Hangfire.Core" "net451"
     Collect-Assembly "Hangfire.SqlServer" "net451"
     Collect-Assembly "Hangfire.SqlServer.Msmq" "net451"
+    Collect-Assembly "Hangfire.NetCore" "net451"
     Collect-Assembly "Hangfire.AspNetCore" "net451"
 
     Collect-Assembly "Hangfire.Core" "net46"
 
     Collect-Assembly "Hangfire.Core" "netstandard1.3"
     Collect-Assembly "Hangfire.SqlServer" "netstandard1.3"
+    Collect-Assembly "Hangfire.NetCore" "netstandard1.3"
     Collect-Assembly "Hangfire.AspNetCore" "netstandard1.3"
     
     Collect-Assembly "Hangfire.Core" "netstandard2.0"
