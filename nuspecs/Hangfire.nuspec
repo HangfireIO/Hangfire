@@ -38,7 +38,12 @@ Hangfire.SqlServer
 
 Hangfire.NetCore
 
-• Changed – Use `netstandard2.1` target instead of `netcoreapp3.0` for Hangfire.NetCore package.
+• Added – `net451` and `netstandard1.3` targets for the package.
+• Changed – Use `netstandard2.1` target instead of `netcoreapp3.0` for the package.
+
+Hangfire.AspNetCore
+
+• Breaking – Make the package to be dependent on Hangfire.NetCore to use the same types.
 
 1.8.0-rc1
 

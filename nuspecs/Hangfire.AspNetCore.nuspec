@@ -15,6 +15,9 @@
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.8.0-rc2
+• Breaking – Make the package to be dependent on Hangfire.NetCore to use the same types.
+
 1.8.0-rc1
 • Added – `IApplicationBuilder.UseHangfireServer` that accepts custom factory for `IBackgroundProcessingServer`.
 

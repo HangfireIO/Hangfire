@@ -16,7 +16,8 @@
     <releaseNotes>https://www.hangfire.io/blog/
 
 1.8.0-rc2
-• Changed – Use `netstandard2.1` target instead of `netcoreapp3.0` for Hangfire.NetCore package.
+• Added – `net451` and `netstandard1.3` targets for the package.
+• Changed – Use `netstandard2.1` target instead of `netcoreapp3.0` for the package.
 
 1.8.0-rc1
 • Added – `IApplicationBuilder.UseHangfireServer` that accepts custom factory for `IBackgroundProcessingServer`.
