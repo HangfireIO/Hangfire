@@ -20,6 +20,26 @@ https://www.hangfire.io/
     <tags>Hangfire AspNet MVC AspNetCore SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.8.0-rc2
+
+Hangfire.Core
+
+• Added – Support for default culture and UI culture via the `UseDefaultCulture` configuration method.
+• Added – `CompatibilityLevel.Version_180` flag to avoid storing culture parameters when they are the same as default.
+• Added – `BackgroundJobServerOptions.IsLightweightServer` option to run server with no storage processes.
+• Changed – Use UI culture from `CurrentCulture` parameter when `CurrentUICulture` one is missing.
+
+Hangfire.SqlServer
+
+• Breaking – Prioritise Microsoft.Data.SqlClient package over System.Data.SqlClient one.
+
+• Changed – Bump internal version of Dapper to 2.0.123.
+• Changed – Remove System.Data.SqlClient package from the NuGet dependency graph (by @0xced).
+
+Hangfire.NetCore
+
+• Changed – Use `netstandard2.1` target instead of `netcoreapp3.0` for Hangfire.NetCore package.
+
 1.8.0-rc1
 
 Hangfire.Core
@@ -98,6 +118,8 @@ Internals
  
 Hangfire.SqlServer
 
+• Breaking – Dropped `NET45` platform target in favor of `NET451` target to support Visual Studio 2022.
+
 • Added – Recommended Schema 8 migration with fixed `JobQueue.Id` column to use the `bigint` type.
 • Added – Automatic client package detection based on available types, preferring `System.Data.SqlClient` (by @0xced).
 • Added – `SqlServerStorageOptions.DbProviderFactory` option to use custom provider factory.
@@ -114,7 +136,6 @@ Hangfire.SqlServer
 • Changed – `GetJobData` now populates `JobData.ParametersSnapshot` property to avoid additional round-trips.
 • Changed – Display scheduled and processing jobs in the ascending order in Dashboard UI.
 • Deprecated – `UsePageLocksOnDequeue` option is now obsolete and doesn't affect anything.
-• Breaking – Dropped `NET45` platform target in favor of `NET451` target to support Visual Studio 2022.
 
 Hangfire.SqlServer.Msmq
 

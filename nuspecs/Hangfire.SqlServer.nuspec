@@ -15,6 +15,11 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.8.0-rc2
+• Breaking – Prioritise Microsoft.Data.SqlClient package over System.Data.SqlClient one.
+• Changed – Bump internal version of Dapper to 2.0.123.
+• Changed – Remove System.Data.SqlClient package from the NuGet dependency graph (by @0xced).
+
 1.8.0-rc1
 • Added – Recommended Schema 8 migration with fixed `JobQueue.Id` column to use the `bigint` type.
 • Added – Automatic client package detection based on available types, preferring `System.Data.SqlClient` (by @0xced).
