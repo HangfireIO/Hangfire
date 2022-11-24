@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -114,7 +114,7 @@ namespace Hangfire
         /// <param name="minute">The minute in which the schedule will be activated (0-59).</param>
         public static string Weekly(DayOfWeek dayOfWeek, int hour, int minute)
         {
-            return $"{minute} {hour} * * {(int) dayOfWeek}";
+            return $"{minute} {hour} * * {(int)dayOfWeek}";
         }
 
         /// <summary>
@@ -213,32 +213,40 @@ namespace Hangfire
             return $"{minute} {hour} {day} {month} *";
         }
 
-		/// <summary>
-		/// Returns cron expression that never fires. Specifically 31st of February
-		/// </summary>
-		/// <returns></returns>
-		public static string Never()
-		{
-			return Yearly(2, 31);
-		}
+        /// <summary>
+        /// Returns cron expression that never fires. Specifically 31st of February
+        /// </summary>
+        /// <returns></returns>
+        public static string Never()
+        {
+            return Yearly(2, 31);
+        }
 
         /// <summary>
         /// Returns cron expression that fires every &lt;<paramref name="interval"></paramref>&gt; minutes.
         /// </summary>
-        /// <param name="interval">The number of minutes to wait between every activation.</param>
-        [Obsolete("Please use Cron expressions instead. Will be removed in 2.0.0")]
+        /// <param name="interval">The number of minutes to wait between every activation. Only 1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30 values are allowed.</param>        
         public static string MinuteInterval(int interval)
         {
+            if (interval < 1 || interval > 30 || 60 % interval != 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(interval), "Invalid interval value.");
+            }
+
             return $"*/{interval} * * * *";
         }
 
         /// <summary>
         /// Returns cron expression that fires every &lt;<paramref name="interval"></paramref>&gt; hours.
         /// </summary>
-        /// <param name="interval">The number of hours to wait between every activation.</param>
-        [Obsolete("Please use Cron expressions instead. Will be removed in 2.0.0")]
+        /// <param name="interval">The number of hours to wait between every activation. Only 1, 2, 3, 4, 6, 8, 12 value are allowed.</param>
         public static string HourInterval(int interval)
         {
+            if (interval < 1 || interval > 12 || 24 % interval != 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(interval), "Invalid interval value.");
+            }
+
             return $"0 */{interval} * * *";
         }
 
