@@ -43,6 +43,16 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
+        public void SerializeData_DoesNotContainQueueKey_WhenItIsNotSet()
+        {
+            var state = new ScheduledState(TimeSpan.Zero);
+
+            var data = state.SerializeData();
+
+            Assert.DoesNotContain("Queue", data.Keys);
+        }
+
+        [Fact]
         public void IsFinal_ReturnsFalse()
         {
             var state = new ScheduledState(DateTime.UtcNow);

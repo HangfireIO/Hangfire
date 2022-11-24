@@ -28,11 +28,10 @@ namespace Hangfire.Dashboard
 
         public EmbeddedResourceDispatcher(
             [NotNull] string contentType,
-            [NotNull] Assembly assembly, 
-            string resourceName)
+            [CanBeNull] Assembly assembly, 
+            [CanBeNull] string resourceName)
         {
             if (contentType == null) throw new ArgumentNullException(nameof(contentType));
-            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
             
             _assembly = assembly;
             _resourceName = resourceName;

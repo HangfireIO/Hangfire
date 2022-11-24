@@ -29,10 +29,10 @@ namespace Hangfire.Client
     public class CreateContext
     {
         public CreateContext([NotNull] CreateContext context)
-            : this(context.Storage, context.Connection, context.Job, context.InitialState, context.Profiler)
+            : this(context.Storage, context.Connection, context.Job, context.InitialState, context.Parameters, context.Profiler)
         {
             Items = context.Items;
-            Parameters = context.Parameters;
+            Factory = context.Factory;
         }
 
         public CreateContext(
@@ -40,7 +40,17 @@ namespace Hangfire.Client
             [NotNull] IStorageConnection connection,
             [NotNull] Job job,
             [CanBeNull] IState initialState)
-            : this(storage, connection, job, initialState, EmptyProfiler.Instance)
+            : this(storage, connection, job, initialState, null)
+        {
+        }
+
+        public CreateContext(
+            [NotNull] JobStorage storage,
+            [NotNull] IStorageConnection connection,
+            [NotNull] Job job,
+            [CanBeNull] IState initialState,
+            [CanBeNull] IDictionary<string, object> parameters)
+            : this(storage, connection, job, initialState, parameters, EmptyProfiler.Instance)
         {
         }
 
@@ -49,6 +59,7 @@ namespace Hangfire.Client
             [NotNull] IStorageConnection connection, 
             [NotNull] Job job, 
             [CanBeNull] IState initialState,
+            [CanBeNull] IDictionary<string, object> parameters,
             [NotNull] IProfiler profiler)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -62,7 +73,7 @@ namespace Hangfire.Client
             Profiler = profiler;
 
             Items = new Dictionary<string, object>();
-            Parameters = new Dictionary<string, object>();
+            Parameters = parameters ?? new Dictionary<string, object>();
         }
 
         [NotNull]
@@ -96,5 +107,8 @@ namespace Hangfire.Client
 
         [NotNull]
         internal IProfiler Profiler { get; }
+        
+        [CanBeNull]
+        public IBackgroundJobFactory Factory { get; internal set; }
     }
 }

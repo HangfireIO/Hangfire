@@ -47,7 +47,10 @@ namespace Hangfire.Server
 
             var builders = new List<IBackgroundProcessDispatcherBuilder>();
             builders.AddRange(GetRequiredProcesses());
-            builders.AddRange(GetStorageComponents());
+            if (!options.ExcludeStorageProcesses)
+            {
+                builders.AddRange(GetStorageComponents());
+            }
             builders.AddRange(dispatcherBuilders);
 
             _dispatcherBuilders = builders.ToArray();
@@ -142,7 +145,7 @@ namespace Hangfire.Server
         {
             return _storage.GetComponents().Select(component => new ServerProcessDispatcherBuilder(
                 component, 
-                threadStart => BackgroundProcessExtensions.DefaultThreadFactory(1, component.GetType().Name, threadStart)));
+                threadStart => BackgroundProcessExtensions.DefaultThreadFactory(1, component.GetType().Name, threadStart, null)));
         }
 
         private string GetServerId()

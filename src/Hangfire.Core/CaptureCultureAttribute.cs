@@ -15,6 +15,7 @@
 
 using System;
 using System.Globalization;
+using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Logging;
@@ -26,63 +27,106 @@ namespace Hangfire
     {
         private readonly ILog _logger = LogProvider.GetLogger(typeof(CaptureCultureAttribute));
 
-        public void OnCreating(CreatingContext filterContext)
-        {
-            if (filterContext == null) throw new ArgumentNullException(nameof(filterContext));
-
-            filterContext.SetJobParameter("CurrentCulture", CultureInfo.CurrentCulture.Name);
-            filterContext.SetJobParameter("CurrentUICulture", CultureInfo.CurrentUICulture.Name);
-        }
-
-        public void OnCreated(CreatedContext filterContext)
+        public CaptureCultureAttribute() : this(null)
         {
         }
 
-        public void OnPerforming(PerformingContext filterContext)
+        public CaptureCultureAttribute([CanBeNull] string defaultCultureName) : this(defaultCultureName, defaultCultureName)
         {
-            var cultureName = filterContext.GetJobParameter<string>("CurrentCulture");
-            var uiCultureName = filterContext.GetJobParameter<string>("CurrentUICulture");
+        }
+
+        public CaptureCultureAttribute([CanBeNull] string defaultCultureName, [CanBeNull] string defaultUICultureName)
+        {
+            DefaultCultureName = defaultCultureName;
+            DefaultUICultureName = defaultUICultureName;
+        }
+
+        [CanBeNull]
+        public string DefaultCultureName { get; }
+
+        [CanBeNull]
+        public string DefaultUICultureName { get; }
+
+        public void OnCreating(CreatingContext context)
+        {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            var currentCulture = CultureInfo.CurrentCulture;
+            var currentUICulture = CultureInfo.CurrentUICulture;
+
+            if (GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_180) &&
+                currentCulture.Name.Equals(DefaultCultureName, StringComparison.Ordinal))
+            {
+                // Don't set the 'CurrentCulture' job parameter when it's equal to the default one
+            }
+            else
+            {
+                context.SetJobParameter("CurrentCulture", currentCulture.Name);
+            }
+
+            if (GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_180) &&
+                (currentUICulture.Equals(currentCulture) || currentUICulture.Name.Equals(DefaultUICultureName, StringComparison.Ordinal)))
+            {
+                // Don't set the 'CurrentUICulture' job parameter when it's equal to the default one
+            }
+            else
+            {
+                context.SetJobParameter("CurrentUICulture", currentUICulture.Name);
+            }
+        }
+
+        public void OnCreated(CreatedContext context)
+        {
+        }
+
+        public void OnPerforming(PerformingContext context)
+        {
+            var cultureName = context.GetJobParameter<string>("CurrentCulture", allowStale: true);
+            var uiCultureName = context.GetJobParameter<string>("CurrentUICulture", allowStale: true) ?? cultureName;
+
+            cultureName = cultureName ?? DefaultCultureName;
+            uiCultureName = uiCultureName ?? DefaultUICultureName;
 
             try
             {
                 if (cultureName != null)
                 {
-                    filterContext.Items["PreviousCulture"] = CultureInfo.CurrentCulture;
+                    context.Items["PreviousCulture"] = CultureInfo.CurrentCulture;
                     SetCurrentCulture(new CultureInfo(cultureName));
                 }
             }
             catch (CultureNotFoundException ex)
             {
                 // TODO: Make this overridable, and start with throwing an exception
-                _logger.WarnException($"Unable to set CurrentCulture for job {filterContext.BackgroundJob.Id} due to an exception", ex);
+                _logger.WarnException($"Unable to set CurrentCulture for job {context.BackgroundJob.Id} due to an exception", ex);
             }
 
             try
             {
                 if (uiCultureName != null)
                 {
-                    filterContext.Items["PreviousUICulture"] = CultureInfo.CurrentUICulture;
+                    context.Items["PreviousUICulture"] = CultureInfo.CurrentUICulture;
                     SetCurrentUICulture(new CultureInfo(uiCultureName));
                 }
             }
             catch (CultureNotFoundException ex)
             {
                 // TODO: Make this overridable, and start with throwing an exception
-                _logger.WarnException($"Unable to set CurrentUICulture for job {filterContext.BackgroundJob.Id} due to an exception", ex);
+                _logger.WarnException($"Unable to set CurrentUICulture for job {context.BackgroundJob.Id} due to an exception", ex);
             }
         }
 
-        public void OnPerformed(PerformedContext filterContext)
+        public void OnPerformed(PerformedContext context)
         {
-            if (filterContext == null) throw new ArgumentNullException(nameof(filterContext));
+            if (context == null) throw new ArgumentNullException(nameof(context));
 
-            if (filterContext.Items.ContainsKey("PreviousCulture"))
+            if (context.Items.TryGetValue("PreviousCulture", out var culture))
             {
-                SetCurrentCulture((CultureInfo) filterContext.Items["PreviousCulture"]);
+                SetCurrentCulture((CultureInfo)culture);
             }
-            if (filterContext.Items.ContainsKey("PreviousUICulture"))
+            if (context.Items.TryGetValue("PreviousUICulture", out var uiCulture))
             {
-                SetCurrentUICulture((CultureInfo)filterContext.Items["PreviousUICulture"]);
+                SetCurrentUICulture((CultureInfo)uiCulture);
             }
         }
         

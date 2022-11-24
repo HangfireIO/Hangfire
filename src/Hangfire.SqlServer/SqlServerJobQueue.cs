@@ -38,6 +38,7 @@ namespace Hangfire.SqlServer
 
         private static readonly TimeSpan LongPollingThreshold = TimeSpan.FromSeconds(1);
         private static readonly int PollingQuantumMs = 1000;
+        private static readonly int DefaultPollingDelayMs = 200;
         private static readonly int MinPollingDelayMs = 50;
         private static readonly DynamicMutex<Tuple<SqlServerStorage, string>> DynamicMutex =
             new DynamicMutex<Tuple<SqlServerStorage, string>>();
@@ -95,8 +96,12 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
             var queuesString = String.Join("_", queues.OrderBy(x => x));
             var resource = Tuple.Create(_storage, queuesString);
 
-            var pollingDelayMs = Math.Min(
-                Math.Max((int)_options.QueuePollInterval.TotalMilliseconds, MinPollingDelayMs),
+            var pollingDelayMs = _options.QueuePollInterval > TimeSpan.Zero
+                ? (int) _options.QueuePollInterval.TotalMilliseconds
+                : DefaultPollingDelayMs;
+
+            pollingDelayMs = Math.Min(
+                Math.Max(pollingDelayMs, MinPollingDelayMs),
                 PollingQuantumMs);
 
             SqlServerTimeoutJob fetched = null;
@@ -173,7 +178,7 @@ set nocount on;set xact_abort on;set tran isolation level read committed;
 update top (1) JQ
 set FetchedAt = GETUTCDATE()
 output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
-from [{_storage.SchemaName}].JobQueue JQ with ({GetSlidingFetchTableHints()})
+from [{_storage.SchemaName}].JobQueue JQ with (forceseek, readpast, updlock, rowlock)
 where Queue in @queues and
 (FetchedAt is null or FetchedAt < DATEADD(second, @timeoutSs, GETUTCDATE()));";
         }
@@ -190,22 +195,12 @@ WHILE (SYSUTCDATETIME() < @end)
 BEGIN
 	update top (1) JQ set FetchedAt = GETUTCDATE()
 	output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
-	from [{_storage.SchemaName}].JobQueue JQ with ({GetSlidingFetchTableHints()})
+	from [{_storage.SchemaName}].JobQueue JQ with (forceseek, readpast, updlock, rowlock)
 	where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeoutSs, GETUTCDATE()));
 
 	IF @@ROWCOUNT > 0 RETURN;
 	WAITFOR DELAY @delay;
 END";
-        }
-
-        private string GetSlidingFetchTableHints()
-        {
-            if (_storage.Options.UsePageLocksOnDequeue)
-            {
-                return "forceseek, paglock, xlock";
-            }
-
-            return "forceseek, readpast, updlock, rowlock";
         }
 
         private SqlServerTransactionJob DequeueUsingTransaction(string[] queues, CancellationToken cancellationToken)

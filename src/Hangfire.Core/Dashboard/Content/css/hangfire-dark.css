@@ -1,0 +1,624 @@
+@media (prefers-color-scheme: dark) {
+    /* Common */
+    .page-header {
+        border-bottom: 1px solid #4d4d4d;
+    }
+
+    body {
+        background-color: #22272e;
+        color: #adbac7;
+    }
+
+    a {
+        color: #539bf5;
+    }
+
+    a:focus, 
+    a:hover {
+        color: #539bf5;
+        text-decoration: underline;
+    }
+
+    /* Tables */
+
+    .table .table {
+        background-color: transparent;
+    }
+
+    .table-striped > tbody > tr:nth-of-type(odd) {
+        background-color: #2d333b;
+    }
+
+    .table > tbody > tr.hover:hover > td, 
+    .table > tbody > tr.hover:hover > th {
+        background-color: #2d333b;
+    }
+
+    .table > tbody > tr.highlight > td, 
+    .table > tbody > tr.highlight > th {
+        background-color: #2d333b;
+        border-color: #4d4d4d
+    }
+
+    .table > tbody > tr.highlight:hover > td, 
+    .table > tbody > tr.highlight:hover > th {
+        background-color: #2d333b;
+        border-color: #4d4d4d
+    }
+
+    .table > tbody > tr > td, 
+    .table > tbody > tr > th, 
+    .table > tfoot > tr > td, 
+    .table > tfoot > tr > th, 
+    .table > thead > tr > td, 
+    .table > thead > tr > th {
+        border-color: #4d4d4d
+    }
+
+    /* Footer */
+
+    div#footer {
+        background: #2d333b;
+    }
+
+    /* State cards */
+
+    .state-card {
+        background-color: transparent;
+        border: 1px solid #4d4d4d;
+        padding: 0;
+    }
+
+    .state-card-body {
+        background-color: transparent;
+        border-top: 1px solid #4d4d4d;
+        padding: 12px;
+        margin: 0;
+    }
+
+    .state-card-title {
+        background-color: transparent;
+        padding: 12px;
+    }
+
+    .state-card-text {
+        padding: 0 12px 12px 12px;
+        margin: 0;
+    }
+
+    /* State card success */
+
+    .state-card-state-success {
+        border-color: rgba(87, 171, 90, 0.4) !important;
+    }
+
+    .state-card-state-success .state-card-title {
+        background-color: rgba(87, 171, 90, 0.1);
+        border-color: rgba(87, 171, 90, 0.4);
+        color: rgba(87, 171, 90) !important;
+    }
+
+    .state-card-state-success .state-card-body {
+        background-color: transparent !important;
+        border-top-color: rgba(87, 171, 90, 0.4);
+    }
+
+    .state-card-state-success .state-card-text {
+        background-color: rgba(87, 171, 90, 0.1);
+    }
+
+    /* State card danger */
+
+    .state-card-state-danger {
+        border-color: rgba(235, 156, 166, 0.3) !important;
+    }
+
+    .state-card-state-danger .state-card-title {
+        background-color: rgba(215, 58, 74, 0.1);
+        border-color: rgba(235, 156, 166, 0.3) !important;
+        color: rgb(235, 156, 166) !important;
+    }
+
+    .state-card-state-danger .state-card-body {
+        background-color: transparent !important;
+        border-color: rgba(235, 156, 166, 0.3);
+    }
+
+    .state-card-state-danger .state-card-text {
+        background-color: rgba(215, 58, 74, 0.1);
+    }
+
+    /* State card warning */
+
+    .state-card-state-warning {
+        border-color: rgba(250, 201, 5, 0.3) !important;
+    }
+
+    .state-card-state-warning .state-card-title {
+        background-color: rgba(251, 202, 4, 0.1);
+        border-color: rgba(250, 201, 5, 0.3) !important;
+        color: rgb(250, 201, 5) !important;
+    }
+
+    .state-card-state-warning .state-card-body {
+        background-color: transparent !important;
+        border-color: rgba(250, 201, 5, 0.3);
+    }
+
+    .state-card-state-warning .state-card-text {
+        background-color: rgba(251, 202, 4, 0.1);
+    }
+
+    /* State card info */
+
+    .state-card-state-info {
+        border-color: rgba(104, 167, 234, 0.3) !important;
+    }
+
+    .state-card-state-info .state-card-title {
+        background-color: rgba(29, 118, 219, 0.1);
+        border-color: rgba(104, 167, 234, 0.3) !important;
+        color: rgb(104, 167, 234) !important;
+    }
+
+    .state-card-state-info .state-card-body {
+        background-color: transparent !important;
+        border-color: rgba(104, 167, 234, 0.3)
+    }
+
+    .state-card-state-info .state-card-text {
+        background-color: rgba(29, 118, 219, 0.1);
+    }
+
+    /* State card inactive 
+
+    .state-card-state-inactive {
+        border-color: #777 !important;
+    }
+
+    .state-card-state-inactive .state-card-title {
+        color: #777 !important;
+    }
+
+    .state-card-state-inactive .state-card-body {
+        background-color: #ddd !important;
+    }
+
+    .state-card-state-active {
+        border-color: #999 !important;
+    }
+
+    .state-card-state-active .state-card-title {
+        color: #999 !important;
+    }
+
+    .state-card-state-active .state-card-body {
+        background-color: #F5F5F5 !important;
+    }
+
+    */
+
+    /* Stats */
+
+    #stats {
+        background: #2d333b;
+    }
+
+    #stats .list-group-item {
+        border-color: #4d4d4d;
+        background-color: transparent;
+    }
+
+    #stats a.list-group-item {
+        color: rgba(255, 255, 255, 0.6);
+        border-color: #4d4d4d;
+    }
+
+    #stats a.list-group-item:hover,
+    #stats a.list-group-item:focus {
+        border-color: #4d4d4d;
+        color: #fff;
+    }
+
+    #stats .list-group-item.active,
+    #stats .list-group-item.active:hover,
+    #stats .list-group-item.active:focus {
+        background: #373e47;
+        border-color: #4d4d4d;
+        color: #fff;
+    }
+
+    /* Navbar */
+
+    .navbar-default {
+        background: #2d333b;
+        border: none;
+    }
+
+    .navbar-default .navbar-brand {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+        .navbar-default .navbar-brand:hover {
+            color: rgba(255, 255, 255, 1);
+        }
+
+    .navbar-default .navbar-nav > li > a {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .navbar-default .navbar-nav > li > a:focus,
+    .navbar-default .navbar-nav > li > a:hover {
+        color: #ffffff;
+    }
+
+    .navbar-default .navbar-nav > .active > a,
+    .navbar-default .navbar-nav > .active > a:focus,
+    .navbar-default .navbar-nav > .active > a:hover {
+        background: #373e47;
+        color: #ffffff;
+    }
+
+    /* Paginator */
+
+    .paginator .btn {
+        background: #2d333b;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .paginator .btn.active,
+    .paginator  a.btn.btn-default.active {
+        background: rgba(29, 118, 219, 0.6);
+        color: #fff;
+    }
+
+    .btn-group .btn.active,
+    .btn-group .paginator  a.btn.btn-default.active {
+        background: rgba(29, 118, 219, 0.6);
+        color: #fff;
+    }
+
+    /* btn-default */
+
+    .btn-default {
+        background: #2d333b;
+        border-color: #4d4d4d;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .btn-default.active.focus, 
+    .btn-default.active:focus, 
+    .btn-default.active:hover, 
+    .btn-default:active.focus, 
+    .btn-default:active:focus, 
+    .btn-default:active:hover, 
+    .open>.dropdown-toggle.btn-default.focus, 
+    .open>.dropdown-toggle.btn-default:focus, 
+    .open>.dropdown-toggle.btn-default:hover,
+    .btn-default:hover,
+    .btn-default:focus,
+    .btn-default:active:focus,
+    a.btn.btn-default.active {
+        background: #373e47;
+        border-color: #4d4d4d;
+        color: rgba(255, 255, 255, 1);
+    }
+
+    .btn-default.disabled.focus, 
+    .btn-default.disabled:focus, 
+    .btn-default.disabled:hover, 
+    .btn-default[disabled].focus, 
+    .btn-default[disabled]:focus, 
+    .btn-default[disabled]:hover, 
+    fieldset[disabled] .btn-default.focus, 
+    fieldset[disabled] .btn-default:focus, 
+    fieldset[disabled] .btn-default:hover {
+        background: #2d333b;
+        border-color: #4d4d4d;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* btn-primary */
+
+    .btn-primary {
+        background-color: rgba(29, 118, 219, 0.6);
+        border: 1px solid rgba(29, 118, 219, 0.3);
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .btn-primary.active.focus, 
+    .btn-primary.active:focus, 
+    .btn-primary.active:hover, 
+    .btn-primary:active.focus, 
+    .btn-primary:active:focus, 
+    .btn-primary:active:hover, 
+    .open>.dropdown-toggle.btn-primary.focus, 
+    .open>.dropdown-toggle.btn-primary:focus, 
+    .open>.dropdown-toggle.btn-primary:hover,
+    .btn-primary:hover,
+    .btn-primary:focus,
+    .btn-primary:active:focus,
+    a.btn.btn-primary.active {
+        background-color: rgba(29, 118, 219, 0.8);
+        border: 1px solid rgba(29, 118, 219, 0.3);
+        color: rgba(255, 255, 255, 1);
+    }
+
+    .btn-primary.disabled.focus, 
+    .btn-primary.disabled:focus, 
+    .btn-primary.disabled:hover, 
+    .btn-primary[disabled].focus, 
+    .btn-primary[disabled]:focus, 
+    .btn-primary[disabled]:hover, 
+    fieldset[disabled] .btn-primary.focus, 
+    fieldset[disabled] .btn-primary:focus, 
+    fieldset[disabled] .btn-primary:hover {
+        background-color: rgba(29, 118, 219, 0.6);
+        border: 1px solid rgba(29, 118, 219, 0.3);
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* btn-death */
+
+    .btn-death {
+        background-color: rgba(229, 88, 79, 0.6);
+        border: 1px solid rgba(229, 88, 79, 0.3);
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .btn-death.active.focus, 
+    .btn-death.active:focus, 
+    .btn-death.active:hover, 
+    .btn-death:active.focus, 
+    .btn-death:active:focus, 
+    .btn-death:active:hover, 
+    .open>.dropdown-toggle.btn-death.focus, 
+    .open>.dropdown-toggle.btn-death:focus, 
+    .open>.dropdown-toggle.btn-death:hover,
+    .btn-death:hover,
+    .btn-death:focus,
+    .btn-death:active:focus,
+    a.btn.btn-death.active {
+        background-color: rgba(229, 88, 79, 0.8);
+        border: 1px solid rgba(229, 88, 79, 0.3);
+        color: rgba(255, 255, 255, 1);
+    }
+
+    .btn-death.disabled.focus, 
+    .btn-death.disabled:focus, 
+    .btn-death.disabled:hover, 
+    .btn-death[disabled].focus, 
+    .btn-death[disabled]:focus, 
+    .btn-death[disabled]:hover, 
+    fieldset[disabled] .btn-death.focus, 
+    fieldset[disabled] .btn-death:focus, 
+    fieldset[disabled] .btn-death:hover {
+        background-color: rgba(229, 88, 79, 0.6);
+        border: 1px solid rgba(229, 88, 79, 0.3);
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* btn-group */
+
+    /* Alerts */
+
+    .alert-info {
+        background-color: rgba(29, 118, 219, 0.1);
+        border-color: rgba(104, 167, 234, 0.3);
+        color: rgb(104, 167, 234);
+    }
+
+    .alert-warning {
+        background-color: rgba(251, 202, 4, 0.1);
+        border-color: rgba(250, 201, 5, 0.3);
+        color: rgb(250, 201, 5);
+    }
+
+    .alert-success {
+        background-color: rgba(87, 171, 90, 0.1);
+        border-color: rgba(87, 171, 90, 0.4);
+        color: rgba(87, 171, 90);
+    }
+
+    .alert-danger {
+        background-color: rgba(215, 58, 74, 0.1);
+        border-color: rgba(235, 156, 166, 0.3);
+        color: rgb(235, 156, 166);
+    }
+
+    /* Job Snippet */
+
+    .job-snippet {
+        background: #22272e;
+        border: 1px solid #4d4d4d;
+    }
+
+    .job-snippet-code code { 
+        color: #fff;
+    }
+
+    .job-snippet-code pre .comment {
+        color: #57ab5a;
+    }
+
+    .job-snippet-code pre .keyword {
+        color: #539bf5;
+    }
+
+    .job-snippet-code pre .string {
+        color: #e5534b;
+    }
+
+    .job-snippet-code pre .type {
+        color: rgb(43, 145, 175);
+    }
+
+    .job-snippet-code pre .xmldoc {
+        color: rgb(128, 128, 128);
+    }
+
+    .job-snippet-properties code {
+        color: #e5534b;
+    }
+
+    /* code */
+
+    pre code {
+        border: none;
+    }
+
+    code {
+        background-color: rgba(29, 118, 219, 0.1);
+        border: 1px solid rgba(104, 167, 234, 0.3);
+        color: rgb(104, 167, 234);
+    }
+
+    /* Stack Trace */
+
+    .stack-trace {
+        background: transparent;
+        border: 1px solid #4d4d4d;  
+        color: #fff; 
+    }
+
+    .st-type {
+        font-weight: bold;
+    }
+
+    .st-param-name {
+        color: #666;
+    }
+
+    .st-file {
+        color: #999;
+    }
+
+    .st-method {
+        color: #539bf5;
+        font-weight: bold;
+    }
+
+    .st-line {
+        color: #bb00bb;
+    }
+
+    /* Metric */
+
+    div.metric.metric-default {
+        border-color: #ddd;
+    }
+
+    div.metric-info,
+    span.metric-info {
+        color: #5bc0de;
+        border-color: #5bc0de;
+    }
+
+    span.metric-info.highlighted {
+        background-color: #5bc0de;
+    }
+
+    div.metric-warning,
+    span.metric-warning {
+        color: #f0ad4e;
+        border-color: #f0ad4e;
+    }
+
+    span.metric-warning.highlighted {
+        background-color: #f0ad4e;
+    }
+
+    div.metric-success,
+    span.metric-success {
+        color: #5cb85c;
+        border-color: #5cb85c;
+    }
+
+    span.metric-success.highlighted {
+        background-color: #5cb85c;
+    }
+
+    div.metric-danger,
+    span.metric-danger {
+        color: #d9534f;
+        border-color: #d9534f;
+    }
+
+    span.metric-danger.highlighted {
+        background-color: #d9534f;
+    }
+
+    /* State labels */
+
+    .label-state-success {
+        background-color: rgba(87, 171, 90, 0.1) !important;
+        border: 1px solid rgba(87, 171, 90, 0.4) !important;
+        color: rgba(87, 171, 90) !important;
+    }
+
+        a:hover .label-hover.label-state-success {
+            background-color: rgba(87, 171, 90, 0.4) !important;
+            color: rgba(87, 171, 90) !important;
+        }
+
+    .label-state-danger {
+        background-color: rgba(215, 58, 74, 0.1) !important;
+        border: 1px solid rgba(235, 156, 166, 0.3) !important;
+        color: rgb(235, 156, 166) !important;
+    }
+
+        a:hover .label-hover.label-state-danger {
+            background-color: rgba(215, 58, 74, 0.4) !important;
+            color: rgb(235, 156, 166) !important;
+        }
+
+    .label-state-warning {
+        background-color: rgba(251, 202, 4, 0.1) !important;
+        border: 1px solid rgba(250, 201, 5, 0.3) !important;
+        color: rgb(250, 201, 5) !important;
+    }
+
+        a:hover .label-hover.label-state-warning {
+            background-color: rgba(251, 202, 4, 0.4) !important;
+            color: rgb(250, 201, 5) !important;
+        }
+
+    .label-state-info {
+        background-color: rgba(29, 118, 219, 0.1) !important;
+        border: 1px solid rgba(104, 167, 234, 0.3) !important;
+        color: rgb(104, 167, 234) !important;
+    }
+
+        a:hover .label-hover.label-state-info {
+            background-color: rgba(29, 118, 219, 0.4) !important;
+            color: rgb(104, 167, 234) !important;
+        }
+
+    .label-state-inactive {
+        background-color:   
+        border: 1px solid rgba(204, 204, 204, 0.3) !important;
+        color: rgb(204, 204, 204) !important;
+    }
+
+        a:hover .label-hover.label-state-inactive {
+            background-color: rgba(204, 204, 204, 0.4) !important;
+            color: rgb(204, 204, 204) !important;
+        }
+
+    .label-state-active {
+        background-color: rgba(204, 204, 204, 0.1);
+        border: 1px solid rgba(204, 204, 204, 0.3) !important;
+        color: rgb(204, 204, 204) !important;
+    }
+
+        a:hover .label-hover.label-state-active {
+            background-color: rgba(204, 204, 204, 0.4) !important;
+            color: rgb(204, 204, 204) !important;
+        }
+
+    /* Common */
+
+    .table td.failed-job-details {
+        background-color: transparent;
+    }
+}

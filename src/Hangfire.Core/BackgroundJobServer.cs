@@ -194,9 +194,13 @@ namespace Hangfire
                 if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
             }
 
-            processes.Add(new Worker(_options.Queues, performer, stateChanger).UseBackgroundPool(_options.WorkerCount));
-            processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger).UseBackgroundPool(1));
-            processes.Add(new RecurringJobScheduler(factory, _options.SchedulePollingInterval, timeZoneResolver).UseBackgroundPool(1));
+            processes.Add(new Worker(_options.Queues, performer, stateChanger).UseBackgroundPool(_options.WorkerCount, _options.WorkerThreadConfigurationAction));
+
+            if (!_options.IsLightweightServer)
+            {
+                processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger).UseBackgroundPool(1));
+                processes.Add(new RecurringJobScheduler(factory, _options.SchedulePollingInterval, timeZoneResolver).UseBackgroundPool(1));
+            }
 
             return processes;
         }
@@ -213,7 +217,8 @@ namespace Hangfire
                 ServerTimeout = _options.ServerWatchdogOptions?.ServerTimeout ?? _options.ServerTimeout,
 #pragma warning restore 618
                 CancellationCheckInterval = _options.CancellationCheckInterval,
-                ServerName = _options.ServerName
+                ServerName = _options.ServerName,
+                ExcludeStorageProcesses = _options.IsLightweightServer
             };
         }
     }

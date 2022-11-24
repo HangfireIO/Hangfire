@@ -42,14 +42,18 @@ namespace Hangfire.States
             _innerStateMachine = innerStateMachine;
         }
 
+        public IStateMachine InnerStateMachine => _innerStateMachine;
+
         public IState ApplyState(ApplyStateContext initialContext)
         {
+            if (initialContext == null) throw new ArgumentNullException(nameof(initialContext));
+
             var filterInfo = GetFilters(initialContext.BackgroundJob.Job);
             var electFilters = filterInfo.ElectStateFilters;
             var applyFilters = filterInfo.ApplyStateFilters;
 
             // Electing a a state
-            var electContext = new ElectStateContext(initialContext);
+            var electContext = new ElectStateContext(initialContext, this);
 
             foreach (var filter in electFilters)
             {

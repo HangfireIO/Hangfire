@@ -45,20 +45,33 @@ namespace Hangfire
         [NotNull]
         public IStorageConnection Connection { get; }
 
-        public void SetJobParameter(string name, object value)
+        public void SetJobParameter([NotNull] string name, object value)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
             Connection.SetJobParameter(BackgroundJob.Id, name, SerializationHelper.Serialize(value, SerializationOption.User));
         }
 
-        public T GetJobParameter<T>(string name)
+        public T GetJobParameter<T>([NotNull] string name) => GetJobParameter<T>(name, allowStale: false);
+
+        public T GetJobParameter<T>([NotNull] string name, bool allowStale)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
             try
             {
-                return SerializationHelper.Deserialize<T>(Connection.GetJobParameter(BackgroundJob.Id, name), SerializationOption.User);
+                string value;
+
+                if (allowStale && BackgroundJob.ParametersSnapshot != null)
+                {
+                    BackgroundJob.ParametersSnapshot.TryGetValue(name, out value);
+                }
+                else
+                {
+                    value = Connection.GetJobParameter(BackgroundJob.Id, name);                
+                }
+
+                return SerializationHelper.Deserialize<T>(value, SerializationOption.User);
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
             {

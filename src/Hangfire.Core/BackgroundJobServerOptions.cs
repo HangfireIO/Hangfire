@@ -57,6 +57,13 @@ namespace Hangfire
         
         public string ServerName { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether storage instance will include only <see cref="Worker"/> and required
+        /// <see cref="ServerWatchdog"/> and <see cref="ServerJobCancellationWatcher"/> processes. No
+        /// storage-related processes or recurring/delayed job schedulers will be included.
+        /// </summary>
+        public bool IsLightweightServer { get; set; }
+
         public int WorkerCount
         {
             get { return _workerCount; }
@@ -177,5 +184,8 @@ namespace Hangfire
 
         [CanBeNull]
         public TaskScheduler TaskScheduler { get; set; }
+        
+        [CanBeNull]
+        public Action<Thread> WorkerThreadConfigurationAction { get; set; }
     }
 }

@@ -14,6 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
@@ -21,6 +22,35 @@ using Hangfire.States;
 
 namespace Hangfire
 {
+    /// <summary>
+    /// Provides extended methods for creating background jobs and changing
+    /// their states.
+    /// </summary>
+    public interface IBackgroundJobClientV2 : IBackgroundJobClient
+    {
+        /// <summary>
+        /// Gets a storage associated with the current background job client.
+        /// </summary>
+        [NotNull]
+        JobStorage Storage { get; }
+
+        /// <summary>
+        /// Creates a background job within the specified state and given job parameters.
+        /// </summary>
+        /// 
+        /// <param name="job">Job that should be processed in background.</param>
+        /// <param name="state">Initial state for a background job.</param>
+        /// <param name="parameters">Job parameters to create.</param>
+        /// <returns>Unique identifier of a created background job <i>-or-</i> 
+        ///  <see langword="null"/>, if it was not created.</returns>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="job"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="state"/> is null.</exception>
+        /// <exception cref="BackgroundJobClientException">Creation failed due to an exception.</exception>
+        [CanBeNull]
+        string Create([NotNull] Job job, [NotNull] IState state, [CanBeNull] IDictionary<string, object> parameters);
+    }
+
     /// <summary>
     /// Provides methods for creating background jobs and changing their states.
     /// </summary>

@@ -14,6 +14,8 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Data.Common;
+using System.Reflection;
 #if FEATURE_TRANSACTIONSCOPE
 using System.Transactions;
 #else
@@ -28,11 +30,12 @@ namespace Hangfire.SqlServer
         private string _schemaName;
         private TimeSpan _jobExpirationCheckInterval;
         private TimeSpan? _slidingInvisibilityTimeout;
+        private DbProviderFactory _sqlClientFactory;
 
         public SqlServerStorageOptions()
         {
-            QueuePollInterval = TimeSpan.FromSeconds(15);
-            SlidingInvisibilityTimeout = null;
+            QueuePollInterval = TimeSpan.Zero;
+            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5);
 #pragma warning disable 618
             InvisibilityTimeout = TimeSpan.FromMinutes(30);
 #pragma warning restore 618
@@ -45,6 +48,42 @@ namespace Hangfire.SqlServer
             DisableGlobalLocks = false;
             UsePageLocksOnDequeue = false;
             DeleteExpiredBatchSize = -1;
+            UseTransactionalAcknowledge = false;
+            UseRecommendedIsolationLevel = true;
+            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5);
+            TryAutoDetectSchemaDependentOptions = true;
+            _sqlClientFactory = GetDefaultSqlClientFactory();
+        }
+
+        private static DbProviderFactory GetDefaultSqlClientFactory()
+        {
+            var dbProviderFactoryTypes = new[]
+            {
+                "Microsoft.Data.SqlClient.SqlClientFactory, Microsoft.Data.SqlClient",
+                // Available in the .NET Framework GAC, requires Version + Culture + PublicKeyToken to be explicitly specified
+                "System.Data.SqlClient.SqlClientFactory, System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
+                "System.Data.SqlClient.SqlClientFactory, System.Data.SqlClient",
+            };
+
+            foreach (var dbProviderFactoryType in dbProviderFactoryTypes)
+            {
+                var providerFactoryType = Type.GetType(dbProviderFactoryType, throwOnError: false);
+                if (providerFactoryType != null)
+                {
+                    var instanceField = providerFactoryType.GetField("Instance");
+                    if (instanceField == null)
+                    {
+                        continue;
+                    }
+                    var instance = (DbProviderFactory)instanceField.GetValue(null);
+                    if (instance != null)
+                    {
+                        return instance;
+                    }
+                }
+            }
+
+            return null;
         }
 
         [Obsolete("TransactionIsolationLevel option is deprecated, please set UseRecommendedIsolationLevel instead. Will be removed in 2.0.0.")]
@@ -119,13 +158,15 @@ namespace Hangfire.SqlServer
 
         public Func<IDisposable> ImpersonationFunc { get; set; }
         public bool DisableGlobalLocks { get; set; }
+        
+        [Obsolete("This option is deprecated and doesn't change anything. You can safely remove it. Will be removed in 2.0.0.")]
         public bool UsePageLocksOnDequeue { get; set; }
         public bool UseRecommendedIsolationLevel { get; set; }
         public bool EnableHeavyMigrations { get; set; }
         public bool UseFineGrainedLocks { get; set; }
 
         /// <summary>
-        /// Gets or sets whether IGNORE_DUP_OPTION was applied to [Hash] and [Set] tables and so MERGE
+        /// Gets or sets whether IGNORE_DUP_KEY was applied to [Hash] and [Set] tables and so MERGE
         /// statements can be replaced by much more efficient INSERT/UPDATE pair. This option allows
         /// to avoid deadlocks related to SERIALIZABLE-level range locks without introducing transient
         /// errors due to concurrency.
@@ -138,5 +179,34 @@ namespace Hangfire.SqlServer
         /// enough, so expiration manager becomes the bottleneck.
         /// </summary>
         public int DeleteExpiredBatchSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to enable experimental feature of transactional acknowledge of completed
+        /// background jobs. In this case there will be less requests sent to SQL Server and better handling
+        /// of data loss when asynchronous replication is used. But additional blocking on the JobQueue table
+        /// is expected, since transaction commit requires an explicit Commit request to be sent. 
+        /// </summary>
+        public bool UseTransactionalAcknowledge { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="DbProviderFactory"/> for creating <c>SqlConnection</c> instances.
+        /// Defaults to either <c>System.Data.SqlClient.SqlClientFactory.Instance</c> or
+        /// <c>Microsoft.Data.SqlClient.SqlClientFactory</c> depending on which package reference exists
+        /// on the consuming project.
+        /// </summary>
+        public DbProviderFactory SqlClientFactory
+        {
+            get => _sqlClientFactory ?? throw new InvalidOperationException("Please add a NuGet package reference to either 'Microsoft.Data.SqlClient' or 'System.Data.SqlClient' in your application project. " +
+                                                                            "Hangfire.SqlServer supports both providers but let the consumer decide which one should be used.");
+            set => _sqlClientFactory = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        /// <summary>
+        /// Gets or sets whether to try automatically query for the current schema on application start
+        /// and enable <see cref="UseIgnoreDupKeyOption"/>, <see cref="DeleteExpiredBatchSize"/> and
+        /// <see cref="DisableGlobalLocks"/> options depending on the current schema version. When storage
+        /// is inaccessible on startup, default values will be used for those options.
+        /// </summary>
+        public bool TryAutoDetectSchemaDependentOptions { get; set; }
     }
 }

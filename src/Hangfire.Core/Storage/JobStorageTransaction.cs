@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
+using Hangfire.Common;
 using Hangfire.States;
 
 namespace Hangfire.Storage
@@ -81,6 +82,26 @@ namespace Hangfire.Storage
         }
 
         public virtual void RemoveSet([NotNull] string key)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual void AcquireDistributedLock([NotNull] string resource, TimeSpan timeout)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual void RemoveFromQueue([NotNull] IFetchedJob fetchedJob)
+        {
+            throw new NotSupportedException();
+        }
+        
+        public virtual void SetJobParameter([NotNull] string jobId, [NotNull] string name, [CanBeNull] string value)
+        {
+            throw new NotSupportedException();
+        }
+        
+        public virtual string CreateJob([NotNull] Job job, [NotNull] IDictionary<string, string> parameters, TimeSpan? expireIn)
         {
             throw new NotSupportedException();
         }

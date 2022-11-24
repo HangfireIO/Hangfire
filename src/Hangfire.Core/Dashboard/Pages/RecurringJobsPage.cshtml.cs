@@ -96,7 +96,7 @@ WriteLiteral("\r\n");
 
     Pager pager = null;
 
-	using (var connection = Storage.GetConnection())
+	using (var connection = Storage.GetReadOnlyConnection())
 	{
 	    var storageConnection = connection as JobStorageConnection;
 	    if (storageConnection != null)

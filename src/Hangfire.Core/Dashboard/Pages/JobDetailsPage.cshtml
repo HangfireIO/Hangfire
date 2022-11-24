@@ -14,6 +14,7 @@
 @{
     var monitor = Storage.GetMonitoringApi();
     var job = monitor.JobDetails(JobId);
+    var dto = job != null ? new JobDetailsRendererDto(this, JobId, job) : null;
     
     string title = null;
 
@@ -76,6 +77,10 @@
                 <div class="job-snippet">
                     <div class="job-snippet-code">
                         <pre><code><span class="comment">// @Strings.JobDetailsPage_JobId: @Html.JobId(JobId.ToString(), false)</span>
+@if (job.Job.Queue != null)
+{
+<span class="comment">// @Strings.QueuesPage_Table_Queue: @job.Job.Queue</span>
+}
 @JobMethodCallRenderer.Render(job.Job)
 </code></pre>
                     </div>
@@ -142,7 +147,7 @@
                             {
                                 JobData jobData;
 
-                                using (var connection = Storage.GetConnection())
+                                using (var connection = Storage.GetReadOnlyConnection())
                                 {
                                     jobData = connection.GetJobData(continuation.JobId);
                                 }
@@ -165,6 +170,23 @@
                             </tbody>
                         </table>
                     </div>
+                }
+            }
+
+            if (dto != null)
+            {
+                foreach (var renderer in JobDetailsRenderer.GetRenderers())
+                {
+                    try
+                    {
+                        @renderer.Item2(dto)
+                    }
+                    catch (Exception ex)
+                    {
+                        <h4 class="exception-type">@ex.GetType().Name</h4>
+                        <p class="text-muted">@ex.Message</p>
+                        <pre class="stack-trace">@Html.StackTrace(ex.StackTrace)</pre>
+                    }
                 }
             }
 

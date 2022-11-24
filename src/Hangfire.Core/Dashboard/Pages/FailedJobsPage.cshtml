@@ -131,9 +131,10 @@
                                         <td colspan="2" class="failed-job-details">
                                             @{
                                                 var displayCss = index++ == 0 ? "display-block" : null;
+                                                var serverId = job.Value.StateData != null && job.Value.StateData.ContainsKey("ServerId") ? $" ({Html.ServerId(job.Value.StateData["ServerId"])})" : null;
                                             }
                                             <div class="expandable @displayCss">
-                                                <h4>@job.Value.ExceptionType</h4>
+                                                <h4>@job.Value.ExceptionType@Html.Raw(serverId)</h4>
                                                 <p class="text-muted">
                                                     @job.Value.ExceptionMessage
                                                 </p>

@@ -249,7 +249,16 @@ namespace Hangfire.States
                         $"`{typeof (Handler).FullName}` state handler can be registered only for the Enqueued state.");
                 }
 
-                transaction.AddToQueue(enqueuedState.Queue, context.BackgroundJob.Id);
+                if (context.BackgroundJob.Job?.Queue != null && !context.Storage.HasFeature("Job.Queue"))
+                {
+                    throw new NotSupportedException("Current storage doesn't support specifying queues directly for a specific job. Please use the QueueAttribute instead.");
+                }
+
+                transaction.AddToQueue(
+                    context.BackgroundJob.Job?.Queue == null || !DefaultQueue.Equals(enqueuedState.Queue, StringComparison.OrdinalIgnoreCase)
+                        ? enqueuedState.Queue
+                        : context.BackgroundJob.Job.Queue,
+                    context.BackgroundJob.Id);
             }
 
             public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)

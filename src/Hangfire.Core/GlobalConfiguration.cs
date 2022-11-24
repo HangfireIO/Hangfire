@@ -26,6 +26,7 @@ namespace Hangfire
     {
         Version_110 = 110,
         Version_170 = 170,
+        Version_180 = 180,
     }
 
     public class GlobalConfiguration : IGlobalConfiguration

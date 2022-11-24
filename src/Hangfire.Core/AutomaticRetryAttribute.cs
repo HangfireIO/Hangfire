@@ -15,6 +15,7 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
@@ -97,6 +98,7 @@ namespace Hangfire
         private Func<long, int> _delayInSecondsByAttemptFunc;
         private AttemptsExceededAction _onAttemptsExceeded;
         private bool _logEvents;
+        private Type[] _onlyOn;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AutomaticRetryAttribute"/>
@@ -184,6 +186,18 @@ namespace Hangfire
             set { lock (_lockObject) { _logEvents = value; } }
         }
 
+        /// <summary>
+        /// Gets a sets an array of exception types that will be used to determine whether
+        /// automatic retry logic should be attempted to run. By default it will be run on
+        /// any exception, but this property allow to reduce it only to some specific
+        /// exception types and their subtypes.
+        /// </summary>
+        public Type[] OnlyOn
+        {
+            get { lock (_lockObject) { return _onlyOn; } }
+            set { lock (_lockObject) { _onlyOn = value; } }
+        }
+
         /// <inheritdoc />
         public void OnStateElection(ElectStateContext context)
         {
@@ -194,7 +208,24 @@ namespace Hangfire
                 return;
             }
 
-            var retryAttempt = context.GetJobParameter<int>("RetryCount") + 1;
+            if (_onlyOn != null && _onlyOn.Length > 0)
+            {
+                var exceptionType = failedState.Exception.GetType();
+                var satisfied = false;
+
+                foreach (var onlyOn in _onlyOn)
+                {
+                    if (onlyOn.GetTypeInfo().IsAssignableFrom(exceptionType.GetTypeInfo()))
+                    {
+                        satisfied = true;
+                        break;
+                    }
+                }
+
+                if (!satisfied) return;
+            }
+
+            var retryAttempt = context.GetJobParameter<int>("RetryCount", allowStale: true) + 1;
 
             if (retryAttempt <= Attempts)
             {
@@ -289,7 +320,7 @@ namespace Hangfire
         /// <param name="failedState">Object which contains details about the current failed state.</param>
         private void TransitionToDeleted(ElectStateContext context, FailedState failedState)
         {
-            context.CandidateState = new DeletedState
+            context.CandidateState = new DeletedState(new ExceptionInfo(failedState.Exception))
             {
                 Reason = Attempts > 0
                     ? "Exceeded the maximum number of retry attempts."

@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
+using Hangfire.Common;
+using Hangfire.Dashboard;
 using Hangfire.SqlServer;
+using Hangfire.States;
 using Microsoft.Owin.Hosting;
 
 namespace ConsoleSample
@@ -14,38 +18,50 @@ namespace ConsoleSample
         {
             GlobalConfiguration.Configuration
                 .UseColouredConsoleLogProvider()
-                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
                 .UseSimpleAssemblyNameTypeSerializer()
+                .UseIgnoredAssemblyVersionTypeResolver()
                 .UseRecommendedSerializerSettings()
                 .UseResultsInContinuations()
+                .UseDashboardMetrics(SqlServerStorage.SchemaVersion, SqlServerStorage.TotalConnections)
+                .UseJobDetailsRenderer(10, dto => throw new InvalidOperationException())
+                .UseJobDetailsRenderer(10, dto => new NonEscapedString("<h4>Hello, world!</h4>"))
+                .UseDefaultCulture(CultureInfo.CurrentCulture)
                 .UseSqlServerStorage(@"Server=.\;Database=Hangfire.Sample;Trusted_Connection=True;", new SqlServerStorageOptions
                 {
-                    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-                    QueuePollInterval = TimeSpan.Zero,
-                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(1),
-                    UseRecommendedIsolationLevel = true,
-                    UsePageLocksOnDequeue = true,
-                    DisableGlobalLocks = true,
                     EnableHeavyMigrations = true
                 });
+
+            Console.WriteLine(SerializationHelper.Serialize(new ExceptionInfo(new OperationCanceledException()), SerializationOption.Internal));
 
             var backgroundJobs = new BackgroundJobClient();
             backgroundJobs.RetryAttempts = 5;
 
+            NewFeatures.Test(throwException: false);
+            NewFeatures.Test(throwException: true);
+
             var job1 = BackgroundJob.Enqueue<Services>(x => x.WriteIndex(0));
-            var job2 = BackgroundJob.ContinueJobWith<Services>(job1, x => x.WriteIndex(null));
-            var job3 = BackgroundJob.ContinueJobWith<Services>(job2, x => x.WriteIndex(null));
-            var job4 = BackgroundJob.ContinueJobWith<Services>(job3, x => x.WriteIndex(null));
-            var job5 = BackgroundJob.ContinueJobWith<Services>(job4, x => x.WriteIndex(null));
+            var job2 = BackgroundJob.ContinueJobWith<Services>(job1, "default",  x => x.WriteIndex(default));
+            var job3 = BackgroundJob.ContinueJobWith<Services>(job2, "critical", x => x.WriteIndex(default));
+            var job4 = BackgroundJob.ContinueJobWith<Services>(job3, "default",  x => x.WriteIndex(default));
+            var job5 = BackgroundJob.ContinueJobWith<Services>(job4, "critical", x => x.WriteIndex(default));
 
             RecurringJob.AddOrUpdate("seconds", () => Console.WriteLine("Hello, seconds!"), "*/15 * * * * *");
-            RecurringJob.AddOrUpdate(() => Console.WriteLine("Hello, world!"), Cron.Minutely);
+            RecurringJob.AddOrUpdate("Console.WriteLine", () => Console.WriteLine("Hello, world!"), Cron.Minutely);
             RecurringJob.AddOrUpdate("hourly", () => Console.WriteLine("Hello"), "25 15 * * *");
             RecurringJob.AddOrUpdate("neverfires", () => Console.WriteLine("Can only be triggered"), "0 0 31 2 *");
 
-            RecurringJob.AddOrUpdate("Hawaiian", () => Console.WriteLine("Hawaiian"), "15 08 * * *", TimeZoneInfo.FindSystemTimeZoneById("Hawaiian Standard Time"));
-            RecurringJob.AddOrUpdate("UTC", () => Console.WriteLine("UTC"), "15 18 * * *");
-            RecurringJob.AddOrUpdate("Russian", () => Console.WriteLine("Russian"), "15 21 * * *", TimeZoneInfo.Local);
+            RecurringJob.AddOrUpdate("Hawaiian", () => Console.WriteLine("Hawaiian"), "15 08 * * *", new RecurringJobOptions
+            {
+                TimeZone = TimeZoneInfo.FindSystemTimeZoneById("Hawaiian Standard Time")
+            });
+
+            RecurringJob.AddOrUpdate("UTC", "critical", () => Console.WriteLine("UTC"), "15 18 * * *");
+
+            RecurringJob.AddOrUpdate("Russian", () => Console.WriteLine("Russian"), "15 21 * * *", new RecurringJobOptions
+            {
+                TimeZone = TimeZoneInfo.Local
+            });
 
             using (WebApp.Start<Startup>("http://localhost:12345"))
             {
@@ -170,7 +186,7 @@ namespace ConsoleSample
                     {
                         var seconds = int.Parse(command.Substring(2));
                         var number = count++;
-                        BackgroundJob.Schedule<Services>(x => x.Random(number), TimeSpan.FromSeconds(seconds));
+                        BackgroundJob.Schedule<Services>("default", x => x.Random(number), TimeSpan.FromSeconds(seconds));
                     }
 
                     if (command.StartsWith("cancelable", StringComparison.OrdinalIgnoreCase))
@@ -182,10 +198,10 @@ namespace ConsoleSample
                     if (command.StartsWith("delete", StringComparison.OrdinalIgnoreCase))
                     {
                         var workCount = int.Parse(command.Substring(7));
+                        var client = new BackgroundJobClient();
                         for (var i = 0; i < workCount; i++)
                         {
-                            var jobId = BackgroundJob.Enqueue<Services>(x => x.EmptyDefault());
-                            BackgroundJob.Delete(jobId);
+                            client.Create<Services>(x => x.EmptyDefault(), new DeletedState(new ExceptionInfo(new OperationCanceledException())));
                         }
                     }
 
@@ -196,14 +212,9 @@ namespace ConsoleSample
                             var workCount = int.Parse(command.Substring(5));
                             Parallel.For(0, workCount, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, i =>
                             {
-                                if (i % 2 == 0)
-                                {
-                                    BackgroundJob.Enqueue<Services>(x => x.EmptyCritical());
-                                }
-                                else
-                                {
-                                    BackgroundJob.Enqueue<Services>(x => x.EmptyDefault());
-                                }
+                                BackgroundJob.Enqueue<Services>(
+                                    i % 2 == 0 ? "critical" : "default",
+                                    x => x.EmptyDefault());
                             });
                             Console.WriteLine("Jobs enqueued.");
                         }

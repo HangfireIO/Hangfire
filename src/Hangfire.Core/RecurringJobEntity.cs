@@ -102,6 +102,19 @@ namespace Hangfire
                 CreatedAt = now;
             }
 
+            if (recurringJob.TryGetValue("Misfire", out var misfireStr))
+            {
+                MisfireHandling = (MisfireHandlingMode)Enum.Parse(typeof(MisfireHandlingMode), misfireStr);
+                if (!Enum.IsDefined(typeof(MisfireHandlingMode), MisfireHandling))
+                {
+                    throw new NotSupportedException(String.Format("Misfire option '{0}' is not supported.", (int)MisfireHandling));
+                }
+            }
+            else
+            {
+                MisfireHandling = MisfireHandlingMode.Relaxed;
+            }
+
             if (recurringJob.ContainsKey("V") && !String.IsNullOrWhiteSpace(recurringJob["V"]))
             {
                 Version = int.Parse(recurringJob["V"], CultureInfo.InvariantCulture);
@@ -120,6 +133,7 @@ namespace Hangfire
         public string Cron { get; set; }
         public TimeZoneInfo TimeZone { get; set; }
         public Job Job { get; set; }
+        public MisfireHandlingMode MisfireHandling { get; set; }
 
         public DateTime CreatedAt { get; }
         public DateTime? NextExecution { get; }
@@ -187,7 +201,7 @@ namespace Hangfire
             changedFields = result;
         }
 
-        public IReadOnlyDictionary<string, string> GetChangedFields(out DateTime? nextExecution)
+        private IReadOnlyDictionary<string, string> GetChangedFields(out DateTime? nextExecution)
         {
             var result = new Dictionary<string, string>();
 
@@ -244,6 +258,13 @@ namespace Hangfire
             if ((_recurringJob.ContainsKey("LastJobId") ? _recurringJob["LastJobId"] : null) != LastJobId)
             {
                 result.Add("LastJobId", LastJobId ?? String.Empty);
+            }
+
+            var misfireHandlingValue = MisfireHandling.ToString("D");
+            if ((!_recurringJob.ContainsKey("Misfire") && MisfireHandling != MisfireHandlingMode.Relaxed) ||
+                (_recurringJob.ContainsKey("Misfire") && _recurringJob["Misfire"] != misfireHandlingValue))
+            {
+                result.Add("Misfire", misfireHandlingValue);
             }
 
             if (!_recurringJob.ContainsKey("V"))

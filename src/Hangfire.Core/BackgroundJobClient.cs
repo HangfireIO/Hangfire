@@ -14,6 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
@@ -43,7 +44,7 @@ namespace Hangfire
     /// </remarks>
     /// 
     /// <threadsafety static="true" instance="true" />
-    public class BackgroundJobClient : IBackgroundJobClient
+    public class BackgroundJobClient : IBackgroundJobClient, IBackgroundJobClientV2
     {
         private readonly JobStorage _storage;
         private readonly IBackgroundJobFactory _factory;
@@ -115,6 +116,9 @@ namespace Hangfire
             _factory = factory;
         }
 
+        /// <inheritdoc />
+        public JobStorage Storage => _storage;
+
         public int RetryAttempts
         {
             get
@@ -136,7 +140,10 @@ namespace Hangfire
         }
 
         /// <inheritdoc />
-        public string Create(Job job, IState state)
+        public string Create(Job job, IState state) => Create(job, state, null);
+
+        /// <inheritdoc />
+        public string Create(Job job, IState state, IDictionary<string, object> parameters)
         {
             if (job == null) throw new ArgumentNullException(nameof(job));
             if (state == null) throw new ArgumentNullException(nameof(state));
@@ -145,7 +152,7 @@ namespace Hangfire
             {
                 using (var connection = _storage.GetConnection())
                 {
-                    var context = new CreateContext(_storage, connection, job, state);
+                    var context = new CreateContext(_storage, connection, job, state, parameters);
                     var backgroundJob = _factory.Create(context);
 
                     return backgroundJob?.Id;

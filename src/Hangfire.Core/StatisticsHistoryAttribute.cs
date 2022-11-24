@@ -49,6 +49,16 @@ namespace Hangfire
                     $"stats:failed:{DateTime.UtcNow.ToString("yyyy-MM-dd-HH")}",
                     TimeSpan.FromDays(1));
             }
+            else if (context.CandidateState is DeletedState)
+            {
+                context.Transaction.IncrementCounter(
+                    $"stats:deleted:{DateTime.UtcNow.ToString("yyyy-MM-dd")}",
+                    DateTime.UtcNow.AddMonths(1) - DateTime.UtcNow);
+
+                context.Transaction.IncrementCounter(
+                    $"stats:deleted:{DateTime.UtcNow.ToString("yyyy-MM-dd-HH")}",
+                    TimeSpan.FromDays(1));
+            }
         }
     }
 }

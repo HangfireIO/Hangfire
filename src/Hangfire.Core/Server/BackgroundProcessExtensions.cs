@@ -91,7 +91,7 @@ namespace Hangfire.Server
             return UseBackgroundPool(
                 process,
                 maxConcurrency,
-                (threadName, threadStart) => DefaultThreadFactory(threadCount, threadName, threadStart));
+                (threadName, threadStart) => DefaultThreadFactory(threadCount, threadName, threadStart, null));
         }
 
         public static IBackgroundProcessDispatcherBuilder UseBackgroundPool(

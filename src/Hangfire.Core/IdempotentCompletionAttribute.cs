@@ -30,7 +30,7 @@ namespace Hangfire
         {
             if (String.IsNullOrEmpty(context.CurrentState)) return;
 
-            var serializedState = context.GetJobParameter<string>("Completion");
+            var serializedState = context.GetJobParameter<string>("Completion", allowStale: true);
 
             if (!String.IsNullOrEmpty(serializedState))
             {

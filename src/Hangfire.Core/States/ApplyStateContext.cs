@@ -14,7 +14,9 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using Hangfire.Annotations;
+using Hangfire.Common;
 using Hangfire.Profiling;
 using Hangfire.Storage;
 
@@ -27,8 +29,9 @@ namespace Hangfire.States
         public ApplyStateContext(
             [NotNull] IWriteOnlyTransaction transaction, 
             [NotNull] ElectStateContext context)
-            : this(context.Storage, context.Connection, transaction, context.BackgroundJob, context.CandidateState, context.CurrentState, context.Profiler)
+            : this(context.Storage, context.Connection, transaction, context.BackgroundJob, context.CandidateState, context.CurrentState, context.Profiler, context.StateMachine, context.CustomData != null ? new Dictionary<string, object>(context.CustomData) : null)
         {
+            // TODO: Add explicit JobExpirationTimeout parameter in 2.0, because it's unclear it isn't preserved
         }
 
         public ApplyStateContext(
@@ -38,7 +41,7 @@ namespace Hangfire.States
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IState newState,
             [CanBeNull] string oldStateName)
-            : this(storage, connection, transaction, backgroundJob, newState, oldStateName, EmptyProfiler.Instance)
+            : this(storage, connection, transaction, backgroundJob, newState, oldStateName, EmptyProfiler.Instance, null)
         {
         }
 
@@ -49,23 +52,20 @@ namespace Hangfire.States
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IState newState, 
             [CanBeNull] string oldStateName,
-            [NotNull] IProfiler profiler)
+            [NotNull] IProfiler profiler,
+            [CanBeNull] IStateMachine stateMachine,
+            [CanBeNull] IReadOnlyDictionary<string, object> customData = null)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
-            if (connection == null) throw new ArgumentNullException(nameof(connection));
-            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
-            if (backgroundJob == null) throw new ArgumentNullException(nameof(backgroundJob));
-            if (newState == null) throw new ArgumentNullException(nameof(newState));
-            
-            BackgroundJob = backgroundJob;
-
-            Storage = storage;
-            Connection = connection;
-            Transaction = transaction;
+            BackgroundJob = backgroundJob ?? throw new ArgumentNullException(nameof(backgroundJob));
+            Storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            Transaction = transaction ?? throw new ArgumentNullException(nameof(transaction));
+            NewState = newState ?? throw new ArgumentNullException(nameof(newState));
             OldStateName = oldStateName;
-            NewState = newState;
+            Profiler = profiler ?? throw new ArgumentNullException(nameof(profiler));
+            StateMachine = stateMachine;
+            CustomData = customData;
             JobExpirationTimeout = storage.JobExpirationTimeout;
-            Profiler = profiler;
         }
 
         [NotNull]
@@ -89,5 +89,39 @@ namespace Hangfire.States
 
         [NotNull]
         internal IProfiler Profiler { get; }
+
+        [CanBeNull]
+        public IReadOnlyDictionary<string, object> CustomData { get; }
+
+        [CanBeNull]
+        public IStateMachine StateMachine { get; }
+
+        public T GetJobParameter<T>([NotNull] string name) => GetJobParameter<T>(name, allowStale: false);
+
+        public T GetJobParameter<T>([NotNull] string name, bool allowStale)
+        {
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+
+            try
+            {
+                string value;
+
+                if (allowStale && BackgroundJob.ParametersSnapshot != null)
+                {
+                    BackgroundJob.ParametersSnapshot.TryGetValue(name, out value);
+                }
+                else
+                {
+                    value = Connection.GetJobParameter(BackgroundJob.Id, name);                
+                }
+
+                return SerializationHelper.Deserialize<T>(value, SerializationOption.User);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    $"Could not get a value of the job parameter `{name}`. See inner exception for details.", ex);
+            }
+        }
     }
 }

@@ -826,7 +826,7 @@ select scope_identity() as Id";
             }
             finally
             {
-                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = OFF)"), useMicrosoftDataSqlClient);
+                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useMicrosoftDataSqlClient);
             }
         }
 
@@ -861,7 +861,7 @@ select scope_identity() as Id";
             }
             finally
             {
-                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = OFF)"), useMicrosoftDataSqlClient);
+                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useMicrosoftDataSqlClient);
             }
         }
 
@@ -870,18 +870,25 @@ select scope_identity() as Id";
         [InlineData(true, false), InlineData(true, true)]
         public void AddToSet_WithIgnoreDupKeyOption_FailsToUpdateExistingValue_WhenIgnoreDupKeyOptionWasNotSet(bool useBatching, bool useMicrosoftDataSqlClient)
         {
-            UseConnection(sql =>
+            try
             {
-                sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = OFF)");
-                sql.Execute($"insert into [{Constants.DefaultSchema}].[Set] ([Key], Value, Score) VALUES (N'key1', N'value1', 1.2)");
+                UseConnection(sql =>
+                {
+                    sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = OFF)");
+                    sql.Execute($"insert into [{Constants.DefaultSchema}].[Set] ([Key], Value, Score) VALUES (N'key1', N'value1', 1.2)");
 
-                var exception = Assert.ThrowsAny<DbException>(() =>
-                    Commit(x =>
-                        x.AddToSet("key1", "value1"),
-                        useMicrosoftDataSqlClient, useBatching, options => options.UseIgnoreDupKeyOption = true));
+                    var exception = Assert.ThrowsAny<DbException>(() =>
+                        Commit(x => 
+                            x.AddToSet("key1", "value1"),
+                            useMicrosoftDataSqlClient, useBatching, options => options.UseIgnoreDupKeyOption = true));
 
-                Assert.Contains("Violation of PRIMARY KEY", exception.Message);
-            }, useMicrosoftDataSqlClient);
+                    Assert.Contains("Violation of PRIMARY KEY", exception.Message);
+                }, useMicrosoftDataSqlClient);
+            }
+            finally
+            {
+                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useMicrosoftDataSqlClient);
+            }
         }
 
         [Theory, CleanDatabase]
@@ -1427,7 +1434,7 @@ select scope_identity() as Id";
             }
             finally
             {
-                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = OFF)"), useMicrosoftDataSqlClient);
+                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useMicrosoftDataSqlClient);
             }
         }
 
@@ -1467,7 +1474,7 @@ select scope_identity() as Id";
             }
             finally
             {
-                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = OFF)"), useMicrosoftDataSqlClient);
+                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useMicrosoftDataSqlClient);
             }
         }
 
@@ -1476,19 +1483,26 @@ select scope_identity() as Id";
         [InlineData(true, false), InlineData(true, true)]
         public void SetRangeInHash_WithIgnoreDupKeyOption_FailsToUpdateExistingValue_WhenIgnoreDupKeyOptionWasNotSet(bool useBatching, bool useMicrosoftDataSqlClient)
         {
-            UseConnection(sql =>
+            try
             {
-                sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = OFF)");
-                sql.Execute($"insert into [{Constants.DefaultSchema}].Hash([Key], Field, Value) VALUES (N'some-hash', N'key', N'value1')");
+                UseConnection(sql =>
+                {
+                    sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = OFF)");
+                    sql.Execute($"insert into [{Constants.DefaultSchema}].Hash([Key], Field, Value) VALUES (N'some-hash', N'key', N'value1')");
 
-                var exception = Assert.ThrowsAny<DbException>(() =>
-                    Commit(x => x.SetRangeInHash("some-hash", new Dictionary<string, string>
-                    {
-                        { "key", "value2" }
-                    }), useMicrosoftDataSqlClient, useBatching, options => options.UseIgnoreDupKeyOption = true));
+                    var exception = Assert.ThrowsAny<DbException>(() =>
+                        Commit(x => x.SetRangeInHash("some-hash", new Dictionary<string, string>
+                        {
+                            { "key", "value2" }
+                        }), useMicrosoftDataSqlClient, useBatching, options => options.UseIgnoreDupKeyOption = true));
 
-                Assert.Contains("Violation of PRIMARY KEY", exception.Message);
-            }, useMicrosoftDataSqlClient);
+                    Assert.Contains("Violation of PRIMARY KEY", exception.Message);
+                }, useMicrosoftDataSqlClient);
+            }
+            finally
+            {
+                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useMicrosoftDataSqlClient);
+            }
         }
 
         [Theory, CleanDatabase]
@@ -1635,7 +1649,7 @@ select scope_identity() as Id";
             }
             finally
             {
-                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = OFF)"), useMicrosoftDataSqlClient);
+                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useMicrosoftDataSqlClient);
             }
         }
 

@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Logging;
@@ -149,19 +150,41 @@ namespace Hangfire.Server
             {
                 var jobsProcessed = 0;
 
-                if (IsBatchingAvailable(connection))
-                {
-                    var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
-                    var jobIds = ((JobStorageConnection)connection).GetFirstByLowestScoreFromSet("schedule", 0, timestamp, BatchSize);
+                var now = !context.Storage.HasFeature("Connection.GetUtcDateTime")
+                    ? DateTime.UtcNow
+                    : ((JobStorageConnection)connection).GetUtcDateTime();
 
-                    if (jobIds != null)
+                if (IsBatchingAvailable(context.Storage, connection))
+                {
+                    var timestamp = JobHelper.ToTimestamp(now);
+                    var entries = ((JobStorageConnection)connection).GetFirstByLowestScoreFromSet("schedule", 0, timestamp, BatchSize);
+                    var toBeEnqueued = new List<Tuple<string, int>>();
+
+                    if (entries != null)
                     {
-                        foreach (var jobId in jobIds)
+                        foreach (var entry in entries)
                         {
                             if (context.IsStopping) break;
 
-                            EnqueueBackgroundJob(context, connection, jobId);
+                            var colonIndex = entry.IndexOf(':');
+
+                            if (colonIndex < 0) EnqueueBackgroundJob(context, connection, entry);
+                            else toBeEnqueued.Add(Tuple.Create(entry, colonIndex));
+
                             jobsProcessed++;
+                        }
+
+                        if (toBeEnqueued.Count > 0)
+                        {
+                            using (var transaction = connection.CreateWriteTransaction())
+                            {
+                                foreach (var tuple in toBeEnqueued)
+                                {
+                                    EnqueueEntry(tuple.Item1, tuple.Item2, transaction);
+                                }
+
+                                transaction.Commit();
+                            }
                         }
                     }
                 }
@@ -171,18 +194,43 @@ namespace Hangfire.Server
                     {
                         if (context.IsStopping) break;
 
-                        var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
+                        var timestamp = JobHelper.ToTimestamp(now);
 
-                        var jobId = connection.GetFirstByLowestScoreFromSet("schedule", 0, timestamp);
-                        if (jobId == null) break;
+                        var entry = connection.GetFirstByLowestScoreFromSet("schedule", 0, timestamp);
+                        if (entry == null) break;
 
-                        EnqueueBackgroundJob(context, connection, jobId);
+                        var colonIndex = entry.IndexOf(':');
+
+                        if (colonIndex < 0)
+                        {
+                            EnqueueBackgroundJob(context, connection, entry);
+                        }
+                        else
+                        {
+                            using (var transaction = connection.CreateWriteTransaction())
+                            {
+                                EnqueueEntry(entry, colonIndex, transaction);
+                                transaction.Commit();
+                            }
+                        }
+
                         jobsProcessed++;
                     }
                 }
 
                 return jobsProcessed;
             });
+        }
+
+        private static void EnqueueEntry(string entry, int colonIndex, IWriteOnlyTransaction transaction)
+        {
+            if (colonIndex < 0) throw new ArgumentOutOfRangeException(nameof(colonIndex));
+
+            var queue = entry.Substring(0, colonIndex);
+            var jobId = entry.Substring(colonIndex + 1);
+
+            transaction.RemoveFromSet("schedule", entry);
+            transaction.AddToQueue(queue, jobId);
         }
 
         private void EnqueueBackgroundJob(BackgroundProcessContext context, IStorageConnection connection, string jobId)
@@ -201,7 +249,8 @@ namespace Hangfire.Server
                         new [] { ScheduledState.StateName },
                         disableFilters: false,
                         context.StoppingToken,
-                        _profiler));
+                        _profiler,
+                        context.ServerId));
 
                     if (appliedState == null && connection.GetJobData(jobId) == null)
                     {
@@ -241,18 +290,22 @@ namespace Hangfire.Server
                 context.Storage,
                 connection,
                 jobId,
-                new FailedState(exception)
+                new FailedState(exception, context.ServerId)
                 {
                     Reason = $"Failed to change state to the '{EnqueuedState.StateName}' one due to an exception after {MaxStateChangeAttempts} retry attempts"
                 },
                 new[] { ScheduledState.StateName },
                 disableFilters: true,
                 context.StoppingToken,
-                _profiler));
+                _profiler,
+                context.ServerId));
         }
 
-        private bool IsBatchingAvailable(IStorageConnection connection)
+        // TODO Use new HasFeature method if available to avoid exceptions
+        private bool IsBatchingAvailable(JobStorage storage, IStorageConnection connection)
         {
+            if (storage.HasFeature("BatchedGetFirstByLowestScoreFromSet")) return true;
+
             return _isBatchingAvailableCache.GetOrAdd(
                 connection.GetType(),
                 type =>

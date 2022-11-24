@@ -60,6 +60,16 @@ namespace Hangfire.Storage
             throw new NotSupportedException();
         }
 
+        public virtual KeyValuePair<string, long>[] GetSetCount([NotNull] string[] keys, int limit)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual bool SetContains([NotNull] string key, [NotNull] string value)
+        {
+            throw new NotSupportedException();
+        }
+
         public virtual List<string> GetRangeFromSet([NotNull] string key, int startingFrom, int endingAt)
         {
             throw new NotSupportedException();
@@ -115,5 +125,10 @@ namespace Hangfire.Storage
         {
             throw new NotSupportedException();
         }
+
+        public virtual DateTime GetUtcDateTime()
+        {
+            throw new NotSupportedException();
+        } 
     }
 }

@@ -14,6 +14,9 @@
     <copyright>Copyright © 2014-2022 Hangfire OÜ</copyright>
     <tags>Hangfire SqlServer MSMQ</tags>
     <releaseNotes>https://www.hangfire.io/blog/
+
+1.8.0-rc1
+• Breaking – Dropped `NET45` platform target in favor of `NET451` target to support Visual Studio 2022.
     
 1.6.3
 • Fixed – Prevent MSMQ transactions from timing out after 1 minute of processing.
@@ -40,9 +43,9 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="net45\Hangfire.SqlServer.Msmq.dll" target="lib\net45" />
-    <file src="net45\Hangfire.SqlServer.Msmq.xml" target="lib\net45" />
-    <file src="net45\Hangfire.SqlServer.Msmq.pdb" target="lib\net45" />
+    <file src="net451\Hangfire.SqlServer.Msmq.dll" target="lib\net451" />
+    <file src="net451\Hangfire.SqlServer.Msmq.xml" target="lib\net451" />
+    <file src="net451\Hangfire.SqlServer.Msmq.pdb" target="lib\net451" />
     <file src="..\src\Hangfire.SqlServer.Msmq\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
     <file src="LICENSE.md" />
     <file src="COPYING" />

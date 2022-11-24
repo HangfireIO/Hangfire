@@ -14,6 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using Hangfire.Common;
 using Hangfire.Server;
 
@@ -21,6 +22,7 @@ namespace Hangfire
 {
     public class DisableConcurrentExecutionAttribute : JobFilterAttribute, IServerFilter
     {
+        private readonly string _resource;
         private readonly int _timeoutInSeconds;
 
         public DisableConcurrentExecutionAttribute(int timeoutInSeconds)
@@ -30,10 +32,15 @@ namespace Hangfire
             _timeoutInSeconds = timeoutInSeconds;
         }
 
+        public DisableConcurrentExecutionAttribute(string resource, int timeoutSec)
+            : this(timeoutSec)
+        {
+            _resource = resource;
+        }
+
         public void OnPerforming(PerformingContext filterContext)
         {
             var resource = GetResource(filterContext.BackgroundJob.Job);
-
             var timeout = TimeSpan.FromSeconds(_timeoutInSeconds);
 
             var distributedLock = filterContext.Connection.AcquireDistributedLock(resource, timeout);
@@ -51,8 +58,20 @@ namespace Hangfire
             distributedLock.Dispose();
         }
 
-        private static string GetResource(Job job)
+        private string GetResource(Job job)
         {
+            if (!String.IsNullOrWhiteSpace(_resource))
+            {
+                try
+                {
+                    return String.Format(_resource, job.Args.ToArray()).ToLowerInvariant();
+                }
+                catch (Exception ex)
+                {
+                    throw new FormatException($"Unable to obtain resource identifier: {ex.Message}");
+                }
+            }
+
             return $"{job.Type.ToGenericTypeString()}.{job.Method.Name}";
         }
     }

@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Newtonsoft.Json;
 
@@ -75,12 +76,27 @@ namespace Hangfire.States
         /// 
         /// <exception cref="ArgumentNullException">The <paramref name="exception"/> 
         /// argument is <see langword="null" /></exception>
-        public FailedState(Exception exception)
+        public FailedState([NotNull] Exception exception)
+            : this(exception, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FailedState"/> class
+        /// with the given exception and specified server id.
+        /// </summary>
+        /// <param name="exception">Exception that occurred during the background job processing.</param>
+        /// <param name="serverId">Server Id on which the exception occurred.</param>
+        ///
+        /// <exception cref="ArgumentNullException">The <paramref name="exception"/>
+        /// argument is <see langword="null" /></exception>
+        public FailedState([NotNull] Exception exception, [CanBeNull] string serverId)
         {
             if (exception == null) throw new ArgumentNullException(nameof(exception));
 
             FailedAt = DateTime.UtcNow;
             Exception = exception;
+            ServerId = serverId;
         }
 
         /// <summary>
@@ -93,6 +109,12 @@ namespace Hangfire.States
         /// Gets the exception that occurred during the background job processing.
         /// </summary>
         public Exception Exception { get; }
+
+        /// <summary>
+        /// Gets the server identifier on which the exception occurred.
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string ServerId { get; }
 
         /// <inheritdoc />
         /// <remarks>
@@ -165,13 +187,20 @@ namespace Hangfire.States
         /// </remarks>
         public Dictionary<string, string> SerializeData()
         {
-            return new Dictionary<string, string>
+            var result = new Dictionary<string, string>
             {
                 { "FailedAt", JobHelper.SerializeDateTime(FailedAt) },
                 { "ExceptionType", Exception.GetType().FullName },
                 { "ExceptionMessage", Exception.Message },
                 { "ExceptionDetails", Exception.ToStringWithOriginalStackTrace(MaxLinesInExceptionDetails) }
             };
+
+            if (ServerId != null)
+            {
+                result.Add("ServerId", ServerId);
+            }
+
+            return result;
         }
     }
 }

@@ -108,7 +108,7 @@ namespace Hangfire.Core.Tests
             var manager = CreateManager();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => manager.AddOrUpdate(_id, null, Cron.Daily()));
+                () => manager.AddOrUpdate(_id, (Job)null, Cron.Daily()));
 
             Assert.Equal("job", exception.ParamName);
         }

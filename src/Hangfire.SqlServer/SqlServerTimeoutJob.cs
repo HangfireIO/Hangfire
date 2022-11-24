@@ -31,6 +31,7 @@ namespace Hangfire.SqlServer
         private bool _disposed;
         private bool _removedFromQueue;
         private bool _requeued;
+        private SqlServerWriteOnlyTransaction _transaction;
 
         private long _lastHeartbeat;
         private TimeSpan _interval;
@@ -72,12 +73,13 @@ namespace Hangfire.SqlServer
         {
             lock (_syncRoot)
             {
+                if (_transaction != null && _transaction.Committed) return;
                 if (!FetchedAt.HasValue) return;
 
                 _storage.UseConnection(null, connection =>
                 {
                     connection.Execute(
-                        $"delete JQ from [{_storage.SchemaName}].JobQueue JQ with ({GetTableHints()}) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
+                        $"delete JQ from [{_storage.SchemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
                         new { queue = Queue, id = Id, fetchedAt = FetchedAt },
                         commandTimeout: _storage.CommandTimeout);
                 });
@@ -90,12 +92,14 @@ namespace Hangfire.SqlServer
         {
             lock (_syncRoot)
             {
+                if (_transaction != null && _transaction.Committed) return;
+
                 if (!FetchedAt.HasValue) return;
 
                 _storage.UseConnection(null, connection =>
                 {
                     connection.Execute(
-                        $"update JQ set FetchedAt = null from [{_storage.SchemaName}].JobQueue JQ with ({GetTableHints()}) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
+                        $"update JQ set FetchedAt = null from [{_storage.SchemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
                         new { queue = Queue, id = Id, fetchedAt = FetchedAt },
                         commandTimeout: _storage.CommandTimeout);
                 });
@@ -114,26 +118,24 @@ namespace Hangfire.SqlServer
 
             lock (_syncRoot)
             {
-                if (!_removedFromQueue && !_requeued)
+                if (!_removedFromQueue && !_requeued && (_transaction == null || !_transaction.Committed))
                 {
                     Requeue();
                 }
             }
         }
 
+        internal void SetTransaction(SqlServerWriteOnlyTransaction transaction)
+        {
+            lock (_syncRoot)
+            {
+                _transaction = transaction;
+            }
+        }
+
         internal void DisposeTimer()
         {
             _storage.HeartbeatProcess.Untrack(this);
-        }
-
-        private string GetTableHints()
-        {
-            if (_storage.Options.UsePageLocksOnDequeue)
-            {
-                return "forceseek, paglock, xlock";
-            }
-
-            return "forceseek, rowlock";
         }
 
         internal void ExecuteKeepAliveQueryIfRequired()
@@ -147,13 +149,14 @@ namespace Hangfire.SqlServer
                     if (!FetchedAt.HasValue) return;
 
                     if (_requeued || _removedFromQueue) return;
+                    if (_transaction != null && _transaction.Committed) return;
 
                     try
                     {
                         _storage.UseConnection(null, connection =>
                         {
                             FetchedAt = connection.ExecuteScalar<DateTime?>(
-                                $"update JQ set FetchedAt = getutcdate() output INSERTED.FetchedAt from [{_storage.SchemaName}].JobQueue JQ with ({GetTableHints()}) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
+                                $"update JQ set FetchedAt = getutcdate() output INSERTED.FetchedAt from [{_storage.SchemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
                                 new { queue = Queue, id = Id, fetchedAt = FetchedAt },
                                 commandTimeout: _storage.CommandTimeout);
                         });

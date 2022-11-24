@@ -5,7 +5,7 @@ using Moq;
 
 namespace Hangfire.Core.Tests
 {
-    class PerformContextMock
+    public class PerformContextMock
     {
         private readonly Lazy<PerformContext> _context;
 
@@ -29,6 +29,16 @@ namespace Hangfire.Core.Tests
 
         public static void SomeMethod()
         {
+        }
+
+        public PerformingContext GetPerformingContext()
+        {
+            return new PerformingContext(Object);
+        }
+
+        public PerformedContext GetPerformedContext(object result = null, bool canceled = false, Exception exception = null)
+        {
+            return new PerformedContext(Object, result, canceled, exception);
         }
     }
 }

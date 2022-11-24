@@ -64,6 +64,7 @@ namespace Hangfire.States
         /// </summary>
         /// <param name="parentId">The identifier of a background job to wait for.</param>
         /// <param name="nextState">The next state for the continuation.</param>
+        // TODO: Warning inconsistency - everywhere else is OnlyOnSucceededState
         public AwaitingState([NotNull] string parentId, [NotNull] IState nextState)
             : this(parentId, nextState, JobContinuationOptions.OnAnyFinishedState)
         {

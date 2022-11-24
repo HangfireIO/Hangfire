@@ -1,4 +1,5 @@
 ﻿using System;
+using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
@@ -12,12 +13,14 @@ namespace Hangfire.Core.Tests.States
 
         private readonly ApplyStateContextMock _context;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
+        private readonly EnqueuedState _enqueuedState;
 
         public EnqueuedStateHandlerFacts()
         {
+            _enqueuedState = new EnqueuedState { Queue = Queue };
             _context = new ApplyStateContextMock
             {
-                NewStateObject = new EnqueuedState { Queue = Queue }
+                NewStateObject = _enqueuedState
             };
 
             _transaction = new Mock<IWriteOnlyTransaction>();
@@ -49,6 +52,42 @@ namespace Hangfire.Core.Tests.States
 
             Assert.Throws<InvalidOperationException>(
                 () => handler.Apply(_context.Object, _transaction.Object));
+        }
+
+        [Fact]
+        public void Apply_WithJobAndQueueSpecified_ThrowsAnException_WhenRequiredFeatureNotSupported()
+        {
+            _context.BackgroundJob.Job = Job.FromExpression(() => BackgroundJobMock.SomeMethod(), "critical");
+            var handler = new EnqueuedState.Handler();
+
+            Assert.Throws<NotSupportedException>(
+                () => handler.Apply(_context.Object, _transaction.Object));
+        }
+
+        [Fact]
+        public void Apply_AddsJob_ToTheJobTargetQueue_WhenEnqueuedState_HasTheDefaultQueue()
+        {
+            _context.Storage.Setup(x => x.HasFeature("Job.Queue")).Returns(true);
+            _context.BackgroundJob.Job = Job.FromExpression(() => BackgroundJobMock.SomeMethod(), "myqueue");
+            _enqueuedState.Queue = "default";
+            var handler = new EnqueuedState.Handler();
+
+            handler.Apply(_context.Object, _transaction.Object);
+
+            _transaction.Verify(x => x.AddToQueue("myqueue", _context.BackgroundJob.Id));
+        }
+
+        [Fact]
+        public void Apply_AddsJobToTheOverridenQueue_WhenTheJobTargetQueuePresent_ButEnqueuedStateQueueIsNotDefault()
+        {
+            _context.Storage.Setup(x => x.HasFeature("Job.Queue")).Returns(true);
+            _context.BackgroundJob.Job = Job.FromExpression(() => BackgroundJobMock.SomeMethod(), "myqueue");
+            _enqueuedState.Queue = "otherqueue";
+            var handler = new EnqueuedState.Handler();
+
+            handler.Apply(_context.Object, _transaction.Object);
+
+            _transaction.Verify(x => x.AddToQueue("otherqueue", _context.BackgroundJob.Id));
         }
 
         [Fact]

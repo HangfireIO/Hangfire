@@ -706,3 +706,33 @@ div.metric-null {
     white-space: normal;
     word-break: break-word;
 }
+
+/* Full width styles */
+
+@media (min-width: 768px) {
+    .container {
+        width: 100%;
+        padding-left: 25px;
+        padding-right: 25px;
+    }
+}
+
+@media (min-width: 992px) {
+    #wrap > .container > .row > .col-md-3 {
+        width: 251px;
+    }
+
+    #wrap > .container > .row > .col-md-9 {
+        width: calc(100% - 251px);
+    }
+}
+
+@media (min-width: 1200px) {
+    #wrap > .container > .row > .col-md-3 {
+        width: 293px;
+    }
+
+    #wrap > .container > .row > .col-md-9 {
+        width: calc(100% - 293px);
+    }
+}

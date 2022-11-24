@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire. Copyright © 2019 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2019 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-#if NETCOREAPP3_0 || NETSTANDARD2_0 || NET461
+#if !NET451 && !NETSTANDARD1_3
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -31,7 +31,7 @@ namespace Hangfire
         private readonly BackgroundJobServerOptions _options;
         private readonly JobStorage _storage;
         private readonly IEnumerable<IBackgroundProcess> _additionalProcesses;
-#if NETCOREAPP3_0_OR_GREATER
+#if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
         private readonly IHostApplicationLifetime _hostApplicationLifetime;
 #endif
         private readonly IBackgroundJobFactory _factory;
@@ -50,7 +50,7 @@ namespace Hangfire
         {
         }
 
-#if NETCOREAPP3_0_OR_GREATER
+#if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
         public BackgroundJobServerHostedService(
             [NotNull] JobStorage storage,
             [NotNull] BackgroundJobServerOptions options,
@@ -63,7 +63,7 @@ namespace Hangfire
         }
 #endif
 
-#if NETCOREAPP3_0_OR_GREATER
+#if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
         [Obsolete("This constructor uses an obsolete constructor overload of the BackgroundJobServer type that will be removed in 2.0.0.")]
         public BackgroundJobServerHostedService(
             [NotNull] JobStorage storage,
@@ -85,7 +85,7 @@ namespace Hangfire
             [CanBeNull] IBackgroundJobFactory factory,
             [CanBeNull] IBackgroundJobPerformer performer,
             [CanBeNull] IBackgroundJobStateChanger stateChanger
-#if NETCOREAPP3_0_OR_GREATER
+#if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
             ,
             [CanBeNull] IHostApplicationLifetime hostApplicationLifetime
 #endif
@@ -100,14 +100,14 @@ namespace Hangfire
             _performer = performer;
             _stateChanger = stateChanger;
 
-#if NETCOREAPP3_0_OR_GREATER
+#if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
             _hostApplicationLifetime = hostApplicationLifetime;
 #endif
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-#if NETCOREAPP3_0_OR_GREATER
+#if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
             if (_hostApplicationLifetime != null)
             {
                 // https://github.com/HangfireIO/Hangfire/issues/2117
