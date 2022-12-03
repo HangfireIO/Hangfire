@@ -61,7 +61,7 @@ namespace Hangfire
         /// election filters.</para>
         /// </remarks>
         [CanBeNull]
-        string Create([NotNull] Job job, [NotNull] IState state);
+        string Create([NotNull] Job job, [NotNull] IState state, params Tuple<string, object>[] parameters);
 
         /// <summary>
         /// Attempts to change a state of a background job with a given
