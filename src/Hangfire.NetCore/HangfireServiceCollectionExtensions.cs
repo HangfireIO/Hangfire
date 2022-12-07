@@ -56,13 +56,19 @@ namespace Hangfire
             
             services.TryAddSingleton(x => new DefaultClientManagerFactory(x));
             services.TryAddSingletonChecked<IBackgroundJobClientFactory>(x => x.GetService<DefaultClientManagerFactory>());
+            services.TryAddSingletonChecked<IBackgroundJobClientFactoryV2>(x => x.GetService<DefaultClientManagerFactory>());
             services.TryAddSingletonChecked<IRecurringJobManagerFactory>(x => x.GetService<DefaultClientManagerFactory>());
+            services.TryAddSingletonChecked<IRecurringJobManagerFactoryV2>(x => x.GetService<DefaultClientManagerFactory>());
 
             services.TryAddSingletonChecked(x => x
                 .GetService<IBackgroundJobClientFactory>().GetClient(x.GetService<JobStorage>()));
+            services.TryAddSingletonChecked(x => x
+                .GetService<IBackgroundJobClientFactoryV2>().GetClientV2(x.GetService<JobStorage>()));
 
             services.TryAddSingletonChecked(x => x
                 .GetService<IRecurringJobManagerFactory>().GetManager(x.GetService<JobStorage>()));
+            services.TryAddSingletonChecked(x => x
+                .GetService<IRecurringJobManagerFactoryV2>().GetManagerV2(x.GetService<JobStorage>()));
 
             // IGlobalConfiguration serves as a marker indicating that Hangfire's services 
             // were added to the service container (checked by IApplicationBuilder extensions).

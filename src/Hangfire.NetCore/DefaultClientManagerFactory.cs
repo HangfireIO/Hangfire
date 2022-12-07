@@ -20,7 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Hangfire
 {
-    internal sealed class DefaultClientManagerFactory : IBackgroundJobClientFactory, IRecurringJobManagerFactory
+    internal sealed class DefaultClientManagerFactory : IBackgroundJobClientFactoryV2, IRecurringJobManagerFactoryV2
     {
         private readonly IServiceProvider _serviceProvider;
 
@@ -29,7 +29,7 @@ namespace Hangfire
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
-        public IBackgroundJobClient GetClient(JobStorage storage)
+        public IBackgroundJobClientV2 GetClientV2(JobStorage storage)
         {
             if (HangfireServiceCollectionExtensions.GetInternalServices(_serviceProvider, out var factory, out var stateChanger, out _))
             {
@@ -41,7 +41,12 @@ namespace Hangfire
                 _serviceProvider.GetRequiredService<IJobFilterProvider>());
         }
 
-        public IRecurringJobManager GetManager(JobStorage storage)
+        public IBackgroundJobClient GetClient(JobStorage storage)
+        {
+            return GetClientV2(storage);
+        }
+
+        public IRecurringJobManagerV2 GetManagerV2(JobStorage storage)
         {
             if (HangfireServiceCollectionExtensions.GetInternalServices(_serviceProvider, out var factory, out _, out _))
             {
@@ -55,6 +60,11 @@ namespace Hangfire
                 storage,
                 _serviceProvider.GetRequiredService<IJobFilterProvider>(),
                 _serviceProvider.GetRequiredService<ITimeZoneResolver>());
+        }
+
+        public IRecurringJobManager GetManager(JobStorage storage)
+        {
+            return GetManagerV2(storage);
         }
     }
 }
