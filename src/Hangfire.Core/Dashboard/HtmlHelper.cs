@@ -65,6 +65,8 @@ namespace Hangfire.Dashboard
             _page = page;
         }
 
+        public RazorPage Page => _page;
+
         public NonEscapedString Breadcrumbs(string title, [NotNull] IDictionary<string, string> items)
         {
             if (items == null) throw new ArgumentNullException(nameof(items));
