@@ -38,7 +38,7 @@ namespace Hangfire.SqlServer
 
         private static readonly TimeSpan LongPollingThreshold = TimeSpan.FromSeconds(1);
         private static readonly int PollingQuantumMs = 1000;
-        private static readonly int MinPollingDelayMs = 50;
+        private static readonly int MinPollingDelayMs = 100;
         private static readonly DynamicMutex<Tuple<SqlServerStorage, string>> DynamicMutex =
             new DynamicMutex<Tuple<SqlServerStorage, string>>();
 
