@@ -463,11 +463,11 @@ end catch";
             {
                 connection.Execute(
 $@";merge [{_storage.SchemaName}].Server with (holdlock) as Target
-using (VALUES (@id, @data, @heartbeat)) as Source (Id, Data, Heartbeat)
+using (VALUES (@id, @data, sysutcdatetime())) as Source (Id, Data, Heartbeat)
 on Target.Id = Source.Id
 when matched then update set Data = Source.Data, LastHeartbeat = Source.Heartbeat
 when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat);",
-                    new { id = serverId, data = SerializationHelper.Serialize(data), heartbeat = DateTime.UtcNow },
+                    new { id = serverId, data = SerializationHelper.Serialize(data) },
                     commandTimeout: _storage.CommandTimeout);
             });
         }
@@ -492,8 +492,8 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
             _storage.UseConnection(_dedicatedConnection, connection =>
             {
                 var affected = connection.Execute(
-                    $@"update [{_storage.SchemaName}].Server set LastHeartbeat = @now where Id = @id",
-                    new { now = DateTime.UtcNow, id = serverId },
+                    $@"update [{_storage.SchemaName}].Server set LastHeartbeat = sysutcdatetime() where Id = @id",
+                    new { id = serverId },
                     commandTimeout: _storage.CommandTimeout);
 
                 if (affected == 0)
@@ -511,8 +511,8 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
             }
 
             return _storage.UseConnection(_dedicatedConnection, connection => connection.Execute(
-                $@"delete s from [{_storage.SchemaName}].Server s with (readpast, readcommitted) where LastHeartbeat < @timeOutAt",
-                new { timeOutAt = DateTime.UtcNow.Add(timeOut.Negate()) },
+                $@"delete s from [{_storage.SchemaName}].Server s with (readpast, readcommitted) where LastHeartbeat < dateadd(ms, @timeoutMsNeg, sysutcdatetime())",
+                new { timeoutMsNeg = timeOut.Negate().TotalMilliseconds },
                 commandTimeout: _storage.CommandTimeout));
         }
 
