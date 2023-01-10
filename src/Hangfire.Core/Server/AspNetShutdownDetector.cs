@@ -23,7 +23,6 @@ namespace Hangfire.Server
 {
     internal static class AspNetShutdownDetector
     {
-        private static readonly ILog Logger = LogProvider.GetLogger(typeof(AspNetShutdownDetector));
         private static readonly TimeSpan CheckForShutdownTimerInterval = TimeSpan.FromMilliseconds(250);
         private static readonly CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
 
@@ -121,7 +120,7 @@ namespace Hangfire.Server
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
-                Logger.ErrorException("Failed to initialize shutdown triggers for ASP.NET application.", ex);
+                GetLogger().ErrorException("Failed to initialize shutdown triggers for ASP.NET application.", ex);
             }
         }
 
@@ -155,7 +154,7 @@ namespace Hangfire.Server
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
-                Logger.ErrorException(
+                GetLogger().ErrorException(
                     "An exception occurred while checking for ASP.NET shutdown, will not able to do the checks properly.",
                     ex);
             }
@@ -174,7 +173,7 @@ namespace Hangfire.Server
             }
             catch (AggregateException ag)
             {
-                Logger.ErrorException("One or more exceptions were thrown during app pool shutdown: ", ag);
+                GetLogger().ErrorException("One or more exceptions were thrown during app pool shutdown: ", ag);
             }
         }
 
@@ -189,12 +188,12 @@ namespace Hangfire.Server
                 if (stopEvent == null) return;
 
                 stopEvent.AddEventHandler(null, new EventHandler(StopListening));
-                Logger.Debug("HostingEnvironment.StopListening shutdown trigger initialized successfully.");
+                GetLogger().Debug("HostingEnvironment.StopListening shutdown trigger initialized successfully.");
                 success = true;
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
-                Logger.DebugException("Unable to initialize HostingEnvironment.StopListening shutdown trigger", ex);
+                GetLogger().DebugException("Unable to initialize HostingEnvironment.StopListening shutdown trigger", ex);
             }
         }
 
@@ -215,7 +214,7 @@ namespace Hangfire.Server
 
                 _shutdownReasonFunc = ShutdownReasonFunc;
 
-                Logger.Debug("HostingEnvironment.ShutdownReason shutdown trigger initialized successfully.");
+                GetLogger().Debug("HostingEnvironment.ShutdownReason shutdown trigger initialized successfully.");
                 success = true;
 
                 string ShutdownReasonFunc()
@@ -231,7 +230,7 @@ namespace Hangfire.Server
                     }
                     catch (Exception ex) when (ex.IsCatchableExceptionType())
                     {
-                        Logger.TraceException("Unable to call the HostingEnvironment.ShutdownReason property due to an exception.", ex);
+                        GetLogger().TraceException("Unable to call the HostingEnvironment.ShutdownReason property due to an exception.", ex);
                     }
 
                     return null;
@@ -239,7 +238,7 @@ namespace Hangfire.Server
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
-                Logger.DebugException("Unable to initialize HostingEnvironment.ShutdownReason shutdown trigger", ex);
+                GetLogger().DebugException("Unable to initialize HostingEnvironment.ShutdownReason shutdown trigger", ex);
             }
         }
 
@@ -255,12 +254,12 @@ namespace Hangfire.Server
 
                 _checkConfigChangedFunc = (Func<bool>)Delegate.CreateDelegate(typeof(Func<bool>), methodInfo);
 
-                Logger.Debug("UnsafeIISMethods.MgdHasConfigChanged shutdown trigger initialized successfully.");
+                GetLogger().Debug("UnsafeIISMethods.MgdHasConfigChanged shutdown trigger initialized successfully.");
                 success = true;
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
-                Logger.DebugException("Unable to initialize UnsafeIISMethods.MgdHasConfigChanged shutdown trigger", ex);
+                GetLogger().DebugException("Unable to initialize UnsafeIISMethods.MgdHasConfigChanged shutdown trigger", ex);
             }
         }
 
@@ -282,12 +281,12 @@ namespace Hangfire.Server
 
                 _disposingHttpRuntime = () => disposingHttpRuntime(theRuntime());
 
-                Logger.Debug("HttpRuntime._disposingHttpRuntime shutdown trigger initialized successfully.");
+                GetLogger().Debug("HttpRuntime._disposingHttpRuntime shutdown trigger initialized successfully.");
                 success = true;
             }
             catch (Exception ex)
             {
-                Logger.DebugException("Unable to initialize HttpRuntime._disposingHttpRuntime shutdown trigger", ex);
+                GetLogger().DebugException("Unable to initialize HttpRuntime._disposingHttpRuntime shutdown trigger", ex);
             }
         }
 
@@ -305,5 +304,10 @@ namespace Hangfire.Server
             return Expression.Lambda<Func<object, T>>(fieldExp, instExp).Compile();
         }
 #endif
+
+        private static ILog GetLogger()
+        {
+            return LogProvider.GetLogger(typeof(AspNetShutdownDetector));
+        }
     }
 }
