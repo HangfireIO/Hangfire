@@ -162,7 +162,7 @@ namespace Hangfire.Server
 
         private static void Cancel(string reason)
         {
-            Logger.Info($"ASP.NET application is shutting down: {reason}.");
+            GetLogger().Info($"ASP.NET application is shutting down: {reason}.");
 
             try
             {
