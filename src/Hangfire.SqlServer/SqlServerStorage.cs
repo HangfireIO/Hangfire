@@ -44,6 +44,19 @@ namespace Hangfire.SqlServer
         private string _escapedSchemaName;
         private SqlServerHeartbeatProcess _heartbeatProcess;
 
+        private readonly Dictionary<string, bool> _features =
+            new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
+            {
+                { JobStorageFeatures.JobQueueProperty, true },
+                { JobStorageFeatures.Connection.BatchedGetFirstByLowest, true },
+                { JobStorageFeatures.Connection.GetUtcDateTime, true },
+                { JobStorageFeatures.Connection.GetSetCount, true },
+                { JobStorageFeatures.Connection.SetContains, false },
+                { JobStorageFeatures.Transaction.AcquireDistributedLock, false },
+                { JobStorageFeatures.Transaction.CreateJob, false },
+                { JobStorageFeatures.Transaction.SetJobParameter, false }
+            };
+
         public SqlServerStorage(string nameOrConnectionString)
             : this(nameOrConnectionString, new SqlServerStorageOptions())
         {
@@ -164,30 +177,9 @@ namespace Hangfire.SqlServer
         {
             if (featureId == null) throw new ArgumentNullException(nameof(featureId));
 
-            if (_options.UseTransactionalAcknowledge &&
-                featureId.StartsWith(Worker.TransactionalAcknowledgePrefix, StringComparison.OrdinalIgnoreCase))
-            {
-                return featureId.Equals(
-                    Worker.TransactionalAcknowledgePrefix + nameof(SqlServerTimeoutJob),
-                    StringComparison.OrdinalIgnoreCase);
-            }
-
-            if ("BatchedGetFirstByLowestScoreFromSet".Equals(featureId, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            if ("Connection.GetUtcDateTime".Equals(featureId, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            if ("Job.Queue".Equals(featureId, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            return base.HasFeature(featureId);
+            return _features.TryGetValue(featureId, out var isSupported) 
+                ? isSupported
+                : base.HasFeature(featureId);
         }
 
         public override string ToString()
@@ -475,6 +467,10 @@ namespace Hangfire.SqlServer
 
             InitializeQueueProviders();
             _heartbeatProcess = new SqlServerHeartbeatProcess();
+
+            _features.Add(
+                JobStorageFeatures.Transaction.RemoveFromQueue(typeof(SqlServerTimeoutJob)),
+                _options.UseTransactionalAcknowledge);
         }
 
         private void InitializeQueueProviders()

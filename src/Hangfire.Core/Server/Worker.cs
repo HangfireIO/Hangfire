@@ -41,7 +41,8 @@ namespace Hangfire.Server
     /// <seealso cref="EnqueuedState"/>
     public class Worker : IBackgroundProcess
     {
-        public static readonly string TransactionalAcknowledgePrefix = "TransactionalAcknowledge:";
+        [Obsolete("Please use JobStorageFeatures.StorageTransactionalAcknowledge instead.")]
+        public static readonly string TransactionalAcknowledgePrefix = JobStorageFeatures.TransactionalAcknowledgePrefix;
         
         private readonly TimeSpan _jobInitializationWaitTimeout;
         private readonly int _maxStateChangeAttempts;
@@ -142,7 +143,7 @@ namespace Hangfire.Server
                     // It will be re-queued after the JobTimeout was expired.
 
                     var state = PerformJob(context, connection, fetchedJob.JobId, backgroundJob, out var customData);
-                    var transactionalAck = context.Storage.HasFeature(TransactionalAcknowledgePrefix + fetchedJob.GetType().Name);
+                    var transactionalAck = context.Storage.HasFeature(JobStorageFeatures.Transaction.RemoveFromQueue(fetchedJob.GetType()));
 
                     if (state != null)
                     {
