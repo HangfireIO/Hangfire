@@ -249,7 +249,7 @@ namespace Hangfire.States
                         $"`{typeof (Handler).FullName}` state handler can be registered only for the Enqueued state.");
                 }
 
-                if (context.BackgroundJob.Job?.Queue != null && !context.Storage.HasFeature("Job.Queue"))
+                if (context.BackgroundJob.Job?.Queue != null && !context.Storage.HasFeature(JobStorageFeatures.JobQueueProperty))
                 {
                     throw new NotSupportedException("Current storage doesn't support specifying queues directly for a specific job. Please use the QueueAttribute instead.");
                 }

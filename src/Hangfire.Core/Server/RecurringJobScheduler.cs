@@ -188,7 +188,7 @@ namespace Hangfire.Server
                 var jobsProcessed = 0;
 
                 var now = DateTime.SpecifyKind(
-                    !context.Storage.HasFeature("Connection.GetUtcDateTime")
+                    !context.Storage.HasFeature(JobStorageFeatures.Connection.GetUtcDateTime)
                         ? _nowFactory()
                         : ((JobStorageConnection)connection).GetUtcDateTime(),
                     DateTimeKind.Utc);
@@ -411,7 +411,7 @@ namespace Hangfire.Server
 
         private bool IsBatchingAvailable(JobStorage storage, IStorageConnection connection)
         {
-            if (storage.HasFeature("BatchedGetFirstByLowestScoreFromSet")) return true;
+            if (storage.HasFeature(JobStorageFeatures.Connection.BatchedGetFirstByLowest)) return true;
 
             return _isBatchingAvailableCache.GetOrAdd(
                 connection.GetType(),
