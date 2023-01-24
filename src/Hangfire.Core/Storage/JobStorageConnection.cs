@@ -74,7 +74,7 @@ namespace Hangfire.Storage
         public virtual bool GetSetContains([NotNull] string key, [NotNull] string value)
         {
 #pragma warning disable CS0618
-            SetContains(key, value);
+            return SetContains(key, value);
 #pragma warning restore CS0618
         }
 
