@@ -27,7 +27,6 @@ namespace Hangfire.Storage
         public static class Connection
         {
             public static readonly string GetUtcDateTime = "Connection.GetUtcDateTime";
-            public static readonly string GetSetCount = "Connection.GetSetCount";
             public static readonly string SetContains = "Connection.SetContains";
 
             public static readonly string BatchedGetFirstByLowest = "BatchedGetFirstByLowestScoreFromSet";
