@@ -65,9 +65,17 @@ namespace Hangfire.Storage
             throw new NotSupportedException();
         }
 
+        [Obsolete("Please use/override the GetSetContains method instead. Will be removed in 2.0.0.")]
         public virtual bool SetContains([NotNull] string key, [NotNull] string value)
         {
             throw new NotSupportedException();
+        }
+
+        public virtual bool GetSetContains([NotNull] string key, [NotNull] string value)
+        {
+#pragma warning disable CS0618
+            SetContains(key, value);
+#pragma warning restore CS0618
         }
 
         public virtual List<string> GetRangeFromSet([NotNull] string key, int startingFrom, int endingAt)

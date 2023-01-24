@@ -77,7 +77,7 @@ Extensibility
 Storage
 • Added – Virtual `JobStorage.GetReadOnlyConnection` method intended to return `JobStorageConnection` for replicas.
 • Added – Virtual `JobStorage.HasFeature` method for querying optional features.
-• Added – Optional `GetSetCount` and `GetUtcDateTime` methods for the `JobStorageConnection` class.
+• Added – Optional `GetSetCount`, `GetSetContains` and `GetUtcDateTime` methods for the `JobStorageConnection` class.
 • Added – Optional `AcquireDistributedLock` and `RemoveFromQueue` methods for the `JobStorageTransaction` class.
 • Added – Support for transactional acknowledge using new storage method for better handling some data loss scenarios.
 • Added – `CreateJob` method to the `JobStorageTransaction` abstract class.
