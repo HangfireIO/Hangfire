@@ -51,6 +51,7 @@ namespace Hangfire.SqlServer
                 { JobStorageFeatures.Connection.BatchedGetFirstByLowest, true },
                 { JobStorageFeatures.Connection.GetUtcDateTime, true },
                 { JobStorageFeatures.Connection.SetContains, false },
+                { JobStorageFeatures.Connection.LimitedGetSetCount, false },
                 { JobStorageFeatures.Transaction.AcquireDistributedLock, false },
                 { JobStorageFeatures.Transaction.CreateJob, false },
                 { JobStorageFeatures.Transaction.SetJobParameter, false }
