@@ -182,11 +182,18 @@ namespace Hangfire.Dashboard
             {
                 long awaitingCount = -1;
 
-                using (var connection = page.Storage.GetReadOnlyConnection())
+                if (page.Statistics.Awaiting.HasValue)
                 {
-                    if (connection is JobStorageConnection storageConnection)
+                    awaitingCount = page.Statistics.Awaiting.Value;
+                }
+                else
+                {
+                    using (var connection = page.Storage.GetReadOnlyConnection())
                     {
-                        awaitingCount = storageConnection.GetSetCount("awaiting");
+                        if (connection is JobStorageConnection storageConnection)
+                        {
+                            awaitingCount = storageConnection.GetSetCount("awaiting");
+                        }
                     }
                 }
 

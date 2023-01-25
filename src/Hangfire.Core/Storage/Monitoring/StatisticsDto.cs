@@ -27,5 +27,6 @@ namespace Hangfire.Storage.Monitoring
         public long Failed { get; set; }
         public long Deleted { get; set; }
         public long? Retries { get; set; }
+        public long? Awaiting { get; set; }
     }
 }

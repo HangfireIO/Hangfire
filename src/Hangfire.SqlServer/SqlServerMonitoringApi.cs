@@ -408,6 +408,7 @@ select count(Id) from [{0}].Job with (nolock, forceseek) where StateName = N'Enq
 select count(Id) from [{0}].Job with (nolock, forceseek) where StateName = N'Failed';
 select count(Id) from [{0}].Job with (nolock, forceseek) where StateName = N'Processing';
 select count(Id) from [{0}].Job with (nolock, forceseek) where StateName = N'Scheduled';
+select count(Id) from [{0}].Job with (nolock, forceseek) where StateName = N'Awaiting';
 select count(Id) from [{0}].Server with (nolock);
 select sum(s.[Value]) from (
     select sum([Value]) as [Value] from [{0}].Counter with (nolock, forceseek) where [Key] = N'stats:succeeded'
@@ -433,6 +434,7 @@ select count(*) from [{0}].[Set] with (nolock, forceseek) where [Key] = N'retrie
                     stats.Failed = multi.ReadSingle<int>();
                     stats.Processing = multi.ReadSingle<int>();
                     stats.Scheduled = multi.ReadSingle<int>();
+                    stats.Awaiting = multi.ReadSingle<int>();
 
                     stats.Servers = multi.ReadSingle<int>();
 
