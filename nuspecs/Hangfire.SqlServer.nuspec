@@ -17,6 +17,11 @@
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.33
+• Changed – Use SQL Server as a time authority for server heartbeats.
+• Changed – Increase `MinPollingDelayMs` for SQL Server to 100 milliseconds.
+• Changed – Don't wait on SQL Server's side when using long polling for fetching.
+
 1.7.29
 • Fixed – Command batching is now fully working for the Microsoft.Data.SqlClient package (by @0xced).
 

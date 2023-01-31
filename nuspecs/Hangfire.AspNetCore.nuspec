@@ -15,6 +15,9 @@
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.7.33
+• Fixed – Implement support `IAsyncDisposable` for `IServiceScope` instances for newer .NET platforms.
+
 1.7.32
 • Changed – Wait for application to be ready before starting the server when using `AddHangfireServer`.
 • Fixed – Do not return `null` as result of `StopAsync` in hosted service implementation (by @tomaszek92).
