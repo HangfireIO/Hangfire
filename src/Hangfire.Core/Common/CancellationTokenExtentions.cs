@@ -22,8 +22,6 @@ namespace Hangfire.Common
 {
     public static class CancellationTokenExtentions
     {
-        private static readonly ILog Logger = LogProvider.GetLogger(typeof(CancellationTokenExtentions));
-
         /// <summary>
         /// Returns a class that contains a <see cref="EventWaitHandle"/> that is set, when
         /// the given <paramref name="cancellationToken"/> is canceled. This method is based
@@ -72,8 +70,15 @@ namespace Hangfire.Common
                     timeout >= timeoutThreshold &&
                     stopwatch.Elapsed < elapsedThreshold)
                 {
-                    Logger.Error($"Actual wait time for non-canceled token was '{stopwatch.Elapsed}' instead of '{timeout}', wait result: {waitResult}, using protective wait. Please report this to Hangfire developers.");
-                    Thread.Sleep(protectionTime);
+                    try
+                    {
+                        var logger = LogProvider.GetLogger(typeof(CancellationTokenExtentions));
+                        logger.Error($"Actual wait time for non-canceled token was '{stopwatch.Elapsed}' instead of '{timeout}', wait result: {waitResult}, using protective wait. Please report this to Hangfire developers.");
+                    }
+                    finally
+                    {
+                        Thread.Sleep(protectionTime);
+                    }
                 }
 
                 return waitResult;

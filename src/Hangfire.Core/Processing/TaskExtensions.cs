@@ -26,7 +26,6 @@ namespace Hangfire.Processing
 {
     internal static class TaskExtensions
     {
-        private static readonly ILog Logger = LogProvider.GetLogger(typeof(TaskExtensions));
         private static readonly Type[] EmptyTypes = new Type[0];
         private static readonly WaitHandle InvalidWaitHandleInstance = new InvalidWaitHandle();
 
@@ -58,8 +57,15 @@ namespace Hangfire.Processing
                     timeout >= timeoutThreshold &&
                     stopwatch.Elapsed < elapsedThreshold)
                 {
-                    Logger.Error($"Actual wait time for non-canceled token was '{stopwatch.Elapsed}' instead of '{timeout}', wait result: {waitResult}, using protective wait. Please report this to Hangfire developers.");
-                    Thread.Sleep(protectionTime);
+                    try
+                    {
+                        var logger = LogProvider.GetLogger(typeof(TaskExtensions));
+                        logger.Error($"Actual wait time for non-canceled token was '{stopwatch.Elapsed}' instead of '{timeout}', wait result: {waitResult}, using protective wait. Please report this to Hangfire developers.");
+                    }
+                    finally
+                    {
+                        Thread.Sleep(protectionTime);
+                    }
                 }
 
                 token.ThrowIfCancellationRequested();

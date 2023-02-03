@@ -167,7 +167,7 @@ In order to give the community time to respond and upgrade we strongly urge you 
 License
 --------
 
-Copyright © 2022 Hangfire OÜ.
+Copyright © 2023 Hangfire OÜ.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by

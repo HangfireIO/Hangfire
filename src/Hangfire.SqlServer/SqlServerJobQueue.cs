@@ -39,7 +39,7 @@ namespace Hangfire.SqlServer
         private static readonly TimeSpan LongPollingThreshold = TimeSpan.FromSeconds(1);
         private static readonly int PollingQuantumMs = 1000;
         private static readonly int DefaultPollingDelayMs = 200;
-        private static readonly int MinPollingDelayMs = 50;
+        private static readonly int MinPollingDelayMs = 100;
         private static readonly DynamicMutex<Tuple<SqlServerStorage, string>> DynamicMutex =
             new DynamicMutex<Tuple<SqlServerStorage, string>>();
 
@@ -91,83 +91,87 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
         {
             if (queues == null) throw new ArgumentNullException(nameof(queues));
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", nameof(queues));
+            
+            cancellationToken.ThrowIfCancellationRequested();
 
-            var useLongPolling = false;
+            // First we will check if our queues has any background jobs in it and
+            // return if any. In this case we don't need any additional logic like
+            // semaphores or waiting.
+            var fetchedJob = FetchJob(queues);
+            if (fetchedJob != null) return fetchedJob;
+
+            // Then we determine whether we should use the long polling feature,
+            // where only a single worker acquires a semaphore for each queue set
+            // to avoid excessive load on a database.
+            var configuredPollInterval = _options.QueuePollInterval;
+            var useLongPolling = configuredPollInterval < LongPollingThreshold;
+
+            // Then we determine a delay between attempts. For long-polling we use constrained
+            // sub-second intervals within the [MinPollingDelayMs, PollingQuantumMs] interval.
+            // For regular polling we just use the interval defined in the QueuePollInterval
+            // option.
+            var pollingDelayMs = useLongPolling
+                ? TimeSpan.FromMilliseconds(
+                    Math.Min(
+                        Math.Max(
+                            configuredPollInterval == TimeSpan.Zero ? DefaultPollingDelayMs : (int)configuredPollInterval.TotalMilliseconds,
+                            MinPollingDelayMs),
+                        PollingQuantumMs))
+                : configuredPollInterval;
+
             var queuesString = String.Join("_", queues.OrderBy(x => x));
             var resource = Tuple.Create(_storage, queuesString);
 
-            var pollingDelayMs = _options.QueuePollInterval > TimeSpan.Zero
-                ? (int) _options.QueuePollInterval.TotalMilliseconds
-                : DefaultPollingDelayMs;
-
-            pollingDelayMs = Math.Min(
-                Math.Max(pollingDelayMs, MinPollingDelayMs),
-                PollingQuantumMs);
-
-            SqlServerTimeoutJob fetched = null;
-
             using (var cancellationEvent = cancellationToken.GetCancellationEvent())
             {
-                while (!cancellationToken.IsCancellationRequested)
+                var waitArray = new WaitHandle[] { cancellationEvent.WaitHandle, NewItemInQueueEvent };
+                var acquired = false;
+
+                try
                 {
-                    var acquired = false;
+                    if (useLongPolling) DynamicMutex.Wait(resource, cancellationToken, out acquired);
 
-                    try
+                    while (!cancellationToken.IsCancellationRequested)
                     {
-                        if (useLongPolling) DynamicMutex.Wait(resource, cancellationToken, out acquired);
+                        // For non-first attempts we just trying again and again with
+                        // the determined delay between attempts, until shutdown
+                        // request is received.
+                        fetchedJob = FetchJob(queues);
+                        if (fetchedJob != null) return fetchedJob;
 
-                        fetched = _storage.UseConnection(null, connection =>
-                        {
-                            var parameters = new DynamicParameters();
-                            parameters.Add("@queues", queues);
-                            parameters.Add("@timeoutSs", (int)_options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds);
-                            parameters.Add("@delayMs", pollingDelayMs);
-                            parameters.Add("@endMs", PollingQuantumMs);
-
-                            var query = useLongPolling ? GetBlockingFetchSql() : GetNonBlockingFetchSql();
-
-                            using (var reader = connection.QueryMultiple(query, parameters, commandTimeout: _storage.CommandTimeout))
-                            {
-                                while (!reader.IsConsumed)
-                                {
-                                    var fetchedJob = reader.Read<FetchedJob>().SingleOrDefault(x => x != null);
-                                    if (fetchedJob != null)
-                                    {
-                                        return new SqlServerTimeoutJob(_storage, fetchedJob.Id, fetchedJob.JobId.ToString(CultureInfo.InvariantCulture), fetchedJob.Queue, fetchedJob.FetchedAt.Value);
-                                    }
-                                }
-                            }
-
-                            return null;
-                        });
+                        WaitHandle.WaitAny(waitArray, pollingDelayMs);
+                        cancellationToken.ThrowIfCancellationRequested();
                     }
-                    finally
-                    {
-                        if (acquired)
-                        {
-                            DynamicMutex.Release(resource);
-                        }
-                    }
-
-                    if (fetched != null)
-                    {
-                        break;
-                    }
-
-                    if (_options.QueuePollInterval < LongPollingThreshold)
-                    {
-                        useLongPolling = true;
-                    }
-                    else
-                    {
-                        WaitHandle.WaitAny(new WaitHandle[] { cancellationEvent.WaitHandle, NewItemInQueueEvent }, _options.QueuePollInterval);
-                    }
+                }
+                finally
+                {
+                    if (acquired) DynamicMutex.Release(resource);
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
+                return null;
             }
+        }
 
-            return fetched;
+        private SqlServerTimeoutJob FetchJob(string[] queues)
+        {
+            return _storage.UseConnection(null, connection =>
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@queues", queues);
+                parameters.Add("@timeoutSs", (int)_options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds);
+
+                var fetchedJob = connection
+                    .Query<FetchedJob>(
+                        GetNonBlockingFetchSql(),
+                        parameters,
+                        commandTimeout: _storage.CommandTimeout)
+                    .SingleOrDefault();
+                                
+                return fetchedJob != null 
+                    ? new SqlServerTimeoutJob(_storage, fetchedJob.Id, fetchedJob.JobId.ToString(CultureInfo.InvariantCulture), fetchedJob.Queue, fetchedJob.FetchedAt.Value)
+                    : null;
+            });
         }
 
         private string GetNonBlockingFetchSql()
@@ -181,26 +185,6 @@ output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
 from [{_storage.SchemaName}].JobQueue JQ with (forceseek, readpast, updlock, rowlock)
 where Queue in @queues and
 (FetchedAt is null or FetchedAt < DATEADD(second, @timeoutSs, GETUTCDATE()));";
-        }
-
-        private string GetBlockingFetchSql()
-        {
-            return $@"
-set nocount on;set xact_abort on;set tran isolation level read committed;
-
-declare @end datetime2 = DATEADD(ms, @endMs, SYSUTCDATETIME()),
-	@delay datetime = DATEADD(ms, @delayMs, convert(DATETIME, 0));
-
-WHILE (SYSUTCDATETIME() < @end)
-BEGIN
-	update top (1) JQ set FetchedAt = GETUTCDATE()
-	output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
-	from [{_storage.SchemaName}].JobQueue JQ with (forceseek, readpast, updlock, rowlock)
-	where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeoutSs, GETUTCDATE()));
-
-	IF @@ROWCOUNT > 0 RETURN;
-	WAITFOR DELAY @delay;
-END";
         }
 
         private SqlServerTransactionJob DequeueUsingTransaction(string[] queues, CancellationToken cancellationToken)

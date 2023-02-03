@@ -1196,6 +1196,8 @@ values
                     "{\"WorkerCount\":4,\"Queues\":[\"critical\",\"default\"],\"StartedAt\":"),
                     server.Data);
                 Assert.NotNull(server.LastHeartbeat);
+                Assert.True(DateTime.UtcNow.AddHours(-1) < server.LastHeartbeat &&
+                            server.LastHeartbeat < DateTime.UtcNow.AddHours(1));
 
                 var context2 = new ServerContext
                 {
@@ -1269,6 +1271,9 @@ values
 
                 Assert.NotEqual(2012, servers["server1"].Year);
                 Assert.Equal(2012, servers["server2"].Year);
+
+                Assert.True(DateTime.UtcNow.AddHours(-1) < servers["server1"] &&
+                            servers["server1"] < DateTime.UtcNow.AddHours(1));
             }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
