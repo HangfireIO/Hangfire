@@ -114,6 +114,27 @@ namespace Hangfire.SqlServer
                 }));
         }
 
+        public override JobList<ScheduledJobDto> ScheduledJobsByIds(long[] jobIds)
+        {
+            if (jobIds.Length == 0)
+                throw new InvalidOperationException("Sequence contains no elements");
+
+            return UseConnection(connection => GetJobsByIdsList(
+                connection,
+                jobIds,
+                ScheduledState.StateName,
+                (sqlJob, job, invocationData, loadException, stateData) => new ScheduledJobDto
+            {
+                Job = job,
+                LoadException = loadException,
+                InvocationData = invocationData,
+                InScheduledState = ScheduledState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
+                EnqueueAt = JobHelper.DeserializeNullableDateTime(stateData["EnqueueAt"]) ?? DateTime.MinValue,
+                ScheduledAt = sqlJob.StateChanged,
+                StateData = stateData
+            }));
+        }
+
         public override IDictionary<DateTime, long> SucceededByDatesCount()
         {
             return UseConnection(connection => 
@@ -622,6 +643,27 @@ where cte.row_num between @start and @end";
                         new { stateName = stateName, start = @from + 1, end = @from + count },
                         commandTimeout: _storage.CommandTimeout)
                         .ToList();
+
+            return DeserializeJobs(jobs, selector);
+        }
+
+        private JobList<TDto> GetJobsByIdsList<TDto>(
+            DbConnection connection,
+            long[] jobIds,
+            string stateName,
+            Func<SqlJob, Job, InvocationData, JobLoadException, SafeDictionary<string, string>, TDto> selector)
+        {
+            string jobsSql =
+$@";select j.*, s.Reason as StateReason, s.Data as StateData, s.CreatedAt as StateChanged
+from [{_storage.SchemaName}].Job j with (nolock, forceseek)
+left join [{_storage.SchemaName}].State s with (nolock, forceseek) on j.StateId = s.Id and j.Id = s.JobId
+where j.Id in @ids";
+
+            var jobs = connection.Query<SqlJob>(
+                    jobsSql,
+                    new { stateName = stateName , ids = jobIds },
+                    commandTimeout: _storage.CommandTimeout)
+                .ToList();
 
             return DeserializeJobs(jobs, selector);
         }
