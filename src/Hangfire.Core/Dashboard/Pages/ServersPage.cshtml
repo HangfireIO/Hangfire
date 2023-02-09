@@ -28,7 +28,7 @@
         }
         else
         {
-            if (servers.Any(x => x.Heartbeat.HasValue && x.Heartbeat.Value < now.Add(-inconclusiveThreshold)))
+            if (servers.Any(x => x.Heartbeat.HasValue && x.Heartbeat.Value < now.Add(-possiblyAbortedThreshold)))
             {
                 <div class="alert alert-info">
                     <h4>@Strings.ServersPage_Note_Title</h4>
