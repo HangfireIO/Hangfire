@@ -423,24 +423,102 @@ namespace Hangfire
 
         /// <summary>
         /// Changes state of a job with the specified <paramref name="jobId"/>
-        /// to the <see cref="EnqueuedState"/>. If <paramref name="fromState"/> value 
-        /// is not null, state change will be performed only if the current state name 
+        /// to the <see cref="ScheduledState"/>. If <paramref name="fromState"/> value
+        /// is not null, state change will be performed only if the current state name
         /// of a job equal to the given value.
         /// </summary>
+        ///
+        /// <param name="client">An instance of <see cref="IBackgroundJobClient"/> implementation.</param>
+        /// <param name="jobId">Identifier of job, whose state is being changed.</param>
+        /// <param name="delay">Delay, after which the job will be rescheduled.</param>
+        /// <param name="fromState">Current state assertion, or null if unneeded.</param>
+        /// <returns>True, if state change succeeded, otherwise false.</returns>
+        public static bool Reschedule(
+          [NotNull] this IBackgroundJobClient client,
+          [NotNull] string jobId,
+          TimeSpan delay,
+          [CanBeNull] string fromState)
+        {
+          if (client == null) throw new ArgumentNullException(nameof(client));
+
+          var state = new ScheduledState(delay);
+          return client.ChangeState(jobId, state, fromState);
+        }
+
+        /// <summary>
+        ///   Changes state of a job with the specified <paramref name="jobId" />
+        ///   to the <see cref="ScheduledState" />.
+        /// </summary>
         /// 
+        /// <param name="client">An instance of <see cref="IBackgroundJobClient" /> implementation.</param>
+        /// <param name="jobId">Identifier of job, whose state is being changed.</param>
+        /// <param name="delay">Delay, after which the job will be rescheduled.</param>
+        /// <returns>True, if state change succeeded, otherwise false.</returns>
+        public static bool Reschedule([NotNull] this IBackgroundJobClient client, [NotNull] string jobId,
+          TimeSpan delay)
+        {
+          return Reschedule(client, jobId, delay, null);
+        }
+
+        /// <summary>
+        /// Changes state of a job with the specified <paramref name="jobId"/>
+        /// to the <see cref="ScheduledState"/>. If <paramref name="fromState"/> value
+        /// is not null, state change will be performed only if the current state name
+        /// of a job equal to the given value.
+        /// </summary>
+        ///
+        /// <param name="client">An instance of <see cref="IBackgroundJobClient"/> implementation.</param>
+        /// <param name="jobId">Identifier of job, whose state is being changed.</param>
+        /// <param name="enqueueAt">Moment of time at which the job will be rescheduled.</param>
+        /// <param name="fromState">Current state assertion, or null if unneeded.</param>
+        /// <returns>True, if state change succeeded, otherwise false.</returns>
+        public static bool Reschedule(
+          [NotNull] this IBackgroundJobClient client,
+          [NotNull] string jobId,
+          DateTimeOffset enqueueAt,
+          [CanBeNull] string fromState)
+        {
+          if (client == null) throw new ArgumentNullException(nameof(client));
+
+          var state = new ScheduledState(enqueueAt.UtcDateTime);
+          return client.ChangeState(jobId, state, fromState);
+        }
+
+        /// <summary>
+        ///   Changes state of a job with the specified <paramref name="jobId" />
+        ///   to the <see cref="ScheduledState" />.
+        /// </summary>
+        /// 
+        /// <param name="client">An instance of <see cref="IBackgroundJobClient" /> implementation.</param>
+        /// <param name="jobId">Identifier of job, whose state is being changed.</param>
+        /// <param name="enqueueAt">Moment of time at which the job will be rescheduled.</param>
+        /// <returns>True, if state change succeeded, otherwise false.</returns>
+        public static bool Reschedule([NotNull] this IBackgroundJobClient client, [NotNull] string jobId,
+          DateTimeOffset enqueueAt)
+        {
+          return Reschedule(client, jobId, enqueueAt, null);
+        }
+
+        /// <summary>
+        /// Changes state of a job with the specified <paramref name="jobId"/>
+        /// to the <see cref="EnqueuedState"/>. If <paramref name="fromState"/> value
+        /// is not null, state change will be performed only if the current state name
+        /// of a job equal to the given value.
+        /// </summary>
+        ///
         /// <param name="client">An instance of <see cref="IBackgroundJobClient"/> implementation.</param>
         /// <param name="jobId">Identifier of job, whose state is being changed.</param>
         /// <param name="fromState">Current state assertion, or null if unneeded.</param>
         /// <returns>True, if state change succeeded, otherwise false.</returns>
         public static bool Requeue(
-            [NotNull] this IBackgroundJobClient client, 
-            [NotNull] string jobId, 
-            [CanBeNull] string fromState)
+          [NotNull] this IBackgroundJobClient client,
+          [NotNull] string jobId,
+          [CanBeNull] string fromState)
         {
-            if (client == null) throw new ArgumentNullException(nameof(client));
+          if (client == null) throw new ArgumentNullException(nameof(client));
 
-            var state = new EnqueuedState();
-            return client.ChangeState(jobId, state, fromState);
+          var state = new EnqueuedState();
+          return client.ChangeState(jobId, state, fromState);
         }
 
         /// <summary>

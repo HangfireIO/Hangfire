@@ -253,6 +253,51 @@ namespace Hangfire.Core.Tests
             _client.Verify(x => x.ChangeState(JobId, It.IsAny<EnqueuedState>(), FailedState.StateName));
         }
 
+        [Fact]
+        public void Reschedule_ThrowsAnException_WhenClientIsNull()
+        {
+          var exception = Assert.Throws<ArgumentNullException>(
+            () => BackgroundJobClientExtensions.Reschedule(null, JobId, TimeSpan.FromDays(1), FailedState.StateName));
+
+          Assert.Equal("client", exception.ParamName);
+        }
+
+        [Fact]
+        public void Reschedule_ChangesTheStateOfAJob_ToScheduled()
+        {
+          _client.Object.Reschedule(JobId, TimeSpan.FromDays(1));
+
+          _client.Verify(x => x.ChangeState(JobId, It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow), null));
+        }
+
+        [Fact]
+        public void Reschedule_WithFromState_ChangesTheStateOfAJob_ToScheduled_FromTheGivenState()
+        {
+          _client.Object.Reschedule(JobId, TimeSpan.FromDays(1), FailedState.StateName);
+
+          _client.Verify(x => x.ChangeState(JobId,  It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow), FailedState.StateName));
+        }
+
+        [Fact]
+        public void Reschedule_WithDateTimeOffset_ChangesTheStateOfAJob_ToScheduled()
+        {
+          var now = DateTimeOffset.Now;
+
+          _client.Object.Reschedule(JobId, now);
+
+          _client.Verify(x => x.ChangeState(JobId, It.Is<ScheduledState>(state => state.EnqueueAt == now.UtcDateTime), null));
+        }
+
+        [Fact]
+        public void Reschedule_WithDateTimeOffset_WithFromState_ChangesTheStateOfAJob_ToScheduled_FromTheGivenState()
+        {
+          var now = DateTimeOffset.Now;
+
+          _client.Object.Reschedule(JobId, now, FailedState.StateName);
+
+          _client.Verify(x => x.ChangeState(JobId,  It.Is<ScheduledState>(state => state.EnqueueAt == now.UtcDateTime), FailedState.StateName));
+        }
+
         public static void StaticMethod()
         {
         }
