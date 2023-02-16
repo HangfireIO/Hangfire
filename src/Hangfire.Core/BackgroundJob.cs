@@ -344,7 +344,7 @@ namespace Hangfire
         /// <returns>True, if state change succeeded, otherwise false.</returns>
         public static bool Reschedule([NotNull] string jobId, TimeSpan delay)
         {
-          return ClientFactory().Reschedule(jobId, delay);
+            return ClientFactory().Reschedule(jobId, delay);
         }
 
         /// <summary>
@@ -358,9 +358,9 @@ namespace Hangfire
         /// <param name="delay">Delay, after which the job will be scheduled.</param>
         /// <param name="fromState">Current state assertion, or null if unneeded.</param>
         /// <returns>True, if state change succeeded, otherwise false.</returns>
-        public static bool Requeue([NotNull] string jobId, TimeSpan delay, [CanBeNull] string fromState)
+        public static bool Reschedule([NotNull] string jobId, TimeSpan delay, [CanBeNull] string fromState)
         {
-          return ClientFactory().Reschedule(jobId, delay, fromState);
+            return ClientFactory().Reschedule(jobId, delay, fromState);
         }
 
         /// <summary>
@@ -373,7 +373,7 @@ namespace Hangfire
         /// <returns>True, if state change succeeded, otherwise false.</returns>
         public static bool Reschedule([NotNull] string jobId, DateTimeOffset enqueueAt)
         {
-          return ClientFactory().Reschedule(jobId, enqueueAt);
+            return ClientFactory().Reschedule(jobId, enqueueAt);
         }
 
         /// <summary>
@@ -387,9 +387,9 @@ namespace Hangfire
         /// <param name="enqueueAt">The moment of time at which the job will be rescheduled.</param>
         /// <param name="fromState">Current state assertion, or null if unneeded.</param>
         /// <returns>True, if state change succeeded, otherwise false.</returns>
-        public static bool Requeue([NotNull] string jobId, DateTimeOffset enqueueAt, [CanBeNull] string fromState)
+        public static bool Reschedule([NotNull] string jobId, DateTimeOffset enqueueAt, [CanBeNull] string fromState)
         {
-          return ClientFactory().Reschedule(jobId, enqueueAt, fromState);
+            return ClientFactory().Reschedule(jobId, enqueueAt, fromState);
         }
 
         /// <summary>
