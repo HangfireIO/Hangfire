@@ -325,8 +325,13 @@ namespace Hangfire.Dashboard
                 var exceptionInfo = SerializationHelper.Deserialize<ExceptionInfo>(exception);
                 if (exceptionInfo != null)
                 {
+                    var commaIndex = exceptionInfo.Type.IndexOf(",", StringComparison.OrdinalIgnoreCase);
+                    var typeName = commaIndex > 0 
+                        ? exceptionInfo.Type.Substring(0, commaIndex)
+                        : exceptionInfo.Type;
+
                     return new NonEscapedString(
-                        $"<h4 class=\"exception-type\">{html.HtmlEncode(exceptionInfo.Type)}</h4><p class=\"text-muted\">{html.HtmlEncode(exceptionInfo.Message)}</p>");
+                        $"<h4 class=\"exception-type\">{html.HtmlEncode(typeName)}</h4><p class=\"text-muted\">{html.HtmlEncode(exceptionInfo.Message)}</p>");
                 }
             }
 
