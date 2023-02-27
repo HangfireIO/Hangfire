@@ -20,6 +20,12 @@ https://www.hangfire.io/
     <tags>Hangfire AspNet MVC AspNetCore SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.8.0-rc3
+
+Hangfire.Core
+
+• Rollback – Use the `AttemptsExceededAction.Delete` option by default in the global automatic retry filter.
+
 1.8.0-rc2
 
 Hangfire.Core
