@@ -21,6 +21,12 @@ https://www.hangfire.io/
     <releaseNotes>https://www.hangfire.io/blog/
 
 1.8.0-rc3
+• Added – Introduce the `captureDefault` parameter in the `CaptureCulture` filter.
+• Added – Built-in awaiting metric through the `StatisticsDto.Awaiting` for monitoring stats.
+• Added – `JobStorageFeatures` class to avoid using magic strings in storage features.
+• Changed – Rely on `captureDefault` when dealing with default cultures instead of compatibility level.
+• Changed – Rename in a non-breaking way `SetContains` to `GetSetContains` for consistency.
+• Fixed – Don't show assembly details in deleted state renderer.
 • Rollback – Use the `AttemptsExceededAction.Delete` option by default in the global automatic retry filter.
 
 1.8.0-rc2

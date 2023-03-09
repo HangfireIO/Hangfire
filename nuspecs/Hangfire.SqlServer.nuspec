@@ -15,6 +15,9 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.8.0-rc3
+• Fixed – Detect schema-related options after migration, not before, to get the actual schema version.
+
 1.8.0-rc2
 • Breaking – Prioritise Microsoft.Data.SqlClient package over System.Data.SqlClient one.
 • Changed – Bump internal version of Dapper to 2.0.123.
