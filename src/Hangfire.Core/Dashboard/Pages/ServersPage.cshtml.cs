@@ -124,7 +124,7 @@ WriteLiteral("\r\n            </div>\r\n");
         }
         else
         {
-            if (servers.Any(x => x.Heartbeat.HasValue && x.Heartbeat.Value < now.Add(-inconclusiveThreshold)))
+            if (servers.Any(x => x.Heartbeat.HasValue && x.Heartbeat.Value < now.Add(-possiblyAbortedThreshold)))
             {
 
             

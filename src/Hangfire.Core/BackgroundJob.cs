@@ -535,7 +535,65 @@ namespace Hangfire
         }
 
         /// <summary>
-        /// Creates a new background job that will wait for a successful completion 
+        /// Changes state of a job with the specified <paramref name="jobId"/>
+        /// to the <see cref="ScheduledState"/>.
+        /// </summary>
+        ///
+        /// <param name="jobId">Identifier of job, whose state is being changed.</param>
+        /// <param name="delay">Delay, after which the job will be scheduled.</param>
+        /// <returns>True, if state change succeeded, otherwise false.</returns>
+        public static bool Reschedule([NotNull] string jobId, TimeSpan delay)
+        {
+            return ClientFactory().Reschedule(jobId, delay);
+        }
+
+        /// <summary>
+        /// Changes state of a job with the specified <paramref name="jobId"/>
+        /// to the <see cref="ScheduledState"/>. If <paramref name="fromState"/> value
+        /// is not null, state change will be performed only if the current state name
+        /// of a job equal to the given value.
+        /// </summary>
+        ///
+        /// <param name="jobId">Identifier of job, whose state is being changed.</param>
+        /// <param name="delay">Delay, after which the job will be scheduled.</param>
+        /// <param name="fromState">Current state assertion, or null if unneeded.</param>
+        /// <returns>True, if state change succeeded, otherwise false.</returns>
+        public static bool Reschedule([NotNull] string jobId, TimeSpan delay, [CanBeNull] string fromState)
+        {
+            return ClientFactory().Reschedule(jobId, delay, fromState);
+        }
+
+        /// <summary>
+        /// Changes state of a job with the specified <paramref name="jobId"/>
+        /// to the <see cref="ScheduledState"/>.
+        /// </summary>
+        ///
+        /// <param name="jobId">Identifier of job, whose state is being changed.</param>
+        /// <param name="enqueueAt">The moment of time at which the job will be rescheduled.</param>
+        /// <returns>True, if state change succeeded, otherwise false.</returns>
+        public static bool Reschedule([NotNull] string jobId, DateTimeOffset enqueueAt)
+        {
+            return ClientFactory().Reschedule(jobId, enqueueAt);
+        }
+
+        /// <summary>
+        /// Changes state of a job with the specified <paramref name="jobId"/>
+        /// to the <see cref="ScheduledState"/>. If <paramref name="fromState"/> value
+        /// is not null, state change will be performed only if the current state name
+        /// of a job equal to the given value.
+        /// </summary>
+        ///
+        /// <param name="jobId">Identifier of job, whose state is being changed.</param>
+        /// <param name="enqueueAt">The moment of time at which the job will be rescheduled.</param>
+        /// <param name="fromState">Current state assertion, or null if unneeded.</param>
+        /// <returns>True, if state change succeeded, otherwise false.</returns>
+        public static bool Reschedule([NotNull] string jobId, DateTimeOffset enqueueAt, [CanBeNull] string fromState)
+        {
+            return ClientFactory().Reschedule(jobId, enqueueAt, fromState);
+        }
+
+        /// <summary>
+        /// Creates a new background job that will wait for a successful completion
         /// of another background job to be enqueued.
         /// </summary>
         /// <param name="parentId">Identifier of a background job to wait completion for.</param>
