@@ -400,34 +400,7 @@ namespace Hangfire.SqlServer
         {
             _escapedSchemaName = _options.SchemaName.Replace("]", "]]");
 
-            int? schema = null;
-
-            if (_options.TryAutoDetectSchemaDependentOptions)
-            {
-                try
-                {
-                    UseConnection(null, connection =>
-                    {
-                        schema = connection.ExecuteScalar<int>($"select top (1) [Version] from [{SchemaName}].[Schema]");
-                    });
-
-                    _options.UseRecommendedIsolationLevel = true;
-                    _options.UseIgnoreDupKeyOption = schema >= 8;
-                    _options.DisableGlobalLocks = schema >= 6;
-
-                    if (schema >= 6 && _options.DeleteExpiredBatchSize == -1)
-                    {
-                        _options.DeleteExpiredBatchSize = 50000;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    var log = LogProvider.GetLogger(typeof(SqlServerStorage));
-                    log.ErrorException("Was unable to use the TryAutoDetectSchemaDependentOptions option due to an exception.", ex);
-                }
-            }
-
-            if (_options.PrepareSchemaIfNecessary && (schema == null || schema < SqlServerObjectsInstaller.LatestSchemaVersion))
+            if (_options.PrepareSchemaIfNecessary)
             {
                 var log = LogProvider.GetLogger(typeof(SqlServerObjectsInstaller));
                 const int RetryAttempts = 3;
@@ -462,6 +435,33 @@ namespace Hangfire.SqlServer
                 else
                 {
                     log.Info("Hangfire SQL objects installed.");
+                }
+            }
+
+            if (_options.TryAutoDetectSchemaDependentOptions)
+            {
+                try
+                {
+                    int? schema = null;
+
+                    UseConnection(null, connection =>
+                    {
+                        schema = connection.ExecuteScalar<int>($"select top (1) [Version] from [{SchemaName}].[Schema]");
+                    });
+
+                    _options.UseRecommendedIsolationLevel = true;
+                    _options.UseIgnoreDupKeyOption = schema >= 8;
+                    _options.DisableGlobalLocks = schema >= 6;
+
+                    if (schema >= 6 && _options.DeleteExpiredBatchSize == -1)
+                    {
+                        _options.DeleteExpiredBatchSize = 10000;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var log = LogProvider.GetLogger(typeof(SqlServerStorage));
+                    log.ErrorException("Was unable to use the TryAutoDetectSchemaDependentOptions option due to an exception.", ex);
                 }
             }
 
