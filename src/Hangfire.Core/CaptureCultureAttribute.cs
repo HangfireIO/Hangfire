@@ -31,14 +31,19 @@ namespace Hangfire
         {
         }
 
-        public CaptureCultureAttribute([CanBeNull] string defaultCultureName) : this(defaultCultureName, defaultCultureName)
+        public CaptureCultureAttribute([CanBeNull] string defaultCultureName, bool captureDefault = true)
+            : this(defaultCultureName, defaultCultureName, captureDefault)
         {
         }
 
-        public CaptureCultureAttribute([CanBeNull] string defaultCultureName, [CanBeNull] string defaultUICultureName)
+        public CaptureCultureAttribute(
+            [CanBeNull] string defaultCultureName,
+            [CanBeNull] string defaultUICultureName,
+            bool captureDefault = true)
         {
             DefaultCultureName = defaultCultureName;
             DefaultUICultureName = defaultUICultureName;
+            CaptureDefault = captureDefault;
         }
 
         [CanBeNull]
@@ -47,6 +52,8 @@ namespace Hangfire
         [CanBeNull]
         public string DefaultUICultureName { get; }
 
+        public bool CaptureDefault { get; }
+
         public void OnCreating(CreatingContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
@@ -54,8 +61,7 @@ namespace Hangfire
             var currentCulture = CultureInfo.CurrentCulture;
             var currentUICulture = CultureInfo.CurrentUICulture;
 
-            if (GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_180) &&
-                currentCulture.Name.Equals(DefaultCultureName, StringComparison.Ordinal))
+            if (CaptureDefault == false && currentCulture.Name.Equals(DefaultCultureName, StringComparison.Ordinal))
             {
                 // Don't set the 'CurrentCulture' job parameter when it's equal to the default one
             }
@@ -64,10 +70,15 @@ namespace Hangfire
                 context.SetJobParameter("CurrentCulture", currentCulture.Name);
             }
 
-            if (GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_180) &&
-                (currentUICulture.Equals(currentCulture) || currentUICulture.Name.Equals(DefaultUICultureName, StringComparison.Ordinal)))
+            if (CaptureDefault == false && currentUICulture.Name.Equals(DefaultUICultureName, StringComparison.Ordinal))
             {
                 // Don't set the 'CurrentUICulture' job parameter when it's equal to the default one
+            }
+            else if (GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_180) &&
+                     currentUICulture.Equals(currentCulture))
+            {
+                // Don't set the 'CurrentUICulture' when it's the same as 'CurrentCulture' under
+                // CompatibilityLevel.Version_180
             }
             else
             {

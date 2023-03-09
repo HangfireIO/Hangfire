@@ -67,7 +67,7 @@ namespace Hangfire.Core.Tests
         public void OnCreating_ExplicitlySetsUICultureName_EvenWhenItIsEqualToTheCultureNameOne_WithCompatibilityVersion170AndBelow()
         {
             // Arrange
-            var attribute = new CaptureCultureAttribute();
+            var attribute = new CaptureCultureAttribute(null, null, captureDefault: false);
             SetCurrentCulture(_culture);
             SetCurrentUICulture(_culture);
 
@@ -83,7 +83,7 @@ namespace Hangfire.Core.Tests
         public void OnCreating_DoesNotSetUICultureName_WhenItIsEqualToTheCultureNameOne_WithCompatibilityVersion180AndAbove()
         {
             // Arrange
-            var attribute = new CaptureCultureAttribute();
+            var attribute = new CaptureCultureAttribute(null, null, captureDefault: true);
             SetCurrentCulture(_culture);
             SetCurrentUICulture(_culture);
 
@@ -95,14 +95,14 @@ namespace Hangfire.Core.Tests
             Assert.False(_context.Object.Parameters.ContainsKey("CurrentUICulture"));
         }
 
-        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_180)]
-        public void OnCreating_SetsCultureNames_EvenWhenTheyEqualToTheDefaultOnes_WithCompatibilityVersion170AndBelow()
+        [DataCompatibilityRangeFact]
+        public void OnCreating_SetsCultureNames_EvenWhenTheyEqualToTheDefaultOnes_WhenCaptureDefaultEnabled()
         {
             // Arrange
             SetCurrentCulture(_culture);
             SetCurrentUICulture(_uiCulture);
 
-            var attribute = new CaptureCultureAttribute(_culture.Name, _uiCulture.Name);
+            var attribute = new CaptureCultureAttribute(_culture.Name, _uiCulture.Name, captureDefault: true);
 
             // Act
             attribute.OnCreating(_context.GetCreatingContext());
@@ -112,14 +112,14 @@ namespace Hangfire.Core.Tests
             Assert.Equal(_context.Object.Parameters["CurrentUICulture"], _uiCulture.Name);
         }
 
-        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_180)]
-        public void OnCreating_DoesNotSetCultureNames_WhenTheyEqualToTheDefaultOnes_WithCompatibilityVersion180AndAbove()
+        [DataCompatibilityRangeFact]
+        public void OnCreating_DoesNotSetCultureNames_WhenTheyEqualToTheDefaultOnes_WhenCaptureDefaultDisabled()
         {
             // Arrange
             SetCurrentCulture(_culture);
             SetCurrentUICulture(_uiCulture);
 
-            var attribute = new CaptureCultureAttribute(_culture.Name, _uiCulture.Name);
+            var attribute = new CaptureCultureAttribute(_culture.Name, _uiCulture.Name, captureDefault: false);
 
             // Act
             attribute.OnCreating(_context.GetCreatingContext());
