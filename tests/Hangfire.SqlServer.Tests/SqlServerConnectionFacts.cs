@@ -1631,6 +1631,102 @@ values (@key, @value, 0.0)";
 
         [Theory, CleanDatabase]
         [InlineData(false), InlineData(true)]
+        public void GetSetCount_Limited_ThrowsAnException_WhenKeysArgumentIsNull(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => connection.GetSetCount((IEnumerable<string>) null, 10));
+
+                Assert.Equal("keys", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetCount_Limited_ThrowsAnException_WhenLimitIsNegative(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentOutOfRangeException>(
+                    () => connection.GetSetCount(Enumerable.Empty<string>(), -10));
+
+                Assert.Equal("limit", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetCount_Limited_ReturnsZero_WhenSetsArgumentIsEmpty(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetSetCount(Enumerable.Empty<string>(), 10);
+                Assert.Equal(0, result);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetCount_Limited_ReturnsZero_WhenGivenSetsDoNotExist(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetSetCount(new [] { "set-1", "set-2" }.AsEnumerable(), 10);
+                Assert.Equal(0, result);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetCount_Limited_ReturnsTheSum_OfGivenSetCardinalities(bool useMicrosoftDataSqlClient)
+        {
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
+values (@Key, @Value, 0.0)";
+
+            UseConnections((sql, connection) =>
+            {
+                sql.Execute(arrangeSql, new List<dynamic>
+                {
+                    new { Key = "set-1", Value = "1" },
+                    new { Key = "set-1", Value = "2" },
+                    new { Key = "set-2", Value = "2" },
+                    new { Key = "set-2", Value = "3" },
+                    new { Key = "set-3", Value = "1" }
+                });
+
+                var result = connection.GetSetCount(new [] { "set-1", "set-2" }.AsEnumerable(), 10);
+                Assert.Equal(4, result);
+            }, useBatching: false, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetCount_Limited_LimitValue_IsConsidered(bool useMicrosoftDataSqlClient)
+        {
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
+values (@Key, @Value, 0.0)";
+
+            UseConnections((sql, connection) =>
+            {
+                sql.Execute(arrangeSql, new List<dynamic>
+                {
+                    new { Key = "set-1", Value = "1" },
+                    new { Key = "set-1", Value = "2" },
+                    new { Key = "set-2", Value = "2" },
+                    new { Key = "set-2", Value = "3" },
+                    new { Key = "set-3", Value = "1" }
+                });
+
+                var result = connection.GetSetCount(new [] { "set-1", "set-2", "set-4" }.AsEnumerable(), 2);
+                Assert.Equal(2, result);
+            }, useBatching: false, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
         public void GetRangeFromSet_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
