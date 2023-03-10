@@ -134,7 +134,7 @@ namespace Hangfire.SqlServer
         {
             if (String.IsNullOrWhiteSpace(resource)) throw new ArgumentNullException(nameof(resource));
 
-            var disposableLock = _connection.AcquireLock(resource, timeout);
+            var disposableLock = _connection.AcquireLock($"{_storage.SchemaName}:{resource}", timeout);
             if (!disposableLock.OwnLock) return;
 
             var command = SqlServerDistributedLock.CreateReleaseCommand(

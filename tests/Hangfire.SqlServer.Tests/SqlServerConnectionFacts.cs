@@ -174,7 +174,7 @@ namespace Hangfire.SqlServer.Tests
                 distributedLock.Dispose();
 
                 var lockMode = sql.Query<string>(
-                    "select applock_mode('public', 'hello', 'session')").Single();
+                    $"select applock_mode('public', '{Constants.DefaultSchema}:hello', 'session')").Single();
 
                 Assert.Equal("NoLock", lockMode);
             }, useBatching: false, useMicrosoftDataSqlClient);

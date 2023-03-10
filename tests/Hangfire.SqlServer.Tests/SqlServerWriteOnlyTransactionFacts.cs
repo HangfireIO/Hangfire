@@ -2238,7 +2238,7 @@ values (@jobId, '', '', getutcdate())";
             UseSqlServerTransaction(transaction =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                () => transaction.AcquireDistributedLock("", TimeSpan.FromMinutes(5)));
+                () => transaction.AcquireDistributedLock("", TimeSpan.FromSeconds(15)));
 
                 Assert.Equal("resource", exception.ParamName);
             }, useMicrosoftDataSqlClient, useBatching);
@@ -2257,7 +2257,7 @@ values (@jobId, '', '', getutcdate())";
                 using (var connection = new SqlServerConnection(storage))
                 using (var transaction = new SqlServerWriteOnlyTransaction(connection))
                 {
-                    transaction.AcquireDistributedLock("hello", TimeSpan.FromMinutes(5));
+                    transaction.AcquireDistributedLock("hello", TimeSpan.FromSeconds(15));
                     var lockMode = sql.Query<string>(
                         $"select applock_mode('public', '{Constants.DefaultSchema}:hello', 'session')").Single();
 
@@ -2281,13 +2281,17 @@ values (@jobId, '', '', getutcdate())";
                     transaction1.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(5));
 
                     lockAcquired.Set();
-                    releaseLock.Wait();
+                    if (!releaseLock.Wait(TimeSpan.FromSeconds(15)))
+                        throw new TimeoutException("Waiting for too long in transaction1 block");
 
                     transaction1.Commit();
                 }, useMicrosoftDataSqlClient, useBatching));
             thread.Start();
 
-            lockAcquired.Wait();
+            if (!lockAcquired.Wait(TimeSpan.FromSeconds(15)))
+            {
+                throw new TimeoutException("Waiting for too long in transaction2 block");
+            }
 
             UseSqlServerTransaction(transaction2 =>
             {
@@ -2312,11 +2316,11 @@ values (@jobId, '', '', getutcdate())";
                 using (var connection = new SqlServerConnection(storage))
                 using (var transaction = new SqlServerWriteOnlyTransaction(connection))
                 {
-                    transaction.AcquireDistributedLock("hello", TimeSpan.FromMinutes(5));
+                    transaction.AcquireDistributedLock("hello", TimeSpan.FromSeconds(15));
                     transaction.Commit();
                 }
 
-                var lockMode = sql.Query<string>("select applock_mode('public', 'hello', 'session')").Single();
+                var lockMode = sql.Query<string>($"select applock_mode('public', '{Constants.DefaultSchema}:hello', 'session')").Single();
 
                 Assert.Equal("NoLock", lockMode);
             }, useMicrosoftDataSqlClient);
@@ -2329,8 +2333,8 @@ values (@jobId, '', '', getutcdate())";
         {
             UseSqlServerTransaction(transaction =>
             {
-                transaction.AcquireDistributedLock("hello", TimeSpan.FromMinutes(5));
-                transaction.AcquireDistributedLock("hello", TimeSpan.FromMinutes(5));
+                transaction.AcquireDistributedLock("hello", TimeSpan.FromSeconds(15));
+                transaction.AcquireDistributedLock("hello", TimeSpan.FromSeconds(15));
                 transaction.Commit();
             }, useMicrosoftDataSqlClient, useBatching);
         }
