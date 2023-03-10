@@ -2290,7 +2290,14 @@ values (@jobId, '', '', getutcdate())";
                     }
                     catch (Exception ex)
                     {
-                        Assert.True(false, ex.ToString());
+                        try
+                        {
+                            Assert.True(false, ex.ToString());
+                        }
+                        catch
+                        {
+                            // Need only message
+                        }
                     }
                 }, useMicrosoftDataSqlClient, useBatching));
             thread.Start();
