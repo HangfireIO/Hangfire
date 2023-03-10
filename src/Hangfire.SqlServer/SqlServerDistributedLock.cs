@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Diagnostics;
 using System.Threading;
 using Dapper;
@@ -49,7 +50,7 @@ namespace Hangfire.SqlServer
         private static readonly ThreadLocal<Dictionary<string, int>> AcquiredLocks
             = new ThreadLocal<Dictionary<string, int>>(() => new Dictionary<string, int>()); 
 
-        private IDbConnection _connection;
+        private DbConnection _connection;
         private readonly SqlServerStorage _storage;
         private readonly string _resource;
         private readonly Timer _timer;
@@ -158,7 +159,7 @@ namespace Hangfire.SqlServer
             }
         }
 
-        internal static void Acquire(IDbConnection connection, string resource, TimeSpan timeout)
+        internal static void Acquire(DbConnection connection, string resource, TimeSpan timeout)
         {
             if (connection.State != ConnectionState.Open)
             {
@@ -217,25 +218,50 @@ namespace Hangfire.SqlServer
             throw new DistributedLockTimeoutException(resource);
         }
 
-        internal static void Release(IDbConnection connection, string resource)
+        internal static void Release(DbConnection connection, string resource)
         {
-            var parameters = new DynamicParameters();
-            parameters.Add("@Resource", resource);
-            parameters.Add("@LockOwner", LockOwner);
-            parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
+            var command = CreateReleaseCommand(connection, resource, out var resultParameter);
+            command.ExecuteNonQuery();
 
-            connection.Execute(
-                @"sp_releaseapplock",
-                parameters,
-                commandType: CommandType.StoredProcedure);
-
-            var releaseResult = parameters.Get<int>("@Result");
+            var releaseResult = (int)resultParameter.Value;
 
             if (releaseResult < 0)
             {
                 throw new SqlServerDistributedLockException(
                     $"Could not release a lock on the resource '{resource}': Server returned the '{releaseResult}' error.");
             }
+        }
+
+        internal static DbCommand CreateReleaseCommand(
+            DbConnection connection,
+            string resource,
+            out DbParameter resultParameter)
+        {
+            var command = connection.CreateCommand();
+            command.CommandType = CommandType.StoredProcedure;
+            command.CommandText = "sp_releaseapplock";
+
+            var resourceParameter = command.CreateParameter();
+            resourceParameter.ParameterName = "@Resource";
+            resourceParameter.DbType = DbType.String;
+            resourceParameter.Size = 255;
+            resourceParameter.Value = resource;
+            command.Parameters.Add(resourceParameter);
+
+            var ownerParameter = command.CreateParameter();
+            ownerParameter.ParameterName = "@LockOwner";
+            ownerParameter.DbType = DbType.String;
+            ownerParameter.Size = 32;
+            ownerParameter.Value = LockOwner;
+            command.Parameters.Add(ownerParameter);
+
+            resultParameter = command.CreateParameter();
+            resultParameter.ParameterName = "@Result";
+            resultParameter.DbType = DbType.Int32;
+            resultParameter.Direction = ParameterDirection.ReturnValue;
+            command.Parameters.Add(resultParameter);
+
+            return command;
         }
     }
 }
