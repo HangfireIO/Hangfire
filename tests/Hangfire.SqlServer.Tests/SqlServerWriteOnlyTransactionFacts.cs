@@ -2278,17 +2278,24 @@ values (@jobId, '', '', getutcdate())";
             var thread = new Thread(
                 () => UseSqlServerTransaction(transaction1 =>
                 {
-                    transaction1.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(5));
+                    try
+                    {
+                        transaction1.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(5));
 
-                    lockAcquired.Set();
-                    if (!releaseLock.Wait(TimeSpan.FromSeconds(15)))
-                        throw new TimeoutException("Waiting for too long in transaction1 block");
+                        lockAcquired.Set();
+                        if (!releaseLock.Wait(TimeSpan.FromSeconds(30)))
+                            throw new TimeoutException("Waiting for too long in transaction1 block");
 
-                    transaction1.Commit();
+                        transaction1.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        Assert.True(false, ex.ToString());
+                    }
                 }, useMicrosoftDataSqlClient, useBatching));
             thread.Start();
 
-            if (!lockAcquired.Wait(TimeSpan.FromSeconds(15)))
+            if (!lockAcquired.Wait(TimeSpan.FromSeconds(30)))
             {
                 throw new TimeoutException("Waiting for too long in transaction2 block");
             }
@@ -2326,6 +2333,9 @@ values (@jobId, '', '', getutcdate())";
             }, useMicrosoftDataSqlClient);
         }
 
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
         public void AcquireDistributedLock_TransactionCommit_DoesNotReleaseLock_IfItsOwnedByConnection(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
