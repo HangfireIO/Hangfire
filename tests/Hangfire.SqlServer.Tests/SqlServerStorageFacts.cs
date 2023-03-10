@@ -150,6 +150,16 @@ namespace Hangfire.SqlServer.Tests
         }
 
         [Fact, CleanDatabase]
+        public void HasFeature_Connection_GetSetContains_ReturnsTrue()
+        {
+            var storage = CreateStorage();
+
+            var result = storage.HasFeature("Connection.GetSetContains");
+
+            Assert.True(result);
+        }
+
+        [Fact, CleanDatabase]
         public void HasFeature_Job_Queue_ReturnsTrue()
         {
             var storage = CreateStorage();

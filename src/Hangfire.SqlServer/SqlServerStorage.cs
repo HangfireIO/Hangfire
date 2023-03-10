@@ -50,7 +50,7 @@ namespace Hangfire.SqlServer
                 { JobStorageFeatures.JobQueueProperty, true },
                 { JobStorageFeatures.Connection.BatchedGetFirstByLowest, true },
                 { JobStorageFeatures.Connection.GetUtcDateTime, true },
-                { JobStorageFeatures.Connection.GetSetContains, false },
+                { JobStorageFeatures.Connection.GetSetContains, true },
                 { JobStorageFeatures.Connection.LimitedGetSetCount, false },
                 { JobStorageFeatures.Transaction.AcquireDistributedLock, false },
                 { JobStorageFeatures.Transaction.CreateJob, false },

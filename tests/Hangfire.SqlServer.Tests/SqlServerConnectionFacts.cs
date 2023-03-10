@@ -1678,6 +1678,118 @@ values (@Key, @Value, 0.0)";
 
         [Theory, CleanDatabase]
         [InlineData(false), InlineData(true)]
+        public void GetSetContains_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => connection.GetSetContains(null, "value"));
+                
+                Assert.Equal("key", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetContains_ThrowsAnException_WhenValueIsNull(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => connection.GetSetContains("key", null));
+
+                Assert.Equal("value", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetContains_ReturnsFalse_WhenGivenSetDoesNotExist(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetSetContains("non-existing-set", "some-value");
+                Assert.False(result);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetContains_ReturnsTrue_WhenGivenSetExists_AndContainsTheValue(bool useMicrosoftDataSqlClient)
+        {
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
+values (@Key, @Value, 0.0)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new List<dynamic>
+                {
+                    new { Key = "my-set", Value = "1" },
+                    new { Key = "my-set", Value = "2" },
+                });
+
+                // Act
+                var result = connection.GetSetContains("my-set", "2");
+
+                // Assert
+                Assert.True(result);
+            }, useBatching: false, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetContains_ReturnsFalse_WhenGivenSetExists_ButContainsOtherValues(bool useMicrosoftDataSqlClient)
+        {
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
+values (@Key, @Value, 0.0)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new List<dynamic>
+                {
+                    new { Key = "my-set", Value = "1" },
+                    new { Key = "my-set", Value = "2" },
+                });
+
+                // Act
+                var result = connection.GetSetContains("my-set", "3");
+
+                // Assert
+                Assert.False(result);
+            }, useBatching: false, useMicrosoftDataSqlClient);
+        }
+        
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetContains_ReturnsFalse_WhenAnotherSetContainsTheValue(bool useMicrosoftDataSqlClient)
+        {
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
+values (@Key, @Value, 0.0)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new List<dynamic>
+                {
+                    new { Key = "my-set", Value = "1" },
+                    new { Key = "another-set", Value = "2" },
+                });
+
+                // Act
+                var result = connection.GetSetContains("another-set", "2");
+
+                // Assert
+                Assert.False(result);
+            }, useBatching: false, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
         public void GetCounter_ReturnsZero_WhenKeyDoesNotExist(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>

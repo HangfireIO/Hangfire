@@ -535,6 +535,17 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
                 commandTimeout: _storage.CommandTimeout).First());
         }
 
+        public override bool GetSetContains(string key, string value)
+        {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (value == null) throw new ArgumentNullException(nameof(value));
+
+            return _storage.UseConnection(_dedicatedConnection, connection => connection.ExecuteScalar<int>(
+                $"select count(1) from [{_storage.SchemaName}].[Set] with (forceseek) where [Key] = @key and [Value] = @value",
+                new { key = key, value = value },
+                commandTimeout: _storage.CommandTimeout) == 1); 
+        }
+
         public override List<string> GetRangeFromSet(string key, int startingFrom, int endingAt)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
