@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
@@ -60,12 +61,20 @@ namespace Hangfire.Storage
             throw new NotSupportedException();
         }
 
+        [Obsolete("Please use/override the GetSetCount method that results `long` instead. Will be removed in 1.8.0.")]
         public virtual KeyValuePair<string, long>[] GetSetCount([NotNull] string[] keys, int limit)
         {
             throw new NotSupportedException();
         }
 
-        [Obsolete("Please use/override the GetSetContains method instead. Will be removed in 2.0.0.")]
+        public virtual long GetSetCount([NotNull] IEnumerable<string> keys, int limit)
+        {
+#pragma warning disable CS0618
+            return GetSetCount(keys.ToArray(), limit).Sum(x => x.Value);
+#pragma warning restore CS0618
+        }
+
+        [Obsolete("Please use/override the GetSetContains method instead. Will be removed in 1.8.0.")]
         public virtual bool SetContains([NotNull] string key, [NotNull] string value)
         {
             throw new NotSupportedException();
