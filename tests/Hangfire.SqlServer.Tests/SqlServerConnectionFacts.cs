@@ -1781,7 +1781,7 @@ values (@Key, @Value, 0.0)";
                 });
 
                 // Act
-                var result = connection.GetSetContains("another-set", "2");
+                var result = connection.GetSetContains("my-set", "2");
 
                 // Assert
                 Assert.False(result);
