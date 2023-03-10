@@ -2326,6 +2326,31 @@ values (@jobId, '', '', getutcdate())";
             }, useMicrosoftDataSqlClient);
         }
 
+        public void AcquireDistributedLock_TransactionCommit_DoesNotReleaseLock_IfItsOwnedByConnection(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(sql =>
+            {
+                var options = new SqlServerStorageOptions { CommandBatchMaxTimeout = useBatching ? (TimeSpan?)TimeSpan.FromMinutes(5) : null };
+                var storage = new SqlServerStorage(sql, options);
+
+                using (var connection = new SqlServerConnection(storage))
+                using (connection.AcquireDistributedLock("hello", TimeSpan.FromSeconds(15)))
+                {
+                    using (var transaction = new SqlServerWriteOnlyTransaction(connection))
+                    {
+                        transaction.AcquireDistributedLock("hello", TimeSpan.FromSeconds(15));
+                        transaction.Commit();
+                    }
+
+                    var lockMode = sql
+                        .Query<string>($"select applock_mode('public', '{Constants.DefaultSchema}:hello', 'session')")
+                        .Single();
+
+                    Assert.Equal("Exclusive", lockMode);
+                }
+            }, useMicrosoftDataSqlClient);
+        }
+
         [Theory, CleanDatabase]
         [InlineData(false, false), InlineData(false, true)]
         [InlineData(true, false), InlineData(true, true)]
