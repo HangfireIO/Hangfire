@@ -46,7 +46,6 @@ namespace Hangfire.SqlServer
             _schemaName = Constants.DefaultSchema;
             TransactionTimeout = TimeSpan.FromMinutes(1);
             DisableGlobalLocks = false;
-            UsePageLocksOnDequeue = false;
             DeleteExpiredBatchSize = -1;
             UseTransactionalAcknowledge = false;
             UseRecommendedIsolationLevel = true;
