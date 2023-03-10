@@ -541,7 +541,9 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
             if (limit < 0) throw new ArgumentOutOfRangeException(nameof(limit), "Value must be greater or equal to 0.");
 
             return _storage.UseConnection(_dedicatedConnection, connection => connection.ExecuteScalar<long>(
-                $"select top(@limit) count(1) from [{_storage.SchemaName}].[Set] with (forceseek) where [Key] in @keys",
+$@"select count(*) from (
+  select top(@limit) 1 as N from [{_storage.SchemaName}].[Set] with (forceseek) where [Key] in @keys
+) a",
                 new { keys = keys, limit = limit },
                 commandTimeout: _storage.CommandTimeout));
         }
