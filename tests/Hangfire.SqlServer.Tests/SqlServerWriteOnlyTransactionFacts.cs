@@ -31,12 +31,12 @@ namespace Hangfire.SqlServer.Tests
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_IfStorageIsNull()
+        public void Ctor_ThrowsAnException_IfConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerWriteOnlyTransaction(null, () => null));
+                () => new SqlServerWriteOnlyTransaction(null));
 
-            Assert.Equal("storage", exception.ParamName);
+            Assert.Equal("connection", exception.ParamName);
         }
 
         [Theory, CleanDatabase]
@@ -2248,7 +2248,8 @@ values (@jobId, '', '', getutcdate())";
             var storage = new Mock<SqlServerStorage>((Func<DbConnection>)(() => ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient)), options);
             storage.Setup(x => x.QueueProviders).Returns(_queueProviders);
 
-            using (var transaction = new SqlServerWriteOnlyTransaction(storage.Object, () => null))
+            using (var connection = new SqlServerConnection(storage.Object))
+            using (var transaction = new SqlServerWriteOnlyTransaction(connection))
             {
                 action(transaction);
                 transaction.Commit();

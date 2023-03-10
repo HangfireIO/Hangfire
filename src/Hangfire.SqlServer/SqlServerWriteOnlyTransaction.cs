@@ -36,7 +36,7 @@ namespace Hangfire.SqlServer
         private readonly Queue<Action> _afterCommitCommandQueue = new Queue<Action>();
 
         private readonly SqlServerStorage _storage;
-        private readonly Func<DbConnection> _dedicatedConnectionFunc;
+        private readonly SqlServerConnection _connection;
 
         private readonly SortedDictionary<long, List<Tuple<string, SqlCommandBatchParameter[]>>> _jobCommands = new SortedDictionary<long, List<Tuple<string, SqlCommandBatchParameter[]>>>();
         private readonly SortedDictionary<string, List<Tuple<string, SqlCommandBatchParameter[]>>> _counterCommands = new SortedDictionary<string, List<Tuple<string, SqlCommandBatchParameter[]>>>();
@@ -49,19 +49,18 @@ namespace Hangfire.SqlServer
 
         private bool _committed;
 
-        public SqlServerWriteOnlyTransaction([NotNull] SqlServerStorage storage, Func<DbConnection> dedicatedConnectionFunc)
+        public SqlServerWriteOnlyTransaction([NotNull] SqlServerConnection connection)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
-
-            _storage = storage;
-            _dedicatedConnectionFunc = dedicatedConnectionFunc;
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            _connection = connection;
+            _storage = connection.Storage;
         }
 
         public bool Committed => _committed;
 
         public override void Commit()
         {
-            _storage.UseTransaction(_dedicatedConnectionFunc(), (connection, transaction) =>
+            _storage.UseTransaction(_connection.DedicatedConnection, (connection, transaction) =>
             {
                 using (var commandBatch = new SqlCommandBatch(connection, transaction, preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
                 {

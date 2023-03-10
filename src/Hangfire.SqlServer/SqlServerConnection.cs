@@ -41,6 +41,9 @@ namespace Hangfire.SqlServer
             _storage = storage;
         }
 
+        public SqlServerStorage Storage => _storage;
+        public DbConnection DedicatedConnection => _dedicatedConnection;
+
         public override void Dispose()
         {
             if (_dedicatedConnection != null)
@@ -52,7 +55,7 @@ namespace Hangfire.SqlServer
 
         public override IWriteOnlyTransaction CreateWriteTransaction()
         {
-            return new SqlServerWriteOnlyTransaction(_storage, () => _dedicatedConnection);
+            return new SqlServerWriteOnlyTransaction(this);
         }
 
         public override IDisposable AcquireDistributedLock([NotNull] string resource, TimeSpan timeout)
