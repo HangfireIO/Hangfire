@@ -529,10 +529,21 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            return _storage.UseConnection(_dedicatedConnection, connection => connection.Query<int>(
+            return _storage.UseConnection(_dedicatedConnection, connection => connection.ExecuteScalar<long>(
                 $"select count(*) from [{_storage.SchemaName}].[Set] with (forceseek) where [Key] = @key",
                 new { key = key },
-                commandTimeout: _storage.CommandTimeout).First());
+                commandTimeout: _storage.CommandTimeout));
+        }
+
+        public override long GetSetCount(IEnumerable<string> keys, int limit)
+        {
+            if (keys == null) throw new ArgumentNullException(nameof(keys));
+            if (limit < 0) throw new ArgumentOutOfRangeException(nameof(limit), "Value must be greater or equal to 0.");
+
+            return _storage.UseConnection(_dedicatedConnection, connection => connection.ExecuteScalar<long>(
+                $"select top(@limit) count(1) from [{_storage.SchemaName}].[Set] with (forceseek) where [Key] in @keys",
+                new { keys = keys, limit = limit },
+                commandTimeout: _storage.CommandTimeout));
         }
 
         public override bool GetSetContains(string key, string value)
