@@ -5,8 +5,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Threading;
 using ReferencedDapper::Dapper;
 using Hangfire.States;
+using Hangfire.Storage;
 using Moq;
 using Xunit;
 
@@ -2227,6 +2229,111 @@ values (@jobId, '', '', getutcdate())";
                 Assert.Equal(int.MaxValue + 1L, jobState.JobId);
             }, useMicrosoftDataSqlClient);
         }
+        
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AcquireDistributedLock_ThrowsAnException_WhenResourceIsNullOrEmpty(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseSqlServerTransaction(transaction =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                () => transaction.AcquireDistributedLock("", TimeSpan.FromMinutes(5)));
+
+                Assert.Equal("resource", exception.ParamName);
+            }, useMicrosoftDataSqlClient, useBatching);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AcquireDistributedLock_AcquiresExclusiveApplicationLock_OnSession(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            using (var sql = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient))
+            {
+                var options = new SqlServerStorageOptions { CommandBatchMaxTimeout = useBatching ? (TimeSpan?)TimeSpan.FromMinutes(5) : null };
+                var storage = new SqlServerStorage(sql, options);
+
+                using (var connection = new SqlServerConnection(storage))
+                using (var transaction = new SqlServerWriteOnlyTransaction(connection))
+                {
+                    transaction.AcquireDistributedLock("hello", TimeSpan.FromMinutes(5));
+                    var lockMode = sql.Query<string>(
+                        $"select applock_mode('public', '{Constants.DefaultSchema}:hello', 'session')").Single();
+
+                    Assert.Equal("Exclusive", lockMode);
+                    transaction.Commit();
+                }
+            }
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AcquireDistributedLock_ThrowsAnException_IfLockCanNotBeGranted(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            var releaseLock = new ManualResetEventSlim(false);
+            var lockAcquired = new ManualResetEventSlim(false);
+
+            var thread = new Thread(
+                () => UseSqlServerTransaction(transaction1 =>
+                {
+                    transaction1.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(5));
+
+                    lockAcquired.Set();
+                    releaseLock.Wait();
+
+                    transaction1.Commit();
+                }, useMicrosoftDataSqlClient, useBatching));
+            thread.Start();
+
+            lockAcquired.Wait();
+
+            UseSqlServerTransaction(transaction2 =>
+            {
+                Assert.Throws<DistributedLockTimeoutException>(
+                    () => transaction2.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(5)));
+            }, useMicrosoftDataSqlClient, useBatching);
+
+            releaseLock.Set();
+            thread.Join();
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AcquireDistributedLock_TransactionCommit_ReleasesExclusiveApplicationLock(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(sql =>
+            {
+                var options = new SqlServerStorageOptions { CommandBatchMaxTimeout = useBatching ? (TimeSpan?)TimeSpan.FromMinutes(5) : null };
+                var storage = new SqlServerStorage(sql, options);
+
+                using (var connection = new SqlServerConnection(storage))
+                using (var transaction = new SqlServerWriteOnlyTransaction(connection))
+                {
+                    transaction.AcquireDistributedLock("hello", TimeSpan.FromMinutes(5));
+                    transaction.Commit();
+                }
+
+                var lockMode = sql.Query<string>("select applock_mode('public', 'hello', 'session')").Single();
+
+                Assert.Equal("NoLock", lockMode);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AcquireDistributedLock_IsReentrant_FromTheSameTransaction_OnTheSameResource(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseSqlServerTransaction(transaction =>
+            {
+                transaction.AcquireDistributedLock("hello", TimeSpan.FromMinutes(5));
+                transaction.AcquireDistributedLock("hello", TimeSpan.FromMinutes(5));
+                transaction.Commit();
+            }, useMicrosoftDataSqlClient, useBatching);
+        }
 
         private static void UseConnection(Action<DbConnection> action, bool useMicrosoftDataSqlClient)
         {
@@ -2236,24 +2343,50 @@ values (@jobId, '', '', getutcdate())";
             }
         }
 
+        private void UseSqlServerConnection(
+            Action<SqlServerConnection> action,
+            bool useMicrosoftDataSqlClient,
+            bool useBatching = false,
+            Action<SqlServerStorageOptions> optionsAction = null)
+        {
+            var options = new SqlServerStorageOptions { CommandBatchMaxTimeout = useBatching ? TimeSpan.FromMinutes(1) : (TimeSpan?) null };
+            optionsAction?.Invoke(options);
+
+            var storage = new Mock<SqlServerStorage>((Func<DbConnection>) (() => ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient)), options);
+            storage.Setup(x => x.QueueProviders).Returns(_queueProviders);
+
+            using (var connection = new SqlServerConnection(storage.Object))
+            {
+                action(connection);
+            }
+        }
+
+        private void UseSqlServerTransaction(
+            Action<SqlServerWriteOnlyTransaction> action,
+            bool useMicrosoftDataSqlClient,
+            bool useBatching,
+            Action<SqlServerStorageOptions> optionsAction = null)
+        {
+            UseSqlServerConnection(connection =>
+            {
+                using (var transaction = new SqlServerWriteOnlyTransaction(connection))
+                {
+                    action(transaction);
+                }
+            }, useMicrosoftDataSqlClient, useBatching, optionsAction);
+        }
+
         private void Commit(
             Action<SqlServerWriteOnlyTransaction> action,
             bool useMicrosoftDataSqlClient,
             bool useBatching,
             Action<SqlServerStorageOptions> optionsAction = null)
         {
-            var options = new SqlServerStorageOptions { CommandBatchMaxTimeout = useBatching ? TimeSpan.FromMinutes(1) : (TimeSpan?) null };
-            optionsAction?.Invoke(options);
-
-            var storage = new Mock<SqlServerStorage>((Func<DbConnection>)(() => ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient)), options);
-            storage.Setup(x => x.QueueProviders).Returns(_queueProviders);
-
-            using (var connection = new SqlServerConnection(storage.Object))
-            using (var transaction = new SqlServerWriteOnlyTransaction(connection))
+            UseSqlServerTransaction(transaction =>
             {
                 action(transaction);
                 transaction.Commit();
-            }
+            }, useMicrosoftDataSqlClient, useBatching, optionsAction);
         }
     }
 }

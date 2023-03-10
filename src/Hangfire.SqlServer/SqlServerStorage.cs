@@ -52,7 +52,7 @@ namespace Hangfire.SqlServer
                 { JobStorageFeatures.Connection.GetUtcDateTime, true },
                 { JobStorageFeatures.Connection.GetSetContains, true },
                 { JobStorageFeatures.Connection.LimitedGetSetCount, true },
-                { JobStorageFeatures.Transaction.AcquireDistributedLock, false },
+                { JobStorageFeatures.Transaction.AcquireDistributedLock, true },
                 { JobStorageFeatures.Transaction.CreateJob, false },
                 { JobStorageFeatures.Transaction.SetJobParameter, false }
             };

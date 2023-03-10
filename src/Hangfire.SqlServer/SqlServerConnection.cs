@@ -711,7 +711,7 @@ order by [Id] desc";
 
         private DbConnection _dedicatedConnection;
 
-        private IDisposable AcquireLock(string resource, TimeSpan timeout)
+        internal DisposableLock AcquireLock(string resource, TimeSpan timeout)
         {
             if (_dedicatedConnection == null)
             {
@@ -719,16 +719,18 @@ order by [Id] desc";
             }
 
             var lockId = Guid.NewGuid();
+            var ownLock = false;
 
             if (!_lockedResources.ContainsKey(resource))
             {
                 try
                 {
                     SqlServerDistributedLock.Acquire(_dedicatedConnection, resource, timeout);
+                    ownLock = true;
                 }
                 catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
-                    ReleaseLock(resource, lockId, true);
+                    ReleaseLock(resource, lockId, true, false);
                     throw;
                 }
 
@@ -736,10 +738,10 @@ order by [Id] desc";
             }
 
             _lockedResources[resource].Add(lockId);
-            return new DisposableLock(this, resource, lockId);
+            return new DisposableLock(this, resource, lockId, ownLock);
         }
 
-        private void ReleaseLock(string resource, Guid lockId, bool onDisposing)
+        private void ReleaseLock(string resource, Guid lockId, bool onDisposing, bool releasedExternally)
         {
             try
             {
@@ -756,7 +758,10 @@ order by [Id] desc";
                             // is open. When connection is closed or broken, for example, when
                             // there was an error, application lock is already released by SQL
                             // Server itself, and we shouldn't do anything.
-                            SqlServerDistributedLock.Release(_dedicatedConnection, resource);
+                            if (!releasedExternally)
+                            {
+                                SqlServerDistributedLock.Release(_dedicatedConnection, resource);
+                            }
                         }
                     }
                 }
@@ -778,22 +783,30 @@ order by [Id] desc";
             }
         }
 
-        private class DisposableLock : IDisposable
+        internal class DisposableLock : IDisposable
         {
+            private bool _disposed;
             private readonly SqlServerConnection _connection;
             private readonly string _resource;
             private readonly Guid _lockId;
 
-            public DisposableLock(SqlServerConnection connection, string resource, Guid lockId)
+            public DisposableLock(SqlServerConnection connection, string resource, Guid lockId, bool ownLock)
             {
                 _connection = connection;
                 _resource = resource;
                 _lockId = lockId;
+                OwnLock = ownLock;
             }
+
+            public string Resource => _resource;
+            public bool OwnLock { get; }
+            public bool ReleasedExternally { get; set; }
 
             public void Dispose()
             {
-                _connection.ReleaseLock(_resource, _lockId, true);
+                if (_disposed) return;
+                _disposed = true;
+                _connection.ReleaseLock(_resource, _lockId, true, ReleasedExternally);
             }
         }
     }

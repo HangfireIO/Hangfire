@@ -179,6 +179,16 @@ namespace Hangfire.SqlServer.Tests
             Assert.True(result);
         }
 
+        [Fact, CleanDatabase]
+        public void HasFeature_Transaction_AcquireDistributedLock_ReturnsTrue()
+        {
+            var storage = CreateStorage();
+
+            var result = storage.HasFeature("Transaction.AcquireDistributedLock");
+
+            Assert.True(result);
+        }
+
         private SqlServerStorage CreateStorage()
         {
             return new SqlServerStorage(

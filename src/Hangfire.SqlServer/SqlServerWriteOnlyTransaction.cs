@@ -44,6 +44,7 @@ namespace Hangfire.SqlServer
         private readonly SortedDictionary<string, List<Tuple<string, SqlCommandBatchParameter[]>>> _listCommands = new SortedDictionary<string, List<Tuple<string, SqlCommandBatchParameter[]>>>();
         private readonly SortedDictionary<string, List<Tuple<string, SqlCommandBatchParameter[]>>> _setCommands = new SortedDictionary<string, List<Tuple<string, SqlCommandBatchParameter[]>>>();
         private readonly SortedDictionary<string, List<Tuple<string, SqlCommandBatchParameter[]>>> _queueCommands = new SortedDictionary<string, List<Tuple<string, SqlCommandBatchParameter[]>>>();
+        private readonly List<Tuple<SqlServerConnection.DisposableLock, DbCommand, DbParameter>> _lockCommands = new List<Tuple<SqlServerConnection.DisposableLock, DbCommand, DbParameter>>();
 
         private readonly SortedSet<string> _lockedResources = new SortedSet<string>();
 
@@ -80,10 +81,39 @@ namespace Hangfire.SqlServer
                     AppendBatch(_setCommands, commandBatch);
                     AppendBatch(_queueCommands, commandBatch);
 
+                    foreach (var command in _lockCommands)
+                    {
+                        commandBatch.Append(command.Item2);
+                    }
+
                     commandBatch.CommandTimeout = _storage.CommandTimeout;
                     commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
 
-                    commandBatch.ExecuteNonQuery();
+                    try
+                    {
+                        commandBatch.ExecuteNonQuery();
+                        foreach (var lockCommand in _lockCommands)
+                        {
+                            lockCommand.Item1.ReleasedExternally = true;
+                        }
+
+                        foreach (var lockCommand in _lockCommands)
+                        {
+                            var releaseResult = (int)lockCommand.Item3.Value;
+                            if (releaseResult < 0)
+                            {
+                                throw new SqlServerDistributedLockException(
+                                    $"Could not release a lock on the resource '{lockCommand.Item1.Resource}': Server returned the '{releaseResult}' error.");
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        foreach (var command in _lockCommands)
+                        {
+                            command.Item1.Dispose();
+                        }
+                    }
 
                     foreach (var queueCommand in _queueCommandQueue)
                     {
@@ -98,6 +128,21 @@ namespace Hangfire.SqlServer
             {
                 command();
             }
+        }
+
+        public override void AcquireDistributedLock(string resource, TimeSpan timeout)
+        {
+            if (String.IsNullOrWhiteSpace(resource)) throw new ArgumentNullException(nameof(resource));
+
+            var disposableLock = _connection.AcquireLock(resource, timeout);
+            if (!disposableLock.OwnLock) return;
+
+            var command = SqlServerDistributedLock.CreateReleaseCommand(
+                _connection.DedicatedConnection,
+                resource,
+                out var resultParameter);
+
+            _lockCommands.Add(Tuple.Create(disposableLock, command, resultParameter));
         }
 
         public override void ExpireJob(string jobId, TimeSpan expireIn)
