@@ -130,6 +130,14 @@ namespace Hangfire.SqlServer
             }
         }
 
+        public override void Dispose()
+        {
+            foreach (var command in _lockCommands)
+            {
+                command.Item1.Dispose();
+            }
+        }
+
         public override void AcquireDistributedLock(string resource, TimeSpan timeout)
         {
             if (String.IsNullOrWhiteSpace(resource)) throw new ArgumentNullException(nameof(resource));
@@ -139,7 +147,7 @@ namespace Hangfire.SqlServer
 
             var command = SqlServerDistributedLock.CreateReleaseCommand(
                 _connection.DedicatedConnection,
-                resource,
+                disposableLock.Resource,
                 out var resultParameter);
 
             _lockCommands.Add(Tuple.Create(disposableLock, command, resultParameter));
