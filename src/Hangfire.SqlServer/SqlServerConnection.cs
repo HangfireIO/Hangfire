@@ -800,13 +800,18 @@ order by [Id] desc";
 
             public string Resource => _resource;
             public bool OwnLock { get; }
-            public bool ReleasedExternally { get; set; }
+            public bool ReleasedExternally { get; private set; }
 
             public void Dispose()
             {
                 if (_disposed) return;
                 _disposed = true;
                 _connection.ReleaseLock(_resource, _lockId, true, ReleasedExternally);
+            }
+
+            public void TryReportReleased()
+            {
+                if (OwnLock) ReleasedExternally = true;
             }
         }
     }
