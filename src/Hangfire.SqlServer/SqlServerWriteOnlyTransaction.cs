@@ -99,8 +99,8 @@ namespace Hangfire.SqlServer
 
                         foreach (var lockCommand in _lockCommands)
                         {
-                            var releaseResult = (int)lockCommand.Item3.Value;
-                            if (releaseResult < 0)
+                            var releaseResult = (int?)lockCommand.Item3.Value;
+                            if (releaseResult.HasValue && releaseResult.Value < 0)
                             {
                                 throw new SqlServerDistributedLockException(
                                     $"Could not release a lock on the resource '{lockCommand.Item1.Resource}': Server returned the '{releaseResult}' error.");
