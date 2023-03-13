@@ -63,36 +63,39 @@ namespace Hangfire.SqlServer
 
         public override void Commit()
         {
-            _storage.UseTransaction(_connection.DedicatedConnection, (connection, transaction) =>
+            try
             {
-                using (var commandBatch = new SqlCommandBatch(connection, transaction, preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
+                _storage.UseTransaction(_connection.DedicatedConnection, (connection, transaction) =>
                 {
-                    commandBatch.Append("set xact_abort on;set nocount on;");
-
-                    foreach (var lockedResource in _lockedResources)
+                    using (var commandBatch = new SqlCommandBatch(connection, transaction, preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
                     {
-                        commandBatch.Append(
-                            "exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'",
-                            new SqlCommandBatchParameter("@resource", DbType.String, 255) { Value = lockedResource });
-                    }
+                        commandBatch.Append("set xact_abort on;set nocount on;");
 
-                    AppendBatch(_jobCommands, commandBatch);
-                    AppendBatch(_counterCommands, commandBatch);
-                    AppendBatch(_hashCommands, commandBatch);
-                    AppendBatch(_listCommands, commandBatch);
-                    AppendBatch(_setCommands, commandBatch);
-                    AppendBatch(_queueCommands, commandBatch);
+                        foreach (var lockedResource in _lockedResources)
+                        {
+                            commandBatch.Append(
+                                "exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'",
+                                new SqlCommandBatchParameter("@resource", DbType.String, 255)
+                                {
+                                    Value = lockedResource
+                                });
+                        }
 
-                    foreach (var command in _lockCommands)
-                    {
-                        commandBatch.Append(command.Item1);
-                    }
+                        AppendBatch(_jobCommands, commandBatch);
+                        AppendBatch(_counterCommands, commandBatch);
+                        AppendBatch(_hashCommands, commandBatch);
+                        AppendBatch(_listCommands, commandBatch);
+                        AppendBatch(_setCommands, commandBatch);
+                        AppendBatch(_queueCommands, commandBatch);
 
-                    commandBatch.CommandTimeout = _storage.CommandTimeout;
-                    commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
+                        foreach (var command in _lockCommands)
+                        {
+                            commandBatch.Append(command.Item1);
+                        }
 
-                    try
-                    {
+                        commandBatch.CommandTimeout = _storage.CommandTimeout;
+                        commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
+
                         commandBatch.ExecuteNonQuery();
                         foreach (var acquiredLock in _acquiredLocks)
                         {
@@ -101,30 +104,29 @@ namespace Hangfire.SqlServer
 
                         foreach (var lockCommand in _lockCommands)
                         {
-                            var releaseResult = (int?)lockCommand.Item2.Value;
+                            var releaseResult = (int?) lockCommand.Item2.Value;
                             if (releaseResult.HasValue && releaseResult.Value < 0)
                             {
-                                throw new SqlServerDistributedLockException(
-                                    $"Could not release a lock on the resource '{lockCommand.Item3}': Server returned the '{releaseResult}' error.");
+                                throw new SqlServerDistributedLockException($"Could not release a lock on the resource '{lockCommand.Item3}': Server returned the '{releaseResult}' error.");
                             }
                         }
-                    }
-                    finally
-                    {
-                        foreach (var acquiredLock in _acquiredLocks)
+                        
+                        foreach (var queueCommand in _queueCommandQueue)
                         {
-                            acquiredLock.Dispose();
+                            queueCommand(connection, transaction);
                         }
                     }
+                });
 
-                    foreach (var queueCommand in _queueCommandQueue)
-                    {
-                        queueCommand(connection, transaction);
-                    }
+                _committed = true;
+            }
+            finally
+            {
+                foreach (var acquiredLock in _acquiredLocks)
+                {
+                    acquiredLock.Dispose();
                 }
-            });
-
-            _committed = true;
+            }
 
             foreach (var command in _afterCommitCommandQueue)
             {
