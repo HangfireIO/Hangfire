@@ -51,6 +51,29 @@ namespace Hangfire.Core.Tests.Client
         }
 
         [Fact]
+        public void Create_ThrowsAnException_WhenContextIsNull()
+        {
+            var factory = CreateFactory();
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => factory.Create(null));
+
+            Assert.Equal("context", exception.ParamName);
+        }
+
+        [Fact]
+        public void Create_ThrowsAnException_WhenJobQueueIsSet_ButStorageDoesNotSupportIt()
+        {
+            // Arrange
+            _context.Storage.Setup(x => x.HasFeature(JobStorageFeatures.JobQueueProperty)).Returns(false);
+            _context.Job = Job.FromExpression(() => Method(), "some-queue");
+
+            var factory = CreateFactory();
+
+            // Act & Assert
+            Assert.Throws<NotSupportedException>(() => factory.Create(_context.Object));
+        }
+
+        [Fact]
         public void Create_ReturnsNull_WhenCreateExpiredJobReturnedNull()
         {
             _context.Connection
@@ -472,6 +495,10 @@ namespace Hangfire.Core.Tests.Client
             if (retries.HasValue) factory.RetryAttempts = retries.Value;
 
             return factory;
+        }
+
+        public static void Method()
+        {
         }
     }
 }

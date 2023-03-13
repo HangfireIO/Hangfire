@@ -16,7 +16,7 @@ namespace Hangfire.Core.Tests
     {
         private readonly Mock<JobStorage> _storage;
         private readonly string _id;
-        private readonly Job _job;
+        private Job _job;
         private readonly string _cronExpression;
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
@@ -188,6 +188,19 @@ namespace Hangfire.Core.Tests
                 () => manager.AddOrUpdate(_id, _job, _cronExpression, TimeZoneInfo.Utc, null));
 
             Assert.Equal("queue", exception.ParamName);
+        }
+
+        [Fact]
+        public void AddOrUpdate_ThrowsAnException_WhenJobQueueIsSet_ButStorageDoesNotSupportIt()
+        {
+            // Arrange
+            _storage.Setup(x => x.HasFeature(JobStorageFeatures.JobQueueProperty)).Returns(false);
+            _job = Job.FromExpression(() => Method(), "some-queue");
+
+            var manager = CreateManager();
+
+            // Act & Assert
+            Assert.Throws<NotSupportedException>(() => manager.AddOrUpdate(_id, _job, _cronExpression));
         }
 
         [Fact]

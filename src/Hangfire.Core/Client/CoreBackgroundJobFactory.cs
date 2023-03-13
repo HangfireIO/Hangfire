@@ -56,6 +56,13 @@ namespace Hangfire.Client
 
         public BackgroundJob Create(CreateContext context)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            if (context.Job.Queue != null && !context.Storage.HasFeature(JobStorageFeatures.JobQueueProperty))
+            {
+                throw new NotSupportedException("Current storage doesn't support specifying queues directly for a specific job. Please use the QueueAttribute instead.");
+            }
+
             var parameters = context.Parameters.ToDictionary(
                 x => x.Key,
                 x => SerializationHelper.Serialize(x.Value, SerializationOption.User));

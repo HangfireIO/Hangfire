@@ -19,6 +19,7 @@ using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Profiling;
+using Hangfire.Storage;
 
 namespace Hangfire
 {
@@ -101,6 +102,11 @@ namespace Hangfire
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             ValidateCronExpression(cronExpression);
+
+            if (job.Queue != null && !Storage.HasFeature(JobStorageFeatures.JobQueueProperty))
+            {
+                throw new NotSupportedException("Current storage doesn't support specifying queues directly for a specific job. Please use the QueueAttribute instead.");
+            }
 
             using (var connection = _storage.GetConnection())
             using (connection.AcquireDistributedRecurringJobLock(recurringJobId, DefaultTimeout))
