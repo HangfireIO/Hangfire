@@ -22,6 +22,7 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
+using Hangfire.Storage;
 
 namespace Hangfire.Client
 {
@@ -55,12 +56,68 @@ namespace Hangfire.Client
 
         public BackgroundJob Create(CreateContext context)
         {
-            var attemptsLeft = Math.Max(RetryAttempts, 0);
             var parameters = context.Parameters.ToDictionary(
                 x => x.Key,
                 x => SerializationHelper.Serialize(x.Value, SerializationOption.User));
 
             var createdAt = DateTime.UtcNow;
+            var expireIn = TimeSpan.FromDays(30);
+
+            if (context.Storage.HasFeature(JobStorageFeatures.Transaction.CreateJob))
+            {
+                return CreateBackgroundJobSingleStep(context, parameters, createdAt, expireIn);
+            }
+            else
+            {
+                return CreateBackgroundJobTwoSteps(context, parameters, createdAt, expireIn);
+            }
+        }
+
+        private BackgroundJob CreateBackgroundJobSingleStep(CreateContext context, Dictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn)
+        {
+            var attemptsLeft = Math.Max(RetryAttempts, 0);
+
+            return RetryOnException(ref attemptsLeft, attempt =>
+            {
+                using (var transaction = context.Connection.CreateWriteTransaction())
+                {
+                    if (!(transaction is JobStorageTransaction storageTransaction))
+                    {
+                        throw new InvalidOperationException($"{transaction.GetType().Name} must inherit {nameof(JobStorageTransaction)} to use this feature.");
+                    }
+
+                    var jobId = storageTransaction.CreateJob(context.Job, parameters, createdAt, expireIn);
+                    if (String.IsNullOrEmpty(jobId))
+                    {
+                        return null;
+                    }
+
+                    var backgroundJob = new BackgroundJob(jobId, context.Job, createdAt, parameters);
+
+                    if (context.InitialState != null)
+                    {
+                        var applyContext = new ApplyStateContext(
+                            context.Storage,
+                            context.Connection,
+                            transaction,
+                            backgroundJob,
+                            context.InitialState,
+                            oldStateName: null,
+                            context.Profiler,
+                            StateMachine);
+
+                        StateMachine.ApplyState(applyContext);
+                    }
+
+                    transaction.Commit();
+                    return backgroundJob;
+                }
+            });
+        }
+
+        private BackgroundJob CreateBackgroundJobTwoSteps(CreateContext context, Dictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn)
+        {
+            var attemptsLeft = Math.Max(RetryAttempts, 0);
 
             // Retry may cause multiple background jobs to be created, especially when there's
             // a timeout-related exception. But initialization attempt will be performed only
@@ -73,7 +130,7 @@ namespace Hangfire.Client
                 context.Job,
                 parameters,
                 createdAt,
-                TimeSpan.FromDays(30)));
+                expireIn));
 
             if (String.IsNullOrEmpty(jobId))
             {

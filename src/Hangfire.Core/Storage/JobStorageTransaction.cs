@@ -100,10 +100,18 @@ namespace Hangfire.Storage
         {
             throw new NotSupportedException();
         }
-        
+
+        [Obsolete("Please use/override the CreateJob method that contains `createdAt` parameter instead. Will be removed in 1.8.0.")]
         public virtual string CreateJob([NotNull] Job job, [NotNull] IDictionary<string, string> parameters, TimeSpan? expireIn)
         {
             throw new NotSupportedException();
+        }
+
+        public virtual string CreateJob([NotNull] Job job, [NotNull] IDictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn)
+        {
+#pragma warning disable CS0618
+            return CreateJob(job, parameters, expireIn);
+#pragma warning restore CS0618
         }
     }
 }
