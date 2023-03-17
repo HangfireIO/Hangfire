@@ -88,23 +88,23 @@ namespace Hangfire.Storage
 
         public virtual void AcquireDistributedLock([NotNull] string resource, TimeSpan timeout)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Transaction.AcquireDistributedLock);
         }
 
         public virtual void RemoveFromQueue([NotNull] IFetchedJob fetchedJob)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Transaction.RemoveFromQueue(fetchedJob.GetType()));
         }
         
         public virtual void SetJobParameter([NotNull] string jobId, [NotNull] string name, [CanBeNull] string value)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Transaction.SetJobParameter);
         }
 
         [Obsolete("Please use/override the CreateJob method that contains `createdAt` parameter instead. Will be removed in 1.8.0.")]
         public virtual string CreateJob([NotNull] Job job, [NotNull] IDictionary<string, string> parameters, TimeSpan? expireIn)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Transaction.CreateJob);
         }
 
         public virtual string CreateJob([NotNull] Job job, [NotNull] IDictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn)

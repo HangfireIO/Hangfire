@@ -53,7 +53,7 @@ namespace Hangfire.Storage
 
         public virtual List<string> GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore, int count)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Connection.BatchedGetFirstByLowest);
         }
 
         public virtual long GetSetCount([NotNull] string key)
@@ -64,7 +64,7 @@ namespace Hangfire.Storage
         [Obsolete("Please use/override the GetSetCount method that results `long` instead. Will be removed in 1.8.0.")]
         public virtual KeyValuePair<string, long>[] GetSetCount([NotNull] string[] keys, int limit)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Connection.LimitedGetSetCount);
         }
 
         public virtual long GetSetCount([NotNull] IEnumerable<string> keys, int limit)
@@ -77,7 +77,7 @@ namespace Hangfire.Storage
         [Obsolete("Please use/override the GetSetContains method instead. Will be removed in 1.8.0.")]
         public virtual bool SetContains([NotNull] string key, [NotNull] string value)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Connection.GetSetContains);
         }
 
         public virtual bool GetSetContains([NotNull] string key, [NotNull] string value)
@@ -145,7 +145,7 @@ namespace Hangfire.Storage
 
         public virtual DateTime GetUtcDateTime()
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Connection.GetUtcDateTime);
         } 
     }
 }
