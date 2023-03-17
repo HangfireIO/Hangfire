@@ -47,6 +47,7 @@ namespace Hangfire.SqlServer
         private readonly Dictionary<string, bool> _features =
             new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
             {
+                { JobStorageFeatures.ExtendedApi, true },
                 { JobStorageFeatures.JobQueueProperty, true },
                 { JobStorageFeatures.Connection.BatchedGetFirstByLowest, true },
                 { JobStorageFeatures.Connection.GetUtcDateTime, true },
@@ -54,7 +55,9 @@ namespace Hangfire.SqlServer
                 { JobStorageFeatures.Connection.LimitedGetSetCount, true },
                 { JobStorageFeatures.Transaction.AcquireDistributedLock, true },
                 { JobStorageFeatures.Transaction.CreateJob, false },
-                { JobStorageFeatures.Transaction.SetJobParameter, false }
+                { JobStorageFeatures.Transaction.SetJobParameter, false },
+                { JobStorageFeatures.Monitoring.DeletedStateGraphs, true },
+                { JobStorageFeatures.Monitoring.AwaitingJobs, false }
             };
 
         public SqlServerStorage(string nameOrConnectionString)

@@ -180,11 +180,31 @@ namespace Hangfire.SqlServer.Tests
         }
 
         [Fact, CleanDatabase]
+        public void HasFeature_Storage_ExtendedApi_ReturnsTrue()
+        {
+            var storage = CreateStorage();
+
+            var result = storage.HasFeature("Storage.ExtendedApi");
+
+            Assert.True(result);
+        }
+
+        [Fact, CleanDatabase]
         public void HasFeature_Transaction_AcquireDistributedLock_ReturnsTrue()
         {
             var storage = CreateStorage();
 
             var result = storage.HasFeature("Transaction.AcquireDistributedLock");
+
+            Assert.True(result);
+        }
+
+        [Fact, CleanDatabase]
+        public void HasFeature_Monitoring_DeletedStateGraphs_ReturnsTrue()
+        {
+            var storage = CreateStorage();
+
+            var result = storage.HasFeature("Monitoring.DeletedStateGraphs");
 
             Assert.True(result);
         }
