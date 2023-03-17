@@ -48,42 +48,42 @@ namespace Hangfire.Storage
 
         public virtual void ExpireSet([NotNull] string key, TimeSpan expireIn)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
         public virtual void ExpireList([NotNull] string key, TimeSpan expireIn)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
         public virtual void ExpireHash([NotNull] string key, TimeSpan expireIn)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
         public virtual void PersistSet([NotNull] string key)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
         public virtual void PersistList([NotNull] string key)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
         public virtual void PersistHash([NotNull] string key)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
         public virtual void AddRangeToSet([NotNull] string key, [NotNull] IList<string> items)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
         public virtual void RemoveSet([NotNull] string key)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
         public virtual void AcquireDistributedLock([NotNull] string resource, TimeSpan timeout)

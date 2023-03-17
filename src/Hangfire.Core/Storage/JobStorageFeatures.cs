@@ -24,6 +24,7 @@ namespace Hangfire.Storage
         internal static readonly string TransactionalAcknowledgePrefix = "TransactionalAcknowledge:";
 
         public static readonly string JobQueueProperty = "Job.Queue";
+        public static readonly string ExtendedApi = "Storage.ExtendedApi";
 
         public static class Connection
         {

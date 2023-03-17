@@ -58,7 +58,7 @@ namespace Hangfire.Storage
 
         public virtual long GetSetCount([NotNull] string key)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
         [Obsolete("Please use/override the GetSetCount method that results `long` instead. Will be removed in 1.8.0.")]
@@ -89,12 +89,12 @@ namespace Hangfire.Storage
 
         public virtual List<string> GetRangeFromSet([NotNull] string key, int startingFrom, int endingAt)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
         public virtual TimeSpan GetSetTtl([NotNull] string key)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
         // Hashes
@@ -103,44 +103,44 @@ namespace Hangfire.Storage
 
         public virtual string GetValueFromHash([NotNull] string key, [NotNull] string name)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
         public virtual long GetHashCount([NotNull] string key)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
         public virtual TimeSpan GetHashTtl([NotNull] string key)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
         // Lists
         public virtual long GetListCount([NotNull] string key)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
         public virtual List<string> GetAllItemsFromList([NotNull] string key)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
         public virtual List<string> GetRangeFromList([NotNull] string key, int startingFrom, int endingAt)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
         public virtual TimeSpan GetListTtl([NotNull] string key)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
         // Counters
         public virtual long GetCounter([NotNull] string key)
         {
-            throw new NotSupportedException();
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
         public virtual DateTime GetUtcDateTime()
