@@ -170,6 +170,16 @@ namespace Hangfire.SqlServer.Tests
         }
 
         [Fact, CleanDatabase]
+        public void HasFeature_Connection_BatchedGetFirstByLowestScoreFromSet_ReturnsTrue()
+        {
+            var storage = CreateStorage();
+
+            var result = storage.HasFeature("Connection.BatchedGetFirstByLowestScoreFromSet");
+
+            Assert.True(result);
+        }
+
+        [Fact, CleanDatabase]
         public void HasFeature_Job_Queue_ReturnsTrue()
         {
             var storage = CreateStorage();

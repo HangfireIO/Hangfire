@@ -49,6 +49,7 @@ namespace Hangfire.SqlServer
             {
                 { JobStorageFeatures.ExtendedApi, true },
                 { JobStorageFeatures.JobQueueProperty, true },
+                { "BatchedGetFirstByLowestScoreFromSet", true }, // TODO: Remove in 1.8.0 release
                 { JobStorageFeatures.Connection.BatchedGetFirstByLowest, true },
                 { JobStorageFeatures.Connection.GetUtcDateTime, true },
                 { JobStorageFeatures.Connection.GetSetContains, true },

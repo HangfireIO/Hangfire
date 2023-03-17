@@ -411,7 +411,11 @@ namespace Hangfire.Server
 
         private bool IsBatchingAvailable(JobStorage storage, IStorageConnection connection)
         {
-            if (storage.HasFeature(JobStorageFeatures.Connection.BatchedGetFirstByLowest)) return true;
+            if (storage.HasFeature(JobStorageFeatures.Connection.BatchedGetFirstByLowest) ||
+                storage.HasFeature("BatchedGetFirstByLowestScoreFromSet")) // FROM RCs
+            {
+                return true;
+            }
 
             return _isBatchingAvailableCache.GetOrAdd(
                 connection.GetType(),

@@ -32,7 +32,7 @@ namespace Hangfire.Storage
             public static readonly string GetSetContains = "Connection.GetSetContains";
             public static readonly string LimitedGetSetCount = "Connection.GetSetCount.Limited";
 
-            public static readonly string BatchedGetFirstByLowest = "BatchedGetFirstByLowestScoreFromSet";
+            public static readonly string BatchedGetFirstByLowest = "Connection.BatchedGetFirstByLowestScoreFromSet";
         }
 
         public static class Transaction
