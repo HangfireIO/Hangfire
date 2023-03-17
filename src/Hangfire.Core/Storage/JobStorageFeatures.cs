@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Hangfire.Annotations;
 
 namespace Hangfire.Storage
 {
@@ -44,6 +45,19 @@ namespace Hangfire.Storage
             {
                 return TransactionalAcknowledgePrefix + fetchedJobType.Name;
             }
+        }
+
+        public static class Monitoring
+        {
+            public static readonly string DeletedStateGraphs = "Monitoring.DeletedStateGraphs";
+            public static readonly string AwaitingJobs = "Monitoring.AwaitingJobs";
+        }
+
+        public static Exception GetNotSupportedException([NotNull] string featureId)
+        {
+            if (featureId == null) throw new ArgumentNullException(nameof(featureId));
+            return new NotSupportedException(
+                $"Current storage implementation does not support the '{featureId}' feature.");
         }
     }
 }

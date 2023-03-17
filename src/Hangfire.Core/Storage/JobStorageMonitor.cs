@@ -33,7 +33,12 @@ namespace Hangfire.Storage
         public abstract JobList<SucceededJobDto> SucceededJobs(int from, int count);
         public abstract JobList<FailedJobDto> FailedJobs(int from, int count);
         public abstract JobList<DeletedJobDto> DeletedJobs(int from, int count);
-        public abstract JobList<AwaitingJobDto> AwaitingJobs(int from, int count);
+
+        public virtual JobList<AwaitingJobDto> AwaitingJobs(int from, int count)
+        {
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Monitoring.AwaitingJobs);
+        }
+
         public abstract long ScheduledCount();
         public abstract long EnqueuedCount(string queue);
         public abstract long FetchedCount(string queue);
@@ -41,12 +46,26 @@ namespace Hangfire.Storage
         public abstract long ProcessingCount();
         public abstract long SucceededListCount();
         public abstract long DeletedListCount();
-        public abstract long AwaitingCount();
+
+        public virtual long AwaitingCount()
+        {
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Monitoring.AwaitingJobs);
+        }
+
         public abstract IDictionary<DateTime, long> SucceededByDatesCount();
         public abstract IDictionary<DateTime, long> FailedByDatesCount();
-        public abstract IDictionary<DateTime, long> DeletedByDatesCount();
+
+        public virtual IDictionary<DateTime, long> DeletedByDatesCount()
+        {
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Monitoring.DeletedStateGraphs);
+        }
+
         public abstract IDictionary<DateTime, long> HourlySucceededJobs();
         public abstract IDictionary<DateTime, long> HourlyFailedJobs();
-        public abstract IDictionary<DateTime, long> HourlyDeletedJobs();
+
+        public virtual IDictionary<DateTime, long> HourlyDeletedJobs()
+        {
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Monitoring.DeletedStateGraphs);
+        }
     }
 }
