@@ -223,7 +223,11 @@ namespace Hangfire.States
         {
             public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
-                transaction.AddToSet("awaiting", context.BackgroundJob.Id, JobHelper.ToTimestamp(DateTime.UtcNow));
+                if (!GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_180) ||
+                    !context.Storage.HasFeature(JobStorageFeatures.Monitoring.AwaitingJobs))
+                {
+                    transaction.AddToSet("awaiting", context.BackgroundJob.Id, JobHelper.ToTimestamp(DateTime.UtcNow));
+                }
             }
 
             public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)
