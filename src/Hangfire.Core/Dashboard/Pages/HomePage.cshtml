@@ -20,7 +20,8 @@
     {
         succeeded = monitor.SucceededByDatesCount();
         failed = monitor.FailedByDatesCount();
-        if (monitor is JobStorageMonitor jobStorageMonitor)
+        if (Storage.HasFeature(JobStorageFeatures.Monitoring.DeletedStateGraphs) &&
+            monitor is JobStorageMonitor jobStorageMonitor)
         {
             deleted = jobStorageMonitor.DeletedByDatesCount();
         }
@@ -29,7 +30,8 @@
     {
         succeeded = monitor.HourlySucceededJobs();
         failed = monitor.HourlyFailedJobs();
-        if (monitor is JobStorageMonitor jobStorageMonitor)
+        if (Storage.HasFeature(JobStorageFeatures.Monitoring.DeletedStateGraphs) &&
+            monitor is JobStorageMonitor jobStorageMonitor)
         {
             deleted = jobStorageMonitor.HourlyDeletedJobs();
         }
