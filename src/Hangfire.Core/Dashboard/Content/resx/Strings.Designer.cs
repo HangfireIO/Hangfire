@@ -8,10 +8,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System.Reflection;
-
 namespace Hangfire.Dashboard.Resources {
     using System;
+    using System.Reflection;
     
     
     /// <summary>
@@ -21,7 +20,7 @@ namespace Hangfire.Dashboard.Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Strings {
@@ -104,6 +103,15 @@ namespace Hangfire.Dashboard.Resources {
         public static string AwaitingJobsPage_Table_Parent {
             get {
                 return ResourceManager.GetString("AwaitingJobsPage_Table_Parent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Since.
+        /// </summary>
+        public static string AwaitingJobsPage_Table_Since {
+            get {
+                return ResourceManager.GetString("AwaitingJobsPage_Table_Since", resourceCulture);
             }
         }
         

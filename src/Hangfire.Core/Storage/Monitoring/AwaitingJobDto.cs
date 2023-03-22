@@ -32,5 +32,6 @@ namespace Hangfire.Storage.Monitoring
         public DateTime? AwaitingAt { get; set; }
         public bool InAwaitingState { get; set; }
         public IDictionary<string, string> StateData { get; set; }
+        public string ParentStateName { get; set; }
     }
 }

@@ -2,11 +2,13 @@
 @using System
 @using System.Collections.Generic
 @using Hangfire
+@using Hangfire.Common;
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @using Hangfire.Dashboard.Resources
 @using Hangfire.States
 @using Hangfire.Storage
+@using Hangfire.Storage.Monitoring;
 @inherits RazorPage
 @{
     Layout = new LayoutPage(Strings.AwaitingJobsPage_Title);
@@ -18,15 +20,33 @@
 
     List<string> jobIds = null;
     Pager pager = null;
+    JobList <AwaitingJobDto> jobs = null;
+    int jobCount = 0;
 
-    using (var connection = Storage.GetReadOnlyConnection())
+    if (Storage.HasFeature(JobStorageFeatures.Monitoring.AwaitingJobs))
     {
-        var storageConnection = connection as JobStorageConnection;
-
-        if (storageConnection != null)
+        var monitor = Storage.GetMonitoringApi() as JobStorageMonitor;
+        if (monitor == null) 
         {
-            pager = new Pager(from, perPage, storageConnection.GetSetCount("awaiting"));
-            jobIds = storageConnection.GetRangeFromSet("awaiting", pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
+            throw new NotSupportedException("MonitoringApi should inherit the `JobStorageMonitor` class");
+        }
+
+        pager = new Pager(from, perPage, monitor.AwaitingCount());
+        jobs = monitor.AwaitingJobs(pager.FromRecord, pager.RecordsPerPage);
+        jobCount = jobs.Count;
+    }
+    else
+    {
+        using (var connection = Storage.GetReadOnlyConnection())
+        {
+            var storageConnection = connection as JobStorageConnection;
+
+            if (storageConnection != null)
+            {
+                pager = new Pager(from, perPage, storageConnection.GetSetCount("awaiting"));
+                jobIds = storageConnection.GetRangeFromSet("awaiting", pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
+                jobCount = jobIds.Count;
+            }
         }
     }
 }
@@ -38,14 +58,14 @@
     <div class="col-md-9">
         <h1 class="page-header">@Strings.AwaitingJobsPage_Title</h1>
 
-        @if (jobIds == null)
+        @if (jobIds == null && jobs == null)
         {
             <div class="alert alert-warning">
                 <h4>@Strings.AwaitingJobsPage_ContinuationsWarning_Title</h4>
                 <p>@Strings.AwaitingJobsPage_ContinuationsWarning_Text</p>
             </div>
         }
-        else if (jobIds.Count > 0)
+        else if (jobCount > 0)
         {
             <div class="js-jobs-list">
                 <div class="btn-toolbar btn-toolbar-top">
@@ -85,50 +105,81 @@
                                 <th>@Strings.Common_Job</th>
                                 <th class="min-width">@Strings.AwaitingJobsPage_Table_Options</th>
                                 <th class="min-width">@Strings.AwaitingJobsPage_Table_Parent</th>
-                                <th class="align-right">@Strings.Common_Created</th>
+                                <th class="align-right">@Strings.AwaitingJobsPage_Table_Since</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var jobId in jobIds)
+                            @for (var i = 0; i < jobCount; i++)
                             {
-                                JobData jobData;
-                                StateData stateData;
-                                StateData parentStateData = null;
+                                var jobId = jobIds != null ? jobIds[i] : jobs[i].Key;
 
-                                using (var connection = Storage.GetReadOnlyConnection())
+                                Job job = null;
+                                bool inAwaitingState = true;
+                                IDictionary<string, string> stateData = null;
+                                string parentStateName = null;
+                                DateTime? awaitingSince = null;
+
+                                if (jobs != null)
                                 {
-                                    jobData = connection.GetJobData(jobId);
-                                    stateData = connection.GetStateData(jobId);
-
-                                    if (stateData != null && stateData.Name == AwaitingState.StateName)
+                                    if (jobs[i].Value != null)
                                     {
-                                        parentStateData = connection.GetStateData(stateData.Data["ParentId"]);
+                                        job = jobs[i].Value.Job;
+                                        inAwaitingState = jobs[i].Value.InAwaitingState;
+                                        stateData = jobs[i].Value.StateData;
+                                        parentStateName = jobs[i].Value.ParentStateName;
+                                        awaitingSince = jobs[i].Value.AwaitingAt;
+                                    }
+                                }
+                                else
+                                {
+                                    using (var connection = Storage.GetReadOnlyConnection())
+                                    {
+                                        var jobData = connection.GetJobData(jobId);
+                                        var state = connection.GetStateData(jobId);
+                                        inAwaitingState = AwaitingState.StateName.Equals(state.Name);
+
+                                        if (state != null && inAwaitingState)
+                                        {
+                                            var parentState = connection.GetStateData(state.Data["ParentId"]);
+                                            parentStateName = parentState.Name;
+                                        }
+
+                                        job = jobData.Job;
+                                        stateData = state.Data;
+                                        awaitingSince = jobData.CreatedAt;
                                     }
                                 }
 
-                                <tr class="js-jobs-list-row @(jobData != null ? "hover" : null)">
+                                <tr class="js-jobs-list-row @(job == null || !inAwaitingState ? "obsolete-data" : null) @(job != null && inAwaitingState ? "hover" : null)">
                                     @if (!IsReadOnly)
                                     {
                                         <td>
-                                            <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@jobId"/>
+                                            @if (job == null || inAwaitingState)
+                                            {
+                                                <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@jobId" />
+                                            }
                                         </td>
                                     }
                                     <td class="min-width">
                                         @Html.JobIdLink(jobId)
+                                        @if (job != null && !inAwaitingState)
+                                        {
+                                            <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
+                                        }
                                     </td>
-                                    @if (jobData == null)
+                                    @if (job == null)
                                     {
                                         <td colspan="2"><em>@Strings.Common_JobExpired</em></td>
                                     }
                                     else
                                     {
                                         <td class="word-break">
-                                            @Html.JobNameLink(jobId, jobData.Job)
+                                            @Html.JobNameLink(jobId, job)
                                         </td>
                                         <td class="min-width">
-                                            @if (stateData != null && stateData.Data.ContainsKey("Options") && !String.IsNullOrWhiteSpace(stateData.Data["Options"]))
+                                            @if (stateData != null && stateData.ContainsKey("Options") && !String.IsNullOrWhiteSpace(stateData["Options"]))
                                             {
-                                                var optionsDescription = stateData.Data["Options"];
+                                                var optionsDescription = stateData["Options"];
                                                 if (Enum.TryParse(optionsDescription, out JobContinuationOptions options))
                                                 {
                                                     optionsDescription = options.ToString("G");
@@ -141,10 +192,10 @@
                                             }
                                         </td>
                                         <td class="min-width">
-                                            @if (parentStateData != null)
+                                            @if (parentStateName != null)
                                             {
-                                                <a href="@Url.JobDetails(stateData.Data["ParentId"])" class="text-decoration-none">
-                                                    @Html.StateLabel(parentStateData.Name, parentStateData.Name, hover: true)
+                                                <a href="@Url.JobDetails(stateData["ParentId"])" class="text-decoration-none">
+                                                    @Html.StateLabel(parentStateName, parentStateName, hover: true)
                                                 </a>
                                             }
                                             else
@@ -153,7 +204,14 @@
                                             }
                                         </td>
                                         <td class="min-width align-right">
-                                            @Html.RelativeTime(jobData.CreatedAt)
+                                            @if (awaitingSince.HasValue)
+                                            {
+                                                @Html.RelativeTime(awaitingSince.Value)
+                                            }
+                                            else
+                                            {
+                                                <em>@Strings.Common_NotAvailable</em>
+                                            }
                                         </td>
                                     }
                                 </tr>

@@ -551,4 +551,7 @@
   <data name="Metrics_SQLServer_SchemaVersion" xml:space="preserve">
     <value>Schema Version</value>
   </data>
+  <data name="AwaitingJobsPage_Table_Since" xml:space="preserve">
+    <value>Since</value>
+  </data>
 </root>
