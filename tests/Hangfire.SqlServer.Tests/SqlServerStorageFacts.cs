@@ -210,6 +210,16 @@ namespace Hangfire.SqlServer.Tests
         }
 
         [Fact, CleanDatabase]
+        public void HasFeature_Monitoring_AwaitingJobs_ReturnsTrue()
+        {
+            var storage = CreateStorage();
+
+            var result = storage.HasFeature("Monitoring.AwaitingJobs");
+
+            Assert.True(result);
+        }
+
+        [Fact, CleanDatabase]
         public void HasFeature_Monitoring_DeletedStateGraphs_ReturnsTrue()
         {
             var storage = CreateStorage();

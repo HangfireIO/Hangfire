@@ -233,12 +233,12 @@ namespace Hangfire.SqlServer
 
         public override JobList<AwaitingJobDto> AwaitingJobs(int @from, int count)
         {
-            return UseConnection(connection => GetJobs(
+            var awaitingJobs = UseConnection(connection => GetJobs(
                 connection,
                 from,
                 count,
                 AwaitingState.StateName,
-                descending: true,
+                descending: false,
                 (sqlJob, job, invocationData, loadException, stateData) => new AwaitingJobDto
                 {
                     Job = job,
@@ -248,6 +248,34 @@ namespace Hangfire.SqlServer
                     AwaitingAt = sqlJob.StateChanged,
                     StateData = stateData
                 }));
+
+            var parentIds = awaitingJobs
+                .Where(x => x.Value != null && x.Value.InAwaitingState && x.Value.StateData.ContainsKey("ParentId"))
+                .Select(x => long.Parse(x.Value.StateData["ParentId"]))
+                .ToArray();
+
+            var parentStates = UseConnection(connection =>
+            {
+                return connection.Query<ParentStateDto>(
+                    $"select Id, StateName from [{_storage.SchemaName}].Job with (nolock, forceseek) where Id in @ids",
+                    new { ids = parentIds },
+                    commandTimeout: _storage.CommandTimeout)
+                .ToDictionary(x => x.Id, x => x.StateName);
+            });
+
+            foreach (var awaitingJob in awaitingJobs)
+            {
+                if (awaitingJob.Value != null && awaitingJob.Value.InAwaitingState && awaitingJob.Value.StateData.ContainsKey("ParentId"))
+                {
+                    var parentId = long.Parse(awaitingJob.Value.StateData["ParentId"]);
+                    if (parentStates.ContainsKey(parentId))
+                    {
+                        awaitingJob.Value.ParentStateName = parentStates[parentId];
+                    }
+                }
+            }
+
+            return awaitingJobs;
         }
 
         public override long AwaitingCount()
@@ -701,6 +729,12 @@ where j.Id in @jobIds";
                 get { return ContainsKey(i) ? base[i] : default(TValue); }
                 set { base[i] = value; }
             }
+        }
+
+        private class ParentStateDto
+        {
+            public long Id { get; set; }
+            public string StateName { get; set; }
         }
     }
 }

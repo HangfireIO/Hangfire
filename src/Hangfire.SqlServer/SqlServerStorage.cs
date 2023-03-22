@@ -58,7 +58,7 @@ namespace Hangfire.SqlServer
                 { JobStorageFeatures.Transaction.CreateJob, false },
                 { JobStorageFeatures.Transaction.SetJobParameter, false },
                 { JobStorageFeatures.Monitoring.DeletedStateGraphs, true },
-                { JobStorageFeatures.Monitoring.AwaitingJobs, false }
+                { JobStorageFeatures.Monitoring.AwaitingJobs, true }
             };
 
         public SqlServerStorage(string nameOrConnectionString)
