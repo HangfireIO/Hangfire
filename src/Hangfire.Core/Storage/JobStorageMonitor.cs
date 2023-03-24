@@ -39,6 +39,7 @@ namespace Hangfire.Storage
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Monitoring.AwaitingJobs);
         }
 
+        public abstract long JobCount(string stateName);
         public abstract long ScheduledCount();
         public abstract long EnqueuedCount(string queue);
         public abstract long FetchedCount(string queue);
