@@ -24,8 +24,16 @@ https://www.hangfire.io/
 • Added – Introduce the `captureDefault` parameter in the `CaptureCulture` filter.
 • Added – Built-in awaiting metric through the `StatisticsDto.Awaiting` for monitoring stats.
 • Added – `JobStorageFeatures` class to avoid using magic strings in storage features.
+• Added – Create job atomically when corresponding storage feature supported.
+• Added – Support for new MonitoringApi methods for the Awaiting Jobs page.
 • Changed – Rely on `captureDefault` when dealing with default cultures instead of compatibility level.
 • Changed – Rename in a non-breaking way `SetContains` to `GetSetContains` for consistency.
+• Changed – Rely on storage indexing with `Monitoring.AwaitingJobs` feature.
+• Changed – Rename the `BatchedGetFirstByLowest` feature.
+• Changed – Throw more descriptive `NotSupportedException` from new storage methods
+• Changed – Make new methods in `JobStorageMonitor` virtual, not abstract.
+• Changed – Change GetSetCount with multiple keys in a non-breaking way.
+• Fixed – Throw an exception early when `Job.Queue` feature not supported.
 • Fixed – Don't show assembly details in deleted state renderer.
 • Rollback – Use the `AttemptsExceededAction.Delete` option by default in the global automatic retry filter.
 

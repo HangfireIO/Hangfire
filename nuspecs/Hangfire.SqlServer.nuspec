@@ -16,6 +16,10 @@
     <releaseNotes>https://www.hangfire.io/blog/
 
 1.8.0-rc3
+• Changed – Enable the `Monitoring.AwaitingJobs` feature for SQL storage.
+• Changed – Implement the `Transaction.AcquireDistributedLock` feature.
+• Changed – Implement the `GetSetCount.Limited feature`.
+• Changed – Implement the `GetSetContains feature`.
 • Fixed – Detect schema-related options after migration, not before, to get the actual schema version.
 
 1.8.0-rc2
