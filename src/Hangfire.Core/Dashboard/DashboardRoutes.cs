@@ -30,7 +30,8 @@ namespace Hangfire.Dashboard
         internal static volatile int JavaScriptsHashCode;
         internal static volatile int StylesheetsHashCode;
 
-        public static bool IsDarkModeSupportEnabled = false;
+        [Obsolete("This field is deprecated and will be removed in the 1.8.0 release.")]
+        public static bool IsDarkModeSupportEnabled = true;
 
         static DashboardRoutes()
         {
@@ -43,6 +44,7 @@ namespace Hangfire.Dashboard
             AddStylesheet(executingAssembly, GetContentResourceName("css", "bootstrap.min.css"));
             AddStylesheet(executingAssembly, GetContentResourceName("css", "Chart.min.css"));
             AddStylesheet(executingAssembly, GetContentResourceName("css", "hangfire.css"));
+            AddStylesheet(executingAssembly, GetContentResourceName("css", "hangfire-dark.css"));
 
             AddJavaScript(executingAssembly, GetContentResourceName("js", "jquery-3.6.0.min.js"));
             AddJavaScript(executingAssembly, GetContentResourceName("js", "bootstrap.min.js"));
@@ -200,15 +202,6 @@ namespace Hangfire.Dashboard
                 JavaScripts.Add(Tuple.Create(assembly, resource));
                 JavaScriptsHashCode ^= resource.GetHashCode();
             }
-        }
-
-        internal static void AddDarkModeSupport()
-        {
-            IsDarkModeSupportEnabled = true;
-
-            AddStylesheet(
-                typeof(DashboardRoutes).GetTypeInfo().Assembly,
-                GetContentResourceName("css", "hangfire-dark.css"));
         }
 
         internal static string GetContentFolderNamespace(string contentFolder)

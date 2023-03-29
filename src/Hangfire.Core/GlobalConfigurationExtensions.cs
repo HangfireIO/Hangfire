@@ -336,13 +336,11 @@ namespace Hangfire
             return configuration;
         }
 
+        [Obsolete("Dark mode is enabled by default now. This method is deprecated in will be removed in the 1.8.0 release.")]
         public static IGlobalConfiguration UseDarkModeSupportForDashboard(
             [NotNull] this IGlobalConfiguration configuration)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
-
-            DashboardRoutes.AddDarkModeSupport();
-
             return configuration;
         }
 
