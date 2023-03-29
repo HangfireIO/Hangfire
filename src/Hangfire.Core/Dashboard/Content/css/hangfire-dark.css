@@ -259,6 +259,18 @@
         color: #ffffff;
     }
 
+    .navbar-default .navbar-toggle {
+        border-color: #4d4d4d;
+    }
+
+    .navbar-default .navbar-collapse, .navbar-default .navbar-form {
+        border-color: #4d4d4d;
+    }
+
+    .navbar-default .navbar-toggle:focus, .navbar-default .navbar-toggle:hover {
+        background-color: #373e47;
+    }
+
     /* Paginator */
 
     .paginator .btn {
@@ -595,7 +607,7 @@
         }
 
     .label-state-inactive {
-        background-color:   
+        background-color: rgba(204, 204, 204, 0.1) !important;
         border: 1px solid rgba(204, 204, 204, 0.3) !important;
         color: rgb(204, 204, 204) !important;
     }
@@ -620,5 +632,53 @@
 
     .table td.failed-job-details {
         background-color: transparent;
+    }
+
+    .nav-tabs > li > a {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .nav-tabs > li > a:hover {
+        color: white;
+        background-color: transparent;
+        border-color: transparent!important;
+    }
+
+    .nav-tabs > li.active > a, .nav-tabs > li.active > a:focus, .nav-tabs > li.active > a:hover {
+        color: white;
+        background-color: #373e47;
+        border-color: #4d4d4d #4d4d4d transparent #4d4d4d !important;
+    }
+
+    .table-hover > tbody > tr:hover {
+        background-color: #2d333b;
+    }
+
+    .progress {
+        background-color: #2d333b;
+    }
+
+    div.metric.metric-default {
+        border-color: #4d4d4d;
+    }
+
+    @media (min-width: 768px) {
+        .nav-tabs > li > a {
+            border-bottom-color: #4d4d4d!important;
+        }
+
+        .nav-tabs > li > a:hover {
+            border-bottom-color: #4d4d4d!important;
+        }
+    }
+
+    @media screen and (max-width: 767px) {
+        .table-responsive {
+            border-color: #4d4d4d;
+        }
+    }
+
+    .table-vertical tbody > tr > th {
+        border-right-color: #4d4d4d!important;
     }
 }
