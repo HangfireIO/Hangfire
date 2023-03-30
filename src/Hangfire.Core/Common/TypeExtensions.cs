@@ -172,7 +172,9 @@ namespace Hangfire.Common
                 return true;
             }
 
-            return parameterType == actualType;
+            return parameterType != typeof(object).GetTypeInfo() 
+                ? parameterType.IsAssignableFrom(actualType)
+                : parameterType == actualType;
         }
 
         private static string GetFullNameWithoutNamespace(this Type type)

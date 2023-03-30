@@ -376,6 +376,19 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void FromGenericExpression_InfersType_FromAGivenObject_AndHandlesAssignableParameters()
+        {
+            IServiceInterface<MyDerivedClass> service = new MyBaseClassService();
+            MyDerivedClass myClass = new MyDerivedClass();
+
+            var job = Job.FromExpression(() => service.MyMethod(myClass));
+
+            Assert.Equal(typeof(MyBaseClassService), job.Type);
+            Assert.Equal("MyMethod", job.Method.Name);
+            Assert.Equal(typeof(MyBaseClassService), job.Method.DeclaringType);
+        }
+
+        [Fact]
         public void FromScopedExpression_HandlesGenericMethods()
         {
             CommandDispatcher dispatcher = new CommandDispatcher();
@@ -926,6 +939,29 @@ namespace Hangfire.Core.Tests.Common
 
         public class TestMethodAttribute : JobFilterAttribute
         {
+        }
+
+        class MyBaseClass
+        {
+            public string BaseProp { get; set; }
+        }
+
+        class MyDerivedClass : MyBaseClass
+        {
+            public int MyProperty { get; set; }
+        }
+
+        interface IServiceInterface<in T> where T : MyBaseClass
+        {
+            Task MyMethod(T input);
+        }
+
+        class MyBaseClassService : IServiceInterface<MyBaseClass>
+        {
+            public Task MyMethod(MyBaseClass input)
+            {
+                return Task.FromResult(true);
+            }
         }
     }
 }
