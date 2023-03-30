@@ -27,6 +27,7 @@ Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfi
 Hangfire.Core
 
 • Added – Add reschedule functionality to `BackgroundJob` and `IBackgroundJobClient` (by @chrischu).
+• Fixed – `ArgumentNullException` with tricky generic type with inheritance case for jobs.
 • Fixed – Display "Aborted servers will be removed…" note only once aborted threshold passed.
 
 1.7.33
