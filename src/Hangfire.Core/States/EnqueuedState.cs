@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -100,7 +99,7 @@ namespace Hangfire.States
         /// <seealso cref="Queue"/>
         /// 
         /// <exception cref="ArgumentNullException">
-        /// The <paramref name="queue"/> argument is <see langword="null"/>,  empty or consist only of 
+        /// The <paramref name="queue"/> argument is <see langword="null"/>, empty or consists only of 
         /// white-space characters.
         /// </exception>
         /// <exception cref="ArgumentException">
@@ -121,7 +120,7 @@ namespace Hangfire.States
         /// Gets or sets a queue name to which a background job identifier
         /// will be added.
         /// </summary>
-        /// <value>A queue name that consist only of lowercase letters, digits and
+        /// <value>A queue name that consists only of lowercase letters, digits and
         /// underscores.</value>
         /// <remarks>
         /// <para>Queue name must consist only of lowercase letters, digits and
@@ -136,7 +135,7 @@ namespace Hangfire.States
         /// 
         /// <exception cref="ArgumentNullException">
         /// The value specified for a set operation is <see langword="null"/>, 
-        /// empty or consist only of white-space characters.
+        /// empty or consists only of white-space characters.
         /// </exception>
         /// <exception cref="ArgumentException">
         /// The value specified for a set operation is not a valid queue name.
@@ -250,7 +249,16 @@ namespace Hangfire.States
                         $"`{typeof (Handler).FullName}` state handler can be registered only for the Enqueued state.");
                 }
 
-                transaction.AddToQueue(enqueuedState.Queue, context.BackgroundJob.Id);
+                if (context.BackgroundJob.Job?.Queue != null && !context.Storage.HasFeature(JobStorageFeatures.JobQueueProperty))
+                {
+                    throw new NotSupportedException("Current storage doesn't support specifying queues directly for a specific job. Please use the QueueAttribute instead.");
+                }
+
+                transaction.AddToQueue(
+                    context.BackgroundJob.Job?.Queue == null || !DefaultQueue.Equals(enqueuedState.Queue, StringComparison.OrdinalIgnoreCase)
+                        ? enqueuedState.Queue
+                        : context.BackgroundJob.Job.Queue,
+                    context.BackgroundJob.Id);
             }
 
             public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)

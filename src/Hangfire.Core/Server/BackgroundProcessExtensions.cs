@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2017 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -36,12 +35,20 @@ namespace Hangfire.Server
             [NotNull] this IBackgroundProcess process,
             int threadCount)
         {
+            return UseBackgroundPool(process, threadCount, null);
+        }
+
+        public static IBackgroundProcessDispatcherBuilder UseBackgroundPool(
+            [NotNull] this IBackgroundProcess process,
+            int threadCount,
+            [CanBeNull] Action<Thread> threadConfig)
+        {
             if (process == null) throw new ArgumentNullException(nameof(process));
             if (threadCount <= 0) throw new ArgumentOutOfRangeException(nameof(threadCount));
 
             return UseBackgroundPool(
                 process,
-                (threadName, threadStart) => DefaultThreadFactory(threadCount, threadName, threadStart));
+                (threadName, threadStart) => DefaultThreadFactory(threadCount, threadName, threadStart, threadConfig));
         }
 
         public static IBackgroundProcessDispatcherBuilder UseBackgroundPool(
@@ -84,7 +91,7 @@ namespace Hangfire.Server
             return UseBackgroundPool(
                 process,
                 maxConcurrency,
-                (threadName, threadStart) => DefaultThreadFactory(threadCount, threadName, threadStart));
+                (threadName, threadStart) => DefaultThreadFactory(threadCount, threadName, threadStart, null));
         }
 
         public static IBackgroundProcessDispatcherBuilder UseBackgroundPool(
@@ -127,7 +134,8 @@ namespace Hangfire.Server
         internal static IEnumerable<Thread> DefaultThreadFactory(
             int threadCount,
             [NotNull] string threadName,
-            [NotNull] ThreadStart threadStart)
+            [NotNull] ThreadStart threadStart,
+            [CanBeNull] Action<Thread> threadConfig = null)
         {
             if (threadName == null) throw new ArgumentNullException(nameof(threadName));
             if (threadStart == null) throw new ArgumentNullException(nameof(threadStart));
@@ -135,11 +143,14 @@ namespace Hangfire.Server
 
             for (var i = 0; i < threadCount; i++)
             {
-                yield return new Thread(threadStart)
+                var thread = new Thread(threadStart)
                 {
                     IsBackground = true,
                     Name = $"{threadName} #{i + 1}"
                 };
+
+                threadConfig?.Invoke(thread);
+                yield return thread;
             }
         }
     }

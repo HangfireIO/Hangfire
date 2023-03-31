@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2015 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2015 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -16,6 +15,8 @@
 
 using System;
 using System.ComponentModel;
+using System.Globalization;
+using System.Reflection;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Dashboard;
@@ -42,13 +43,12 @@ namespace Hangfire
 
         public static IGlobalConfiguration<TStorage> WithJobExpirationTimeout<TStorage>(
             [NotNull] this IGlobalConfiguration<TStorage> configuration,
-            [NotNull] TimeSpan timeout)
+            TimeSpan timeout)
             where TStorage : JobStorage
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
-            JobStorage.Current.JobExpirationTimeout = timeout;
-
+            configuration.Entry.JobExpirationTimeout = timeout;
             return configuration;
         }
 
@@ -172,6 +172,17 @@ namespace Hangfire
             return configuration.Use(filter, x => GlobalJobFilters.Filters.Add(x));
         }
 
+        public static IGlobalConfiguration<TFilterProvider> UseFilterProvider<TFilterProvider>(
+            [NotNull] this IGlobalConfiguration configuration, 
+            [NotNull] TFilterProvider filterProvider)
+            where TFilterProvider : IJobFilterProvider
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (filterProvider == null) throw new ArgumentNullException(nameof(filterProvider));
+
+            return configuration.Use(filterProvider, x => JobFilterProviders.Providers.Add(x));
+        }
+
         public static IGlobalConfiguration UseDashboardMetric(
             [NotNull] this IGlobalConfiguration configuration,
             [NotNull] DashboardMetric metric)
@@ -181,6 +192,35 @@ namespace Hangfire
 
             DashboardMetrics.AddMetric(metric);
             HomePage.Metrics.Add(metric);
+
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseDashboardMetrics(
+            [NotNull] this IGlobalConfiguration configuration,
+            [NotNull] params DashboardMetric[] metrics)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (metrics == null) throw new ArgumentNullException(nameof(metrics));
+
+            foreach (var metric in metrics)
+            {
+                DashboardMetrics.AddMetric(metric);
+                HomePage.Metrics.Add(metric);
+            }
+
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseJobDetailsRenderer(
+            [NotNull] this IGlobalConfiguration configuration,
+            int order,
+            [NotNull] Func<JobDetailsRendererDto, NonEscapedString> renderer)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (renderer == null) throw new ArgumentNullException(nameof(renderer));
+
+            JobDetailsRenderer.AddRenderer(order, renderer);
 
             return configuration;
         }
@@ -234,7 +274,7 @@ namespace Hangfire
         }
 
         /// <summary>
-        /// These settings is used to serialize user data like arguments or parameters.
+        /// These settings are used to serialize user data like arguments or parameters.
         /// You can use <see cref="SerializationHelper.Serialize{T}(T, SerializationOption)"/> with <see cref="SerializationOption.User"/> option
         /// to serialize with specified settings
         /// </summary>
@@ -251,9 +291,19 @@ namespace Hangfire
         public static IGlobalConfiguration UseRecommendedSerializerSettings(
             [NotNull] this IGlobalConfiguration configuration)
         {
+            return UseRecommendedSerializerSettings(configuration, null);
+        }
+
+        public static IGlobalConfiguration UseRecommendedSerializerSettings(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] Action<JsonSerializerSettings> settingsConfiguration)
+        {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
-            SerializationHelper.SetUserSerializerSettings(SerializationHelper.GetInternalSettings());
+            var settings = SerializationHelper.GetInternalSettings();
+            settingsConfiguration?.Invoke(settings);
+
+            SerializationHelper.SetUserSerializerSettings(settings);
             return configuration;
         }
 
@@ -262,6 +312,53 @@ namespace Hangfire
             return configuration
                 .UseFilter(new JobParameterInjectionFilter())
                 .UseFilter(new ContinuationsSupportAttribute(pushResults: true));
+        }
+
+        public static IGlobalConfiguration UseMaxLinesInExceptionDetails(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] int? numberOfLines)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (numberOfLines.HasValue && numberOfLines.Value <= 1) throw new ArgumentOutOfRangeException(nameof(numberOfLines), "Must be either a positive value larger than 1; or a null value.");
+
+            States.FailedState.MaxLinesInExceptionDetails = numberOfLines;
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseMaxArgumentSizeToRender(
+            [NotNull] this IGlobalConfiguration configuration,
+            int size)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (size < 0) throw new ArgumentOutOfRangeException(nameof(size), "Must be a positive value");
+
+            JobMethodCallRenderer.MaxArgumentToRenderSize = size;
+            return configuration;
+        }
+
+        [Obsolete("Dark mode is enabled by default now. This method is deprecated in will be removed in the 1.8.0 release.")]
+        public static IGlobalConfiguration UseDarkModeSupportForDashboard(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseDefaultCulture(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] CultureInfo culture)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseFilter(new CaptureCultureAttribute(culture?.Name));
+        }
+
+        public static IGlobalConfiguration UseDefaultCulture(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] CultureInfo culture,
+            [CanBeNull] CultureInfo uiCulture)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseFilter(new CaptureCultureAttribute(culture?.Name, uiCulture?.Name));
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]

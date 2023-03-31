@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2016 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2016 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -28,7 +27,10 @@ namespace Hangfire
         public RecurringJobOptions()
         {
             TimeZone = TimeZoneInfo.Utc;
+#pragma warning disable 618
             QueueName = EnqueuedState.DefaultQueue;
+#pragma warning restore 618
+            MisfireHandling = MisfireHandlingMode.Relaxed;
         }
 
         [NotNull]
@@ -43,6 +45,7 @@ namespace Hangfire
             }
         }
 
+        [Obsolete("Please use non-obsolete AddOrUpdate with the explicit `queue` parameter instead. Will be removed in 2.0.0.")]
         [NotNull]
         public string QueueName
         {
@@ -53,5 +56,7 @@ namespace Hangfire
                 _queueName = value;
             }
         }
+
+        public MisfireHandlingMode MisfireHandling { get; set; }
     }
 }

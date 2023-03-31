@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright © 2019 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2019 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -31,18 +30,18 @@ namespace Hangfire
         {
             if (String.IsNullOrEmpty(context.CurrentState)) return;
 
-            var serializedState = context.GetJobParameter<string>("Completion");
+            var serializedState = context.GetJobParameter<string>("Completion", allowStale: true);
 
             if (!String.IsNullOrEmpty(serializedState))
             {
                 if (context.CandidateState is ProcessingState || context.CandidateState.IsFinal)
                 {
-                    context.CandidateState = SerializationHelper.Deserialize<IState>(serializedState);
+                    context.CandidateState = SerializationHelper.Deserialize<IState>(serializedState, SerializationOption.TypedInternal);
                 }
             }
             else if (context.CandidateState.IsFinal)
             {
-                context.SetJobParameter("Completion", SerializationHelper.Serialize(context.CandidateState));
+                context.SetJobParameter("Completion", SerializationHelper.Serialize(context.CandidateState, SerializationOption.TypedInternal));
             }
         }
     }

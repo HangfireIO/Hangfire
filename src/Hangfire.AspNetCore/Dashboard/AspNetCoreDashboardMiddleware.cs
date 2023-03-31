@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright � 2016 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2016 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -64,12 +63,16 @@ namespace Hangfire.Dashboard
             {
                 if (!filter.Authorize(context))
                 {
-                    var isAuthenticated = httpContext.User?.Identity?.IsAuthenticated;
+                    httpContext.Response.StatusCode = GetUnauthorizedStatusCode(httpContext);
+                    return;
+                }
+            }
 
-                    httpContext.Response.StatusCode = isAuthenticated == true
-                        ? (int) HttpStatusCode.Forbidden
-                        : (int) HttpStatusCode.Unauthorized;
-
+            foreach (var filter in _options.AsyncAuthorization)
+            {
+                if (!await filter.AuthorizeAsync(context))
+                {
+                    httpContext.Response.StatusCode = GetUnauthorizedStatusCode(httpContext);
                     return;
                 }
             }
@@ -94,6 +97,13 @@ namespace Hangfire.Dashboard
             context.UriMatch = findResult.Item2;
 
             await findResult.Item1.Dispatch(context);
+        }
+
+        private static int GetUnauthorizedStatusCode(HttpContext httpContext)
+        {
+            return httpContext.User?.Identity?.IsAuthenticated == true
+                ? (int)HttpStatusCode.Forbidden
+                : (int)HttpStatusCode.Unauthorized;
         }
     }
 }

@@ -17,6 +17,30 @@ namespace Hangfire.Core.Tests.Storage
 {
     public class InvocationDataFacts
     {
+        [Fact]
+        public void Ctor_InitializesAllTheGivenProperties()
+        {
+            var invocationData = new InvocationData("type", "method", "parameterTypes", "arguments");
+
+            Assert.Equal("type", invocationData.Type);
+            Assert.Equal("method", invocationData.Method);
+            Assert.Equal("parameterTypes", invocationData.ParameterTypes);
+            Assert.Equal("arguments", invocationData.Arguments);
+            Assert.Null(invocationData.Queue);
+        }
+
+        [Fact]
+        public void Ctor_WithQueue_InitializesAllTheGivenProperties()
+        {
+            var invocationData = new InvocationData("type", "method", "parameterTypes", "arguments", "critical");
+
+            Assert.Equal("type", invocationData.Type);
+            Assert.Equal("method", invocationData.Method);
+            Assert.Equal("parameterTypes", invocationData.ParameterTypes);
+            Assert.Equal("arguments", invocationData.Arguments);
+            Assert.Equal("critical", invocationData.Queue);
+        }
+
         [DataCompatibilityRangeFact]
         public void Deserialize_CorrectlyDeserializes_AllTheData()
         {
@@ -35,6 +59,22 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(type, job.Type);
             Assert.Equal(methodInfo, job.Method);
             Assert.Equal("Hello", job.Args[0]);
+            Assert.Null(job.Queue);
+        }
+
+        [DataCompatibilityRangeFact]
+        public void Deserialize_CorrectlyDeserializes_QueueProperty()
+        {
+            var serializedData = new InvocationData(
+                "Hangfire.JobStorage, Hangfire.Core",
+                "GetConnection",
+                String.Empty,
+                null,
+                "critical");
+
+            var job = serializedData.Deserialize();
+
+            Assert.Equal("critical", job.Queue);
         }
 
         [DataCompatibilityRangeFact]
@@ -226,6 +266,18 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal("Sample", invocationData.Method);
             Assert.Equal(JobHelper.ToJson(new[] { typeof(string) }), invocationData.ParameterTypes);
             Assert.Equal(JobHelper.ToJson(new[] { "\"Hello\"" }), invocationData.Arguments);
+            Assert.Null(invocationData.Queue);
+        }
+
+        [DataCompatibilityRangeFact]
+        public void Serialize_CorrectlySerializes_TheJobQueueProperty()
+        {
+            var job = Job.FromExpression(() => Sample("Hello"), "critical");
+
+            var invocationData = InvocationData.Serialize(job);
+
+            Assert.Equal("Sample", invocationData.Method);
+            Assert.Equal("critical", invocationData.Queue);
         }
 
         [DataCompatibilityRangeFact]
@@ -320,6 +372,23 @@ namespace Hangfire.Core.Tests.Storage
         }
 
         [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
+        public void SerializePayload_CorrectlySerializesInvocationDataWithQueueToString_WithOldFormat_InVersion_Pre_170()
+        {
+            var invocationData = new InvocationData(
+                "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests",
+                "Sample",
+                "[\"System.String\"]",
+                "[\"\\\"Hello\\\"\"]",
+                "critical");
+
+            var payload = invocationData.SerializePayload();
+
+            Assert.Equal(
+                "{\"Type\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"Method\":\"Sample\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"Hello\\\\\\\"\\\"]\",\"Queue\":\"critical\"}",
+                payload);
+        }
+
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
         public void SerializePayload_DoesNotIncludeArgumentsWhenStatedSo_WithOldFormat_InVersion_Pre_170()
         {
             var invocationData = new InvocationData(
@@ -364,6 +433,23 @@ namespace Hangfire.Core.Tests.Storage
 
             Assert.Equal(
                 "{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"Sample\",\"p\":[\"System.String\"],\"a\":[\"\\\"Hello\\\"\"]}",
+                payload);
+        }
+
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
+        public void SerializePayload_CorrectlySerializesInvocationDataWithQueueToString_WithNewFormat_InVersion_170()
+        {
+            var invocationData = new InvocationData(
+                "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests",
+                "Sample",
+                "[\"System.String\"]",
+                "[\"\\\"Hello\\\"\"]",
+                "critical");
+
+            var payload = invocationData.SerializePayload();
+
+            Assert.Equal(
+                "{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"Sample\",\"p\":[\"System.String\"],\"a\":[\"\\\"Hello\\\"\"],\"q\":\"critical\"}",
                 payload);
         }
 
@@ -536,7 +622,7 @@ namespace Hangfire.Core.Tests.Storage
         {
             var deserializedJob = new InvocationData(typeName, method, parameterTypes, serializedArgs).Deserialize();
 
-#if NETCOREAPP1_0
+#if NETCOREAPP1_0 || NETCOREAPP2_1
             Assert.Equal(job.Type.FullName, deserializedJob.Type.FullName);
             Assert.Equal(job.Method.Name, deserializedJob.Method.Name);
 #else
@@ -814,16 +900,17 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(typeof(InvocationDataFacts), job.Type);
             Assert.Equal(2, job.Args.Count);
 
-            Assert.Equal(typeof(List<string>), job.Args[0].GetType());
+            Assert.Equal(typeof(List<string>), job.Args[0]?.GetType());
             Assert.Equal("one", (job.Args[0] as List<string>)?[0]);
             Assert.Equal("two", (job.Args[0] as List<string>)?[1]);
 
-            Assert.Equal(typeof(SomeClass), job.Args[1].GetType());
+            Assert.Equal(typeof(SomeClass), job.Args[1]?.GetType());
             Assert.Equal("value", (job.Args[1] as SomeClass)?.StringValue);
             Assert.Equal(0, (job.Args[1] as SomeClass)?.DefaultValue);
             Assert.Equal(null, (job.Args[1] as SomeClass)?.NullObject);
         }
 
+#if !NET452 && !NET461
         [DataCompatibilityRangeFact, CleanSerializerSettings]
         public void DeserializeJob_CanPreviousFormat_WhenTypeNameHandlingOptionIsSetToAll()
         {
@@ -842,6 +929,16 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal("WriteLine", job.Method.Name);
             Assert.Equal("Hello ", job.Args[0]);
         }
+#endif
+
+        [Fact]
+        public void DeserializePayload_ThrowsAnException_WhenPayloadIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => InvocationData.DeserializePayload(null));
+
+            Assert.Equal("payload", exception.ParamName);
+        }
 
         // https://github.com/HangfireIO/Hangfire/issues/1470
         [DataCompatibilityRangeFact, CleanSerializerSettings]
@@ -858,6 +955,18 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal("WriteLine", data.Method);
             Assert.Equal("[]", data.ParameterTypes);
             Assert.Equal("[]", data.Arguments);
+        }
+
+        [DataCompatibilityRangeTheory]
+        [InlineData("{\"Type\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\",\"Method\":\"Sample\",\"ParameterTypes\":\"[\\\"System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"Hello\\\\\\\"\\\"]\",\"Queue\":\"critical\"}")]
+        [InlineData("{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"Sample\",\"p\":[\"System.String\"],\"a\":[\"\\\"Hello\\\"\"],\"q\":\"critical\"}")]
+        public void DeserializePayload_WithQueueNameSet_ReturnsCorrectInvocationData(string payload)
+        {
+            var invocationData = InvocationData.DeserializePayload(payload);
+
+            Assert.Contains("InvocationDataFacts", invocationData.Type);
+            Assert.Equal("Sample", invocationData.Method);
+            Assert.Equal("critical", invocationData.Queue);
         }
 
         private class FieldsOnlyContractResolver: DefaultContractResolver 

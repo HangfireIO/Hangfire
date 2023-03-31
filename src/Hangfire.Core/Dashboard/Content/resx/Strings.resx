@@ -217,7 +217,7 @@
     <value>The queue is empty.</value>
   </data>
   <data name="EnqueuedJobsPage_Title" xml:space="preserve">
-    <value>Enqueued jobs</value>
+    <value>Enqueued Jobs</value>
   </data>
   <data name="FailedJobsPage_FailedJobsNotExpire_Warning_Html" xml:space="preserve">
     <value>&lt;strong&gt;Failed jobs do not become expired&lt;/strong&gt; to allow you to re-queue them without any
@@ -237,13 +237,13 @@
     <value>The queue is empty.</value>
   </data>
   <data name="FetchedJobsPage_Title" xml:space="preserve">
-    <value>Fetched jobs</value>
+    <value>Fetched Jobs</value>
   </data>
   <data name="HomePage_HistoryGraph" xml:space="preserve">
-    <value>History graph</value>
+    <value>History Graph</value>
   </data>
   <data name="HomePage_RealtimeGraph" xml:space="preserve">
-    <value>Realtime graph</value>
+    <value>Realtime Graph</value>
   </data>
   <data name="HomePage_Title" xml:space="preserve">
     <value>Overview</value>
@@ -278,7 +278,7 @@
                     It will be removed automatically &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;.</value>
   </data>
   <data name="JobDetailsPage_JobId" xml:space="preserve">
-    <value>Job ID</value>
+    <value>Id</value>
   </data>
   <data name="JobDetailsPage_Requeue" xml:space="preserve">
     <value>Requeue</value>
@@ -353,7 +353,7 @@
     <value>Time zone</value>
   </data>
   <data name="RecurringJobsPage_Title" xml:space="preserve">
-    <value>Recurring jobs</value>
+    <value>Recurring Jobs</value>
   </data>
   <data name="RecurringJobsPage_Triggering" xml:space="preserve">
     <value>Triggering...</value>
@@ -544,5 +544,14 @@
   </data>
   <data name="Common_Error" xml:space="preserve">
     <value>Error</value>
+  </data>
+  <data name="JobDetailsPage_Parameters" xml:space="preserve">
+    <value>Parameters</value>
+  </data>
+  <data name="Metrics_SQLServer_SchemaVersion" xml:space="preserve">
+    <value>Schema Version</value>
+  </data>
+  <data name="AwaitingJobsPage_Table_Since" xml:space="preserve">
+    <value>Since</value>
   </data>
 </root>

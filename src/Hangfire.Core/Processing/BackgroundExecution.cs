@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2017 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -19,7 +18,6 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
-using Hangfire.Common;
 using Hangfire.Logging;
 using ThreadState = System.Threading.ThreadState;
 
@@ -36,7 +34,7 @@ namespace Hangfire.Processing
         // one defines its own logging rules to lower the number of logged messages,
         // to not to make stress on logging subsystem with thousands of messages in
         // case of transient faults.
-        private readonly ManualResetEvent _running = new ManualResetEvent(true);
+        private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
         private Stopwatch _faultedSince;
         private Stopwatch _failedSince;
         private Stopwatch _lastException;
@@ -107,9 +105,14 @@ namespace Hangfire.Processing
                             // domain unloads.
                             if (StopRequested) break;
 
-                            if (nextDelay > TimeSpan.Zero)
+                            if (nextDelay != TimeSpan.Zero)
                             {
-                                HandleDelay(executionId, nextDelay);
+                                if (!HandleDelay(executionId, nextDelay))
+                                {
+                                    // Inability to handle the delay means that execution was
+                                    // already stopped, so we should break the loop.
+                                    break;
+                                }
                             }
 
                             callback(executionId, state);
@@ -123,7 +126,7 @@ namespace Hangfire.Processing
                             throw;
                         }
 #endif
-                        catch (OperationCanceledException) when (StopRequested)
+                        catch (OperationCanceledException ex) when (ex.CancellationToken.Equals(_stopToken) || StopRequested)
                         {
                             // We are catching general OCE exception without checking its CancellationToken
                             // property, because the concrete token may be different than our one, for
@@ -132,7 +135,7 @@ namespace Hangfire.Processing
                             // broken on next iteration anyway.
                             break;
                         }
-                        catch (Exception ex)
+                        catch (Exception ex) when (ex.IsCatchableExceptionType())
                         {
                             HandleException(executionId, ex, out nextDelay);
                         }
@@ -189,9 +192,14 @@ namespace Hangfire.Processing
                             // domain unloads.
                             if (StopRequested) break;
 
-                            if (nextDelay > TimeSpan.Zero)
+                            if (nextDelay != TimeSpan.Zero)
                             {
-                                await HandleDelayAsync(executionId, nextDelay).ConfigureAwait(true);
+                                if (!await HandleDelayAsync(executionId, nextDelay).ConfigureAwait(true))
+                                {
+                                    // Inability to handle the delay means that execution was
+                                    // already stopped, so we should break the loop.
+                                    break;
+                                }
                             }
 
                             await callback(executionId, state).ConfigureAwait(true);
@@ -205,7 +213,7 @@ namespace Hangfire.Processing
                             throw;
                         }
 #endif
-                        catch (OperationCanceledException) when (StopRequested)
+                        catch (OperationCanceledException ex) when (ex.CancellationToken.Equals(_stopToken) || StopRequested)
                         {
                             // We are catching general OCE exception without checking its CancellationToken
                             // property, because the concrete token may be different than our one, for
@@ -214,7 +222,7 @@ namespace Hangfire.Processing
                             // broken on next iteration anyway.
                             break;
                         }
-                        catch (Exception ex)
+                        catch (Exception ex) when (ex.IsCatchableExceptionType())
                         {
                             HandleException(executionId, ex, out nextDelay);
                         }
@@ -236,13 +244,15 @@ namespace Hangfire.Processing
 
         public void Dispose()
         {
-            lock (_running)
+            lock (_stopped)
             {
                 if (_disposed) return;
                 _disposed = true;
 
                 _stopRegistration.Dispose();
-                _running.Dispose();
+
+                _stopped.Set();
+                _stopped.Dispose();
             }
         }
 
@@ -271,20 +281,49 @@ namespace Hangfire.Processing
             // Looks weird, but several times I was initializing the nextDelay variable
             // inside the execution loop by mistake. This lead to immediate looped invocation
             // with no delays and 100% of CPU consumption on transient exceptions, that is
-            // completely unnacceptable. So this is just a defensive technique.
+            // completely unacceptable. So this is just a defensive technique.
             initialDelay = TimeSpan.Zero;
         }
 
-        private void HandleDelay(Guid executionId, TimeSpan delay)
+        private bool HandleDelay(Guid executionId, TimeSpan delay)
         {
-            LogRetry(executionId, delay);
-            _running.WaitOne(delay, _stopToken);
+            try
+            {
+                LogRetry(executionId, delay);
+                return !_stopped.WaitOne(delay, _stopToken);
+            }
+            catch (ObjectDisposedException)
+            {
+                return false;
+            }
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
+            {
+                LogUnableWait(executionId, delay, ex);
+                return false;
+            }
         }
 
-        private async Task HandleDelayAsync(Guid executionId, TimeSpan delay)
+        private async Task<bool> HandleDelayAsync(Guid executionId, TimeSpan delay)
         {
-            LogRetry(executionId, delay);
-            await _running.WaitOneAsync(delay, _stopToken).ConfigureAwait(true);
+            try
+            {
+                LogRetry(executionId, delay);
+                return !await _stopped.WaitOneAsync(delay, _stopToken).ConfigureAwait(true);
+            }
+            catch (ObjectDisposedException)
+            {
+                return false;
+            }
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
+            {
+                LogUnableWait(executionId, delay, ex);
+                return false;
+            }
+        }
+
+        private void LogUnableWait(Guid executionId, TimeSpan delay, Exception ex)
+        {
+            _logger.FatalException($"{GetExecutionLoopTemplate(executionId)} was unable to wait for '{delay}' delay due to an exception. Execution will be stopped.", ex);
         }
 
         private void LogRetry(Guid executionId, TimeSpan delay)
@@ -320,11 +359,11 @@ namespace Hangfire.Processing
                 {
                     Thread.ResetAbort();
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     // .NET Core doesn't support both Thread.Abort and Thread.ResetAbort methods.
                     // I don't see any possible cases, where thread is aborted, but nevertheless
-                    // we shouldn't hide the orignial exception.
+                    // we shouldn't hide the original exception.
                     _logger.ErrorException($"{GetExecutionLoopTemplate(executionId)} was unable to reset thread abort request due to an exception. Background execution can be prematurely stopped.", ex);
                 }
             }
@@ -336,9 +375,21 @@ namespace Hangfire.Processing
                 return;
             }
 
-            if (!exception.Data.Contains("ExecutionId"))
+            try
             {
-                exception.Data.Add("ExecutionId", executionId);
+                // Some code might cache exception object and throw the same instance
+                // from multiple threads, despite it's not recommended to do. However
+                // bad things happen, and we should have some diagnostic tools to
+                // understand what's happened and what was the original exception which
+                // is being modified.
+                if (!exception.Data.Contains("ExecutionId"))
+                {
+                    exception.Data.Add("ExecutionId", executionId);
+                }
+            }
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
+            {
+                _logger.WarnException($"Was unable to add the ExecutionId property to the exception object, please see inner exception for details. Original exception: ${exception.GetType()} (${exception.Message})", ex);
             }
 
             ToFailedState(exception, out delay);
@@ -361,7 +412,7 @@ namespace Hangfire.Processing
 
         private void ToRunningState()
         {
-            lock (_running)
+            lock (_stopped)
             {
                 if (_disposed) return;
 
@@ -387,20 +438,16 @@ namespace Hangfire.Processing
                 _faultedSince = null;
                 _failedSince = null;
                 _lastException = null;
-
-                _running.Set();
             }
         }
 
         private void ToFailedState(Exception exception, out TimeSpan retryDelay)
         {
-            lock (_running)
+            lock (_stopped)
             {
                 retryDelay = FallbackRetryDelay;
 
                 if (_disposed) return;
-
-                _running.Reset();
 
                 _exceptionsCount++;
                 _lastException = Stopwatch.StartNew();

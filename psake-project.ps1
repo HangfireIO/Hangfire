@@ -9,9 +9,9 @@ Task Build -Depends Clean -Description "Restore all the packages and build the w
 }
 
 Task Merge -Depends Build -Description "Run ILRepack /internalize to merge required assemblies." {
-    Repack-Assembly @("Hangfire.Core", "net45") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
+    Repack-Assembly @("Hangfire.Core", "net451") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
     Repack-Assembly @("Hangfire.Core", "net46") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
-    Repack-Assembly @("Hangfire.SqlServer", "net45") @("Dapper")
+    Repack-Assembly @("Hangfire.SqlServer", "net451") @("Dapper")
     
     # Referenced packages aren't copied to the output folder in .NET Core <= 2.X. To make ILRepack run,
     # we need to copy them using the `dotnet publish` command prior to merging them. In .NET Core 3.0
@@ -32,19 +32,27 @@ Task Test -Depends Merge -Description "Run unit and integration tests against me
     # the same assemblies that are distributed to users. Since the `dotnet test` command doesn't support
     # the `--no-dependencies` command directly, we need to re-build tests themselves first.
     Exec { ls "tests\**\*.csproj" | % { dotnet build -c Release --no-dependencies $_.FullName } }
-    Exec { ls "tests\**\*.csproj" | % { dotnet test -c Release --no-build $_.FullName } }
+
+    # We are running unit test project one by one, because pipelined version like the line above does not
+    # support halting the whole execution pipeline when "dotnet test" command fails due to a failed test,
+    # silently allowing build process to continue its execution even with failed tests.
+    Exec { dotnet test -c Release --no-build "tests\Hangfire.Core.Tests" }
+    Exec { dotnet test -c Release --no-build "tests\Hangfire.SqlServer.Tests" }
+    Exec { dotnet test -c Release --no-build "tests\Hangfire.SqlServer.Msmq.Tests" }
 }
 
 Task Collect -Depends Test -Description "Copy all artifacts to the build folder." {
-    Collect-Assembly "Hangfire.Core" "net45"
-    Collect-Assembly "Hangfire.SqlServer" "net45"
-    Collect-Assembly "Hangfire.SqlServer.Msmq" "net45"
+    Collect-Assembly "Hangfire.Core" "net451"
+    Collect-Assembly "Hangfire.SqlServer" "net451"
+    Collect-Assembly "Hangfire.SqlServer.Msmq" "net451"
+    Collect-Assembly "Hangfire.NetCore" "net451"
     Collect-Assembly "Hangfire.AspNetCore" "net451"
 
     Collect-Assembly "Hangfire.Core" "net46"
 
     Collect-Assembly "Hangfire.Core" "netstandard1.3"
     Collect-Assembly "Hangfire.SqlServer" "netstandard1.3"
+    Collect-Assembly "Hangfire.NetCore" "netstandard1.3"
     Collect-Assembly "Hangfire.AspNetCore" "netstandard1.3"
     
     Collect-Assembly "Hangfire.Core" "netstandard2.0"
@@ -55,12 +63,12 @@ Task Collect -Depends Test -Description "Copy all artifacts to the build folder.
     Collect-Assembly "Hangfire.AspNetCore" "net461"
 
     Collect-Assembly "Hangfire.AspNetCore" "netcoreapp3.0"
-    Collect-Assembly "Hangfire.NetCore" "netcoreapp3.0"
+    Collect-Assembly "Hangfire.NetCore" "netstandard2.1"
     
     Collect-Content "content\readme.txt"
     Collect-Tool "src\Hangfire.SqlServer\DefaultInstall.sql"
 
-    Collect-Localizations "Hangfire.Core" "net45"
+    Collect-Localizations "Hangfire.Core" "net451"
     Collect-Localizations "Hangfire.Core" "net46"
     Collect-Localizations "Hangfire.Core" "netstandard1.3"
     Collect-Localizations "Hangfire.Core" "netstandard2.0"

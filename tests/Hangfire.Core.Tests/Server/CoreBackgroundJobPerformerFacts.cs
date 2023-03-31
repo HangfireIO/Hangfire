@@ -318,6 +318,21 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void ThrowsJobPerformanceException_DoesInclude_JobId()
+        {
+	        // Arrange
+	        _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+	        _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(CancellationToken.None);
+	        _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<OperationCanceledException>();
+
+	        var performer = CreatePerformer();
+
+	        // Act & Assert
+	        var exception = Assert.Throws<JobPerformanceException>(() => performer.Perform(_context.Object));
+	        Assert.Equal(_context.BackgroundJob.Id, exception.JobId);
+        }
+
+        [Fact]
         public void Run_ThrowsJobPerformanceException_InsteadOfOperationCanceled_WhenShutdownWasNOTInitiated()
         {
             // Arrange

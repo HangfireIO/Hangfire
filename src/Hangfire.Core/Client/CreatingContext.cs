@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -73,7 +72,7 @@ namespace Hangfire.Client
                     ? (T)Parameters[name]
                     : default(T);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 throw new InvalidOperationException(
                     $"Could not get a value of the job parameter `{name}`. See inner exception for details.", ex);

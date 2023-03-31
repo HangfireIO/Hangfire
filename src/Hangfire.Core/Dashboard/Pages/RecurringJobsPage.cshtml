@@ -19,16 +19,16 @@
 
     Pager pager = null;
 
-    using (var connection = Storage.GetConnection())
-    {
-        var storageConnection = connection as JobStorageConnection;
-        if (storageConnection != null)
-        {
-            pager = new Pager(from, perPage > 0 ? perPage : DashboardOptions.DefaultRecordsPerPage, storageConnection.GetRecurringJobCount());
-            recurringJobs = storageConnection.GetRecurringJobs(pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
-        }
-        else
-        {
+	using (var connection = Storage.GetReadOnlyConnection())
+	{
+	    var storageConnection = connection as JobStorageConnection;
+	    if (storageConnection != null)
+	    {
+	        pager = new Pager(from, perPage > 0 ? perPage : DashboardOptions.DefaultRecordsPerPage, storageConnection.GetRecurringJobCount());
+	        recurringJobs = storageConnection.GetRecurringJobs(pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
+	    }
+	    else
+	    {
             recurringJobs = connection.GetRecurringJobs();
         }
     }
@@ -104,7 +104,7 @@
                                         </td>
                                     }
                                     <td class="word-break width-15">@job.Id</td>
-                                    <td class="min-width">
+                                    <td class="min-width min-width-125p ">
                                         @* ReSharper disable once EmptyGeneralCatchClause *@
                                         @{
                                             string cronDescription = null;
@@ -116,7 +116,7 @@
                                                 {
                                                     RecurringJobEntity.ParseCronExpression(job.Cron);
                                                 }
-                                                catch (Exception ex)
+                                                catch (Exception ex) when (ex.IsCatchableExceptionType())
                                                 {
                                                     cronDescription = ex.Message;
                                                     cronError = true;
@@ -139,7 +139,7 @@
 
                                         @if (cronDescription != null)
                                         {
-                                        <code title="@cronDescription">
+                                        <code title="@cronDescription" class="cron-badge">
                                             @if (cronError)
                                             {
                                                 <span class="glyphicon glyphicon-exclamation-sign"></span>
@@ -149,10 +149,10 @@
                                         }
                                         else
                                         {
-                                            <code>@job.Cron</code>
+                                            <code class="cron-badge">@job.Cron</code>
                                         }
                                     </td>
-                                    <td style="word-break: break-word;">
+                                    <td>
                                         @if (!String.IsNullOrWhiteSpace(job.TimeZoneId))
                                         {
                                             string displayName;
@@ -163,7 +163,7 @@
                                                 var resolver = DashboardOptions.TimeZoneResolver ?? new DefaultTimeZoneResolver();
                                                 displayName = resolver.GetTimeZoneById(job.TimeZoneId).DisplayName;
                                             }
-                                            catch (Exception ex)
+                                            catch (Exception ex) when (ex.IsCatchableExceptionType())
                                             {
                                                 displayName = null;
                                                 exception = ex;
@@ -226,10 +226,22 @@
                                         {
                                             if (!String.IsNullOrEmpty(job.LastJobId))
                                             {
-                                                <a href="@Url.JobDetails(job.LastJobId)" style="text-decoration: none">
-                                                    <span class="label label-default label-hover" style="@($"background-color: {JobHistoryRenderer.GetForegroundStateColor(job.LastJobState ?? EnqueuedState.StateName)};")">
-                                                        @Html.RelativeTime(job.LastExecution.Value)
-                                                    </span>
+                                                <a href="@Url.JobDetails(job.LastJobId)" class="text-decoration-none">
+                                                    @{
+                                                        var cssSuffix = JobHistoryRenderer.GetStateCssSuffix(job.LastJobState ?? EnqueuedState.StateName);
+                                                    }
+                                                    @if (cssSuffix != null)
+                                                    {
+                                                        <span class="label label-default label-hover label-state-@cssSuffix">
+                                                            @Html.RelativeTime(job.LastExecution.Value)
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="label label-default label-hover" style="@($"background-color: {JobHistoryRenderer.GetForegroundStateColor(job.LastJobState ?? EnqueuedState.StateName)};")">
+                                                            @Html.RelativeTime(job.LastExecution.Value)
+                                                        </span>
+                                                    }
                                                 </a>
                                             }
                                             else

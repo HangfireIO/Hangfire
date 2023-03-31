@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -14,11 +13,15 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
 namespace Hangfire
 {
+    [Flags]
     public enum JobContinuationOptions
     {
-        OnAnyFinishedState = 0,
-        OnlyOnSucceededState
+        OnAnyFinishedState   = 0,
+        OnlyOnSucceededState = 1,
+        OnlyOnDeletedState   = 2,
     }
 }

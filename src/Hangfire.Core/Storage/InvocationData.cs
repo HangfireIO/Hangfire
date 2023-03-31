@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -48,17 +47,27 @@ namespace Hangfire.Storage
         }
 
         public InvocationData(string type, string method, string parameterTypes, string arguments)
+            : this(type, method, parameterTypes, arguments, null)
+        {
+        }
+
+        [JsonConstructor]
+        public InvocationData(string type, string method, string parameterTypes, string arguments, string queue)
         {
             Type = type;
             Method = method;
             ParameterTypes = parameterTypes;
             Arguments = arguments;
+            Queue = queue;
         }
 
         public string Type { get; }
         public string Method { get; }
         public string ParameterTypes { get; }
         public string Arguments { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string Queue { get; }
 
         [Obsolete("Please use DeserializeJob() method instead. Will be removed in 2.0.0 for clarity.")]
         public Job Deserialize()
@@ -89,7 +98,7 @@ namespace Hangfire.Storage
                 {
                     var parametersString = parameterTypes != null
                         ? String.Join(", ", parameterTypes.Select(x => x.Name))
-                        : String.Empty;
+                        : ParameterTypes ?? String.Empty;
                     
                     throw new InvalidOperationException(
                         $"The type `{type.FullName}` does not contain a method with signature `{Method}({parametersString})`");
@@ -98,9 +107,9 @@ namespace Hangfire.Storage
                 var argumentsArray = SerializationHelper.Deserialize<string[]>(Arguments);
                 var arguments = DeserializeArguments(method, argumentsArray);
 
-                return new Job(type, method, arguments);
+                return new Job(type, method, arguments, Queue);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 throw new JobLoadException("Could not load the job. See inner exception for the details.", ex);
             }
@@ -116,19 +125,25 @@ namespace Hangfire.Storage
                 job.Method.GetParameters().Select(x => typeSerializer(x.ParameterType)).ToArray());
             var arguments = SerializationHelper.Serialize(SerializeArguments(job.Method, job.Args));
 
-            return new InvocationData(type, methodName, parameterTypes, arguments);
+            return new InvocationData(type, methodName, parameterTypes, arguments, job.Queue);
         }
 
         public static InvocationData DeserializePayload(string payload)
         {
+            if (payload == null) throw new ArgumentNullException(nameof(payload));
+
             JobPayload jobPayload = null;
             Exception exception = null;
 
             try
             {
                 jobPayload = SerializationHelper.Deserialize<JobPayload>(payload);
+                if (jobPayload == null)
+                {
+                    throw new InvalidOperationException("Deserialize<JobPayload> returned `null` for a non-null payload.");
+                }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 exception = ex;
             }
@@ -139,10 +154,15 @@ namespace Hangfire.Storage
                     jobPayload.TypeName,
                     jobPayload.MethodName,
                     SerializationHelper.Serialize(jobPayload.ParameterTypes),
-                    SerializationHelper.Serialize(jobPayload.Arguments));
+                    SerializationHelper.Serialize(jobPayload.Arguments),
+                    jobPayload.Queue);
             }
 
             var data = SerializationHelper.Deserialize<InvocationData>(payload);
+            if (data == null)
+            {
+                throw new InvalidOperationException("Deserialize<InvocationData> returned `null` for a non-null payload.");
+            }
 
             if (data.Type == null || data.Method == null)
             {
@@ -164,12 +184,13 @@ namespace Hangfire.Storage
                     TypeName = Type,
                     MethodName = Method,
                     ParameterTypes = parameterTypes?.Length > 0 ? parameterTypes : null,
-                    Arguments = arguments?.Length > 0 ? arguments : null
+                    Arguments = arguments?.Length > 0 ? arguments : null,
+                    Queue = Queue
                 });
             }
 
             return SerializationHelper.Serialize(excludeArguments
-                ? new InvocationData(Type, Method, ParameterTypes, null)
+                ? new InvocationData(Type, Method, ParameterTypes, null, Queue)
                 : this);
         }
 
@@ -179,14 +200,14 @@ namespace Hangfire.Storage
             {
                 return SerializationHelper.Deserialize<string[]>(ParameterTypes);
             }
-            catch (Exception outerException)
+            catch (Exception outerException) when (outerException.IsCatchableExceptionType())
             {
                 try
                 {
                     var parameterTypes = SerializationHelper.Deserialize<Type[]>(ParameterTypes);
                     return parameterTypes.Select(TypeHelper.CurrentTypeSerializer).ToArray();
                 }
-                catch (Exception)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     ExceptionDispatchInfo.Capture(outerException).Throw();
                     throw;
@@ -281,11 +302,7 @@ namespace Hangfire.Storage
             {
                 value = SerializationHelper.Deserialize(argument, type, SerializationOption.User);
             }
-            catch (Exception
-#if !NETSTANDARD1_3
-            jsonException
-#endif
-            )
+            catch (Exception jsonException) when (jsonException.IsCatchableExceptionType())
             {
                 if (type == typeof(object))
                 {
@@ -315,7 +332,7 @@ namespace Hangfire.Storage
 
                         value = converter.ConvertFromInvariantString(argument);
                     }
-                    catch (Exception)
+                    catch (Exception ex) when (ex.IsCatchableExceptionType())
                     {
                         ExceptionDispatchInfo.Capture(jsonException).Throw();
                         throw;
@@ -363,6 +380,9 @@ namespace Hangfire.Storage
 
             [JsonProperty("a", NullValueHandling = NullValueHandling.Ignore)]
             public string[] Arguments { get; set; }
+
+            [JsonProperty("q", NullValueHandling = NullValueHandling.Ignore)]
+            public string Queue { get; set; }
         }
     }
 }

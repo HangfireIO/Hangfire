@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -23,6 +22,7 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
+using Hangfire.Storage;
 
 namespace Hangfire.Client
 {
@@ -56,12 +56,75 @@ namespace Hangfire.Client
 
         public BackgroundJob Create(CreateContext context)
         {
-            var attemptsLeft = Math.Max(RetryAttempts, 0);
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            if (context.Job.Queue != null && !context.Storage.HasFeature(JobStorageFeatures.JobQueueProperty))
+            {
+                throw new NotSupportedException("Current storage doesn't support specifying queues directly for a specific job. Please use the QueueAttribute instead.");
+            }
+
             var parameters = context.Parameters.ToDictionary(
                 x => x.Key,
                 x => SerializationHelper.Serialize(x.Value, SerializationOption.User));
 
             var createdAt = DateTime.UtcNow;
+            var expireIn = TimeSpan.FromDays(30);
+
+            if (context.Storage.HasFeature(JobStorageFeatures.Transaction.CreateJob))
+            {
+                return CreateBackgroundJobSingleStep(context, parameters, createdAt, expireIn);
+            }
+            else
+            {
+                return CreateBackgroundJobTwoSteps(context, parameters, createdAt, expireIn);
+            }
+        }
+
+        private BackgroundJob CreateBackgroundJobSingleStep(CreateContext context, Dictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn)
+        {
+            var attemptsLeft = Math.Max(RetryAttempts, 0);
+
+            return RetryOnException(ref attemptsLeft, attempt =>
+            {
+                using (var transaction = context.Connection.CreateWriteTransaction())
+                {
+                    if (!(transaction is JobStorageTransaction storageTransaction))
+                    {
+                        throw new InvalidOperationException($"{transaction.GetType().Name} must inherit {nameof(JobStorageTransaction)} to use this feature.");
+                    }
+
+                    var jobId = storageTransaction.CreateJob(context.Job, parameters, createdAt, expireIn);
+                    if (String.IsNullOrEmpty(jobId))
+                    {
+                        return null;
+                    }
+
+                    var backgroundJob = new BackgroundJob(jobId, context.Job, createdAt, parameters);
+
+                    if (context.InitialState != null)
+                    {
+                        var applyContext = new ApplyStateContext(
+                            context.Storage,
+                            context.Connection,
+                            transaction,
+                            backgroundJob,
+                            context.InitialState,
+                            oldStateName: null,
+                            context.Profiler,
+                            StateMachine);
+
+                        StateMachine.ApplyState(applyContext);
+                    }
+
+                    transaction.Commit();
+                    return backgroundJob;
+                }
+            });
+        }
+
+        private BackgroundJob CreateBackgroundJobTwoSteps(CreateContext context, Dictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn)
+        {
+            var attemptsLeft = Math.Max(RetryAttempts, 0);
 
             // Retry may cause multiple background jobs to be created, especially when there's
             // a timeout-related exception. But initialization attempt will be performed only
@@ -74,14 +137,14 @@ namespace Hangfire.Client
                 context.Job,
                 parameters,
                 createdAt,
-                TimeSpan.FromDays(30)));
+                expireIn));
 
             if (String.IsNullOrEmpty(jobId))
             {
                 return null;
             }
 
-            var backgroundJob = new BackgroundJob(jobId, context.Job, createdAt);
+            var backgroundJob = new BackgroundJob(jobId, context.Job, createdAt, parameters);
 
             if (context.InitialState != null)
             {
@@ -92,7 +155,7 @@ namespace Hangfire.Client
                         // Normally, a distributed lock should be applied when making a retry, since
                         // it's possible to get a timeout exception, when transaction was actually
                         // committed. But since background job can't be returned to a position where
-                        // it's state is null, and since only the current thread knows the job's identifier
+                        // its state is null, and since only the current thread knows the job's identifier
                         // when its state is null, and since we shouldn't do anything when it's non-null,
                         // there will be no any race conditions.
                         var data = context.Connection.GetJobData(jobId);
@@ -110,7 +173,8 @@ namespace Hangfire.Client
                             backgroundJob,
                             context.InitialState,
                             oldStateName: null,
-                            profiler: context.Profiler);
+                            context.Profiler,
+                            StateMachine);
 
                         StateMachine.ApplyState(applyContext);
 
@@ -148,7 +212,7 @@ namespace Hangfire.Client
 
                     return action(attempt++);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     exceptions.Add(ex);
                     _logger.DebugException("An exception occurred while creating a background job, see inner exception for details.", ex);

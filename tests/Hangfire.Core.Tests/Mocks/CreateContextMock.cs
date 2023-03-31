@@ -7,7 +7,7 @@ using Moq;
 
 namespace Hangfire.Core.Tests
 {
-    class CreateContextMock
+    public class CreateContextMock
     {
         private readonly Lazy<CreateContext> _context;
 
@@ -34,5 +34,20 @@ namespace Hangfire.Core.Tests
         public CreateContext Object => _context.Value;
 
         public static void Method() { }
+
+        public CreatingContext GetCreatingContext()
+        {
+            return new CreatingContext(Object);
+        }
+
+        public CreatedContext GetCreatedContext(
+            string jobId, DateTime? createdAt = null, bool canceled = false, Exception exception = null)
+        {
+            return new CreatedContext(
+                Object,
+                new BackgroundJob(jobId, Job, createdAt ?? DateTime.UtcNow),
+                canceled,
+                exception);
+        }
     }
 }

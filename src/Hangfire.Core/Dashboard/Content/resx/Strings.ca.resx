@@ -1,0 +1,520 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AwaitingJobsPage_ContinuationsWarning_Text" xml:space="preserve">
+    <value>Les continuacions funcionen correctament, però el teu sistema d'emmagatzematge de tasques actual no suporta algunes consultes necessàries per a mostrar aquesta pàgina. Actualitzeu el vostre sistema d'emmagatzematge de tasques o espereu que aquest suporti aquesta funcionalitat</value>
+  </data>
+  <data name="AwaitingJobsPage_ContinuationsWarning_Title" xml:space="preserve">
+    <value>Les continuacions funcionen, però aquesta pàgina no es pot mostrar.</value>
+  </data>
+  <data name="AwaitingJobsPage_NoJobs" xml:space="preserve">
+    <value>No s'han trobat tasques en espera</value>
+  </data>
+  <data name="AwaitingJobsPage_Table_Options" xml:space="preserve">
+    <value>Opcions</value>
+  </data>
+  <data name="AwaitingJobsPage_Table_Parent" xml:space="preserve">
+    <value>Pare</value>
+    <comment>Fuzzy</comment>
+  </data>
+  <data name="AwaitingJobsPage_Title" xml:space="preserve">
+    <value>Tasques en espera</value>
+  </data>
+  <data name="Common_Created" xml:space="preserve">
+    <value>Creat</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Eliminar</value>
+  </data>
+  <data name="Common_DeleteConfirm" xml:space="preserve">
+    <value>¿Esteu segur que voleu ELIMINAR TOTES les tasques seleccionades?</value>
+  </data>
+  <data name="Common_Deleting" xml:space="preserve">
+    <value>Eliminant...</value>
+  </data>
+  <data name="Common_DeleteSelected" xml:space="preserve">
+    <value>Eliminar seleccionats</value>
+  </data>
+  <data name="Common_EnqueueButton_Text" xml:space="preserve">
+    <value>Posar tasques a la cua</value>
+  </data>
+  <data name="Common_Enqueueing" xml:space="preserve">
+    <value>Posant a la cua...</value>
+  </data>
+  <data name="Common_Fetched" xml:space="preserve">
+    <value>Obtingut</value>
+    <comment>Fuzzy</comment>
+  </data>
+  <data name="Common_Id" xml:space="preserve">
+    <value>Id</value>
+  </data>
+  <data name="Common_Job" xml:space="preserve">
+    <value>Tasca</value>
+  </data>
+  <data name="Common_JobExpired" xml:space="preserve">
+    <value>Tasca expirada</value>
+  </data>
+  <data name="Common_JobStateChanged_Text" xml:space="preserve">
+    <value>L'estat de la tasca ha canviat mentre s'obtenia informació.</value>
+    <comment>Fuzzy</comment>
+  </data>
+  <data name="Common_LessDetails" xml:space="preserve">
+    <value>Menys detalls</value>
+  </data>
+  <data name="Common_MoreDetails" xml:space="preserve">
+    <value>Més detalls</value>
+  </data>
+  <data name="Common_NotAvailable" xml:space="preserve">
+    <value>N/D</value>
+  </data>
+  <data name="Common_PeriodDay" xml:space="preserve">
+    <value>Dia</value>
+  </data>
+  <data name="Common_PeriodWeek" xml:space="preserve">
+    <value>Setmana</value>
+  </data>
+  <data name="Common_Reason" xml:space="preserve">
+    <value>Raó</value>
+  </data>
+  <data name="Common_RequeueJobs" xml:space="preserve">
+    <value>Tornar a posar les tasques a la cua</value>
+    <comment>Fuzzy</comment>
+  </data>
+  <data name="Common_Retry" xml:space="preserve">
+    <value>Tornar a intentar</value>
+  </data>
+  <data name="Common_Server" xml:space="preserve">
+    <value>Servidor</value>
+  </data>
+  <data name="Common_State" xml:space="preserve">
+    <value>Estat</value>
+  </data>
+  <data name="Common_Unknown" xml:space="preserve">
+    <value>Desconegut</value>
+  </data>
+  <data name="DeletedJobsPage_NoJobs" xml:space="preserve">
+    <value>No s'han trobat tasques eliminades.</value>
+  </data>
+  <data name="DeletedJobsPage_Table_Deleted" xml:space="preserve">
+    <value>Eliminat</value>
+  </data>
+  <data name="DeletedJobsPage_Title" xml:space="preserve">
+    <value>Tasques eliminades</value>
+  </data>
+  <data name="EnqueuedJobsPage_NoJobs" xml:space="preserve">
+    <value>La cua esta buida.</value>
+  </data>
+  <data name="EnqueuedJobsPage_Title" xml:space="preserve">
+    <value>Tasques a la cua</value>
+  </data>
+  <data name="FailedJobsPage_FailedJobsNotExpire_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;Les tasques fallides no expiren&lt;/strong&gt; per a permetre-us tornar a afegir-les a la cua sense cap pressió. Podeu afegir-les de nou a la cua, eliminar-les manualment o aplicar l'atribut &lt;code&gt;AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)&lt;/code&gt; per a eliminar-les automàticament.</value>
+  </data>
+  <data name="FailedJobsPage_NoJobs" xml:space="preserve">
+    <value>No hi han tasques amb errors.</value>
+  </data>
+  <data name="FailedJobsPage_Table_Failed" xml:space="preserve">
+    <value>Amb errors</value>
+  </data>
+  <data name="FailedJobsPage_Title" xml:space="preserve">
+    <value>Tasques amb errors</value>
+  </data>
+  <data name="FetchedJobsPage_NoJobs" xml:space="preserve">
+    <value>La cua és buida</value>
+  </data>
+  <data name="FetchedJobsPage_Title" xml:space="preserve">
+    <value>Tasques obtingudes</value>
+    <comment>Fuzzy</comment>
+  </data>
+  <data name="HomePage_HistoryGraph" xml:space="preserve">
+    <value>Gràfic històric</value>
+  </data>
+  <data name="HomePage_RealtimeGraph" xml:space="preserve">
+    <value>Gràfic en temps real</value>
+  </data>
+  <data name="HomePage_Title" xml:space="preserve">
+    <value>Panell</value>
+    <comment>Fuzzy</comment>
+  </data>
+  <data name="JobDetailsPage_Created" xml:space="preserve">
+    <value>Creat</value>
+  </data>
+  <data name="JobDetailsPage_DeleteConfirm" xml:space="preserve">
+    <value>¿Esteu segur que voleu eliminar aquesta tasca?</value>
+  </data>
+  <data name="JobDetailsPage_State" xml:space="preserve">
+    <value>Estat</value>
+  </data>
+  <data name="JobDetailsPage_JobAbortedNotActive_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;La tasca ha estat avortada&lt;/strong&gt; - ha estat processada pel servidor &lt;code&gt;{0}&lt;/code&gt; que no és a la llista de &lt;a href="{1}"&gt;servidors actius&lt;/a&gt; per ara. Serà recuperat automàticament després del període d'invisibilitat, però podeu tornar-la a posar en la cua o eliminar-la manualment.</value>
+  </data>
+  <data name="JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;La tasca ha estat avortada&lt;/strong&gt; - ha estat processada pel servido &lt;code&gt;{0}&lt;/code&gt; que ha reportat un batec fa més d'un minut. Serà recuperat automàticament després del període d'invisibilitat, però podeu tornar-la a posar en la cua o eliminar-la manualment.</value>
+  </data>
+  <data name="JobDetailsPage_JobExpired" xml:space="preserve">
+    <value>La tasca amb id '{0}' ha expirat o no s'ha trobat al servidor</value>
+  </data>
+  <data name="JobDetailsPage_JobFinished_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;La tasca ha finalitzat&lt;/strong&gt;. S'eliminarà automàticament en &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;</value>
+  </data>
+  <data name="JobDetailsPage_JobId" xml:space="preserve">
+    <value>ID Tasca</value>
+  </data>
+  <data name="JobDetailsPage_Requeue" xml:space="preserve">
+    <value>Tornar a posar a la cua</value>
+    <comment>Fuzzy</comment>
+  </data>
+  <data name="LayoutPage_Back" xml:space="preserve">
+    <value>Tornar</value>
+  </data>
+  <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
+    <value>Generat: {0}ms</value>
+  </data>
+  <data name="LayoutPage_Footer_Time" xml:space="preserve">
+    <value>Hora:</value>
+  </data>
+  <data name="Paginator_Next" xml:space="preserve">
+    <value>Següent</value>
+  </data>
+  <data name="Paginator_Prev" xml:space="preserve">
+    <value>Anterior</value>
+  </data>
+  <data name="Paginator_TotalItems" xml:space="preserve">
+    <value>Total elements</value>
+  </data>
+  <data name="PerPageSelector_ItemsPerPage" xml:space="preserve">
+    <value>Elements per pàgina</value>
+  </data>
+  <data name="ProcessingJobsPage_Aborted" xml:space="preserve">
+    <value>Sembla que la tasca ha estat cancel·lada</value>
+  </data>
+  <data name="ProcessingJobsPage_NoJobs" xml:space="preserve">
+    <value>No hi han tasques en procés.</value>
+  </data>
+  <data name="ProcessingJobsPage_Table_Started" xml:space="preserve">
+    <value>Iniciat</value>
+  </data>
+  <data name="ProcessingJobsPage_Title" xml:space="preserve">
+    <value>Tasques en procés</value>
+  </data>
+  <data name="QueuesPage_NoJobs" xml:space="preserve">
+    <value>No hi han tasques a la cua.</value>
+  </data>
+  <data name="QueuesPage_NoQueues" xml:space="preserve">
+    <value>No s'han trobat tasques a la cua. Proveu a posar alguna.</value>
+  </data>
+  <data name="QueuesPage_Table_Length" xml:space="preserve">
+    <value>Longitud</value>
+  </data>
+  <data name="QueuesPage_Table_NextsJobs" xml:space="preserve">
+    <value>Properes tasques</value>
+  </data>
+  <data name="QueuesPage_Table_Queue" xml:space="preserve">
+    <value>Cua</value>
+  </data>
+  <data name="QueuesPage_Title" xml:space="preserve">
+    <value>Cues</value>
+  </data>
+  <data name="RecurringJobsPage_Canceled" xml:space="preserve">
+    <value>Cancel·lat</value>
+  </data>
+  <data name="RecurringJobsPage_NoJobs" xml:space="preserve">
+    <value>No s'han trobat tasques recurrents</value>
+  </data>
+  <data name="RecurringJobsPage_Table_Cron" xml:space="preserve">
+    <value>Cron</value>
+  </data>
+  <data name="RecurringJobsPage_Table_LastExecution" xml:space="preserve">
+    <value>Darrera execució</value>
+  </data>
+  <data name="RecurringJobsPage_Table_NextExecution" xml:space="preserve">
+    <value>Propera execució</value>
+  </data>
+  <data name="RecurringJobsPage_Table_TimeZone" xml:space="preserve">
+    <value>Zona horària</value>
+  </data>
+  <data name="RecurringJobsPage_Title" xml:space="preserve">
+    <value>Tasques recurrents</value>
+  </data>
+  <data name="RecurringJobsPage_Triggering" xml:space="preserve">
+    <value>Activant...</value>
+  </data>
+  <data name="RecurringJobsPage_TriggerNow" xml:space="preserve">
+    <value>Activar ara</value>
+  </data>
+  <data name="RetriesPage_NoJobs" xml:space="preserve">
+    <value>Tot va bé - no hi ha cap reintent.</value>
+  </data>
+  <data name="RetriesPage_Title" xml:space="preserve">
+    <value>Reintents</value>
+  </data>
+  <data name="RetriesPage_Warning_Html" xml:space="preserve">
+    <value>&lt;h4&gt;Els reintents estan funcionant, però aquesta pàgina no es pot mostrar&lt;/h4&gt;
+        &lt;p&gt;
+            No us preocupeu, els reintents funcionen como haurien, però el teu sistema d'emmagatzematge de tasques actual no suporta algunes consultes necessàries per a mostrar aquesta pàgina. Actualitzeu el vostre sistema d'emmagatzematge o espereu fins que aquest suporti aquesta funcionalitat
+        &lt;/p&gt;
+        &lt;p&gt;
+           Visiteu la pàgina &lt;a href="{0}"&gt;Tasques programades&lt;/a&gt; per a veure totes les tasques programades, inclosos els reintents.
+        &lt;/p&gt; </value>
+  </data>
+  <data name="ScheduledJobsPage_EnqueueNow" xml:space="preserve">
+    <value>Posar a la cua ara</value>
+  </data>
+  <data name="ScheduledJobsPage_NoJobs" xml:space="preserve">
+    <value>No hi han tasques programades.</value>
+  </data>
+  <data name="ScheduledJobsPage_Table_Enqueue" xml:space="preserve">
+    <value>Posar a la cua</value>
+  </data>
+  <data name="ScheduledJobsPage_Table_Scheduled" xml:space="preserve">
+    <value>Programades</value>
+  </data>
+  <data name="ScheduledJobsPage_Title" xml:space="preserve">
+    <value>Tasques programades</value>
+  </data>
+  <data name="ServersPage_NoServers" xml:space="preserve">
+    <value>No hi ha cap servidor actiu. Les tasques en segon pla no seran processades.</value>
+  </data>
+  <data name="ServersPage_Table_Heartbeat" xml:space="preserve">
+    <value>Batec</value>
+    <comment>Fuzzy</comment>
+  </data>
+  <data name="ServersPage_Table_Name" xml:space="preserve">
+    <value>Nom</value>
+  </data>
+  <data name="ServersPage_Table_Queues" xml:space="preserve">
+    <value>Cues</value>
+  </data>
+  <data name="ServersPage_Table_Started" xml:space="preserve">
+    <value>Iniciada</value>
+  </data>
+  <data name="ServersPage_Table_Workers" xml:space="preserve">
+    <value>Treballadors</value>
+    <comment>Fuzzy</comment>
+  </data>
+  <data name="ServersPage_Title" xml:space="preserve">
+    <value>Servidors</value>
+  </data>
+  <data name="SucceededJobsPage_NoJobs" xml:space="preserve">
+    <value>No s'han trobat tasques completades</value>
+  </data>
+  <data name="SucceededJobsPage_Table_Succeeded" xml:space="preserve">
+    <value>Completades</value>
+  </data>
+  <data name="SucceededJobsPage_Table_TotalDuration" xml:space="preserve">
+    <value>Durada total</value>
+  </data>
+  <data name="SucceededJobsPage_Title" xml:space="preserve">
+    <value>Tasques completades</value>
+  </data>
+  <data name="JobsSidebarMenu_Awaiting" xml:space="preserve">
+    <value>A l'espera</value>
+  </data>
+  <data name="JobsSidebarMenu_Deleted" xml:space="preserve">
+    <value>Eliminat</value>
+  </data>
+  <data name="JobsSidebarMenu_Failed" xml:space="preserve">
+    <value>Amb errors</value>
+  </data>
+  <data name="JobsSidebarMenu_Processing" xml:space="preserve">
+    <value>Processant</value>
+  </data>
+  <data name="JobsSidebarMenu_Scheduled" xml:space="preserve">
+    <value>Programades</value>
+  </data>
+  <data name="JobsSidebarMenu_Succeeded" xml:space="preserve">
+    <value>Completades</value>
+  </data>
+  <data name="NavigationMenu_Jobs" xml:space="preserve">
+    <value>Tasques</value>
+  </data>
+  <data name="NavigationMenu_RecurringJobs" xml:space="preserve">
+    <value>Tasques recurrents</value>
+  </data>
+  <data name="NavigationMenu_Retries" xml:space="preserve">
+    <value>Reintents</value>
+  </data>
+  <data name="NavigationMenu_Servers" xml:space="preserve">
+    <value>Servidors</value>
+  </data>
+  <data name="Common_CannotFindTargetMethod" xml:space="preserve">
+    <value>No es pot trobar el mètode destí</value>
+    <comment>Fuzzy</comment>
+  </data>
+  <data name="Common_Enqueued" xml:space="preserve">
+    <value>A la cua</value>
+  </data>
+  <data name="Common_NoState" xml:space="preserve">
+    <value>Sense estat</value>
+  </data>
+  <data name="JobsSidebarMenu_Enqueued" xml:space="preserve">
+    <value>A la cua</value>
+  </data>
+  <data name="Metrics_ActiveConnections" xml:space="preserve">
+    <value>Connexions actives</value>
+  </data>
+  <data name="Metrics_DeletedJobs" xml:space="preserve">
+    <value>Tasques eliminades</value>
+  </data>
+  <data name="Metrics_FailedJobs" xml:space="preserve">
+    <value>Tasques fallides</value>
+  </data>
+  <data name="Metrics_ProcessingJobs" xml:space="preserve">
+    <value>Tasques en procés</value>
+  </data>
+  <data name="Metrics_RecurringJobs" xml:space="preserve">
+    <value>Tasques recurrents</value>
+  </data>
+  <data name="Metrics_Retries" xml:space="preserve">
+    <value>Reintents</value>
+  </data>
+  <data name="Metrics_ScheduledJobs" xml:space="preserve">
+    <value>Tasques programades</value>
+  </data>
+  <data name="Metrics_Servers" xml:space="preserve">
+    <value>Servidors</value>
+  </data>
+  <data name="Metrics_SucceededJobs" xml:space="preserve">
+    <value>Tasques completades</value>
+  </data>
+  <data name="Metrics_TotalConnections" xml:space="preserve">
+    <value>Connexions totals</value>
+  </data>
+  <data name="Common_Condition" xml:space="preserve">
+    <value>Condició</value>
+  </data>
+  <data name="Common_Continuations" xml:space="preserve">
+    <value>Continuacions</value>
+  </data>
+  <data name="Metrics_AwaitingCount" xml:space="preserve">
+    <value>A l'espera</value>
+  </data>
+  <data name="Metrics_EnqueuedCountOrNull" xml:space="preserve">
+    <value>A la cua</value>
+  </data>
+  <data name="Metrics_EnqueuedQueuesCount" xml:space="preserve">
+    <value>A la cua / Cues</value>
+  </data>
+  <data name="HomePage_GraphHover_Failed" xml:space="preserve">
+    <value>Amb errors</value>
+  </data>
+  <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
+    <value>Completats</value>
+  </data>
+</root>

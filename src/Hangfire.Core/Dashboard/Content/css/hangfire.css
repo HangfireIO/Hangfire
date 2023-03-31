@@ -11,6 +11,16 @@ body {
     padding-top: 75px;
 }
 
+.col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-2, .col-lg-3, .col-lg-4,
+.col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-md-1, .col-md-10, .col-md-11,
+.col-md-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8,
+.col-md-9, .col-sm-1, .col-sm-10, .col-sm-11, .col-sm-12, .col-sm-2, .col-sm-3, .col-sm-4,
+.col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-xs-1, .col-xs-10, .col-xs-11,
+.col-xs-12, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8,
+.col-xs-9 {
+    min-height: 2px !important;
+}
+
 /* Wrapper for page content to push down footer */
 #wrap {
   min-height: 100%;
@@ -105,12 +115,28 @@ a:hover .label-hover {
     white-space: nowrap;
 }
 
+.min-width-125p {
+    min-width: 125px;
+}
+
+.min-width-200p {
+    min-width: 200px;
+}
+
 .width-15 {
     width: 15%;
 }
 
+.width-20 {
+    width: 20%;
+}
+
 .width-30 {
     width: 30%;
+}
+
+.glyphicon-sm {
+    font-size: 10px;
 }
 
 @media (max-width: 991px) {
@@ -283,37 +309,31 @@ a:hover .label-hover {
     color: rgb(128, 128, 128);
 }
 
-.job-snippet-properties {
-    max-width: 200px;
-    padding-left: 5px;
-}
-
-.job-snippet-properties dl {
-    margin: 0;
-}
-
-.job-snippet-properties dl dt {
-    color: #999;
-    text-shadow: 0 1px white;
-    font-weight: normal;
-}
-
-.job-snippet-properties dl dd {
-    margin-left: 0;
-    margin-bottom: 5px;
-}
-
 .job-snippet-properties pre {
-    background-color: white;
+    background-color: inherit;
     -webkit-box-shadow: none;
     -ms-box-shadow: none;
     padding: 2px 4px;
     border: none;
     margin: 0;
+    overflow: hidden;
 }
 
 .job-snippet-properties code {
-    color: black;
+    color: rgb(163, 21, 21);
+}
+
+.alert-warning .table td {
+    border-color: rgb(229, 220, 195);
+}
+
+.alert-fixed {
+    border-radius: 0;
+    margin-bottom: -1px;
+    padding-left: 0;
+    padding-right: 0;
+    border-left: none;
+    border-right: none;
 }
 
 .state-card {
@@ -377,8 +397,103 @@ a:hover .label-hover {
     margin-top: 0;
 }
 
-/* Job History styles */
+.state-card-state-active {
+    border-color: #999;
+}
 
+.state-card-state-active .state-card-title {
+    color: #999;
+}
+
+.state-card-state-active .state-card-body {
+    background-color: #F5F5F5;
+}
+
+.state-card-state-success {
+    border-color: #5cb85c;
+}
+
+.state-card-state-success .state-card-title {
+    color: #5cb85c;
+}
+
+.state-card-state-success .state-card-body {
+    background-color: #EDF7ED;
+}
+
+.state-card-state-danger {
+    border-color: #d9534f;
+}
+
+.state-card-state-danger .state-card-title {
+    color: #d9534f;
+}
+
+.state-card-state-danger .state-card-body {
+    background-color: #FAEBEA;
+}
+
+.state-card-state-warning {
+    border-color: #f0ad4e;
+}
+
+.state-card-state-warning .state-card-title {
+    color: #f0ad4e;
+}
+
+.state-card-state-warning .state-card-body {
+    background-color: #FCEFDC;
+}
+
+.state-card-state-info {
+    border-color: #5bc0de;
+}
+
+.state-card-state-info .state-card-title {
+    color: #5bc0de;
+}
+
+.state-card-state-info .state-card-body {
+    background-color: #E0F3F8;
+}
+
+.state-card-state-inactive {
+    border-color: #777;
+}
+
+.state-card-state-inactive .state-card-title {
+    color: #777;
+}
+
+.state-card-state-inactive .state-card-body {
+    background-color: #ddd;
+}
+
+.label-state-active {
+    background-color: #999;
+}
+
+.label-state-success {
+    background-color: #5cb85c;
+}
+
+.label-state-danger {
+    background-color: #d9534f;
+}
+
+.label-state-warning {
+    background-color: #f0ad4e;
+}
+
+.label-state-info {
+    background-color: #5bc0de;
+}
+
+.label-state-inactive {
+    background-color: #777;
+}
+
+/* Job History styles */
 .job-history {
     margin-bottom: 10px;
     opacity: 0.8;
@@ -435,6 +550,34 @@ a.job-method {
     top: 2px;
 }
 
+.text-decoration-none {
+    text-decoration: none;
+}
+
+.display-none {
+    display: none;
+}
+
+.display-block {
+    display: block;
+}
+
+.margin-top-2p {
+    margin-top: 2px;
+}
+
+.margin-bottom-0 {
+    margin-bottom: 0;
+}
+
+.margin-bottom-20p {
+    margin-bottom: 20px;
+}
+
+.margin-right-14p {
+    margin-right: 14px;
+}
+
 span.metric {
     display: inline-block;
     min-width: 10px;
@@ -466,6 +609,11 @@ span.metric-default {
 
 span.metric-default.highlighted {
     background-color: #777;
+}
+
+.clickable-metric, .clickable-metric:hover, .clickable-metric:active, .clickable-metric:visited, .clickable-metric:focus {
+    color: inherit;
+    text-decoration: none;
 }
 
 div.metric {
@@ -547,5 +695,44 @@ div.metric-null {
 @media (min-width: 1200px) {
     #stats {
         width: 262.5px;
+    }
+}
+
+/* Recurring Jobs Page */
+
+.cron-badge {
+    display: inline-block;
+    max-width: 125px;
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* Full width styles */
+
+@media (min-width: 768px) {
+    .container {
+        width: 100%;
+        padding-left: 25px;
+        padding-right: 25px;
+    }
+}
+
+@media (min-width: 992px) {
+    #wrap > .container > .row > .col-md-3 {
+        width: 251px;
+    }
+
+    #wrap > .container > .row > .col-md-9 {
+        width: calc(100% - 251px);
+    }
+}
+
+@media (min-width: 1200px) {
+    #wrap > .container > .row > .col-md-3 {
+        width: 293px;
+    }
+
+    #wrap > .container > .row > .col-md-9 {
+        width: calc(100% - 293px);
     }
 }

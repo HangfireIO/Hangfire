@@ -19,6 +19,18 @@ namespace Hangfire.Core.Tests
             Assert.Equal(@"{""stringProperty"":""Value""}", result);
         }
 
+        [Fact, CleanSerializerSettings]
+        public void UseSerializationSettingsWithCallback_AffectSerializationWithUserSettings()
+        {
+            GlobalConfiguration.Configuration.UseRecommendedSerializerSettings(settings =>
+            {
+                settings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            });
+
+            var result = SerializationHelper.Serialize(new CustomClass { StringProperty = "Value" }, SerializationOption.User);
+            Assert.Equal(@"{""stringProperty"":""Value""}", result);
+        }
+
         public class CustomClass
         {
             public string StringProperty { get; set; }

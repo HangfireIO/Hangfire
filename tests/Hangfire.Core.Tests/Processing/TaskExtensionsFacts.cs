@@ -83,21 +83,23 @@ namespace Hangfire.Core.Tests.Processing
         [Fact]
         public async Task WaitOneAsync_WaitsAndReturnsFalse_WhenNotSignaled_AndNonNullTimeout()
         {
-            var sw = Stopwatch.StartNew();
-            var result = await TaskExtensions.WaitOneAsync(_mre, TimeSpan.FromMilliseconds(100), _cts.Token);
-            sw.Stop();
+            using (var mre = new ManualResetEvent(false))
+            {
+                var sw = Stopwatch.StartNew();
+                var result = await TaskExtensions.WaitOneAsync(mre, TimeSpan.FromMilliseconds(500), CancellationToken.None);
+                sw.Stop();
 
-            Assert.False(result, "result != false");
-            Assert.False(_cts.Token.IsCancellationRequested, "IsCancellationRequested != false");
-            Assert.False(_mre.WaitOne(TimeSpan.Zero), "_mre is signaled");
-            Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(95), sw.Elapsed.ToString());
+                Assert.False(result, "result != false");
+                Assert.False(mre.WaitOne(TimeSpan.Zero), "mre is signaled");
+                Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(450), $"Elapsed: {sw.Elapsed.TotalMilliseconds} ms, Expected: 450 ms");
+            }
         }
 
         [Fact]
         public async Task WaitOneAsync_WaitsAndThrowsTaskCanceled_WhenNotSignaled_AndCancellationTokenIsCanceled()
         {
             var sw = Stopwatch.StartNew();
-            _cts.CancelAfter(TimeSpan.FromMilliseconds(100));
+            _cts.CancelAfter(TimeSpan.FromMilliseconds(500));
 
             var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(
                 async () => await TaskExtensions.WaitOneAsync(_mre, Timeout.InfiniteTimeSpan, _cts.Token));
@@ -108,7 +110,7 @@ namespace Hangfire.Core.Tests.Processing
 #else
             Assert.NotNull(exception);
 #endif
-            Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(95), sw.Elapsed.ToString());
+            Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(450), $"Elapsed: {sw.Elapsed.TotalMilliseconds} ms, Expected: 450 ms");
         }
 
         [Fact]
@@ -166,7 +168,7 @@ namespace Hangfire.Core.Tests.Processing
         [Fact]
         public void WaitOne_ReturnsFalseImmediately_WhenNotSignaled_AndTimeoutIsZero()
         {
-             var result = TaskExtensions.WaitOne(_mre, TimeSpan.Zero, _cts.Token);
+             var result = TaskExtensions.WaitOne(_mre, TimeSpan.Zero, CancellationToken.None);
 
              Assert.False(result);
         }
@@ -174,19 +176,23 @@ namespace Hangfire.Core.Tests.Processing
         [Fact]
         public void WaitOne_WaitsAndReturnsFalse_WhenNotSignaled_AndNonNullTimeout()
         {
-            var sw = Stopwatch.StartNew();
-            var result = TaskExtensions.WaitOne(_mre, TimeSpan.FromMilliseconds(100), _cts.Token);
-            sw.Stop();
+            using (var mre = new ManualResetEvent(false))
+            {
+                var sw = Stopwatch.StartNew();
+                var result = TaskExtensions.WaitOne(mre, TimeSpan.FromMilliseconds(500), CancellationToken.None);
+                sw.Stop();
 
-            Assert.False(result);
-            Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(95), sw.Elapsed.ToString());
+                Assert.False(result, "result != false");
+                Assert.False(mre.WaitOne(TimeSpan.Zero), "mre is signaled");
+                Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(450), $"Elapsed: {sw.Elapsed.TotalMilliseconds} ms, Expected: 450 ms");
+            }
         }
 
         [Fact]
         public void WaitOne_WaitsAndThrowsTaskCanceled_WhenNotSignaled_AndCancellationTokenIsCanceled()
         {
             var sw = Stopwatch.StartNew();
-            _cts.CancelAfter(TimeSpan.FromMilliseconds(100));
+            _cts.CancelAfter(TimeSpan.FromMilliseconds(500));
 
             var exception = Assert.ThrowsAny<OperationCanceledException>(
                 () => TaskExtensions.WaitOne(_mre, Timeout.InfiniteTimeSpan, _cts.Token));
@@ -197,7 +203,7 @@ namespace Hangfire.Core.Tests.Processing
 #else
             Assert.NotNull(exception);
 #endif
-            Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(95), sw.Elapsed.ToString());
+            Assert.True(sw.Elapsed > TimeSpan.FromMilliseconds(450), $"Elapsed: {sw.Elapsed.TotalMilliseconds} ms, Expected: 450 ms");
         }
     }
 }

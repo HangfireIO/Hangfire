@@ -26,7 +26,8 @@
         }
     }
     @{ var version = GetType().GetTypeInfo().Assembly.GetName().Version; }
-    <link rel="stylesheet" href="@Url.To($"/css{version.Major}{version.Minor}{version.Build}0")">
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+    <link rel="stylesheet" href="@Url.To($"/css{version.Major}{version.Minor}{version.Build}0{Math.Abs(DashboardRoutes.StylesheetsHashCode)}")">
 </head>
     <body>
         <!-- Wrap all page content here -->
@@ -50,7 +51,9 @@
                                 <li>
                                     <a href="@AppPath">
                                         <span class="glyphicon glyphicon-log-out"></span>
-                                        @Strings.LayoutPage_Back
+                                        <span class="hidden-sm">
+                                            @Strings.LayoutPage_Back
+                                        </span>
                                     </a>
                                 </li>
                             </ul>
@@ -58,13 +61,12 @@
                     </div>
                     <!--/.nav-collapse -->
                 </div>
+                <!-- Error alert when polling fails -->
+                @Html.RenderPartial(new ErrorAlert())
             </div>
 
             <!-- Begin page content -->
-            <div class="container" style="margin-bottom: 20px;">
-                <!-- Error alert when polling fails -->
-                @Html.RenderPartial(new ErrorAlert())
-
+            <div class="container js-page-container margin-bottom-20p">
                 @RenderBody()
             </div>
         </div>
@@ -87,9 +89,10 @@
         
         <div id="hangfireConfig"
              data-pollinterval="@DashboardOptions.StatsPollingInterval"
-             data-pollurl="@(Url.To("/stats"))">
+             data-pollurl="@(Url.To("/stats"))"
+             data-darkmode="@(DashboardRoutes.IsDarkModeSupportEnabled.ToString().ToLowerInvariant())">
         </div>
 
-        <script src="@Url.To($"/js{version.Major}{version.Minor}{version.Build}0")"></script>
+        <script src="@Url.To($"/js{version.Major}{version.Minor}{version.Build}0{Math.Abs(DashboardRoutes.JavaScriptsHashCode)}")"></script>
     </body>
 </html>

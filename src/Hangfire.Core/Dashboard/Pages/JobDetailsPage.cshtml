@@ -14,13 +14,18 @@
 @{
     var monitor = Storage.GetMonitoringApi();
     var job = monitor.JobDetails(JobId);
+    var dto = job != null ? new JobDetailsRendererDto(this, JobId, job) : null;
     
     string title = null;
 
     if (job != null)
     {
         title = job.Job != null ? Html.JobName(job.Job) : null;
-        job.History.Add(new StateHistoryDto { StateName = "Created", CreatedAt = job.CreatedAt ?? default(DateTime) });
+
+        var historyList = new List<StateHistoryDto>(job.History);
+        historyList.Add(new StateHistoryDto { StateName = "Created", CreatedAt = job.CreatedAt ?? default(DateTime) });
+
+        job.History = historyList;
     }
 
     title = title ?? Strings.Common_Job;
@@ -67,36 +72,61 @@
                 </div>
             }
 
-            <div class="job-snippet">
-                <div class="job-snippet-code">
-                    <pre><code><span class="comment">// @Strings.JobDetailsPage_JobId: @Html.JobId(JobId.ToString(), false)</span>
+            if (job.Job != null)
+            {
+                <div class="job-snippet">
+                    <div class="job-snippet-code">
+                        <pre><code><span class="comment">// @Strings.JobDetailsPage_JobId: @Html.JobId(JobId.ToString(), false)</span>
+@if (job.Job.Queue != null)
+{
+<span class="comment">// @Strings.QueuesPage_Table_Queue: @job.Job.Queue</span>
+}
 @JobMethodCallRenderer.Render(job.Job)
 </code></pre>
-                </div>
-
-                @if (job.Properties.Count > 0)
-                {
-                    <div class="job-snippet-properties">
-                        <dl>
-                            @foreach (var property in job.Properties.Where(x => x.Key != "Continuations"))
-                            {
-                                <dt>@property.Key</dt>
-                                <dd><pre><code>@property.Value</code></pre></dd>
-                            }
-                        </dl>
                     </div>
-                }
-            </div>
-
-            if (job.Properties.ContainsKey("Continuations"))
+                </div>
+            }
+            else
             {
-                List<ContinuationsSupportAttribute.Continuation> continuations;
+                var dbgParameters = job.Properties.Where(x => x.Key.StartsWith("DBG_")).ToArray();
 
-                using (var connection = Storage.GetConnection())
-                {
-                    continuations = ContinuationsSupportAttribute.DeserializeContinuations(connection.GetJobParameter(
-                        JobId, "Continuations"));
-                }
+                <div class="alert alert-warning">
+                    <h4>@Strings.Common_CannotFindTargetMethod</h4>
+                    <table class="table table-condensed job-snippet-properties margin-bottom-0">
+                        <tr>
+                            <td>@Strings.JobDetailsPage_JobId</td>
+                            <td><pre><code>@Html.JobId(JobId, false)</code></pre></td>
+                        </tr>
+                        @foreach (var parameter in dbgParameters)
+                        {
+                            <tr>
+                                <td class="width-15">@parameter.Key.Substring(4)</td>
+                                <td><pre><code>@parameter.Value</code></pre></td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+            }
+
+            var displayParameters = job.Properties.Where(x => !x.Key.StartsWith("DBG_") && x.Key != "Continuations").ToArray();
+
+            if (displayParameters.Length > 0)
+            {
+                <h3>@Strings.JobDetailsPage_Parameters</h3>
+                <table class="table table-condensed job-snippet-properties">
+                    @foreach (var parameter in displayParameters)
+                    {
+                        <tr>
+                            <td class="width-20 word-break">@parameter.Key</td>
+                            <td><pre><code>@parameter.Value</code></pre></td>
+                        </tr>
+                    }
+                </table>
+            }
+
+            if (job.Properties.TryGetValue("Continuations", out var serializedContinuations))
+            {
+                var continuations = ContinuationsSupportAttribute.DeserializeContinuations(serializedContinuations);
 
                 if (continuations.Count > 0)
                 {
@@ -117,7 +147,7 @@
                             {
                                 JobData jobData;
 
-                                using (var connection = Storage.GetConnection())
+                                using (var connection = Storage.GetReadOnlyConnection())
                                 {
                                     jobData = connection.GetJobData(continuation.JobId);
                                 }
@@ -140,6 +170,23 @@
                             </tbody>
                         </table>
                     </div>
+                }
+            }
+
+            if (dto != null)
+            {
+                foreach (var renderer in JobDetailsRenderer.GetRenderers())
+                {
+                    try
+                    {
+                        @renderer.Item2(dto)
+                    }
+                    catch (Exception ex)
+                    {
+                        <h4 class="exception-type">@ex.GetType().Name</h4>
+                        <p class="text-muted">@ex.Message</p>
+                        <pre class="stack-trace">@Html.StackTrace(ex.StackTrace)</pre>
+                    }
                 }
             }
 
@@ -176,9 +223,13 @@
             {
                 var accentColor = JobHistoryRenderer.GetForegroundStateColor(entry.StateName);
                 var backgroundColor = JobHistoryRenderer.GetBackgroundStateColor(entry.StateName);
+                var cardCss = index == 0 ? JobHistoryRenderer.GetStateCssSuffix(entry.StateName) : null;
+                var cardStyle = index == 0 && cardCss == null ? $"border-color: {accentColor}" : null;
+                var cardTitleStyle = index == 0 && cardCss == null ? $"color: {accentColor}" : null;
+                var cardBackgroundStyle = index == 0 && cardCss == null ? $"background-color: {backgroundColor}" : null;
 
-                <div class="state-card" style="@(index == 0 ? $"border-color: {accentColor}" : null)">
-                    <h4 class="state-card-title" style="@(index == 0 ? $"color: {accentColor}" : null)">
+                <div class="state-card @(cardCss != null ? "state-card-state-" + cardCss : null)" style="@cardStyle">
+                    <h4 class="state-card-title" style="@cardTitleStyle">
                         <small class="pull-right text-muted">
                             @if (index == job.History.Count - 1)
                             {
@@ -213,7 +264,7 @@
 
                     @if (rendered != null)
                     {
-                        <div class="state-card-body" style="@(index == 0 ? $"background-color: {backgroundColor}" : null)">
+                        <div class="state-card-body" style="@cardBackgroundStyle">
                             @rendered
                         </div>
                     }

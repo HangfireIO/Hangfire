@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -31,7 +30,8 @@ namespace Hangfire.Dashboard
 {
     internal static class JobMethodCallRenderer
     {
-        private static readonly int MaxArgumentToRenderSize = 4096;
+        // Should not be converted to "readonly" to support https://github.com/HangfireIO/Hangfire/issues/1295
+        internal static int MaxArgumentToRenderSize = 4096;
 
         public static NonEscapedString Render(Job job)
         {
@@ -122,7 +122,7 @@ namespace Hangfire.Dashboard
                     {
                         argumentValue = SerializationHelper.Deserialize(argument, parameter.ParameterType, SerializationOption.User);
                     }
-                    catch (Exception)
+                    catch (Exception ex) when (ex.IsCatchableExceptionType())
                     {
                         // If argument value is not encoded as JSON (an old
                         // way using TypeConverter), we should display it as is.
@@ -140,7 +140,7 @@ namespace Hangfire.Dashboard
                         var renderedItems = new List<string>();
 
                         // ReSharper disable once LoopCanBeConvertedToQuery
-                        foreach (var item in (IEnumerable)argumentValue)
+                        foreach (var item in argumentValue as IEnumerable)
                         {
                             var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
                             renderedItems.Add(argumentRenderer.Render(isJson, item?.ToString(),

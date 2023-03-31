@@ -105,6 +105,19 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void RemoveWithTypeDeletesFilterByType()
+        {
+            // Arrange
+            _collection.Add(_filterInstance);
+
+            // Act
+            _collection.Remove(_filterInstance.GetType());
+
+            // Assert
+            Assert.Empty(_collection);
+        }
+
+        [Fact]
         public void CollectionIsIFilterProviderWhichReturnsAllFilters()
         {
             // Arrange

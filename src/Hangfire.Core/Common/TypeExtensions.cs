@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -173,7 +172,9 @@ namespace Hangfire.Common
                 return true;
             }
 
-            return parameterType == actualType;
+            return parameterType != typeof(object).GetTypeInfo() 
+                ? parameterType.IsAssignableFrom(actualType)
+                : parameterType == actualType;
         }
 
         private static string GetFullNameWithoutNamespace(this Type type)

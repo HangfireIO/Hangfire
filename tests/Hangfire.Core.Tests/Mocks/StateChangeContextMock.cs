@@ -8,7 +8,7 @@ using Moq;
 
 namespace Hangfire.Core.Tests
 {
-    class StateChangeContextMock
+    public class StateChangeContextMock
     {
         private readonly Lazy<StateChangeContext> _context;
 
@@ -31,7 +31,9 @@ namespace Hangfire.Core.Tests
                     ExpectedStates,
                     DisableFilters,
                     CancellationToken,
-                    EmptyProfiler.Instance));
+                    EmptyProfiler.Instance,
+                    ServerId,
+                    CustomData));
         }
 
         public Mock<JobStorage> Storage { get; set; }
@@ -41,6 +43,8 @@ namespace Hangfire.Core.Tests
         public IEnumerable<string> ExpectedStates { get; set; }
         public bool DisableFilters { get; set; }
         public CancellationToken CancellationToken { get; set; }
+        public string ServerId { get; set; }
+        public IReadOnlyDictionary<string, object> CustomData { get; set; }
         
         public StateChangeContext Object => _context.Value;
     }

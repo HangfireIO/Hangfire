@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -18,7 +17,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 #if FEATURE_CONFIGURATIONMANAGER
@@ -44,6 +42,24 @@ namespace Hangfire.SqlServer
         private readonly SqlServerStorageOptions _options;
         private readonly string _connectionString;
         private string _escapedSchemaName;
+        private SqlServerHeartbeatProcess _heartbeatProcess;
+
+        private readonly Dictionary<string, bool> _features =
+            new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
+            {
+                { JobStorageFeatures.ExtendedApi, true },
+                { JobStorageFeatures.JobQueueProperty, true },
+                { "BatchedGetFirstByLowestScoreFromSet", true }, // TODO: Remove in 1.8.0 release
+                { JobStorageFeatures.Connection.BatchedGetFirstByLowest, true },
+                { JobStorageFeatures.Connection.GetUtcDateTime, true },
+                { JobStorageFeatures.Connection.GetSetContains, true },
+                { JobStorageFeatures.Connection.LimitedGetSetCount, true },
+                { JobStorageFeatures.Transaction.AcquireDistributedLock, true },
+                { JobStorageFeatures.Transaction.CreateJob, false },
+                { JobStorageFeatures.Transaction.SetJobParameter, false },
+                { JobStorageFeatures.Monitoring.DeletedStateGraphs, true },
+                { JobStorageFeatures.Monitoring.AwaitingJobs, true }
+            };
 
         public SqlServerStorage(string nameOrConnectionString)
             : this(nameOrConnectionString, new SqlServerStorageOptions())
@@ -68,7 +84,7 @@ namespace Hangfire.SqlServer
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             _connectionString = GetConnectionString(nameOrConnectionString);
-            _connectionFactory = () => new SqlConnection(_connectionString);
+            _connectionFactory = DefaultConnectionFactory;
             _options = options;
 
             Initialize();
@@ -135,6 +151,7 @@ namespace Hangfire.SqlServer
         internal int? CommandBatchMaxTimeout => _options.CommandBatchMaxTimeout.HasValue ? (int)_options.CommandBatchMaxTimeout.Value.TotalSeconds : (int?)null;
         internal TimeSpan? SlidingInvisibilityTimeout => _options.SlidingInvisibilityTimeout;
         internal SqlServerStorageOptions Options => _options;
+        internal SqlServerHeartbeatProcess HeartbeatProcess => _heartbeatProcess;
 
         public override IMonitoringApi GetMonitoringApi()
         {
@@ -152,11 +169,21 @@ namespace Hangfire.SqlServer
         {
             yield return new ExpirationManager(this, _options.JobExpirationCheckInterval);
             yield return new CountersAggregator(this, _options.CountersAggregateInterval);
+            yield return _heartbeatProcess;
         }
 
         public override void WriteOptionsToLog(ILog logger)
         {
             logger.Info($"Using the following options for SQL Server job storage: Queue poll interval: {_options.QueuePollInterval}.");
+        }
+
+        public override bool HasFeature(string featureId)
+        {
+            if (featureId == null) throw new ArgumentNullException(nameof(featureId));
+
+            return _features.TryGetValue(featureId, out var isSupported) 
+                ? isSupported
+                : base.HasFeature(featureId);
         }
 
         public override string ToString()
@@ -165,6 +192,11 @@ namespace Hangfire.SqlServer
 
             try
             {
+                if (_connectionString == null)
+                {
+                    return "SQL Server (custom)";
+                }
+
                 var parts = _connectionString.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(x => x.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries))
                     .Select(x => new { Key = x[0].Trim(), Value = x[1].Trim() })
@@ -196,7 +228,7 @@ namespace Hangfire.SqlServer
                     ? $"SQL Server: {builder}"
                     : canNotParseMessage;
             }
-            catch (Exception)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 return canNotParseMessage;
             }
@@ -243,66 +275,75 @@ namespace Hangfire.SqlServer
             [InstantHandle] Func<DbConnection, DbTransaction, T> func, 
             IsolationLevel? isolationLevel)
         {
-#if FEATURE_TRANSACTIONSCOPE
             isolationLevel = isolationLevel ?? (_options.UseRecommendedIsolationLevel
                 ? IsolationLevel.ReadCommitted
 #pragma warning disable 618
                 : _options.TransactionIsolationLevel);
 #pragma warning restore 618
 
-            using (var transaction = CreateTransaction(isolationLevel))
+#if FEATURE_TRANSACTIONSCOPE
+            if (IsRunningOnWindows())
             {
-                var result = UseConnection(dedicatedConnection, connection =>
+                using (var transaction = CreateTransaction(isolationLevel))
                 {
-                    connection.EnlistTransaction(Transaction.Current);
-                    return func(connection, null);
-                });
-
-                transaction.Complete();
-
-                return result;
-            }
-#else
-            return UseConnection(dedicatedConnection, connection =>
-            {
-                using (var transaction = connection.BeginTransaction(isolationLevel ?? IsolationLevel.ReadCommitted))
-                {
-                    T result;
-
-                    try
+                    var result = UseConnection(dedicatedConnection, connection =>
                     {
-                        result = func(connection, transaction);
-                        transaction.Commit();
-                    }
-                    catch
-                    {
-                        // It is possible that XACT_ABORT option is set, and in this
-                        // case transaction will be aborted automatically on server.
-                        // Some older SqlClient implementations throw InvalidOperationException
-                        // when trying to rollback such an aborted transaction, so we
-                        // try to handle this case.
-                        //
-                        // It's also possible that our connection is broken, so this
-                        // check is useful even when XACT_ABORT option wasn't set.
-                        if (transaction.Connection != null)
-                        {
-                            // Don't rely on implicit rollback when calling the Dispose
-                            // method, because some implementations may throw the
-                            // NullReferenceException, although it's prohibited to throw
-                            // any exception from a Dispose method, according to the
-                            // .NET Framework Design Guidelines:
-                            // https://github.com/dotnet/efcore/issues/12864
-                            // https://github.com/HangfireIO/Hangfire/issues/1494
-                            transaction.Rollback();
-                        }
+                        connection.EnlistTransaction(Transaction.Current);
+                        return func(connection, null);
+                    });
 
-                        throw;
-                    }
+                    transaction.Complete();
 
                     return result;
                 }
-            });
+            }
+            else
 #endif
+            {
+                return UseConnection(dedicatedConnection, connection =>
+                {
+                    using (var transaction = connection.BeginTransaction(
+#if !FEATURE_TRANSACTIONSCOPE
+                        isolationLevel ??
+#endif
+                        System.Data.IsolationLevel.ReadCommitted))
+                    {
+                        T result;
+
+                        try
+                        {
+                            result = func(connection, transaction);
+                            transaction.Commit();
+                        }
+                        catch (Exception ex) when (ex.IsCatchableExceptionType())
+                        {
+                            // It is possible that XACT_ABORT option is set, and in this
+                            // case transaction will be aborted automatically on server.
+                            // Some older SqlClient implementations throw InvalidOperationException
+                            // when trying to rollback such an aborted transaction, so we
+                            // try to handle this case.
+                            //
+                            // It's also possible that our connection is broken, so this
+                            // check is useful even when XACT_ABORT option wasn't set.
+                            if (transaction.Connection != null)
+                            {
+                                // Don't rely on implicit rollback when calling the Dispose
+                                // method, because some implementations may throw the
+                                // NullReferenceException, although it's prohibited to throw
+                                // any exception from a Dispose method, according to the
+                                // .NET Framework Design Guidelines:
+                                // https://github.com/dotnet/efcore/issues/12864
+                                // https://github.com/HangfireIO/Hangfire/issues/1494
+                                transaction.Rollback();
+                            }
+
+                            throw;
+                        }
+
+                        return result;
+                    }
+                });
+            }
         }
 
         internal DbConnection CreateAndOpenConnection()
@@ -322,7 +363,7 @@ namespace Hangfire.SqlServer
 
                     return connection;
                 }
-                catch
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     ReleaseConnection(connection);
                     throw;
@@ -341,6 +382,22 @@ namespace Hangfire.SqlServer
             {
                 connection.Dispose();
             }
+        }
+        
+        private DbConnection DefaultConnectionFactory()
+        {
+            var connection = _options.SqlClientFactory.CreateConnection() ?? throw new InvalidOperationException($"The provider factory ({_options.SqlClientFactory}) returned a null DbConnection.");
+            connection.ConnectionString = _connectionString;
+            return connection;
+        }
+
+        private static bool IsRunningOnWindows()
+        {
+#if !NETSTANDARD1_3
+            return Environment.OSVersion.Platform == PlatformID.Win32NT;
+#else
+            return System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows);
+#endif
         }
 
         private void Initialize()
@@ -385,7 +442,39 @@ namespace Hangfire.SqlServer
                 }
             }
 
+            if (_options.TryAutoDetectSchemaDependentOptions)
+            {
+                try
+                {
+                    int? schema = null;
+
+                    UseConnection(null, connection =>
+                    {
+                        schema = connection.ExecuteScalar<int>($"select top (1) [Version] from [{SchemaName}].[Schema]");
+                    });
+
+                    _options.UseRecommendedIsolationLevel = true;
+                    _options.UseIgnoreDupKeyOption = schema >= 8;
+                    _options.DisableGlobalLocks = schema >= 6;
+
+                    if (schema >= 6 && _options.DeleteExpiredBatchSize == -1)
+                    {
+                        _options.DeleteExpiredBatchSize = 10000;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var log = LogProvider.GetLogger(typeof(SqlServerStorage));
+                    log.ErrorException("Was unable to use the TryAutoDetectSchemaDependentOptions option due to an exception.", ex);
+                }
+            }
+
             InitializeQueueProviders();
+            _heartbeatProcess = new SqlServerHeartbeatProcess();
+
+            _features.Add(
+                JobStorageFeatures.Transaction.RemoveFromQueue(typeof(SqlServerTimeoutJob)),
+                _options.UseTransactionalAcknowledge);
         }
 
         private void InitializeQueueProviders()
@@ -479,6 +568,65 @@ where dbid = db_id(@name) and status != 'background'";
                         .Single();
 
                     return new Metric(value);
+                });
+            });
+
+        public static readonly DashboardMetric SchemaVersion = new DashboardMetric(
+            "sqlserver:schema",
+            "Metrics_SQLServer_SchemaVersion",
+            page =>
+            {
+                var sqlStorage = page.Storage as SqlServerStorage;
+                if (sqlStorage == null) return new Metric("???");
+
+                return sqlStorage.UseConnection(null, connection =>
+                {
+                    var sqlQuery = $@"select top(1) [Version] from [{sqlStorage.SchemaName}].[Schema]";
+                    var value = connection.Query<int>(sqlQuery).Single();
+
+                    return new Metric(value)
+                    {
+                        Style = value < SqlServerObjectsInstaller.LatestSchemaVersion
+                            ? MetricStyle.Warning
+                            : value == SqlServerObjectsInstaller.LatestSchemaVersion
+                                ? MetricStyle.Success
+                                : MetricStyle.Default
+                    };
+                });
+            });
+
+        public static readonly Func<string, string, string, DashboardMetric> PerformanceCounterDatabaseMetric = 
+            (string objectName, string counterName, string instanceName) => new DashboardMetric(
+            $"sqlserver:counter:{objectName}:{counterName}:{instanceName ?? "db"}",
+            counterName,
+            page =>
+            {
+                if (objectName == null) throw new ArgumentNullException(nameof(objectName));
+                if (counterName == null) throw new ArgumentNullException(nameof(counterName));
+
+                var sqlStorage = page.Storage as SqlServerStorage;
+                if (sqlStorage == null) return new Metric("???");
+
+                return sqlStorage.UseConnection(null, connection =>
+                {
+                    var sqlQuery = $@"SELECT cntr_value FROM sys.dm_os_performance_counters where object_name = @objectName and instance_name = @instanceName and counter_name = @counterName";
+                    long? value;
+
+                    try
+                    {
+                        value = connection.Query<long>(sqlQuery, new
+                        {
+                            objectName = objectName,
+                            instanceName = instanceName ?? connection.Database,
+                            counterName = counterName
+                        }).Single();
+                    }
+                    catch
+                    {
+                        value = null;
+                    }
+
+                    return value != null ? new Metric(value.Value) : new Metric("???");
                 });
             });
     }

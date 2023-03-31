@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2015 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2015 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -27,6 +26,7 @@ namespace Hangfire
     {
         Version_110 = 110,
         Version_170 = 170,
+        Version_180 = 180,
     }
 
     public class GlobalConfiguration : IGlobalConfiguration

@@ -2,7 +2,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using System.Data.Common;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using ReferencedDapper::Dapper;
@@ -42,8 +43,9 @@ namespace Hangfire.SqlServer.Tests
             Assert.Equal("storage", exception.ParamName);
         }
 
-        [Fact, CleanDatabase]
-        public void FetchNextJob_DelegatesItsExecution_ToTheQueue()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void FetchNextJob_DelegatesItsExecution_ToTheQueue(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -53,11 +55,12 @@ namespace Hangfire.SqlServer.Tests
                 connection.FetchNextJob(queues, token);
 
                 _queue.Verify(x => x.Dequeue(queues, token));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void FetchNextJob_Throws_IfMultipleProvidersResolved()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void FetchNextJob_Throws_IfMultipleProvidersResolved(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -67,31 +70,36 @@ namespace Hangfire.SqlServer.Tests
 
                 Assert.Throws<InvalidOperationException>(
                     () => connection.FetchNextJob(new[] { "critical", "default" }, token));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void CreateWriteTransaction_ReturnsNonNullInstance()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void CreateWriteTransaction_ReturnsNonNullInstance(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 var transaction = connection.CreateWriteTransaction();
                 Assert.NotNull(transaction);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void AcquireLock_ReturnsNonNullInstance()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void AcquireLock_ReturnsNonNullInstance(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
-                var @lock = connection.AcquireDistributedLock("1", TimeSpan.FromSeconds(1));
-                Assert.NotNull(@lock);
-            });
+                using (var @lock = connection.AcquireDistributedLock("1", TimeSpan.FromSeconds(1)))
+                {
+                    Assert.NotNull(@lock);
+                }
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void AcquireDistributedLock_ThrowsAnException_WhenResourceIsNullOrEmpty()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void AcquireDistributedLock_ThrowsAnException_WhenResourceIsNullOrEmpty(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -99,14 +107,18 @@ namespace Hangfire.SqlServer.Tests
                 () => connection.AcquireDistributedLock("", TimeSpan.FromMinutes(5)));
 
                 Assert.Equal("resource", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void AcquireDistributedLock_AcquiresExclusiveApplicationLock_OnSession()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void AcquireDistributedLock_AcquiresExclusiveApplicationLock_OnSession(bool useMicrosoftDataSqlClient)
         {
-            UseConnections((sql, connection) =>
+            using (var sql = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient))
             {
+                var storage = new SqlServerStorage(sql);
+
+                using (var connection = new SqlServerConnection(storage))
                 using (connection.AcquireDistributedLock("hello", TimeSpan.FromMinutes(5)))
                 {
                     var lockMode = sql.Query<string>(
@@ -114,11 +126,12 @@ namespace Hangfire.SqlServer.Tests
 
                     Assert.Equal("Exclusive", lockMode);
                 }
-            });
+            }
         }
 
-        [Fact, CleanDatabase]
-        public void AcquireDistributedLock_ThrowsAnException_IfLockCanNotBeGranted()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void AcquireDistributedLock_ThrowsAnException_IfLockCanNotBeGranted(bool useMicrosoftDataSqlClient)
         {
             var releaseLock = new ManualResetEventSlim(false);
             var lockAcquired = new ManualResetEventSlim(false);
@@ -131,7 +144,7 @@ namespace Hangfire.SqlServer.Tests
                         lockAcquired.Set();
                         releaseLock.Wait();
                     }
-                }));
+                }, useMicrosoftDataSqlClient));
             thread.Start();
 
             lockAcquired.Wait();
@@ -145,14 +158,15 @@ namespace Hangfire.SqlServer.Tests
                         {
                         }
                     });
-            });
+            }, useMicrosoftDataSqlClient);
 
             releaseLock.Set();
             thread.Join();
         }
 
-        [Fact, CleanDatabase]
-        public void AcquireDistributedLock_Dispose_ReleasesExclusiveApplicationLock()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void AcquireDistributedLock_Dispose_ReleasesExclusiveApplicationLock(bool useMicrosoftDataSqlClient)
         {
             UseConnections((sql, connection) =>
             {
@@ -160,14 +174,15 @@ namespace Hangfire.SqlServer.Tests
                 distributedLock.Dispose();
 
                 var lockMode = sql.Query<string>(
-                    "select applock_mode('public', 'hello', 'session')").Single();
+                    $"select applock_mode('public', '{Constants.DefaultSchema}:hello', 'session')").Single();
 
                 Assert.Equal("NoLock", lockMode);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void AcquireDistributedLock_IsReentrant_FromTheSameConnection_OnTheSameResource()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void AcquireDistributedLock_IsReentrant_FromTheSameConnection_OnTheSameResource(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -176,11 +191,12 @@ namespace Hangfire.SqlServer.Tests
                 {
                     Assert.True(true);
                 }
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void CreateExpiredJob_ThrowsAnException_WhenJobIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void CreateExpiredJob_ThrowsAnException_WhenJobIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -192,11 +208,12 @@ namespace Hangfire.SqlServer.Tests
                         TimeSpan.Zero));
 
                 Assert.Equal("job", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void CreateExpiredJob_ThrowsAnException_WhenParametersCollectionIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void CreateExpiredJob_ThrowsAnException_WhenParametersCollectionIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -208,13 +225,13 @@ namespace Hangfire.SqlServer.Tests
                         TimeSpan.Zero));
 
                 Assert.Equal("parameters", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void CreateExpiredJob_CreatesAJobInTheStorage_AndSetsItsParameters(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void CreateExpiredJob_CreatesAJobInTheStorage_AndSetsItsParameters(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnections((sql, connection) =>
             {
@@ -253,13 +270,133 @@ namespace Hangfire.SqlServer.Tests
                 Assert.Equal("Value1", parameters["Key1"]);
                 Assert.Equal("Value2", parameters["Key2"]);
                 Assert.Equal("Value3", parameters["Key3"]);
-            }, useBatching);
+            }, useBatching, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void CreateExpiredJob_CanCreateParametersWithNullValues(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void CreateExpiredJob_CanCreateParametersWithNonNullValues(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string> { { "Key1", "Value1" } },
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql
+                    .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Equal("Value1", parameters["Key1"]);
+            }, useBatching, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void CreateExpiredJob_CanCreateTwoParametersWithNonNullValues(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string> { { "Key1", "Value1" }, { "Key2", "Value2" } },
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql
+                    .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Equal("Value1", parameters["Key1"]);
+                Assert.Equal("Value2", parameters["Key2"]);
+            }, useBatching, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void CreateExpiredJob_CanCreateThreeParametersWithNonNullValues(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string> { { "Key1", "Value1" }, { "Key2", "Value2" }, { "Key3", "Value3" } },
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql
+                    .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Equal("Value1", parameters["Key1"]);
+                Assert.Equal("Value2", parameters["Key2"]);
+                Assert.Equal("Value3", parameters["Key3"]);
+            }, useBatching, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void CreateExpiredJob_CanCreateFourParametersWithNonNullValues(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string> { { "Key1", "Value1" }, { "Key2", "Value2" }, { "Key3", "Value3" }, { "Key4", "Value4" } },
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql
+                    .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Equal("Value1", parameters["Key1"]);
+                Assert.Equal("Value2", parameters["Key2"]);
+                Assert.Equal("Value3", parameters["Key3"]);
+                Assert.Equal("Value4", parameters["Key4"]);
+            }, useBatching, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void CreateExpiredJob_CanCreateManyParametersWithNonNullValues(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string> { { "Key1", "Value1" }, { "Key2", "Value2" }, { "Key3", "Value3" }, { "Key4", "Value4" }, { "Key5", "Value5" } },
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql
+                    .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Equal("Value1", parameters["Key1"]);
+                Assert.Equal("Value2", parameters["Key2"]);
+                Assert.Equal("Value3", parameters["Key3"]);
+                Assert.Equal("Value4", parameters["Key4"]);
+                Assert.Equal("Value5", parameters["Key5"]);
+            }, useBatching, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void CreateExpiredJob_CanCreateParametersWithNullValues(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnections((sql, connection) =>
             {
@@ -275,13 +412,13 @@ namespace Hangfire.SqlServer.Tests
                     .ToDictionary(x => (string)x.Name, x => (string)x.Value);
 
                 Assert.Equal(null, parameters["Key1"]);
-            }, useBatching);
+            }, useBatching, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void CreateExpiredJob_CanCreateTwoParametersWithNullValues(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void CreateExpiredJob_CanCreateTwoParametersWithNullValues(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnections((sql, connection) =>
             {
@@ -298,13 +435,13 @@ namespace Hangfire.SqlServer.Tests
 
                 Assert.Equal(null, parameters["Key1"]);
                 Assert.Equal(null, parameters["Key2"]);
-            }, useBatching);
+            }, useBatching, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void CreateExpiredJob_CanCreateMultipleParametersWithNullValues(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void CreateExpiredJob_CanCreateThreeParametersWithNullValues(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnections((sql, connection) =>
             {
@@ -322,13 +459,64 @@ namespace Hangfire.SqlServer.Tests
                 Assert.Equal(null, parameters["Key1"]);
                 Assert.Equal(null, parameters["Key2"]);
                 Assert.Equal(null, parameters["Key3"]);
-            }, useBatching);
+            }, useBatching, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void CreateExpiredJob_CanCreateJobWithoutParameters(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void CreateExpiredJob_CanCreateFourParametersWithNullValues(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string> { { "Key1", null }, { "Key2", null }, { "Key3", null }, { "Key4", null } },
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql
+                    .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Equal(null, parameters["Key1"]);
+                Assert.Equal(null, parameters["Key2"]);
+                Assert.Equal(null, parameters["Key3"]);
+                Assert.Equal(null, parameters["Key4"]);
+            }, useBatching, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void CreateExpiredJob_CanCreateManyParametersWithNullValues(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnections((sql, connection) =>
+            {
+                var createdAt = new DateTime(2012, 12, 12);
+                var jobId = connection.CreateExpiredJob(
+                    Job.FromExpression(() => SampleMethod("Hello")),
+                    new Dictionary<string, string> { { "Key1", null }, { "Key2", null }, { "Key3", null }, { "Key4", null }, { "Key5", null } },
+                    createdAt,
+                    TimeSpan.FromDays(1));
+
+                var parameters = sql
+                    .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
+                    .ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                Assert.Equal(null, parameters["Key1"]);
+                Assert.Equal(null, parameters["Key2"]);
+                Assert.Equal(null, parameters["Key3"]);
+                Assert.Equal(null, parameters["Key4"]);
+                Assert.Equal(null, parameters["Key5"]);
+            }, useBatching, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void CreateExpiredJob_CanCreateJobWithoutParameters(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnections((sql, connection) =>
             {
@@ -344,28 +532,43 @@ namespace Hangfire.SqlServer.Tests
                     .ToDictionary(x => (string)x.Name, x => (string)x.Value);
 
                 Assert.Empty(parameters);
-            }, useBatching);
+            }, useBatching, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetJobData_ThrowsAnException_WhenJobIdIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetJobData_ThrowsAnException_WhenJobIdIsNull(bool useMicrosoftDataSqlClient)
         {
-            UseConnection(connection => Assert.Throws<ArgumentNullException>(
-                    () => connection.GetJobData(null)));
+            UseConnection(
+                connection => Assert.Throws<ArgumentNullException>(() => connection.GetJobData(null)),
+                useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetJobData_ReturnsNull_WhenThereIsNoSuchJob()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetJobData_ReturnsNull_WhenThereIsNoSuchJob(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 var result = connection.GetJobData("1");
                 Assert.Null(result);
-            });
+            }, useMicrosoftDataSqlClient);
+        }
+        
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetJobData_ReturnsNull_WhenIdentifierCanNotBeParsedAsLong(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetJobData("some-non-long-id");
+                Assert.Null(result);
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetJobData_ReturnsResult_WhenJobExists()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetJobData_ReturnsResult_WhenJobExists(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, StateName, CreatedAt)
@@ -394,29 +597,79 @@ select scope_identity() as Id";
                 Assert.Null(result.LoadException);
                 Assert.True(DateTime.UtcNow.AddMinutes(-1) < result.CreatedAt);
                 Assert.True(result.CreatedAt < DateTime.UtcNow.AddMinutes(1));
-            });
+                Assert.Empty(result.ParametersSnapshot);
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetStateData_ThrowsAnException_WhenJobIdIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetJobData_ReturnsResultWithParameters_WhenJobAndParametersExist(bool useMicrosoftDataSqlClient)
+        {
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, StateName, CreatedAt)
+values (@invocationData, @arguments, @stateName, getutcdate())
+declare @id bigint = scope_identity();
+insert into [{Constants.DefaultSchema}].JobParameter ([JobId], [Name], [Value])
+values (@id, N'Param1', N'Value1'), (@id, N'Param2', 'Value2')
+select @id as Id";
+
+            UseConnections((sql, connection) =>
+            {
+                var job = Job.FromExpression(() => SampleMethod("wrong"));
+
+                var jobId = sql.Query(
+                    arrangeSql,
+                    new
+                    {
+                        invocationData = JobHelper.ToJson(InvocationData.Serialize(job)),
+                        stateName = "Succeeded",
+                        arguments = "['Arguments']"
+                    }).Single();
+
+                var result = connection.GetJobData(((long)jobId.Id).ToString());
+
+                Assert.NotNull(result);
+                Assert.Equal("SampleMethod", result.Job.Method.Name);
+                Assert.Equal(2, result.ParametersSnapshot.Count);
+                Assert.Equal("Value1", result.ParametersSnapshot["Param1"]);
+                Assert.Equal("Value2", result.ParametersSnapshot["Param2"]);
+            }, useBatching: false, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetStateData_ThrowsAnException_WhenJobIdIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(
-                connection => Assert.Throws<ArgumentNullException>(
-                    () => connection.GetStateData(null)));
+                connection => Assert.Throws<ArgumentNullException>(() => connection.GetStateData(null)),
+                useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetStateData_ReturnsNull_IfThereIsNoSuchState()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetStateData_ReturnsNull_IfThereIsNoSuchState(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 var result = connection.GetStateData("1");
                 Assert.Null(result);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetStateData_ReturnsCorrectData()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetStateData_ReturnsNull_WhenIdentifierCanNotBeParsedAsLong(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetStateData("some-non-long-id");
+                Assert.Null(result);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetStateData_ReturnsCorrectData(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, StateName, CreatedAt)
@@ -450,11 +703,12 @@ select @JobId as Id;";
                 Assert.Equal("Name", result.Name);
                 Assert.Equal("Reason", result.Reason);
                 Assert.Equal("Value", result.Data["Key"]);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetStateData_ReturnsCorrectData_WhenPropertiesAreCamelcased()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetStateData_ReturnsCorrectData_WhenPropertiesAreCamelcased(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, StateName, CreatedAt)
@@ -485,11 +739,12 @@ select @JobId as Id;";
                 Assert.NotNull(result);
 
                 Assert.Equal("Value", result.Data["Key"]);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetJobData_ReturnsJobLoadException_IfThereWasADeserializationException()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetJobData_ReturnsJobLoadException_IfThereWasADeserializationException(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, StateName, CreatedAt)
@@ -510,11 +765,12 @@ select scope_identity() as Id";
                 var result = connection.GetJobData(((long)jobId.Id).ToString());
 
                 Assert.NotNull(result.LoadException);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void SetParameter_ThrowsAnException_WhenJobIdIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void SetParameter_ThrowsAnException_WhenJobIdIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -522,11 +778,12 @@ select scope_identity() as Id";
                     () => connection.SetJobParameter(null, "name", "value"));
 
                 Assert.Equal("id", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void SetParameter_ThrowsAnException_WhenNameIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void SetParameter_ThrowsAnException_WhenNameIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -534,11 +791,12 @@ select scope_identity() as Id";
                     () => connection.SetJobParameter("1", null, "value"));
 
                 Assert.Equal("name", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void SetParameters_CreatesNewParameter_WhenParameterWithTheGivenNameDoesNotExists()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void SetParameters_CreatesNewParameter_WhenParameterWithTheGivenNameDoesNotExists(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
@@ -557,11 +815,12 @@ select scope_identity() as Id";
                     new { id = jobId, name = "Name" }).Single();
 
                 Assert.Equal("Value", parameter.Value);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void SetParameter_UpdatesValue_WhenParameterWithTheGivenName_AlreadyExists()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void SetParameter_UpdatesValue_WhenParameterWithTheGivenName_AlreadyExists(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
@@ -581,11 +840,12 @@ select scope_identity() as Id";
                     new { id = jobId, name = "Name" }).Single();
 
                 Assert.Equal("AnotherValue", parameter.Value);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void SetParameter_CanAcceptNulls_AsValues()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void SetParameter_CanAcceptNulls_AsValues(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
@@ -604,11 +864,91 @@ select scope_identity() as Id";
                     new { id = jobId, name = "Name" }).Single();
 
                 Assert.Equal((string) null, parameter.Value);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetParameter_ThrowsAnException_WhenJobIdIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void SetJobParameter_WithIgnoreDupKeyOption_InsertsNonExistingValue(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            try
+            {
+                UseConnections((sql, connection) =>
+                {
+                    sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[JobParameter] REBUILD WITH (IGNORE_DUP_KEY = ON)");
+
+                    string jobId = sql.Query($@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt) values ('', '', getutcdate())
+select scope_identity() as Id").Single().Id.ToString();
+
+                    connection.SetJobParameter(jobId, "Name", "Value");
+
+                    var parameter = sql.Query(
+                        $"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @jobId and Name = N'Name'",
+                        new { jobId }).Single();
+
+                    Assert.Equal("Value", parameter.Value);
+                }, useBatching, useMicrosoftDataSqlClient);
+            }
+            finally
+            {
+                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[JobParameter] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useBatching, useMicrosoftDataSqlClient);
+            }
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void SetJobParameter_WithIgnoreDupKeyOption_UpdatesExistingValue_WhenIgnoreDupKeyOptionIsSet(bool setIgnoreDupKey, bool useMicrosoftDataSqlClient)
+        {
+            try
+            {
+                UseConnections((sql, connection) =>
+                {
+                    sql.Execute("SET XACT_ABORT ON");
+                    var onOrOff = setIgnoreDupKey ? "ON" : "OFF";
+                    sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[JobParameter] REBUILD WITH (IGNORE_DUP_KEY = {onOrOff})");
+
+                    string jobId1 = sql.Query($@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt) values ('', '', getutcdate())
+select scope_identity() as Id").Single().Id.ToString();
+
+                    string jobId2 = sql.Query($@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt) values ('', '', getutcdate())
+select scope_identity() as Id").Single().Id.ToString();
+
+                    sql.Execute(
+                        $@"insert into [{Constants.DefaultSchema}].[JobParameter] (JobId, Name, Value) values
+(@jobId1, N'Name1', N'Value1'),
+(@jobId1, N'Name2', N'Value1'),
+(@jobId2, N'Name1', N'Value1')", new { jobId1, jobId2 });
+
+                    connection.SetJobParameter(jobId1, "Name1", "Value2");
+
+                    var parameters1 = sql.Query(
+                        $"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @jobId1",
+                        new { jobId1 }).ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                    Assert.Equal("Value2", parameters1["Name1"]);
+                    Assert.Equal("Value1", parameters1["Name2"]);
+
+                    var parameters2 = sql.Query(
+                        $"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @jobId2",
+                        new { jobId2 }).ToDictionary(x => (string)x.Name, x => (string)x.Value);
+
+                    Assert.Equal("Value1", parameters2["Name1"]);
+                }, useBatching: false, useMicrosoftDataSqlClient);
+            }
+            finally
+            {
+                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[JobParameter] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useBatching: false, useMicrosoftDataSqlClient);
+            }
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetParameter_ThrowsAnException_WhenJobIdIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -616,11 +956,12 @@ select scope_identity() as Id";
                     () => connection.GetJobParameter(null, "hello"));
 
                 Assert.Equal("id", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetParameter_ThrowsAnException_WhenNameIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetParameter_ThrowsAnException_WhenNameIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -628,21 +969,34 @@ select scope_identity() as Id";
                     () => connection.GetJobParameter("1", null));
 
                 Assert.Equal("name", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetParameter_ReturnsNull_WhenParameterDoesNotExists()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetParameter_ReturnsNull_WhenParameterDoesNotExists(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 var value = connection.GetJobParameter("1", "hello");
                 Assert.Null(value);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetParameter_ReturnsParameterValue_WhenJobExists()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetParameter_ReturnsNull_WhenJobIdCanNotBeParsedAsLong(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetJobParameter("some-non-long-id", "name");
+                Assert.Null(result);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetParameter_ReturnsParameterValue_WhenJobExists(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 declare @id bigint
@@ -662,11 +1016,12 @@ select @id";
                 var value = connection.GetJobParameter(id.ToString(), "name");
 
                 Assert.Equal("value", value);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetFirstByLowestScoreFromSet_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetFirstByLowestScoreFromSet_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -674,11 +1029,12 @@ select @id";
                     () => connection.GetFirstByLowestScoreFromSet(null, 0, 1));
 
                 Assert.Equal("key", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetFirstByLowestScoreFromSet_ThrowsAnException_ToScoreIsLowerThanFromScore()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetFirstByLowestScoreFromSet_ThrowsAnException_ToScoreIsLowerThanFromScore(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -686,11 +1042,12 @@ select @id";
                     () => connection.GetFirstByLowestScoreFromSet("key", 0, -1));
 
                 Assert.Equal("toScore", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetFirstByLowestScoreFromSet_ReturnsNull_WhenTheKeyDoesNotExist()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetFirstByLowestScoreFromSet_ReturnsNull_WhenTheKeyDoesNotExist(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -698,11 +1055,12 @@ select @id";
                     "key", 0, 1);
 
                 Assert.Null(result);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetFirstByLowestScoreFromSet_ThrowsArgException_WhenRequestingLessThanZero()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetFirstByLowestScoreFromSet_ThrowsArgException_WhenRequestingLessThanZero(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -710,21 +1068,23 @@ select @id";
                     () => connection.GetFirstByLowestScoreFromSet("key", 0, 1, -1));
 
                 Assert.Equal("count", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact]
-        public void GetFirstByLowestScoreFromSet_ReturnsEmpty_WhenNoneExist()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetFirstByLowestScoreFromSet_ReturnsEmpty_WhenNoneExist(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 var result = connection.GetFirstByLowestScoreFromSet("key", 0, 1, 10);
                 Assert.Empty(result);
-            });
+            }, useMicrosoftDataSqlClient);
         }
         
-        [Fact, CleanDatabase]
-        public void GetFirstByLowestScoreFromSet_ReturnsN_WhenMoreThanNExist()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetFirstByLowestScoreFromSet_ReturnsN_WhenMoreThanNExist(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].[Set] ([Key], Score, Value)
@@ -743,11 +1103,12 @@ values
                 Assert.Equal(2, result.Count);
                 Assert.Equal("890", result.ElementAt(0));
                 Assert.Equal("567", result.ElementAt(1));
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
         
-        [Fact, CleanDatabase]
-        public void GetFirstByLowestScoreFromSet_ReturnsN_WhenMoreThanNExist_And_RequestedCountIsGreaterThanN()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetFirstByLowestScoreFromSet_ReturnsN_WhenMoreThanNExist_And_RequestedCountIsGreaterThanN(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].[Set] ([Key], Score, Value)
@@ -765,11 +1126,12 @@ values
                 
                 Assert.Equal(1, result.Count);
                 Assert.Equal("abcd", result.First());
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetFirstByLowestScoreFromSet_ReturnsTheValueWithTheLowestScore()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetFirstByLowestScoreFromSet_ReturnsTheValueWithTheLowestScore(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].[Set] ([Key], Score, Value)
@@ -786,11 +1148,12 @@ values
                 var result = connection.GetFirstByLowestScoreFromSet("key", -1.0, 3.0);
                 
                 Assert.Equal("-1.0", result);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void AnnounceServer_ThrowsAnException_WhenServerIdIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void AnnounceServer_ThrowsAnException_WhenServerIdIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -798,11 +1161,12 @@ values
                     () => connection.AnnounceServer(null, new ServerContext()));
 
                 Assert.Equal("serverId", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void AnnounceServer_ThrowsAnException_WhenContextIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void AnnounceServer_ThrowsAnException_WhenContextIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -810,11 +1174,12 @@ values
                     () => connection.AnnounceServer("server", null));
 
                 Assert.Equal("context", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void AnnounceServer_CreatesOrUpdatesARecord()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void AnnounceServer_CreatesOrUpdatesARecord(bool useMicrosoftDataSqlClient)
         {
             UseConnections((sql, connection) =>
             {
@@ -831,6 +1196,8 @@ values
                     "{\"WorkerCount\":4,\"Queues\":[\"critical\",\"default\"],\"StartedAt\":"),
                     server.Data);
                 Assert.NotNull(server.LastHeartbeat);
+                Assert.True(DateTime.UtcNow.AddHours(-1) < server.LastHeartbeat &&
+                            server.LastHeartbeat < DateTime.UtcNow.AddHours(1));
 
                 var context2 = new ServerContext
                 {
@@ -841,18 +1208,21 @@ values
                 var sameServer = sql.Query($"select * from [{Constants.DefaultSchema}].Server").Single();
                 Assert.Equal("server", sameServer.Id);
                 Assert.Contains("1000", sameServer.Data);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void RemoveServer_ThrowsAnException_WhenServerIdIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void RemoveServer_ThrowsAnException_WhenServerIdIsNull(bool useMicrosoftDataSqlClient)
         {
-            UseConnection(connection => Assert.Throws<ArgumentNullException>(
-                () => connection.RemoveServer(null)));
+            UseConnection(
+                connection => Assert.Throws<ArgumentNullException>(() => connection.RemoveServer(null)),
+                useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void RemoveServer_RemovesAServerRecord()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void RemoveServer_RemovesAServerRecord(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Server (Id, Data, LastHeartbeat)
@@ -868,18 +1238,21 @@ values
 
                 var server = sql.Query($"select * from [{Constants.DefaultSchema}].Server").Single();
                 Assert.NotEqual("Server1", server.Id, StringComparer.OrdinalIgnoreCase);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Heartbeat_ThrowsAnException_WhenServerIdIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Heartbeat_ThrowsAnException_WhenServerIdIsNull(bool useMicrosoftDataSqlClient)
         {
-            UseConnection(connection => Assert.Throws<ArgumentNullException>(
-                () => connection.Heartbeat(null)));
+            UseConnection(
+                connection => Assert.Throws<ArgumentNullException>(() => connection.Heartbeat(null)),
+                useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Heartbeat_UpdatesLastHeartbeat_OfTheServerWithGivenId()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Heartbeat_UpdatesLastHeartbeat_OfTheServerWithGivenId(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Server (Id, Data, LastHeartbeat)
@@ -898,18 +1271,24 @@ values
 
                 Assert.NotEqual(2012, servers["server1"].Year);
                 Assert.Equal(2012, servers["server2"].Year);
-            });
+
+                Assert.True(DateTime.UtcNow.AddHours(-1) < servers["server1"] &&
+                            servers["server1"] < DateTime.UtcNow.AddHours(1));
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void RemoveTimedOutServers_ThrowsAnException_WhenTimeOutIsNegative()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void RemoveTimedOutServers_ThrowsAnException_WhenTimeOutIsNegative(bool useMicrosoftDataSqlClient)
         {
-            UseConnection(connection => Assert.Throws<ArgumentException>(
-                () => connection.RemoveTimedOutServers(TimeSpan.FromMinutes(-5))));
+            UseConnection(
+                connection => Assert.Throws<ArgumentException>(() => connection.RemoveTimedOutServers(TimeSpan.FromMinutes(-5))),
+                useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void RemoveTimedOutServers_DoItsWorkPerfectly()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void RemoveTimedOutServers_DoItsWorkPerfectly(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Server (Id, Data, LastHeartbeat)
@@ -929,18 +1308,21 @@ values (@id, '', @heartbeat)";
 
                 var liveServer = sql.Query($"select * from [{Constants.DefaultSchema}].Server").Single();
                 Assert.Equal("server2", liveServer.Id);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetAllItemsFromSet_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetAllItemsFromSet_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
         {
-            UseConnection(connection =>
-                Assert.Throws<ArgumentNullException>(() => connection.GetAllItemsFromSet(null)));
+            UseConnection(
+                connection => Assert.Throws<ArgumentNullException>(() => connection.GetAllItemsFromSet(null)),
+                useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetAllItemsFromSet_ReturnsEmptyCollection_WhenKeyDoesNotExist()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetAllItemsFromSet_ReturnsEmptyCollection_WhenKeyDoesNotExist(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -948,11 +1330,12 @@ values (@id, '', @heartbeat)";
 
                 Assert.NotNull(result);
                 Assert.Equal(0, result.Count);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetAllItemsFromSet_ReturnsAllItems()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetAllItemsFromSet_ReturnsAllItems(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].[Set] ([Key], Score, Value)
@@ -975,11 +1358,12 @@ values (@key, 0.0, @value)";
                 Assert.Equal(2, result.Count);
                 Assert.Contains("1", result);
                 Assert.Contains("2", result);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void SetRangeInHash_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void SetRangeInHash_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -987,11 +1371,12 @@ values (@key, 0.0, @value)";
                     () => connection.SetRangeInHash(null, new Dictionary<string, string>()));
 
                 Assert.Equal("key", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void SetRangeInHash_ThrowsAnException_WhenKeyValuePairsArgumentIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void SetRangeInHash_ThrowsAnException_WhenKeyValuePairsArgumentIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -999,13 +1384,28 @@ values (@key, 0.0, @value)";
                     () => connection.SetRangeInHash("some-hash", null));
 
                 Assert.Equal("keyValuePairs", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void SetRangeInHash_MergesAllRecords(bool useBatching)
+        [InlineData(false), InlineData(true)]
+        public void SetRangeInHash_ThrowsSqlException_WhenKeyIsTooLong(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.ThrowsAny<DbException>(
+                    () => connection.SetRangeInHash(
+                    "123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_123456789_12345",
+                    new Dictionary<string, string> { { "field", "value" } }));
+
+                Assert.Contains("data would be truncated", exception.Message);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void SetRangeInHash_MergesAllRecords(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnections((sql, connection) =>
             {
@@ -1022,13 +1422,13 @@ values (@key, 0.0, @value)";
 
                 Assert.Equal("Value1", result["Key1"]);
                 Assert.Equal("Value2", result["Key2"]);
-            }, useBatching);
+            }, useBatching, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void SetRangeInHash_CanCreateFieldsWithNullValues(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void SetRangeInHash_CanCreateFieldsWithNullValues(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnections((sql, connection) =>
             {
@@ -1043,11 +1443,13 @@ values (@key, 0.0, @value)";
                     .ToDictionary(x => (string)x.Field, x => (string)x.Value);
 
                 Assert.Equal(null, result["Key1"]);
-            }, useBatching);
+            }, useBatching, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void SetRangeInHash_ReleasesTheAcquiredLock()
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void SetRangeInHash_ReleasesTheAcquiredLock(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnections((sql, connection) =>
             {
@@ -1058,28 +1460,104 @@ values (@key, 0.0, @value)";
 
                 var result = sql.QuerySingle<string>($"select APPLOCK_MODE( 'public' , 'HangFire:Hash:Lock' , 'Session' )");
                 Assert.Equal("NoLock", result);
-            });
+            }, useBatching, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetAllEntriesFromHash_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void SetRangeInHash_WithIgnoreDupKeyOption_InsertsNonExistingValue(bool useBatching, bool useMicrosoftDataSqlClient)
         {
-            UseConnection(connection =>
-                Assert.Throws<ArgumentNullException>(() => connection.GetAllEntriesFromHash(null)));
+            try
+            {
+                UseConnections((sql, connection) =>
+                {
+                    sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = ON)");
+
+                    connection.SetRangeInHash("some-hash", new Dictionary<string, string>
+                    {
+                        { "key", "value" }
+                    });
+
+                    var result = sql
+                        .Query($"select * from [{Constants.DefaultSchema}].Hash where [Key] = N'some-hash'")
+                        .ToDictionary(x => (string)x.Field, x => (string)x.Value);
+
+                    Assert.Equal("value", result["key"]);
+                }, useBatching, useMicrosoftDataSqlClient);
+            }
+            finally
+            {
+                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useBatching, useMicrosoftDataSqlClient);
+            }
         }
 
-        [Fact, CleanDatabase]
-        public void GetAllEntriesFromHash_ReturnsNull_IfHashDoesNotExist()
+        [Theory, CleanDatabase]
+        [InlineData(false, false, false), InlineData(false, false, true)]
+        [InlineData(false,  true, false), InlineData(false,  true, true)]
+        [InlineData( true, false, false), InlineData( true, false, true)]
+        [InlineData( true,  true, false), InlineData( true,  true, true)]
+        public void SetRangeInHash_WithIgnoreDupKeyOption_UpdatesExistingValue_WhenIgnoreDupKeyOptionIsSet(bool setIgnoreDupKey, bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            try
+            {
+                UseConnections((sql, connection) =>
+                {
+                    var onOrOff = setIgnoreDupKey ? "ON" : "OFF";
+                    sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = {onOrOff})");
+                    sql.Execute($@"insert into [{Constants.DefaultSchema}].Hash([Key], Field, Value) VALUES
+(N'some-hash', N'key1', N'value1'),
+(N'some-hash', N'key2', N'value1'),
+(N'othr-hash', N'key1', N'value1')");
+
+                    connection.SetRangeInHash("some-hash", new Dictionary<string, string>
+                    {
+                        { "key1", "value2" }
+                    });
+
+                    var someResult = sql
+                        .Query($"select * from [{Constants.DefaultSchema}].Hash where [Key] = N'some-hash'")
+                        .ToDictionary(x => (string)x.Field, x => (string)x.Value);
+
+                    Assert.Equal("value2", someResult["key1"]);
+                    Assert.Equal("value1", someResult["key2"]);
+
+                    var othrResult = sql
+                        .Query($"select * from [{Constants.DefaultSchema}].Hash where [Key] = N'othr-hash'")
+                        .ToDictionary(x => (string)x.Field, x => (string)x.Value);
+
+                    Assert.Equal("value1", othrResult["key1"]);
+                }, useBatching, useMicrosoftDataSqlClient);
+            }
+            finally
+            {
+                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useBatching, useMicrosoftDataSqlClient);
+            }
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetAllEntriesFromHash_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(
+                connection => Assert.Throws<ArgumentNullException>(() => connection.GetAllEntriesFromHash(null)),
+                useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetAllEntriesFromHash_ReturnsNull_IfHashDoesNotExist(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 var result = connection.GetAllEntriesFromHash("some-hash");
                 Assert.Null(result);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetAllEntriesFromHash_ReturnsAllKeysAndTheirValues()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetAllEntriesFromHash_ReturnsAllKeysAndTheirValues(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Hash ([Key], [Field], [Value])
@@ -1103,31 +1581,34 @@ values (@key, @field, @value)";
                 Assert.Equal(2, result.Count);
                 Assert.Equal("Value1", result["Key1"]);
                 Assert.Equal("Value2", result["Key2"]);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetSetCount_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetCount_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 Assert.Throws<ArgumentNullException>(
                     () => connection.GetSetCount(null));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetSetCount_ReturnsZero_WhenSetDoesNotExist()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetCount_ReturnsZero_WhenSetDoesNotExist(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 var result = connection.GetSetCount("my-set");
                 Assert.Equal(0, result);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetSetCount_ReturnsNumberOfElements_InASet()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetCount_ReturnsNumberOfElements_InASet(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
@@ -1145,20 +1626,118 @@ values (@key, @value, 0.0)";
                 var result = connection.GetSetCount("set-1");
 
                 Assert.Equal(2, result);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetRangeFromSet_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetCount_Limited_ThrowsAnException_WhenKeysArgumentIsNull(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => connection.GetSetCount((IEnumerable<string>) null, 10));
+
+                Assert.Equal("keys", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetCount_Limited_ThrowsAnException_WhenLimitIsNegative(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentOutOfRangeException>(
+                    () => connection.GetSetCount(Enumerable.Empty<string>(), -10));
+
+                Assert.Equal("limit", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetCount_Limited_ReturnsZero_WhenSetsArgumentIsEmpty(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetSetCount(Enumerable.Empty<string>(), 10);
+                Assert.Equal(0, result);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetCount_Limited_ReturnsZero_WhenGivenSetsDoNotExist(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetSetCount(new [] { "set-1", "set-2" }.AsEnumerable(), 10);
+                Assert.Equal(0, result);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetCount_Limited_ReturnsTheSum_OfGivenSetCardinalities(bool useMicrosoftDataSqlClient)
+        {
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
+values (@Key, @Value, 0.0)";
+
+            UseConnections((sql, connection) =>
+            {
+                sql.Execute(arrangeSql, new List<dynamic>
+                {
+                    new { Key = "set-1", Value = "1" },
+                    new { Key = "set-1", Value = "2" },
+                    new { Key = "set-2", Value = "2" },
+                    new { Key = "set-2", Value = "3" },
+                    new { Key = "set-3", Value = "1" }
+                });
+
+                var result = connection.GetSetCount(new [] { "set-1", "set-2" }.AsEnumerable(), 10);
+                Assert.Equal(4, result);
+            }, useBatching: false, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetCount_Limited_LimitValue_IsConsidered(bool useMicrosoftDataSqlClient)
+        {
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
+values (@Key, @Value, 0.0)";
+
+            UseConnections((sql, connection) =>
+            {
+                sql.Execute(arrangeSql, new List<dynamic>
+                {
+                    new { Key = "set-1", Value = "1" },
+                    new { Key = "set-1", Value = "2" },
+                    new { Key = "set-2", Value = "2" },
+                    new { Key = "set-2", Value = "3" },
+                    new { Key = "set-3", Value = "1" }
+                });
+
+                var result = connection.GetSetCount(new [] { "set-1", "set-2", "set-4" }.AsEnumerable(), 2);
+                Assert.Equal(2, result);
+            }, useBatching: false, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetRangeFromSet_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 Assert.Throws<ArgumentNullException>(() => connection.GetRangeFromSet(null, 0, 1));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetRangeFromSet_ReturnsPagedElements()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetRangeFromSet_ReturnsPagedElements(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
@@ -1179,31 +1758,146 @@ values (@Key, @Value, 0.0)";
                 var result = connection.GetRangeFromSet("set-1", 2, 3);
 
                 Assert.Equal(new [] { "3", "4" }, result);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetCounter_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetCounter_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 Assert.Throws<ArgumentNullException>(
                     () => connection.GetCounter(null));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetCounter_ReturnsZero_WhenKeyDoesNotExist()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetContains_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => connection.GetSetContains(null, "value"));
+                
+                Assert.Equal("key", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetContains_ThrowsAnException_WhenValueIsNull(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => connection.GetSetContains("key", null));
+
+                Assert.Equal("value", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetContains_ReturnsFalse_WhenGivenSetDoesNotExist(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetSetContains("non-existing-set", "some-value");
+                Assert.False(result);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetContains_ReturnsTrue_WhenGivenSetExists_AndContainsTheValue(bool useMicrosoftDataSqlClient)
+        {
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
+values (@Key, @Value, 0.0)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new List<dynamic>
+                {
+                    new { Key = "my-set", Value = "1" },
+                    new { Key = "my-set", Value = "2" },
+                });
+
+                // Act
+                var result = connection.GetSetContains("my-set", "2");
+
+                // Assert
+                Assert.True(result);
+            }, useBatching: false, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetContains_ReturnsFalse_WhenGivenSetExists_ButContainsOtherValues(bool useMicrosoftDataSqlClient)
+        {
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
+values (@Key, @Value, 0.0)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new List<dynamic>
+                {
+                    new { Key = "my-set", Value = "1" },
+                    new { Key = "my-set", Value = "2" },
+                });
+
+                // Act
+                var result = connection.GetSetContains("my-set", "3");
+
+                // Assert
+                Assert.False(result);
+            }, useBatching: false, useMicrosoftDataSqlClient);
+        }
+        
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetContains_ReturnsFalse_WhenAnotherSetContainsTheValue(bool useMicrosoftDataSqlClient)
+        {
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
+values (@Key, @Value, 0.0)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new List<dynamic>
+                {
+                    new { Key = "my-set", Value = "1" },
+                    new { Key = "another-set", Value = "2" },
+                });
+
+                // Act
+                var result = connection.GetSetContains("my-set", "2");
+
+                // Assert
+                Assert.False(result);
+            }, useBatching: false, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetCounter_ReturnsZero_WhenKeyDoesNotExist(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 var result = connection.GetCounter("my-counter");
                 Assert.Equal(0, result);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetCounter_ReturnsSumOfValues_InCounterTable()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetCounter_ReturnsSumOfValues_InCounterTable(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Counter ([Key], [Value])
@@ -1224,11 +1918,12 @@ values (@key, @value)";
 
                 // Assert
                 Assert.Equal(2, result);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetCounter_IncludesValues_FromCounterAggregateTable()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetCounter_IncludesValues_FromCounterAggregateTable(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].AggregatedCounter ([Key], [Value])
@@ -1247,30 +1942,33 @@ values (@key, @value)";
                 var result = connection.GetCounter("counter-1");
 
                 Assert.Equal(12, result);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetHashCount_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetHashCount_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 Assert.Throws<ArgumentNullException>(() => connection.GetHashCount(null));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetHashCount_ReturnsZero_WhenKeyDoesNotExist()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetHashCount_ReturnsZero_WhenKeyDoesNotExist(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 var result = connection.GetHashCount("my-hash");
                 Assert.Equal(0, result);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetHashCount_ReturnsNumber_OfHashFields()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetHashCount_ReturnsNumber_OfHashFields(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Hash ([Key], [Field])
@@ -1291,31 +1989,34 @@ values (@key, @field)";
 
                 // Assert
                 Assert.Equal(2, result);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetHashTtl_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetHashTtl_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 Assert.Throws<ArgumentNullException>(
                     () => connection.GetHashTtl(null));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetHashTtl_ReturnsNegativeValue_WhenHashDoesNotExist()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetHashTtl_ReturnsNegativeValue_WhenHashDoesNotExist(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 var result = connection.GetHashTtl("my-hash");
                 Assert.True(result < TimeSpan.Zero);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetHashTtl_ReturnsExpirationTimeForHash()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetHashTtl_ReturnsExpirationTimeForHash(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Hash ([Key], [Field], [ExpireAt])
@@ -1336,31 +2037,34 @@ values (@key, @field, @expireAt)";
                 // Assert
                 Assert.True(TimeSpan.FromMinutes(59) < result);
                 Assert.True(result < TimeSpan.FromMinutes(61));
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetListCount_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetListCount_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 Assert.Throws<ArgumentNullException>(
                     () => connection.GetListCount(null));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetListCount_ReturnsZero_WhenListDoesNotExist()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetListCount_ReturnsZero_WhenListDoesNotExist(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 var result = connection.GetListCount("my-list");
                 Assert.Equal(0, result);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetListCount_ReturnsTheNumberOfListElements()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetListCount_ReturnsTheNumberOfListElements(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].List ([Key])
@@ -1381,31 +2085,34 @@ values (@key)";
 
                 // Assert
                 Assert.Equal(2, result);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetListTtl_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetListTtl_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 Assert.Throws<ArgumentNullException>(
                     () => connection.GetListTtl(null));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetListTtl_ReturnsNegativeValue_WhenListDoesNotExist()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetListTtl_ReturnsNegativeValue_WhenListDoesNotExist(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 var result = connection.GetListTtl("my-list");
                 Assert.True(result < TimeSpan.Zero);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetListTtl_ReturnsExpirationTimeForList()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetListTtl_ReturnsExpirationTimeForList(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].List ([Key], [ExpireAt])
@@ -1426,11 +2133,12 @@ values (@key, @expireAt)";
                 // Assert
                 Assert.True(TimeSpan.FromMinutes(59) < result);
                 Assert.True(result < TimeSpan.FromMinutes(61));
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetValueFromHash_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetValueFromHash_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -1438,11 +2146,12 @@ values (@key, @expireAt)";
                     () => connection.GetValueFromHash(null, "name"));
 
                 Assert.Equal("key", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetValueFromHash_ThrowsAnException_WhenNameIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetValueFromHash_ThrowsAnException_WhenNameIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -1450,21 +2159,23 @@ values (@key, @expireAt)";
                     () => connection.GetValueFromHash("key", null));
 
                 Assert.Equal("name", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetValueFromHash_ReturnsNull_WhenHashDoesNotExist()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetValueFromHash_ReturnsNull_WhenHashDoesNotExist(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 var result = connection.GetValueFromHash("my-hash", "name");
                 Assert.Null(result);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetValueFromHash_ReturnsValue_OfAGivenField()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetValueFromHash_ReturnsValue_OfAGivenField(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Hash ([Key], [Field], [Value])
@@ -1485,11 +2196,12 @@ values (@key, @field, @value)";
 
                 // Assert
                 Assert.Equal("1", result);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetRangeFromList_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetRangeFromList_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -1497,21 +2209,23 @@ values (@key, @field, @value)";
                     () => connection.GetRangeFromList(null, 0, 1));
 
                 Assert.Equal("key", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetRangeFromList_ReturnsAnEmptyList_WhenListDoesNotExist()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetRangeFromList_ReturnsAnEmptyList_WhenListDoesNotExist(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 var result = connection.GetRangeFromList("my-list", 0, 1);
                 Assert.Empty(result);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetRangeFromList_ReturnsAllEntries_WithinGivenBounds()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetRangeFromList_ReturnsAllEntries_WithinGivenBounds(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].List ([Key], [Value])
@@ -1534,31 +2248,34 @@ values (@key, @value)";
                 
                 // Assert
                 Assert.Equal(new [] { "4", "3" }, result);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetAllItemsFromList_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetAllItemsFromList_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 Assert.Throws<ArgumentNullException>(
                     () => connection.GetAllItemsFromList(null));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetAllItemsFromList_ReturnsAnEmptyList_WhenListDoesNotExist()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetAllItemsFromList_ReturnsAnEmptyList_WhenListDoesNotExist(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 var result = connection.GetAllItemsFromList("my-list");
                 Assert.Empty(result);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetAllItemsFromList_ReturnsAllItems_FromAGivenList()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetAllItemsFromList_ReturnsAllItems_FromAGivenList(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].List ([Key], Value)
@@ -1579,30 +2296,33 @@ values (@key, @value)";
 
                 // Assert
                 Assert.Equal(new [] { "3", "1" }, result);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetSetTtl_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetTtl_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 Assert.Throws<ArgumentNullException>(() => connection.GetSetTtl(null));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetSetTtl_ReturnsNegativeValue_WhenSetDoesNotExist()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetTtl_ReturnsNegativeValue_WhenSetDoesNotExist(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 var result = connection.GetSetTtl("my-set");
                 Assert.True(result < TimeSpan.Zero);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetSetTtl_ReturnsExpirationTime_OfAGivenSet()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetTtl_ReturnsExpirationTime_OfAGivenSet(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [ExpireAt], [Score])
@@ -1623,11 +2343,12 @@ values (@key, @value, @expireAt, 0.0)";
                 // Assert
                 Assert.True(TimeSpan.FromMinutes(59) < result);
                 Assert.True(result < TimeSpan.FromMinutes(61));
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetJobData_ReturnsResult_WhenJobIdIsLongValue()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetJobData_ReturnsResult_WhenJobIdIsLongValue(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 SET IDENTITY_INSERT [{Constants.DefaultSchema}].Job ON;
@@ -1650,11 +2371,12 @@ values (@jobId, @invocationData, '[''Arguments'']', 'Succeeded', getutcdate());"
 
                 Assert.NotNull(result);
                 Assert.NotNull(result.Job);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetStateData_ReturnsCorrectData_WhenJobIdAndStateIdAreLongValues()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetStateData_ReturnsCorrectData_WhenJobIdAndStateIdAreLongValues(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 SET IDENTITY_INSERT [{Constants.DefaultSchema}].Job ON
@@ -1687,11 +2409,12 @@ update [{Constants.DefaultSchema}].Job set StateId = @stateId;";
                 var result = connection.GetStateData((int.MaxValue + 1L).ToString());
 
                 Assert.NotNull(result);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void CreateExpiredJob_HandlesJobIdCanExceedInt32Max()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void CreateExpiredJob_HandlesJobIdCanExceedInt32Max(bool useMicrosoftDataSqlClient)
         {
             UseConnections((sql, connection) =>
             {
@@ -1708,11 +2431,12 @@ update [{Constants.DefaultSchema}].Job set StateId = @stateId;";
 
                 // Assert
                 Assert.True(int.MaxValue < long.Parse(jobId));
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void SetJobParameter_CreatesNewParameter_WhenJobIdIsLongValue()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void SetJobParameter_CreatesNewParameter_WhenJobIdIsLongValue(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 SET IDENTITY_INSERT [{Constants.DefaultSchema}].Job ON
@@ -1732,11 +2456,12 @@ values (@jobId, '', '', getutcdate())";
                     new { id = int.MaxValue + 1L, name = "Name" }).Single();
 
                 Assert.NotNull(parameter);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void GetJobParameter_ReturnsParameterValue_WhenJobIdIsLong()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetJobParameter_ReturnsParameterValue_WhenJobIdIsLong(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 SET IDENTITY_INSERT [{Constants.DefaultSchema}].Job ON
@@ -1759,7 +2484,22 @@ values (@jobId, @name, @value)";
                 var value = connection.GetJobParameter((int.MaxValue + 1L).ToString(), "name");
 
                 Assert.Equal("value", value);
-            });
+            }, useBatching: false, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetUtcDateTime_ReturnsCurrentUtcDateTime(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var dateTime = connection.GetUtcDateTime();
+                var currentDateTime = DateTime.UtcNow;
+
+                Assert.Equal(DateTimeKind.Utc, dateTime.Kind);
+                Assert.True(currentDateTime.AddMinutes(-1) < dateTime, dateTime.ToString(CultureInfo.CurrentCulture));
+                Assert.True(dateTime < currentDateTime.AddMinutes(1), dateTime.ToString(CultureInfo.CurrentCulture));
+            }, useMicrosoftDataSqlClient);
         }
 
         [Fact, CleanSerializerSettings]
@@ -1800,11 +2540,14 @@ values (@jobId, @name, @value)";
             Assert.Equal(initialJob.Type, deserializedJob.Type);
         }
 
-        private void UseConnections(Action<SqlConnection, SqlServerConnection> action, bool useBatching = false)
+        private void UseConnections(Action<DbConnection, SqlServerConnection> action, bool useBatching, bool useMicrosoftDataSqlClient)
         {
-            using (var sqlConnection = ConnectionUtils.CreateConnection())
+            using (var sqlConnection = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient))
             {
-                var storage = new SqlServerStorage(sqlConnection, new SqlServerStorageOptions { CommandBatchMaxTimeout = useBatching ? TimeSpan.FromMinutes(1) : (TimeSpan?)null });
+                var storage = new SqlServerStorage(
+                    () => ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient),
+                    new SqlServerStorageOptions { CommandBatchMaxTimeout = useBatching ? TimeSpan.FromMinutes(1) : (TimeSpan?)null });
+
                 using (var connection = new SqlServerConnection(storage))
                 {
                     action(sqlConnection, connection);
@@ -1812,17 +2555,14 @@ values (@jobId, @name, @value)";
             }
         }
 
-        private void UseConnection(Action<SqlServerConnection> action)
+        private void UseConnection(Action<SqlServerConnection> action, bool useMicrosoftDataSqlClient)
         {
-            using (var sql = ConnectionUtils.CreateConnection())
-            {
-                var storage = new Mock<SqlServerStorage>(sql);
-                storage.Setup(x => x.QueueProviders).Returns(_providers);
+            var storage = new Mock<SqlServerStorage>((Func<DbConnection>)(() => ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient)));
+            storage.Setup(x => x.QueueProviders).Returns(_providers);
 
-                using (var connection = new SqlServerConnection(storage.Object))
-                {
-                    action(connection);
-                }
+            using (var connection = new SqlServerConnection(storage.Object))
+            {
+                action(connection);
             }
         }
 

@@ -41,5 +41,23 @@ namespace Hangfire.Core.Tests.Common
             Assert.True(result);
             Assert.True(stopwatch.Elapsed < TimeSpan.FromMilliseconds(900), $"Elapsed: {stopwatch.Elapsed}");
         }
+
+        [Fact]
+        public void WaitOrThrow_DoesNotThrow_WhenTokenIsNotCanceled()
+        {
+            _cts.Token.WaitOrThrow(TimeSpan.Zero);
+            Assert.False(_cts.Token.IsCancellationRequested);
+        }
+
+        [Fact]
+        public void WaitOrThrow_ThrowsAnException_WhenTokenIsCanceled()
+        {
+            _cts.Cancel();
+            var exception = Assert.Throws<OperationCanceledException>(
+                () => _cts.Token.WaitOrThrow(TimeSpan.FromSeconds(1)));
+
+            Assert.Equal(_cts.Token, exception.CancellationToken);
+            Assert.True(exception.CancellationToken.IsCancellationRequested);
+        }
     }
 }

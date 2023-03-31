@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
@@ -18,13 +17,19 @@ namespace Hangfire.Core.Tests.Client
         private const string JobId = "jobId";
         private readonly Mock<IStateMachine> _stateMachine;
         private readonly CreateContextMock _context;
-        private readonly Mock<IWriteOnlyTransaction> _transaction;
+        private readonly Mock<JobStorageTransaction> _transaction;
 
         public CoreBackgroundJobFactoryFacts()
         {
             _stateMachine = new Mock<IStateMachine>();
             _context = new CreateContextMock();
-            _transaction = new Mock<IWriteOnlyTransaction>();
+            _transaction = new Mock<JobStorageTransaction>();
+
+            _transaction.Setup(x => x.CreateJob(
+                It.IsNotNull<Job>(),
+                It.IsNotNull<IDictionary<string, string>>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<TimeSpan>())).Returns(JobId);
 
             _context.Connection.Setup(x => x.CreateExpiredJob(
                 It.IsAny<Job>(),
@@ -43,6 +48,29 @@ namespace Hangfire.Core.Tests.Client
                 () => new CoreBackgroundJobFactory(null));
 
             Assert.Equal("stateMachine", exception.ParamName);
+        }
+
+        [Fact]
+        public void Create_ThrowsAnException_WhenContextIsNull()
+        {
+            var factory = CreateFactory();
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => factory.Create(null));
+
+            Assert.Equal("context", exception.ParamName);
+        }
+
+        [Fact]
+        public void Create_ThrowsAnException_WhenJobQueueIsSet_ButStorageDoesNotSupportIt()
+        {
+            // Arrange
+            _context.Storage.Setup(x => x.HasFeature(JobStorageFeatures.JobQueueProperty)).Returns(false);
+            _context.Job = Job.FromExpression(() => Method(), "some-queue");
+
+            var factory = CreateFactory();
+
+            // Act & Assert
+            Assert.Throws<NotSupportedException>(() => factory.Create(_context.Object));
         }
 
         [Fact]
@@ -282,6 +310,184 @@ namespace Hangfire.Core.Tests.Client
             _stateMachine.Verify(x => x.ApplyState(It.IsAny<ApplyStateContext>()), Times.Exactly(2));
             _transaction.Verify(x => x.Commit(), Times.Once);
         }
+        
+        [Fact]
+        public void CreateJob_Transactional_CreatesExpiredJob()
+        {
+            _context.Storage.Setup(x => x.HasFeature(JobStorageFeatures.Transaction.CreateJob)).Returns(true);
+            _context.Object.Parameters.Add("Name", "Value");
+
+            var factory = CreateFactory();
+
+            factory.Create(_context.Object);
+
+            _transaction.Verify(x => x.CreateJob(
+                _context.Job,
+                It.Is<Dictionary<string, string>>(d => d["Name"] == "\"Value\""),
+                It.IsAny<DateTime>(),
+                It.IsAny<TimeSpan>()));
+        }
+
+        [Fact]
+        public void CreateJob_Transactional_ChangesTheStateOfACreatedJob()
+        {
+            _context.Storage.Setup(x => x.HasFeature(JobStorageFeatures.Transaction.CreateJob)).Returns(true);
+            var factory = CreateFactory();
+
+            factory.Create(_context.Object);
+
+            _stateMachine.Verify(x => x.ApplyState(
+                It.Is<ApplyStateContext>(
+                    sc => sc.BackgroundJob.Id == JobId && sc.BackgroundJob.Job == _context.Job
+                    && sc.NewState == _context.InitialState.Object && sc.OldStateName == null)));
+
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void CreateJob_Transactional_ReturnsNewJobId()
+        {
+            _context.Storage.Setup(x => x.HasFeature(JobStorageFeatures.Transaction.CreateJob)).Returns(true);
+            var factory = CreateFactory();
+            Assert.Equal(JobId, factory.Create(_context.Object).Id);
+        }
+
+        [Fact]
+        public void Create_Transactional_DoesNotRetryCreateExpiredJobMethod_ByDefault_AndThrowsAnException()
+        {
+            // Arrange
+            _context.Storage.Setup(x => x.HasFeature(JobStorageFeatures.Transaction.CreateJob)).Returns(true);
+            _transaction
+                .Setup(x => x.CreateJob(It.IsAny<Job>(), It.IsAny<IDictionary<string, string>>(),
+                    It.IsAny<DateTime>(), It.IsAny<TimeSpan>()))
+                .Throws<InvalidOperationException>();
+
+            var factory = CreateFactory();
+
+            // Act
+            Assert.Throws<InvalidOperationException>(() => factory.Create(_context.Object));
+
+            // Assert
+            _transaction.Verify(
+                x => x.CreateJob(It.IsAny<Job>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<DateTime>(), It.IsAny<TimeSpan>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public void Create_Transactional_DoesNotRetryStateTransaction_ByDefault_AndThrowsAnException()
+        {
+            // Arrange
+            _context.Storage.Setup(x => x.HasFeature(JobStorageFeatures.Transaction.CreateJob)).Returns(true);
+            _stateMachine.Setup(x => x.ApplyState(It.IsAny<ApplyStateContext>())).Throws<InvalidOperationException>();
+
+            var factory = CreateFactory();
+
+            // Act
+            Assert.Throws<InvalidOperationException>(() => factory.Create(_context.Object));
+
+            // Assert
+            _transaction.Verify(
+                x => x.CreateJob(It.IsAny<Job>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<DateTime>(), It.IsAny<TimeSpan>()),
+                Times.Once);
+            _stateMachine.Verify(x => x.ApplyState(It.IsAny<ApplyStateContext>()), Times.Once);
+            _transaction.Verify(x => x.Commit(), Times.Never);
+        }
+
+        [Fact]
+        public void Create_Transactional_IsResilientToASingleCreateExpiredJobFault_WhenRetriesEnabled()
+        {
+            // Arrange
+            _context.Storage.Setup(x => x.HasFeature(JobStorageFeatures.Transaction.CreateJob)).Returns(true);
+            _transaction
+                .SetupSequence(x => x.CreateJob(It.IsAny<Job>(), It.IsAny<IDictionary<string, string>>(),
+                    It.IsAny<DateTime>(), It.IsAny<TimeSpan>()))
+                .Throws<InvalidOperationException>()
+                .Returns(JobId);
+
+            var factory = CreateFactory(retries: 1);
+
+            // Act
+            factory.Create(_context.Object);
+
+            // Assert
+            _transaction.Verify(
+                x => x.CreateJob(It.IsNotNull<Job>(), It.IsNotNull<IDictionary<string, string>>(), It.IsAny<DateTime>(), It.IsAny<TimeSpan>()),
+                Times.Exactly(2));
+            _stateMachine.Verify(x => x.ApplyState(It.IsNotNull<ApplyStateContext>()), Times.Once);
+            _transaction.Verify(x => x.Commit(), Times.Once);
+        }
+
+        [Fact]
+        public void Create_Transactional_IsResilientToASingleStateMachineFault_WhenRetriesEnabled()
+        {
+            // Arrange
+            _context.Storage.Setup(x => x.HasFeature(JobStorageFeatures.Transaction.CreateJob)).Returns(true);
+            _stateMachine.SetupSequence(x => x.ApplyState(It.IsAny<ApplyStateContext>()))
+                .Throws<InvalidOperationException>()
+                .Returns(_context.InitialState.Object);
+
+            var factory = CreateFactory(retries: 1);
+
+            // Act
+            factory.Create(_context.Object);
+
+            // Assert
+            _transaction.Verify(
+                x => x.CreateJob(It.IsNotNull<Job>(), It.IsNotNull<IDictionary<string, string>>(), It.IsAny<DateTime>(), It.IsAny<TimeSpan>()),
+                Times.Exactly(2));
+            _stateMachine.Verify(x => x.ApplyState(It.IsNotNull<ApplyStateContext>()), Times.Exactly(2));
+            _transaction.Verify(x => x.Commit(), Times.Once);
+        }
+
+        [Fact]
+        public void Create_Transactional_ThrowsAnException_AndLeavesTransactionUncommitted_WhenAllRetryAttemptsExhausted_WhenCallingCreateExpiredJob()
+        {
+            // Arrange
+            _context.Storage.Setup(x => x.HasFeature(JobStorageFeatures.Transaction.CreateJob)).Returns(true);
+            _transaction
+                .SetupSequence(x => x.CreateJob(It.IsAny<Job>(), It.IsAny<IDictionary<string, string>>(),
+                    It.IsAny<DateTime>(), It.IsAny<TimeSpan>()))
+                .Throws<NotSupportedException>()
+                .Throws<TimeoutException>();
+
+            var factory = CreateFactory(retries: 1);
+
+            // Act
+            var exception = Assert.Throws<AggregateException>(() => factory.Create(_context.Object));
+
+            // Assert
+            Assert.IsType<NotSupportedException>(exception.InnerExceptions[0]);
+            Assert.IsType<TimeoutException>(exception.InnerExceptions[1]);
+
+            _stateMachine.Verify(x => x.ApplyState(It.IsAny<ApplyStateContext>()), Times.Never);
+            _transaction.Verify(x => x.Commit(), Times.Never);
+        }
+
+        [Fact]
+        public void Create_Transactional_ThrowsAnException_AndLeavesTransactionUncommitted_WhenAllRetryAttemptsExhausted_WithFaultyStateTransaction()
+        {
+            // Arrange
+            _context.Storage.Setup(x => x.HasFeature(JobStorageFeatures.Transaction.CreateJob)).Returns(true);
+            _stateMachine.SetupSequence(x => x.ApplyState(It.IsAny<ApplyStateContext>()))
+                .Throws<NotSupportedException>()
+                .Returns(_context.InitialState.Object);
+
+            _transaction.SetupSequence(x => x.Commit())
+                .Throws<TimeoutException>()
+                .Pass();
+
+            var factory = CreateFactory(retries: 1);
+
+            // Act
+            var exception = Assert.Throws<AggregateException>(() => factory.Create(_context.Object));
+
+            // Assert
+            Assert.IsType<NotSupportedException>(exception.InnerExceptions[0]);
+            Assert.IsType<TimeoutException>(exception.InnerExceptions[1]);
+
+            _stateMachine.Verify(x => x.ApplyState(It.IsAny<ApplyStateContext>()), Times.Exactly(2));
+            _transaction.Verify(x => x.Commit(), Times.Once);
+        }
 
         private CoreBackgroundJobFactory CreateFactory(int? retries = null)
         {
@@ -289,6 +495,10 @@ namespace Hangfire.Core.Tests.Client
             if (retries.HasValue) factory.RetryAttempts = retries.Value;
 
             return factory;
+        }
+
+        public static void Method()
+        {
         }
     }
 }

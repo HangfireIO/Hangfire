@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2015 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2015 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -74,7 +73,7 @@ namespace Hangfire.Server
             }
         }
 
-        internal static void HandleJobPerformanceException(Exception exception, IJobCancellationToken cancellationToken)
+        internal static void HandleJobPerformanceException(Exception exception, IJobCancellationToken cancellationToken, [CanBeNull] BackgroundJob job)
         {
             if (exception is JobAbortedException)
             {
@@ -105,7 +104,7 @@ namespace Hangfire.Server
             // shallow stack trace without Hangfire methods.
             throw new JobPerformanceException(
                 "An exception occurred during performance of the job.",
-                exception);
+                exception, job?.Id);
         }
 
         private object InvokeMethod(PerformContext context, object instance, object[] arguments)
@@ -132,22 +131,22 @@ namespace Hangfire.Server
             }
             catch (ArgumentException ex)
             {
-                HandleJobPerformanceException(ex, context.CancellationToken);
+                HandleJobPerformanceException(ex, context.CancellationToken, context.BackgroundJob);
                 throw;
             }
             catch (AggregateException ex)
             {
-                HandleJobPerformanceException(ex.InnerException, context.CancellationToken);
+                HandleJobPerformanceException(ex.InnerException, context.CancellationToken, context.BackgroundJob);
                 throw;
             }
             catch (TargetInvocationException ex)
             {
-                HandleJobPerformanceException(ex.InnerException, context.CancellationToken);
+                HandleJobPerformanceException(ex.InnerException, context.CancellationToken, context.BackgroundJob);
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
-                HandleJobPerformanceException(ex, context.CancellationToken);
+                HandleJobPerformanceException(ex, context.CancellationToken, context.BackgroundJob);
                 throw;
             }
         }

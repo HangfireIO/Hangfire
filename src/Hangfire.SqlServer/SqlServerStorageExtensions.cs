@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2015 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2015 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -32,7 +31,7 @@ namespace Hangfire
             if (nameOrConnectionString == null) throw new ArgumentNullException(nameof(nameOrConnectionString));
 
             var storage = new SqlServerStorage(nameOrConnectionString);
-            return configuration.UseStorage(storage);
+            return configuration.UseStorage(storage).UseSqlServerStorageCommonMetrics();
         }
 
         public static IGlobalConfiguration<SqlServerStorage> UseSqlServerStorage(
@@ -45,7 +44,7 @@ namespace Hangfire
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             var storage = new SqlServerStorage(nameOrConnectionString, options);
-            return configuration.UseStorage(storage);
+            return configuration.UseStorage(storage).UseSqlServerStorageCommonMetrics();
         }
 
         public static IGlobalConfiguration<SqlServerStorage> UseSqlServerStorage(
@@ -56,7 +55,7 @@ namespace Hangfire
             if (connectionFactory == null) throw new ArgumentNullException(nameof(connectionFactory));
 
             var storage = new SqlServerStorage(connectionFactory);
-            return configuration.UseStorage(storage);
+            return configuration.UseStorage(storage).UseSqlServerStorageCommonMetrics();
         }
 
         public static IGlobalConfiguration<SqlServerStorage> UseSqlServerStorage(
@@ -69,7 +68,21 @@ namespace Hangfire
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             var storage = new SqlServerStorage(connectionFactory, options);
-            return configuration.UseStorage(storage);
+            return configuration.UseStorage(storage).UseSqlServerStorageCommonMetrics();
+        }
+
+        private static IGlobalConfiguration<SqlServerStorage> UseSqlServerStorageCommonMetrics(
+            [NotNull] this IGlobalConfiguration<SqlServerStorage> configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            configuration.UseDashboardMetric(SqlServerStorage.SchemaVersion);
+            configuration.UseDashboardMetric(SqlServerStorage.ActiveConnections);
+            configuration.UseDashboardMetric(SqlServerStorage.TotalConnections);
+            configuration.UseDashboardMetric(SqlServerStorage.PerformanceCounterDatabaseMetric("SQLServer:Databases", "Active Transactions", null));
+            configuration.UseDashboardMetric(SqlServerStorage.PerformanceCounterDatabaseMetric("SQLServer:Databases", "Data File(s) Size (KB)", null));
+            configuration.UseDashboardMetric(SqlServerStorage.PerformanceCounterDatabaseMetric("SQLServer:Databases", "Log File(s) Size (KB)", null));
+
+            return configuration;
         }
     }
 }

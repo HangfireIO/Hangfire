@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2016 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2016 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -17,6 +16,7 @@
 using System;
 using System.Text.RegularExpressions;
 using Hangfire.Annotations;
+using Hangfire.Common;
 
 namespace Hangfire.Dashboard
 {
@@ -54,7 +54,10 @@ namespace Hangfire.Dashboard
 
         public virtual IRecurringJobManager GetRecurringJobManager()
         {
-            return new RecurringJobManager(Storage);
+            return new RecurringJobManager(
+                Storage,
+                JobFilterProviders.Providers,
+                Options.TimeZoneResolver ?? new DefaultTimeZoneResolver());
         }
     }
 }

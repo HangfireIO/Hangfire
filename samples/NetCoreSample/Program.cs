@@ -153,7 +153,7 @@ namespace NetCoreSample
             }
             catch (Exception e)
             {
-                _logger.LogError("An exception occurred while creating recurring jobs.", e);
+                _logger.LogError(e, "An exception occurred while creating recurring jobs.");
             }
 
             return Task.CompletedTask;

@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -24,8 +23,19 @@ namespace Hangfire.Server
     public class JobPerformanceException : Exception
     {
         public JobPerformanceException(string message, Exception innerException)
-            : base(message, innerException)
+            : this(message, innerException, null)
         {
         }
+    
+        public JobPerformanceException(string message, Exception innerException, string jobId)
+            : base(message, innerException)
+        {
+            JobId = jobId;
+        }
+
+        /// <summary>
+        /// The Background Job Id of the Job instance this exception has been raised for
+        /// </summary>
+        public string JobId { get; private set; }
     }
 }

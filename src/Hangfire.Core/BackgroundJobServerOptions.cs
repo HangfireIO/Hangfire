@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright � 2013-2014 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -57,6 +56,13 @@ namespace Hangfire
         }
         
         public string ServerName { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether storage instance will include only <see cref="Worker"/> and required
+        /// <see cref="ServerWatchdog"/> and <see cref="ServerJobCancellationWatcher"/> processes. No
+        /// storage-related processes or recurring/delayed job schedulers will be included.
+        /// </summary>
+        public bool IsLightweightServer { get; set; }
 
         public int WorkerCount
         {
@@ -126,7 +132,7 @@ namespace Hangfire
             get { return _heartbeatInterval; }
             set
             {
-                if (value < TimeSpan.Zero || value > ServerWatchdog.MaxServerCheckInterval)
+                if (value < TimeSpan.Zero || value > ServerWatchdog.MaxHeartbeatInterval)
                 {
                     throw new ArgumentOutOfRangeException(nameof(value), $"HeartbeatInterval must be either non-negative and equal to or less than {ServerWatchdog.MaxHeartbeatInterval.Hours} hours");
                 }
@@ -178,5 +184,8 @@ namespace Hangfire
 
         [CanBeNull]
         public TaskScheduler TaskScheduler { get; set; }
+        
+        [CanBeNull]
+        public Action<Thread> WorkerThreadConfigurationAction { get; set; }
     }
 }

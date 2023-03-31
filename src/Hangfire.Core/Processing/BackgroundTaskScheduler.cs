@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2017 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -316,7 +315,7 @@ namespace Hangfire.Processing
                 }
             }
 #endif
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 InvokeUnhandledExceptionHandler(ex);
             }
@@ -330,7 +329,7 @@ namespace Hangfire.Processing
                 handler?.Invoke(exception);
             }
 #if !NETSTANDARD1_3
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 Trace.WriteLine("Unexpected exception caught in exception handler itself." + Environment.NewLine + ex);
             }

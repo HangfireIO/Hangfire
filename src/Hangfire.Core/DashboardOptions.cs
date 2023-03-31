@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -23,11 +22,17 @@ namespace Hangfire
 {
     public class DashboardOptions
     {
+        private static readonly IDashboardAuthorizationFilter[] DefaultAuthorization =
+            new[] { new LocalRequestsOnlyAuthorizationFilter() };
+
+        private IEnumerable<IDashboardAsyncAuthorizationFilter> _asyncAuthorization;
+
         public DashboardOptions()
         {
             AppPath = "/";
             PrefixPath = string.Empty;
-            Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
+            _asyncAuthorization = new IDashboardAsyncAuthorizationFilter[0];
+            Authorization = DefaultAuthorization;
             IsReadOnlyFunc = _ => false;
             StatsPollingInterval = 2000;
             DisplayStorageConnectionString = true;
@@ -53,6 +58,20 @@ namespace Hangfire
 #endif
 
         public IEnumerable<IDashboardAuthorizationFilter> Authorization { get; set; }
+
+        public IEnumerable<IDashboardAsyncAuthorizationFilter> AsyncAuthorization
+        {
+            get => _asyncAuthorization;
+            set
+            {
+                _asyncAuthorization = value;
+
+                if (ReferenceEquals(Authorization, DefaultAuthorization))
+                {
+                    Authorization = new IDashboardAuthorizationFilter[0];
+                }
+            }
+        }
 
         public Func<DashboardContext, bool> IsReadOnlyFunc { get; set; }
         

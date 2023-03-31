@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -79,7 +78,7 @@ namespace Hangfire.Common
         }
 
         /// <summary>
-        /// Determines wheither a filter is in the global filter collection.
+        /// Determines whether a filter is in the global filter collection.
         /// </summary>
         /// <param name="filter">The filter instance.</param>
         /// <returns>True if the global filter collection contains the filter, otherwise false.</returns>
@@ -95,6 +94,24 @@ namespace Hangfire.Common
         public void Remove(object filter)
         {
             _filters.RemoveAll(x => x.Instance == filter);
+        }
+
+        /// <summary>
+        /// Remove all filters of the specified type with strict type matching.
+        /// </summary>
+        /// <typeparam name="T">Type of filters to remove.</typeparam>
+        public void Remove<T>()
+        {
+            Remove(typeof(T));
+        }
+
+        /// <summary>
+        /// Remove all filters of the specified type with strict type matching.
+        /// </summary>
+        /// <param name="type">Type of filters to remove.</param>
+        public void Remove(Type type)
+        {
+            _filters.RemoveAll(x => type == x.Instance.GetType());
         }
 
         public IEnumerator<JobFilter> GetEnumerator()

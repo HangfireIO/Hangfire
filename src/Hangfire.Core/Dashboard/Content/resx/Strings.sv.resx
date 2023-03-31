@@ -1,0 +1,553 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AwaitingJobsPage_ContinuationsWarning_Text" xml:space="preserve">
+    <value>Oroa dig inte, fortsättningar fungerar som dom ska. Din nuvarande lagring för jobb stödjer
+            inte vissa frågor som behövs för att visa den här sidan. Uppdatera till en annan lagringstyp
+            eller vänta och hoppas att den nuvarande får stöd för alla frågetyper.</value>
+  </data>
+  <data name="AwaitingJobsPage_ContinuationsWarning_Title" xml:space="preserve">
+    <value>Fortsättningar fungerar, men den här sidan kunde inte visas</value>
+  </data>
+  <data name="AwaitingJobsPage_NoJobs" xml:space="preserve">
+    <value>Inga jobb hittades i väntande tillstånd.</value>
+  </data>
+  <data name="AwaitingJobsPage_Table_Options" xml:space="preserve">
+    <value>Inställningar</value>
+  </data>
+  <data name="AwaitingJobsPage_Table_Parent" xml:space="preserve">
+    <value>Förälder</value>
+  </data>
+  <data name="AwaitingJobsPage_Title" xml:space="preserve">
+    <value>Väntade jobb</value>
+  </data>
+  <data name="Common_Created" xml:space="preserve">
+    <value>Skapad</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Ta bort</value>
+  </data>
+  <data name="Common_DeleteConfirm" xml:space="preserve">
+    <value>Vill du verkligen TA BORT ALLA valda jobb?</value>
+  </data>
+  <data name="Common_Deleting" xml:space="preserve">
+    <value>Tar bort...</value>
+  </data>
+  <data name="Common_DeleteSelected" xml:space="preserve">
+    <value>Ta bort valda</value>
+  </data>
+  <data name="Common_EnqueueButton_Text" xml:space="preserve">
+    <value>Köa upp jobb</value>
+  </data>
+  <data name="Common_Enqueueing" xml:space="preserve">
+    <value>Lägger till i kö...</value>
+  </data>
+  <data name="Common_Fetched" xml:space="preserve">
+    <value>Hämtad</value>
+  </data>
+  <data name="Common_Id" xml:space="preserve">
+    <value>Id</value>
+  </data>
+  <data name="Common_Job" xml:space="preserve">
+    <value>Jobb</value>
+  </data>
+  <data name="Common_JobExpired" xml:space="preserve">
+    <value>Utgånget jobb.</value>
+  </data>
+  <data name="Common_JobStateChanged_Text" xml:space="preserve">
+    <value>Jobbets tillstånd ändrades medan informationen hämtades.</value>
+  </data>
+  <data name="Common_LessDetails" xml:space="preserve">
+    <value>Färre detaljer...</value>
+  </data>
+  <data name="Common_MoreDetails" xml:space="preserve">
+    <value>Mer detaljer...</value>
+  </data>
+  <data name="Common_NotAvailable" xml:space="preserve">
+    <value>N/A</value>
+  </data>
+  <data name="Common_PeriodDay" xml:space="preserve">
+    <value>Dag</value>
+  </data>
+  <data name="Common_PeriodWeek" xml:space="preserve">
+    <value>Vecka</value>
+  </data>
+  <data name="Common_Reason" xml:space="preserve">
+    <value>Orsak</value>
+  </data>
+  <data name="Common_RequeueJobs" xml:space="preserve">
+    <value>Köa om jobb</value>
+  </data>
+  <data name="Common_Retry" xml:space="preserve">
+    <value>Försök igen</value>
+  </data>
+  <data name="Common_Server" xml:space="preserve">
+    <value>Server</value>
+  </data>
+  <data name="Common_State" xml:space="preserve">
+    <value>Tillstånd</value>
+  </data>
+  <data name="Common_Unknown" xml:space="preserve">
+    <value>Okänd</value>
+  </data>
+  <data name="DeletedJobsPage_NoJobs" xml:space="preserve">
+    <value>Inga borttagna jobb hittades.</value>
+  </data>
+  <data name="DeletedJobsPage_Table_Deleted" xml:space="preserve">
+    <value>Borttaget</value>
+  </data>
+  <data name="DeletedJobsPage_Title" xml:space="preserve">
+    <value>Borttagna jobb</value>
+  </data>
+  <data name="EnqueuedJobsPage_NoJobs" xml:space="preserve">
+    <value>Kön är tom.</value>
+  </data>
+  <data name="EnqueuedJobsPage_Title" xml:space="preserve">
+    <value>Köade jobb</value>
+  </data>
+  <data name="FailedJobsPage_FailedJobsNotExpire_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;Misslyckade jobb löper inte ut&lt;/strong&gt; så att man inte ska känna sig stressad att köa upp det igen.
+                Köa upp eller ta bort dom manuellt, eller sätt följande attribut i koden för att radera dom automatiskt: &lt;code&gt;AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)&lt;/code&gt;</value>
+  </data>
+  <data name="FailedJobsPage_NoJobs" xml:space="preserve">
+    <value>Du har inga misslyckade jobb just nu.</value>
+  </data>
+  <data name="FailedJobsPage_Table_Failed" xml:space="preserve">
+    <value>Misslyckad</value>
+  </data>
+  <data name="FailedJobsPage_Title" xml:space="preserve">
+    <value>Misslyckade jobb</value>
+  </data>
+  <data name="FetchedJobsPage_NoJobs" xml:space="preserve">
+    <value>Kön är tom.</value>
+  </data>
+  <data name="FetchedJobsPage_Title" xml:space="preserve">
+    <value>Hämtade jobb</value>
+  </data>
+  <data name="HomePage_HistoryGraph" xml:space="preserve">
+    <value>Historisk graf</value>
+  </data>
+  <data name="HomePage_RealtimeGraph" xml:space="preserve">
+    <value>Realtidsgraf</value>
+  </data>
+  <data name="HomePage_Title" xml:space="preserve">
+    <value>Översikt</value>
+  </data>
+  <data name="JobDetailsPage_Created" xml:space="preserve">
+    <value>Skapad</value>
+  </data>
+  <data name="JobDetailsPage_DeleteConfirm" xml:space="preserve">
+    <value>Vill du verkligen ta bort det här jobbet?</value>
+  </data>
+  <data name="JobDetailsPage_State" xml:space="preserve">
+    <value>Tillstånd</value>
+  </data>
+  <data name="JobDetailsPage_JobAbortedNotActive_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;Jobbet avbröts&lt;/strong&gt; – det processades av servern
+                        &lt;code&gt;{0}&lt;/code&gt; som just nu inte är med på listan över
+                        &lt;a href="{1}"&gt;aktiva servrar&lt;/a&gt;.
+                        Det kommer att automatiskt försökas igen efter &quot;invisibility timeout&quot;, men du kan
+                        också köa upp eller ta bort det manuellt.</value>
+  </data>
+  <data name="JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;Det verkar som att jobbeet avbröts&lt;/strong&gt; – det processas av servern
+                        &lt;code&gt;{0}&lt;/code&gt;, som gav sitt senaste livstecken för mer än en minut sedan.
+                        Det kommer att automatiskt försökas igen efter &quot;invisibility timeout&quot;, men du kan
+                        också köa upp eller ta bort det manuellt.</value>
+  </data>
+  <data name="JobDetailsPage_JobExpired" xml:space="preserve">
+    <value>Bakgrundsjobbet '{0}' har löpt ut eller kunde inte hittas på servern.</value>
+  </data>
+  <data name="JobDetailsPage_JobFinished_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;Jobbet är färdigt&lt;/strong&gt;.
+                    Det kommer att tas bort automatiskt &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;.</value>
+  </data>
+  <data name="JobDetailsPage_JobId" xml:space="preserve">
+    <value>Jobb ID</value>
+  </data>
+  <data name="JobDetailsPage_Requeue" xml:space="preserve">
+    <value>Köa igen</value>
+  </data>
+  <data name="LayoutPage_Back" xml:space="preserve">
+    <value>Tillbaka till webbplats</value>
+  </data>
+  <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
+    <value>Genererades på: {0}ms</value>
+  </data>
+  <data name="LayoutPage_Footer_Time" xml:space="preserve">
+    <value>Tid:</value>
+  </data>
+  <data name="Paginator_Next" xml:space="preserve">
+    <value>Nästa</value>
+  </data>
+  <data name="Paginator_Prev" xml:space="preserve">
+    <value>Föregående</value>
+  </data>
+  <data name="Paginator_TotalItems" xml:space="preserve">
+    <value>Totalt antal</value>
+  </data>
+  <data name="PerPageSelector_ItemsPerPage" xml:space="preserve">
+    <value>Antal per sida</value>
+  </data>
+  <data name="ProcessingJobsPage_Aborted" xml:space="preserve">
+    <value>Det verkar som att jobbet avbröts</value>
+  </data>
+  <data name="ProcessingJobsPage_NoJobs" xml:space="preserve">
+    <value>Inga jobb körs just nu.</value>
+  </data>
+  <data name="ProcessingJobsPage_Table_Started" xml:space="preserve">
+    <value>Startade</value>
+  </data>
+  <data name="ProcessingJobsPage_Title" xml:space="preserve">
+    <value>Processing Jobs</value>
+  </data>
+  <data name="QueuesPage_NoJobs" xml:space="preserve">
+    <value>Inga köade jobb.</value>
+  </data>
+  <data name="QueuesPage_NoQueues" xml:space="preserve">
+    <value>Inga köade jobb finns. Försök med att köa upp ett jobb.</value>
+  </data>
+  <data name="QueuesPage_Table_Length" xml:space="preserve">
+    <value>Längd</value>
+  </data>
+  <data name="QueuesPage_Table_NextsJobs" xml:space="preserve">
+    <value>Nästa jobb</value>
+  </data>
+  <data name="QueuesPage_Table_Queue" xml:space="preserve">
+    <value>Kö</value>
+  </data>
+  <data name="QueuesPage_Title" xml:space="preserve">
+    <value>Köer</value>
+  </data>
+  <data name="RecurringJobsPage_Canceled" xml:space="preserve">
+    <value>Avbrutet</value>
+  </data>
+  <data name="RecurringJobsPage_NoJobs" xml:space="preserve">
+    <value>Inga återkommande jobb hittades.</value>
+  </data>
+  <data name="RecurringJobsPage_Table_Cron" xml:space="preserve">
+    <value>Cron</value>
+  </data>
+  <data name="RecurringJobsPage_Table_LastExecution" xml:space="preserve">
+    <value>Senaste körning</value>
+  </data>
+  <data name="RecurringJobsPage_Table_NextExecution" xml:space="preserve">
+    <value>Nästa körning</value>
+  </data>
+  <data name="RecurringJobsPage_Table_TimeZone" xml:space="preserve">
+    <value>Tidszon</value>
+  </data>
+  <data name="RecurringJobsPage_Title" xml:space="preserve">
+    <value>Återkommande jobb</value>
+  </data>
+  <data name="RecurringJobsPage_Triggering" xml:space="preserve">
+    <value>Startar...</value>
+  </data>
+  <data name="RecurringJobsPage_TriggerNow" xml:space="preserve">
+    <value>Starta nu</value>
+  </data>
+  <data name="RetriesPage_NoJobs" xml:space="preserve">
+    <value>Allt är OK – du har inga nya försök.</value>
+  </data>
+  <data name="RetriesPage_Title" xml:space="preserve">
+    <value>Nya försök</value>
+  </data>
+  <data name="RetriesPage_Warning_Html" xml:space="preserve">
+    <value>&lt;h4&gt;Nya försök fungerar, men den här sidan kan inte visas&lt;/h4&gt;
+        &lt;p&gt;
+            Oroa dig inte, nya försök fungerar som dom ska. Din nuvarande lagring för jobb stödjer
+            inte vissa frågor som behövs för att visa den här sidan. Uppdatera till en annan lagringstyp
+            eller vänta och hoppas att den nuvarande får stöd för alla frågetyper.
+        &lt;/p&gt;
+        &lt;p&gt;
+            Gå till &lt;a href="{0}"&gt;Schemalagda jobb&lt;/a&gt;-sidan för att se alla
+            schemalagda jobb inklusive nya försök.
+        &lt;/p&gt;</value>
+  </data>
+  <data name="ScheduledJobsPage_EnqueueNow" xml:space="preserve">
+    <value>Köpa upp nu</value>
+  </data>
+  <data name="ScheduledJobsPage_NoJobs" xml:space="preserve">
+    <value>Det finns inga schemalagda jobb.</value>
+  </data>
+  <data name="ScheduledJobsPage_Table_Enqueue" xml:space="preserve">
+    <value>Köa upp</value>
+  </data>
+  <data name="ScheduledJobsPage_Table_Scheduled" xml:space="preserve">
+    <value>Schemalagd</value>
+  </data>
+  <data name="ScheduledJobsPage_Title" xml:space="preserve">
+    <value>Schemalagda jobb</value>
+  </data>
+  <data name="ServersPage_NoServers" xml:space="preserve">
+    <value>Det finns inga aktiva servrar. Bakgrundsjobb kommer inte att köras.</value>
+  </data>
+  <data name="ServersPage_Table_Heartbeat" xml:space="preserve">
+    <value>Livstecken</value>
+  </data>
+  <data name="ServersPage_Table_Name" xml:space="preserve">
+    <value>Namn</value>
+  </data>
+  <data name="ServersPage_Table_Queues" xml:space="preserve">
+    <value>Köer</value>
+  </data>
+  <data name="ServersPage_Table_Started" xml:space="preserve">
+    <value>Startade</value>
+  </data>
+  <data name="ServersPage_Table_Workers" xml:space="preserve">
+    <value>Arbetare</value>
+  </data>
+  <data name="ServersPage_Title" xml:space="preserve">
+    <value>Servrar</value>
+  </data>
+  <data name="SucceededJobsPage_NoJobs" xml:space="preserve">
+    <value>Inga lyckade jobb hittades.</value>
+  </data>
+  <data name="SucceededJobsPage_Table_Succeeded" xml:space="preserve">
+    <value>Lyckades</value>
+  </data>
+  <data name="SucceededJobsPage_Table_TotalDuration" xml:space="preserve">
+    <value>Total tidsåtgång</value>
+  </data>
+  <data name="SucceededJobsPage_Title" xml:space="preserve">
+    <value>Lyckade jobb</value>
+  </data>
+  <data name="JobsSidebarMenu_Awaiting" xml:space="preserve">
+    <value>Väntar</value>
+  </data>
+  <data name="JobsSidebarMenu_Deleted" xml:space="preserve">
+    <value>Borttagna</value>
+  </data>
+  <data name="JobsSidebarMenu_Failed" xml:space="preserve">
+    <value>Misslyckade</value>
+  </data>
+  <data name="JobsSidebarMenu_Processing" xml:space="preserve">
+    <value>Kör</value>
+  </data>
+  <data name="JobsSidebarMenu_Scheduled" xml:space="preserve">
+    <value>Schemalagd</value>
+  </data>
+  <data name="JobsSidebarMenu_Succeeded" xml:space="preserve">
+    <value>Lyckade</value>
+  </data>
+  <data name="NavigationMenu_Jobs" xml:space="preserve">
+    <value>Jobb</value>
+  </data>
+  <data name="NavigationMenu_RecurringJobs" xml:space="preserve">
+    <value>Återkommande jobb</value>
+  </data>
+  <data name="NavigationMenu_Retries" xml:space="preserve">
+    <value>Antal nya försök</value>
+  </data>
+  <data name="NavigationMenu_Servers" xml:space="preserve">
+    <value>Servrar</value>
+  </data>
+  <data name="Common_CannotFindTargetMethod" xml:space="preserve">
+    <value>Kan inte hitta målmetoden.</value>
+  </data>
+  <data name="Common_Enqueued" xml:space="preserve">
+    <value>Köad</value>
+  </data>
+  <data name="Common_NoState" xml:space="preserve">
+    <value>Inget tillstånd</value>
+  </data>
+  <data name="JobsSidebarMenu_Enqueued" xml:space="preserve">
+    <value>Köade</value>
+  </data>
+  <data name="Metrics_ActiveConnections" xml:space="preserve">
+    <value>Aktiva anslutningar</value>
+  </data>
+  <data name="Metrics_DeletedJobs" xml:space="preserve">
+    <value>Borttagna jobb</value>
+  </data>
+  <data name="Metrics_FailedJobs" xml:space="preserve">
+    <value>Misslyckade jobb</value>
+  </data>
+  <data name="Metrics_ProcessingJobs" xml:space="preserve">
+    <value>Pågående jobb</value>
+  </data>
+  <data name="Metrics_RecurringJobs" xml:space="preserve">
+    <value>Återkommande jobb</value>
+  </data>
+  <data name="Metrics_Retries" xml:space="preserve">
+    <value>Antal nya försök</value>
+  </data>
+  <data name="Metrics_ScheduledJobs" xml:space="preserve">
+    <value>Schemalagda jobb</value>
+  </data>
+  <data name="Metrics_Servers" xml:space="preserve">
+    <value>Servrar</value>
+  </data>
+  <data name="Metrics_SucceededJobs" xml:space="preserve">
+    <value>Lyckade jobb</value>
+  </data>
+  <data name="Metrics_TotalConnections" xml:space="preserve">
+    <value>Antal anslutningar</value>
+  </data>
+  <data name="Common_Condition" xml:space="preserve">
+    <value>Tillstånd</value>
+  </data>
+  <data name="Common_Continuations" xml:space="preserve">
+    <value>Fortsättningar</value>
+  </data>
+  <data name="Metrics_AwaitingCount" xml:space="preserve">
+    <value>Väntande</value>
+  </data>
+  <data name="Metrics_EnqueuedCountOrNull" xml:space="preserve">
+    <value>Köade</value>
+  </data>
+  <data name="Metrics_EnqueuedQueuesCount" xml:space="preserve">
+    <value>Köade / Kö</value>
+  </data>
+  <data name="Metrics_FailedCountOrNull" xml:space="preserve">
+    <value>{0} misslyckade jobb hittades. Försök igen eller ta bort dom manuellt.</value>
+  </data>
+  <data name="HomePage_GraphHover_Failed" xml:space="preserve">
+    <value>Misslyckade</value>
+  </data>
+  <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
+    <value>Lyckade</value>
+  </data>
+  <data name="Common_Disabled" xml:space="preserve">
+    <value>Avtängd</value>
+  </data>
+  <data name="RecurringJobsPage_RecurringJobDisabled_Tooltip" xml:space="preserve">
+    <value>Cron-uttrycket är ogiligt eller inträffar inte dom närmaste hundra åren</value>
+  </data>
+  <data name="ServersPage_Note_Text" xml:space="preserve">
+    <value>Vissa servrar har inte gett några livstecken den senaste minuten och kan komma att avbrytas.
+            Om dom inte ger några livstecken inom en snar framtid så kommer dom att tas bort automatiskt efter en timeout.
+            Pågående bakgundsjobb på dessa servrar kommer att köras upp igen automatiskt, men du kan snabba upp processen genom att kika på sidan &lt;a href="{0}"&gt;Pågående jobb&lt;/a&gt;.</value>
+  </data>
+  <data name="ServersPage_Note_Title" xml:space="preserve">
+    <value>Avbrutna servrar kommer att tas bort automatiskt</value>
+  </data>
+  <data name="ServersPage_Active" xml:space="preserve">
+    <value>Aktiv</value>
+  </data>
+  <data name="ServersPage_Possibly_Aborted" xml:space="preserve">
+    <value>Möjligen avbrutna</value>
+  </data>
+  <data name="Common_Error" xml:space="preserve">
+    <value>Fel</value>
+  </data>
+  <data name="JobDetailsPage_Parameters" xml:space="preserve">
+    <value>Parametrar</value>
+  </data>
+</root>

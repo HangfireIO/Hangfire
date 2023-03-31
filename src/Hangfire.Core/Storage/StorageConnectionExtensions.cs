@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -36,10 +35,30 @@ namespace Hangfire.Storage
                 timeout);
         }
 
+        public static void AcquireDistributedJobLock(
+            [NotNull] this JobStorageTransaction transaction, 
+            [NotNull] string jobId, 
+            TimeSpan timeout)
+        {
+            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
+
+            transaction.AcquireDistributedLock($"job:{jobId}:state-lock", timeout);
+        }
+
         public static long GetRecurringJobCount([NotNull] this JobStorageConnection connection)
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
             return connection.GetSetCount("recurring-jobs");
+        }
+
+        public static List<string> GetRecurringJobIds(
+            [NotNull] this JobStorageConnection connection,
+            int startingFrom,
+            int endingAt)
+        {
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            return connection.GetRangeFromSet("recurring-jobs", startingFrom, endingAt);
         }
 
         public static List<RecurringJobDto> GetRecurringJobs(
@@ -49,7 +68,7 @@ namespace Hangfire.Storage
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
 
-            var ids = connection.GetRangeFromSet("recurring-jobs", startingFrom, endingAt);
+            var ids = connection.GetRecurringJobIds(startingFrom, endingAt);
             return GetRecurringJobDtos(connection, ids);
         }
 
@@ -61,6 +80,12 @@ namespace Hangfire.Storage
             return GetRecurringJobDtos(connection, ids);
         }
 
+        public static List<RecurringJobDto> GetRecurringJobs([NotNull] this IStorageConnection connection, IEnumerable<string> ids)
+        {
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            return GetRecurringJobDtos(connection, ids);
+        }
+
         private static List<RecurringJobDto> GetRecurringJobDtos(IStorageConnection connection, IEnumerable<string> ids)
         {
             var result = new List<RecurringJobDto>();
@@ -68,6 +93,7 @@ namespace Hangfire.Storage
             {
                 var hash = connection.GetAllEntriesFromHash($"recurring-job:{id}");
 
+                // TODO: Remove this in 2.0 (breaking change)
                 if (hash == null)
                 {
                     result.Add(new RecurringJobDto { Id = id, Removed = true });

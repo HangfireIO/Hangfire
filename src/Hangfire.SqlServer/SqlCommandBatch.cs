@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright © 2017 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -18,7 +17,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 
 namespace Hangfire.SqlServer
 {
@@ -33,14 +31,14 @@ namespace Hangfire.SqlServer
             Connection = connection;
             Transaction = transaction;
 
-            if (connection is SqlConnection && SqlCommandSet.IsAvailable && preferBatching)
+            if (preferBatching)
             {
                 try
                 {
-                    _commandSet = new SqlCommandSet();
+                    _commandSet = new SqlCommandSet(connection);
                     _defaultTimeout = _commandSet.BatchCommand.CommandTimeout;
                 }
-                catch (Exception)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     _commandSet = null;
                 }
@@ -78,9 +76,9 @@ namespace Hangfire.SqlServer
 
         public void Append(DbCommand command)
         {
-            if (_commandSet != null && command is SqlCommand)
+            if (_commandSet != null)
             {
-                _commandSet.Append((SqlCommand)command);
+                _commandSet.Append(command);
             }
             else
             {
@@ -92,8 +90,8 @@ namespace Hangfire.SqlServer
         {
             if (_commandSet != null && _commandSet.CommandCount > 0)
             {
-                _commandSet.Connection = Connection as SqlConnection;
-                _commandSet.Transaction = Transaction as SqlTransaction;
+                _commandSet.Connection = Connection;
+                _commandSet.Transaction = Transaction;
 
                 var batchTimeout = CommandTimeout ?? _defaultTimeout;
 

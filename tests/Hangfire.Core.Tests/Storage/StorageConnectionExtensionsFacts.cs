@@ -45,6 +45,21 @@ namespace Hangfire.Core.Tests.Storage
                 timeout));
         }
 
+        [Fact]
+        public void GetRecurringJobs_WithGivenIdentifiers_QueriesForCorrespondingJobs()
+        {
+            // Act
+            var result = _connection.Object.GetRecurringJobs(new[] { "a", "b" });
+
+            // Assert
+            Assert.Equal(2, result.Count);
+            Assert.True(result[0].Removed);
+            Assert.True(result[1].Removed);
+
+            _connection.Verify(x => x.GetAllEntriesFromHash("recurring-job:a"), Times.Once);
+            _connection.Verify(x => x.GetAllEntriesFromHash("recurring-job:b"), Times.Once);
+        }
+
 	    [Fact]
 	    public void GetRecurringJobsWithNullDateTimeHashValues() 
 		{

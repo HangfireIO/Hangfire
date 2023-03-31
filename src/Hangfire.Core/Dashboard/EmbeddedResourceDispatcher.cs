@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -29,11 +28,10 @@ namespace Hangfire.Dashboard
 
         public EmbeddedResourceDispatcher(
             [NotNull] string contentType,
-            [NotNull] Assembly assembly, 
-            string resourceName)
+            [CanBeNull] Assembly assembly, 
+            [CanBeNull] string resourceName)
         {
             if (contentType == null) throw new ArgumentNullException(nameof(contentType));
-            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
             
             _assembly = assembly;
             _resourceName = resourceName;

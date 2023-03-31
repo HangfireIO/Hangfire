@@ -1,7 +1,7 @@
 ﻿extern alias ReferencedDapper;
 
 using System;
-using System.Data.SqlClient;
+using System.Data.Common;
 using System.Linq;
 using System.Threading;
 using ReferencedDapper::Dapper;
@@ -35,63 +35,68 @@ namespace Hangfire.SqlServer.Tests
             Assert.Equal("options", exception.ParamName);
         }
 
-        [Fact, CleanDatabase]
-        public void Dequeue_ShouldThrowAnException_WhenQueuesCollectionIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_ShouldThrowAnException_WhenQueuesCollectionIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
-                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: null);
 
                 var exception = Assert.Throws<ArgumentNullException>(
                     () => queue.Dequeue(null, CreateTimingOutCancellationToken()));
 
                 Assert.Equal("queues", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Dequeue_ShouldThrowAnException_WhenQueuesCollectionIsEmpty()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_ShouldThrowAnException_WhenQueuesCollectionIsEmpty(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
-                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: null);
 
                 var exception = Assert.Throws<ArgumentException>(
                     () => queue.Dequeue(new string[0], CreateTimingOutCancellationToken()));
 
                 Assert.Equal("queues", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact]
-        public void Dequeue_ThrowsOperationCanceled_WhenCancellationTokenIsSetAtTheBeginning()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_ThrowsOperationCanceled_WhenCancellationTokenIsSetAtTheBeginning(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 var cts = new CancellationTokenSource();
                 cts.Cancel();
-                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: null);
 
                 Assert.Throws<OperationCanceledException>(
                     () => queue.Dequeue(DefaultQueues, cts.Token));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Dequeue_ShouldWaitIndefinitely_WhenThereAreNoJobs()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_ShouldWaitIndefinitely_WhenThereAreNoJobs(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 var cts = new CancellationTokenSource(200);
-                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: null);
 
                 Assert.Throws<OperationCanceledException>(
                     () => queue.Dequeue(DefaultQueues, cts.Token));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Dequeue_ShouldFetchAJob_FromTheSpecifiedQueue()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_ShouldFetchAJob_FromTheSpecifiedQueue(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].JobQueue (JobId, Queue)
@@ -105,21 +110,23 @@ select scope_identity() as Id;";
                 var id = (int)connection.Query(
                     arrangeSql,
                     new { jobId = 1, queue = "default" }).Single().Id;
-                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: null);
 
                 // Act
-                var payload = (SqlServerTransactionJob)queue.Dequeue(
+                using (var payload = (SqlServerTransactionJob) queue.Dequeue(
                     DefaultQueues,
-                    CreateTimingOutCancellationToken());
-
-                // Assert
-                Assert.Equal("1", payload.JobId);
-                Assert.Equal("default", payload.Queue);
-            });
+                    CreateTimingOutCancellationToken()))
+                {
+                    // Assert
+                    Assert.Equal("1", payload.JobId);
+                    Assert.Equal("default", payload.Queue);
+                }
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Dequeue_FetchesAJob_WhenJobIdIsLongValue()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_FetchesAJob_WhenJobIdIsLongValue(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].JobQueue (JobId, Queue)
@@ -133,20 +140,22 @@ select scope_identity() as Id;";
                 var id = (int)connection.Query(
                     arrangeSql,
                     new { jobId = int.MaxValue + 1L, queue = "default" }).Single().Id;
-                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: null);
 
                 // Act
-                var payload = (SqlServerTransactionJob)queue.Dequeue(
+                using (var payload = (SqlServerTransactionJob) queue.Dequeue(
                     DefaultQueues,
-                    CreateTimingOutCancellationToken());
-
-                // Assert
-                Assert.Equal((int.MaxValue + 1L).ToString(), payload.JobId);
-            });
+                    CreateTimingOutCancellationToken()))
+                {
+                    // Assert
+                    Assert.Equal((int.MaxValue + 1L).ToString(), payload.JobId);
+                }
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Dequeue_ShouldDeleteAJob()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_ShouldDeleteAJob(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
@@ -160,23 +169,28 @@ values (scope_identity(), @queue)";
                 connection.Execute(
                     arrangeSql,
                     new { invocationData = "", arguments = "", queue = "default" });
-                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: null);
 
                 // Act
-                var payload = queue.Dequeue(
+                using (var payload = queue.Dequeue(
                     DefaultQueues,
-                    CreateTimingOutCancellationToken());
+                    CreateTimingOutCancellationToken()))
+                {
+                    // Assert
+                    Assert.NotNull(payload);
 
-                // Assert
-                Assert.NotNull(payload);
-
-                var jobInQueue = connection.Query($"select * from [{Constants.DefaultSchema}].JobQueue").SingleOrDefault();
-                Assert.Null(jobInQueue);
-            });
+                    UseConnection(connection2 =>
+                    {
+                        var jobInQueue = connection2.Query($"select * from [{Constants.DefaultSchema}].JobQueue with (readpast)").SingleOrDefault();
+                        Assert.Null(jobInQueue);
+                    }, useMicrosoftDataSqlClient);
+                }
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Dequeue_ShouldFetchTimedOutJobs_FromTheSpecifiedQueue()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_ShouldFetchTimedOutJobs_FromTheSpecifiedQueue(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
@@ -196,20 +210,22 @@ values (scope_identity(), @queue, @fetchedAt)";
                         invocationData = "",
                         arguments = ""
                     });
-                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: null);
 
                 // Act
-                var payload = queue.Dequeue(
+                using (var payload = queue.Dequeue(
                     DefaultQueues,
-                    CreateTimingOutCancellationToken());
-
-                // Assert
-                Assert.NotEmpty(payload.JobId);
-            });
+                    CreateTimingOutCancellationToken()))
+                {
+                    // Assert
+                    Assert.NotEmpty(payload.JobId);
+                }
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Dequeue_ShouldSetFetchedAt_OnlyForTheFetchedJob()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_ShouldSetFetchedAt_OnlyForTheFetchedJob(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
@@ -227,24 +243,29 @@ values (scope_identity(), @queue)";
                         new { queue = "default", invocationData = "", arguments = "" },
                         new { queue = "default", invocationData = "", arguments = "" }
                     });
-                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: null);
 
                 // Act
-                var payload = queue.Dequeue(
+                using (var payload = queue.Dequeue(
                     DefaultQueues,
-                    CreateTimingOutCancellationToken());
+                    CreateTimingOutCancellationToken()))
+                {
+                    // Assert
+                    UseConnection(connection2 =>
+                    {
+                        var otherJobFetchedAt = connection2.Query<DateTime?>(
+                            $"select FetchedAt from [{Constants.DefaultSchema}].JobQueue with (readpast) where JobId != @id",
+                            new { id = payload.JobId }).Single();
 
-                // Assert
-                var otherJobFetchedAt = connection.Query<DateTime?>(
-                    $"select FetchedAt from [{Constants.DefaultSchema}].JobQueue where JobId != @id",
-                    new { id = payload.JobId }).Single();
-
-                Assert.Null(otherJobFetchedAt);
-            });
+                        Assert.Null(otherJobFetchedAt);
+                    }, useMicrosoftDataSqlClient);
+                }
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Dequeue_ShouldFetchJobs_OnlyFromSpecifiedQueues()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_ShouldFetchJobs_OnlyFromSpecifiedQueues(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
@@ -254,7 +275,7 @@ values (scope_identity(), @queue)";
 
             UseConnection(connection =>
             {
-                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: null);
 
                 connection.Execute(
                     arrangeSql,
@@ -264,11 +285,12 @@ values (scope_identity(), @queue)";
                     () => queue.Dequeue(
                         DefaultQueues,
                         CreateTimingOutCancellationToken()));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Dequeue_ShouldFetchJobs_FromMultipleQueues()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_ShouldFetchJobs_FromMultipleQueues(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
@@ -286,82 +308,91 @@ values (scope_identity(), @queue)";
                         new { queue = "critical", invocationData = "", arguments = "" }
                     });
 
-                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: null);
 
-                var critical = (SqlServerTransactionJob)queue.Dequeue(
+                using (var critical = (SqlServerTransactionJob) queue.Dequeue(
                     new[] { "critical", "default" },
-                    CreateTimingOutCancellationToken());
+                    CreateTimingOutCancellationToken()))
+                {
+                    Assert.NotNull(critical.JobId);
+                    Assert.Equal("critical", critical.Queue);
+                    critical.RemoveFromQueue();
+                }
 
-                Assert.NotNull(critical.JobId);
-                Assert.Equal("critical", critical.Queue);
-
-                var @default = (SqlServerTransactionJob)queue.Dequeue(
+                using (var @default = (SqlServerTransactionJob) queue.Dequeue(
                     new[] { "critical", "default" },
-                    CreateTimingOutCancellationToken());
-
-                Assert.NotNull(@default.JobId);
-                Assert.Equal("default", @default.Queue);
-            });
+                    CreateTimingOutCancellationToken()))
+                {
+                    Assert.NotNull(@default.JobId);
+                    Assert.Equal("default", @default.Queue);
+                    @default.RemoveFromQueue();
+                }
+            }, useMicrosoftDataSqlClient);
         }
 
         //---
-        [Fact, CleanDatabase]
-        public void Dequeue_InvisibilityTimeout_ShouldThrowAnException_WhenQueuesCollectionIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_InvisibilityTimeout_ShouldThrowAnException_WhenQueuesCollectionIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
-                var queue = CreateJobQueue(connection, invisibilityTimeout: DefaultTimeout);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: DefaultTimeout);
 
                 var exception = Assert.Throws<ArgumentNullException>(
                     () => queue.Dequeue(null, CreateTimingOutCancellationToken()));
 
                 Assert.Equal("queues", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Dequeue_InvisibilityTimeout_ShouldThrowAnException_WhenQueuesCollectionIsEmpty()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_InvisibilityTimeout_ShouldThrowAnException_WhenQueuesCollectionIsEmpty(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
-                var queue = CreateJobQueue(connection, invisibilityTimeout: DefaultTimeout);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: DefaultTimeout);
 
                 var exception = Assert.Throws<ArgumentException>(
                     () => queue.Dequeue(new string[0], CreateTimingOutCancellationToken()));
 
                 Assert.Equal("queues", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact]
-        public void Dequeue_InvisibilityTimeout_ThrowsOperationCanceled_WhenCancellationTokenIsSetAtTheBeginning()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_InvisibilityTimeout_ThrowsOperationCanceled_WhenCancellationTokenIsSetAtTheBeginning(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 var cts = new CancellationTokenSource();
                 cts.Cancel();
-                var queue = CreateJobQueue(connection, invisibilityTimeout: DefaultTimeout);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: DefaultTimeout);
 
                 Assert.Throws<OperationCanceledException>(
                     () => queue.Dequeue(DefaultQueues, cts.Token));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Dequeue_InvisibilityTimeout_ShouldWaitIndefinitely_WhenThereAreNoJobs()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_InvisibilityTimeout_ShouldWaitIndefinitely_WhenThereAreNoJobs(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
                 var cts = new CancellationTokenSource(200);
-                var queue = CreateJobQueue(connection, invisibilityTimeout: DefaultTimeout);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: DefaultTimeout);
 
                 Assert.Throws<OperationCanceledException>(
                     () => queue.Dequeue(DefaultQueues, cts.Token));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Dequeue_InvisibilityTimeout_ShouldFetchAJob_FromTheSpecifiedQueue()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_InvisibilityTimeout_ShouldFetchAJob_FromTheSpecifiedQueue(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].JobQueue (JobId, Queue)
@@ -374,7 +405,7 @@ select scope_identity() as Id;";
                 var id = (int)connection.Query(
                     arrangeSql,
                     new { jobId = 1, queue = "default" }).Single().Id;
-                var queue = CreateJobQueue(connection, invisibilityTimeout: DefaultTimeout);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: DefaultTimeout);
 
                 // Act
                 var payload = (SqlServerTimeoutJob)queue.Dequeue(
@@ -385,11 +416,12 @@ select scope_identity() as Id;";
                 Assert.Equal(id, payload.Id);
                 Assert.Equal("1", payload.JobId);
                 Assert.Equal("default", payload.Queue);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Dequeue_InvisibilityTimeout_ShouldLeaveJobInTheQueue_ButSetItsFetchedAtValue()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_InvisibilityTimeout_ShouldLeaveJobInTheQueue_ButSetItsFetchedAtValue(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
@@ -403,7 +435,7 @@ values (scope_identity(), @queue)";
                 connection.Execute(
                     arrangeSql,
                     new { invocationData = "", arguments = "", queue = "default" });
-                var queue = CreateJobQueue(connection, invisibilityTimeout: DefaultTimeout);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: DefaultTimeout);
 
                 // Act
                 var payload = queue.Dequeue(
@@ -419,11 +451,12 @@ values (scope_identity(), @queue)";
 
                 Assert.NotNull(fetchedAt);
                 Assert.True(fetchedAt > DateTime.UtcNow.AddMinutes(-1));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Dequeue_InvisibilityTimeout_ShouldFetchATimedOutJobs_FromTheSpecifiedQueue()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_InvisibilityTimeout_ShouldFetchATimedOutJobs_FromTheSpecifiedQueue(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
@@ -443,7 +476,7 @@ values (scope_identity(), @queue, @fetchedAt)";
                         invocationData = "",
                         arguments = ""
                     });
-                var queue = CreateJobQueue(connection, invisibilityTimeout: DefaultTimeout);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: DefaultTimeout);
 
                 // Act
                 var payload = queue.Dequeue(
@@ -452,11 +485,12 @@ values (scope_identity(), @queue, @fetchedAt)";
 
                 // Assert
                 Assert.NotEmpty(payload.JobId);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Dequeue_InvisibilityTimeout_ShouldSetFetchedAt_OnlyForTheFetchedJob()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_InvisibilityTimeout_ShouldSetFetchedAt_OnlyForTheFetchedJob(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
@@ -474,7 +508,7 @@ values (scope_identity(), @queue)";
                         new { queue = "default", invocationData = "", arguments = "" },
                         new { queue = "default", invocationData = "", arguments = "" }
                     });
-                var queue = CreateJobQueue(connection, invisibilityTimeout: DefaultTimeout);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: DefaultTimeout);
 
                 // Act
                 var payload = queue.Dequeue(
@@ -487,11 +521,12 @@ values (scope_identity(), @queue)";
                     new { id = payload.JobId }).Single();
 
                 Assert.Null(otherJobFetchedAt);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Dequeue_InvisibilityTimeout_ShouldFetchJobs_OnlyFromSpecifiedQueues()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_InvisibilityTimeout_ShouldFetchJobs_OnlyFromSpecifiedQueues(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
@@ -501,7 +536,7 @@ values (scope_identity(), @queue)";
 
             UseConnection(connection =>
             {
-                var queue = CreateJobQueue(connection, invisibilityTimeout: DefaultTimeout);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: DefaultTimeout);
 
                 connection.Execute(
                     arrangeSql,
@@ -511,11 +546,12 @@ values (scope_identity(), @queue)";
                     () => queue.Dequeue(
                         DefaultQueues,
                         CreateTimingOutCancellationToken()));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Dequeue_InvisibilityTimeout_ShouldFetchJobs_FromMultipleQueues()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dequeue_InvisibilityTimeout_ShouldFetchJobs_FromMultipleQueues(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
@@ -533,7 +569,7 @@ values (scope_identity(), @queue)";
                         new { queue = "critical", invocationData = "", arguments = "" }
                     });
 
-                var queue = CreateJobQueue(connection, invisibilityTimeout: DefaultTimeout);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: DefaultTimeout);
 
                 var critical = (SqlServerTimeoutJob)queue.Dequeue(
                     new[] { "critical", "default" },
@@ -548,15 +584,16 @@ values (scope_identity(), @queue)";
 
                 Assert.NotNull(@default.JobId);
                 Assert.Equal("default", @default.Queue);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Enqueue_AddsAJobToTheQueue()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Enqueue_AddsAJobToTheQueue(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
-                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: null);
 
 #if NETCOREAPP
                 using (var transaction = connection.BeginTransaction())
@@ -572,15 +609,16 @@ values (scope_identity(), @queue)";
                 Assert.Equal("1", record.JobId.ToString());
                 Assert.Equal("default", record.Queue);
                 Assert.Null(record.FetchedAt);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Enqueue_AddsAJob_WhenIdIsLongValue()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Enqueue_AddsAJob_WhenIdIsLongValue(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
-                var queue = CreateJobQueue(connection, invisibilityTimeout: null);
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: null);
                 
 #if NETCOREAPP
                 using (var transaction = connection.BeginTransaction())
@@ -594,7 +632,7 @@ values (scope_identity(), @queue)";
 
                 var record = connection.Query($"select * from [{Constants.DefaultSchema}].JobQueue").Single();
                 Assert.Equal((int.MaxValue + 1L).ToString(), record.JobId.ToString());
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         private static CancellationToken CreateTimingOutCancellationToken()
@@ -605,15 +643,15 @@ values (scope_identity(), @queue)";
 
         public static void Sample(string arg1, string arg2) { }
 
-        private static SqlServerJobQueue CreateJobQueue(SqlConnection connection, TimeSpan? invisibilityTimeout)
+        private static SqlServerJobQueue CreateJobQueue(bool useMicrosoftDataSqlClient, TimeSpan? invisibilityTimeout)
         {
-            var storage = new SqlServerStorage(connection);
+            var storage = new SqlServerStorage(() => ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient));
             return new SqlServerJobQueue(storage, new SqlServerStorageOptions { SlidingInvisibilityTimeout = invisibilityTimeout });
         }
 
-        private static void UseConnection(Action<SqlConnection> action)
+        private static void UseConnection(Action<DbConnection> action, bool useMicrosoftDataSqlClient)
         {
-            using (var connection = ConnectionUtils.CreateConnection())
+            using (var connection = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient))
             {
                 action(connection);
             }

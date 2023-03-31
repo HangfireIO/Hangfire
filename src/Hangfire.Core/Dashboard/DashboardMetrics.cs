@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2015 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2015 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -84,15 +83,22 @@ namespace Hangfire.Dashboard
             page =>
             {
                 long retryCount;
-                using (var connection = page.Storage.GetConnection())
-                {
-                    var storageConnection = connection as JobStorageConnection;
-                    if (storageConnection == null)
-                    {
-                        return null;
-                    }
 
-                    retryCount = storageConnection.GetSetCount("retries");
+                if (page.Statistics.Retries.HasValue)
+                {
+                    retryCount = page.Statistics.Retries.Value;
+                }
+                else
+                {
+                    using (var connection = page.Storage.GetReadOnlyConnection())
+                    {
+                        if (!(connection is JobStorageConnection storageConnection))
+                        {
+                            return null;
+                        }
+
+                        retryCount = storageConnection.GetSetCount("retries");
+                    }
                 }
 
                 return new Metric(retryCount)
@@ -105,9 +111,9 @@ namespace Hangfire.Dashboard
             "enqueued:count-or-null",
             "Metrics_EnqueuedCountOrNull",
             page => page.Statistics.Enqueued > 0 || page.Statistics.Failed == 0
-                ? new Metric(page.Statistics.Enqueued)
+                ? new Metric(page.Statistics.Enqueued > 0 ? page.Statistics.Enqueued : page.Statistics.Scheduled)
                 {
-                    Style = page.Statistics.Enqueued > 0 ? MetricStyle.Info : MetricStyle.Default,
+                    Style = page.Statistics.Enqueued + page.Statistics.Scheduled > 0 ? MetricStyle.Info : MetricStyle.Default,
                     Highlighted = page.Statistics.Enqueued > 0 && page.Statistics.Failed == 0
                 }
                 : null);
@@ -176,12 +182,18 @@ namespace Hangfire.Dashboard
             {
                 long awaitingCount = -1;
 
-                using (var connection = page.Storage.GetConnection())
+                if (page.Statistics.Awaiting.HasValue)
                 {
-                    var storageConnection = connection as JobStorageConnection;
-                    if (storageConnection != null)
+                    awaitingCount = page.Statistics.Awaiting.Value;
+                }
+                else
+                {
+                    using (var connection = page.Storage.GetReadOnlyConnection())
                     {
-                        awaitingCount = storageConnection.GetSetCount("awaiting");
+                        if (connection is JobStorageConnection storageConnection)
+                        {
+                            awaitingCount = storageConnection.GetSetCount("awaiting");
+                        }
                     }
                 }
 

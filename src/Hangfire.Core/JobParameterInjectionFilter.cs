@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright © 2019 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2019 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -18,11 +17,14 @@ using System;
 using System.Reflection;
 using Hangfire.Common;
 using Hangfire.Server;
+using Hangfire.States;
 
 namespace Hangfire
 {
     public class JobParameterInjectionFilter : IServerFilter
     {
+        internal static readonly string DefaultException = "OCE";
+
         public void OnPerforming(PerformingContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
@@ -40,12 +42,24 @@ namespace Hangfire
                 var parameterType = parameters[index].ParameterType;
                 var parameterName = attribute.ParameterName;
 
-                if (String.IsNullOrEmpty(parameterName) || argumentsArray[index] != null) continue;
+                if (String.IsNullOrEmpty(parameterName)) continue;
 
                 var serialized = context.Connection.GetJobParameter(context.BackgroundJob.Id, parameterName);
-                if (serialized == null) continue;
+                if (serialized != null)
+                {
+                    object deserialized;
 
-                argumentsArray[index] = SerializationHelper.Deserialize(serialized, parameterType, SerializationOption.User);
+                    if (parameterType == typeof(ExceptionInfo) && DefaultException.Equals(serialized, StringComparison.Ordinal))
+                    {
+                        deserialized = new ExceptionInfo(DeletedState.DefaultException);
+                    }
+                    else
+                    {
+                        deserialized = SerializationHelper.Deserialize(serialized, parameterType, SerializationOption.User);
+                    }
+
+                    argumentsArray[index] = deserialized;
+                }
             }
         }
 

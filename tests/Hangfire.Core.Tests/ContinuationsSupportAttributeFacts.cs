@@ -25,6 +25,7 @@ namespace Hangfire.Core.Tests
 
             var continuations = SerializationHelper.Deserialize<List<Continuation>>(continuationsJson);
 
+            Assert.NotNull(continuations);
             Assert.Equal(2, continuations.Count);
             Assert.Equal("1", continuations[0].JobId);
             Assert.Equal(JobContinuationOptions.OnAnyFinishedState, continuations[0].Options);

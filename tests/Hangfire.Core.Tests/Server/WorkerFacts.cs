@@ -175,7 +175,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_ProcessesOnlyJobs_InEnqueuedAndProcessingState()
+        public void Execute_ProcessesOnlyJobs_InEnqueued_Scheduled_AndProcessingStates()
         {
             var worker = CreateWorker();
 
@@ -184,7 +184,9 @@ namespace Hangfire.Core.Tests.Server
             _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.NewState is ProcessingState &&
                 ctx.ExpectedStates.ElementAt(0) == EnqueuedState.StateName &&
-                ctx.ExpectedStates.ElementAt(1) == ProcessingState.StateName)));
+                ctx.ExpectedStates.ElementAt(1) == ScheduledState.StateName &&
+                ctx.ExpectedStates.ElementAt(2) == ProcessingState.StateName &&
+                ctx.ExpectedStates.Count() == 3)));
         }
 
         [Fact]
@@ -299,6 +301,20 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void Execute_PassesCustomData_BetweenContexts_OnSucceededStateTransition()
+        {
+            var worker = CreateWorker();
+            _performer.Setup(x => x.Perform(It.IsNotNull<PerformContext>()))
+                .Callback<PerformContext>(ctx => ctx.Items.Add("Key", "Value"));
+
+            worker.Execute(_context.Object);
+
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.NewState is SucceededState &&
+                ctx.CustomData["Key"].Equals("Value"))));
+        }
+
+        [Fact]
         public void Execute_MovesJob_ToFailedState_IfThereWasInternalException()
         {
             // Arrange
@@ -318,6 +334,21 @@ namespace Hangfire.Core.Tests.Server
                 ctx.NewState is FailedState &&
                 ((FailedState) ctx.NewState).Exception == exception &&
                 ctx.DisableFilters == false)));
+        }
+
+        [Fact]
+        public void Execute_DoesNotPassCustomData_BetweenContexts_OnFailedStateTransition()
+        {
+            var worker = CreateWorker();
+            _performer.Setup(x => x.Perform(It.IsNotNull<PerformContext>()))
+                .Callback<PerformContext>(ctx => ctx.Items.Add("Key", "Value"))
+                .Throws<Exception>();
+
+            worker.Execute(_context.Object);
+
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.NewState is FailedState &&
+                ctx.CustomData == null)));
         }
 
         [Fact]

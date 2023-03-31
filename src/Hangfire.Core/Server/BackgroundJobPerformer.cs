@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -26,6 +25,8 @@ namespace Hangfire.Server
 {
     public class BackgroundJobPerformer : IBackgroundJobPerformer
     {
+        internal static readonly string ContextCanceledKey = "X_HF_Canceled";
+
         private readonly IJobFilterProvider _filterProvider;
         private readonly IBackgroundJobPerformer _innerPerformer;
 
@@ -73,13 +74,14 @@ namespace Hangfire.Server
 
             try
             {
+                context.Performer = this;
                 return PerformJobWithFilters(context, filterInfo.ServerFilters);
             }
             catch (JobAbortedException)
             {
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 // TODO: Catch only JobPerformanceException, and pass InnerException to filters in 2.0.0.
 
@@ -95,6 +97,10 @@ namespace Hangfire.Server
                 {
                     throw;
                 }
+            }
+            finally
+            {
+                context.Performer = null;
             }
 
             return null;
@@ -136,16 +142,21 @@ namespace Hangfire.Server
                     InvokeOnPerforming,
                     $"OnPerforming for {preContext.BackgroundJob.Id}");
             }
-            catch (Exception filterException)
+            catch (Exception filterException) when (filterException.IsCatchableExceptionType())
             {
                 CoreBackgroundJobPerformer.HandleJobPerformanceException(
                     filterException,
-                    preContext.CancellationToken);
+                    preContext.CancellationToken, preContext.BackgroundJob);
                 throw;
             }
             
             if (preContext.Canceled)
             {
+                if (!preContext.Items.ContainsKey(ContextCanceledKey))
+                {
+                    preContext.Items.Add(ContextCanceledKey, filter.GetType().Name);
+                }
+                
                 return new PerformedContext(
                     preContext, null, true, null);
             }
@@ -156,7 +167,7 @@ namespace Hangfire.Server
             {
                 postContext = continuation();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 wasError = true;
                 postContext = new PerformedContext(
@@ -169,11 +180,11 @@ namespace Hangfire.Server
                         InvokeOnPerformed,
                         $"OnPerformed for {postContext.BackgroundJob.Id}");
                 }
-                catch (Exception filterException)
+                catch (Exception filterException) when (filterException.IsCatchableExceptionType())
                 {
                     CoreBackgroundJobPerformer.HandleJobPerformanceException(
                         filterException,
-                        postContext.CancellationToken);
+                        postContext.CancellationToken, postContext.BackgroundJob);
 
                     throw;
                 }
@@ -193,11 +204,11 @@ namespace Hangfire.Server
                         InvokeOnPerformed,
                         $"OnPerformed for {postContext.BackgroundJob.Id}");
                 }
-                catch (Exception filterException)
+                catch (Exception filterException) when (filterException.IsCatchableExceptionType())
                 {
                     CoreBackgroundJobPerformer.HandleJobPerformanceException(
                         filterException,
-                        postContext.CancellationToken);
+                        postContext.CancellationToken, postContext.BackgroundJob);
 
                     throw;
                 }

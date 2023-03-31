@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -54,7 +53,7 @@ namespace Hangfire.Dashboard
 
                 GetDisplayName = Expression.Lambda<Func<object, string>>(Expression.Call(converted, "get_DisplayName", null), p).Compile();
             }
-            catch
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 // Ignoring
             }
@@ -65,6 +64,8 @@ namespace Hangfire.Dashboard
             if (page == null) throw new ArgumentNullException(nameof(page));
             _page = page;
         }
+
+        public RazorPage Page => _page;
 
         public NonEscapedString Breadcrumbs(string title, [NotNull] IDictionary<string, string> items)
         {
@@ -128,6 +129,11 @@ namespace Hangfire.Dashboard
 
         public string JobName(Job job)
         {
+            return JobName(job, includeQueue: true);
+        }
+
+        public string JobName(Job job, bool includeQueue)
+        {
             if (job == null)
             {
                 return Strings.Common_CannotFindTargetMethod;
@@ -140,7 +146,7 @@ namespace Hangfire.Dashboard
                 {
                     return jobDisplayNameAttribute.Format(_page.Context, job);
                 }
-                catch (Exception)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     return jobDisplayNameAttribute.DisplayName;
                 }
@@ -169,16 +175,21 @@ namespace Hangfire.Dashboard
                 {
                     return displayNameProvider(_page.Context, job);
                 }
-                catch
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     // Ignoring exceptions
                 }
             }
 
-            return job.ToString();
+            return job.ToString(includeQueue);
         }
 
         public NonEscapedString StateLabel(string stateName)
+        {
+            return StateLabel(stateName, stateName);
+        }
+
+        public NonEscapedString StateLabel(string stateName, string text, bool hover = false)
         {
             if (String.IsNullOrWhiteSpace(stateName))
             {
@@ -186,7 +197,15 @@ namespace Hangfire.Dashboard
             }
 
             var style = $"background-color: {JobHistoryRenderer.GetForegroundStateColor(stateName)};";
-            return Raw($"<span class=\"label label-default\" style=\"{HtmlEncode(style)}\">{HtmlEncode(stateName)}</span>");
+            var cssSuffix = JobHistoryRenderer.GetStateCssSuffix(stateName);
+            var cssHover = hover ? "label-hover" : null;
+
+            if (cssSuffix != null)
+            {
+                return Raw($"<span class=\"label label-default {cssHover} label-state-{HtmlEncode(cssSuffix)}\">{HtmlEncode(text)}</span>");
+            }
+
+            return Raw($"<span class=\"label label-default {cssHover}\" style=\"{HtmlEncode(style)}\">{HtmlEncode(text)}</span>");
         }
 
         public NonEscapedString JobIdLink(string jobId)
@@ -196,7 +215,12 @@ namespace Hangfire.Dashboard
 
         public NonEscapedString JobNameLink(string jobId, Job job)
         {
-            return Raw($"<a class=\"job-method\" href=\"{HtmlEncode(_page.Url.JobDetails(jobId))}\">{HtmlEncode(JobName(job))}</a>");
+            return JobNameLink(jobId, job, includeQueue: true);
+        }
+
+        public NonEscapedString JobNameLink(string jobId, Job job, bool includeQueue)
+        {
+            return Raw($"<a class=\"job-method\" href=\"{HtmlEncode(_page.Url.JobDetails(jobId))}\">{HtmlEncode(JobName(job, includeQueue))}</a>");
         }
 
         public NonEscapedString RelativeTime(DateTime value)

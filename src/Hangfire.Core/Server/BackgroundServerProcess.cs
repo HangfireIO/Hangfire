@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2017 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -48,7 +47,10 @@ namespace Hangfire.Server
 
             var builders = new List<IBackgroundProcessDispatcherBuilder>();
             builders.AddRange(GetRequiredProcesses());
-            builders.AddRange(GetStorageComponents());
+            if (!options.ExcludeStorageProcesses)
+            {
+                builders.AddRange(GetStorageComponents());
+            }
             builders.AddRange(dispatcherBuilders);
 
             _dispatcherBuilders = builders.ToArray();
@@ -125,7 +127,11 @@ namespace Hangfire.Server
         private IBackgroundDispatcher CreateHeartbeatProcess(BackgroundServerContext context, Action requestRestart)
         {
             return new ServerHeartbeatProcess(_options.HeartbeatInterval, _options.ServerTimeout, requestRestart)
-                .UseBackgroundPool(threadCount: 1)
+                .UseBackgroundPool(threadCount: 1
+#if !NETSTANDARD1_3
+                    , thread => { thread.Priority = ThreadPriority.AboveNormal; }
+#endif
+                )
                 .Create(context, _options);
         }
 
@@ -139,7 +145,7 @@ namespace Hangfire.Server
         {
             return _storage.GetComponents().Select(component => new ServerProcessDispatcherBuilder(
                 component, 
-                threadStart => BackgroundProcessExtensions.DefaultThreadFactory(1, component.GetType().Name, threadStart)));
+                threadStart => BackgroundProcessExtensions.DefaultThreadFactory(1, component.GetType().Name, threadStart, null)));
         }
 
         private string GetServerId()
@@ -196,7 +202,7 @@ namespace Hangfire.Server
                 _logger.Info($"{GetServerTemplate(context.ServerId)} successfully reported itself as stopped in {stopwatch.Elapsed.TotalMilliseconds} ms");
                 _logger.Info($"{GetServerTemplate(context.ServerId)} has been stopped in total {stoppedAt?.Elapsed.TotalMilliseconds ?? 0} ms");
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 _logger.WarnException($"{GetServerTemplate(context.ServerId)} there was an exception, server may not be removed", ex);
             }
@@ -297,7 +303,7 @@ namespace Hangfire.Server
                     name = $"{split[0]}:{split[1]}:{split[2].Substring(0, 8)}";
                 }
             }
-            catch
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 // ignored
             }

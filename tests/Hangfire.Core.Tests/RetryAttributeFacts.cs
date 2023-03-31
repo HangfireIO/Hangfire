@@ -119,9 +119,9 @@ namespace Hangfire.Core.Tests
                 }
             };
             
-            var thrownExcetption = Assert.Throws<Exception>(() => filter.OnStateElection(_context.Object));
+            var thrownException = Assert.Throws<Exception>(() => filter.OnStateElection(_context.Object));
 
-            Assert.Equal(exception, thrownExcetption);
+            Assert.Equal(exception, thrownException);
         }
 
         [Fact]

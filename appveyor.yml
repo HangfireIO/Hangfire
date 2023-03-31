@@ -6,10 +6,12 @@
 #   - All section names are case-sensitive.
 #   - Section names should be unique on each level.
 
-# Don't edit manually! Use `build.bat version` command instead!
-version: 1.7.11-build-0{build}
+# Please don't edit it manually, use the `build.bat version` command instead.
+version: 1.8.0-build-0{build}
 
-os: Visual Studio 2019
+image:
+  - Visual Studio 2022
+  - Ubuntu
 
 #---------------------------------#
 #    environment configuration    #
@@ -18,18 +20,15 @@ os: Visual Studio 2019
 # environment variables
 environment:
   BuildEnvironment: appveyor
-  Hangfire_SqlServer_ConnectionStringTemplate: Server=.\SQL2017;Database={0};User Id=sa;Password=Password12!
-  COVERALLS_REPO_TOKEN: 
-    secure: oE4uB475V9hPzKmm+ZRP+1BacnMFOE98a/2tVeFieYJi5BbYG6X3VM+p6vKIQZdd
-  COVERITY_TOKEN:
-    secure: r3yBqxgALySnCK9W6uiStqoadsqYtrWQolzxGDVKF74=
-  COVERITY_EMAIL:
-    secure: wf51HXCiUYxuTe+eo3uQOxqyptSLrH4IEqq0958Rmx8=
+  Hangfire_SqlServer_ConnectionStringTemplate: Server=.\SQL2017;Database={0};User Id=sa;Password=Password12!;Encrypt=False
+  DOCKER_USERNAME:
+    secure: BDjid/SqKs9YCA39j55dIg==
+  DOCKER_PASSWORD:
+    secure: 5QtoskttMBDkXfFyFZSLhZIlUfsDUDgkCS9jy7rUM6ROPeRytpzEdkIXA5UNNV9K
 
 # enable service required for tests
 services:
   - mssql2017
-  - msmq
 
 pull_requests:
   do_not_increment_build_number: true
@@ -40,9 +39,11 @@ shallow_clone: true
 #       build configuration       #
 #---------------------------------#
 
-# to run your custom scripts instead of automatic MSBuild
+# Installing MSMQ manually to avoid "Cannot initialize 'msmq' service handler" error
 build_script:
-  - build.bat ci
+  - cmd: powershell Import-Module ServerManager; Add-WindowsFeature MSMQ; net start msmq
+  - cmd: ./build.bat ci
+  - sh: chmod +x build.sh; ./build.sh
 
 #---------------------------------#
 #       tests configuration       #
@@ -63,17 +64,10 @@ artifacts:
 #---------------------------------#
 
 deploy:
-  - provider: GitHub
-    auth_token:
-      secure: Kx+tJBMfq/OK7sMpvQDdigFOIIfzYkVmIHxNQetanQdIA5Mb8zm/VhAkrId4x5zW
-    artifact: /.*\.zip/
-    draft: true
-    on:
-      appveyor_repo_tag: true
-
   - provider: NuGet
+    skip_symbols: true
     api_key: 
-      secure: 8BQmcR1hP9MoxvrmXJKMtlRyX6LI36H9ZTU8fSEetvzMGCl1PUlXKZRUGq+GVMja
+      secure: eMfWWcK9kTh3ADgxKEMIfF45qhJ1mcbHA8D/CghrGyxtPl92IoFGWrwxdiawEl/A
     on:
       appveyor_repo_tag: true
 
