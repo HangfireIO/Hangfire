@@ -594,5 +594,40 @@ where dbid = db_id(@name) and status != 'background'";
                     };
                 });
             });
+
+        public static readonly Func<string, string, string, DashboardMetric> PerformanceCounterDatabaseMetric = 
+            (string objectName, string counterName, string instanceName) => new DashboardMetric(
+            $"sqlserver:counter:{objectName}:{counterName}:{instanceName ?? "db"}",
+            counterName,
+            page =>
+            {
+                if (objectName == null) throw new ArgumentNullException(nameof(objectName));
+                if (counterName == null) throw new ArgumentNullException(nameof(counterName));
+
+                var sqlStorage = page.Storage as SqlServerStorage;
+                if (sqlStorage == null) return new Metric("???");
+
+                return sqlStorage.UseConnection(null, connection =>
+                {
+                    var sqlQuery = $@"SELECT cntr_value FROM sys.dm_os_performance_counters where object_name = @objectName and instance_name = @instanceName and counter_name = @counterName";
+                    long? value;
+
+                    try
+                    {
+                        value = connection.Query<long>(sqlQuery, new
+                        {
+                            objectName = objectName,
+                            instanceName = instanceName ?? connection.Database,
+                            counterName = counterName
+                        }).Single();
+                    }
+                    catch
+                    {
+                        value = null;
+                    }
+
+                    return value != null ? new Metric(value.Value) : new Metric("???");
+                });
+            });
     }
 }
