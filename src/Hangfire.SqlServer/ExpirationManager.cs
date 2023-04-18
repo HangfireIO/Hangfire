@@ -68,25 +68,10 @@ namespace Hangfire.SqlServer
 
             foreach (var table in ProcessedTables)
             {
-                _logger.Debug($"Removing outdated records from the '{table}' table...");
-
-                UseConnectionDistributedLock(_storage, connection =>
-                {
-                    int affected;
-
-                    do
-                    {
-                        affected = ExecuteNonQuery(
-                            connection,
-                            GetExpireQuery(_storage.SchemaName, table),
-                            numberOfRecordsInSinglePass,
-                            cancellationToken);
-
-                    } while (affected == numberOfRecordsInSinglePass);
-                });
-
-                _logger.Trace($"Outdated records removed from the '{table}' table.");
+                CleanupTable(GetExpireQuery(_storage.SchemaName, table), table, numberOfRecordsInSinglePass, cancellationToken);
             }
+
+            CleanupTable(GetStateCleanupQuery(_storage.SchemaName), "State", numberOfRecordsInSinglePass, cancellationToken);
 
             cancellationToken.Wait(_checkInterval);
         }
@@ -94,6 +79,27 @@ namespace Hangfire.SqlServer
         public override string ToString()
         {
             return GetType().ToString();
+        }
+
+        private void CleanupTable(string query, string table, int numberOfRecordsInSinglePass, CancellationToken cancellationToken)
+        {
+            _logger.Debug($"Removing outdated records from the '{table}' table...");
+
+            UseConnectionDistributedLock(_storage, connection =>
+            {
+                int affected;
+
+                do
+                {
+                    affected = ExecuteNonQuery(
+                        connection,
+                        query,
+                        numberOfRecordsInSinglePass,
+                        cancellationToken);
+                } while (affected == numberOfRecordsInSinglePass);
+            });
+
+            _logger.Trace($"Outdated records removed from the '{table}' table.");
         }
 
         private void UseConnectionDistributedLock(SqlServerStorage storage, Action<DbConnection> action)
@@ -136,6 +142,25 @@ set lock_timeout 1000;
 delete top (@count) from [{schemaName}].[{table}]
 where ExpireAt < @now
 option (loop join, optimize for (@count = 20000));";
+        }
+
+        private static string GetStateCleanupQuery(string schemaName)
+        {
+            // TODO: Make expiration condition configurable
+            return $@"
+set deadlock_priority low;
+set transaction isolation level read committed;
+set xact_abort on;
+set lock_timeout 1000;
+
+;with cte as (
+	select s.[JobId], s.[Id]
+	from [{schemaName}].[State] s
+	where s.[CreatedAt] < dateadd(day, -7, @now)
+	and exists (
+		select * from [{schemaName}].[Job] j with (forceseek)
+		where j.[Id] = s.[JobId] and j.[StateId] != s.[Id]))
+delete top(@count) from cte option (maxdop 1);";
         }
 
         private static int ExecuteNonQuery(

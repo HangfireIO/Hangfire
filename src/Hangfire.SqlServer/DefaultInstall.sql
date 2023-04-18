@@ -701,7 +701,7 @@ BEGIN
 	FROM sys.indexes AS i
 	INNER JOIN sys.tables AS o
 	ON i.[object_id] = o.[object_id]
-    WHERE i.is_primary_key = 0
+	WHERE i.is_primary_key = 0
 	AND i.index_id <> 0
 	AND o.is_ms_shipped = 0
 	AND SCHEMA_NAME(o.[schema_id]) = 'HangFire'
@@ -760,13 +760,22 @@ BEGIN
 	SET @CURRENT_SCHEMA_VERSION = 8;
 END
 
-/*IF @CURRENT_SCHEMA_VERSION = 8
+IF @CURRENT_SCHEMA_VERSION = 8
 BEGIN
 	PRINT 'Installing schema version 9';
 
-	 Insert migration here
+	CREATE NONCLUSTERED INDEX [IX_HangFire_State_CreatedAt] ON [HangFire].[State] ([CreatedAt] ASC)
 
 	SET @CURRENT_SCHEMA_VERSION = 9;
+END
+
+/*IF @CURRENT_SCHEMA_VERSION = 9
+BEGIN
+	PRINT 'Installing schema version 10';
+
+	 Insert migration here
+
+	SET @CURRENT_SCHEMA_VERSION = 10;
 END*/
 
 UPDATE [HangFire].[Schema] SET [Version] = @CURRENT_SCHEMA_VERSION
