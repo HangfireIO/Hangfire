@@ -29,10 +29,25 @@ namespace Hangfire
     {
         private readonly IBackgroundProcessingServer _server;
 
+#if NETSTANDARD2_1
+        public BackgroundProcessingServerHostedService([NotNull] IBackgroundProcessingServer server)
+            : this(server, null)
+        {
+        }
+
+        public BackgroundProcessingServerHostedService(
+            [NotNull] IBackgroundProcessingServer server,
+            [CanBeNull] IHostApplicationLifetime lifetime)
+        {
+            _server = server ?? throw new ArgumentNullException(nameof(server));
+            lifetime?.ApplicationStopping.Register(server.SendStop);
+        }
+#else
         public BackgroundProcessingServerHostedService([NotNull] IBackgroundProcessingServer server)
         {
             _server = server ?? throw new ArgumentNullException(nameof(server));
         }
+#endif
 
         public Task StartAsync(CancellationToken cancellationToken)
         {

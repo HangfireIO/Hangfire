@@ -222,7 +222,12 @@ namespace Hangfire
             if (implementationFactory == null) throw new ArgumentNullException(nameof(implementationFactory));
 
             services.AddTransient<IHostedService, BackgroundProcessingServerHostedService>(
-                provider => new BackgroundProcessingServerHostedService(implementationFactory(provider)));
+                provider => new BackgroundProcessingServerHostedService(
+                    implementationFactory(provider)
+#if NETSTANDARD2_1
+                    , provider.GetService<IHostApplicationLifetime>()
+#endif
+                    ));
 
             return services;
         }
