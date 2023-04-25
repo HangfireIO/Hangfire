@@ -16,7 +16,7 @@ namespace Hangfire.SqlServer.Tests
         [Fact]
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
-            Assert.Throws<ArgumentNullException>(() => new ExpirationManager(null, TimeSpan.Zero));
+            Assert.Throws<ArgumentNullException>(() => new ExpirationManager(null, TimeSpan.Zero, TimeSpan.FromTicks(1)));
         }
 
         [Theory, CleanDatabase]
@@ -110,6 +110,49 @@ values ('', '', getutcdate(), @expireAt)";
 
         [Theory, CleanDatabase]
         [InlineData(false), InlineData(true)]
+        public void Execute_Processes_StateTable_WhenOptionIsConfigured(bool useMicrosoftDataSqlClient)
+        {
+            using (var connection = CreateConnection(useMicrosoftDataSqlClient))
+            {
+                // Arrange
+                var now = DateTime.UtcNow;
+                var createSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, StateName, CreatedAt)
+values ('', '', '', getutcdate());
+declare @JobId bigint;
+set @JobId = scope_identity();
+insert into [{Constants.DefaultSchema}].State (JobId, Name, CreatedAt)
+values (@JobId, 'old-state-1', @createdAt1);
+insert into [{Constants.DefaultSchema}].State (JobId, Name, CreatedAt)
+values (@JobId, 'old-state-2', @createdAt2);
+insert into [{Constants.DefaultSchema}].State (JobId, Name, CreatedAt)
+values (@JobId, 'current-state', @createdAt3);
+declare @StateId bigint;
+set @StateId = scope_identity();
+update [{Constants.DefaultSchema}].Job set StateId = @StateId;
+select @JobId as Id;";
+
+                var jobId = connection
+                    .Query(createSql, new { createdAt1 = now.AddDays(-1), createdAt2 = now.AddMonths(-1), createdAt3 = now.AddMonths(-1) })
+                    .Single().Id;
+
+                var manager = CreateManager(useMicrosoftDataSqlClient, TimeSpan.FromDays(7));
+
+                // Act
+                manager.Execute(_cts.Token);
+
+                // Assert
+                var states = connection
+                    .Query<string>($"select [Name] from [{Constants.DefaultSchema}].State where JobId = @jobId order by Id", new { jobId })
+                    .ToList();
+                
+                Assert.Equal("old-state-1", states[0]);
+                Assert.Equal("current-state", states[1]);
+            }
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
         public void Execute_Processes_ListTable(bool useMicrosoftDataSqlClient)
         {
             using (var connection = CreateConnection(useMicrosoftDataSqlClient))
@@ -195,10 +238,10 @@ values (N'key', 1, @expireAt)";
             return ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient);
         }
 
-        private ExpirationManager CreateManager(bool useMicrosoftDataSqlClient)
+        private ExpirationManager CreateManager(bool useMicrosoftDataSqlClient, TimeSpan? stateExpirationTimeout = null)
         {
             var storage = new SqlServerStorage(() => ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient));
-            return new ExpirationManager(storage, TimeSpan.Zero);
+            return new ExpirationManager(storage, stateExpirationTimeout ?? TimeSpan.Zero, TimeSpan.FromTicks(1));
         }
     }
 }

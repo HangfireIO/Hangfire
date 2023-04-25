@@ -48,13 +48,17 @@ namespace Hangfire.SqlServer
 
         private readonly ILog _logger = LogProvider.For<ExpirationManager>();
         private readonly SqlServerStorage _storage;
+        private readonly TimeSpan _stateExpirationTimeout;
         private readonly TimeSpan _checkInterval;
 
-        public ExpirationManager(SqlServerStorage storage, TimeSpan checkInterval)
+        public ExpirationManager(SqlServerStorage storage, TimeSpan stateExpirationTimeout, TimeSpan checkInterval)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (stateExpirationTimeout < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(stateExpirationTimeout), "Timeout value should be equal to or greater than zero.");
+            if (checkInterval <= TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(checkInterval), "Timeout value should be greater than zero.");
 
             _storage = storage;
+            _stateExpirationTimeout = stateExpirationTimeout;
             _checkInterval = checkInterval;
         }
 
@@ -68,24 +72,21 @@ namespace Hangfire.SqlServer
 
             foreach (var table in ProcessedTables)
             {
-                _logger.Debug($"Removing outdated records from the '{table}' table...");
+                CleanupTable(GetExpireQuery(_storage.SchemaName, table), table, numberOfRecordsInSinglePass, cancellationToken);
+            }
 
-                UseConnectionDistributedLock(_storage, connection =>
-                {
-                    int affected;
-
-                    do
+            if (_stateExpirationTimeout > TimeSpan.Zero)
+            {
+                CleanupTable(GetStateCleanupQuery(_storage.SchemaName), "State", numberOfRecordsInSinglePass,
+                    cancellationToken,
+                    command =>
                     {
-                        affected = ExecuteNonQuery(
-                            connection,
-                            GetExpireQuery(_storage.SchemaName, table),
-                            numberOfRecordsInSinglePass,
-                            cancellationToken);
+                        var expireMinParameter = command.CreateParameter();
+                        expireMinParameter.ParameterName = "@expireMin";
+                        expireMinParameter.Value = (long)_stateExpirationTimeout.Negate().TotalMinutes;
 
-                    } while (affected == numberOfRecordsInSinglePass);
-                });
-
-                _logger.Trace($"Outdated records removed from the '{table}' table.");
+                        command.Parameters.Add(expireMinParameter);
+                    });
             }
 
             cancellationToken.Wait(_checkInterval);
@@ -94,6 +95,28 @@ namespace Hangfire.SqlServer
         public override string ToString()
         {
             return GetType().ToString();
+        }
+
+        private void CleanupTable(string query, string table, int numberOfRecordsInSinglePass, CancellationToken cancellationToken, Action<DbCommand> additionalActions = null)
+        {
+            _logger.Debug($"Removing outdated records from the '{table}' table...");
+
+            UseConnectionDistributedLock(_storage, connection =>
+            {
+                int affected;
+
+                do
+                {
+                    affected = ExecuteNonQuery(
+                        connection,
+                        query,
+                        numberOfRecordsInSinglePass,
+                        cancellationToken,
+                        additionalActions);
+                } while (affected == numberOfRecordsInSinglePass);
+            });
+
+            _logger.Trace($"Outdated records removed from the '{table}' table.");
         }
 
         private void UseConnectionDistributedLock(SqlServerStorage storage, Action<DbConnection> action)
@@ -138,11 +161,31 @@ where ExpireAt < @now
 option (loop join, optimize for (@count = 20000));";
         }
 
+        private static string GetStateCleanupQuery(string schemaName)
+        {
+            // TODO: Make expiration condition configurable
+            return $@"
+set deadlock_priority low;
+set transaction isolation level read committed;
+set xact_abort on;
+set lock_timeout 1000;
+
+;with cte as (
+	select s.[JobId], s.[Id]
+	from [{schemaName}].[State] s
+	where s.[CreatedAt] < dateadd(minute, @expireMin, @now)
+	and exists (
+		select * from [{schemaName}].[Job] j with (forceseek)
+		where j.[Id] = s.[JobId] and j.[StateId] != s.[Id]))
+delete top(@count) from cte option (maxdop 1);";
+        }
+
         private static int ExecuteNonQuery(
             DbConnection connection,
             string commandText,
             int numberOfRecordsInSinglePass,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            Action<DbCommand> additionalActions)
         {
             using (var command = connection.CreateCommand())
             {
@@ -159,6 +202,8 @@ option (loop join, optimize for (@count = 20000));";
 
                 command.Parameters.Add(countParameter);
                 command.Parameters.Add(nowParameter);
+                
+                additionalActions?.Invoke(command);
 
                 using (cancellationToken.Register(state => ((DbCommand)state).Cancel(), command))
                 {

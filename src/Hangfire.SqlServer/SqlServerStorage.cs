@@ -167,7 +167,7 @@ namespace Hangfire.SqlServer
         public override IEnumerable<IServerComponent> GetComponents()
 #pragma warning restore 618
         {
-            yield return new ExpirationManager(this, _options.JobExpirationCheckInterval);
+            yield return new ExpirationManager(this, _options.InactiveStateExpirationTimeout, _options.JobExpirationCheckInterval);
             yield return new CountersAggregator(this, _options.CountersAggregateInterval);
             yield return _heartbeatProcess;
         }

@@ -759,13 +759,22 @@ BEGIN
 	SET @CURRENT_SCHEMA_VERSION = 8;
 END
 
-/*IF @CURRENT_SCHEMA_VERSION = 8
+IF @CURRENT_SCHEMA_VERSION = 8
 BEGIN
 	PRINT 'Installing schema version 9';
 
-	 Insert migration here
+	CREATE NONCLUSTERED INDEX [IX_HangFire_State_CreatedAt] ON [$(HangFireSchema)].[State] ([CreatedAt] ASC)
 
 	SET @CURRENT_SCHEMA_VERSION = 9;
+END
+
+/*IF @CURRENT_SCHEMA_VERSION = 9
+BEGIN
+	PRINT 'Installing schema version 10';
+
+	 Insert migration here
+
+	SET @CURRENT_SCHEMA_VERSION = 10;
 END*/
 
 UPDATE [$(HangFireSchema)].[Schema] SET [Version] = @CURRENT_SCHEMA_VERSION
