@@ -15,6 +15,12 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.8.0-rc4
+• Added – `Schema 9` migration that creates index for the `State.CreatedAt` column.
+• Added – Clean up of old state entries of a non-finished job when `InactiveStateExpirationTimeout` is set.
+• Added – `DefaultQueueProvider` option to specify a custom default queue provider.
+• Changed – Enable common metrics for SQL Server storage to be shown by default.
+
 1.8.0-rc3
 • Changed – Enable the `Monitoring.AwaitingJobs` feature for SQL storage.
 • Changed – Implement the `Transaction.AcquireDistributedLock` feature.

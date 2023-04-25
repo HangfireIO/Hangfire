@@ -15,6 +15,10 @@
     <tags>hangfire netcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.8.0-rc4
+• Changed – Send the "stop" signal earlier when host supports .NET Standard 2.1.
+• Changed – Don't throw `ObjectDisposedException` when hosted service disposed twice.
+
 1.8.0-rc2
 • Added – `net451` and `netstandard1.3` targets for the package.
 • Changed – Use `netstandard2.1` target instead of `netcoreapp3.0` for the package.

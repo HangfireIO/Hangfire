@@ -20,6 +20,9 @@ https://www.hangfire.io/
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.8.0-rc4
+• Added – `DefaultRecordsPerPage` property on the `DashboardOptions` class (by @PaulARoy).
+
 1.8.0-rc3
 • Added – Introduce the `captureDefault` parameter in the `CaptureCulture` filter.
 • Added – Built-in awaiting metric through the `StatisticsDto.Awaiting` for monitoring stats.

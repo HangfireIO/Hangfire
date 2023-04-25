@@ -20,6 +20,24 @@ https://www.hangfire.io/
     <tags>Hangfire AspNet MVC AspNetCore SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.8.0-rc4
+
+Hangfire.Core
+
+• Added – `DefaultRecordsPerPage` property on the `DashboardOptions` class (by @PaulARoy).
+
+Hangfire.NetCore
+
+• Changed – Send the "stop" signal earlier when host supports .NET Standard 2.1.
+• Changed – Don't throw `ObjectDisposedException` when hosted service disposed twice.
+
+Hangfire.SqlServer
+
+• Added – `Schema 9` migration that creates index for the `State.CreatedAt` column.
+• Added – Clean up of old state entries of a non-finished job when `InactiveStateExpirationTimeout` is set.
+• Added – `DefaultQueueProvider` option to specify a custom default queue provider.
+• Changed – Enable common metrics for SQL Server storage to be shown by default.
+
 1.8.0-rc3
 
 Hangfire.Core
