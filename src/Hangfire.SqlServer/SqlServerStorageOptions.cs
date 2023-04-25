@@ -52,6 +52,7 @@ namespace Hangfire.SqlServer
             CommandBatchMaxTimeout = TimeSpan.FromMinutes(5);
             TryAutoDetectSchemaDependentOptions = true;
             _sqlClientFactory = GetDefaultSqlClientFactory();
+            InactiveStateExpirationTimeout = TimeSpan.Zero;
         }
 
         private static DbProviderFactory GetDefaultSqlClientFactory()
@@ -141,6 +142,7 @@ namespace Hangfire.SqlServer
         public TimeSpan TransactionTimeout { get; set; }
         public TimeSpan? CommandTimeout { get; set; }
         public TimeSpan? CommandBatchMaxTimeout { get; set; }
+        public TimeSpan InactiveStateExpirationTimeout { get; set; }
 
         public string SchemaName
         {
