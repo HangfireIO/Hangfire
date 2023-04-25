@@ -209,5 +209,11 @@ namespace Hangfire.SqlServer
         /// is inaccessible on startup, default values will be used for those options.
         /// </summary>
         public bool TryAutoDetectSchemaDependentOptions { get; set; }
+
+        /// <summary>
+        /// Gets or sets a default queue provider that will be used when no special provider was
+        /// registered for a particular queue.
+        /// </summary>
+        public IPersistentJobQueueProvider DefaultQueueProvider { get; set; }
     }
 }

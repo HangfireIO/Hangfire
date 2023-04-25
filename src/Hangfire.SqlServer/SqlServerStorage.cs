@@ -479,7 +479,7 @@ namespace Hangfire.SqlServer
 
         private void InitializeQueueProviders()
         {
-            var defaultQueueProvider = new SqlServerJobQueueProvider(this, _options);
+            var defaultQueueProvider = _options.DefaultQueueProvider ?? new SqlServerJobQueueProvider(this, _options);
             QueueProviders = new PersistentJobQueueProviderCollection(defaultQueueProvider);
         }
 
