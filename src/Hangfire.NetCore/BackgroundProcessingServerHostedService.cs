@@ -27,7 +27,7 @@ namespace Hangfire
 {
     public sealed class BackgroundProcessingServerHostedService : IHostedService, IDisposable
     {
-        private readonly IBackgroundProcessingServer _server;
+        private IBackgroundProcessingServer _server;
 
 #if NETSTANDARD2_1
         public BackgroundProcessingServerHostedService([NotNull] IBackgroundProcessingServer server)
@@ -56,13 +56,14 @@ namespace Hangfire
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _server.SendStop();
-            return _server.WaitForShutdownAsync(cancellationToken);
+            _server?.SendStop();
+            return _server?.WaitForShutdownAsync(cancellationToken) ?? Task.CompletedTask;
         }
 
         public void Dispose()
         {
-            _server.Dispose();
+            _server?.Dispose();
+            _server = null;
         }
     }
 }
