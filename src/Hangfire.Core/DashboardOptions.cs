@@ -38,6 +38,7 @@ namespace Hangfire
             DisplayStorageConnectionString = true;
             DashboardTitle = "Hangfire Dashboard";
             DisplayNameFunc = null;
+            DefaultRecordsPerPage = 20;
         }
 
         /// <summary>
@@ -94,5 +95,10 @@ namespace Hangfire
         public bool IgnoreAntiforgeryToken { get; set; }
 
         public ITimeZoneResolver TimeZoneResolver { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default number of records per page.
+        /// </summary>
+        public int DefaultRecordsPerPage { get; set; }
     }
 }

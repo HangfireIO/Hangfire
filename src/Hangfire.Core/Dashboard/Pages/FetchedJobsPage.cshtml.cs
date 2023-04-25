@@ -81,7 +81,7 @@ WriteLiteral("\r\n");
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    var pager = new Pager(from, perPage, monitor.FetchedCount(Queue));
+    var pager = new Pager(from, perPage, DashboardOptions.DefaultRecordsPerPage, monitor.FetchedCount(Queue));
     var fetchedJobs = monitor.FetchedJobs(Queue, pager.FromRecord, pager.RecordsPerPage);
 
 

@@ -120,7 +120,7 @@ WriteLiteral("\r\n");
             throw new NotSupportedException("MonitoringApi should inherit the `JobStorageMonitor` class");
         }
 
-        pager = new Pager(from, perPage, monitor.AwaitingCount());
+        pager = new Pager(from, perPage, DashboardOptions.DefaultRecordsPerPage, monitor.AwaitingCount());
         jobs = monitor.AwaitingJobs(pager.FromRecord, pager.RecordsPerPage);
         jobCount = jobs.Count;
     }
@@ -132,7 +132,7 @@ WriteLiteral("\r\n");
 
             if (storageConnection != null)
             {
-                pager = new Pager(from, perPage, storageConnection.GetSetCount("awaiting"));
+                pager = new Pager(from, perPage, DashboardOptions.DefaultRecordsPerPage, storageConnection.GetSetCount("awaiting"));
                 jobIds = storageConnection.GetRangeFromSet("awaiting", pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
                 jobCount = jobIds.Count;
             }

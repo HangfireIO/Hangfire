@@ -101,7 +101,7 @@ WriteLiteral("\r\n");
 	    var storageConnection = connection as JobStorageConnection;
 	    if (storageConnection != null)
 	    {
-	        pager = new Pager(from, perPage, storageConnection.GetRecurringJobCount());
+	        pager = new Pager(from, perPage, DashboardOptions.DefaultRecordsPerPage, storageConnection.GetRecurringJobCount());
 	        recurringJobs = storageConnection.GetRecurringJobs(pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
 	    }
 	    else

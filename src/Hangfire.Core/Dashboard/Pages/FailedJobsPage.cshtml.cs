@@ -74,7 +74,7 @@ WriteLiteral("\r\n");
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    var pager = new Pager(from, perPage, monitor.FailedCount());
+    var pager = new Pager(from, perPage, DashboardOptions.DefaultRecordsPerPage, monitor.FailedCount());
     var failedJobs = monitor.FailedJobs(pager.FromRecord, pager.RecordsPerPage);
 
 

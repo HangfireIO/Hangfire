@@ -102,7 +102,7 @@ WriteLiteral("\r\n");
 
         if (storageConnection != null)
         {
-            pager = new Pager(@from, perPage, storageConnection.GetSetCount("retries"));
+            pager = new Pager(@from, perPage, DashboardOptions.DefaultRecordsPerPage, storageConnection.GetSetCount("retries"));
             jobIds = storageConnection.GetRangeFromSet("retries", pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
         }
     }
