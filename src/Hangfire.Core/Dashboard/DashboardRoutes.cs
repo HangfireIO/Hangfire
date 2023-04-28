@@ -30,9 +30,6 @@ namespace Hangfire.Dashboard
         internal static volatile int JavaScriptsHashCode;
         internal static volatile int StylesheetsHashCode;
 
-        [Obsolete("This field is deprecated and will be removed in the 1.8.0 release.")]
-        public static bool IsDarkModeSupportEnabled = true;
-
         static DashboardRoutes()
         {
             Routes = new RouteCollection();

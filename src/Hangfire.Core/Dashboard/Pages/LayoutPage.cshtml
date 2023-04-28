@@ -90,7 +90,7 @@
         <div id="hangfireConfig"
              data-pollinterval="@DashboardOptions.StatsPollingInterval"
              data-pollurl="@(Url.To("/stats"))"
-             data-darkmode="@(DashboardRoutes.IsDarkModeSupportEnabled.ToString().ToLowerInvariant())">
+             data-darkmode="@(true.ToString().ToLowerInvariant())">
         </div>
 
         <script src="@Url.To($"/js{version.Major}{version.Minor}{version.Build}0{Math.Abs(DashboardRoutes.JavaScriptsHashCode)}")"></script>

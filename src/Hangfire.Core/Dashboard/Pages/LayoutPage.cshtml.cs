@@ -398,7 +398,7 @@ WriteLiteral("\"\r\n             data-darkmode=\"");
 
             
             #line 93 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                        Write(DashboardRoutes.IsDarkModeSupportEnabled.ToString().ToLowerInvariant());
+                        Write(true.ToString().ToLowerInvariant());
 
             
             #line default

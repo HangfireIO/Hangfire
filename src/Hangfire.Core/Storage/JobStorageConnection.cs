@@ -61,30 +61,14 @@ namespace Hangfire.Storage
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
-        [Obsolete("Please use/override the GetSetCount method that results `long` instead. Will be removed in 1.8.0.")]
-        public virtual KeyValuePair<string, long>[] GetSetCount([NotNull] string[] keys, int limit)
+        public virtual long GetSetCount([NotNull] IEnumerable<string> keys, int limit)
         {
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Connection.LimitedGetSetCount);
         }
 
-        public virtual long GetSetCount([NotNull] IEnumerable<string> keys, int limit)
-        {
-#pragma warning disable CS0618
-            return GetSetCount(keys.ToArray(), limit).Sum(x => x.Value);
-#pragma warning restore CS0618
-        }
-
-        [Obsolete("Please use/override the GetSetContains method instead. Will be removed in 1.8.0.")]
-        public virtual bool SetContains([NotNull] string key, [NotNull] string value)
-        {
-            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Connection.GetSetContains);
-        }
-
         public virtual bool GetSetContains([NotNull] string key, [NotNull] string value)
         {
-#pragma warning disable CS0618
-            return SetContains(key, value);
-#pragma warning restore CS0618
+            throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Connection.GetSetContains);
         }
 
         public virtual List<string> GetRangeFromSet([NotNull] string key, int startingFrom, int endingAt)
