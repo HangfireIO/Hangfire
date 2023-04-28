@@ -15,16 +15,12 @@
     <tags>hangfire netcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
-1.8.0-rc4
-• Changed – Send the "stop" signal earlier when host supports .NET Standard 2.1.
-• Changed – Don't throw `ObjectDisposedException` when hosted service disposed twice.
-
-1.8.0-rc2
+1.8.0
+• Added – `IApplicationBuilder.UseHangfireServer` that accepts custom factory for `IBackgroundProcessingServer`.
 • Added – `net451` and `netstandard1.3` targets for the package.
 • Changed – Use `netstandard2.1` target instead of `netcoreapp3.0` for the package.
-
-1.8.0-rc1
-• Added – `IApplicationBuilder.UseHangfireServer` that accepts custom factory for `IBackgroundProcessingServer`.
+• Changed – Send the "stop" signal earlier when the host supports .NET Standard 2.1.
+• Changed – Don't throw `ObjectDisposedException` when hosted service is disposed twice.
 
     </releaseNotes>
     <dependencies>

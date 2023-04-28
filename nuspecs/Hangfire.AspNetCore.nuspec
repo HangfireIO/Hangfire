@@ -11,14 +11,12 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>ASP.NET Core support for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2017-2022 Hangfire OÜ</copyright>
+    <copyright>Copyright © 2017-2023 Hangfire OÜ</copyright>
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
-1.8.0-rc2
-• Breaking – Make the package to be dependent on Hangfire.NetCore to use the same types.
-
-1.8.0-rc1
+1.8.0
+• Breaking – Make the package to be dependent on Hangfire.NetCore and use the same types.
 • Added – `IApplicationBuilder.UseHangfireServer` that accepts custom factory for `IBackgroundProcessingServer`.
 
     </releaseNotes>
