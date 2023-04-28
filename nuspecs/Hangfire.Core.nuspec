@@ -18,7 +18,9 @@ https://www.hangfire.io/
     </description>
     <copyright>Copyright © 2013-2023 Hangfire OÜ</copyright>
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
-    <releaseNotes>https://www.hangfire.io/blog/
+    <releaseNotes>
+Release notes are available in our blog https://www.hangfire.io/blog/
+Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
 1.8.0
 • Breaking – Dropped the `NET45` platform target in favor of the `NET451` target to support Visual Studio 2022.

@@ -13,7 +13,9 @@
     <description>SQL Server 2008+ (including Express), SQL Server LocalDB and SQL Azure storage support for Hangfire (background job system for ASP.NET applications).</description>
     <copyright>Copyright © 2013-2023 Hangfire OÜ</copyright>
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
-    <releaseNotes>https://www.hangfire.io/blog/
+    <releaseNotes>
+Release notes are available in our blog https://www.hangfire.io/blog/
+Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
 1.8.0
 • Breaking – Prioritise Microsoft.Data.SqlClient package over System.Data.SqlClient one.
