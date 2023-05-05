@@ -25,9 +25,9 @@ namespace Hangfire
         private readonly string _resource;
         private readonly int _timeoutInSeconds;
 
-        public DisableConcurrentExecutionAttribute(int timeoutInSeconds)
+        public DisableConcurrentExecutionAttribute(int timeoutInSeconds = 0)
         {
-            if (timeoutInSeconds < 0) throw new ArgumentException("Timeout argument value should be greater that zero.");
+            if (!(timeoutInSeconds >= 0)) throw new ArgumentException("Timeout argument cannot be negative.");
 
             _timeoutInSeconds = timeoutInSeconds;
         }
