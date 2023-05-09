@@ -347,10 +347,29 @@ namespace Hangfire
         public static IGlobalConfiguration UseDefaultCulture(
             [NotNull] this IGlobalConfiguration configuration,
             [CanBeNull] CultureInfo culture,
+            bool captureDefault)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseFilter(new CaptureCultureAttribute(culture?.Name, captureDefault));
+        }
+
+        public static IGlobalConfiguration UseDefaultCulture(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] CultureInfo culture,
             [CanBeNull] CultureInfo uiCulture)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             return configuration.UseFilter(new CaptureCultureAttribute(culture?.Name, uiCulture?.Name));
+        }
+
+        public static IGlobalConfiguration UseDefaultCulture(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] CultureInfo culture,
+            [CanBeNull] CultureInfo uiCulture,
+            bool captureDefault)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseFilter(new CaptureCultureAttribute(culture?.Name, uiCulture?.Name, captureDefault));
         }
 
         public static IGlobalConfiguration UseDashboardStylesheet(
