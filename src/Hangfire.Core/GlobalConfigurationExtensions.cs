@@ -353,6 +353,32 @@ namespace Hangfire
             return configuration.UseFilter(new CaptureCultureAttribute(culture?.Name, uiCulture?.Name));
         }
 
+        public static IGlobalConfiguration UseDashboardStylesheet(
+            [NotNull] this IGlobalConfiguration configuration,
+            [NotNull] Assembly assembly,
+            [NotNull] string resource)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
+            if (resource == null) throw new ArgumentNullException(nameof(resource));
+
+            DashboardRoutes.AddStylesheet(assembly, resource);
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseDashboardJavaScript(
+            [NotNull] this IGlobalConfiguration configuration,
+            [NotNull] Assembly assembly,
+            [NotNull] string resource)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
+            if (resource == null) throw new ArgumentNullException(nameof(resource));
+
+            DashboardRoutes.AddJavaScript(assembly, resource);
+            return configuration;
+        }
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static IGlobalConfiguration<T> Use<T>(
             [NotNull] this IGlobalConfiguration configuration, T entry,
