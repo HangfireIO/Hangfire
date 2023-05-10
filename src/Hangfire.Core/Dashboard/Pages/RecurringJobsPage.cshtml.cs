@@ -455,7 +455,7 @@ WriteLiteral("\"/>\r\n                                        </td>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                                    <td class=\"word-break width-15\">");
+WriteLiteral("                                    <td class=\"word-break\">");
 
 
             
