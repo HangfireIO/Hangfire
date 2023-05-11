@@ -156,7 +156,7 @@ set deadlock_priority low;
 set transaction isolation level read committed;
 set xact_abort on;
 set lock_timeout 1000;
-delete top (@count) from [{schemaName}].[{table}]
+delete top (@count) T from [{schemaName}].[{table}] T with (forceseek)
 where ExpireAt < @now
 option (loop join, optimize for (@count = 20000));";
         }
@@ -172,7 +172,7 @@ set lock_timeout 1000;
 
 ;with cte as (
 	select s.[JobId], s.[Id]
-	from [{schemaName}].[State] s
+	from [{schemaName}].[State] s with (forceseek)
 	where s.[CreatedAt] < dateadd(minute, @expireMin, @now)
 	and exists (
 		select * from [{schemaName}].[Job] j with (forceseek)

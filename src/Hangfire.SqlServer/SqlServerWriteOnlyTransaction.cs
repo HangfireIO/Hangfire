@@ -340,7 +340,7 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (value == null) throw new ArgumentNullException(nameof(value));
 
-            string query = $@"delete from [{_storage.SchemaName}].[Set] where [Key] = @key and Value = @value";
+            string query = $@"delete S from [{_storage.SchemaName}].[Set] S with (forceseek) where [Key] = @key and Value = @value";
 
             AcquireSetLock(key);
             AddCommand(
@@ -361,7 +361,7 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
                 _listCommands,
                 key,
                 $@"
-select [Key] from [{_storage.SchemaName}].List with (xlock)
+select [Key] from [{_storage.SchemaName}].List with (xlock, forceseek)
 where [Key] = @key;
 insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
                 new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
@@ -377,7 +377,7 @@ insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
             AddCommand(
                 _listCommands,
                 key,
-                $@"delete from [{_storage.SchemaName}].List where [Key] = @key and Value = @value",
+                $@"delete L from [{_storage.SchemaName}].List L with (forceseek) where [Key] = @key and Value = @value",
                 new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.String, -1) { Value = value });
         }
@@ -389,7 +389,7 @@ insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
             string trimSql =
 $@";with cte as (
     select row_number() over (order by Id desc) as row_num
-    from [{_storage.SchemaName}].List with (xlock)
+    from [{_storage.SchemaName}].List with (xlock, forceseek)
     where [Key] = @key)
 delete from cte where row_num not between @start and @end";
 
@@ -437,7 +437,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = $@"delete from [{_storage.SchemaName}].Hash where [Key] = @key";
+            string query = $@"delete H from [{_storage.SchemaName}].Hash H with (forceseek) where [Key] = @key";
 
             AcquireHashLock(key);
             AddCommand(_hashCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String) { Value = key });
@@ -464,7 +464,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = $@"delete from [{_storage.SchemaName}].[Set] where [Key] = @key";
+            string query = $@"delete S from [{_storage.SchemaName}].[Set] S with (forceseek) where [Key] = @key";
 
             AcquireSetLock(key);
             AddCommand(_setCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String) { Value = key });

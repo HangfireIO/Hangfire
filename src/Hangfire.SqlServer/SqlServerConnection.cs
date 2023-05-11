@@ -491,7 +491,7 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
             _storage.UseConnection(_dedicatedConnection, connection =>
             {
                 connection.Execute(
-                    $@"delete from [{_storage.SchemaName}].Server where Id = @id",
+                    $@"delete S from [{_storage.SchemaName}].Server S with (forceseek) where Id = @id",
                     new { id = serverId },
                     commandTimeout: _storage.CommandTimeout);
             });
