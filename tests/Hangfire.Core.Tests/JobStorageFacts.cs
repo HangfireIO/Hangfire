@@ -58,10 +58,10 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void JobExpirationTimeout_CantAllowTimeoutLessThanOneHour()
         {
-            var oneMilisecondLess = TimeSpan.FromHours(1).Subtract(TimeSpan.FromMilliseconds(1));
-            var exception = Assert.Throws<ArgumentException>(() => _storage.Object.JobExpirationTimeout = oneMilisecondLess);
+            var negative = TimeSpan.FromSeconds(-1);
+            var exception = Assert.Throws<ArgumentException>(() => _storage.Object.JobExpirationTimeout = negative);
 
-            Assert.Equal("JobStorage.JobExpirationTimeout value should be equal or greater than 1 hour.", exception.Message);
+            Assert.StartsWith("JobStorage.JobExpirationTimeout value should be equal or greater than zero.", exception.Message);
 
         }
 

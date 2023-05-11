@@ -69,9 +69,9 @@ namespace Hangfire
             }
             set
             {
-                if (value < TimeSpan.FromHours(1))
+                if (value < TimeSpan.Zero)
                 {
-                    throw new ArgumentException("JobStorage.JobExpirationTimeout value should be equal or greater than 1 hour.");
+                    throw new ArgumentException("JobStorage.JobExpirationTimeout value should be equal or greater than zero.", nameof(value));
                 }
 
                 _jobExpirationTimeout = value;
