@@ -283,17 +283,16 @@ namespace Hangfire.Server
                     
                     var backgroundJobs = new List<BackgroundJob>();
 
-                    DateTime? nextExecution;
                     Exception error;
 
-                    while (recurringJob.TrySchedule(out nextExecution, out error) && nextExecution <= now)
+                    while (recurringJob.TrySchedule(now, out var execution, out error))
                     {
                         var backgroundJob = _factory.TriggerRecurringJob(
                             context.Storage,
                             connection,
                             _profiler,
                             recurringJob,
-                            recurringJob.MisfireHandling == MisfireHandlingMode.Strict ? nextExecution.Value : now);
+                            execution.Value);
 
                         if (!String.IsNullOrEmpty(backgroundJob?.Id))
                         {
@@ -301,12 +300,7 @@ namespace Hangfire.Server
                         }
                         else
                         {
-                            _logger.Debug($"Recurring job '{recurringJobId}' execution at '{nextExecution}' has been canceled.");
-                        }
-
-                        if (recurringJob.MisfireHandling != MisfireHandlingMode.Strict)
-                        {
-                            break;
+                            _logger.Debug($"Recurring job '{recurringJobId}' execution at '{execution}' has been canceled.");
                         }
                     }
 
@@ -327,7 +321,7 @@ namespace Hangfire.Server
                             _profiler);
                     }
 
-                    recurringJob.IsChanged(out var changedFields, out nextExecution);
+                    recurringJob.IsChanged(out var changedFields, out var nextExecution);
                     transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
                 }
                 catch (Exception ex) when (ex.IsCatchableExceptionType())

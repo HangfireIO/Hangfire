@@ -97,7 +97,7 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void Ctor_ThrowsAnException_WhenMisfireOption_IsNotWithinAValidRange()
         {
-            _recurringJob["Misfire"] = "2";
+            _recurringJob["Misfire"] = "3";
             Assert.Throws<NotSupportedException>(() => CreateEntity());
         }
 

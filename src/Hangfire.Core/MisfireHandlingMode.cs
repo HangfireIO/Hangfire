@@ -36,5 +36,11 @@ namespace Hangfire
         /// time. 
         /// </summary>
         Strict  = 1,
+
+        /// <summary>
+        /// Specifies that no background jobs should be created on missed schedule,
+        /// regardless the number of missed occurrences.
+        /// </summary>
+        Ignorable = 2,
     }
 }
