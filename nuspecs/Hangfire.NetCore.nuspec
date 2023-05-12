@@ -31,6 +31,12 @@ Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfi
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="1.0.0" />
         <dependency id="Hangfire.Core" version="[0.0.0]" />
       </group>
+      <group targetFramework="net461">
+        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="2.0.0" />
+        <dependency id="Microsoft.Extensions.Hosting.Abstractions" version="2.0.0" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="2.0.0" />
+        <dependency id="Hangfire.Core" version="[0.0.0]" />
+      </group>
       <group targetFramework="netstandard1.3">
         <dependency id="NETStandard.Library" version="1.6.0" />
         <dependency id="System.ComponentModel" version="4.0.1" />
@@ -56,6 +62,10 @@ Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfi
     <file src="net451\Hangfire.NetCore.dll" target="lib\net451" />
     <file src="net451\Hangfire.NetCore.xml" target="lib\net451" />
     <file src="net451\Hangfire.NetCore.pdb" target="lib\net451" />
+
+    <file src="net461\Hangfire.NetCore.dll" target="lib\net461" />
+    <file src="net461\Hangfire.NetCore.xml" target="lib\net461" />
+    <file src="net461\Hangfire.NetCore.pdb" target="lib\net461" />
 
     <file src="netstandard1.3\Hangfire.NetCore.dll" target="lib\netstandard1.3" />
     <file src="netstandard1.3\Hangfire.NetCore.xml" target="lib\netstandard1.3" />
