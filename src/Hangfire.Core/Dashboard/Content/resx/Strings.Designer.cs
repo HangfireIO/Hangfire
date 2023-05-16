@@ -837,6 +837,33 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Active Transactions.
+        /// </summary>
+        public static string Metrics_SQLServer_ActiveTransactions {
+            get {
+                return ResourceManager.GetString("Metrics_SQLServer_ActiveTransactions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Data File(s) Size (MB).
+        /// </summary>
+        public static string Metrics_SQLServer_DataFilesSize {
+            get {
+                return ResourceManager.GetString("Metrics_SQLServer_DataFilesSize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Log File(s) Size (MB).
+        /// </summary>
+        public static string Metrics_SQLServer_LogFilesSize {
+            get {
+                return ResourceManager.GetString("Metrics_SQLServer_LogFilesSize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Schema Version.
         /// </summary>
         public static string Metrics_SQLServer_SchemaVersion {

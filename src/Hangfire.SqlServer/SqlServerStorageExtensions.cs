@@ -78,9 +78,9 @@ namespace Hangfire
             configuration.UseDashboardMetric(SqlServerStorage.SchemaVersion);
             configuration.UseDashboardMetric(SqlServerStorage.ActiveConnections);
             configuration.UseDashboardMetric(SqlServerStorage.TotalConnections);
-            configuration.UseDashboardMetric(SqlServerStorage.PerformanceCounterDatabaseMetric("SQLServer:Databases", "Active Transactions", null));
-            configuration.UseDashboardMetric(SqlServerStorage.PerformanceCounterDatabaseMetric("SQLServer:Databases", "Data File(s) Size (KB)", null));
-            configuration.UseDashboardMetric(SqlServerStorage.PerformanceCounterDatabaseMetric("SQLServer:Databases", "Log File(s) Size (KB)", null));
+            configuration.UseDashboardMetric(SqlServerStorage.ActiveTransactions);
+            configuration.UseDashboardMetric(SqlServerStorage.DataFilesSize);
+            configuration.UseDashboardMetric(SqlServerStorage.LogFilesSize);
 
             return configuration;
         }

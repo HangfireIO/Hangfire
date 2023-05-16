@@ -570,6 +570,72 @@ where dbid = db_id(@name) and status != 'background'";
                 });
             });
 
+        public static readonly DashboardMetric ActiveTransactions = new DashboardMetric(
+            "transactions:active",
+            "Metrics_SQLServer_ActiveTransactions",
+            page =>
+            {
+                var sqlStorage = page.Storage as SqlServerStorage;
+                if (sqlStorage == null) return new Metric("???");
+
+                return sqlStorage.UseConnection(null, connection =>
+                {
+                    var sqlQuery = @"
+select count(*) from sys.sysprocesses
+where dbid = db_id(@name) and status != 'background' and open_tran = 1";
+
+                    var value = connection
+                        .Query<int>(sqlQuery, new { name = connection.Database })
+                        .Single();
+
+                    return new Metric(value);
+                });
+            });
+
+        public static readonly DashboardMetric DataFilesSize = new DashboardMetric(
+            "database:files:rows:size",
+            "Metrics_SQLServer_DataFilesSize",
+            page =>
+            {
+                var sqlStorage = page.Storage as SqlServerStorage;
+                if (sqlStorage == null) return new Metric("???");
+
+                return sqlStorage.UseConnection(null, connection =>
+                {
+                    var sqlQuery = @"
+select sum(size / 128.0) as RowsSizeMB from sys.database_files
+where type = 0;";
+
+                    var value = connection
+                        .Query<double>(sqlQuery)
+                        .Single();
+
+                    return new Metric(value.ToString("F"));
+                });
+            });
+
+        public static readonly DashboardMetric LogFilesSize = new DashboardMetric(
+            "database:files:log:size",
+            "Metrics_SQLServer_LogFilesSize",
+            page =>
+            {
+                var sqlStorage = page.Storage as SqlServerStorage;
+                if (sqlStorage == null) return new Metric("???");
+
+                return sqlStorage.UseConnection(null, connection =>
+                {
+                    var sqlQuery = @"
+select sum(size / 128.0) as LogSizeMB from sys.database_files
+where type = 1;";
+
+                    var value = connection
+                        .Query<double>(sqlQuery)
+                        .Single();
+
+                    return new Metric(value.ToString("F"));
+                });
+            });
+
         public static readonly DashboardMetric SchemaVersion = new DashboardMetric(
             "sqlserver:schema",
             "Metrics_SQLServer_SchemaVersion",
