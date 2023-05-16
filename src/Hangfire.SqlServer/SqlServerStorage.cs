@@ -603,7 +603,7 @@ where dbid = db_id(@name) and status != 'background' and open_tran = 1";
                 return sqlStorage.UseConnection(null, connection =>
                 {
                     var sqlQuery = @"
-select sum(size / 128.0) as RowsSizeMB from sys.database_files
+select CAST(FILEPROPERTY(name, 'SpaceUsed') AS INT)/128.0 as RowsSizeMB from sys.database_files
 where type = 0;";
 
                     var value = connection
@@ -625,7 +625,7 @@ where type = 0;";
                 return sqlStorage.UseConnection(null, connection =>
                 {
                     var sqlQuery = @"
-select sum(size / 128.0) as LogSizeMB from sys.database_files
+select CAST(FILEPROPERTY(name, 'SpaceUsed') AS INT)/128.0 as LogSizeMB from sys.database_files
 where type = 1;";
 
                     var value = connection

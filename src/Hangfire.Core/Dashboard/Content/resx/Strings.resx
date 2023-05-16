@@ -558,9 +558,9 @@
     <value>Active Transactions</value>
   </data>
   <data name="Metrics_SQLServer_DataFilesSize" xml:space="preserve">
-    <value>Data File(s) Size (MB)</value>
+    <value>Data File(s) Used (MB)</value>
   </data>
   <data name="Metrics_SQLServer_LogFilesSize" xml:space="preserve">
-    <value>Log File(s) Size (MB)</value>
+    <value>Log File(s) Used (MB)</value>
   </data>
 </root>
