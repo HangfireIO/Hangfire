@@ -39,6 +39,7 @@ namespace Hangfire
             DashboardTitle = "Hangfire Dashboard";
             DisplayNameFunc = null;
             DefaultRecordsPerPage = 20;
+            DarkModeEnabled = true;
         }
 
         /// <summary>
@@ -100,5 +101,11 @@ namespace Hangfire
         /// Gets or sets the default number of records per page.
         /// </summary>
         public int DefaultRecordsPerPage { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether dark mode support is enabled by including
+        /// or excluding the corresponding CSS files.
+        /// </summary>
+        public bool DarkModeEnabled { get; set; }
     }
 }

@@ -26,9 +26,11 @@ namespace Hangfire.Dashboard
     {
         private static readonly List<Tuple<Assembly, string>> JavaScripts = new List<Tuple<Assembly, string>>();
         private static readonly List<Tuple<Assembly, string>> Stylesheets = new List<Tuple<Assembly, string>>();
+        private static readonly List<Tuple<Assembly, string>> StylesheetsDarkMode = new List<Tuple<Assembly, string>>();
 
         internal static volatile int JavaScriptsHashCode;
         internal static volatile int StylesheetsHashCode;
+        internal static volatile int StylesheetsDarkModeHashCode;
 
         static DashboardRoutes()
         {
@@ -41,7 +43,8 @@ namespace Hangfire.Dashboard
             AddStylesheet(executingAssembly, GetContentResourceName("css", "bootstrap.min.css"));
             AddStylesheet(executingAssembly, GetContentResourceName("css", "Chart.min.css"));
             AddStylesheet(executingAssembly, GetContentResourceName("css", "hangfire.css"));
-            AddStylesheet(executingAssembly, GetContentResourceName("css", "hangfire-dark.css"));
+
+            AddStylesheetDarkMode(executingAssembly, GetContentResourceName("css", "hangfire-dark.css"));
 
             AddJavaScript(executingAssembly, GetContentResourceName("js", "jquery-3.6.0.min.js"));
             AddJavaScript(executingAssembly, GetContentResourceName("js", "bootstrap.min.js"));
@@ -54,6 +57,7 @@ namespace Hangfire.Dashboard
 
             Routes.Add("/js[0-9]+", new CombinedResourceDispatcher("application/javascript", JavaScripts));
             Routes.Add("/css[0-9]+", new CombinedResourceDispatcher("text/css", Stylesheets));
+            Routes.Add("/css-dark[0-9]+", new CombinedResourceDispatcher("text/css", StylesheetsDarkMode));
 
             Routes.Add("/fonts/glyphicons-halflings-regular/eot", new EmbeddedResourceDispatcher(
                 "application/vnd.ms-fontobject",
@@ -186,6 +190,18 @@ namespace Hangfire.Dashboard
             {
                 Stylesheets.Add(Tuple.Create(assembly, resource));
                 StylesheetsHashCode ^= resource.GetHashCode();
+            }
+        }
+
+        public static void AddStylesheetDarkMode([NotNull] Assembly assembly, [NotNull] string resource)
+        {
+            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
+            if (resource == null) throw new ArgumentNullException(nameof(resource));
+
+            lock (StylesheetsDarkMode)
+            {
+                StylesheetsDarkMode.Add(Tuple.Create(assembly, resource));
+                StylesheetsDarkModeHashCode ^= resource.GetHashCode();
             }
         }
 

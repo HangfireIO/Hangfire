@@ -385,6 +385,19 @@ namespace Hangfire
             return configuration;
         }
 
+        public static IGlobalConfiguration UseDashboardStylesheetDarkMode(
+            [NotNull] this IGlobalConfiguration configuration,
+            [NotNull] Assembly assembly,
+            [NotNull] string resource)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
+            if (resource == null) throw new ArgumentNullException(nameof(resource));
+
+            DashboardRoutes.AddStylesheetDarkMode(assembly, resource);
+            return configuration;
+        }
+
         public static IGlobalConfiguration UseDashboardJavaScript(
             [NotNull] this IGlobalConfiguration configuration,
             [NotNull] Assembly assembly,
