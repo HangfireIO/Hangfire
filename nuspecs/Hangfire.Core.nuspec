@@ -22,6 +22,16 @@ https://www.hangfire.io/
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.1
+• Added – `MisfireHandlingMode.Ignorable` to avoid scheduling recurring jobs on missed schedules.
+• Added – Support disabling dark mode via the `DashboardOptions.DarkModeEnabled` property.
+• Changed – Remove the 1-hour limitation for the `WithJobExpirationTimeout` configuration method.
+• Fixed – Add missing `UseDefaultCulture` configuration method overloads.
+• Fixed – Add missing `UseDashboardStylesheet` and `UseJobDetailsRenderer` configuration methods.
+• Fixed – Give even more space for identifiers on the Recurring Jobs page.
+• Fixed – `state-card-state-active` color is not very dark (by @coolhome).
+• Fixed – Slightly change chart proportions to fit 4K in Dashboard UI.
+
 1.8.0
 • Breaking – Dropped the `NET45` platform target in favor of the `NET451` target to support Visual Studio 2022.
 • Added – Introduce the `Job.Queue` property, so jobs now can have their own queue specified.

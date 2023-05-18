@@ -16,6 +16,9 @@
     <releaseNotes>
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
+      
+1.8.1
+• Fixed – Add `net461` target for Hangfire.NetCore package to avoid missing method exceptions.
 
 1.8.0
 • Added – `IApplicationBuilder.UseHangfireServer` that accepts custom factory for `IBackgroundProcessingServer`.

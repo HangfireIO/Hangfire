@@ -16,6 +16,12 @@
     <releaseNotes>
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
+      
+1.8.1
+• Fixed – Blocked workers regression since 1.7.33 when using multiple servers inside a process.
+• Fixed – Target schema version is less than the current schema version error.
+• Fixed – Implement database metrics without the need for additional permissions.
+• Fixed – Use the `forceseek` table hint whenever possible to avoid performance drops.
 
 1.8.0
 • Breaking – Prioritise Microsoft.Data.SqlClient package over System.Data.SqlClient one.

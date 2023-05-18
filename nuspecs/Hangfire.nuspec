@@ -22,6 +22,30 @@ https://www.hangfire.io/
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.1
+      
+Hangfire.Core
+
+• Added – `MisfireHandlingMode.Ignorable` to avoid scheduling recurring jobs on missed schedules.
+• Added – Support disabling dark mode via the `DashboardOptions.DarkModeEnabled` property.
+• Changed – Remove the 1-hour limitation for the `WithJobExpirationTimeout` configuration method.
+• Fixed – Add missing `UseDefaultCulture` configuration method overloads.
+• Fixed – Add missing `UseDashboardStylesheet` and `UseJobDetailsRenderer` configuration methods.
+• Fixed – Give even more space for identifiers on the Recurring Jobs page.
+• Fixed – `state-card-state-active` color is not very dark (by @coolhome).
+• Fixed – Slightly change chart proportions to fit 4K in Dashboard UI.
+
+Hangfire.SqlServer
+
+• Fixed – Blocked workers regression since 1.7.33 when using multiple servers inside a process.
+• Fixed – Target schema version is less than the current schema version error.
+• Fixed – Implement database metrics without the need for additional permissions.
+• Fixed – Use the `forceseek` table hint whenever possible to avoid performance drops.
+      
+Hangfire.NetCore
+
+• Fixed – Add `net461` target for Hangfire.NetCore package to avoid missing method exceptions.
+
 1.8.0
 
 Hangfire.Core
