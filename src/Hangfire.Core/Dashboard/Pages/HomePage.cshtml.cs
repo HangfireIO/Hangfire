@@ -185,7 +185,7 @@ WriteLiteral("        <h3>");
             
             #line default
             #line hidden
-WriteLiteral("</h3>\r\n        <canvas width=\"1140\" height=\"250\" id=\"realtimeGraph\" data-succeede" +
+WriteLiteral("</h3>\r\n        <canvas width=\"1140\" height=\"210\" id=\"realtimeGraph\" data-succeede" +
 "d=\"");
 
 
@@ -316,7 +316,7 @@ WriteLiteral("\r\n        </h3>\r\n\r\n");
             
             #line default
             #line hidden
-WriteLiteral("            <canvas width=\"1140\" height=\"250\" id=\"historyGraph\"\r\n                " +
+WriteLiteral("            <canvas width=\"1140\" height=\"210\" id=\"historyGraph\"\r\n                " +
 " data-succeeded=\"");
 
 

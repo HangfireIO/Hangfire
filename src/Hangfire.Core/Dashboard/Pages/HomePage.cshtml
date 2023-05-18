@@ -53,7 +53,7 @@
             </div>
         }
         <h3>@Strings.HomePage_RealtimeGraph</h3>
-        <canvas width="1140" height="250" id="realtimeGraph" data-succeeded="@Statistics.Succeeded" data-failed="@Statistics.Failed" data-deleted="@Statistics.Deleted"
+        <canvas width="1140" height="210" id="realtimeGraph" data-succeeded="@Statistics.Succeeded" data-failed="@Statistics.Failed" data-deleted="@Statistics.Deleted"
              data-succeeded-string="@Strings.HomePage_GraphHover_Succeeded"
              data-failed-string="@Strings.HomePage_GraphHover_Failed"
              data-deleted-string="@Strings.JobsSidebarMenu_Deleted"></canvas>
@@ -73,7 +73,7 @@
 
         @if (succeeded != null && failed != null)
         {
-            <canvas width="1140" height="250" id="historyGraph"
+            <canvas width="1140" height="210" id="historyGraph"
                  data-succeeded="@JsonConvert.SerializeObject(succeeded)"
                  data-failed="@JsonConvert.SerializeObject(failed)"
                  data-deleted="@(deleted != null ? JsonConvert.SerializeObject(deleted) : String.Empty)"
