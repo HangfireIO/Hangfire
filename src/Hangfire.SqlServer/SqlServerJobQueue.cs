@@ -39,8 +39,8 @@ namespace Hangfire.SqlServer
         private static readonly TimeSpan LongPollingThreshold = TimeSpan.FromSeconds(1);
         private static readonly int PollingQuantumMs = 1000;
         private static readonly int MinPollingDelayMs = 100;
-        private static readonly DynamicMutex<Tuple<SqlServerStorage, string>> DynamicMutex =
-            new DynamicMutex<Tuple<SqlServerStorage, string>>();
+        private static readonly ConcurrentDictionary<Tuple<SqlServerStorage, string>, SemaphoreSlim> Semaphores =
+            new ConcurrentDictionary<Tuple<SqlServerStorage, string>, SemaphoreSlim>();
 
         private readonly SqlServerStorage _storage;
         private readonly SqlServerStorageOptions _options;
@@ -121,11 +121,16 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
             using (var cancellationEvent = cancellationToken.GetCancellationEvent())
             {
                 var waitArray = new WaitHandle[] { cancellationEvent.WaitHandle, NewItemInQueueEvent };
-                var acquired = false;
+
+                SemaphoreSlim semaphore = null;
 
                 try
                 {
-                    if (useLongPolling) DynamicMutex.Wait(resource, cancellationToken, out acquired);
+                    if (useLongPolling)
+                    {
+                        semaphore = Semaphores.GetOrAdd(resource, new SemaphoreSlim(initialCount: 1));
+                        semaphore.Wait(cancellationToken);
+                    }
 
                     while (!cancellationToken.IsCancellationRequested)
                     {
@@ -141,7 +146,10 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                 }
                 finally
                 {
-                    if (acquired) DynamicMutex.Release(resource);
+                    if (semaphore != null && semaphore.CurrentCount == 0)
+                    {
+                        semaphore.Release();
+                    }
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
