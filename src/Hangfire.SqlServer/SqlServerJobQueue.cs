@@ -36,6 +36,7 @@ namespace Hangfire.SqlServer
         // without this event, but it helps to reduce the delays in processing.
         internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(false);
 
+        private static readonly Func<Tuple<SqlServerStorage, string>, SemaphoreSlim> CreateSemaphoreFunc = CreateSemaphore;
         private static readonly TimeSpan LongPollingThreshold = TimeSpan.FromSeconds(1);
         private static readonly int PollingQuantumMs = 1000;
         private static readonly int MinPollingDelayMs = 100;
@@ -128,7 +129,7 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                 {
                     if (useLongPolling)
                     {
-                        semaphore = Semaphores.GetOrAdd(resource, new SemaphoreSlim(initialCount: 1));
+                        semaphore = Semaphores.GetOrAdd(resource, CreateSemaphoreFunc);
                         semaphore.Wait(cancellationToken);
                     }
 
@@ -155,6 +156,11 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                 cancellationToken.ThrowIfCancellationRequested();
                 return null;
             }
+        }
+
+        private static SemaphoreSlim CreateSemaphore(Tuple<SqlServerStorage, string> _)
+        {
+            return new SemaphoreSlim(initialCount: 1);
         }
 
         private SqlServerTimeoutJob FetchJob(string[] queues)
