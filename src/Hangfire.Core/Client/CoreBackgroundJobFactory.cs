@@ -70,56 +70,7 @@ namespace Hangfire.Client
             var createdAt = DateTime.UtcNow;
             var expireIn = TimeSpan.FromDays(30);
 
-            if (context.Storage.HasFeature(JobStorageFeatures.Transaction.CreateJob))
-            {
-                return CreateBackgroundJobSingleStep(context, parameters, createdAt, expireIn);
-            }
-            else
-            {
-                return CreateBackgroundJobTwoSteps(context, parameters, createdAt, expireIn);
-            }
-        }
-
-        private BackgroundJob CreateBackgroundJobSingleStep(CreateContext context, Dictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn)
-        {
-            var attemptsLeft = Math.Max(RetryAttempts, 0);
-
-            return RetryOnException(ref attemptsLeft, attempt =>
-            {
-                using (var transaction = context.Connection.CreateWriteTransaction())
-                {
-                    if (!(transaction is JobStorageTransaction storageTransaction))
-                    {
-                        throw new InvalidOperationException($"{transaction.GetType().Name} must inherit {nameof(JobStorageTransaction)} to use this feature.");
-                    }
-
-                    var jobId = storageTransaction.CreateJob(context.Job, parameters, createdAt, expireIn);
-                    if (String.IsNullOrEmpty(jobId))
-                    {
-                        return null;
-                    }
-
-                    var backgroundJob = new BackgroundJob(jobId, context.Job, createdAt, parameters);
-
-                    if (context.InitialState != null)
-                    {
-                        var applyContext = new ApplyStateContext(
-                            context.Storage,
-                            context.Connection,
-                            transaction,
-                            backgroundJob,
-                            context.InitialState,
-                            oldStateName: null,
-                            context.Profiler,
-                            StateMachine);
-
-                        StateMachine.ApplyState(applyContext);
-                    }
-
-                    transaction.Commit();
-                    return backgroundJob;
-                }
-            });
+            return CreateBackgroundJobTwoSteps(context, parameters, createdAt, expireIn);
         }
 
         private BackgroundJob CreateBackgroundJobTwoSteps(CreateContext context, Dictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn)
