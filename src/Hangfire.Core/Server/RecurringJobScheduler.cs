@@ -282,10 +282,11 @@ namespace Hangfire.Server
                     }
                     
                     var backgroundJobs = new List<BackgroundJob>();
+                    var precision = _pollingDelay + _pollingDelay;
 
                     Exception error;
 
-                    while (recurringJob.TrySchedule(now, out var execution, out error))
+                    while (recurringJob.TrySchedule(now, precision, out var execution, out error))
                     {
                         var backgroundJob = _factory.TriggerRecurringJob(
                             context.Storage,
