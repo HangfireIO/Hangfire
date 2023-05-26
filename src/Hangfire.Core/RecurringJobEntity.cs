@@ -146,7 +146,7 @@ namespace Hangfire
 
         public Exception[] Errors => _errors.ToArray();
 
-        public bool TrySchedule(DateTime now, TimeSpan precision, out DateTime? nextExecution, out Exception error)
+        public bool TrySchedule(DateTime now, out DateTime? nextExecution, out Exception error)
         {
             if (_errors.Count > 0)
             {
@@ -155,7 +155,7 @@ namespace Hangfire
                 return false;
             }
 
-            if (TryGetNextExecution(from: null, out nextExecution, out error) &&
+            if (TryGetNextExecution(scheduleChanged: false, out nextExecution, out error) &&
                 nextExecution < now)
             {
                 switch (MisfireHandling)
@@ -167,18 +167,9 @@ namespace Hangfire
                         nextExecution = nextExecution;
                         return true;
                     case MisfireHandlingMode.Ignorable:
-                        while (TryGetNextExecution(nextExecution, out nextExecution, out error))
+                        if (TryGetNextExecution(scheduleChanged: true, out nextExecution, out error))
                         {
-                            if (now.Add(precision.Negate()) <= nextExecution && nextExecution <= now)
-                            {
-                                return true;
-                            }
-
-                            if (nextExecution > now)
-                            {
-                                _rescheduled = true;
-                                return false;
-                            }
+                            _rescheduled = nextExecution != now;
                         }
 
                         break;
@@ -276,7 +267,7 @@ namespace Hangfire
                 ? _recurringJob["TimeZoneId"]
                 : TimeZoneInfo.Utc.Id);
 
-            TryGetNextExecution(result.ContainsKey("Cron") || timeZoneChanged || _rescheduled ? _now.AddSeconds(-1) : (DateTime?)null, out nextExecution, out _);
+            TryGetNextExecution(result.ContainsKey("Cron") || timeZoneChanged || _rescheduled, out nextExecution, out _);
             var serializedNextExecution = nextExecution.HasValue ? JobHelper.SerializeDateTime(nextExecution.Value) : null;
 
             if ((_recurringJob.ContainsKey("NextExecution") ? _recurringJob["NextExecution"] : null) !=
@@ -340,12 +331,12 @@ namespace Hangfire
             return CronExpression.Parse(cronExpression, format);
         }
 
-        private bool TryGetNextExecution(DateTime? from, out DateTime? nextExecution, out Exception exception)
+        private bool TryGetNextExecution(bool scheduleChanged, out DateTime? nextExecution, out Exception exception)
         {
             try
             {
                 nextExecution = ParseCronExpression(Cron).GetNextOccurrence(
-                    from ?? (LastExecution ?? CreatedAt.AddSeconds(-1)),
+                    scheduleChanged ? _now.AddSeconds(-1) : LastExecution ?? CreatedAt.AddSeconds(-1),
                     TimeZone,
                     inclusive: false);
 

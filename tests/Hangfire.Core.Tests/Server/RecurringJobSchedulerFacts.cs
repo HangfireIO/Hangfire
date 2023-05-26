@@ -13,7 +13,6 @@ using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
 using Xunit;
-using Range = Moq.Range;
 
 namespace Hangfire.Core.Tests.Server
 {
@@ -24,7 +23,7 @@ namespace Hangfire.Core.Tests.Server
         private readonly Mock<JobStorageConnection> _connection;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
         private readonly Dictionary<string, string> _recurringJob;
-        private Func<DateTime> _nowInstantFactory;
+        private readonly Func<DateTime> _nowInstantFactory;
         private readonly Mock<ITimeZoneResolver> _timeZoneResolver;
         private readonly BackgroundProcessContextMock _context;
         private readonly Mock<IBackgroundJobFactory> _factory;
@@ -32,7 +31,7 @@ namespace Hangfire.Core.Tests.Server
         private readonly BackgroundJobMock _backgroundJobMock;
 
         private static readonly string _expressionString = "* * * * *";
-        private static readonly TimeSpan _delay = TimeSpan.FromMilliseconds(100);
+        private static readonly TimeSpan _delay = TimeSpan.FromTicks(1);
         private readonly CronExpression _cronExpression = CronExpression.Parse(_expressionString);
         private readonly DateTime _nowInstant = new DateTime(2017, 03, 30, 15, 30, 0, DateTimeKind.Utc);
         private readonly DateTime _nextInstant;
@@ -65,13 +64,13 @@ namespace Hangfire.Core.Tests.Server
             _connection = new Mock<JobStorageConnection>();
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
 
-            _connection.Setup(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, It.Is<double>(value => JobHelper.ToTimestamp(_nowInstant) <= value && value <= JobHelper.ToTimestamp(_nowInstant.AddSeconds(5)))))
+            _connection.Setup(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, JobHelper.ToTimestamp(_nowInstant)))
                 .Returns(() => _schedule.FirstOrDefault());
 
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{RecurringJobId}"))
                 .Returns(_recurringJob);
 
-            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, It.Is<double>(value => JobHelper.ToTimestamp(_nowInstant) <= value && value <= JobHelper.ToTimestamp(_nowInstant.AddSeconds(5))), It.IsAny<int>()))
+            _connection.SetupSequence(x => x.GetFirstByLowestScoreFromSet("recurring-jobs", 0, JobHelper.ToTimestamp(_nowInstant), It.IsAny<int>()))
                 .Returns(() => _schedule.ToList());
 
             _transaction = new Mock<IWriteOnlyTransaction>();
@@ -771,35 +770,6 @@ namespace Hangfire.Core.Tests.Server
                 !dict.ContainsKey("LastExecution"))));
 
             _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, JobHelper.ToTimestamp(_nowInstant.AddMinutes(30))));
-
-            _transaction.Verify(x => x.Commit());
-        }
-
-        [Theory]
-        [InlineData(false), InlineData(true)]
-        public void Execute_TriggersRecurringJob_WhenIgnorableModeIsUsed_AndErrorIsSlight(bool batching)
-        {
-            // Arrange
-            SetupConnection(batching);
-
-            _nowInstantFactory = () => _nowInstant.AddMilliseconds(123);
-            _recurringJob["Cron"] = "30 * * * *";
-            _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddHours(-3));
-            _recurringJob["Misfire"] = MisfireHandlingMode.Ignorable.ToString("D");
-
-            var scheduler = CreateScheduler();
-
-            // Act
-            scheduler.Execute(_context.Object);
-
-            // Assert
-            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Once);
-
-            _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{RecurringJobId}", It.Is<Dictionary<string, string>>(dict =>
-                dict["NextExecution"] == JobHelper.SerializeDateTime(_nowInstant.AddHours(1)) &&
-                dict["LastExecution"] == JobHelper.SerializeDateTime(_nowInstant))));
-
-            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, JobHelper.ToTimestamp(_nowInstant.AddHours(1))));
 
             _transaction.Verify(x => x.Commit());
         }
