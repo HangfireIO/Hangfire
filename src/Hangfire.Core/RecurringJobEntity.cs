@@ -29,7 +29,6 @@ namespace Hangfire
         private readonly IList<Exception> _errors = new List<Exception>();
         private readonly IDictionary<string, string> _recurringJob;
         private readonly DateTime _now;
-        private bool _rescheduled;
 
         public RecurringJobEntity(
             [NotNull] string recurringJobId,
@@ -137,7 +136,7 @@ namespace Hangfire
         public MisfireHandlingMode MisfireHandling { get; set; }
 
         public DateTime CreatedAt { get; }
-        public DateTime? NextExecution { get; }
+        public DateTime? NextExecution { get; set; }
 
         public DateTime? LastExecution { get; set; }
         public string LastJobId { get; set; }
@@ -146,37 +145,48 @@ namespace Hangfire
 
         public Exception[] Errors => _errors.ToArray();
 
-        public bool TrySchedule(DateTime now, out DateTime? nextExecution, out Exception error)
+        public IEnumerable<DateTime> TrySchedule(DateTime now, TimeSpan precision, out Exception error)
         {
             if (_errors.Count > 0)
             {
                 error = _errors.Count == 1 ? _errors[0] : new AggregateException(_errors);
-                nextExecution = null;
-                return false;
+                return Enumerable.Empty<DateTime>();
             }
 
-            if (TryGetNextExecution(scheduleChanged: false, out nextExecution, out error) &&
-                nextExecution < now)
-            {
-                switch (MisfireHandling)
-                {
-                    case MisfireHandlingMode.Relaxed:
-                        nextExecution = now;
-                        return true;
-                    case MisfireHandlingMode.Strict:
-                        nextExecution = nextExecution;
-                        return true;
-                    case MisfireHandlingMode.Ignorable:
-                        if (TryGetNextExecution(scheduleChanged: true, out nextExecution, out error))
-                        {
-                            _rescheduled = nextExecution != now;
-                        }
+            var result = new List<DateTime>();
+            DateTime? nextExecution = null;
 
-                        break;
+            while (TryGetNextExecution(nextExecution, out nextExecution, out error))
+            {
+                if (nextExecution == null || nextExecution > now) break;
+                if (nextExecution == now)
+                {
+                    result.Add(nextExecution.Value);
+                }
+                else
+                {
+                    switch (MisfireHandling)
+                    {
+                        case MisfireHandlingMode.Relaxed:
+                            nextExecution = now;
+                            result.Add(nextExecution.Value);
+                            break;
+                        case MisfireHandlingMode.Strict:
+                            result.Add(nextExecution.Value);
+                            break;
+                        case MisfireHandlingMode.Ignorable:
+                            if (now.Add(precision.Negate()) <= nextExecution && nextExecution <= now)
+                            {
+                                result.Add(nextExecution.Value);
+                            }
+
+                            break;
+                    }
                 }
             }
 
-            return nextExecution == now;
+            NextExecution = nextExecution;
+            return result;
         }
 
         public bool IsChanged(out IReadOnlyDictionary<string, string> changedFields, out DateTime? nextExecution)
@@ -267,13 +277,23 @@ namespace Hangfire
                 ? _recurringJob["TimeZoneId"]
                 : TimeZoneInfo.Utc.Id);
 
-            TryGetNextExecution(result.ContainsKey("Cron") || timeZoneChanged || _rescheduled, out nextExecution, out _);
-            var serializedNextExecution = nextExecution.HasValue ? JobHelper.SerializeDateTime(nextExecution.Value) : null;
-
+            var serializedNextExecution = NextExecution.HasValue ? JobHelper.SerializeDateTime(NextExecution.Value) : null;
             if ((_recurringJob.ContainsKey("NextExecution") ? _recurringJob["NextExecution"] : null) !=
                 serializedNextExecution)
             {
                 result.Add("NextExecution", serializedNextExecution ?? String.Empty);
+                nextExecution = NextExecution;
+            }
+            else
+            {
+                TryGetNextExecution(result.ContainsKey("Cron") || timeZoneChanged ? _now.AddSeconds(-1) : (DateTime?)null, out nextExecution, out _);
+                serializedNextExecution = nextExecution.HasValue ? JobHelper.SerializeDateTime(nextExecution.Value) : null;
+
+                if ((_recurringJob.ContainsKey("NextExecution") ? _recurringJob["NextExecution"] : null) !=
+                    serializedNextExecution)
+                {
+                    result.Add("NextExecution", serializedNextExecution ?? String.Empty);
+                }
             }
 
             if ((_recurringJob.ContainsKey("LastJobId") ? _recurringJob["LastJobId"] : null) != LastJobId)
@@ -331,12 +351,12 @@ namespace Hangfire
             return CronExpression.Parse(cronExpression, format);
         }
 
-        private bool TryGetNextExecution(bool scheduleChanged, out DateTime? nextExecution, out Exception exception)
+        private bool TryGetNextExecution(DateTime? from, out DateTime? nextExecution, out Exception exception)
         {
             try
             {
                 nextExecution = ParseCronExpression(Cron).GetNextOccurrence(
-                    scheduleChanged ? _now.AddSeconds(-1) : LastExecution ?? CreatedAt.AddSeconds(-1),
+                    from ?? (LastExecution ?? CreatedAt.AddSeconds(-1)),
                     TimeZone,
                     inclusive: false);
 

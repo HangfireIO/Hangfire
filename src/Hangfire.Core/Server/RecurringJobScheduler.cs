@@ -282,17 +282,23 @@ namespace Hangfire.Server
                     }
                     
                     var backgroundJobs = new List<BackgroundJob>();
+                    var precision = _pollingDelay + _pollingDelay;
 
-                    Exception error;
+                    var executions = recurringJob.TrySchedule(now, precision, out var error);
 
-                    while (recurringJob.TrySchedule(now, out var execution, out error))
+                    if (error != null)
+                    {
+                        throw new InvalidOperationException("Recurring job can't be scheduled, see inner exception for details.", error);
+                    }
+
+                    foreach (var execution in executions)
                     {
                         var backgroundJob = _factory.TriggerRecurringJob(
                             context.Storage,
                             connection,
                             _profiler,
                             recurringJob,
-                            execution.Value);
+                            execution);
 
                         if (!String.IsNullOrEmpty(backgroundJob?.Id))
                         {
@@ -302,11 +308,6 @@ namespace Hangfire.Server
                         {
                             _logger.Debug($"Recurring job '{recurringJobId}' execution at '{execution}' has been canceled.");
                         }
-                    }
-
-                    if (error != null)
-                    {
-                        throw new InvalidOperationException("Recurring job can't be scheduled, see inner exception for details.", error);
                     }
 
                     foreach (var backgroundJob in backgroundJobs)
