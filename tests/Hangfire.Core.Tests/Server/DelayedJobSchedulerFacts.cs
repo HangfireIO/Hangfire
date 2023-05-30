@@ -322,6 +322,58 @@ namespace Hangfire.Core.Tests.Server
             _transaction.Verify(x => x.Commit());
         }
 
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_RemovesJobFromSchedule_WhenJobIsNotInScheduledState(bool batching)
+        {
+            // Arrange
+            if (batching) EnableBatching();
+            _schedule.Add(JobId);
+
+            _connection.Setup(x => x.GetJobData(JobId))
+                .Returns(new JobData { State = SucceededState.StateName });
+
+            _stateChanger
+                .Setup(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is EnqueuedState)))
+                .Returns<IState>(null);
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _stateChanger.Verify(x => x.ChangeState(It.IsAny<StateChangeContext>()), Times.Once);
+            _transaction.Verify(x => x.RemoveFromSet("schedule", JobId));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_DoesNotRemoveJobFromSchedule_WhenJobIsInTheScheduledState(bool batching)
+        {
+            // Arrange
+            if (batching) EnableBatching();
+            _schedule.Add(JobId);
+
+            _connection.Setup(x => x.GetJobData(JobId))
+                .Returns(new JobData { State = ScheduledState.StateName });
+
+            _stateChanger
+                .SetupSequence(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is EnqueuedState)))
+                .Returns((IState)null)
+                .Returns(() => { _schedule.Remove(JobId); return new EnqueuedState(); });
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _transaction.Verify(x => x.RemoveFromSet("schedule", JobId), Times.Never);
+            _transaction.Verify(x => x.Commit(), Times.Never);
+        }
+
         private DelayedJobScheduler CreateScheduler()
         {
             return new DelayedJobScheduler(TimeSpan.Zero, _stateChanger.Object);

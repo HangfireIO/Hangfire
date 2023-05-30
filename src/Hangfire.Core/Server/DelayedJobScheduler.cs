@@ -252,15 +252,27 @@ namespace Hangfire.Server
                         _profiler,
                         context.ServerId));
 
-                    if (appliedState == null && connection.GetJobData(jobId) == null)
+                    if (appliedState == null)
                     {
-                        // When a background job with the given id does not exist, we should
-                        // remove its id from a schedule manually. This may happen when someone
-                        // modifies a storage bypassing Hangfire API.
-                        using (var transaction = connection.CreateWriteTransaction())
+                        _logger.Debug($"Failed to change state of a scheduled background job '{jobId}'");
+
+                        // When a background job with the given id does not exist, or its state
+                        // does not equal to the Scheduled one, we should remove its id manually
+                        // to avoid poisoned schedule and be able to process other scheduled jobs.
+                        // This might happen when someone modifies the storage bypassing Hangfire API.
+                        using (connection.AcquireDistributedJobLock(jobId, TimeSpan.FromSeconds(5)))
                         {
-                            transaction.RemoveFromSet("schedule", jobId);
-                            transaction.Commit();
+                            var jobData = connection.GetJobData(jobId);
+                            if (jobData == null || !ScheduledState.StateName.Equals(jobData.State, StringComparison.OrdinalIgnoreCase))
+                            {
+                                using (var transaction = connection.CreateWriteTransaction())
+                                {
+                                    transaction.RemoveFromSet("schedule", jobId);
+                                    transaction.Commit();
+                                }
+
+                                _logger.Warn($"Background job '{jobId}' removed from the schedule, because it's expired or its state was changed");
+                            }
                         }
                     }
 
