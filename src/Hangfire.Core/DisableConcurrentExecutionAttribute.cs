@@ -15,33 +15,37 @@
 
 using System;
 using System.Linq;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
+using Newtonsoft.Json;
 
 namespace Hangfire
 {
     public class DisableConcurrentExecutionAttribute : JobFilterAttribute, IServerFilter
     {
-        private readonly string _resource;
-        private readonly int _timeoutInSeconds;
-
         public DisableConcurrentExecutionAttribute(int timeoutInSeconds)
         {
             if (timeoutInSeconds < 0) throw new ArgumentException("Timeout argument value should be greater that zero.");
 
-            _timeoutInSeconds = timeoutInSeconds;
+            TimeoutSec = timeoutInSeconds;
         }
-
+        
+        [JsonConstructor]
         public DisableConcurrentExecutionAttribute(string resource, int timeoutSec)
             : this(timeoutSec)
         {
-            _resource = resource;
+            Resource = resource;
         }
+
+        [CanBeNull]
+        public string Resource { get; }
+        public int TimeoutSec { get; }
 
         public void OnPerforming(PerformingContext filterContext)
         {
             var resource = GetResource(filterContext.BackgroundJob.Job);
-            var timeout = TimeSpan.FromSeconds(_timeoutInSeconds);
+            var timeout = TimeSpan.FromSeconds(TimeoutSec);
 
             var distributedLock = filterContext.Connection.AcquireDistributedLock(resource, timeout);
             filterContext.Items["DistributedLock"] = distributedLock;
@@ -60,11 +64,11 @@ namespace Hangfire
 
         private string GetResource(Job job)
         {
-            if (!String.IsNullOrWhiteSpace(_resource))
+            if (!String.IsNullOrWhiteSpace(Resource))
             {
                 try
                 {
-                    return String.Format(_resource, job.Args.ToArray()).ToLowerInvariant();
+                    return String.Format(Resource, job.Args.ToArray()).ToLowerInvariant();
                 }
                 catch (Exception ex)
                 {

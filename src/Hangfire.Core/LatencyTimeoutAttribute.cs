@@ -30,8 +30,6 @@ namespace Hangfire
     {
         private readonly ILog _logger = LogProvider.For<LatencyTimeoutAttribute>();
 
-        private readonly int _timeoutInSeconds;
-        
         /// <summary>
         /// Initializes a new instance of the <see cref="LatencyTimeoutAttribute"/>
         /// class with the given timeout value.
@@ -49,7 +47,7 @@ namespace Hangfire
                 throw new ArgumentOutOfRangeException(nameof(timeoutInSeconds), "Timeout value must be equal or greater than zero.");
             }
 
-            _timeoutInSeconds = timeoutInSeconds;
+            TimeoutInSeconds = timeoutInSeconds;
             LogLevel = LogLevel.Debug;
         }
 
@@ -58,6 +56,7 @@ namespace Hangfire
         /// background job was deleted due to exceeded timeout.
         /// </summary>
         public LogLevel LogLevel { get; set; }
+        public int TimeoutInSeconds { get; }
 
         /// <inheritdoc />
         public void OnStateElection(ElectStateContext context)
@@ -71,16 +70,16 @@ namespace Hangfire
 
             var elapsedTime = DateTime.UtcNow - context.BackgroundJob.CreatedAt;
 
-            if (elapsedTime.TotalSeconds > _timeoutInSeconds)
+            if (elapsedTime.TotalSeconds > TimeoutInSeconds)
             {
                 context.CandidateState = new DeletedState
                 {
-                    Reason = $"Background job has exceeded latency timeout of {_timeoutInSeconds} second(s)"
+                    Reason = $"Background job has exceeded latency timeout of {TimeoutInSeconds} second(s)"
                 };
 
                 _logger.Log(
                     LogLevel,
-                    () => $"Background job '{context.BackgroundJob.Id}' has exceeded latency timeout of {_timeoutInSeconds} second(s) and will be deleted");
+                    () => $"Background job '{context.BackgroundJob.Id}' has exceeded latency timeout of {TimeoutInSeconds} second(s) and will be deleted");
             }
         }
 
