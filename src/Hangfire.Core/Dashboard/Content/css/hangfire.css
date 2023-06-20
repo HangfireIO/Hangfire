@@ -92,6 +92,10 @@ body {
     height: 1px;
 }
 
+.tooltip {
+    word-break: break-word;
+}
+
 a:hover .label-hover {
     background-color: #2a6496!important;
     color: #fff!important;
