@@ -97,6 +97,7 @@ namespace Hangfire.States
             FailedAt = DateTime.UtcNow;
             Exception = exception;
             ServerId = serverId;
+            MaxLinesInStackTrace = MaxLinesInExceptionDetails;
         }
 
         /// <summary>
@@ -147,6 +148,9 @@ namespace Hangfire.States
         [JsonIgnore]
         public bool IgnoreJobLoadException => false;
 
+        [JsonIgnore]
+        public int? MaxLinesInStackTrace { get; set; }
+
         /// <inheritdoc />
         /// <remarks>
         /// <para>Returning dictionary contains the following keys. You can obtain 
@@ -192,7 +196,7 @@ namespace Hangfire.States
                 { "FailedAt", JobHelper.SerializeDateTime(FailedAt) },
                 { "ExceptionType", Exception.GetType().FullName },
                 { "ExceptionMessage", Exception.Message },
-                { "ExceptionDetails", Exception.ToStringWithOriginalStackTrace(MaxLinesInExceptionDetails) }
+                { "ExceptionDetails", Exception.ToStringWithOriginalStackTrace(MaxLinesInStackTrace) }
             };
 
             if (ServerId != null)

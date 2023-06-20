@@ -210,10 +210,19 @@ namespace Hangfire.Dashboard
 
         private static NonEscapedString FailedRenderer(HtmlHelper html, IDictionary<string, string> stateData)
         {
-            var stackTrace = html.StackTrace(stateData["ExceptionDetails"]).ToString();
-            var serverId = stateData.ContainsKey("ServerId") ? $" ({html.ServerId(stateData["ServerId"])})" : null;
-            return new NonEscapedString(
-                $"<h4 class=\"exception-type\">{html.HtmlEncode(stateData["ExceptionType"])}{serverId}</h4><p class=\"text-muted\">{html.HtmlEncode(stateData["ExceptionMessage"])}</p><pre class=\"stack-trace\">{stackTrace}</pre>");
+            var builder = new StringBuilder();
+            var serverId = stateData.TryGetValue("ServerId", out var value) ? $" ({html.ServerId(value)})" : null;
+
+            builder.Append(
+                $"<h4 class=\"exception-type\">{html.HtmlEncode(stateData["ExceptionType"])}{serverId}</h4><p class=\"text-muted\">{html.HtmlEncode(stateData["ExceptionMessage"])}</p>");
+
+            if (stateData.TryGetValue("ExceptionDetails", out var details) && !String.IsNullOrWhiteSpace(details))
+            {
+                var stackTrace = html.StackTrace(details).ToString();
+                builder.Append($"<pre class=\"stack-trace\">{stackTrace}</pre>");
+            }
+
+            return new NonEscapedString(builder.ToString());
         }
 
         private static NonEscapedString ProcessingRenderer(HtmlHelper helper, IDictionary<string, string> stateData)

@@ -73,7 +73,7 @@ namespace Hangfire.Common
         private static string GetFirstLines(string text, int? numLines)
         {
             if (text == null) return null;
-            if (!numLines.HasValue || numLines.Value <= 0) return text;
+            if (!numLines.HasValue || numLines.Value < 0) return text;
 
             using (var reader = new StringReader(text))
             {
