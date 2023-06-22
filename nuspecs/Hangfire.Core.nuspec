@@ -22,6 +22,12 @@ https://www.hangfire.io/
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.3
+• Changed – Allow to configure `MaxLinesInStackTrace` for a particular `FailedState` instance.
+• Fixed – Remove job id from schedule when it's not in the Scheduled state for some reason.
+• Fixed – Missing invocations of recurring jobs when the new "Ignorable" option is used.
+• Fixed – Make `DisableConcurrentExecutionAttribute` and `LatencyTimeoutAttribute` serializable.
+
 1.8.2
 • Changed – Disable transactional job creation feature appeared in 1.8.0.
 • Fixed – "Can not start continuation XXX" error when storage supports transactional job creation.
