@@ -22,6 +22,9 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.36
+• Fixed – Remove job id from schedule when it's not in the Scheduled state for some reason.
+
 1.7.34
 • Added – Add reschedule functionality to `BackgroundJob` and `IBackgroundJobClient` (by @chrischu).
 • Fixed – `ArgumentNullException` with tricky generic type with inheritance case for jobs.
