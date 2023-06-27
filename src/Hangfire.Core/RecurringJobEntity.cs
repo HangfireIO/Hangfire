@@ -136,7 +136,7 @@ namespace Hangfire
         public MisfireHandlingMode MisfireHandling { get; set; }
 
         public DateTime CreatedAt { get; }
-        public DateTime? NextExecution { get; set; }
+        public DateTime? NextExecution { get; private set; }
 
         public DateTime? LastExecution { get; set; }
         public string LastJobId { get; set; }
