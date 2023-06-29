@@ -131,6 +131,7 @@ namespace Hangfire
         public void Dispose()
         {
             _processingServer?.Dispose();
+            _processingServer = null;
         }
         
         private void InitializeProcessingServer()
