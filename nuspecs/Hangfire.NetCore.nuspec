@@ -15,6 +15,9 @@
     <tags>hangfire netcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.7.36
+• Changed – Set processing server to `null` in hosted service to avoid `ObjectDisposedException`.
+
 1.7.32
 • Changed – Wait for application to be ready before starting the server when using `AddHangfireServer`.
 • Fixed – Do not return `null` as result of `StopAsync` in hosted service implementation (by @tomaszek92).

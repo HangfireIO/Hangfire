@@ -28,6 +28,10 @@ Hangfire.Core
 
 • Fixed – Remove job id from schedule when it's not in the Scheduled state for some reason.
 
+Hangfire.NetCore and Hangfire.AspNetCore
+
+• Changed – Set processing server to `null` in hosted service to avoid `ObjectDisposedException`.
+
 1.7.35
 
 Hangfire.SqlServer

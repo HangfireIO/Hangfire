@@ -15,6 +15,9 @@
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>https://www.hangfire.io/blog/
 
+1.7.36
+• Changed – Set processing server to `null` in hosted service to avoid `ObjectDisposedException`.
+
 1.7.33
 • Fixed – Implement support `IAsyncDisposable` for `IServiceScope` instances for newer .NET platforms.
 
