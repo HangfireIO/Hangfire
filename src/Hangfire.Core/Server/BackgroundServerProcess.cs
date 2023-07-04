@@ -126,13 +126,24 @@ namespace Hangfire.Server
 
         private IBackgroundDispatcher CreateHeartbeatProcess(BackgroundServerContext context, Action requestRestart)
         {
+            // We need to ensure that heartbeats are sent until server shutdown. Otherwise our server
+            // can be considered as dead before completing all the background jobs on a graceful
+            // shutdown.
+            var heartbeatContext = new BackgroundServerContext(
+                context.ServerId,
+                context.Storage,
+                context.Properties,
+                context.ShutdownToken,
+                context.ShutdownToken,
+                context.ShutdownToken);
+
             return new ServerHeartbeatProcess(_options.HeartbeatInterval, _options.ServerTimeout, requestRestart)
                 .UseBackgroundPool(threadCount: 1
 #if !NETSTANDARD1_3
                     , thread => { thread.Priority = ThreadPriority.AboveNormal; }
 #endif
                 )
-                .Create(context, _options);
+                .Create(heartbeatContext, _options);
         }
 
         private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses()
