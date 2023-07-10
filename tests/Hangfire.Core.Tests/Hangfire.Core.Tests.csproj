@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFrameworks>net452;net461;netcoreapp1.0;netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
     <NoWarn>0618</NoWarn>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(TargetFramework)'=='netcoreapp1.0'">

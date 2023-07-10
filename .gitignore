@@ -62,6 +62,7 @@ x64/
 .vs/
 
 # dotnet
+*.lock.json
 artifacts/
 
 # MSTest test Results

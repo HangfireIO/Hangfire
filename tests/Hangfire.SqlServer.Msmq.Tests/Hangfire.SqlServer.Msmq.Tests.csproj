@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFrameworks>net452</TargetFrameworks>
     <NoWarn>0618</NoWarn>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   
   <ItemGroup>

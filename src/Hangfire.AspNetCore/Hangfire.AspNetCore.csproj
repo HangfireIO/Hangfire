@@ -6,7 +6,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>1591</NoWarn>
     <RootNamespace>Hangfire</RootNamespace>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(TargetFramework)'=='net451' or '$(TargetFramework)'=='net461'">
