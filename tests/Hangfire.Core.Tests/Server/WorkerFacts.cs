@@ -224,7 +224,9 @@ namespace Hangfire.Core.Tests.Server
 
             worker.Execute(_context.Object);
 
-            _performer.Verify(x => x.Perform(It.IsNotNull<PerformContext>()));
+            _performer.Verify(x => x.Perform(It.Is<PerformContext>(ctx =>
+                ctx.BackgroundJob.Id == JobId &&
+                ctx.ServerId == _context.ServerId)));
         }
 
         [Fact]

@@ -304,7 +304,7 @@ namespace Hangfire.Server
 
                 using (var jobToken = new ServerJobCancellationToken(connection, backgroundJob.Id, context.ServerId, context.ExecutionId.ToString(), context.StoppedToken))
                 {
-                    var performContext = new PerformContext(context.Storage, connection, backgroundJob, jobToken, _profiler);
+                    var performContext = new PerformContext(context.Storage, connection, backgroundJob, jobToken, _profiler, context.ServerId);
 
                     var latency = (DateTime.UtcNow - backgroundJob.CreatedAt).TotalMilliseconds;
                     var duration = Stopwatch.StartNew();
