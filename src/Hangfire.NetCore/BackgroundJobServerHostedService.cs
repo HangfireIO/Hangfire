@@ -102,6 +102,7 @@ namespace Hangfire
 
 #if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
             _hostApplicationLifetime = hostApplicationLifetime;
+            _hostApplicationLifetime?.ApplicationStopping.Register(SendStopSignal);
 #endif
         }
 
@@ -143,6 +144,13 @@ namespace Hangfire
 #pragma warning restore 618
                 : new BackgroundJobServer(_options, _storage, _additionalProcesses);
         }
+
+#if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
+        private void SendStopSignal()
+        {
+            _processingServer?.SendStop();
+        }
+#endif
     }
 }
 #endif
