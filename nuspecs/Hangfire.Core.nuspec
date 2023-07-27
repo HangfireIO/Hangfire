@@ -22,6 +22,10 @@ https://www.hangfire.io/
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.4
+• Added – Pass server id from a worker to the `PerformContext.ServerId` property available in filters.
+• Fixed – Send heartbeats until full background processing server shutdown.
+
 1.8.3
 • Changed – Allow to configure `MaxLinesInStackTrace` for a particular `FailedState` instance.
 • Fixed – Remove job id from schedule when it's not in the Scheduled state for some reason.

@@ -16,6 +16,11 @@
     <releaseNotes>
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
+
+1.8.4
+• Changed – Send the stop signal earlier in the shutdown pipeline when hosting in .NET Core 3.1 or higher.
+• Changed – Set processing server to null in hosted service to avoid `ObjectDisposedException`.
+• Fixed – Other `IHostedService` implementations can block Hangfire server from being stopped.
       
 1.8.1
 • Fixed – Add `net461` target for Hangfire.NetCore package to avoid missing method exceptions.
