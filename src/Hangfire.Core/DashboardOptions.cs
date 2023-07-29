@@ -107,5 +107,10 @@ namespace Hangfire
         /// or excluding the corresponding CSS files.
         /// </summary>
         public bool DarkModeEnabled { get; set; }
+
+        /// <summary>
+        /// Optional favicon path
+        /// </summary>
+        public string FaviconPath { get; set; } = string.Empty;
     }
 }
