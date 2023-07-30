@@ -27,7 +27,7 @@
     }
     @{ var version = GetType().GetTypeInfo().Assembly.GetName().Version; }
 
-    @if(!string.IsNullOrWithSpace(DashboardOptions.FaviconPath))
+    @if(!string.IsNullOrWhiteSpace(DashboardOptions.FaviconPath))
     {
         @: <link rel="shortcut icon" href="@DashboardOptions.FaviconPath" type="image/x-icon">
     }
