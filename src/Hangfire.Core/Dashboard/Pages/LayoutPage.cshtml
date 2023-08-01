@@ -26,7 +26,16 @@
         }
     }
     @{ var version = GetType().GetTypeInfo().Assembly.GetName().Version; }
-    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+
+    @if(!string.IsNullOrWhiteSpace(DashboardOptions.FaviconPath))
+    {
+        @: <link rel="shortcut icon" href="@DashboardOptions.FaviconPath" type="image/x-icon">
+    }
+    else
+    {
+        @: <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+    }
+    
     <link rel="stylesheet" href="@Url.To($"/css{version.Major}{version.Minor}{version.Build}0{Math.Abs(DashboardRoutes.StylesheetsHashCode)}")">
     @if (DashboardOptions.DarkModeEnabled)
     {
