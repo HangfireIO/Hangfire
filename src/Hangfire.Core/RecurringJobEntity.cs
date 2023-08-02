@@ -278,7 +278,8 @@ namespace Hangfire
                 : TimeZoneInfo.Utc.Id);
 
             var serializedNextExecution = NextExecution.HasValue ? JobHelper.SerializeDateTime(NextExecution.Value) : null;
-            if ((_recurringJob.ContainsKey("NextExecution") ? _recurringJob["NextExecution"] : null) !=
+            if (serializedNextExecution != null &&
+                (_recurringJob.ContainsKey("NextExecution") ? _recurringJob["NextExecution"] : null) !=
                 serializedNextExecution)
             {
                 result.Add("NextExecution", serializedNextExecution ?? String.Empty);
