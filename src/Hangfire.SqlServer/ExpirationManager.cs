@@ -151,6 +151,20 @@ It will be retried in {_checkInterval.TotalSeconds} seconds.",
 
         private static string GetExpireQuery(string schemaName, string table)
         {
+            if (table.Equals("AggregatedCounter", StringComparison.OrdinalIgnoreCase))
+            {
+                // Schema 5, which still should be supported by Hangfire doesn't have an index that covers
+                // the `ExpireAt` column, making it impossible to run the query.
+                return $@"
+set deadlock_priority low;
+set transaction isolation level read committed;
+set xact_abort on;
+set lock_timeout 1000;
+delete top (@count) T from [{schemaName}].[{table}] T
+where ExpireAt < @now
+option (loop join, optimize for (@count = 20000));";
+            }
+
             return $@"
 set deadlock_priority low;
 set transaction isolation level read committed;
