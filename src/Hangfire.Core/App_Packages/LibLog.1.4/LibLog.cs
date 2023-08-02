@@ -327,7 +327,7 @@ namespace Hangfire.Logging
     /// </summary>
     public static class LogProvider
     {
-        private static ILogProvider _currentLogProvider;
+        private static readonly ILogProvider _currentLogProvider;
 
         /// <summary>
         /// Gets a logger for the specified type.
@@ -836,7 +836,7 @@ namespace Hangfire.Logging.LogProviders
         private static readonly Type LogEntryType;
         private static readonly Type LoggerType;
         private readonly Action<string, string, TraceEventType> WriteLogEntry;
-        private Func<string, TraceEventType, bool> ShouldLogEntry;
+        private readonly Func<string, TraceEventType, bool> ShouldLogEntry;
 
         static EntLibLogProvider()
         {

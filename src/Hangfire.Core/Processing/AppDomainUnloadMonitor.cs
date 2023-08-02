@@ -21,8 +21,8 @@ namespace Hangfire.Processing
 {
     internal static class AppDomainUnloadMonitor
     {
-        private static int _initialized;
-        private static bool _isUnloading;
+        private static readonly int _initialized;
+        private static readonly bool _isUnloading;
 
         public static void EnsureInitialized()
         {

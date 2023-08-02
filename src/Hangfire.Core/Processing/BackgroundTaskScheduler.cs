@@ -70,7 +70,7 @@ namespace Hangfire.Processing
         private readonly WaitHandle[] _waitHandles;
         private readonly Action<Exception> _exceptionHandler;
 
-        private int _disposed;
+        private readonly int _disposed;
 
         /// <summary>Initializes a new instance of the <see cref="BackgroundTaskScheduler"/> with
         /// the number of threads based on the <see cref="Environment.ProcessorCount"/> property.
