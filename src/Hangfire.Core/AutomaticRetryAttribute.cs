@@ -14,12 +14,14 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
+using Newtonsoft.Json;
 
 namespace Hangfire
 {
@@ -141,6 +143,7 @@ namespace Hangfire
         /// <value>An array of non-negative numbers.</value>
         /// <exception cref="ArgumentNullException">The value in a set operation is null.</exception>
         /// <exception cref="ArgumentException">The value contain one or more negative numbers.</exception>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public int[] DelaysInSeconds
         {
             get { lock (_lockObject) { return _delaysInSeconds; } }
@@ -157,6 +160,7 @@ namespace Hangfire
         /// Gets or sets a function using to get a delay by an attempt number.
         /// </summary>
         /// <exception cref="ArgumentNullException">The value in a set operation is null.</exception>
+        [JsonIgnore]
         public Func<long, int> DelayInSecondsByAttemptFunc
         {
             get { lock (_lockObject) { return _delayInSecondsByAttemptFunc;} }
@@ -171,6 +175,7 @@ namespace Hangfire
         /// Gets or sets a candidate state for a background job that 
         /// will be chosen when number of retry attempts exceeded.
         /// </summary>
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public AttemptsExceededAction OnAttemptsExceeded
         {
             get { lock (_lockObject) { return _onAttemptsExceeded; } }
@@ -180,6 +185,8 @@ namespace Hangfire
         /// <summary>
         /// Gets or sets whether to produce log messages on retry attempts.
         /// </summary>
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [DefaultValue(true)]
         public bool LogEvents
         {
             get { lock (_lockObject) { return _logEvents; } }
@@ -192,6 +199,7 @@ namespace Hangfire
         /// any exception, but this property allow to reduce it only to some specific
         /// exception types and their subtypes.
         /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public Type[] OnlyOn
         {
             get { lock (_lockObject) { return _onlyOn; } }
