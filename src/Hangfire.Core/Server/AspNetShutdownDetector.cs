@@ -27,7 +27,7 @@ namespace Hangfire.Server
         private static readonly CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
 
 #if !NETSTANDARD1_3
-        private static int _isInitialized;
+        private static readonly int _isInitialized;
         private static bool _isSucceeded;
         // ReSharper disable once NotAccessedField.Local
         private static Thread _checkForShutdownThread;

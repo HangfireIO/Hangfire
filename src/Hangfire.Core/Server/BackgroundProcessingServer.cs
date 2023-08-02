@@ -41,7 +41,7 @@ namespace Hangfire.Server
     public sealed class BackgroundProcessingServer : IBackgroundProcessingServer
     {
         public static readonly TimeSpan DefaultShutdownTimeout = TimeSpan.FromSeconds(15);
-        private static int _lastThreadId = 0;
+        private static readonly int _lastThreadId = 0;
 
         private readonly ILog _logger = LogProvider.GetLogger(typeof(BackgroundProcessingServer));
 
@@ -54,8 +54,8 @@ namespace Hangfire.Server
         private readonly BackgroundProcessingServerOptions _options;
         private readonly IBackgroundDispatcher _dispatcher;
 
-        private int _disposed;
-        private bool _awaited;
+        private readonly int _disposed;
+        private readonly bool _awaited;
 
         public BackgroundProcessingServer([NotNull] IEnumerable<IBackgroundProcess> processes)
             : this(JobStorage.Current, processes)
