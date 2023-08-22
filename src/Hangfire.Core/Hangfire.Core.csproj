@@ -57,7 +57,7 @@
   
   <!-- Full MSBuild is required to generate Razor classes -->
   <PropertyGroup>
-    <MSBuild14FullPath>$(MSBuildProgramFiles32)\MSBuild\14.0\bin\MSBuild.exe</MSBuild14FullPath>
+    <MSBuild14FullPath>$(MSBuildProgramFiles32)\..\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe</MSBuild14FullPath>
     <MSBuildCurrentFullPath>$(MSBuildBinPath)\MSBuild.exe</MSBuildCurrentFullPath>
     <RazorProjectFile>Razor.build</RazorProjectFile>
     <InnerTargets>GenerateRazorClasses;Build</InnerTargets>
