@@ -15,7 +15,17 @@
   <ItemGroup>
     <Compile Include="..\SharedAssemblyInfo.cs" Link="Properties\SharedAssemblyInfo.cs" />
   </ItemGroup>
-  
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.3" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Hangfire.NetCore\Hangfire.NetCore.csproj" />
   </ItemGroup>
