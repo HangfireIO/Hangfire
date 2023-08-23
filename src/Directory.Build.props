@@ -1,0 +1,9 @@
+<Project>
+    <!-- Custom AssemblyInfo.cs file -->
+    <PropertyGroup>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="..\SharedAssemblyInfo.cs" Link="Properties\SharedAssemblyInfo.cs" />
+    </ItemGroup>
+</Project>

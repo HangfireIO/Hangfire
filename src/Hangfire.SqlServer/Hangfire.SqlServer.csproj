@@ -2,7 +2,6 @@
   <PropertyGroup>
     <TargetFrameworks>net451;netstandard1.3;netstandard2.0;</TargetFrameworks>
     <DebugType>portable</DebugType>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>1591</NoWarn>
     <RootNamespace>Hangfire.SqlServer</RootNamespace>
@@ -12,10 +11,6 @@
     <DebugType>full</DebugType>
     <DefineConstants>$(DefineConstants);FEATURE_TRANSACTIONSCOPE;FEATURE_CONFIGURATIONMANAGER</DefineConstants>
   </PropertyGroup>
-  
-  <ItemGroup>
-    <Compile Include="..\SharedAssemblyInfo.cs" Link="Properties\SharedAssemblyInfo.cs" />
-  </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\Hangfire.Core\Hangfire.Core.csproj" />

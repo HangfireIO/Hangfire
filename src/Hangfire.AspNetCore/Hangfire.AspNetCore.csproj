@@ -2,7 +2,6 @@
   <PropertyGroup>
     <TargetFrameworks>net451;net461;netstandard1.3;netstandard2.0;netcoreapp3.0</TargetFrameworks>
     <DebugType>portable</DebugType>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>1591</NoWarn>
     <RootNamespace>Hangfire</RootNamespace>
@@ -11,10 +10,6 @@
   <PropertyGroup Condition="'$(TargetFramework)'=='net451' or '$(TargetFramework)'=='net461'">
     <DebugType>full</DebugType>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="..\SharedAssemblyInfo.cs" Link="Properties\SharedAssemblyInfo.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.3" />
