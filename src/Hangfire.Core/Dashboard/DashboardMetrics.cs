@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Dashboard.Resources;
@@ -126,7 +127,7 @@ namespace Hangfire.Dashboard
                 {
                     Style = MetricStyle.Danger,
                     Highlighted = true,
-                    Title = string.Format(Strings.Metrics_FailedCountOrNull, page.Statistics.Failed)
+                    Title = string.Format(CultureInfo.CurrentCulture, Strings.Metrics_FailedCountOrNull, page.Statistics.Failed)
                 }
                 : null);
 

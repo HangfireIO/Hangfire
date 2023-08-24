@@ -107,7 +107,7 @@ namespace Hangfire
                 MisfireHandling = (MisfireHandlingMode)Enum.Parse(typeof(MisfireHandlingMode), misfireStr);
                 if (!Enum.IsDefined(typeof(MisfireHandlingMode), MisfireHandling))
                 {
-                    throw new NotSupportedException(String.Format("Misfire option '{0}' is not supported.", (int)MisfireHandling));
+                    throw new NotSupportedException(String.Format(CultureInfo.CurrentCulture, "Misfire option '{0}' is not supported.", (int)MisfireHandling));
                 }
             }
             else

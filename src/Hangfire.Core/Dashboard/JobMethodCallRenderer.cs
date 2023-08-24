@@ -16,6 +16,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -149,6 +150,7 @@ namespace Hangfire.Dashboard
 
                         // ReSharper disable once UseStringInterpolation
                         renderedArgument = String.Format(
+                            CultureInfo.CurrentCulture,
                             "{0}{1} {{ {2} }}",
                             WrapKeyword("new"),
                             parameter.ParameterType.IsArray ? " []" : "",

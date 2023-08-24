@@ -159,7 +159,10 @@ namespace Hangfire.Dashboard
                 {
                     try
                     {
-                        return String.Format(GetDisplayName(attribute), job.Args.ToArray());
+                        return String.Format(
+                            CultureInfo.CurrentCulture,
+                            GetDisplayName(attribute),
+                            job.Args.ToArray());
                     }
                     catch (FormatException)
                     {
