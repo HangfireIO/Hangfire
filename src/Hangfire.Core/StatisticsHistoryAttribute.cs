@@ -36,27 +36,27 @@ namespace Hangfire
                     DateTime.UtcNow.AddMonths(1) - DateTime.UtcNow);
 
                 context.Transaction.IncrementCounter(
-                    $"stats:succeeded:{DateTime.UtcNow.ToString("yyyy-MM-dd-HH")}",
+                    $"stats:succeeded:{DateTime.UtcNow.ToString("yyyy-MM-dd-HH", CultureInfo.InvariantCulture)}",
                     TimeSpan.FromDays(1));
             }
             else if (context.CandidateState.Name == FailedState.StateName)
             {
                 context.Transaction.IncrementCounter(
-                    $"stats:failed:{DateTime.UtcNow.ToString("yyyy-MM-dd")}",
+                    $"stats:failed:{DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}",
                     DateTime.UtcNow.AddMonths(1) - DateTime.UtcNow);
 
                 context.Transaction.IncrementCounter(
-                    $"stats:failed:{DateTime.UtcNow.ToString("yyyy-MM-dd-HH")}",
+                    $"stats:failed:{DateTime.UtcNow.ToString("yyyy-MM-dd-HH", CultureInfo.InvariantCulture)}",
                     TimeSpan.FromDays(1));
             }
             else if (context.CandidateState is DeletedState)
             {
                 context.Transaction.IncrementCounter(
-                    $"stats:deleted:{DateTime.UtcNow.ToString("yyyy-MM-dd")}",
+                    $"stats:deleted:{DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}",
                     DateTime.UtcNow.AddMonths(1) - DateTime.UtcNow);
 
                 context.Transaction.IncrementCounter(
-                    $"stats:deleted:{DateTime.UtcNow.ToString("yyyy-MM-dd-HH")}",
+                    $"stats:deleted:{DateTime.UtcNow.ToString("yyyy-MM-dd-HH", CultureInfo.InvariantCulture)}",
                     TimeSpan.FromDays(1));
             }
         }
