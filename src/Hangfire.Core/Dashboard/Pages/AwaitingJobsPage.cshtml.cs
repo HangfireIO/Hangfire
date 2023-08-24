@@ -448,7 +448,7 @@ WriteLiteral("</th>\r\n                            </tr>\r\n                    
                                         }
 
                                         job = jobData.Job;
-                                        stateData = state.Data;
+                                        stateData = state?.Data;
                                         awaitingSince = jobData.CreatedAt;
                                     }
                                 }
