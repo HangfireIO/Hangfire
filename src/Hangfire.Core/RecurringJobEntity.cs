@@ -284,7 +284,7 @@ namespace Hangfire
                 (_recurringJob.TryGetValue("NextExecution", out var next) ? next : null) !=
                 serializedNextExecution)
             {
-                result.Add("NextExecution", serializedNextExecution ?? String.Empty);
+                result.Add("NextExecution", serializedNextExecution);
                 nextExecution = NextExecution;
             }
             else

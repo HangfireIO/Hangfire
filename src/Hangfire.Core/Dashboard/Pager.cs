@@ -119,7 +119,6 @@ namespace Hangfire.Dashboard
             if (_startPageIndex > 2)
             {
                 var index = _startPageIndex - 1;
-                if (index < 1) index = 1;
                 var item = new Item(index, false, ItemType.MorePage);
                 results.Add(item);
             }
