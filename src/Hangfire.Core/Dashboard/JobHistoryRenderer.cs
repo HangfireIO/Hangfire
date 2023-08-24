@@ -177,7 +177,7 @@ namespace Hangfire.Dashboard
 
             if (stateData.ContainsKey("Latency"))
             {
-                var latency = TimeSpan.FromMilliseconds(long.Parse(stateData["Latency"]));
+                var latency = TimeSpan.FromMilliseconds(long.Parse(stateData["Latency"], CultureInfo.InvariantCulture));
 
                 builder.Append($"<dt>Latency:</dt><dd>{html.HtmlEncode(html.ToHumanDuration(latency, false))}</dd>");
 
@@ -186,7 +186,7 @@ namespace Hangfire.Dashboard
 
             if (stateData.ContainsKey("PerformanceDuration"))
             {
-                var duration = TimeSpan.FromMilliseconds(long.Parse(stateData["PerformanceDuration"]));
+                var duration = TimeSpan.FromMilliseconds(long.Parse(stateData["PerformanceDuration"], CultureInfo.InvariantCulture));
                 builder.Append($"<dt>Duration:</dt><dd>{html.HtmlEncode(html.ToHumanDuration(duration, false))}</dd>");
 
                 itemsAdded = true;

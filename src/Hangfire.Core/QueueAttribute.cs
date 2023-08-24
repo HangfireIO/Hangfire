@@ -14,6 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using Hangfire.Common;
 using Hangfire.States;
@@ -67,7 +68,7 @@ namespace Hangfire
         {
             if (context.CandidateState is EnqueuedState enqueuedState)
             {
-                enqueuedState.Queue = String.Format(Queue, context.BackgroundJob.Job.Args.ToArray());
+                enqueuedState.Queue = String.Format(CultureInfo.InvariantCulture, Queue, context.BackgroundJob.Job.Args.ToArray());
             }
         }
     }

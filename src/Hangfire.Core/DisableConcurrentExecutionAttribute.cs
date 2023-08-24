@@ -14,6 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Common;
@@ -68,7 +69,7 @@ namespace Hangfire
             {
                 try
                 {
-                    return String.Format(Resource, job.Args.ToArray()).ToLowerInvariant();
+                    return String.Format(CultureInfo.InvariantCulture, Resource, job.Args.ToArray()).ToLowerInvariant();
                 }
                 catch (Exception ex)
                 {
