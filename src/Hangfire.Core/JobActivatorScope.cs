@@ -50,6 +50,8 @@ namespace Hangfire
             {
                 _current.Value = null;
             }
+
+            GC.SuppressFinalize(this);
         }
     }
 }

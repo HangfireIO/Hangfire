@@ -132,6 +132,8 @@ namespace Hangfire.SqlServer
                     _connection = null;
                 }
             }
+
+            GC.SuppressFinalize(this);
         }
 
         private void ExecuteKeepAliveQuery(object obj)

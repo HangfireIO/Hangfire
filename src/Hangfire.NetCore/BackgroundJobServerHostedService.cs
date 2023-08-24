@@ -133,6 +133,7 @@ namespace Hangfire
         {
             _processingServer?.Dispose();
             _processingServer = null;
+            GC.SuppressFinalize(this);
         }
         
         private void InitializeProcessingServer()

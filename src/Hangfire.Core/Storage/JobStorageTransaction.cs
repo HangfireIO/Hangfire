@@ -25,6 +25,7 @@ namespace Hangfire.Storage
     {
         public virtual void Dispose()
         {
+            GC.SuppressFinalize(this);
         }
 
         public abstract void ExpireJob(string jobId, TimeSpan expireIn);

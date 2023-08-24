@@ -139,6 +139,7 @@ namespace Hangfire
         public void Dispose()
         {
             _processingServer.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         [Obsolete("This method is a stub. There is no need to call the `Start` method. Will be removed in version 2.0.0.")]

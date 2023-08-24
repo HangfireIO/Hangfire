@@ -27,6 +27,7 @@ namespace Hangfire.Storage
     {
         public virtual void Dispose()
         {
+            GC.SuppressFinalize(this);
         }
 
         // Common

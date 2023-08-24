@@ -52,6 +52,8 @@ namespace Hangfire.SqlServer
                 _dedicatedConnection.Dispose();
                 _dedicatedConnection = null;
             }
+
+            base.Dispose();
         }
 
         public override IWriteOnlyTransaction CreateWriteTransaction()
