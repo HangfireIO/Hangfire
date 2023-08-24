@@ -273,9 +273,11 @@ namespace Hangfire
                 result.Add("LastExecution", serializedLastExecution ?? String.Empty);
             }
 
-            var timeZoneChanged = !TimeZone.Id.Equals(_recurringJob.ContainsKey("TimeZoneId")
-                ? _recurringJob["TimeZoneId"]
-                : TimeZoneInfo.Utc.Id);
+            var timeZoneChanged = !TimeZone.Id.Equals(
+                _recurringJob.ContainsKey("TimeZoneId")
+                    ? _recurringJob["TimeZoneId"]
+                    : TimeZoneInfo.Utc.Id,
+                StringComparison.Ordinal);
 
             var serializedNextExecution = NextExecution.HasValue ? JobHelper.SerializeDateTime(NextExecution.Value) : null;
             if (serializedNextExecution != null &&

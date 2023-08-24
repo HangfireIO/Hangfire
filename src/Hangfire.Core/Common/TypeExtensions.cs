@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -206,7 +207,7 @@ namespace Hangfire.Common
 
             typeName = rgx.Replace(typeName, match =>
             {
-                var currentGenericArgumentNumbers = int.Parse(match.Value.Substring(1));
+                var currentGenericArgumentNumbers = int.Parse(match.Value.Substring(1), CultureInfo.InvariantCulture);
                 var currentArguments = string.Join(",", genericArguments.Take(currentGenericArgumentNumbers).Select(ToGenericTypeString));
                 genericArguments = genericArguments.Skip(currentGenericArgumentNumbers).ToArray();
                 return string.Concat("<", currentArguments, ">");

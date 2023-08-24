@@ -259,7 +259,7 @@ namespace Hangfire
         {
             if (context.NewState is ScheduledState &&
                 context.NewState.Reason != null &&
-                context.NewState.Reason.StartsWith("Retry attempt"))
+                context.NewState.Reason.StartsWith("Retry attempt", StringComparison.OrdinalIgnoreCase))
             {
                 transaction.AddToSet("retries", context.BackgroundJob.Id);
             }

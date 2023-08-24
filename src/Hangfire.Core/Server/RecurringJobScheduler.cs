@@ -391,7 +391,7 @@ namespace Hangfire.Server
                     return action(connection);
                 }
             }
-            catch (DistributedLockTimeoutException e) when (e.Resource.EndsWith(resource))
+            catch (DistributedLockTimeoutException e) when (e.Resource.EndsWith(resource, StringComparison.Ordinal))
             {
                 // DistributedLockTimeoutException here doesn't mean that recurring jobs weren't scheduled.
                 // It just means another Hangfire server did this work.

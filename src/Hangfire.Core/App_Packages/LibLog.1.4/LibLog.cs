@@ -1428,7 +1428,11 @@ namespace Hangfire.Logging.LogProviders
             stringBuilder.Append(' ');
 
             // Append a readable representation of the log level
-            stringBuilder.Append(("[" + level.ToString().ToUpper() + "]").PadRight(8));
+            stringBuilder.Append(("[" + level.ToString().ToUpper(
+#if !NETSTANDARD1_3
+                CultureInfo.InvariantCulture
+#endif
+                ) + "]").PadRight(8));
 
             stringBuilder.Append("(" + loggerName + ") ");
 
