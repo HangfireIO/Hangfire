@@ -439,7 +439,7 @@ WriteLiteral("</th>\r\n                            </tr>\r\n                    
                                     {
                                         var jobData = connection.GetJobData(jobId);
                                         var state = connection.GetStateData(jobId);
-                                        inAwaitingState = AwaitingState.StateName.Equals(state.Name);
+                                        inAwaitingState = AwaitingState.StateName.Equals(state?.Name);
 
                                         if (state != null && inAwaitingState)
                                         {
