@@ -41,7 +41,7 @@ namespace Hangfire.Server
     public sealed class BackgroundProcessingServer : IBackgroundProcessingServer
     {
         public static readonly TimeSpan DefaultShutdownTimeout = TimeSpan.FromSeconds(15);
-        private static int _lastThreadId = 0;
+        private static int _lastThreadId;
 
         private readonly ILog _logger = LogProvider.GetLogger(typeof(BackgroundProcessingServer));
 
@@ -228,14 +228,14 @@ namespace Hangfire.Server
         private IBackgroundDispatcher CreateDispatcher()
         {
             var execution = new BackgroundExecution(
-                _stoppingCts.Token,
                 new BackgroundExecutionOptions
                 {
                     Name = nameof(BackgroundServerProcess),
                     ErrorThreshold = TimeSpan.Zero,
                     StillErrorThreshold = TimeSpan.Zero,
                     RetryDelay = retry => _options.RestartDelay
-                });
+                },
+                _stoppingCts.Token);
 
             return new BackgroundDispatcher(
                 execution,

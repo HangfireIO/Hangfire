@@ -50,7 +50,7 @@ namespace Hangfire.Processing
 
         private volatile bool _disposed;
 
-        public BackgroundExecution(CancellationToken stopToken, [NotNull] BackgroundExecutionOptions options)
+        public BackgroundExecution([NotNull] BackgroundExecutionOptions options, CancellationToken stopToken)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
 

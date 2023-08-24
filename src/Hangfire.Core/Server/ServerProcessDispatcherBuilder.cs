@@ -44,11 +44,11 @@ namespace Hangfire.Server
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             return new BackgroundDispatcher(
-                new BackgroundExecution(context.StoppingToken, new BackgroundExecutionOptions
+                new BackgroundExecution(new BackgroundExecutionOptions
                 {
                     Name = _component.GetType().Name,
                     RetryDelay = options.RetryDelay
-                }),
+                }, context.StoppingToken),
                 ExecuteComponent,
                 Tuple.Create(_component, context),
                 _threadFactory);

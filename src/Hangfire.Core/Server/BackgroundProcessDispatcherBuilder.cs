@@ -44,12 +44,12 @@ namespace Hangfire.Server
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             var execution = new BackgroundExecution(
-                context.StoppingToken,
                 new BackgroundExecutionOptions
                 {
                     Name = _process.GetType().Name,
                     RetryDelay = options.RetryDelay
-                });
+                },
+                context.StoppingToken);
 
             return new BackgroundDispatcher(
                 execution,
