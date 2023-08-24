@@ -1,3 +1,4 @@
+cov-configure --cs
 cov-build.exe --dir cov-int build.bat build
 
 # Compress results.
