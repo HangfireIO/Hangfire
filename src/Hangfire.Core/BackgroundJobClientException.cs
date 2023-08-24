@@ -14,6 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Runtime.Serialization;
 using Hangfire.Client;
 
 #pragma warning disable 618 // Obsolete member
@@ -40,5 +41,18 @@ namespace Hangfire
         public BackgroundJobClientException(string message, Exception inner) : base(message, inner)
         {
         }
+
+#if !NETSTANDARD1_3
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BackgroundJobClientException"/> class
+        /// with serialized data.
+        /// </summary>
+        /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
+        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
+        protected BackgroundJobClientException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+        }
+#endif
     }
 }
