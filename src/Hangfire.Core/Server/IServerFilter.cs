@@ -23,13 +23,13 @@ namespace Hangfire.Server
         /// <summary>
         /// Called before the performance of the job.
         /// </summary>
-        /// <param name="filterContext">The filter context.</param>
-        void OnPerforming(PerformingContext filterContext);
+        /// <param name="context">The filter context.</param>
+        void OnPerforming(PerformingContext context);
 
         /// <summary>
         /// Called after the performance of the job.
         /// </summary>
-        /// <param name="filterContext">The filter context.</param>
-        void OnPerformed(PerformedContext filterContext);
+        /// <param name="context">The filter context.</param>
+        void OnPerformed(PerformedContext context);
     }
 }

@@ -23,13 +23,13 @@ namespace Hangfire.Client
         /// <summary>
         /// Called before the creation of the job. 
         /// </summary>
-        /// <param name="filterContext">The filter context.</param>
-        void OnCreating(CreatingContext filterContext);
+        /// <param name="context">The filter context.</param>
+        void OnCreating(CreatingContext context);
 
         /// <summary>
         /// Called after the creation of the job.
         /// </summary>
-        /// <param name="filterContext">The filter context.</param>
-        void OnCreated(CreatedContext filterContext);
+        /// <param name="context">The filter context.</param>
+        void OnCreated(CreatedContext context);
     }
 }
