@@ -52,8 +52,8 @@ namespace Hangfire.SqlServer
 
         public IPersistentJobQueueProvider GetProvider(string queue)
         {
-            return _providersByQueue.ContainsKey(queue) 
-                ? _providersByQueue[queue]
+            return _providersByQueue.TryGetValue(queue, out var provider) 
+                ? provider
                 : _defaultProvider;
         }
 

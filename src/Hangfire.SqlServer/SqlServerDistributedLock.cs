@@ -211,7 +211,7 @@ namespace Hangfire.SqlServer
                 if (lockResult == -999 /* Indicates a parameter validation or other call error. */)
                 {
                     throw new SqlServerDistributedLockException(
-                        $"Could not place a lock on the resource '{resource}': {(LockErrorMessages.ContainsKey(lockResult) ? LockErrorMessages[lockResult] : $"Server returned the '{lockResult}' error.")}.");
+                        $"Could not place a lock on the resource '{resource}': {(LockErrorMessages.TryGetValue(lockResult, out var message) ? message : $"Server returned the '{lockResult}' error.")}.");
                 }
             } while (started.Elapsed < timeout);
 

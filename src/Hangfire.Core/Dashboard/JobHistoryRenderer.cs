@@ -138,8 +138,8 @@ namespace Hangfire.Dashboard
             this HtmlHelper helper,
             string state, IDictionary<string, string> properties)
         {
-            var renderer = Renderers.ContainsKey(state)
-                ? Renderers[state]
+            var renderer = Renderers.TryGetValue(state, out var value)
+                ? value
                 : DefaultRenderer;
 
             return renderer?.Invoke(helper, properties);
@@ -175,25 +175,25 @@ namespace Hangfire.Dashboard
 
             var itemsAdded = false;
 
-            if (stateData.ContainsKey("Latency"))
+            if (stateData.TryGetValue("Latency", out var latencyString))
             {
-                var latency = TimeSpan.FromMilliseconds(long.Parse(stateData["Latency"], CultureInfo.InvariantCulture));
+                var latency = TimeSpan.FromMilliseconds(long.Parse(latencyString, CultureInfo.InvariantCulture));
 
                 builder.Append($"<dt>Latency:</dt><dd>{html.HtmlEncode(html.ToHumanDuration(latency, false))}</dd>");
 
                 itemsAdded = true;
             }
 
-            if (stateData.ContainsKey("PerformanceDuration"))
+            if (stateData.TryGetValue("PerformanceDuration", out var durationString))
             {
-                var duration = TimeSpan.FromMilliseconds(long.Parse(stateData["PerformanceDuration"], CultureInfo.InvariantCulture));
+                var duration = TimeSpan.FromMilliseconds(long.Parse(durationString, CultureInfo.InvariantCulture));
                 builder.Append($"<dt>Duration:</dt><dd>{html.HtmlEncode(html.ToHumanDuration(duration, false))}</dd>");
 
                 itemsAdded = true;
             }
 
 
-            if (stateData.ContainsKey("Result") && !String.IsNullOrWhiteSpace(stateData["Result"]))
+            if (stateData.TryGetValue("Result", out var resultString) && !String.IsNullOrWhiteSpace(resultString))
             {
                 var result = stateData["Result"];
                 builder.Append($"<dt>Result:</dt><dd>{html.HtmlEncode(result)}</dd>");
@@ -247,15 +247,15 @@ namespace Hangfire.Dashboard
                 builder.Append($"<dd>{helper.ServerId(serverId)}</dd>");
             }
 
-            if (stateData.ContainsKey("WorkerId"))
+            if (stateData.TryGetValue("WorkerId", out var workerId))
             {
                 builder.Append("<dt>Worker:</dt>");
-                builder.Append($"<dd>{helper.HtmlEncode(stateData["WorkerId"].Substring(0, 8))}</dd>");
+                builder.Append($"<dd>{helper.HtmlEncode(workerId.Substring(0, 8))}</dd>");
             }
-            else if (stateData.ContainsKey("WorkerNumber"))
+            else if (stateData.TryGetValue("WorkerNumber", out var workerNumber))
             {
                 builder.Append("<dt>Worker:</dt>");
-                builder.Append($"<dd>#{helper.HtmlEncode(stateData["WorkerNumber"])}</dd>");
+                builder.Append($"<dd>#{helper.HtmlEncode(workerNumber)}</dd>");
             }
 
             builder.Append("</dl>");
@@ -299,21 +299,20 @@ namespace Hangfire.Dashboard
 
             builder.Append("<dl class=\"dl-horizontal\">");
 
-            if (stateData.ContainsKey("ParentId"))
+            if (stateData.TryGetValue("ParentId", out var parentId))
             {
-                builder.Append($"<dt>Parent</dt><dd>{helper.JobIdLink(stateData["ParentId"])}</dd>");
+                builder.Append($"<dt>Parent</dt><dd>{helper.JobIdLink(parentId)}</dd>");
             }
 
-            if (stateData.ContainsKey("NextState"))
+            if (stateData.TryGetValue("NextState", out var nextStateString))
             {
-                var nextState = SerializationHelper.Deserialize<IState>(stateData["NextState"], SerializationOption.TypedInternal);
+                var nextState = SerializationHelper.Deserialize<IState>(nextStateString, SerializationOption.TypedInternal);
 
                 builder.Append($"<dt>Next State</dt><dd>{helper.StateLabel(nextState?.Name ?? "(no state)")}</dd>");
             }
 
-            if (stateData.ContainsKey("Options"))
+            if (stateData.TryGetValue("Options", out var optionsDescription))
             {
-                var optionsDescription = stateData["Options"];
                 if (Enum.TryParse(optionsDescription, out JobContinuationOptions options))
                 {
                     optionsDescription = options.ToString("G");

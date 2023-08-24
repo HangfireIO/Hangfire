@@ -90,7 +90,7 @@ namespace Hangfire.SqlServer
                     LoadException = loadException,
                     InvocationData = invocationData,
                     InProcessingState = ProcessingState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
-                    ServerId = stateData.ContainsKey("ServerId") ? stateData["ServerId"] : stateData["ServerName"],
+                    ServerId = stateData.TryGetValue("ServerId", out var serverId) ? serverId : stateData["ServerName"],
                     StartedAt = sqlJob.StateChanged,
                     StateData = stateData
                 }));
@@ -205,8 +205,8 @@ namespace Hangfire.SqlServer
                     InvocationData = invocationData,
                     InSucceededState = SucceededState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
                     Result = stateData["Result"],
-                    TotalDuration = stateData.ContainsKey("PerformanceDuration") && stateData.ContainsKey("Latency")
-                        ? (long?)long.Parse(stateData["PerformanceDuration"], CultureInfo.InvariantCulture) + (long?)long.Parse(stateData["Latency"], CultureInfo.InvariantCulture)
+                    TotalDuration = stateData.TryGetValue("PerformanceDuration", out var duration) && stateData.TryGetValue("Latency", out var latency)
+                        ? (long?)long.Parse(duration, CultureInfo.InvariantCulture) + (long?)long.Parse(latency, CultureInfo.InvariantCulture)
                         : null,
                     SucceededAt = sqlJob.StateChanged,
                     StateData = stateData
@@ -266,12 +266,12 @@ namespace Hangfire.SqlServer
 
             foreach (var awaitingJob in awaitingJobs)
             {
-                if (awaitingJob.Value != null && awaitingJob.Value.InAwaitingState && awaitingJob.Value.StateData.ContainsKey("ParentId"))
+                if (awaitingJob.Value != null && awaitingJob.Value.InAwaitingState && awaitingJob.Value.StateData.TryGetValue("ParentId", out var parentIdString))
                 {
-                    var parentId = long.Parse(awaitingJob.Value.StateData["ParentId"], CultureInfo.InvariantCulture);
-                    if (parentStates.ContainsKey(parentId))
+                    var parentId = long.Parse(parentIdString, CultureInfo.InvariantCulture);
+                    if (parentStates.TryGetValue(parentId, out var parentStateName))
                     {
-                        awaitingJob.Value.ParentStateName = parentStates[parentId];
+                        awaitingJob.Value.ParentStateName = parentStateName;
                     }
                 }
             }
@@ -570,7 +570,7 @@ where j.Id in @jobIds";
                 .ToDictionary(x => x.Id, x => x);
 
             var sortedSqlJobs = jobIds
-                .Select(jobId => jobs.ContainsKey(jobId) ? jobs[jobId] : new SqlJob { Id = jobId })
+                .Select(jobId => jobs.TryGetValue(jobId, out var job) ? job : new SqlJob { Id = jobId })
                 .ToList();
             
             return DeserializeJobs(
@@ -727,8 +727,8 @@ where j.Id in @jobIds";
 
             public new TValue this[TKey i]
             {
-                get { return ContainsKey(i) ? base[i] : default(TValue); }
-                set { base[i] = value; }
+                get => TryGetValue(i, out var value) ? value : default(TValue);
+                set => base[i] = value;
             }
         }
 
