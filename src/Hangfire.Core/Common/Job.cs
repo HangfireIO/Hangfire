@@ -223,12 +223,12 @@ namespace Hangfire.Common
         {
             var sb = new StringBuilder()
                 .Append(Type.ToGenericTypeString())
-                .Append(".")
+                .Append('.')
                 .Append(Method.Name);
 
             if (includeQueue && Queue != null)
             {
-                sb.Append(" (").Append(Queue).Append(")");
+                sb.Append(" (").Append(Queue).Append(')');
             }
 
             return sb.ToString();

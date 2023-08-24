@@ -56,13 +56,13 @@ namespace Hangfire.Common
                 sb.Append(" ---> ");
                 sb.Append(ToStringHelper(exception.InnerException, true));
             }
-            else sb.Append("\n");
+            else sb.Append('\n');
 
             var stackTrace = exception.Data.Contains(DataKey) ? (string)exception.Data[DataKey] : exception.StackTrace;
             if (!String.IsNullOrWhiteSpace(stackTrace))
             {
                 sb.Append(stackTrace);
-                sb.Append("\n");
+                sb.Append('\n');
             }
 
             if (isInner) sb.Append("   --- End of inner exception stack trace ---\n");

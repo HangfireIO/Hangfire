@@ -1425,7 +1425,7 @@ namespace Hangfire.Logging.LogProviders
 
             stringBuilder.Append(DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss", CultureInfo.InvariantCulture));
 
-            stringBuilder.Append(" ");
+            stringBuilder.Append(' ');
 
             // Append a readable representation of the log level
             stringBuilder.Append(("[" + level.ToString().ToUpper() + "]").PadRight(8));

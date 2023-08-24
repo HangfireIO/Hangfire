@@ -40,9 +40,9 @@ namespace Hangfire.Dashboard
             var builder = new StringBuilder();
 
             builder.Append(WrapKeyword("using"));
-            builder.Append(" ");
+            builder.Append(' ');
             builder.Append(Encode(job.Type.Namespace));
-            builder.Append(";");
+            builder.Append(';');
             builder.AppendLine();
             builder.AppendLine();
 
@@ -74,7 +74,7 @@ namespace Hangfire.Dashboard
 
             builder.Append(!job.Method.IsStatic ? Encode(serviceName) : WrapType(Encode(job.Type.ToGenericTypeString())));
 
-            builder.Append(".");
+            builder.Append('.');
             builder.Append(Encode(job.Method.Name));
 
             if (job.Method.IsGenericMethod)
@@ -86,7 +86,7 @@ namespace Hangfire.Dashboard
                 builder.Append($"&lt;{String.Join(", ", genericArgumentTypes)}&gt;");
             }
 
-            builder.Append("(");
+            builder.Append('(');
 
             var parameters = job.Method.GetParameters();
             var renderedArguments = new List<string>(parameters.Length);
@@ -180,7 +180,7 @@ namespace Hangfire.Dashboard
                 }
                 else if (i > 0)
                 {
-                    builder.Append(" ");
+                    builder.Append(' ');
                 }
 
                 builder.Append($"<span title=\"{parameter.Name}\" data-placement=\"{tooltipPosition}\">");
@@ -189,7 +189,7 @@ namespace Hangfire.Dashboard
 
                 if (i < renderedArguments.Count - 1)
                 {
-                    builder.Append(",");
+                    builder.Append(',');
                 }
             }
 
@@ -275,7 +275,7 @@ namespace Hangfire.Dashboard
                     builder.Append("&lt;")
                         .Append(WrapType(Encode(_deserializationType.Name)))
                         .Append(WrapIdentifier("&gt;"))
-                        .Append("(");
+                        .Append('(');
 
                     builder.Append(WrapString(Encode("\"" + rawValue.Replace("\"", "\\\"") + "\"")));
                 }
@@ -296,7 +296,7 @@ namespace Hangfire.Dashboard
 
                 if (_deserializationType != null)
                 {
-                    builder.Append(")");
+                    builder.Append(')');
                 }
 
                 return builder.ToString();
