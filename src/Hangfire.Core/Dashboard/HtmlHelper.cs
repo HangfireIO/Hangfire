@@ -228,7 +228,7 @@ namespace Hangfire.Dashboard
 
         public NonEscapedString RelativeTime(DateTime value)
         {
-            return Raw($"<span data-moment=\"{HtmlEncode(JobHelper.ToTimestamp(value).ToString(CultureInfo.InvariantCulture))}\">{HtmlEncode(value.ToString(CultureInfo.CurrentUICulture))}</span>");
+            return Raw($"<span data-moment=\"{HtmlEncode(JobHelper.ToTimestamp(value).ToString(CultureInfo.InvariantCulture))}\">{HtmlEncode(value.ToString(CultureInfo.CurrentCulture))}</span>");
         }
 
         public NonEscapedString MomentTitle(DateTime time, string value)
@@ -238,7 +238,7 @@ namespace Hangfire.Dashboard
 
         public NonEscapedString LocalTime(DateTime value)
         {
-            return Raw($"<span data-moment-local=\"{HtmlEncode(JobHelper.ToTimestamp(value).ToString(CultureInfo.InvariantCulture))}\">{HtmlEncode(value.ToString(CultureInfo.CurrentUICulture))}</span>");
+            return Raw($"<span data-moment-local=\"{HtmlEncode(JobHelper.ToTimestamp(value).ToString(CultureInfo.InvariantCulture))}\">{HtmlEncode(value.ToString(CultureInfo.CurrentCulture))}</span>");
         }
 
         public string ToHumanDuration(TimeSpan? duration, bool displaySign = true)

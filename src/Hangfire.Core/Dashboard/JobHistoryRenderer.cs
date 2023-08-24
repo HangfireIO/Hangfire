@@ -281,7 +281,7 @@ namespace Hangfire.Dashboard
 
             var sb = new StringBuilder();
             sb.Append("<dl class=\"dl-horizontal\">");
-            sb.Append($"<dt>Enqueue at:</dt><dd data-moment=\"{helper.HtmlEncode(JobHelper.ToTimestamp(enqueueAt).ToString(CultureInfo.InvariantCulture))}\">{helper.HtmlEncode(enqueueAt.ToString(CultureInfo.CurrentUICulture))}</dd>");
+            sb.Append($"<dt>Enqueue at:</dt><dd data-moment=\"{helper.HtmlEncode(JobHelper.ToTimestamp(enqueueAt).ToString(CultureInfo.InvariantCulture))}\">{helper.HtmlEncode(enqueueAt.ToString(CultureInfo.CurrentCulture))}</dd>");
 
             if (!String.IsNullOrWhiteSpace(queue))
             {
