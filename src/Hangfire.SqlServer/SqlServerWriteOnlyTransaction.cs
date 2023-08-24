@@ -566,7 +566,7 @@ update [{_storage.SchemaName}].[List] set ExpireAt = null where [Key] = @key";
             }
         }
 
-        private void AppendBatch<TKey>(
+        private static void AppendBatch<TKey>(
             SortedDictionary<TKey, List<Tuple<string, SqlCommandBatchParameter[]>>> collection,
             SqlCommandBatch batch)
         {
@@ -579,7 +579,7 @@ update [{_storage.SchemaName}].[List] set ExpireAt = null where [Key] = @key";
             }
         }
 
-        private void AddCommand<TKey>(
+        private static void AddCommand<TKey>(
             SortedDictionary<TKey, List<Tuple<string, SqlCommandBatchParameter[]>>> collection,
             TKey key, 
             string commandText, 

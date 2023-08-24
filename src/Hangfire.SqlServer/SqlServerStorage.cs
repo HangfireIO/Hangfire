@@ -483,7 +483,7 @@ namespace Hangfire.SqlServer
             QueueProviders = new PersistentJobQueueProviderCollection(defaultQueueProvider);
         }
 
-        private string GetConnectionString(string nameOrConnectionString)
+        private static string GetConnectionString(string nameOrConnectionString)
         {
 #if FEATURE_CONFIGURATIONMANAGER
             if (IsConnectionString(nameOrConnectionString))
@@ -504,12 +504,12 @@ namespace Hangfire.SqlServer
         }
 
 #if FEATURE_CONFIGURATIONMANAGER
-        private bool IsConnectionString(string nameOrConnectionString)
+        private static bool IsConnectionString(string nameOrConnectionString)
         {
             return nameOrConnectionString.Contains(";");
         }
 
-        private bool IsConnectionStringInConfiguration(string connectionStringName)
+        private static bool IsConnectionStringInConfiguration(string connectionStringName)
         {
             var connectionStringSetting = ConfigurationManager.ConnectionStrings[connectionStringName];
 
