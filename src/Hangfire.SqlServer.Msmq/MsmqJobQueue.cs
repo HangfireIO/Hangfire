@@ -15,6 +15,7 @@
 
 using System;
 using System.Data;
+using System.Globalization;
 using System.Messaging;
 using System.Threading;
 using Hangfire.Storage;
@@ -104,7 +105,7 @@ namespace Hangfire.SqlServer.Msmq
 
         private MessageQueue GetMessageQueue(string queue)
         {
-            return new MessageQueue(String.Format(_pathPattern, queue));
+            return new MessageQueue(String.Format(CultureInfo.InvariantCulture, _pathPattern, queue));
         }
     }
 }

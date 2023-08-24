@@ -58,7 +58,11 @@ namespace Hangfire.Dashboard
                     serviceName = serviceName.Substring(1);
                 }
 
-                serviceName = Char.ToLower(serviceName[0], CultureInfo.InvariantCulture) + serviceName.Substring(1);
+                serviceName = Char.ToLower(serviceName[0]
+#if !NETSTANDARD1_3
+                    , CultureInfo.InvariantCulture
+#endif
+                    ) + serviceName.Substring(1);
 
                 builder.Append(WrapKeyword("var"));
                 builder.Append(

@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Messaging;
 using MQTools;
@@ -44,7 +45,7 @@ namespace Hangfire.SqlServer.Msmq
         {
             var result = new List<long>();
 
-            using (var messageQueue = new MessageQueue(String.Format(_pathPattern, queue)))
+            using (var messageQueue = new MessageQueue(String.Format(CultureInfo.InvariantCulture, _pathPattern, queue)))
             {
                 var current = 0;
                 var end = from + perPage;
@@ -57,7 +58,7 @@ namespace Hangfire.SqlServer.Msmq
                         var message = enumerator.Current;
                         if (message == null) continue;
 
-                        result.Add(long.Parse(message.Label));
+                        result.Add(long.Parse(message.Label, CultureInfo.InvariantCulture));
                     }
 
                     if (current >= end) break;
@@ -76,7 +77,7 @@ namespace Hangfire.SqlServer.Msmq
 
         public EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue)
         {
-            using (var messageQueue = new MessageQueue(String.Format(_pathPattern, queue)))
+            using (var messageQueue = new MessageQueue(String.Format(CultureInfo.InvariantCulture, _pathPattern, queue)))
             {                
                 return new EnqueuedAndFetchedCountDto
                 {

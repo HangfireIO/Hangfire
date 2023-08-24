@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Dapper;
@@ -173,7 +174,7 @@ commit tran;";
 
                 return _storage.UseConnection(_dedicatedConnection, connection => connection
                     .ExecuteScalar<long>(queryString, queryParameters, commandTimeout: _storage.CommandTimeout)
-                    .ToString());
+                    .ToString(CultureInfo.InvariantCulture));
             }
 
             return _storage.UseTransaction(_dedicatedConnection, (connection, transaction) =>
@@ -182,7 +183,7 @@ commit tran;";
                     queryString,
                     queryParameters,
                     transaction,
-                    commandTimeout: _storage.CommandTimeout).ToString();
+                    commandTimeout: _storage.CommandTimeout).ToString(CultureInfo.InvariantCulture);
 
                 var insertParameterSql =
 $@"insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value)";
@@ -195,7 +196,7 @@ $@"insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values 
                     foreach (var parameter in parametersArray)
                     {
                         commandBatch.Append(insertParameterSql,
-                            new SqlCommandBatchParameter("@jobId", DbType.Int64) { Value = long.Parse(jobId) },
+                            new SqlCommandBatchParameter("@jobId", DbType.Int64) { Value = long.Parse(jobId, CultureInfo.InvariantCulture) },
                             new SqlCommandBatchParameter("@name",DbType.String, 40) { Value = parameter.Key },
                             new SqlCommandBatchParameter("@value", DbType.String, -1) { Value = (object)parameter.Value ?? DBNull.Value });
                     }
@@ -331,7 +332,7 @@ end catch";
             {
                 connection.Execute(
                     query,
-                    new { jobId = long.Parse(id), name, value },
+                    new { jobId = long.Parse(id, CultureInfo.InvariantCulture), name, value },
                     commandTimeout: _storage.CommandTimeout);
             });
         }

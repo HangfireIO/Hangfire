@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Globalization;
 #if FEATURE_TRANSACTIONSCOPE
 using System.Transactions;
 #endif
@@ -166,10 +167,10 @@ namespace Hangfire.SqlServer
 
             AddCommand(
                 _jobCommands,
-                long.Parse(jobId),
+                long.Parse(jobId, CultureInfo.InvariantCulture),
                 $@"update J set ExpireAt = @expireAt from [{_storage.SchemaName}].Job J with (forceseek) where Id = @id;",
                 new SqlCommandBatchParameter("@expireAt", DbType.DateTime) { Value = DateTime.UtcNow.Add(expireIn) },
-                new SqlCommandBatchParameter("@id", DbType.Int64) { Value = long.Parse(jobId) });
+                new SqlCommandBatchParameter("@id", DbType.Int64) { Value = long.Parse(jobId, CultureInfo.InvariantCulture) });
         }
 
         public override void PersistJob(string jobId)
@@ -178,9 +179,9 @@ namespace Hangfire.SqlServer
 
             AddCommand(
                 _jobCommands,
-                long.Parse(jobId),
+                long.Parse(jobId, CultureInfo.InvariantCulture),
                 $@"update J set ExpireAt = NULL from [{_storage.SchemaName}].Job J with (forceseek) where Id = @id;",
-                new SqlCommandBatchParameter("@id", DbType.Int64) { Value = long.Parse(jobId) });
+                new SqlCommandBatchParameter("@id", DbType.Int64) { Value = long.Parse(jobId, CultureInfo.InvariantCulture) });
         }
 
         public override void SetJobState(string jobId, IState state)
@@ -195,9 +196,9 @@ update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @
 
             AddCommand(
                 _jobCommands,
-                long.Parse(jobId),
+                long.Parse(jobId, CultureInfo.InvariantCulture),
                 addAndSetStateSql,
-                new SqlCommandBatchParameter("@jobId", DbType.Int64) { Value = long.Parse(jobId) },
+                new SqlCommandBatchParameter("@jobId", DbType.Int64) { Value = long.Parse(jobId, CultureInfo.InvariantCulture) },
                 new SqlCommandBatchParameter("@name", DbType.String, 20) { Value = state.Name },
                 new SqlCommandBatchParameter("@reason", DbType.String, 100) { Value = (object)state.Reason?.Substring(0, Math.Min(99, state.Reason.Length)) ?? DBNull.Value },
                 new SqlCommandBatchParameter("@createdAt", DbType.DateTime) { Value = DateTime.UtcNow },
@@ -215,9 +216,9 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
             AddCommand(
                 _jobCommands,
-                long.Parse(jobId),
+                long.Parse(jobId, CultureInfo.InvariantCulture),
                 addStateSql,
-                new SqlCommandBatchParameter("@jobId", DbType.Int64) { Value = long.Parse(jobId) },
+                new SqlCommandBatchParameter("@jobId", DbType.Int64) { Value = long.Parse(jobId, CultureInfo.InvariantCulture) },
                 new SqlCommandBatchParameter("@name", DbType.String, 20) { Value = state.Name },
                 new SqlCommandBatchParameter("@reason", DbType.String, 100) { Value = (object)state.Reason?.Substring(0, Math.Min(99, state.Reason.Length)) ?? DBNull.Value },
                 new SqlCommandBatchParameter("@createdAt", DbType.DateTime) { Value = DateTime.UtcNow },
@@ -238,7 +239,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
                     _queueCommands,
                     queue,
                     $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)",
-                    new SqlCommandBatchParameter("@jobId", DbType.Int64) { Value = long.Parse(jobId) },
+                    new SqlCommandBatchParameter("@jobId", DbType.Int64) { Value = long.Parse(jobId, CultureInfo.InvariantCulture) },
                     new SqlCommandBatchParameter("@queue", DbType.String, 50) { Value = queue });
 
                 _afterCommitCommandQueue.Enqueue(() => SqlServerJobQueue.NewItemInQueueEvent.Set());

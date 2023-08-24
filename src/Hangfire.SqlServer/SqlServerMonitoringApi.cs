@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Globalization;
 using System.Linq;
 using Dapper;
 using Hangfire.Annotations;
@@ -205,7 +206,7 @@ namespace Hangfire.SqlServer
                     InSucceededState = SucceededState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
                     Result = stateData["Result"],
                     TotalDuration = stateData.ContainsKey("PerformanceDuration") && stateData.ContainsKey("Latency")
-                        ? (long?)long.Parse(stateData["PerformanceDuration"]) + (long?)long.Parse(stateData["Latency"])
+                        ? (long?)long.Parse(stateData["PerformanceDuration"], CultureInfo.InvariantCulture) + (long?)long.Parse(stateData["Latency"], CultureInfo.InvariantCulture)
                         : null,
                     SucceededAt = sqlJob.StateChanged,
                     StateData = stateData
@@ -251,7 +252,7 @@ namespace Hangfire.SqlServer
 
             var parentIds = awaitingJobs
                 .Where(x => x.Value != null && x.Value.InAwaitingState && x.Value.StateData.ContainsKey("ParentId"))
-                .Select(x => long.Parse(x.Value.StateData["ParentId"]))
+                .Select(x => long.Parse(x.Value.StateData["ParentId"], CultureInfo.InvariantCulture))
                 .ToArray();
 
             var parentStates = UseConnection(connection =>
@@ -267,7 +268,7 @@ namespace Hangfire.SqlServer
             {
                 if (awaitingJob.Value != null && awaitingJob.Value.InAwaitingState && awaitingJob.Value.StateData.ContainsKey("ParentId"))
                 {
-                    var parentId = long.Parse(awaitingJob.Value.StateData["ParentId"]);
+                    var parentId = long.Parse(awaitingJob.Value.StateData["ParentId"], CultureInfo.InvariantCulture);
                     if (parentStates.ContainsKey(parentId))
                     {
                         awaitingJob.Value.ParentStateName = parentStates[parentId];
@@ -430,7 +431,7 @@ select * from [{_storage.SchemaName}].State with (nolock, forceseek) where JobId
 
         public override StatisticsDto GetStatistics()
         {
-            string sql = String.Format(@"
+            string sql = String.Format(CultureInfo.InvariantCulture, @"
 set transaction isolation level read committed;
 select count(Id) from [{0}].Job with (nolock, forceseek) where StateName = N'Enqueued';
 select count(Id) from [{0}].Job with (nolock, forceseek) where StateName = N'Failed';
@@ -492,7 +493,7 @@ select count(*) from [{0}].[Set] with (nolock, forceseek) where [Key] = N'retrie
                 endDate = endDate.AddHours(-1);
             }
 
-            var keyMaps = dates.ToDictionary(x => $"stats:{type}:{x.ToString("yyyy-MM-dd-HH")}", x => x);
+            var keyMaps = dates.ToDictionary(x => $"stats:{type}:{x.ToString("yyyy-MM-dd-HH", CultureInfo.InvariantCulture)}", x => x);
 
             return GetTimelineStats(connection, keyMaps);
         }
@@ -507,7 +508,7 @@ select count(*) from [{0}].[Set] with (nolock, forceseek) where [Key] = N'retrie
                 endDate = endDate.AddDays(-1);
             }
 
-            var keyMaps = dates.ToDictionary(x => $"stats:{type}:{x.ToString("yyyy-MM-dd")}", x => x);
+            var keyMaps = dates.ToDictionary(x => $"stats:{type}:{x.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}", x => x);
 
             return GetTimelineStats(connection, keyMaps);
         }
@@ -676,7 +677,7 @@ where cte.row_num between @start and @end";
                 }
 
                 result.Add(new KeyValuePair<string, TDto>(
-                    job.Id.ToString(), dto));
+                    job.Id.ToString(CultureInfo.InvariantCulture), dto));
             }
 
             return new JobList<TDto>(result);
@@ -702,7 +703,7 @@ where j.Id in @jobIds";
             foreach (var job in jobs)
             {
                 result.Add(new KeyValuePair<string, FetchedJobDto>(
-                    job.Id.ToString(),
+                    job.Id.ToString(CultureInfo.InvariantCulture),
                     new FetchedJobDto
                     {
                         Job = DeserializeJob(job.InvocationData, job.Arguments, out _, out _),

@@ -81,7 +81,7 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
 
             connection.Execute(
                 enqueueJobSql, 
-                new { jobId = long.Parse(jobId), queue = queue }
+                new { jobId = long.Parse(jobId, CultureInfo.InvariantCulture), queue = queue }
 #if !FEATURE_TRANSACTIONSCOPE
                 , transaction
 #endif
