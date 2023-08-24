@@ -195,7 +195,7 @@ namespace Hangfire.Processing
             // we allow to inline only requests from the current scheduler, i.e. just to save
             // some time, since no queueing will be involved.
 
-            if (!_ourThreadIds.Contains(Thread.CurrentThread.ManagedThreadId)) return false;
+            if (!_ourThreadIds.Contains(Environment.CurrentManagedThreadId)) return false;
 
             return TryExecuteTask(task);
         }
