@@ -26,7 +26,7 @@ namespace Hangfire.Processing
 {
     internal static class TaskExtensions
     {
-        private static readonly Type[] EmptyTypes = new Type[0];
+        private static readonly Type[] EmptyTypes = Type.EmptyTypes;
         private static readonly WaitHandle InvalidWaitHandleInstance = new InvalidWaitHandle();
 
         public static bool WaitOne([NotNull] this WaitHandle waitHandle, TimeSpan timeout, CancellationToken token)

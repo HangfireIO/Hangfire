@@ -1083,7 +1083,13 @@ namespace Hangfire.Logging.LogProviders
                 // (logger, level, message) => { ((SeriLog.ILoggerILogger)logger).Write(level, message, new object[]); }
                 MethodInfo writeMethodInfo = loggerType.GetRuntimeMethod("Write", new[] { logEventTypeType, typeof(string), typeof(object[]) });
                 ParameterExpression messageParam = Expression.Parameter(typeof(string));
-                ConstantExpression propertyValuesParam = Expression.Constant(new object[0]);
+                ConstantExpression propertyValuesParam = Expression.Constant(
+#if NET451
+                    new object[0]
+#else
+                    Array.Empty<object>()
+#endif
+                );
                 MethodCallExpression writeMethodExp = Expression.Call(instanceCast, writeMethodInfo, levelCast, messageParam, propertyValuesParam);
                 Write = Expression.Lambda<Action<object, object, string>>(writeMethodExp, new[]
                 {

@@ -76,6 +76,14 @@ namespace Hangfire.Common
     /// <threadsafety static="true" instance="false" />
     public partial class Job
     {
+        private static readonly object[] EmptyObjectArray =
+#if NET451
+                new object[0]
+#else
+                Array.Empty<object>()
+#endif
+            ;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Job"/> class with the
         /// metadata of a method with no arguments.
@@ -86,7 +94,7 @@ namespace Hangfire.Common
         /// <exception cref="ArgumentNullException"><paramref name="method"/> argument is null.</exception>
         /// <exception cref="NotSupportedException"><paramref name="method"/> is not supported.</exception>
         public Job([NotNull] MethodInfo method)
-            : this(method, new object[0])
+            : this(method, EmptyObjectArray)
         {
         }
 
@@ -123,7 +131,7 @@ namespace Hangfire.Common
         /// <exception cref="ArgumentException">Parameter/argument count mismatch.</exception>
         /// <exception cref="NotSupportedException"><paramref name="method"/> is not supported.</exception>
         public Job([NotNull] Type type, [NotNull] MethodInfo method)
-            : this(type, method, new object[0])
+            : this(type, method, EmptyObjectArray)
         {
         }
 

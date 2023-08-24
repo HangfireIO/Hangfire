@@ -32,7 +32,13 @@ namespace Hangfire.Storage
 {
     public class InvocationData
     {
-        private static readonly object[] EmptyArray = new object[0];
+        private static readonly object[] EmptyArray =
+#if NET451
+                new object[0]
+#else
+                Array.Empty<object>()
+#endif
+            ;
 
         [Obsolete("Please use IGlobalConfiguration.UseTypeResolver instead. Will be removed in 2.0.0.")]
         public static void SetTypeResolver([CanBeNull] Func<string, Type> typeResolver)

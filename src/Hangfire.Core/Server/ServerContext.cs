@@ -19,7 +19,13 @@ namespace Hangfire.Server
     {
         public ServerContext()
         {
-            Queues = new string[0];
+            Queues =
+#if NET451
+                new string[0]
+#else
+                System.Array.Empty<string>()
+#endif
+                ;
             WorkerCount = -1;
         }
 

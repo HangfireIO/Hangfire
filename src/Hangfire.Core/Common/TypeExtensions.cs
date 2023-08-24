@@ -47,7 +47,7 @@ namespace Hangfire.Common
             if (type == null) throw new ArgumentNullException(nameof(type));
             if (name == null) throw new ArgumentNullException(nameof(name));
 
-            parameterTypes = parameterTypes ?? new Type[0];
+            parameterTypes = parameterTypes ?? Type.EmptyTypes;
 
             var methodCandidates = new List<MethodInfo>(type.GetRuntimeMethods());
 
