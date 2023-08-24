@@ -111,8 +111,8 @@ namespace Hangfire.SqlServer
                         connection,
                         query,
                         numberOfRecordsInSinglePass,
-                        cancellationToken,
-                        additionalActions);
+                        additionalActions,
+                        cancellationToken);
                 } while (affected == numberOfRecordsInSinglePass);
             });
 
@@ -198,8 +198,8 @@ delete top(@count) from cte option (maxdop 1);";
             DbConnection connection,
             string commandText,
             int numberOfRecordsInSinglePass,
-            CancellationToken cancellationToken,
-            Action<DbCommand> additionalActions)
+            Action<DbCommand> additionalActions,
+            CancellationToken cancellationToken)
         {
             using (var command = connection.CreateCommand())
             {
