@@ -294,7 +294,7 @@ namespace Hangfire
             }
             else
             {
-                delayInSeconds = _delayInSecondsByAttemptFunc(retryAttempt);                
+                delayInSeconds = DelayInSecondsByAttemptFunc(retryAttempt);                
             }
 
             var delay = TimeSpan.FromSeconds(delayInSeconds);          
