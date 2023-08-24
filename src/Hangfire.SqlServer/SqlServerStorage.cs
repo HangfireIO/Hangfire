@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 #if FEATURE_CONFIGURATIONMANAGER
@@ -610,7 +611,7 @@ where type = 0;";
                         .Query<double>(sqlQuery)
                         .Single();
 
-                    return new Metric(value.ToString("F"));
+                    return new Metric(value.ToString("F", CultureInfo.CurrentCulture));
                 });
             });
 
@@ -632,7 +633,7 @@ where type = 1;";
                         .Query<double>(sqlQuery)
                         .Single();
 
-                    return new Metric(value.ToString("F"));
+                    return new Metric(value.ToString("F", CultureInfo.CurrentCulture));
                 });
             });
 
