@@ -222,15 +222,17 @@ namespace Hangfire.SqlServer
 
         internal static void Release(DbConnection connection, string resource)
         {
-            var command = CreateReleaseCommand(connection, resource, out var resultParameter);
-            command.ExecuteNonQuery();
-
-            var releaseResult = (int)resultParameter.Value;
-
-            if (releaseResult < 0)
+            using (var command = CreateReleaseCommand(connection, resource, out var resultParameter))
             {
-                throw new SqlServerDistributedLockException(
-                    $"Could not release a lock on the resource '{resource}': Server returned the '{releaseResult}' error.");
+                command.ExecuteNonQuery();
+
+                var releaseResult = (int)resultParameter.Value;
+
+                if (releaseResult < 0)
+                {
+                    throw new SqlServerDistributedLockException(
+                        $"Could not release a lock on the resource '{resource}': Server returned the '{releaseResult}' error.");
+                }
             }
         }
 
