@@ -85,7 +85,7 @@ namespace Hangfire.Common
             }
         }
 
-        public class CancellationEvent : IDisposable
+        public sealed class CancellationEvent : IDisposable
         {
             private static readonly Action<object> SetEventCallback = SetEvent;
 

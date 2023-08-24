@@ -21,7 +21,7 @@ using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Hangfire.AspNetCore
 {
-    internal class AspNetCoreLog : ILog
+    internal sealed class AspNetCoreLog : ILog
     {
         private static readonly Func<object, Exception, string> MessageFormatterFunc = MessageFormatter;
 
