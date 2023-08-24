@@ -358,7 +358,7 @@ namespace Hangfire
         {
             try
             {
-                nextExecution = ParseCronExpression(Cron).GetNextOccurrence(
+                nextExecution = ParseCronExpression(Cron)?.GetNextOccurrence(
                     from ?? (LastExecution ?? CreatedAt.AddSeconds(-1)),
                     TimeZone,
                     inclusive: false);

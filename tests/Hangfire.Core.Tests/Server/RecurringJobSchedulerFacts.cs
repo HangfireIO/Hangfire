@@ -678,6 +678,35 @@ namespace Hangfire.Core.Tests.Server
 
         [Theory]
         [InlineData(false), InlineData(true)]
+        public void Execute_CanHandleRecurringJob_WithCronThatNeverFires(bool batching)
+        {
+            // Arrange
+            SetupConnection(batching);
+
+            _recurringJob["Cron"] = "0 0 31 2 *";
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant);
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _stateMachine.Verify(
+                x => x.ApplyState(It.IsAny<ApplyStateContext>()),
+                Times.Never);
+            
+            _transaction.Verify(x => x.SetRangeInHash(
+                $"recurring-job:{RecurringJobId}", 
+                It.Is<Dictionary<string, string>>(dict =>
+                    dict.ContainsKey("NextExecution") && dict["NextExecution"] == String.Empty)));
+
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1.0D));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Theory]
+        [InlineData(false), InlineData(true)]
         public void Execute_TriggersRecurringJobOnce_WithMissedScheduleByDefault(bool batching)
         {
             // Arrange
