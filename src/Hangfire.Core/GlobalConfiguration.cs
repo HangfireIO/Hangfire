@@ -17,11 +17,13 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Hangfire.Annotations;
 
 namespace Hangfire
 {
+    [SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Public API, can not touch in minor versions.")]
     public enum CompatibilityLevel
     {
         Version_110 = 110,

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 #if NETSTANDARD1_3
 namespace System.Diagnostics.CodeAnalysis
@@ -338,6 +339,7 @@ namespace Hangfire.Annotations
   }
   
   [Flags]
+  [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "Public API, can not change in minor versions.")]
   public enum ImplicitUseKindFlags
   {
     Default = Access | Assign | InstantiatedWithFixedConstructorSignature,
@@ -360,9 +362,11 @@ namespace Hangfire.Annotations
   /// or <see cref="UsedImplicitlyAttribute"/>
   /// </summary>
   [Flags]
+  [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "Public API, can not change in minor versions.")]
   public enum ImplicitUseTargetFlags
   {
     Default = Itself,
+    [SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "Public API, can not change in minor versions.")]
     Itself = 1,
     /// <summary>Members of entity marked with attribute are considered used</summary>
     Members = 2,
@@ -374,6 +378,7 @@ namespace Hangfire.Annotations
   /// This attribute is intended to mark publicly available API
   /// which should not be removed and so is treated as used
   /// </summary>
+  [AttributeUsage(AttributeTargets.All)]
   [MeansImplicitUse]
   public sealed class PublicAPIAttribute : Attribute
   {

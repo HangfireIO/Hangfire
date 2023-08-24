@@ -115,7 +115,7 @@ namespace Hangfire.SqlServer
             {
                 if (value <= TimeSpan.Zero)
                 {
-                    throw new ArgumentOutOfRangeException("Sliding timeout should be greater than zero");
+                    throw new ArgumentOutOfRangeException(nameof(value), "Sliding timeout should be greater than zero");
                 }
 
                 _slidingInvisibilityTimeout = value;
@@ -130,7 +130,7 @@ namespace Hangfire.SqlServer
             set {
                 if (value.TotalMilliseconds > int.MaxValue)
                 {
-                    throw new ArgumentOutOfRangeException("Job expiration check interval cannot be greater than int.MaxValue");
+                    throw new ArgumentOutOfRangeException(nameof(value), "Job expiration check interval cannot be greater than int.MaxValue");
                 }
                 _jobExpirationCheckInterval = value;
             }

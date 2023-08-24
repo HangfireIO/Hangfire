@@ -42,7 +42,9 @@ namespace Hangfire.AspNetCore
                 // Service scope disposal is triggered inside a dedicated background thread,
                 // while Task result is being set in CLR's Thread Pool, so no deadlocks on
                 // wait should happen.
+#pragma warning disable CA2012
                 asyncDisposable.DisposeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+#pragma warning restore CA2012
                 return;
             }
 #endif

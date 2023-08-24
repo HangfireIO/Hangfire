@@ -24,6 +24,7 @@
 // SOFTWARE.
 //===============================================================================
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading;
 using Hangfire.Logging.LogProviders;
@@ -1328,13 +1329,13 @@ namespace Hangfire.Logging.LogProviders
                     return true;
                 }
 
-                _logWriteDelegate((int)ToLogMessageSeverity(logLevel), LogSystem, _skipLevel, exception, true, 0, null,
+                _logWriteDelegate((int)LoupeLogger.ToLogMessageSeverity(logLevel), LogSystem, _skipLevel, exception, true, 0, null,
                     _category, null, messageFunc.Invoke());
 
                 return true;
             }
 
-            public TraceEventType ToLogMessageSeverity(LogLevel logLevel)
+            private static TraceEventType ToLogMessageSeverity(LogLevel logLevel)
             {
                 switch (logLevel)
                 {
@@ -1415,6 +1416,7 @@ namespace Hangfire.Logging.LogProviders
         /// <param name="message">The Log Message</param>
         /// <param name="e">The Exception, if there is one</param>
         /// <returns>A formatted Log Message string.</returns>
+        [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "Public API, can not change in minor versions.")]
         public delegate string MessageFormatterDelegate(
             string loggerName,
             LogLevel level,
@@ -1434,11 +1436,13 @@ namespace Hangfire.Logging.LogProviders
             stringBuilder.Append(' ');
 
             // Append a readable representation of the log level
+#pragma warning disable CA1311
             stringBuilder.Append(("[" + level.ToString().ToUpper(
 #if !NETSTANDARD1_3
                 CultureInfo.InvariantCulture
 #endif
                 ) + "]").PadRight(8));
+#pragma warning restore CA1311
 
             stringBuilder.Append("(" + loggerName + ") ");
 

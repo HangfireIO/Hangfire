@@ -20,6 +20,7 @@ using System.Net;
 using System.Text;
 using Hangfire.Common;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -30,6 +31,7 @@ using Hangfire.Dashboard.Resources;
 
 namespace Hangfire.Dashboard
 {
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "We use instance methods in this class for better observability.")]
     public class HtmlHelper
     {
         private static readonly Type DisplayNameType;

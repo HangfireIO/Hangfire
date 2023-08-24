@@ -230,15 +230,9 @@ namespace Hangfire.Dashboard
             var builder = new StringBuilder();
             builder.Append("<dl class=\"dl-horizontal\">");
 
-            string serverId = null;
-
-            if (stateData.ContainsKey("ServerId"))
+            if (!stateData.TryGetValue("ServerId", out var serverId))
             {
-                serverId = stateData["ServerId"];
-            }
-            else if (stateData.ContainsKey("ServerName"))
-            {
-                serverId = stateData["ServerName"];
+                stateData.TryGetValue("ServerName", out serverId);
             }
 
             if (serverId != null)

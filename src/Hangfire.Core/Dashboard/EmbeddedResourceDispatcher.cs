@@ -14,6 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
@@ -51,6 +52,7 @@ namespace Hangfire.Dashboard
             return WriteResource(response, _assembly, _resourceName);
         }
 
+        [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Context can be potentially accessed in derived classes.")]
         protected async Task WriteResource(DashboardResponse response, Assembly assembly, string resourceName)
         {
             using (var inputStream = assembly.GetManifestResourceStream(resourceName))

@@ -213,7 +213,7 @@ namespace Hangfire.SqlServer
                     }
                 }
 
-                if (builder.Length != 0) builder.Append("@");
+                if (builder.Length != 0) builder.Append('@');
 
                 foreach (var alias in new[] { "Database", "Initial Catalog" })
                 {
