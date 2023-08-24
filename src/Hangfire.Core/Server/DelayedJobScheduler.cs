@@ -237,7 +237,10 @@ namespace Hangfire.Server
         {
             Exception exception = null;
 
-            for (var retryAttempt = 0; retryAttempt < MaxStateChangeAttempts; retryAttempt++)
+            // At least one retry attempt should always be performed.
+            var maxRetryAttempts = MaxStateChangeAttempts > 0 ? MaxStateChangeAttempts : 1;
+
+            for (var retryAttempt = 0; retryAttempt < maxRetryAttempts; retryAttempt++)
             {
                 try
                 {

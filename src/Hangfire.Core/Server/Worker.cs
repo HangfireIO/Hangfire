@@ -206,7 +206,10 @@ namespace Hangfire.Server
 
             abortToken.ThrowIfCancellationRequested();
 
-            for (var retryAttempt = 0; retryAttempt < _maxStateChangeAttempts; retryAttempt++)
+            // At least one retry attempt should always be performed.
+            var maxRetryAttempts = _maxStateChangeAttempts > 0 ? _maxStateChangeAttempts : 1;
+
+            for (var retryAttempt = 0; retryAttempt < maxRetryAttempts; retryAttempt++)
             {
                 try
                 {
