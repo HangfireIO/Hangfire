@@ -15,6 +15,7 @@
 
 using System;
 using System.Data.Common;
+using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.SqlServer;
 
@@ -23,6 +24,8 @@ namespace Hangfire
 {
     public static class SqlServerStorageExtensions
     {
+        private static int _metricsInitialized;
+
         public static IGlobalConfiguration<SqlServerStorage> UseSqlServerStorage(
             [NotNull] this IGlobalConfiguration configuration,
             [NotNull] string nameOrConnectionString)
@@ -75,12 +78,16 @@ namespace Hangfire
             [NotNull] this IGlobalConfiguration<SqlServerStorage> configuration)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
-            configuration.UseDashboardMetric(SqlServerStorage.SchemaVersion);
-            configuration.UseDashboardMetric(SqlServerStorage.ActiveConnections);
-            configuration.UseDashboardMetric(SqlServerStorage.TotalConnections);
-            configuration.UseDashboardMetric(SqlServerStorage.ActiveTransactions);
-            configuration.UseDashboardMetric(SqlServerStorage.DataFilesSize);
-            configuration.UseDashboardMetric(SqlServerStorage.LogFilesSize);
+
+            if (Interlocked.Exchange(ref _metricsInitialized, 1) == 0)
+            {
+                configuration.UseDashboardMetric(SqlServerStorage.SchemaVersion);
+                configuration.UseDashboardMetric(SqlServerStorage.ActiveConnections);
+                configuration.UseDashboardMetric(SqlServerStorage.TotalConnections);
+                configuration.UseDashboardMetric(SqlServerStorage.ActiveTransactions);
+                configuration.UseDashboardMetric(SqlServerStorage.DataFilesSize);
+                configuration.UseDashboardMetric(SqlServerStorage.LogFilesSize);
+            }
 
             return configuration;
         }
