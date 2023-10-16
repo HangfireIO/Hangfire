@@ -51,7 +51,7 @@ namespace Hangfire.Dashboard
             BackgroundStateColors.Add(ProcessingState.StateName, "#FCEFDC");
             BackgroundStateColors.Add(ScheduledState.StateName, "#E0F3F8");
             BackgroundStateColors.Add(DeletedState.StateName, "#ddd");
-            BackgroundStateColors.Add(AwaitingState.StateName, "#F5F5F5");
+            BackgroundStateColors.Add(AwaitingState.StateName, "#E0F3F8");
 
             ForegroundStateColors.Add(EnqueuedState.StateName, "#999");
             ForegroundStateColors.Add(SucceededState.StateName, "#5cb85c");
@@ -59,7 +59,7 @@ namespace Hangfire.Dashboard
             ForegroundStateColors.Add(ProcessingState.StateName, "#f0ad4e");
             ForegroundStateColors.Add(ScheduledState.StateName, "#5bc0de");
             ForegroundStateColors.Add(DeletedState.StateName, "#777");
-            ForegroundStateColors.Add(AwaitingState.StateName, "#999");
+            ForegroundStateColors.Add(AwaitingState.StateName, "#5bc0de");
 
             StateCssSuffixes.Add(EnqueuedState.StateName, "active");
             StateCssSuffixes.Add(SucceededState.StateName, "success");
@@ -67,7 +67,7 @@ namespace Hangfire.Dashboard
             StateCssSuffixes.Add(ProcessingState.StateName, "warning");
             StateCssSuffixes.Add(ScheduledState.StateName, "info");
             StateCssSuffixes.Add(DeletedState.StateName, "inactive");
-            StateCssSuffixes.Add(AwaitingState.StateName, "active");
+            StateCssSuffixes.Add(AwaitingState.StateName, "info");
         }
 
         [Obsolete("Use `AddStateCssSuffix` method's logic instead. Will be removed in 2.0.0.")]
