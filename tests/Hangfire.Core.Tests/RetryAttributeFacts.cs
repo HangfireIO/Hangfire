@@ -42,13 +42,6 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenDelaysInSecondsIsNull()
-        {
-            Assert.Throws<ArgumentNullException>(
-                () => new AutomaticRetryAttribute { DelaysInSeconds = null });
-        }
-
-        [Fact]
         public void Ctor_ThrowsAnException_WhenDelaysInSecondsIsEmpty()
         {
             Assert.Throws<ArgumentNullException>(
@@ -91,6 +84,13 @@ namespace Hangfire.Core.Tests
             Assert.Equal(2, filter.DelaysInSeconds.Length);
             Assert.Equal(5, filter.DelaysInSeconds[0]);
             Assert.Equal(8, filter.DelaysInSeconds[1]);
+        }
+
+        [Fact]
+        public void DelaysInSeconds_CanBeSetToNull()
+        {
+            var filter = new AutomaticRetryAttribute { DelaysInSeconds = null };
+            Assert.NotNull(filter);
         }
 
         [Fact]

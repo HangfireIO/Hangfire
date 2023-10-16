@@ -149,8 +149,14 @@ namespace Hangfire
             get { lock (_lockObject) { return _delaysInSeconds; } }
             set
             {
-                if (value == null || value.Length == 0) throw new ArgumentNullException(nameof(value));
-                if (value.Any(delay => delay < 0)) throw new ArgumentException($@"{nameof(DelaysInSeconds)} value must be an array of non-negative numbers.", nameof(value));
+                if (value != null)
+                {
+                    if (value.Length == 0) throw new ArgumentNullException(nameof(value));
+                    if (value.Any(delay => delay < 0))
+                        throw new ArgumentException(
+                            $@"{nameof(DelaysInSeconds)} value must be an array of non-negative numbers.",
+                            nameof(value));
+                }
 
                 lock (_lockObject) { _delaysInSeconds = value; }
             }
