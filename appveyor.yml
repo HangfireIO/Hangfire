@@ -46,7 +46,7 @@ shallow_clone: true
 # Installing MSMQ manually to avoid "Cannot initialize 'msmq' service handler" error
 build_script:
   - cmd: powershell Import-Module ServerManager; Add-WindowsFeature MSMQ; net start msmq
-  - ps: IF ($env:APPVEYOR_SCHEDULED_BUILD -eq "True" -or $env:APPVEYOR_REPO_COMMIT_MESSAGE -like "*[covscan]*") { .\coverity-scan.ps1 }
+  - ps: IF ($env:APPVEYOR_SCHEDULED_BUILD -or $env:APPVEYOR_REPO_COMMIT_MESSAGE -like "*covscan*") { .\coverity-scan.ps1 }
   - cmd: IF NOT DEFINED APPVEYOR_SCHEDULED_BUILD build.bat ci
   - sh: chmod +x build.sh; ./build.sh
 
