@@ -46,7 +46,7 @@ namespace Hangfire.Dashboard
 
             AddStylesheetDarkMode(executingAssembly, GetContentResourceName("css", "hangfire-dark.css"));
 
-            AddJavaScript(executingAssembly, GetContentResourceName("js", "jquery-3.6.0.min.js"));
+            AddJavaScript(executingAssembly, GetContentResourceName("js", "jquery-3.7.1.min.js"));
             AddJavaScript(executingAssembly, GetContentResourceName("js", "bootstrap.min.js"));
             AddJavaScript(executingAssembly, GetContentResourceName("js", "moment-with-locales.min.js"));
             AddJavaScript(executingAssembly, GetContentResourceName("js", "Chart.min.js"));
