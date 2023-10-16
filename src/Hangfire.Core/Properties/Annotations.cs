@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
 #if NETSTANDARD1_3
@@ -38,6 +39,7 @@ namespace Hangfire.Annotations
   ///     var s = p.ToString(); // Warning: Possible 'System.NullReferenceException'
   /// }
   /// </code></example>
+  [EditorBrowsable(EditorBrowsableState.Never)]
   [AttributeUsage(
     AttributeTargets.Method | AttributeTargets.Parameter |
     AttributeTargets.Property | AttributeTargets.Delegate |
@@ -54,6 +56,7 @@ namespace Hangfire.Annotations
   ///     return null; // Warning: Possible 'null' assignment
   /// }
   /// </code></example>
+  [EditorBrowsable(EditorBrowsableState.Never)]
   [AttributeUsage(
     AttributeTargets.Method | AttributeTargets.Parameter |
     AttributeTargets.Property | AttributeTargets.Delegate |
@@ -74,6 +77,7 @@ namespace Hangfire.Annotations
   ///     ShowError("Failed: {0}"); // Warning: Non-existing argument in format string
   /// }
   /// </code></example>
+  [EditorBrowsable(EditorBrowsableState.Never)]
   [AttributeUsage(
     AttributeTargets.Constructor | AttributeTargets.Method)]
   public sealed class StringFormatMethodAttribute : Attribute
@@ -101,6 +105,7 @@ namespace Hangfire.Annotations
   ///         throw new ArgumentNullException("par"); // Warning: Cannot resolve symbol
   /// }
   /// </code></example>
+  [EditorBrowsable(EditorBrowsableState.Never)]
   [AttributeUsage(AttributeTargets.Parameter)]
   public sealed class InvokerParameterNameAttribute : Attribute { }
 
@@ -141,6 +146,7 @@ namespace Hangfire.Annotations
   /// <item><c>SetProperty(ref myField, value, "Property")</c></item>
   /// </list>
   /// </example>
+  [EditorBrowsable(EditorBrowsableState.Never)]
   [AttributeUsage(AttributeTargets.Method)]
   public sealed class NotifyPropertyChangedInvocatorAttribute : Attribute
   {
@@ -195,6 +201,7 @@ namespace Hangfire.Annotations
   /// public bool TryParse(string s, out Person result)
   /// </code></item>
   /// </list></examples>
+  [EditorBrowsable(EditorBrowsableState.Never)]
   [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
   public sealed class ContractAnnotationAttribute : Attribute
   {
@@ -221,6 +228,7 @@ namespace Hangfire.Annotations
   ///     private string str = "my string"; // Warning: Localizable string
   /// }
   /// </code></example>
+  [EditorBrowsable(EditorBrowsableState.Never)]
   [AttributeUsage(AttributeTargets.All)]
   public sealed class LocalizationRequiredAttribute : Attribute
   {
@@ -255,6 +263,7 @@ namespace Hangfire.Annotations
   ///     }
   /// }
   /// </code></example>
+  [EditorBrowsable(EditorBrowsableState.Never)]
   [AttributeUsage(
     AttributeTargets.Interface | AttributeTargets.Class |
     AttributeTargets.Struct)]
@@ -270,6 +279,7 @@ namespace Hangfire.Annotations
   /// [Component] // ComponentAttribute requires implementing IComponent interface
   /// public class MyComponent : IComponent { }
   /// </code></example>
+  [EditorBrowsable(EditorBrowsableState.Never)]
   [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
   [BaseTypeRequired(typeof(Attribute))]
   public sealed class BaseTypeRequiredAttribute : Attribute
@@ -287,6 +297,7 @@ namespace Hangfire.Annotations
   /// (e.g. via reflection, in external library), so this symbol
   /// will not be marked as unused (as well as by other usage inspections)
   /// </summary>
+  [EditorBrowsable(EditorBrowsableState.Never)]
   [AttributeUsage(AttributeTargets.All)]
   public sealed class UsedImplicitlyAttribute : Attribute
   {
@@ -315,6 +326,7 @@ namespace Hangfire.Annotations
   /// to not mark symbols marked with such attributes as unused
   /// (as well as by other usage inspections)
   /// </summary>
+  [EditorBrowsable(EditorBrowsableState.Never)]
   [AttributeUsage(AttributeTargets.Class)]
   public sealed class MeansImplicitUseAttribute : Attribute
   {
@@ -338,6 +350,7 @@ namespace Hangfire.Annotations
     [UsedImplicitly] public ImplicitUseTargetFlags TargetFlags { get; private set; }
   }
   
+  [EditorBrowsable(EditorBrowsableState.Never)]
   [Flags]
   [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "Public API, can not change in minor versions.")]
   public enum ImplicitUseKindFlags
@@ -361,6 +374,7 @@ namespace Hangfire.Annotations
   /// when marked with <see cref="MeansImplicitUseAttribute"/>
   /// or <see cref="UsedImplicitlyAttribute"/>
   /// </summary>
+  [EditorBrowsable(EditorBrowsableState.Never)]
   [Flags]
   [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "Public API, can not change in minor versions.")]
   public enum ImplicitUseTargetFlags
@@ -378,6 +392,7 @@ namespace Hangfire.Annotations
   /// This attribute is intended to mark publicly available API
   /// which should not be removed and so is treated as used
   /// </summary>
+  [EditorBrowsable(EditorBrowsableState.Never)]
   [AttributeUsage(AttributeTargets.All)]
   [MeansImplicitUse]
   public sealed class PublicAPIAttribute : Attribute
@@ -398,6 +413,7 @@ namespace Hangfire.Annotations
   /// If the parameter is an enumerable, indicates that it is enumerated
   /// while the method is executed
   /// </summary>
+  [EditorBrowsable(EditorBrowsableState.Never)]
   [AttributeUsage(AttributeTargets.Parameter)]
   public sealed class InstantHandleAttribute : Attribute { }
 
@@ -412,9 +428,11 @@ namespace Hangfire.Annotations
   ///   Multiply(a, b); // Waring: Return value of pure method is not used
   /// }
   /// </code></example>
+  [EditorBrowsable(EditorBrowsableState.Never)]
   [AttributeUsage(AttributeTargets.Method)]
   public sealed class PureAttribute : Attribute { }
 
+  [EditorBrowsable(EditorBrowsableState.Never)]
   [AttributeUsage(
     AttributeTargets.Parameter | AttributeTargets.Property |
     AttributeTargets.Field)]
@@ -429,6 +447,7 @@ namespace Hangfire.Annotations
     [NotNull] public string Name { get; private set; }
   }
 
+  [EditorBrowsable(EditorBrowsableState.Never)]
   [AttributeUsage(
     AttributeTargets.Parameter | AttributeTargets.Field |
     AttributeTargets.Property)]
