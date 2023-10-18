@@ -22,6 +22,30 @@ https://www.hangfire.io/
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.6
+
+• Changed – Update jQuery library in Dashboard UI to version 3.7.1.
+• Changed – Mark all types in Hangfire.Annotations with `EditorBrowsableAttribute(Never)`.
+• Changed – Change state card colors for the Awaiting state to match the Scheduled state.
+• Fixed – Exception when deserializing an instance of the `AutomaticRetryAttribute` class from JSON.
+• Fixed – Add serialization-related constructors for all the exception classes.
+• Fixed – Use invariant culture or ordinal comparisons for internal strings.
+• Fixed – Use invariant culture when formatting key names for metrics.
+• Fixed – Use `CurrentCulture` instead of `CurrentUICulture` when displaying time.
+• Project – Enable running static analysis by Coverity Scan weekly.
+• Project – Enable mandatory static analysis by the Microsoft.CodeAnalysis.NetAnalyzers package.
+• Project – Change MSBuild path when building using newer .NET SDKs for Razor views.
+        
+Hangfire.SqlServer
+
+• Fixed – Exception in Dashboard UI when schema version is not present in a database.
+• Fixed – `DbCommand` resource leak when releasing a lock detected by static analysis.
+• Fixed – Don't add SQL Server-related metrics multiple times in Dashboard UI.
+
+Hangfire.NetCore
+
+• Fixed – Include assembly information to the Hangfire.NetCore assembly.
+
 1.8.5
 
 Hangfire.Core
