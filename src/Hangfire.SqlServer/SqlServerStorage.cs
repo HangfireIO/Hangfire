@@ -648,13 +648,21 @@ where type = 1;";
                 return sqlStorage.UseConnection(null, connection =>
                 {
                     var sqlQuery = $@"select top(1) [Version] from [{sqlStorage.SchemaName}].[Schema]";
-                    var value = connection.Query<int>(sqlQuery).Single();
+                    var version = connection.Query<int?>(sqlQuery).SingleOrDefault();
 
-                    return new Metric(value)
+                    if (!version.HasValue)
                     {
-                        Style = value < SqlServerObjectsInstaller.LatestSchemaVersion
+                        return new Metric("Unspecified")
+                        {
+                            Style = MetricStyle.Danger,
+                        };
+                    }
+
+                    return new Metric(version.Value)
+                    {
+                        Style = version < SqlServerObjectsInstaller.LatestSchemaVersion
                             ? MetricStyle.Warning
-                            : value == SqlServerObjectsInstaller.LatestSchemaVersion
+                            : version == SqlServerObjectsInstaller.LatestSchemaVersion
                                 ? MetricStyle.Success
                                 : MetricStyle.Default
                     };

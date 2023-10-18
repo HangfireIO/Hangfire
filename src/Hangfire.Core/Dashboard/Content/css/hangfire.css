@@ -633,6 +633,8 @@ div.metric .metric-body {
     padding: 15px 15px 0;
     font-size: 26px;
     text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 div.metric .metric-description {
