@@ -1737,27 +1737,28 @@ values (@Key, @Value, 0.0)";
 
         [Theory, CleanDatabase]
         [InlineData(false), InlineData(true)]
-        public void GetRangeFromSet_ReturnsPagedElements(bool useMicrosoftDataSqlClient)
+        public void GetRangeFromSet_ReturnsPagedElements_SortedByScore(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
-values (@Key, @Value, 0.0)";
+values (@Key, @Value, @Score)";
 
             UseConnections((sql, connection) =>
             {
                 sql.Execute(arrangeSql, new List<dynamic>
                 {
-                    new { Key = "set-1", Value = "1" },
-                    new { Key = "set-1", Value = "2" },
-                    new { Key = "set-1", Value = "3" },
-                    new { Key = "set-1", Value = "4" },
-                    new { Key = "set-2", Value = "4" },
-                    new { Key = "set-1", Value = "5" }
+                    new { Key = "set-1", Value = "4", Score = 4.0D },
+                    new { Key = "set-2", Value = "4", Score = 4.0D },
+                    new { Key = "set-1", Value = "6", Score = 6.0D },
+                    new { Key = "set-1", Value = "2", Score = 2.0D },
+                    new { Key = "set-1", Value = "3", Score = 3.0D },
+                    new { Key = "set-1", Value = "5", Score = 5.0D },
+                    new { Key = "set-1", Value = "1", Score = 1.0D },
                 });
 
-                var result = connection.GetRangeFromSet("set-1", 2, 3);
+                var result = connection.GetRangeFromSet("set-1", 2, 4);
 
-                Assert.Equal(new [] { "3", "4" }, result);
+                Assert.Equal(new [] { "3", "4", "5" }, result);
             }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
