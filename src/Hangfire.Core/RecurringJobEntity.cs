@@ -341,14 +341,17 @@ namespace Hangfire
             var parts = cronExpression.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
             var format = CronFormat.Standard;
 
-            if (parts.Length == 6)
+            if (!cronExpression.StartsWith('@'))
             {
-                format |= CronFormat.IncludeSeconds;
-            }
-            else if (parts.Length != 5)
-            {
-                throw new CronFormatException(
-                    $"Wrong number of parts in the `{cronExpression}` cron expression, you can only use 5 or 6 (with seconds) part-based expressions.");
+                if (parts.Length == 6)
+                {
+                    format |= CronFormat.IncludeSeconds;
+                }
+                else if (parts.Length != 5)
+                {
+                    throw new CronFormatException(
+                        $"Wrong number of parts in the `{cronExpression}` cron expression, you can only use 5 or 6 (with seconds) part-based expressions.");
+                }
             }
 
             return CronExpression.Parse(cronExpression, format);
