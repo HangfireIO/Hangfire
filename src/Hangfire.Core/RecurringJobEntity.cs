@@ -26,6 +26,8 @@ namespace Hangfire
 {
     internal class RecurringJobEntity
     {
+        private static readonly char[] SeparatorCharacters = new[] { ' ', '\t' };
+
         private readonly IList<Exception> _errors = new List<Exception>();
         private readonly IDictionary<string, string> _recurringJob;
         private readonly DateTime _now;
@@ -338,7 +340,7 @@ namespace Hangfire
         {
             if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
 
-            var parts = cronExpression.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = cronExpression.Split(SeparatorCharacters, StringSplitOptions.RemoveEmptyEntries);
             var format = CronFormat.Standard;
 
             if (parts.Length == 6)

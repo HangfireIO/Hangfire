@@ -80,11 +80,11 @@
                         <tbody>
                             @foreach (var job in processingJobs)
                             {
-                                <tr class="js-jobs-list-row @(!job.Value.InProcessingState ? "obsolete-data" : null) @(job.Value.InProcessingState ? "hover" : null)">
+                                <tr class="js-jobs-list-row @(job.Value == null || !job.Value.InProcessingState ? "obsolete-data" : null) @(job.Value != null && job.Value.InProcessingState ? "hover" : null)">
                                     @if (!IsReadOnly)
                                     {
                                         <td>
-                                            @if (job.Value.InProcessingState)
+                                            @if (job.Value != null && job.Value.InProcessingState)
                                             {
                                                 <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
                                             }
@@ -92,12 +92,16 @@
                                     }
                                     <td class="min-width">
                                         @Html.JobIdLink(job.Key)
-                                        @if (!job.Value.InProcessingState)
+                                        @if (job.Value != null && !job.Value.InProcessingState)
                                         {
                                             <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
                                         }
                                     </td>
-                                    @if (!job.Value.InProcessingState)
+                                    @if (job.Value == null)
+                                    {
+                                        <td colspan="3"><em>@Strings.Common_JobExpired</em></td>
+                                    }
+                                    else if (!job.Value.InProcessingState)
                                     {
                                         <td colspan="3">@Strings.Common_JobStateChanged_Text</td>
                                     }

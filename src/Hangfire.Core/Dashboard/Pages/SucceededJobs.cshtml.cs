@@ -312,7 +312,7 @@ WriteLiteral("                                        <td>\r\n");
 
             
             #line 74 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
-                                             if (job.Value == null || job.Value.InSucceededState)
+                                             if (job.Value != null && job.Value.InSucceededState)
                                             {
 
             

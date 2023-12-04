@@ -44,9 +44,9 @@ namespace Hangfire.Dashboard
         {
             IList<string> values;
 
-            if(_context.Environment.ContainsKey(FormCollectionKey))
+            if(_context.Environment.TryGetValue(FormCollectionKey, out var formCollection))
             {
-                if(_context.Environment[FormCollectionKey] is IFormCollection)
+                if (formCollection is IFormCollection)
                 {
                     var form = (IFormCollection)_context.Request.Environment[FormCollectionKey];
                     values = form.GetValues(key);
