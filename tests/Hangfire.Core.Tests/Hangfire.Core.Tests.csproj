@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net452;net461;netcoreapp1.0;netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
     <NoWarn>0618</NoWarn>
+    <NuGetAudit>false</NuGetAudit><!-- We are testing against these packages, not including them into the product -->
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(TargetFramework)'=='netcoreapp1.0'">
