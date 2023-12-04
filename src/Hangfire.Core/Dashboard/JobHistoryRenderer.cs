@@ -78,12 +78,12 @@ namespace Hangfire.Dashboard
 
         public static string GetBackgroundStateColor(string stateName)
         {
-            if (stateName == null || !BackgroundStateColors.ContainsKey(stateName))
+            if (stateName == null || !BackgroundStateColors.TryGetValue(stateName, out var color))
             {
                 return "inherit";
             }
 
-            return BackgroundStateColors[stateName];
+            return color;
         }
 
         [Obsolete("Use `AddStateCssSuffix` method's logic instead. Will be removed in 2.0.0.")]
@@ -94,12 +94,12 @@ namespace Hangfire.Dashboard
 
         public static string GetForegroundStateColor(string stateName)
         {
-            if (stateName == null || !ForegroundStateColors.ContainsKey(stateName))
+            if (stateName == null || !ForegroundStateColors.TryGetValue(stateName, out var color))
             {
                 return "inherit";
             }
 
-            return ForegroundStateColors[stateName];
+            return color;
         }
 
         public static void AddStateCssSuffix(string stateName, string color)
