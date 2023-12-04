@@ -198,12 +198,12 @@ namespace Hangfire.Server
                 return true;
             }
 
-            if (!state.Data.ContainsKey("ServerId") || !state.Data["ServerId"].Equals(_serverId, StringComparison.OrdinalIgnoreCase))
+            if (!state.Data.TryGetValue("ServerId", out var serverId) || !serverId.Equals(_serverId, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
 
-            if (!state.Data.ContainsKey("WorkerId") || !state.Data["WorkerId"].Equals(_workerId, StringComparison.OrdinalIgnoreCase))
+            if (!state.Data.TryGetValue("WorkerId", out var workerId) || !workerId.Equals(_workerId, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
