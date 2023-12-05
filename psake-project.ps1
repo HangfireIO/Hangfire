@@ -1,6 +1,12 @@
 Framework 4.5.1
 Include "packages\Hangfire.Build.0.2.6\tools\psake-common.ps1"
 
+Properties {
+    $opencover47 = ".\packages\OpenCover.*\tools\opencover.console.exe"
+    $coverage_file = "coverage.xml"
+    $coverage_filter = "+[Hangfire.*]* -[*.Tests]* -[*]*.Annotations.* -[*]*.Dashboard.* -[*]*.Logging.* -[*]*.ExpressionUtil.*"
+}
+
 Task Default -Depends Collect
 Task CI -Depends Pack
 
@@ -31,10 +37,16 @@ Task Test -Depends Merge -Description "Run unit and integration tests against me
     # Dependencies shouldn't be re-built, because we need to run tests against merged assemblies to test
     # the same assemblies that are distributed to users. Since the `dotnet test` command doesn't support
     # the `--no-dependencies` command directly, we need to re-build tests themselves first.
+    Write-Host "Building test projects with '--no-depepdencies' option..." -ForegroundColor "Green"
     Exec { ls "tests\**\*.csproj" | % { dotnet build -c Release --no-dependencies $_.FullName } }
 
-    Exec { dotnet tool install --global JetBrains.dotCover.GlobalTool }
-    Exec { dotnet dotcover test -c Release --no-build --dcReportType=HTML }
+    # We are running unit test project one by one, because pipelined version like the line above does not
+    # support halting the whole execution pipeline when "dotnet test" command fails due to a failed test,
+    # silently allowing build process to continue its execution even with failed tests.
+    Write-Host "Running test projects with coverage capture..." -ForegroundColor "Green"
+    Run-OpenCoverDotnet "Hangfire.Core.Tests" $coverage_file $coverage_filter
+    Run-OpenCoverDotnet "Hangfire.SqlServer.Tests" $coverage_file $coverage_filter
+    Run-OpenCoverDotnet "Hangfire.SqlServer.Msmq.Tests" $coverage_file $coverage_filter
 }
 
 Task Collect -Depends Test -Description "Copy all artifacts to the build folder." {
@@ -159,4 +171,13 @@ function Repack-Assembly($projectWithOptionalTarget, $internalizeAssemblies, $ta
     Pop-Location
 
     Move-Files "$temp_dir\$project.*" $projectOutput
+}
+
+function Run-OpenCoverDotnet($directory, $coverageFile, $coverageFilter) {
+    $directory = "$tests_dir\$directory"
+    Write-Host "Running OpenCover/dotnet for '$directory'..." -ForegroundColor "Green"
+	
+    Exec {
+        .$opencover47 -target:`"dotnet.exe`" -targetargs:"test --no-build $directory" -filter:`"$coverageFilter`" -mergeoutput -output:`"$coverageFile`" -register:user -returntargetcode -oldStyle
+    }
 }
