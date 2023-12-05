@@ -21,16 +21,10 @@ image:
 environment:
   BuildEnvironment: appveyor
   Hangfire_SqlServer_ConnectionStringTemplate: Server=.\SQL2017;Database={0};User Id=sa;Password=Password12!;Encrypt=False
-  DOCKER_USERNAME:
-    secure: BDjid/SqKs9YCA39j55dIg==
-  DOCKER_PASSWORD:
-    secure: 5QtoskttMBDkXfFyFZSLhZIlUfsDUDgkCS9jy7rUM6ROPeRytpzEdkIXA5UNNV9K
   COVERITY_TOKEN:
     secure: r3yBqxgALySnCK9W6uiStqoadsqYtrWQolzxGDVKF74=
   COVERITY_EMAIL:
     secure: wf51HXCiUYxuTe+eo3uQOxqyptSLrH4IEqq0958Rmx8=
-  SONAR_TOKEN:
-    secure: nx3qPGdtPoDuJfjGBVrVIrqRKGUEFWmdn3FYgdAecVc0G1vTLIpIPxFuHFFgtXQ2
 
 # enable service required for tests
 services:
@@ -49,10 +43,7 @@ shallow_clone: true
 build_script:
   - cmd: powershell Import-Module ServerManager; Add-WindowsFeature MSMQ; net start msmq
   - ps: IF ($env:APPVEYOR_SCHEDULED_BUILD -or $env:APPVEYOR_REPO_COMMIT_MESSAGE -like "*covscan*") { .\coverity-scan.ps1 }
-  - cmd: dotnet tool install --global dotnet-sonarscanner
-  - cmd: dotnet sonarscanner begin /o:"hangfireio" /k:"HangfireIO_Hangfire" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths=coverage.xml /d:sonar.login="%SONAR_TOKEN%" /v:"%APPVEYOR_BUILD_NUMBER%"
   - cmd: IF NOT DEFINED APPVEYOR_SCHEDULED_BUILD build.bat ci
-  - cmd: dotnet sonarscanner end
   - sh: chmod +x build.sh; ./build.sh
 
 #---------------------------------#
@@ -80,4 +71,3 @@ deploy:
       secure: GdfWH5BGrFoHBIuQPebg1ci3odJAeUUOZ2KFJR7y0mBU+kwicu/lNow1vRRjLBU3
     on:
       appveyor_repo_tag: true
-
