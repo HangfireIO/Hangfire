@@ -29,7 +29,7 @@ environment:
     secure: r3yBqxgALySnCK9W6uiStqoadsqYtrWQolzxGDVKF74=
   COVERITY_EMAIL:
     secure: wf51HXCiUYxuTe+eo3uQOxqyptSLrH4IEqq0958Rmx8=
-  SONAR_LOGIN:
+  SONARCLOUD_PROJECT_TOKEN:
     secure: nx3qPGdtPoDuJfjGBVrVIrqRKGUEFWmdn3FYgdAecVc0G1vTLIpIPxFuHFFgtXQ2
 
 # enable service required for tests
