@@ -214,7 +214,7 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void AddOrUpdate_AddsAJob_ToTheRecurringJobsSetWithMacroExpression()
+        public void AddOrUpdate_AddsAJob_VerifyCronMacroExpression()
         {
             var manager = CreateManager();
 
