@@ -21,10 +21,6 @@ image:
 environment:
   BuildEnvironment: appveyor
   Hangfire_SqlServer_ConnectionStringTemplate: Server=.\SQL2017;Database={0};User Id=sa;Password=Password12!;Encrypt=False
-  DOCKER_USERNAME:
-    secure: BDjid/SqKs9YCA39j55dIg==
-  DOCKER_PASSWORD:
-    secure: 5QtoskttMBDkXfFyFZSLhZIlUfsDUDgkCS9jy7rUM6ROPeRytpzEdkIXA5UNNV9K
   COVERITY_TOKEN:
     secure: r3yBqxgALySnCK9W6uiStqoadsqYtrWQolzxGDVKF74=
   COVERITY_EMAIL:
@@ -75,4 +71,3 @@ deploy:
       secure: GdfWH5BGrFoHBIuQPebg1ci3odJAeUUOZ2KFJR7y0mBU+kwicu/lNow1vRRjLBU3
     on:
       appveyor_repo_tag: true
-
