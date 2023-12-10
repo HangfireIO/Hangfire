@@ -296,7 +296,7 @@ WriteLiteral("                                        <td>\r\n");
 
             
             #line 71 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
-                                             if (job.Value == null || job.Value.InDeletedState)
+                                             if (job.Value != null && job.Value.InDeletedState)
                                             {
 
             

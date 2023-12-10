@@ -76,11 +76,11 @@
                         </thead>
                         @foreach (var job in scheduledJobs)
                         {
-                            <tr class="js-jobs-list-row @(!job.Value.InScheduledState ? "obsolete-data" : null) @(job.Value.InScheduledState ? "hover" : null)">
+                            <tr class="js-jobs-list-row @(job.Value == null || !job.Value.InScheduledState ? "obsolete-data" : null) @(job.Value != null && job.Value.InScheduledState ? "hover" : null)">
                                 @if (!IsReadOnly)
                                 {
                                     <td>
-                                        @if (job.Value.InScheduledState)
+                                        @if (job.Value != null && job.Value.InScheduledState)
                                         {
                                             <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
                                         }
@@ -88,23 +88,30 @@
                                 }
                                 <td class="min-width">
                                     @Html.JobIdLink(job.Key)
-                                    @if (!job.Value.InScheduledState)
+                                    @if (job.Value != null && !job.Value.InScheduledState)
                                     {
                                         <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
                                     }
                                 </td>
-                                <td class="min-width">
-                                    @Html.RelativeTime(job.Value.EnqueueAt)
-                                </td>
-                                <td class="word-break">
-                                    @Html.JobNameLink(job.Key, job.Value.Job)
-                                </td>
-                                <td class="align-right">
-                                    @if (job.Value.ScheduledAt.HasValue)
-                                    {
-                                        @Html.RelativeTime(job.Value.ScheduledAt.Value)
-                                    }
-                                </td>
+                                @if (job.Value == null)
+                                {
+                                    <td colspan="3"><em>@Strings.Common_JobExpired</em></td>
+                                }
+                                else
+                                {
+                                    <td class="min-width">
+                                        @Html.RelativeTime(job.Value.EnqueueAt)
+                                    </td>
+                                    <td class="word-break">
+                                        @Html.JobNameLink(job.Key, job.Value.Job)
+                                    </td>
+                                    <td class="align-right">
+                                        @if (job.Value.ScheduledAt.HasValue)
+                                        {
+                                            @Html.RelativeTime(job.Value.ScheduledAt.Value)
+                                        }
+                                    </td>
+                                }
                             </tr>
                         }
                     </table>

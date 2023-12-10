@@ -78,7 +78,7 @@
                                 @if (!IsReadOnly)
                                 {
                                     <td>
-                                        @if (job.Value != null)
+                                        @if (job.Value != null && job.Value.InEnqueuedState)
                                         {
                                             <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
                                         }

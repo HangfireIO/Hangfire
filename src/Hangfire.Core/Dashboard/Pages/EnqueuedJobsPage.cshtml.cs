@@ -342,7 +342,7 @@ WriteLiteral("                                    <td>\r\n");
 
             
             #line 81 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                                         if (job.Value != null)
+                                         if (job.Value != null && job.Value.InEnqueuedState)
                                         {
 
             
