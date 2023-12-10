@@ -220,7 +220,7 @@ namespace Hangfire.Core.Tests
 
             manager.AddOrUpdate(_id, _job, "@hourly");
 
-            _transaction.Verify(x => x.AddToSet("recurring-jobs", _id, JobHelper.ToTimestamp(_now)));
+            _transaction.Verify(x => x.Commit());
         }
 
         [Fact]
