@@ -83,9 +83,9 @@ namespace Hangfire
                 if (value == null) throw new ArgumentNullException(nameof(value));
                 if (value.Length == 0) throw new ArgumentException("You should specify at least one queue to listen.", nameof(value));
 
-                foreach (var item in value)
+                foreach (var name in value)
                 {
-                    if (!Regex.IsMatch(item, "^[a-z0-9_]+$")) throw new ArgumentException("A queue name consists only of lowercase, letters, digits and underscores.", string.Join(", ", value));
+                    EnqueuedState.ValidateQueueName(nameof(name), name);
                 }
 
                 _queues = value;
