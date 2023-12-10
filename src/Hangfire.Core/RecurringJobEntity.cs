@@ -343,7 +343,7 @@ namespace Hangfire
             var parts = cronExpression.Split(SeparatorCharacters, StringSplitOptions.RemoveEmptyEntries);
             var format = CronFormat.Standard;
 
-            if (!cronExpression.StartsWith('@'))
+            if (!cronExpression.StartsWith("@", StringComparison.OrdinalIgnoreCase))
             {
                 if (parts.Length == 6)
                 {

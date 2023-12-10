@@ -214,6 +214,16 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void AddOrUpdate_AddsAJob_ToTheRecurringJobsSetWithMacroExpression()
+        {
+            var manager = CreateManager();
+
+            manager.AddOrUpdate(_id, _job, "@hourly");
+
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", _id, JobHelper.ToTimestamp(_now)));
+        }
+
+        [Fact]
         public void AddOrUpdate_SetsTheRecurringJobEntry()
         {
             var manager = CreateManager();
