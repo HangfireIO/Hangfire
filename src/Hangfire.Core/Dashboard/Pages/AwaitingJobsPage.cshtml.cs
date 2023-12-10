@@ -493,7 +493,7 @@ WriteLiteral("                                        <td>\r\n");
 
             
             #line 157 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
-                                             if (job == null || inAwaitingState)
+                                             if (job != null && inAwaitingState)
                                             {
 
             
@@ -583,7 +583,7 @@ WriteLiteral("                                    </td>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                                        <td colspan=\"2\"><em>");
+WriteLiteral("                                        <td colspan=\"4\"><em>");
 
 
             

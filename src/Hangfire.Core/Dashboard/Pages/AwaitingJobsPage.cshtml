@@ -154,7 +154,7 @@
                                     @if (!IsReadOnly)
                                     {
                                         <td>
-                                            @if (job == null || inAwaitingState)
+                                            @if (job != null && inAwaitingState)
                                             {
                                                 <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@jobId" />
                                             }
@@ -169,7 +169,7 @@
                                     </td>
                                     @if (job == null)
                                     {
-                                        <td colspan="2"><em>@Strings.Common_JobExpired</em></td>
+                                        <td colspan="4"><em>@Strings.Common_JobExpired</em></td>
                                     }
                                     else
                                     {

@@ -71,7 +71,7 @@
                                     @if (!IsReadOnly)
                                     {
                                         <td>
-                                            @if (job.Value == null || job.Value.InSucceededState)
+                                            @if (job.Value != null && job.Value.InSucceededState)
                                             {
                                                 <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
                                             }
