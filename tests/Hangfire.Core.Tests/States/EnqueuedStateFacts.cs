@@ -117,7 +117,7 @@ namespace Hangfire.Core.Tests.States
             var state = SerializationHelper.Deserialize<EnqueuedState>(json);
 
             Assert.Equal("default", state.Queue);
-            Assert.Equal(null, state.Reason);
+            Assert.Null(state.Reason);
         }
 
         [DataCompatibilityRangeFact]
@@ -127,7 +127,7 @@ namespace Hangfire.Core.Tests.States
             var state = SerializationHelper.Deserialize<EnqueuedState>(json);
 
             Assert.Equal("default", state.Queue);
-            Assert.Equal(null, state.Reason);
+            Assert.Null(state.Reason);
         }
     }
 }

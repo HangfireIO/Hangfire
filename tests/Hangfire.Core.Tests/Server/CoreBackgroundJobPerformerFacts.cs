@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Core.Tests.Common;
 using Hangfire.Server;
@@ -15,18 +16,12 @@ namespace Hangfire.Core.Tests.Server
 {
     public class CoreBackgroundJobPerformerFacts : IDisposable
     {
-        private readonly Mock<JobActivator> _activator;
-        private readonly PerformContextMock _context;
+        private readonly Mock<JobActivator> _activator = new Mock<JobActivator>() { CallBase = true };
+        private readonly PerformContextMock _context = new PerformContextMock();
 
         private static readonly DateTime SomeDateTime = new DateTime(2014, 5, 30, 12, 0, 0);
         private static bool _methodInvoked;
         private static bool _disposed;
-
-        public CoreBackgroundJobPerformerFacts()
-        {
-            _activator = new Mock<JobActivator>() { CallBase = true };
-            _context = new PerformContextMock();
-        }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenActivatorIsNull()
@@ -380,7 +375,7 @@ namespace Hangfire.Core.Tests.Server
 
             var result = performer.Perform(_context.Object);
 
-            Assert.Equal(null, result);
+            Assert.Null(result);
         }
 
         [Fact]
@@ -391,7 +386,7 @@ namespace Hangfire.Core.Tests.Server
 
             var result = performer.Perform(_context.Object);
 
-            Assert.Equal(null, result);
+            Assert.Null(result);
         }
 
         [Theory]
@@ -446,13 +441,20 @@ namespace Hangfire.Core.Tests.Server
             Assert.True(scheduler.TasksPerformed > 1);
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+        [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static")]
         public void InstanceMethod()
         {
             _methodInvoked = true;
         }
 
+        [UsedImplicitly]
         public class Disposable : IDisposable
         {
+            [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
+            [SuppressMessage("Performance", "CA1822:Mark members as static")]
             public void Method()
             {
                 _methodInvoked = true;
@@ -461,11 +463,15 @@ namespace Hangfire.Core.Tests.Server
             public void Dispose()
             {
                 _disposed = true;
+                GC.SuppressFinalize(this);
             }
         }
 
+        [UsedImplicitly]
         public class BrokenDispose : IDisposable
         {
+            [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
+            [SuppressMessage("Performance", "CA1822:Mark members as static")]
             public void Method()
             {
                 _methodInvoked = true;
@@ -473,6 +479,7 @@ namespace Hangfire.Core.Tests.Server
 
             public void Dispose()
             {
+                GC.SuppressFinalize(this);
                 throw new InvalidOperationException();
             }
         }
@@ -480,24 +487,35 @@ namespace Hangfire.Core.Tests.Server
         public void Dispose()
         {
             _disposed = true;
+            GC.SuppressFinalize(this);
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void NullArgumentMethod(string[] argument)
         {
             _methodInvoked = true;
             Assert.Null(argument);
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void CancelableJob(IJobCancellationToken token)
         {
             token.ThrowIfCancellationRequested();
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void CancelableJob(CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public void MethodWithDateTimeArgument(DateTime argument)
         {
             _methodInvoked = true;
@@ -505,11 +523,17 @@ namespace Hangfire.Core.Tests.Server
             Assert.Equal(SomeDateTime, argument);
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void StaticMethod()
         {
             _methodInvoked = true;
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public void MethodWithArguments(string stringArg, int intArg)
         {
             _methodInvoked = true;
@@ -518,11 +542,15 @@ namespace Hangfire.Core.Tests.Server
             Assert.Equal(5, intArg);
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void ExceptionMethod()
         {
             throw new InvalidOperationException("exception");
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static async Task TaskExceptionMethod()
         {
             await Task.Yield();
@@ -530,11 +558,14 @@ namespace Hangfire.Core.Tests.Server
             throw new InvalidOperationException("exception");
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void TaskCanceledExceptionMethod()
         {
             throw new TaskCanceledException();
         }
 
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static async Task<bool> AsyncMethod(int threadId)
         {
             if (threadId != Thread.CurrentThread.ManagedThreadId)

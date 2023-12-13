@@ -46,7 +46,7 @@ namespace Hangfire.Core.Tests.Storage
         public void JobList_Ctor_ShouldInitializeCollection()
         {
             var list = new JobList<int>(new Dictionary<string, int> { { "1", 2 } });
-            Assert.Equal(1, list.Count);
+            Assert.Single(list);
         }
     }
 }
