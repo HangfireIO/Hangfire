@@ -292,6 +292,10 @@ namespace Hangfire.Processing
                 LogRetry(executionId, delay);
                 return !_stopped.WaitOne(delay, _stopToken);
             }
+            catch (OperationCanceledException ex) when (ex.CancellationToken.Equals(_stopToken) || StopRequested)
+            {
+                return false;
+            }
             catch (ObjectDisposedException)
             {
                 return false;
@@ -309,6 +313,10 @@ namespace Hangfire.Processing
             {
                 LogRetry(executionId, delay);
                 return !await _stopped.WaitOneAsync(delay, _stopToken).ConfigureAwait(true);
+            }
+            catch (OperationCanceledException ex) when (ex.CancellationToken.Equals(_stopToken) || StopRequested)
+            {
+                return false;
             }
             catch (ObjectDisposedException)
             {
