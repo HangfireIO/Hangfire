@@ -724,7 +724,7 @@ order by [Id] desc";
             var lockId = Guid.NewGuid();
             var ownLock = false;
 
-            if (!_lockedResources.ContainsKey(resource))
+            if (!_lockedResources.TryGetValue(resource, out var lockIds))
             {
                 try
                 {
@@ -737,10 +737,10 @@ order by [Id] desc";
                     throw;
                 }
 
-                _lockedResources.Add(resource, new HashSet<Guid>());
+                _lockedResources.Add(resource, lockIds = new HashSet<Guid>());
             }
 
-            _lockedResources[resource].Add(lockId);
+            lockIds.Add(lockId);
             return new DisposableLock(this, resource, lockId, ownLock);
         }
 
@@ -748,12 +748,12 @@ order by [Id] desc";
         {
             try
             {
-                if (_lockedResources.ContainsKey(resource))
+                if (_lockedResources.TryGetValue(resource, out var lockIds))
                 {
-                    if (_lockedResources[resource].Contains(lockId))
+                    if (lockIds.Contains(lockId))
                     {
-                        if (_lockedResources[resource].Remove(lockId) &&
-                            _lockedResources[resource].Count == 0 &&
+                        if (lockIds.Remove(lockId) &&
+                            lockIds.Count == 0 &&
                             _lockedResources.Remove(resource) &&
                             _dedicatedConnection.State == ConnectionState.Open)
                         {

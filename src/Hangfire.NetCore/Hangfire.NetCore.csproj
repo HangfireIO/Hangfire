@@ -2,7 +2,6 @@
   <PropertyGroup>
     <TargetFrameworks>net451;net461;netstandard1.3;netstandard2.0;netstandard2.1</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>1591</NoWarn>
     <RootNamespace>Hangfire</RootNamespace>
   </PropertyGroup>
 
