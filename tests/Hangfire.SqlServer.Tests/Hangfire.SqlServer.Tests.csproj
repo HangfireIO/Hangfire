@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net452;net461;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net452;net461;netcoreapp3.1;net6.0</TargetFrameworks>
     <NoWarn>0618</NoWarn>
     <NuGetAudit>false</NuGetAudit><!-- We are testing against these packages, not including them into the product -->
   </PropertyGroup>
