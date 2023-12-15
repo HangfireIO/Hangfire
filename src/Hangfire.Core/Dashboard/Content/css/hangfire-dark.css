@@ -170,7 +170,7 @@
         background-color: rgba(29, 118, 219, 0.1);
     }
 
-    /* State card inactive 
+    /* State card inactive */
 
     .state-card-state-inactive {
         border-color: #777 !important;
@@ -181,8 +181,10 @@
     }
 
     .state-card-state-inactive .state-card-body {
-        background-color: #ddd !important;
+        background-color: #333 !important;
     }
+
+    /* State card active */
 
     .state-card-state-active {
         border-color: #999 !important;
@@ -191,10 +193,10 @@
     .state-card-state-active .state-card-title {
         color: #999 !important;
     }
-    */
 
     .state-card-state-active .state-card-body {
-        background-color: #333 !important;
+        background-color: #999 !important;
+        color: #444 !important;
     }
 
     /* Stats */
