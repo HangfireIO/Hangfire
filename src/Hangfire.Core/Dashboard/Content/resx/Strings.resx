@@ -292,8 +292,14 @@
   <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
     <value>Generated: {0}ms</value>
   </data>
+  <data name="LayoutPage_Footer_StorageTime" xml:space="preserve">
+    <value>Storage Time:</value>
+  </data>
+    <data name="LayoutPage_Footer_TimeIsOutOfSync" xml:space="preserve">
+    <value>Application time is out of sync with storage time</value>
+  </data>
   <data name="LayoutPage_Footer_Time" xml:space="preserve">
-    <value>Time:</value>
+    <value>Application Time:</value>
   </data>
   <data name="Paginator_Next" xml:space="preserve">
     <value>Next</value>

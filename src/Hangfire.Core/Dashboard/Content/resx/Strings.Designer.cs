@@ -728,11 +728,29 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Time:.
+        ///   Looks up a localized string similar to Storage Time:.
+        /// </summary>
+        public static string LayoutPage_Footer_StorageTime {
+            get {
+                return ResourceManager.GetString("LayoutPage_Footer_StorageTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Application Time:.
         /// </summary>
         public static string LayoutPage_Footer_Time {
             get {
                 return ResourceManager.GetString("LayoutPage_Footer_Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Application time is out of sync with storage time.
+        /// </summary>
+        public static string LayoutPage_Footer_TimeIsOutOfSync {
+            get {
+                return ResourceManager.GetString("LayoutPage_Footer_TimeIsOutOfSync", resourceCulture);
             }
         }
         
