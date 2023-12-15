@@ -584,8 +584,7 @@ WriteLiteral("                                            <td class=\"min-width 
             
             #line default
             #line hidden
-WriteLiteral("                                            </td>                                " +
-"            \r\n");
+WriteLiteral("                                            </td>\r\n");
 
 
             

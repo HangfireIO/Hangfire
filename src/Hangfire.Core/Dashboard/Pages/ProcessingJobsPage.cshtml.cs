@@ -535,7 +535,7 @@ WriteLiteral("                                        <td class=\"word-break\">\
 
             
             #line 114 "..\..\Dashboard\Pages\ProcessingJobsPage.cshtml"
-                                             if (servers.All(x => x.Name != job.Value.ServerId || x.Heartbeat < DateTime.UtcNow.AddMinutes(-1)))
+                                             if (servers.All(x => x.Name != job.Value.ServerId || x.Heartbeat < (StorageUtcNow ?? ApplicationUtcNow).AddMinutes(-1)))
                                             {
 
             
@@ -551,7 +551,7 @@ WriteLiteral("                                                <span title=\"");
             
             #line default
             #line hidden
-WriteLiteral("\" class=\"glyphicon glyphicon-warning-sign glyphicon-sm\"></span>\r\n");
+WriteLiteral("\" class=\"glyphicon glyphicon-warning-sign glyphicon-sm text-warning\"></span>\r\n");
 
 
             
