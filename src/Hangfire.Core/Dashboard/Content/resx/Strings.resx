@@ -210,6 +210,9 @@
   <data name="DeletedJobsPage_Table_Deleted" xml:space="preserve">
     <value>Deleted</value>
   </data>
+  <data name="DeletedJobsPage_Table_Exception" xml:space="preserve">
+    <value>Exception</value>
+  </data>
   <data name="DeletedJobsPage_Title" xml:space="preserve">
     <value>Deleted Jobs</value>
   </data>

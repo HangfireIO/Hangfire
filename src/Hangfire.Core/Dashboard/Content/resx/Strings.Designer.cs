@@ -413,6 +413,15 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Exception.
+        /// </summary>
+        public static string DeletedJobsPage_Table_Exception {
+            get {
+                return ResourceManager.GetString("DeletedJobsPage_Table_Exception", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Deleted Jobs.
         /// </summary>
         public static string DeletedJobsPage_Title {
@@ -846,7 +855,7 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Data File(s) Size (MB).
+        ///   Looks up a localized string similar to Data File(s) Used (MB).
         /// </summary>
         public static string Metrics_SQLServer_DataFilesSize {
             get {
@@ -855,7 +864,7 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Log File(s) Size (MB).
+        ///   Looks up a localized string similar to Log File(s) Used (MB).
         /// </summary>
         public static string Metrics_SQLServer_LogFilesSize {
             get {
