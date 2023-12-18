@@ -71,7 +71,7 @@ namespace Hangfire
             // fall into the "catastrophic backtracking" trap due to over
             // generalization.
             // https://github.com/atifaziz/StackTraceParser/issues/4
-            TimeSpan.FromSeconds(5));
+            TimeSpan.FromMilliseconds(100));
 
         public static IEnumerable<T> Parse<T>(
             string text,
