@@ -25,6 +25,8 @@ namespace Hangfire.Common
 {
     internal static class TypeExtensions
     {
+        private static readonly Regex GenericArgumentsRegex = new Regex(@"`[1-9]\d*", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
+
         public static string ToGenericTypeString(this Type type)
         {
             if (!type.GetTypeInfo().IsGenericType)
@@ -201,11 +203,7 @@ namespace Hangfire.Common
         {
             var genericArguments = type .GetTypeInfo().GetAllGenericArguments();
 
-            const string regexForGenericArguments = @"`[1-9]\d*";
-
-            var rgx = new Regex(regexForGenericArguments);
-
-            typeName = rgx.Replace(typeName, match =>
+            typeName = GenericArgumentsRegex.Replace(typeName, match =>
             {
                 var currentGenericArgumentNumbers = int.Parse(match.Value.Substring(1), CultureInfo.InvariantCulture);
                 var currentArguments = string.Join(",", genericArguments.Take(currentGenericArgumentNumbers).Select(ToGenericTypeString));
