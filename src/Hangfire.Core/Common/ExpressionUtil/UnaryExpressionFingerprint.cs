@@ -13,6 +13,7 @@ namespace Hangfire.Common.ExpressionUtil
     // The most common appearance of a UnaryExpression is a cast or other conversion operator
 
     [SuppressMessage("Microsoft.Usage", "CA2218:OverrideGetHashCodeOnOverridingEquals", Justification = "Overrides AddToHashCodeCombiner() instead.")]
+    [SuppressMessage("SonarLint", "S1206:OverrideGetHashCodeOnOverridingEquals", Justification = "Overrides AddToHashCodeCombiner() instead.")]
     [ExcludeFromCodeCoverage]
     internal sealed class UnaryExpressionFingerprint : ExpressionFingerprint
     {

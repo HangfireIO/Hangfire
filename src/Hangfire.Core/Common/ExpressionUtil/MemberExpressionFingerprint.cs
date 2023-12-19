@@ -13,6 +13,7 @@ namespace Hangfire.Common.ExpressionUtil
     // Expression of form xxx.FieldOrProperty
 
     [SuppressMessage("Microsoft.Usage", "CA2218:OverrideGetHashCodeOnOverridingEquals", Justification = "Overrides AddToHashCodeCombiner() instead.")]
+    [SuppressMessage("SonarLint", "S1206:OverrideGetHashCodeOnOverridingEquals", Justification = "Overrides AddToHashCodeCombiner() instead.")]
     [ExcludeFromCodeCoverage]
     internal sealed class MemberExpressionFingerprint : ExpressionFingerprint
     {

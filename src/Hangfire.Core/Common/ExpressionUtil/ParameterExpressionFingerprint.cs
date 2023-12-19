@@ -12,6 +12,7 @@ namespace Hangfire.Common.ExpressionUtil
     // Can represent the model parameter or an inner parameter in an open lambda expression
 
     [SuppressMessage("Microsoft.Usage", "CA2218:OverrideGetHashCodeOnOverridingEquals", Justification = "Overrides AddToHashCodeCombiner() instead.")]
+    [SuppressMessage("SonarLint", "S1206:OverrideGetHashCodeOnOverridingEquals", Justification = "Overrides AddToHashCodeCombiner() instead.")]
     [ExcludeFromCodeCoverage]
     internal sealed class ParameterExpressionFingerprint : ExpressionFingerprint
     {
