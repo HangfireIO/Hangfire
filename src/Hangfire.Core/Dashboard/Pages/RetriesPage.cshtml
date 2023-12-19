@@ -41,7 +41,7 @@ else
 {
     <div class="row">
         <div class="col-md-12">
-            <h1 class="page-header">@Strings.RetriesPage_Title</h1>
+            <h1 id="page-title" class="page-header">@Strings.RetriesPage_Title</h1>
             @if (jobIds.Count == 0)
             {
                 <div class="alert alert-success">
@@ -77,7 +77,7 @@ else
                     </div>
 
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-hover" aria-describedby="page-title">
                             <thead>
                                 <tr>
                                     @if (!IsReadOnly)

@@ -30,7 +30,7 @@
             { Queue, Url.Queue(Queue) }
         })
 
-        <h1 class="page-header">
+        <h1 id="page-title" class="page-header">
             @Queue <small>@Strings.FetchedJobsPage_Title</small>
         </h1>
 
@@ -69,7 +69,7 @@
             </div>
 
             <div class="table-responsive">
-                <table class="table">
+                <table class="table" aria-describedby="page-title">
                     <thead>
                         <tr>
                             @if (!IsReadOnly)

@@ -114,13 +114,13 @@ WriteLiteral("\r\n");
             
             #line default
             #line hidden
-WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-12\">\r\n        <h1 class=\"page-header\"" +
-">");
+WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-12\">\r\n        <h1 id=\"page-title\" cla" +
+"ss=\"page-header\">");
 
 
             
             #line 39 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                           Write(Strings.RecurringJobsPage_Title);
+                                           Write(Strings.RecurringJobsPage_Title);
 
             
             #line default
@@ -307,8 +307,8 @@ WriteLiteral("\r\n");
             #line default
             #line hidden
 WriteLiteral("                </div>\r\n\r\n                <div class=\"table-responsive\">\r\n       " +
-"             <table class=\"table\">\r\n                        <thead>\r\n           " +
-"                 <tr>\r\n");
+"             <table class=\"table\" aria-describedby=\"page-title\">\r\n              " +
+"          <thead>\r\n                            <tr>\r\n");
 
 
             
@@ -460,7 +460,7 @@ WriteLiteral("                                    <td class=\"word-break\">");
 
             
             #line 106 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                                               Write(job.Id);
+                                                      Write(job.Id);
 
             
             #line default

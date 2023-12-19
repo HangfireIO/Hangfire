@@ -98,12 +98,13 @@ WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-3\">\r\n       
             
             #line default
             #line hidden
-WriteLiteral("\r\n    </div>\r\n    <div class=\"col-md-9\">\r\n        <h1 class=\"page-header\">");
+WriteLiteral("\r\n    </div>\r\n    <div class=\"col-md-9\">\r\n        <h1 id=\"page-title\" class=\"page" +
+"-header\">");
 
 
             
             #line 28 "..\..\Dashboard\Pages\ProcessingJobsPage.cshtml"
-                           Write(Strings.ProcessingJobsPage_Title);
+                                           Write(Strings.ProcessingJobsPage_Title);
 
             
             #line default
@@ -269,8 +270,8 @@ WriteLiteral("                    ");
             #line default
             #line hidden
 WriteLiteral("\r\n                </div>\r\n\r\n                <div class=\"table-responsive\">\r\n     " +
-"               <table class=\"table\">\r\n                        <thead>\r\n         " +
-"                   <tr>\r\n");
+"               <table class=\"table\" aria-describedby=\"page-title\">\r\n            " +
+"            <thead>\r\n                            <tr>\r\n");
 
 
             

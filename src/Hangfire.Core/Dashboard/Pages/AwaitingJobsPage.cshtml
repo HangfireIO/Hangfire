@@ -56,7 +56,7 @@
         @Html.JobsSidebar()
     </div>
     <div class="col-md-9">
-        <h1 class="page-header">@Strings.AwaitingJobsPage_Title</h1>
+        <h1 id="page-title" class="page-header">@Strings.AwaitingJobsPage_Title</h1>
 
         @if (jobIds == null && jobs == null)
         {
@@ -92,7 +92,7 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table table-hover" aria-describedby="page-title">
                         <thead>
                             <tr>
                                 @if (!IsReadOnly)

@@ -23,7 +23,7 @@
         @Html.JobsSidebar()
     </div>
     <div class="col-md-9">
-        <h1 class="page-header">@Strings.SucceededJobsPage_Title</h1>
+        <h1 id="page-title" class="page-header">@Strings.SucceededJobsPage_Title</h1>
 
         @if (pager.TotalPageCount == 0)
         {
@@ -49,7 +49,7 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="table" aria-describedby="page-title">
                         <thead>
                             <tr>
                                 @if (!IsReadOnly)
