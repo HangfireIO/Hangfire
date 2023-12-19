@@ -63,6 +63,8 @@ namespace Hangfire.States
     /// <threadsafety static="true" instance="false" />
     public class EnqueuedState : IState
     {
+        private static readonly Regex ValidationRegex = new Regex(@"^[a-z0-9_-]+$", RegexOptions.Compiled | RegexOptions.CultureInvariant, TimeSpan.FromSeconds(5));
+
         /// <summary>
         /// Represents the default queue name. This field is constant.
         /// </summary>
@@ -230,7 +232,7 @@ namespace Hangfire.States
                 throw new ArgumentNullException(parameterName);
             }
 
-            if (!Regex.IsMatch(value, @"^[a-z0-9_-]+$"))
+            if (!ValidationRegex.IsMatch(value))
             {
                 throw new ArgumentException(
                     $"The queue name must consist of lowercase letters, digits, underscore, and dash characters only. Given: '{value}'.",
