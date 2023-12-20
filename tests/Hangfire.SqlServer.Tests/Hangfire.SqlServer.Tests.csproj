@@ -32,6 +32,7 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="3.1.0" NoWarn="NU1902" />
     <PackageReference Include="Dapper" Version="2.0.123" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
   </ItemGroup>
 
   <ItemGroup>
