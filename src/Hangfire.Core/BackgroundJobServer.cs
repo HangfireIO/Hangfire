@@ -123,7 +123,7 @@ namespace Hangfire
                 $"    Shutdown timeout: {options.ShutdownTimeout}\r\n" +
                 $"    Schedule polling interval: {options.SchedulePollingInterval}");
 
-            var wrongQueues = new HashSet<string>(StringComparer.InvariantCulture);
+            var wrongQueues = new HashSet<string>(StringComparer.Ordinal);
             foreach (var queue in options.Queues)
             {
                 if (!EnqueuedState.TryValidateQueueName(queue))
