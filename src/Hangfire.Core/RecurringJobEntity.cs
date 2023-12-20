@@ -340,11 +340,11 @@ namespace Hangfire
         {
             if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
 
-            var parts = cronExpression.Split(SeparatorCharacters, StringSplitOptions.RemoveEmptyEntries);
             var format = CronFormat.Standard;
 
             if (!cronExpression.StartsWith("@", StringComparison.OrdinalIgnoreCase))
             {
+                var parts = cronExpression.Split(SeparatorCharacters, StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length == 6)
                 {
                     format |= CronFormat.IncludeSeconds;
