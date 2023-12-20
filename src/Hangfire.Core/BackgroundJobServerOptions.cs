@@ -83,11 +83,6 @@ namespace Hangfire
                 if (value == null) throw new ArgumentNullException(nameof(value));
                 if (value.Length == 0) throw new ArgumentException("You should specify at least one queue to listen.", nameof(value));
 
-                foreach (var name in value)
-                {
-                    EnqueuedState.ValidateQueueName(nameof(name), name);
-                }
-
                 _queues = value;
             }
         }

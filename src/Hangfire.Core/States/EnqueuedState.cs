@@ -225,7 +225,17 @@ namespace Hangfire.States
             };
         }
 
-        internal static void ValidateQueueName([InvokerParameterName] string parameterName, string value)
+        internal static bool TryValidateQueueName([NotNull] string value)
+        {
+            if (String.IsNullOrWhiteSpace(value))
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            return ValidationRegex.IsMatch(value);
+        }
+
+        internal static void ValidateQueueName([InvokerParameterName] string parameterName, [NotNull] string value)
         {
             if (String.IsNullOrWhiteSpace(value))
             {
