@@ -270,6 +270,19 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void AddOrUpdate_IsAbleToScheduleMacroBasedCronExpression()
+        {
+            var manager = CreateManager();
+
+            manager.AddOrUpdate(_id, _job, "@hourly");
+
+            _transaction.Verify(x => x.AddToSet(
+                "recurring-jobs",
+                _id,
+                JobHelper.ToTimestamp(_now.AddMinutes(30))));
+        }
+
+        [Fact]
         public void AddOrUpdate_EnsuresExistingOldJobsAreUpdated()
         {
             // Arrange
