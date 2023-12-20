@@ -3,7 +3,6 @@
     <TargetFrameworks>net451</TargetFrameworks>
     <DebugType>portable</DebugType>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>1591</NoWarn>
     <RootNamespace>Hangfire.SqlServer.Msmq</RootNamespace>
   </PropertyGroup>
   

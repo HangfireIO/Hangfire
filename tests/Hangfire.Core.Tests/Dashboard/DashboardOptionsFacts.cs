@@ -10,13 +10,13 @@ namespace Hangfire.Core.Tests.Dashboard
         public void Ctor_SetsDefaultValues_ForAllOptions()
         {
             var options = new DashboardOptions();
-            Assert.Equal(options.AppPath, "/");
-            Assert.Equal(options.PrefixPath, "");
+            Assert.Equal("/", options.AppPath);
+            Assert.Equal("", options.PrefixPath);
             Assert.NotNull(options.Authorization);
             Assert.IsType<LocalRequestsOnlyAuthorizationFilter>(options.Authorization.FirstOrDefault());
-            Assert.Equal(options.StatsPollingInterval, 2000);
-            Assert.Equal(options.DisplayStorageConnectionString,true);
-            Assert.Equal(options.DashboardTitle, "Hangfire Dashboard");
+            Assert.Equal(2000, options.StatsPollingInterval);
+            Assert.True(options.DisplayStorageConnectionString);
+            Assert.Equal("Hangfire Dashboard", options.DashboardTitle);
         }
     }
 }

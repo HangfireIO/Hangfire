@@ -8,8 +8,7 @@
     <owners>odinserj</owners>
     <projectUrl>https://www.hangfire.io/</projectUrl>
     <repository type="git" url="https://github.com/HangfireIO/Hangfire.git" />
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
+    <license type="file">LICENSE.md</license>
     <description>.NET Core's Worker Service host support for Hangfire (background job system for ASP.NET applications).</description>
     <copyright>Copyright © 2019-2023 Hangfire OÜ</copyright>
     <tags>hangfire netcore</tags>

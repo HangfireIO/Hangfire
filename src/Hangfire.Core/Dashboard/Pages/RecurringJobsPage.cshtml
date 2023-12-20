@@ -36,7 +36,7 @@
 
 <div class="row">
     <div class="col-md-12">
-        <h1 class="page-header">@Strings.RecurringJobsPage_Title</h1>
+        <h1 id="page-title" class="page-header">@Strings.RecurringJobsPage_Title</h1>
         @if (recurringJobs.Count == 0)
         {
             <div class="alert alert-info">
@@ -75,7 +75,7 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="table" aria-describedby="page-title">
                         <thead>
                             <tr>
                                 @if (!IsReadOnly)

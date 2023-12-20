@@ -113,7 +113,7 @@ namespace Hangfire.Core.Tests.States
             var state = SerializationHelper.Deserialize<AwaitingState>(json, SerializationOption.TypedInternal);
 
             Assert.Equal("parent", state.ParentId);
-            Assert.Equal(null, state.Reason);
+            Assert.Null(state.Reason);
             Assert.Equal("Enqueued", state.NextState.Name);
         }
 

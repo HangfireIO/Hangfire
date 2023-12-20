@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -248,8 +249,8 @@ namespace Hangfire.SqlServer.Tests
                 var sqlJob = sql.Query($"select * from [{Constants.DefaultSchema}].Job").Single();
                 Assert.Equal(jobId, sqlJob.Id.ToString());
                 Assert.Equal(createdAt, sqlJob.CreatedAt);
-                Assert.Equal(null, (int?) sqlJob.StateId);
-                Assert.Equal(null, (string) sqlJob.StateName);
+                Assert.Null((int?) sqlJob.StateId);
+                Assert.Null((string) sqlJob.StateName);
 
                 var invocationData = InvocationData.DeserializePayload((string)sqlJob.InvocationData);
                 invocationData.Arguments = sqlJob.Arguments;
@@ -411,7 +412,7 @@ namespace Hangfire.SqlServer.Tests
                     .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
                     .ToDictionary(x => (string)x.Name, x => (string)x.Value);
 
-                Assert.Equal(null, parameters["Key1"]);
+                Assert.Null(parameters["Key1"]);
             }, useBatching, useMicrosoftDataSqlClient);
         }
 
@@ -433,8 +434,8 @@ namespace Hangfire.SqlServer.Tests
                     .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
                     .ToDictionary(x => (string)x.Name, x => (string)x.Value);
 
-                Assert.Equal(null, parameters["Key1"]);
-                Assert.Equal(null, parameters["Key2"]);
+                Assert.Null(parameters["Key1"]);
+                Assert.Null(parameters["Key2"]);
             }, useBatching, useMicrosoftDataSqlClient);
         }
 
@@ -456,9 +457,9 @@ namespace Hangfire.SqlServer.Tests
                     .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
                     .ToDictionary(x => (string)x.Name, x => (string)x.Value);
 
-                Assert.Equal(null, parameters["Key1"]);
-                Assert.Equal(null, parameters["Key2"]);
-                Assert.Equal(null, parameters["Key3"]);
+                Assert.Null(parameters["Key1"]);
+                Assert.Null(parameters["Key2"]);
+                Assert.Null(parameters["Key3"]);
             }, useBatching, useMicrosoftDataSqlClient);
         }
 
@@ -480,10 +481,10 @@ namespace Hangfire.SqlServer.Tests
                     .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
                     .ToDictionary(x => (string)x.Name, x => (string)x.Value);
 
-                Assert.Equal(null, parameters["Key1"]);
-                Assert.Equal(null, parameters["Key2"]);
-                Assert.Equal(null, parameters["Key3"]);
-                Assert.Equal(null, parameters["Key4"]);
+                Assert.Null(parameters["Key1"]);
+                Assert.Null(parameters["Key2"]);
+                Assert.Null(parameters["Key3"]);
+                Assert.Null(parameters["Key4"]);
             }, useBatching, useMicrosoftDataSqlClient);
         }
 
@@ -505,11 +506,11 @@ namespace Hangfire.SqlServer.Tests
                     .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
                     .ToDictionary(x => (string)x.Name, x => (string)x.Value);
 
-                Assert.Equal(null, parameters["Key1"]);
-                Assert.Equal(null, parameters["Key2"]);
-                Assert.Equal(null, parameters["Key3"]);
-                Assert.Equal(null, parameters["Key4"]);
-                Assert.Equal(null, parameters["Key5"]);
+                Assert.Null(parameters["Key1"]);
+                Assert.Null(parameters["Key2"]);
+                Assert.Null(parameters["Key3"]);
+                Assert.Null(parameters["Key4"]);
+                Assert.Null(parameters["Key5"]);
             }, useBatching, useMicrosoftDataSqlClient);
         }
 
@@ -1124,7 +1125,7 @@ values
                 
                 var result = connection.GetFirstByLowestScoreFromSet("another-key", -10.0, 10.0, 5);
                 
-                Assert.Equal(1, result.Count);
+                Assert.Single(result);
                 Assert.Equal("abcd", result.First());
             }, useBatching: false, useMicrosoftDataSqlClient);
         }
@@ -1329,7 +1330,7 @@ values (@id, '', @heartbeat)";
                 var result = connection.GetAllItemsFromSet("some-set");
 
                 Assert.NotNull(result);
-                Assert.Equal(0, result.Count);
+                Assert.Empty(result);
             }, useMicrosoftDataSqlClient);
         }
 
@@ -1442,7 +1443,7 @@ values (@key, 0.0, @value)";
                         new { key = "some-hash" })
                     .ToDictionary(x => (string)x.Field, x => (string)x.Value);
 
-                Assert.Equal(null, result["Key1"]);
+                Assert.Null(result["Key1"]);
             }, useBatching, useMicrosoftDataSqlClient);
         }
 
@@ -2520,7 +2521,7 @@ values (@jobId, @name, @value)";
             Assert.Equal(2, deserializedStateData.Count);
 
             Assert.Equal("value1", deserializedStateData["key1"]);
-            Assert.Equal(null, deserializedStateData["key2"]);
+            Assert.Null(deserializedStateData["key2"]);
         }
 
         [Fact, CleanSerializerSettings]
@@ -2567,6 +2568,8 @@ values (@jobId, @name, @value)";
             }
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void SampleMethod(string arg){ }
     }
 }

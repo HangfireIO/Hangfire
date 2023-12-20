@@ -14,6 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
@@ -24,6 +25,8 @@ namespace Hangfire.Server
     internal static class AspNetShutdownDetector
     {
         private static readonly TimeSpan CheckForShutdownTimerInterval = TimeSpan.FromMilliseconds(250);
+
+        [SuppressMessage("SonarLint", "S2930:IDisposablesShouldBeDisposed", Justification = "Has static lifetime, disposed on process shutdown.")]
         private static readonly CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
 
 #if !NETSTANDARD1_3

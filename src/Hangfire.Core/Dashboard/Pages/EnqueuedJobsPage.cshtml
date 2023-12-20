@@ -29,7 +29,7 @@
             { "Queues", Url.LinkToQueues() }
         })
 
-        <h1 class="page-header">@Queue <small>@Strings.EnqueuedJobsPage_Title</small></h1>
+        <h1 id="page-title" class="page-header">@Queue <small>@Strings.EnqueuedJobsPage_Title</small></h1>
 
         @if (pager.TotalPageCount == 0)
         {
@@ -56,7 +56,7 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="table" aria-describedby="page-title">
                         <thead>
                         <tr>
                             @if (!IsReadOnly)

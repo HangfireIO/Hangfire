@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Hangfire.Common;
 using Moq;
@@ -168,6 +169,8 @@ namespace Hangfire.Core.Tests.Common
             Assert.Same(actionFilter, result[2]);
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void Sample() { }
     }
 }

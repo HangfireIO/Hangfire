@@ -84,7 +84,7 @@ namespace MQTools
         private const int MQ_INFORMATION_UNSUPPORTED_PROPERTY = unchecked((int)0x400E0004); // An unsupported property identifier was specified in pMgmtProps
 
         const string QueueRegex = @"^(?:(.*\:)|)((?<computerName>[^\\]*)|\.)(?:\\(?<queueType>.*)|)\\(?<queue>.*)$";
-        private static readonly Regex regex = new Regex(QueueRegex, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex regex = new Regex(QueueRegex, RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromSeconds(5));
 
         public static long GetCount(this MessageQueue messageQueue)
         {

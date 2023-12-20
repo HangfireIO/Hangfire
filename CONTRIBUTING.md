@@ -16,7 +16,7 @@ ProTip!
   problem. You can simply use <kbd>Print Screen</kbd>, then <kbd>Ctrl + V</kbd> directly 
  into the comment window on GitHub.
 * Include log messages, written by Hangfire when a problem occurred. Don't forget to tell your logger to dump all the exception details.
-* Include stack trace dump, if your background processing stucked. You can use 
+* Include stack trace dump, if your background processing is stuck. You can use 
    [`stdump`](https://github.com/odinserj/stdump) utility to get them either from a minidump file,
    or from a running process without interrupting it: `stdump w3wp > stacktrace.txt`
 

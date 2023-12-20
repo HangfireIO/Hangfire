@@ -144,13 +144,13 @@ else
             
             #line default
             #line hidden
-WriteLiteral("    <div class=\"row\">\r\n        <div class=\"col-md-12\">\r\n            <h1 class=\"pa" +
-"ge-header\">");
+WriteLiteral("    <div class=\"row\">\r\n        <div class=\"col-md-12\">\r\n            <h1 id=\"page-" +
+"title\" class=\"page-header\">");
 
 
             
             #line 44 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                               Write(Strings.RetriesPage_Title);
+                                               Write(Strings.RetriesPage_Title);
 
             
             #line default
@@ -316,8 +316,9 @@ WriteLiteral("                        ");
             #line default
             #line hidden
 WriteLiteral("\r\n                    </div>\r\n\r\n                    <div class=\"table-responsive\"" +
-">\r\n                        <table class=\"table table-hover\">\r\n                  " +
-"          <thead>\r\n                                <tr>\r\n");
+">\r\n                        <table class=\"table table-hover\" aria-describedby=\"pa" +
+"ge-title\">\r\n                            <thead>\r\n                               " +
+" <tr>\r\n");
 
 
             

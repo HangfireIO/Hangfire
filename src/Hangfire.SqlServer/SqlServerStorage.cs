@@ -38,6 +38,9 @@ namespace Hangfire.SqlServer
 {
     public class SqlServerStorage : JobStorage
     {
+        private static readonly char[] SemicolonSeparator = new[] { ';' };
+        private static readonly char[] EqualSignSeparator = new[] { '=' };
+
         private readonly DbConnection _existingConnection;
         private readonly Func<DbConnection> _connectionFactory;
         private readonly SqlServerStorageOptions _options;
@@ -197,8 +200,8 @@ namespace Hangfire.SqlServer
                     return "SQL Server (custom)";
                 }
 
-                var parts = _connectionString.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(x => x.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries))
+                var parts = _connectionString.Split(SemicolonSeparator, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(x => x.Split(EqualSignSeparator, StringSplitOptions.RemoveEmptyEntries))
                     .Select(x => new { Key = x[0].Trim(), Value = x[1].Trim() })
                     .GroupBy(x => x.Key, StringComparer.OrdinalIgnoreCase)
                     .ToDictionary(x => x.Key, x => x.Last().Value, StringComparer.OrdinalIgnoreCase);

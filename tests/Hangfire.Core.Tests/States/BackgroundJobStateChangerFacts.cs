@@ -215,7 +215,7 @@ namespace Hangfire.Core.Tests.States
             var result = stateChanger.ChangeState(_context.Object);
 
             // Assert
-            Assert.Equal(0, results.Count);
+            Assert.Empty(results);
             Assert.NotNull(result);
             Assert.Equal(_state.Object.Name, result.Name);
         }

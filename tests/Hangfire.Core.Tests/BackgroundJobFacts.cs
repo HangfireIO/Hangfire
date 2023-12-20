@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Hangfire.Common;
 using Hangfire.States;
 using Moq;
@@ -208,6 +209,10 @@ namespace Hangfire.Core.Tests
             BackgroundJob.ClientFactory = () => _client.Object;
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static")]
+        [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public void Method() { }
     }
 }
