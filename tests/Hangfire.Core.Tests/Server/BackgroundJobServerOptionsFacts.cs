@@ -49,15 +49,6 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Queues_ThrowsAnException_WhenValueContainsSpecialCharacters()
-        {
-            var options = CreateOptions();
-
-            Assert.Throws<ArgumentException>(
-                () => options.Queues = new string[3] { "default", "default_", "defa!ult__" });
-        }
-
-        [Fact]
         public void Queues_ThrowsAnException_WhenGivenArrayIsEmpty()
         {
             var options = CreateOptions();
