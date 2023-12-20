@@ -9,10 +9,11 @@
 
     <!-- Plugging in Roslyn Analysers -->
     <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.4" />
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" />
     </ItemGroup>
 
     <PropertyGroup>
+        <NoWarn>CA1200;CA1859;1591</NoWarn>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <AnalysisLevel>latest</AnalysisLevel>
         <AnalysisMode>Recommended</AnalysisMode>

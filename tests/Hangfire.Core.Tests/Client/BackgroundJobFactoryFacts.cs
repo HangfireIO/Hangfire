@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
@@ -382,6 +384,9 @@ namespace Hangfire.Core.Tests.Client
             outerFilter.Verify(x => x.OnCreated(It.Is<CreatedContext>(context => context.Exception != null)));
         }
 
+        [UsedImplicitly]
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static")]
         public void TestMethod()
         {
         }

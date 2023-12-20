@@ -548,10 +548,6 @@ namespace Hangfire.Core.Tests.Server
             Assert.IsType<OperationCanceledException>(exception.InnerException);
         }
 
-        public static void Method()
-        {
-        }
-
         private BackgroundJobPerformer CreatePerformer()
         {
             return new BackgroundJobPerformer(_filterProvider.Object, _innerPerformer.Object);

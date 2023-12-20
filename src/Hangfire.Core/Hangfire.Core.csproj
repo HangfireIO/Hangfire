@@ -3,7 +3,6 @@
     <TargetFrameworks>net451;net46;netstandard1.3;netstandard2.0;</TargetFrameworks>
     <DebugType>portable</DebugType>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>1591;CA1200</NoWarn>
     <RootNamespace>Hangfire</RootNamespace>
   </PropertyGroup>
   

@@ -204,7 +204,7 @@ WriteLiteral("\r\n                    </div>\r\n");
             
             #line 59 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                 }
-                else if (server.Heartbeat.HasValue && server.Heartbeat < DateTime.UtcNow.AddMinutes(-1))
+                else if (server.Heartbeat.HasValue && server.Heartbeat < (StorageUtcNow ?? ApplicationUtcNow).AddMinutes(-1))
                 {
 
             
@@ -341,19 +341,20 @@ WriteLiteral("\r\n</code></pre>\r\n                    </div>\r\n               
             
             #line default
             #line hidden
-WriteLiteral("                <div class=\"alert alert-warning\">\r\n                    <h4>");
+WriteLiteral("                <div class=\"alert alert-warning\">\r\n                    <h4 id=\"jo" +
+"b-details-missing-method\">");
 
 
             
             #line 94 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                   Write(Strings.Common_CannotFindTargetMethod);
+                                                   Write(Strings.Common_CannotFindTargetMethod);
 
             
             #line default
             #line hidden
 WriteLiteral("</h4>\r\n                    <table class=\"table table-condensed job-snippet-proper" +
-"ties margin-bottom-0\">\r\n                        <tr>\r\n                          " +
-"  <td>");
+"ties margin-bottom-0\" aria-describedby=\"job-details-missing-method\">\r\n          " +
+"              <tr>\r\n                            <td>");
 
 
             
@@ -430,12 +431,12 @@ WriteLiteral("                    </table>\r\n                </div>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                <h3>");
+WriteLiteral("                <h3 id=\"job-details-parameters\">");
 
 
             
             #line 115 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-               Write(Strings.JobDetailsPage_Parameters);
+                                           Write(Strings.JobDetailsPage_Parameters);
 
             
             #line default
@@ -444,7 +445,8 @@ WriteLiteral("</h3>\r\n");
 
 
 
-WriteLiteral("                <table class=\"table table-condensed job-snippet-properties\">\r\n");
+WriteLiteral("                <table class=\"table table-condensed job-snippet-properties\" aria-" +
+"describedby=\"job-details-parameters\">\r\n");
 
 
             
@@ -503,12 +505,12 @@ WriteLiteral("                </table>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                    <h3>");
+WriteLiteral("                    <h3 id=\"job-details-continuations\">");
 
 
             
             #line 133 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                   Write(Strings.Common_Continuations);
+                                                  Write(Strings.Common_Continuations);
 
             
             #line default
@@ -517,9 +519,11 @@ WriteLiteral("</h3>\r\n");
 
 
 
-WriteLiteral("                    <div class=\"table-responsive\">\r\n                        <tabl" +
-"e class=\"table\">\r\n                            <thead>\r\n                         " +
-"   <tr>\r\n                                <th class=\"min-width\">");
+WriteLiteral(@"                    <div class=""table-responsive"">
+                        <table class=""table"" aria-describedby=""job-details-continuations"">
+                            <thead>
+                            <tr>
+                                <th class=""min-width"">");
 
 
             

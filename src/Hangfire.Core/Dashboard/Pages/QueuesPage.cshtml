@@ -16,7 +16,7 @@
         @Html.JobsSidebar()
     </div>
     <div class="col-md-9">
-        <h1 class="page-header">@Strings.QueuesPage_Title</h1>
+        <h1 id="page-title" class="page-header">@Strings.QueuesPage_Title</h1>
 
         @if (queues.Count == 0)
         {
@@ -27,7 +27,7 @@
         else
         {
             <div class="table-responsive">
-                <table class="table table-striped">
+                <table class="table table-striped" aria-describedby="page-title">
                     <thead>
                         <tr>
                             <th class="min-width-200p">@Strings.QueuesPage_Table_Queue</th>

@@ -57,7 +57,7 @@
                         @Html.Raw(String.Format(Strings.JobDetailsPage_JobAbortedNotActive_Warning_Html, currentState.Data["ServerId"], Url.To("/servers")))
                     </div>
                 }
-                else if (server.Heartbeat.HasValue && server.Heartbeat < DateTime.UtcNow.AddMinutes(-1))
+                else if (server.Heartbeat.HasValue && server.Heartbeat < (StorageUtcNow ?? ApplicationUtcNow).AddMinutes(-1))
                 {
                     <div class="alert alert-warning">
                         @Html.Raw(String.Format(Strings.JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html, server.Name))
@@ -91,8 +91,8 @@
                 var dbgParameters = job.Properties.Where(x => x.Key.StartsWith("DBG_")).ToArray();
 
                 <div class="alert alert-warning">
-                    <h4>@Strings.Common_CannotFindTargetMethod</h4>
-                    <table class="table table-condensed job-snippet-properties margin-bottom-0">
+                    <h4 id="job-details-missing-method">@Strings.Common_CannotFindTargetMethod</h4>
+                    <table class="table table-condensed job-snippet-properties margin-bottom-0" aria-describedby="job-details-missing-method">
                         <tr>
                             <td>@Strings.JobDetailsPage_JobId</td>
                             <td><pre><code>@Html.JobId(JobId, false)</code></pre></td>
@@ -112,8 +112,8 @@
 
             if (displayParameters.Length > 0)
             {
-                <h3>@Strings.JobDetailsPage_Parameters</h3>
-                <table class="table table-condensed job-snippet-properties">
+                <h3 id="job-details-parameters">@Strings.JobDetailsPage_Parameters</h3>
+                <table class="table table-condensed job-snippet-properties" aria-describedby="job-details-parameters">
                     @foreach (var parameter in displayParameters)
                     {
                         <tr>
@@ -130,9 +130,9 @@
 
                 if (continuations.Count > 0)
                 {
-                    <h3>@Strings.Common_Continuations</h3>
+                    <h3 id="job-details-continuations">@Strings.Common_Continuations</h3>
                     <div class="table-responsive">
-                        <table class="table">
+                        <table class="table" aria-describedby="job-details-continuations">
                             <thead>
                             <tr>
                                 <th class="min-width">@Strings.Common_Id</th>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
@@ -266,6 +267,19 @@ namespace Hangfire.Core.Tests
             manager.AddOrUpdate(_id, _job, "15 * * * * *");
 
             _transaction.Verify(x => x.AddToSet("recurring-jobs", _id, JobHelper.ToTimestamp(_now.AddSeconds(15))));
+        }
+
+        [Fact]
+        public void AddOrUpdate_IsAbleToScheduleMacroBasedCronExpression()
+        {
+            var manager = CreateManager();
+
+            manager.AddOrUpdate(_id, _job, "@hourly");
+
+            _transaction.Verify(x => x.AddToSet(
+                "recurring-jobs",
+                _id,
+                JobHelper.ToTimestamp(_now.AddMinutes(30))));
         }
 
         [Fact]
@@ -707,6 +721,8 @@ namespace Hangfire.Core.Tests
             return new RecurringJobManager(_storage.Object, _factory.Object, _timeZoneResolver.Object, _nowFactory);
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void Method() { }
     }
 }

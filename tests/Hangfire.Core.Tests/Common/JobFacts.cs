@@ -1,10 +1,12 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
 using Moq;
@@ -237,13 +239,21 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-	    public void FromExpression_ConvertsArgumentsToJson()
-	    {
-		    var job = Job.FromExpression(() => MethodWithArguments("123", 1));
+        public void FromExpression_ConvertsArgumentsToJson()
+        {
+            var job = Job.FromExpression(() => MethodWithArguments("123", 1));
 
-			Assert.Equal("\"123\"", job.Arguments[0]);
-			Assert.Equal("1", job.Arguments[1]);
-	    }
+            Assert.Equal("\"123\"", job.Arguments[0]);
+            Assert.Equal("1", job.Arguments[1]);
+        }
+
+        [Fact]
+        public void FromExpression_ConvertsObjectArgumentsToJson()
+        {
+            var job = Job.FromExpression(() => MethodWithObjectArgument("hello"));
+
+            Assert.Equal("\"hello\"", job.Arguments[0]);
+        }
 
         [Fact]
         public void FromExpression_ReturnValueDoesNotDepend_OnCurrentCulture()
@@ -533,6 +543,20 @@ namespace Hangfire.Core.Tests.Common
             Assert.True(_methodInvoked);
         }
 
+        [Fact, StaticLock]
+        public void Perform_PassesObjectArguments_ToACallingMethod()
+        {
+            // Arrange
+            _methodInvoked = false;
+            var job = Job.FromExpression(() => MethodWithObjectArgument("5"));
+
+            // Act
+            job.Perform(_activator.Object, _token.Object);
+
+            // Assert - see the `MethodWithArguments` method.
+            Assert.True(_methodInvoked);
+        }
+
 #if !NETCOREAPP1_0
         [Fact, StaticLock]
         public void Perform_PassesCorrectDateTime_IfItWasSerialized_UsingTypeConverter()
@@ -588,19 +612,19 @@ namespace Hangfire.Core.Tests.Common
             Assert.True(_methodInvoked);
         }
 
-		[Fact, StaticLock]
-	    public void Perform_WorksCorrectly_WithNullValues()
-	    {
-			// Arrange
-			_methodInvoked = false;
-			var job = Job.FromExpression(() => NullArgumentMethod(null));
+        [Fact, StaticLock]
+        public void Perform_WorksCorrectly_WithNullValues()
+        {
+            // Arrange
+            _methodInvoked = false;
+            var job = Job.FromExpression(() => NullArgumentMethod(null));
 
-			// Act
-			job.Perform(_activator.Object, _token.Object);
+            // Act
+            job.Perform(_activator.Object, _token.Object);
 
-			// Assert - see also `NullArgumentMethod` method.
-			Assert.True(_methodInvoked);
-	    }
+            // Assert - see also `NullArgumentMethod` method.
+            Assert.True(_methodInvoked);
+        }
 
         [Fact]
         public void Perform_ThrowsPerformanceException_WhenActivatorThrowsAnException()
@@ -631,8 +655,8 @@ namespace Hangfire.Core.Tests.Common
         [Fact]
         public void Ctor_ThrowsJsonReaderException_OnArgumentsDeserializationFailure()
         {
-	        var type = typeof (JobFacts);
-	        var method = type.GetMethod("MethodWithDateTimeArgument");
+            var type = typeof (JobFacts);
+            var method = type.GetMethod("MethodWithDateTimeArgument");
 
             Assert.Throws<JsonReaderException>(
                 () => new Job(type, method, new []{ JobHelper.ToJson("sdfa") }));
@@ -733,14 +757,15 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal("Return value", result);
         }
 
+        [Fact]
         public void GetTypeFilterAttributes_ReturnsCorrectAttributes()
         {
             var job = Job.FromExpression<Instance>(x => x.Method());
             var nonCachedAttributes = job.GetTypeFilterAttributes(false).ToArray();
             var cachedAttributes = job.GetTypeFilterAttributes(true).ToArray();
 
-            Assert.Equal(1, nonCachedAttributes.Length);
-            Assert.Equal(1, cachedAttributes.Length);
+            Assert.Single(nonCachedAttributes);
+            Assert.Single(cachedAttributes);
 
             Assert.True(nonCachedAttributes[0] is TestTypeAttribute);
             Assert.True(cachedAttributes[0] is TestTypeAttribute);
@@ -753,8 +778,8 @@ namespace Hangfire.Core.Tests.Common
             var nonCachedAttributes = job.GetMethodFilterAttributes(false).ToArray();
             var cachedAttributes = job.GetMethodFilterAttributes(true).ToArray();
 
-            Assert.Equal(1, nonCachedAttributes.Length);
-            Assert.Equal(1, cachedAttributes.Length);
+            Assert.Single(nonCachedAttributes);
+            Assert.Single(cachedAttributes);
 
             Assert.True(nonCachedAttributes[0] is TestMethodAttribute);
             Assert.True(cachedAttributes[0] is TestMethodAttribute);
@@ -764,36 +789,54 @@ namespace Hangfire.Core.Tests.Common
         {
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void MethodWithReferenceParameter(ref string a)
         {
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void MethodWithOutputParameter(out string a)
         {
             a = "hello";
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void StaticMethod()
         {
             _methodInvoked = true;
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+        [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
         public void InstanceMethod()
         {
             _methodInvoked = true;
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void CancelableJob(IJobCancellationToken token)
         {
             token.ThrowIfCancellationRequested();
         }
 
-	    public static void NullArgumentMethod(string[] argument)
-	    {
-		    _methodInvoked = true;
-		    Assert.Null(argument);
-	    }
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+        public static void NullArgumentMethod(string[] argument)
+        {
+            _methodInvoked = true;
+            Assert.Null(argument);
+        }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static")]
+        [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public void MethodWithArguments(string stringArg, int intArg)
         {
             _methodInvoked = true;
@@ -802,6 +845,10 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(5, intArg);
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static")]
+        [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public void MethodWithObjectArgument(object argument)
         {
             _methodInvoked = true;
@@ -809,10 +856,15 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal("5", argument);
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
         public void MethodWithCustomArgument(Instance argument)
         {
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+        [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
         public void MethodWithDateTimeArgument(DateTime argument)
         {
             _methodInvoked = true;
@@ -820,45 +872,66 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(SomeDateTime, argument);
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void ExceptionMethod()
         {
             throw new InvalidOperationException("exception");
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void TaskCanceledExceptionMethod()
         {
             throw new TaskCanceledException();
         }
 
+        [UsedImplicitly]
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static")]
         public void GenericMethod<T>(T arg)
         {
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+        [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
         public Task AsyncMethod()
         {
             var source = new TaskCompletionSource<bool>();
             return source.Task;
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static")]
         public async void AsyncVoidMethod()
         {
             await Task.Yield();
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public void DelegateMethod(Action action)
         {
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+        [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
         public void ExpressionMethod(Expression<Action> expression)
         {
         }
 
-        public interface ICommandDispatcher
+        private interface ICommandDispatcher
         {
             void DispatchTyped<TCommand>(TCommand command);
         }
 
-        public class CommandDispatcher : ICommandDispatcher
+        private class CommandDispatcher : ICommandDispatcher
         {
             public void DispatchTyped<TCommand>(TCommand command)
             {

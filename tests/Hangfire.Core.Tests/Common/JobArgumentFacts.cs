@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Storage;
 using Moq;
@@ -23,12 +24,16 @@ namespace Hangfire.Core.Tests.Common
 		{
 			_activator = new Mock<JobActivator>();
 			_activator.Setup(x => x.ActivateJob(It.IsAny<Type>()))
-				      .Returns(() => new JobArgumentFacts());
+				.Returns(() => new JobArgumentFacts());
 
 			_token = new Mock<IJobCancellationToken>();
 		}
 
 		private const Boolean BooleanValue = true;
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(Boolean value) { Assert.Equal(BooleanValue, value); }
 
 		[Fact]
@@ -38,6 +43,10 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 		private const Byte ByteValue = 142;
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(Byte value) { Assert.Equal(ByteValue, value); }
 
 		[Fact]
@@ -47,6 +56,10 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 		private const SByte SByteValue = -111;
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(SByte value) { Assert.Equal(SByteValue, value); }
 
 		[Fact]
@@ -56,6 +69,10 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 		private const Char CharValue = Char.MaxValue;
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(Char value) { Assert.Equal(CharValue, value); }
 
 		[Fact]
@@ -65,6 +82,10 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 		private const Decimal DecimalValue = Decimal.MaxValue;
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(Decimal value) { Assert.Equal(DecimalValue, value); }
 
 		[Fact]
@@ -73,7 +94,11 @@ namespace Hangfire.Core.Tests.Common
 			CreateAndPerform(DecimalValue);
 		}
 
-        private const Double DoubleValue = 3.14159265359D;
+		private const Double DoubleValue = 3.14159265359D;
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(Double value) { Assert.Equal(DoubleValue, value); }
 
 		[Fact]
@@ -82,7 +107,11 @@ namespace Hangfire.Core.Tests.Common
 			CreateAndPerform(DoubleValue);
 		}
 
-        private const Single SingleValue = 3.1415F;
+		private const Single SingleValue = 3.1415F;
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(Single value) { Assert.Equal(SingleValue, value); }
 
 		[Fact]
@@ -92,6 +121,10 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 		private const Int32 Int32Value = Int32.MaxValue;
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(Int32 value) { Assert.Equal(Int32Value, value); }
 
 		[Fact]
@@ -101,6 +134,10 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 		private const UInt32 UInt32Value = UInt32.MaxValue;
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(UInt32 value) { Assert.Equal(UInt32Value, value); }
 
 		[Fact]
@@ -110,16 +147,24 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 		private const Int64 Int64Value = Int64.MaxValue;
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(Int64 value) { Assert.Equal(Int64Value, value); }
 
 		[Fact]
-		public void Int64Values_AreBeingCorrectyDeserialized()
+		public void Int64Values_AreBeingCorrectlyDeserialized()
 		{
 			CreateAndPerform(Int64Value);
 		}
 
 #if !NETCOREAPP1_0
-        private const UInt64 UInt64Value = UInt64.MaxValue;
+		private const UInt64 UInt64Value = UInt64.MaxValue;
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(UInt64 value) { Assert.Equal(UInt64Value, value); }
 
 		[Fact]
@@ -129,7 +174,11 @@ namespace Hangfire.Core.Tests.Common
 		}
 #endif
 
-        private const Int16 Int16Value = Int16.MaxValue;
+		private const Int16 Int16Value = Int16.MaxValue;
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(Int16 value) { Assert.Equal(Int16Value, value); }
 
 		[Fact]
@@ -139,6 +188,10 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 		private const UInt16 UInt16Value = UInt16.MaxValue;
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(UInt16 value) { Assert.Equal(UInt16Value, value); }
 
 		[Fact]
@@ -148,6 +201,10 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 		private const String StringValue = "jkashdgfa$%^&";
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(String value) { Assert.Equal(StringValue, value); }
 
 		[Fact]
@@ -157,6 +214,10 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 		private static readonly TimeSpan TimeSpanValue = TimeSpan.FromDays(1);
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(TimeSpan value) { Assert.Equal(TimeSpanValue, value); }
 
 		[Fact]
@@ -166,6 +227,10 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 		private static readonly Object ObjectValue = "Hellojkadg";
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(Object value) { Assert.Equal(ObjectValue, value); }
 
 		[Fact]
@@ -175,30 +240,42 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 		private static readonly DateTimeOffset DateTimeOffsetValue = new DateTimeOffset(new DateTime(2012, 12, 12), TimeSpan.FromHours(1));
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(DateTimeOffset value) {  Assert.Equal(DateTimeOffsetValue, value); }
 
 		[Fact]
 		public void DateTimeOffsetValues_AreBeingDeserializedCorrectly()
 		{
 			// Don't run this test on Mono – https://bugzilla.xamarin.com/show_bug.cgi?id=25158
-                	if (Type.GetType("Mono.Runtime") == null)
-	        	{
+			if (Type.GetType("Mono.Runtime") == null)
+			{
 				CreateAndPerform(DateTimeOffsetValue);
 			}
 		}
 
 #if !NETCOREAPP1_0
-        private static readonly CultureInfo CultureInfoValue = new CultureInfo("ru-RU");
+		private static readonly CultureInfo CultureInfoValue = new CultureInfo("ru-RU");
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(CultureInfo value) { Assert.Equal(CultureInfoValue, value); }
 
-        [Fact]
+		[Fact]
 		public void CultureInfoValues_AreBeingDeserializedCorrectly()
 		{
 			CreateAndPerform(CultureInfoValue);
 		}
 #endif
 
-        private const DayOfWeek EnumValue = DayOfWeek.Saturday;
+		private const DayOfWeek EnumValue = DayOfWeek.Saturday;
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(DayOfWeek value) { Assert.Equal(EnumValue, value); }
 
 		[Fact]
@@ -208,6 +285,10 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 		private static readonly Guid GuidValue = Guid.NewGuid();
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(Guid value) { Assert.Equal(GuidValue, value); }
 
 		[Fact]
@@ -216,7 +297,11 @@ namespace Hangfire.Core.Tests.Common
 			CreateAndPerform(GuidValue);
 		}
 
-		private static readonly Uri UriValue = new Uri("http://example.com", UriKind.Absolute);
+		private static readonly Uri UriValue = new Uri("https://example.com", UriKind.Absolute);
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(Uri value) { Assert.Equal(UriValue, value); }
 
 		[Fact]
@@ -226,6 +311,10 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 		private static readonly Int64? NotNullNullableValue = Int64.MaxValue;
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(Int64? value) { Assert.Equal(NotNullNullableValue, value); }
 
 		[Fact]
@@ -235,6 +324,10 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 		private static readonly Int32? NullNullableValue = null;
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(Int32? value) { Assert.Equal(NullNullableValue, value); }
 
 		[Fact]
@@ -244,6 +337,10 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 		private static readonly string[] ArrayValue = { "Hello", "world" };
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(string[] value) { Assert.Equal(ArrayValue, value); }
 
 		[Fact]
@@ -253,6 +350,10 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 		private static readonly List<DateTime> ListValue = new List<DateTime> { DateTime.UtcNow.AddDays(-1), DateTime.UtcNow.AddDays(1) };
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(List<DateTime> value) { Assert.Equal(ListValue, value); }
 
 		[Fact]
@@ -265,7 +366,11 @@ namespace Hangfire.Core.Tests.Common
 		{
 			{ TimeSpan.FromSeconds(1), "123" },
 			{ TimeSpan.FromDays(12), "376" }
-		};  
+		};
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(Dictionary<TimeSpan, string> value) { Assert.Equal(DictionaryValue, value); }
 
 		[Fact]
@@ -281,6 +386,10 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 		private static readonly MyStruct CustomStructValue = new MyStruct { Id = Guid.NewGuid(), Name = "Hangfire" };
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(MyStruct value) { Assert.Equal(CustomStructValue, value); }
 
 		[Fact]
@@ -294,20 +403,24 @@ namespace Hangfire.Core.Tests.Common
 		{
 			public DateTime CreatedAt { get; set; }
 
-            public bool Equals(MyClass other)
-            {
-                if (other == null) return false;
-                return CreatedAt.Equals(other.CreatedAt);
-            }
+			public bool Equals(MyClass other)
+			{
+				if (other == null) return false;
+				return CreatedAt.Equals(other.CreatedAt);
+			}
 
-            public override bool Equals(object obj)
-            {
-                return Equals(obj as MyClass);
-            }
-        }
+			public override bool Equals(object obj)
+			{
+				return Equals(obj as MyClass);
+			}
+		}
 #pragma warning restore 659
 
-        private static readonly MyClass CustomClassValue = new MyClass { CreatedAt = DateTime.UtcNow };
+		private static readonly MyClass CustomClassValue = new MyClass { CreatedAt = DateTime.UtcNow };
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
 		public void Method(MyClass value) { Assert.Equal(CustomClassValue.CreatedAt, value.CreatedAt); }
 
 		[Fact]
@@ -316,15 +429,15 @@ namespace Hangfire.Core.Tests.Common
 			CreateAndPerform(CustomClassValue, true);
 		}
 
-		private void CreateAndPerform<T>(T argumentValue, bool checkJsonOnly = false)
+		private static void CreateAndPerform<T>(T argumentValue, bool checkJsonOnly = false)
 		{
-            var type = typeof(JobArgumentFacts);
+			var type = typeof(JobArgumentFacts);
 			var methodInfo = type.GetMethod("Method", new[] { typeof(T) });
 
 			var serializationMethods = new List<Tuple<string, Func<string>>>();
 
 #if !NETCOREAPP1_0
-            if (!checkJsonOnly)
+			if (!checkJsonOnly)
 			{
 				var converter = TypeDescriptor.GetConverter(typeof(T));
 				serializationMethods.Add(new Tuple<string, Func<string>>(
@@ -333,21 +446,21 @@ namespace Hangfire.Core.Tests.Common
 			}
 #endif
 
-            serializationMethods.Add(new Tuple<string, Func<string>>(
+			serializationMethods.Add(new Tuple<string, Func<string>>(
 				"JSON",
 				() => JsonConvert.SerializeObject(argumentValue)));
 
 			foreach (var method in serializationMethods)
-            {
-                var data = new InvocationData(
-                    methodInfo?.DeclaringType?.AssemblyQualifiedName,
-                    methodInfo?.Name,
-                    JobHelper.ToJson(methodInfo?.GetParameters().Select(x => x.ParameterType).ToArray()),
-                    JobHelper.ToJson(new[] { method.Item2() }));
+			{
+				var data = new InvocationData(
+					methodInfo?.DeclaringType?.AssemblyQualifiedName,
+					methodInfo?.Name,
+					JobHelper.ToJson(methodInfo?.GetParameters().Select(x => x.ParameterType).ToArray()),
+					JobHelper.ToJson(new[] { method.Item2() }));
 
-                var job = data.DeserializeJob();
+				var job = data.DeserializeJob();
 
-                Assert.Equal(argumentValue, job.Args[0]);
+				Assert.Equal(argumentValue, job.Args[0]);
 			}
 		}
 	}

@@ -1407,7 +1407,7 @@ select scope_identity() as Id";
                         new { key = "some-hash" })
                     .ToDictionary(x => (string)x.Field, x => (string)x.Value);
 
-                Assert.Equal(null, result["Key1"]);
+                Assert.Null(result["Key1"]);
             }, useMicrosoftDataSqlClient);
         }
 

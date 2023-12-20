@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Hangfire.Common;
 using Hangfire.Storage;
@@ -9,6 +10,7 @@ using Xunit;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using Hangfire.Annotations;
 using Newtonsoft.Json.Serialization;
 
 #pragma warning disable 618
@@ -88,7 +90,7 @@ namespace Hangfire.Core.Tests.Storage
 
             var job = serializedData.Deserialize();
 
-            Assert.Equal(job.Type, typeof(JobStorage));
+            Assert.Equal(typeof(JobStorage), job.Type);
         }
 
         [DataCompatibilityRangeFact]
@@ -102,7 +104,7 @@ namespace Hangfire.Core.Tests.Storage
 
             var job = serializedData.Deserialize();
 
-            Assert.Equal(job.Type, typeof(DateTime));
+            Assert.Equal(typeof(DateTime), job.Type);
         }
 
         [DataCompatibilityRangeFact]
@@ -116,7 +118,7 @@ namespace Hangfire.Core.Tests.Storage
 
             var job = serializedData.Deserialize();
 
-            Assert.Equal(job.Type, typeof(InvocationDataFacts));
+            Assert.Equal(typeof(InvocationDataFacts), job.Type);
         }
 
         [DataCompatibilityRangeFact]
@@ -130,7 +132,7 @@ namespace Hangfire.Core.Tests.Storage
 
             var job = serializedData.Deserialize();
 
-            Assert.Equal(job.Type, typeof(InvocationDataFacts));
+            Assert.Equal(typeof(InvocationDataFacts), job.Type);
         }
 
         [DataCompatibilityRangeFact]
@@ -148,7 +150,7 @@ namespace Hangfire.Core.Tests.Storage
 
                 var job = serializedData.Deserialize();
 
-                Assert.Equal(job.Type, typeof(InvocationDataFacts));
+                Assert.Equal(typeof(InvocationDataFacts), job.Type);
             }
             finally
             {
@@ -171,7 +173,7 @@ namespace Hangfire.Core.Tests.Storage
 
                 var job = serializedData.Deserialize();
 
-                Assert.Equal(job.Type, typeof(InvocationDataFacts));
+                Assert.Equal(typeof(InvocationDataFacts), job.Type);
             }
             finally
             {
@@ -194,7 +196,7 @@ namespace Hangfire.Core.Tests.Storage
 
                 var job = serializedData.Deserialize();
 
-                Assert.Equal(job.Type, typeof(GenericType<int>));
+                Assert.Equal(typeof(GenericType<int>), job.Type);
                 Assert.Equal("Method", job.Method.Name);
                 Assert.Equal(123, job.Args[0]);
             }
@@ -527,7 +529,7 @@ namespace Hangfire.Core.Tests.Storage
 
             Assert.False(job.Type.GetTypeInfo().ContainsGenericParameters);
             Assert.Equal("Empty", job.Method.Name);
-            Assert.Equal(0, job.Method.GetParameters().Length);
+            Assert.Empty(job.Method.GetParameters());
             Assert.Equal(0, job.Args.Count);
         }
 
@@ -907,7 +909,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(typeof(SomeClass), job.Args[1]?.GetType());
             Assert.Equal("value", (job.Args[1] as SomeClass)?.StringValue);
             Assert.Equal(0, (job.Args[1] as SomeClass)?.DefaultValue);
-            Assert.Equal(null, (job.Args[1] as SomeClass)?.NullObject);
+            Assert.Null((job.Args[1] as SomeClass)?.NullObject);
         }
 
 #if !NET452 && !NET461
@@ -980,30 +982,42 @@ namespace Hangfire.Core.Tests.Storage
                 => base.CreateProperties(type, MemberSerialization.Fields);
         }
 
+        [UsedImplicitly]
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
         public static void Empty()
         {
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void Sample(string arg)
         {
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void ListMethod(IList<string> arg)
         {
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void GenericMethod<T>(T arg)
         {
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void OtherGenericMethod<T1,T2>(T1 arg1, T2 arg2)
         {
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
         public static void DateTimeMethod(DateTime arg)
         {
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
         public static void NullableDateTimeMethod(DateTime? arg)
         {
         }
@@ -1026,6 +1040,8 @@ namespace Hangfire.Core.Tests.Storage
             }
         }
 
+        [UsedImplicitly]
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
         public static void ComplicatedMethod(IList<string> arg, SomeClass objArg)
         {
         }
@@ -1037,9 +1053,15 @@ namespace Hangfire.Core.Tests.Storage
             public int DefaultValue { get; set; }
         }
 
+        [UsedImplicitly]
         public class NestedType
         {
+            [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
+            [SuppressMessage("Performance", "CA1822:Mark members as static")]
             public void Method() { }
+
+            [SuppressMessage("Performance", "CA1822:Mark members as static")]
+            [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
             public void NestedGenericMethod<T>(T arg1) { }
         }
 
@@ -1055,32 +1077,48 @@ namespace Hangfire.Core.Tests.Storage
 
 }
 
+[UsedImplicitly]
+[SuppressMessage("Design", "CA1050:Declare types in namespaces")]
 public class GlobalType
 {
+    [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
+    [SuppressMessage("Performance", "CA1822:Mark members as static")]
     public void Method() {}
+
+    [SuppressMessage("Performance", "CA1822:Mark members as static")]
+    [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
     public void GenericMethod<T>(T arg) {}
 
+    [UsedImplicitly]
     public class NestedType
     {
+        [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static")]
         public void NestedMethod() { }
     }
 
+    [UsedImplicitly]
     public class NestedGenericType<T>
     {
         public void NestedGenericMethod<T1>(T arg1, T1 arg2) { }
     }
 }
 
+[UsedImplicitly]
+[SuppressMessage("Design", "CA1050:Declare types in namespaces")]
 public class GlobalGenericType<T>
 {
     public void Method() { }
     public void GenericMethod<T1>(T1 arg) { }
 
+    [UsedImplicitly]
     public class NestedType
     {
+        [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
         public void Method() { }
     }
 
+    [UsedImplicitly]
     public class NestedGenericType<T1>
     {
         public void Method(T arg1, T1 arg2) { }

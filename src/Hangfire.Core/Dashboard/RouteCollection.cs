@@ -63,7 +63,8 @@ namespace Hangfire.Dashboard
                 var match = Regex.Match(
                     path,
                     pattern,
-                    RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                    RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Singleline,
+                    TimeSpan.FromSeconds(1));
 
                 if (match.Success)
                 {

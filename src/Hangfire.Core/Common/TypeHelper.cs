@@ -32,9 +32,9 @@ namespace Hangfire.Common
         private static readonly ConcurrentDictionary<string, Assembly> AssemblyCache = new ConcurrentDictionary<string, Assembly>();
         private static readonly ConcurrentDictionary<string, Type> TypeResolverCache = new ConcurrentDictionary<string, Type>();
 
-        private static readonly Regex VersionRegex = new Regex(@", Version=\d+.\d+.\d+.\d+", RegexOptions.Compiled);
-        private static readonly Regex CultureRegex = new Regex(@", Culture=\w+", RegexOptions.Compiled);
-        private static readonly Regex PublicKeyTokenRegex = new Regex(@", PublicKeyToken=\w+", RegexOptions.Compiled);
+        private static readonly Regex VersionRegex = new Regex(@", Version=\d+.\d+.\d+.\d+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
+        private static readonly Regex CultureRegex = new Regex(@", Culture=\w+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
+        private static readonly Regex PublicKeyTokenRegex = new Regex(@", PublicKeyToken=\w+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
 
         private static Func<string, Type> _currentTypeResolver;
         private static Func<Type, string> _currentTypeSerializer;

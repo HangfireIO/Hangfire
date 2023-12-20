@@ -91,12 +91,13 @@ WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-3\">\r\n       
             
             #line default
             #line hidden
-WriteLiteral("\r\n    </div>\r\n    <div class=\"col-md-9\">\r\n        <h1 class=\"page-header\">");
+WriteLiteral("\r\n    </div>\r\n    <div class=\"col-md-9\">\r\n        <h1 id=\"page-title\" class=\"page" +
+"-header\">");
 
 
             
             #line 26 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
-                           Write(Strings.SucceededJobsPage_Title);
+                                           Write(Strings.SucceededJobsPage_Title);
 
             
             #line default
@@ -200,8 +201,8 @@ WriteLiteral("                    ");
             #line default
             #line hidden
 WriteLiteral("\r\n                </div>\r\n\r\n                <div class=\"table-responsive\">\r\n     " +
-"               <table class=\"table\">\r\n                        <thead>\r\n         " +
-"                   <tr>\r\n");
+"               <table class=\"table\" aria-describedby=\"page-title\">\r\n            " +
+"            <thead>\r\n                            <tr>\r\n");
 
 
             
@@ -244,21 +245,78 @@ WriteLiteral("</th>\r\n                                <th>");
             
             #line default
             #line hidden
-WriteLiteral("</th>\r\n                                <th class=\"min-width\">");
+WriteLiteral("</th>\r\n");
 
 
             
             #line 63 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
-                                                 Write(Strings.SucceededJobsPage_Table_TotalDuration);
+                                 if (succeededJobs.Any(x => x.Value?.StateData != null))
+                                {
 
             
             #line default
             #line hidden
-WriteLiteral("</th>\r\n                                <th class=\"align-right\">");
+WriteLiteral("                                    <th class=\"min-width\">");
 
 
             
-            #line 64 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 65 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                                     Write(Strings.SucceededJobsPage_Table_Duration);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</th>\r\n");
+
+
+
+WriteLiteral("                                    <th class=\"min-width\">");
+
+
+            
+            #line 66 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                                     Write(Strings.SucceededJobsPage_Table_Latency);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</th>\r\n");
+
+
+            
+            #line 67 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                }
+                                else
+                                {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                    <th class=\"min-width\">");
+
+
+            
+            #line 70 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                                     Write(Strings.SucceededJobsPage_Table_TotalDuration);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</th>\r\n");
+
+
+            
+            #line 71 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                <th class=\"align-right\">");
+
+
+            
+            #line 72 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
                                                    Write(Strings.SucceededJobsPage_Table_Succeeded);
 
             
@@ -269,7 +327,7 @@ WriteLiteral("</th>\r\n                            </tr>\r\n                    
 
 
             
-            #line 68 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 76 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
                              foreach (var job in succeededJobs)
                             {
 
@@ -280,7 +338,7 @@ WriteLiteral("                                <tr class=\"js-jobs-list-row ");
 
 
             
-            #line 70 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 78 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
                                                         Write(job.Value == null || !job.Value.InSucceededState ? "obsolete-data" : null);
 
             
@@ -290,7 +348,7 @@ WriteLiteral(" ");
 
 
             
-            #line 70 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 78 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
                                                                                                                                      Write(job.Value != null && job.Value.InSucceededState ? "hover" : null);
 
             
@@ -300,7 +358,7 @@ WriteLiteral("\">\r\n");
 
 
             
-            #line 71 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 79 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
                                      if (!IsReadOnly)
                                     {
 
@@ -311,7 +369,7 @@ WriteLiteral("                                        <td>\r\n");
 
 
             
-            #line 74 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 82 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
                                              if (job.Value != null && job.Value.InSucceededState)
                                             {
 
@@ -323,7 +381,7 @@ WriteLiteral("                                                <input type=\"chec
 
 
             
-            #line 76 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 84 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
                                                                                                                      Write(job.Key);
 
             
@@ -333,7 +391,7 @@ WriteLiteral("\"/>\r\n");
 
 
             
-            #line 77 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 85 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
                                             }
 
             
@@ -343,7 +401,7 @@ WriteLiteral("                                        </td>\r\n");
 
 
             
-            #line 79 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 87 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
                                     }
 
             
@@ -354,7 +412,7 @@ WriteLiteral("                                    <td class=\"min-width\">\r\n  
 
 
             
-            #line 81 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 89 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
                                    Write(Html.JobIdLink(job.Key));
 
             
@@ -364,7 +422,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 82 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 90 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
                                          if (job.Value != null && !job.Value.InSucceededState)
                                         {
 
@@ -375,7 +433,7 @@ WriteLiteral("                                            <span title=\"");
 
 
             
-            #line 84 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 92 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
                                                     Write(Strings.Common_JobStateChanged_Text);
 
             
@@ -385,7 +443,7 @@ WriteLiteral("\" class=\"glyphicon glyphicon-question-sign\"></span>\r\n");
 
 
             
-            #line 85 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 93 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
                                         }
 
             
@@ -395,29 +453,53 @@ WriteLiteral("                                    </td>\r\n\r\n");
 
 
             
-            #line 88 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 96 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
                                      if (job.Value == null)
                                     {
+                                        if (succeededJobs.Any(x => x.Value?.StateData != null))
+                                        {
 
             
             #line default
             #line hidden
-WriteLiteral("                                        <td colspan=\"3\">\r\n                       " +
-"                     <em>");
+WriteLiteral("                                            <td colspan=\"4\"><em>");
 
 
             
-            #line 91 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
-                                           Write(Strings.Common_JobExpired);
+            #line 100 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                                           Write(Strings.Common_JobExpired);
 
             
             #line default
             #line hidden
-WriteLiteral("</em>\r\n                                        </td>\r\n");
+WriteLiteral("</em></td>\r\n");
 
 
             
-            #line 93 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 101 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                        }
+                                        else
+                                        {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                            <td colspan=\"3\"><em>");
+
+
+            
+            #line 104 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                                           Write(Strings.Common_JobExpired);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</em></td>\r\n");
+
+
+            
+            #line 105 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                        }
                                     }
                                     else
                                     {
@@ -430,7 +512,7 @@ WriteLiteral("                                        <td class=\"word-break\">\
 
 
             
-            #line 97 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 110 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
                                        Write(Html.JobNameLink(job.Key, job.Value.Job));
 
             
@@ -439,42 +521,123 @@ WriteLiteral("                                        <td class=\"word-break\">\
 WriteLiteral("\r\n                                        </td>\r\n");
 
 
+            
+            #line 112 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                        if (job.Value.StateData != null)
+                                        {
 
+            
+            #line default
+            #line hidden
+WriteLiteral("                                            <td class=\"min-width align-right\">\r\n");
+
+
+            
+            #line 115 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                                 if (job.Value.StateData.TryGetValue("PerformanceDuration", out var duration))
+                                                {
+                                                    
+            
+            #line default
+            #line hidden
+            
+            #line 117 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                               Write(Html.ToHumanDuration(TimeSpan.FromMilliseconds(long.Parse(duration, System.Globalization.CultureInfo.InvariantCulture)), false));
+
+            
+            #line default
+            #line hidden
+            
+            #line 117 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                                                                                                                                                                    
+                                                }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                            </td>\r\n");
+
+
+
+WriteLiteral("                                            <td class=\"min-width align-right\">\r\n");
+
+
+            
+            #line 121 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                                 if (job.Value.StateData.TryGetValue("Latency", out var latency))
+                                                {
+                                                    
+            
+            #line default
+            #line hidden
+            
+            #line 123 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                               Write(Html.ToHumanDuration(TimeSpan.FromMilliseconds(long.Parse(latency, System.Globalization.CultureInfo.InvariantCulture)), false));
+
+            
+            #line default
+            #line hidden
+            
+            #line 123 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                                                                                                                                                                   
+                                                }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                            </td>\r\n");
+
+
+            
+            #line 126 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                        }
+                                        else
+                                        {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                            <td class=\"min-width align-right\">\r\n");
+
+
+            
+            #line 130 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                                 if (job.Value.TotalDuration.HasValue)
+                                                {
+                                                    
+            
+            #line default
+            #line hidden
+            
+            #line 132 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                               Write(Html.ToHumanDuration(TimeSpan.FromMilliseconds(job.Value.TotalDuration.Value), false));
+
+            
+            #line default
+            #line hidden
+            
+            #line 132 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                                                                                                                          
+                                                }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                            </td>\r\n");
+
+
+            
+            #line 135 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+                                        }
+
+            
+            #line default
+            #line hidden
 WriteLiteral("                                        <td class=\"min-width align-right\">\r\n");
 
 
             
-            #line 100 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
-                                             if (job.Value.TotalDuration.HasValue)
-                                            {
-                                                
-            
-            #line default
-            #line hidden
-            
-            #line 102 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
-                                           Write(Html.ToHumanDuration(TimeSpan.FromMilliseconds(job.Value.TotalDuration.Value), false));
-
-            
-            #line default
-            #line hidden
-            
-            #line 102 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
-                                                                                                                                      
-                                            }
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                                        </td>\r\n");
-
-
-
-WriteLiteral("                                        <td class=\"min-width align-right\">\r\n");
-
-
-            
-            #line 106 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 137 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
                                              if (job.Value.SucceededAt.HasValue)
                                             {
                                                 
@@ -482,14 +645,14 @@ WriteLiteral("                                        <td class=\"min-width alig
             #line default
             #line hidden
             
-            #line 108 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 139 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
                                            Write(Html.RelativeTime(job.Value.SucceededAt.Value));
 
             
             #line default
             #line hidden
             
-            #line 108 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 139 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
                                                                                                
                                             }
 
@@ -500,7 +663,7 @@ WriteLiteral("                                        </td>\r\n");
 
 
             
-            #line 111 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 142 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
                                     }
 
             
@@ -510,7 +673,7 @@ WriteLiteral("                                </tr>\r\n");
 
 
             
-            #line 113 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 144 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
                             }
 
             
@@ -521,7 +684,7 @@ WriteLiteral("                        </tbody>\r\n                    </table>\r
 
 
             
-            #line 118 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 149 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
            Write(Html.Paginator(pager));
 
             
@@ -531,7 +694,7 @@ WriteLiteral("\r\n            </div>\r\n");
 
 
             
-            #line 120 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
+            #line 151 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
         }
 
             

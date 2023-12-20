@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Server;
 using Hangfire.States;
@@ -169,9 +170,7 @@ namespace Hangfire.Core.Tests
             Assert.Equal("en-US", CultureInfo.CurrentUICulture.Name);
         }
 
-        public static void Sample() { }
-
-        private CaptureCultureAttribute CreateFilter()
+        private static CaptureCultureAttribute CreateFilter()
         {
             return new CaptureCultureAttribute();
         }

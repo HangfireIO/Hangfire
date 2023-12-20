@@ -210,6 +210,9 @@
   <data name="DeletedJobsPage_Table_Deleted" xml:space="preserve">
     <value>Deleted</value>
   </data>
+  <data name="DeletedJobsPage_Table_Exception" xml:space="preserve">
+    <value>Exception</value>
+  </data>
   <data name="DeletedJobsPage_Title" xml:space="preserve">
     <value>Deleted Jobs</value>
   </data>
@@ -289,8 +292,14 @@
   <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
     <value>Generated: {0}ms</value>
   </data>
+  <data name="LayoutPage_Footer_StorageTime" xml:space="preserve">
+    <value>Storage Time:</value>
+  </data>
+    <data name="LayoutPage_Footer_TimeIsOutOfSync" xml:space="preserve">
+    <value>Application time is out of sync with storage time</value>
+  </data>
   <data name="LayoutPage_Footer_Time" xml:space="preserve">
-    <value>Time:</value>
+    <value>Application Time:</value>
   </data>
   <data name="Paginator_Next" xml:space="preserve">
     <value>Next</value>
@@ -423,6 +432,12 @@
   </data>
   <data name="SucceededJobsPage_Table_TotalDuration" xml:space="preserve">
     <value>Total Duration</value>
+  </data>
+  <data name="SucceededJobsPage_Table_Latency" xml:space="preserve">
+    <value>Latency</value>
+  </data>
+  <data name="SucceededJobsPage_Table_Duration" xml:space="preserve">
+    <value>Duration</value>
   </data>
   <data name="SucceededJobsPage_Title" xml:space="preserve">
     <value>Succeeded Jobs</value>

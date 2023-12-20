@@ -2,6 +2,7 @@
 
 using System;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using ReferencedDapper::Dapper;
@@ -640,8 +641,6 @@ values (scope_identity(), @queue)";
             var source = new CancellationTokenSource(TimeSpan.FromSeconds(1));
             return source.Token;
         }
-
-        public static void Sample(string arg1, string arg2) { }
 
         private static SqlServerJobQueue CreateJobQueue(bool useMicrosoftDataSqlClient, TimeSpan? invisibilityTimeout)
         {

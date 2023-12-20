@@ -94,7 +94,7 @@ namespace Hangfire.SqlServer.Msmq.Tests
 
             var result = api.GetEnqueuedJobIds("my-queue", 0, 1).ToArray();
 
-            Assert.Equal(1, result.Length);
+            Assert.Single(result);
             Assert.Equal(int.MaxValue + 1L, result[0]);
         }
 

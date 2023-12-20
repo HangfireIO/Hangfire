@@ -72,21 +72,35 @@ namespace Hangfire.SqlServer
 
             foreach (var table in ProcessedTables)
             {
-                CleanupTable(GetExpireQuery(_storage.SchemaName, table), table, numberOfRecordsInSinglePass, cancellationToken);
+                try
+                {
+                    CleanupTable(GetExpireQuery(_storage.SchemaName, table), table, numberOfRecordsInSinglePass, cancellationToken);
+                }
+                catch (DbException ex)
+                {
+                    _logger.ErrorException($"Error occurred while cleaning up the '{table}' table: {ex.Message}", ex);
+                }
             }
 
             if (_stateExpirationTimeout > TimeSpan.Zero)
             {
-                CleanupTable(GetStateCleanupQuery(_storage.SchemaName), "State", numberOfRecordsInSinglePass,
-                    cancellationToken,
-                    command =>
-                    {
-                        var expireMinParameter = command.CreateParameter();
-                        expireMinParameter.ParameterName = "@expireMin";
-                        expireMinParameter.Value = (long)_stateExpirationTimeout.Negate().TotalMinutes;
+                try
+                {
+                    CleanupTable(GetStateCleanupQuery(_storage.SchemaName), "State", numberOfRecordsInSinglePass,
+                        cancellationToken,
+                        command =>
+                        {
+                            var expireMinParameter = command.CreateParameter();
+                            expireMinParameter.ParameterName = "@expireMin";
+                            expireMinParameter.Value = (long)_stateExpirationTimeout.Negate().TotalMinutes;
 
-                        command.Parameters.Add(expireMinParameter);
-                    });
+                            command.Parameters.Add(expireMinParameter);
+                        });
+                }
+                catch (DbException ex)
+                {
+                    _logger.ErrorException($"Error occurred while cleaning up the 'State' table: {ex.Message}", ex);
+                }
             }
 
             cancellationToken.Wait(_checkInterval);

@@ -94,7 +94,22 @@
                     @if(DashboardOptions.DisplayStorageConnectionString){
                     <li>@Storage</li>
                     }
-                    <li>@Strings.LayoutPage_Footer_Time @Html.LocalTime(DateTime.UtcNow)</li>
+                    @if (StorageUtcNow.HasValue)
+                    {
+                        <li>@Strings.LayoutPage_Footer_StorageTime @Html.LocalTime(StorageUtcNow.Value)</li>
+                    }
+                    <li>
+                        @if (TimeDifference.HasValue && Math.Abs(TimeDifference.Value.TotalSeconds) > 30)
+                        {
+                            <span class="text-warning" title="@Strings.LayoutPage_Footer_TimeIsOutOfSync">
+                                <span class="glyphicon glyphicon-warning-sign"></span>&nbsp;@Strings.LayoutPage_Footer_Time @Html.LocalTime(ApplicationUtcNow)
+                            </span>
+                        }
+                        else
+                        {
+                            @Strings.LayoutPage_Footer_Time @Html.LocalTime(ApplicationUtcNow)
+                        }
+                    </li>
                     <li>@String.Format(Strings.LayoutPage_Footer_Generatedms, GenerationTime.Elapsed.TotalMilliseconds.ToString("N"))</li>
                 </ul>
             </div>
