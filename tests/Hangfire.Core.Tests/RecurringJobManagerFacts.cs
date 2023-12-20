@@ -215,16 +215,6 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void AddOrUpdate_AddsAJob_VerifyCronMacroExpression()
-        {
-            var manager = CreateManager();
-
-            manager.AddOrUpdate(_id, _job, "@hourly");
-
-            _transaction.Verify(x => x.Commit());
-        }
-
-        [Fact]
         public void AddOrUpdate_SetsTheRecurringJobEntry()
         {
             var manager = CreateManager();
@@ -277,6 +267,19 @@ namespace Hangfire.Core.Tests
             manager.AddOrUpdate(_id, _job, "15 * * * * *");
 
             _transaction.Verify(x => x.AddToSet("recurring-jobs", _id, JobHelper.ToTimestamp(_now.AddSeconds(15))));
+        }
+
+        [Fact]
+        public void AddOrUpdate_IsAbleToScheduleMacroBasedCronExpression()
+        {
+            var manager = CreateManager();
+
+            manager.AddOrUpdate(_id, _job, "@hourly");
+
+            _transaction.Verify(x => x.AddToSet(
+                "recurring-jobs",
+                _id,
+                JobHelper.ToTimestamp(_now.AddMinutes(30))));
         }
 
         [Fact]
