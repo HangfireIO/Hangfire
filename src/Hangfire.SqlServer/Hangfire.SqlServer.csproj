@@ -17,12 +17,10 @@
 
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
     <PackageReference Include="Dapper" Version="2.0.123" />
-    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
     <PackageReference Include="Dapper" Version="1.50.7" />
-    <PackageReference Include="NETStandard.Library" Version="1.6.1" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='net451'">

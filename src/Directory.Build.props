@@ -20,10 +20,6 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
-    </ItemGroup>
-
     <PropertyGroup>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
         <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
@@ -31,6 +27,6 @@
 
     <PropertyGroup Condition="'$(APPVEYOR)' == 'True'">
         <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-        <RestoreLockedMode>true</RestoreLockedMode>
+        <!--RestoreLockedMode>true</RestoreLockedMode-->
     </PropertyGroup>
 </Project>

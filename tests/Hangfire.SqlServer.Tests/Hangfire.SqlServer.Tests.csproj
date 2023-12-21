@@ -10,7 +10,6 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="xunit" Version="2.4.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
 
     <!-- Don't upgrade to 4.20 or higher, please refer to https://github.com/HangfireIO/Hangfire/issues/2266 -->
     <PackageReference Include="Moq" Version="4.10.0" />
@@ -32,7 +31,6 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="3.1.0" NoWarn="NU1902" />
     <PackageReference Include="Dapper" Version="2.0.123" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
   </ItemGroup>
 
   <ItemGroup>
