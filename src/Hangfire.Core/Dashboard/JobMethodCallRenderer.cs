@@ -279,7 +279,7 @@ namespace Hangfire.Dashboard
                         isJson ? "FromJson" : "Deserialize"));
 
                     builder.Append("&lt;")
-                        .Append(WrapType(Encode(_deserializationType.Name)))
+                        .Append(WrapType(Encode(_deserializationType.ToGenericTypeString())))
                         .Append(WrapIdentifier("&gt;"))
                         .Append('(');
 
