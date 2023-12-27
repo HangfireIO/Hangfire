@@ -25,7 +25,10 @@
             @: <meta name="csrf-token" content="@Context.AntiforgeryToken">
         }
     }
-    @{ var version = GetType().GetTypeInfo().Assembly.GetName().Version; }
+    @{ 
+        var version = GetType().GetTypeInfo().Assembly.GetName().Version;
+        var storageVersion = Storage.GetType().GetTypeInfo().Assembly.GetName().Version;
+    }
 
     @if(!string.IsNullOrWhiteSpace(DashboardOptions.FaviconPath))
     {
@@ -92,7 +95,7 @@
                         </a>
                     </li>
                     @if(DashboardOptions.DisplayStorageConnectionString){
-                    <li>@Storage</li>
+                    <li>@Storage @($"{storageVersion.Major}.{storageVersion.Minor}.{storageVersion.Build}")</li>
                     }
                     @if (StorageUtcNow.HasValue)
                     {

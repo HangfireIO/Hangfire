@@ -164,7 +164,10 @@ WriteLiteral("\">\r\n");
 
             
             #line 28 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-       var version = GetType().GetTypeInfo().Assembly.GetName().Version; 
+       
+        var version = GetType().GetTypeInfo().Assembly.GetName().Version;
+        var storageVersion = Storage.GetType().GetTypeInfo().Assembly.GetName().Version;
+    
 
             
             #line default
@@ -173,7 +176,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 30 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 33 "..\..\Dashboard\Pages\LayoutPage.cshtml"
      if(!string.IsNullOrWhiteSpace(DashboardOptions.FaviconPath))
     {
 
@@ -186,7 +189,7 @@ WriteLiteral(" <link rel=\"shortcut icon\" href=\"");
 
 
             
-            #line 32 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 35 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                       Write(DashboardOptions.FaviconPath);
 
             
@@ -196,7 +199,7 @@ WriteLiteral("\" type=\"image/x-icon\">\r\n");
 
 
             
-            #line 33 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 36 "..\..\Dashboard\Pages\LayoutPage.cshtml"
     }
     else
     {
@@ -210,7 +213,7 @@ WriteLiteral(" <link rel=\"shortcut icon\" href=\"data:image/x-icon;,\" type=\"i
 
 
             
-            #line 37 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 40 "..\..\Dashboard\Pages\LayoutPage.cshtml"
     }
 
             
@@ -220,7 +223,7 @@ WriteLiteral("    \r\n    <link rel=\"stylesheet\" href=\"");
 
 
             
-            #line 39 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 42 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                             Write(Url.To($"/css{version.Major}{version.Minor}{version.Build}0{Math.Abs(DashboardRoutes.StylesheetsHashCode)}"));
 
             
@@ -230,7 +233,7 @@ WriteLiteral("\">\r\n");
 
 
             
-            #line 40 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 43 "..\..\Dashboard\Pages\LayoutPage.cshtml"
      if (DashboardOptions.DarkModeEnabled)
     {
 
@@ -243,7 +246,7 @@ WriteLiteral(" <link rel=\"stylesheet\" href=\"");
 
 
             
-            #line 42 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 45 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                    Write(Url.To($"/css-dark{version.Major}{version.Minor}{version.Build}0{Math.Abs(DashboardRoutes.StylesheetsDarkModeHashCode)}"));
 
             
@@ -253,7 +256,7 @@ WriteLiteral("\">\r\n");
 
 
             
-            #line 43 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 46 "..\..\Dashboard\Pages\LayoutPage.cshtml"
     }
 
             
@@ -277,7 +280,7 @@ WriteLiteral(@"</head>
 
 
             
-            #line 58 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 61 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                  Write(Url.Home());
 
             
@@ -287,7 +290,7 @@ WriteLiteral("\">");
 
 
             
-            #line 58 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 61 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                               Write(Html.Raw(DashboardOptions.DashboardTitle));
 
             
@@ -298,7 +301,7 @@ WriteLiteral("</a>\r\n                    </div>\r\n                    <div cla
 
 
             
-            #line 61 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 64 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(Html.RenderPartial(new Navigation()));
 
             
@@ -308,7 +311,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 62 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 65 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                          if(@AppPath != null) {
 
             
@@ -319,7 +322,7 @@ WriteLiteral("                            <ul class=\"nav navbar-nav navbar-righ
 
 
             
-            #line 65 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 68 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                         Write(AppPath);
 
             
@@ -331,7 +334,7 @@ WriteLiteral("\">\r\n                                        <span class=\"glyph
 
 
             
-            #line 68 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 71 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                        Write(Strings.LayoutPage_Back);
 
             
@@ -343,7 +346,7 @@ WriteLiteral("\r\n                                        </span>\r\n           
 
 
             
-            #line 73 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 76 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                         }
 
             
@@ -355,7 +358,7 @@ WriteLiteral("                    </div>\r\n                    <!--/.nav-collap
 
 
             
-            #line 78 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 81 "..\..\Dashboard\Pages\LayoutPage.cshtml"
            Write(Html.RenderPartial(new ErrorAlert()));
 
             
@@ -366,7 +369,7 @@ WriteLiteral("\r\n            </div>\r\n\r\n            <!-- Begin page content 
 
 
             
-            #line 83 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 86 "..\..\Dashboard\Pages\LayoutPage.cshtml"
            Write(RenderBody());
 
             
@@ -384,7 +387,7 @@ WriteLiteral(@"
 
 
             
-            #line 91 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 94 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                                                                           Write($"{version.Major}.{version.Minor}.{version.Build}");
 
             
@@ -394,7 +397,7 @@ WriteLiteral("\r\n                        </a>\r\n                    </li>\r\n"
 
 
             
-            #line 94 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 97 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                      if(DashboardOptions.DisplayStorageConnectionString){
 
             
@@ -404,8 +407,18 @@ WriteLiteral("                    <li>");
 
 
             
-            #line 95 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 98 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(Storage);
+
+            
+            #line default
+            #line hidden
+WriteLiteral(" ");
+
+
+            
+            #line 98 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                             Write($"{storageVersion.Major}.{storageVersion.Minor}.{storageVersion.Build}");
 
             
             #line default
@@ -414,7 +427,7 @@ WriteLiteral("</li>\r\n");
 
 
             
-            #line 96 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 99 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                     }
 
             
@@ -422,7 +435,7 @@ WriteLiteral("</li>\r\n");
             #line hidden
 
             
-            #line 97 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 100 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                      if (StorageUtcNow.HasValue)
                     {
 
@@ -433,7 +446,7 @@ WriteLiteral("                        <li>");
 
 
             
-            #line 99 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 102 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                        Write(Strings.LayoutPage_Footer_StorageTime);
 
             
@@ -443,7 +456,7 @@ WriteLiteral(" ");
 
 
             
-            #line 99 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 102 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                               Write(Html.LocalTime(StorageUtcNow.Value));
 
             
@@ -453,7 +466,7 @@ WriteLiteral("</li>\r\n");
 
 
             
-            #line 100 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 103 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                     }
 
             
@@ -463,7 +476,7 @@ WriteLiteral("                    <li>\r\n");
 
 
             
-            #line 102 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 105 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                          if (TimeDifference.HasValue && Math.Abs(TimeDifference.Value.TotalSeconds) > 30)
                         {
 
@@ -474,7 +487,7 @@ WriteLiteral("                            <span class=\"text-warning\" title=\""
 
 
             
-            #line 104 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 107 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                          Write(Strings.LayoutPage_Footer_TimeIsOutOfSync);
 
             
@@ -485,7 +498,7 @@ WriteLiteral("\">\r\n                                <span class=\"glyphicon gly
 
 
             
-            #line 105 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 108 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                                                        Write(Strings.LayoutPage_Footer_Time);
 
             
@@ -495,7 +508,7 @@ WriteLiteral(" ");
 
 
             
-            #line 105 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 108 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                                                                                        Write(Html.LocalTime(ApplicationUtcNow));
 
             
@@ -505,7 +518,7 @@ WriteLiteral("\r\n                            </span>\r\n");
 
 
             
-            #line 107 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 110 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                         }
                         else
                         {
@@ -514,27 +527,27 @@ WriteLiteral("\r\n                            </span>\r\n");
             #line default
             #line hidden
             
-            #line 110 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 113 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                        Write(Strings.LayoutPage_Footer_Time);
 
             
             #line default
             #line hidden
             
-            #line 110 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 113 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                             
             
             #line default
             #line hidden
             
-            #line 110 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 113 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                        Write(Html.LocalTime(ApplicationUtcNow));
 
             
             #line default
             #line hidden
             
-            #line 110 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 113 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                                                               
                         }
 
@@ -545,7 +558,7 @@ WriteLiteral("                    </li>\r\n                    <li>");
 
 
             
-            #line 113 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 116 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(String.Format(Strings.LayoutPage_Footer_Generatedms, GenerationTime.Elapsed.TotalMilliseconds.ToString("N")));
 
             
@@ -556,7 +569,7 @@ WriteLiteral("</li>\r\n                </ul>\r\n            </div>\r\n        </
 
 
             
-            #line 119 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 122 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                            Write(DashboardOptions.StatsPollingInterval);
 
             
@@ -566,7 +579,7 @@ WriteLiteral("\"\r\n             data-pollurl=\"");
 
 
             
-            #line 120 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 123 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                        Write(Url.To("/stats"));
 
             
@@ -576,7 +589,7 @@ WriteLiteral("\"\r\n             data-darkmode=\"");
 
 
             
-            #line 121 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 124 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                         Write(DashboardOptions.DarkModeEnabled.ToString().ToLowerInvariant());
 
             
@@ -586,7 +599,7 @@ WriteLiteral("\">\r\n        </div>\r\n\r\n        <script src=\"");
 
 
             
-            #line 124 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 127 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                 Write(Url.To($"/js{version.Major}{version.Minor}{version.Build}0{Math.Abs(DashboardRoutes.JavaScriptsHashCode)}"));
 
             
