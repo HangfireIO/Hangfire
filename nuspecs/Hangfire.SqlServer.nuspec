@@ -16,6 +16,12 @@
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.7
+• Changed – Avoid throwing an exception when a connection string has duplicate property names.
+• Project – Disable tests for `netcoreapp1.0` and `netcoreapp2.1` targets since they aren't supported in AppVeyor.
+• Project – Add a `net6.0` target for unit tests instead of the removed ones.
+• Project – Modernise projects and build environments to use the newest features.
+
 1.8.6
 • Fixed – Exception in Dashboard UI when schema version is not present in a database.
 • Fixed – `DbCommand` resource leak when releasing a lock detected by static analysis.

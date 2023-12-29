@@ -22,6 +22,39 @@ https://www.hangfire.io/
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.7
+
+Hangfire.Core
+
+• Added – Allow using macro expressions like `@hourly` for recurring jobs (by @MuhamedAbdalla).
+• Added – Show storage time in page footer when supported by storage implementation.
+• Added – Show duration and latency columns separately on the Succeeded Jobs page when supported.
+• Added – Show the exception column on the Deleted Jobs page when available and supported by storage.
+• Changed – Reduce package size by stripping unnecessary locales in Moment.js.
+• Changed – Bump Microsoft.Owin package to version 4.2.2.
+• Changed – Log a warning message when a server listens to unsupported queue names.
+• Changed – Use storage time, if available, to show delay warnings in the Dashboard UI.
+• Fixed – Proper rendering of generic arguments on the Job Details page (by @olivermue).
+• Fixed – Language inconsistency in the Dashboard UI related to date/time description.
+• Fixed – Big stack traces take too long time to be formatted.
+• Fixed – Don't throw `NullReferenceException` from the Scheduled Jobs page when there's a job with missing data.
+• Fixed – Don't throw `NullReferenceException` from the Processing Jobs page when there's a job with missing data.
+• Fixed – CSS for Enqueued and Deleted state cards in dark theme.
+• Fixed – Log errors instead of throwing an exception when a particular table can't be cleaned.
+• Fixed – Avoid logging fatal exceptions when stopping a faulting background process.
+• Fixed – Don't display checkboxes in the Dashboard UI when job details can not be fetched.
+• Fixed – Scrollbars in WebKit-based browsers are now dark in dark mode.
+• Project – Disable tests for `netcoreapp1.0` and `netcoreapp2.1` targets since they aren't supported in AppVeyor.
+• Project – Add a `net6.0` target for unit tests instead of the removed ones.
+• Project – Modernise projects and build environments to use the newest features.
+
+Hangfire.SqlServer
+
+• Changed – Avoid throwing an exception when a connection string has duplicate property names.
+• Project – Disable tests for `netcoreapp1.0` and `netcoreapp2.1` targets since they aren't supported in AppVeyor.
+• Project – Add a `net6.0` target for unit tests instead of the removed ones.
+• Project – Modernise projects and build environments to use the newest features.
+
 1.8.6
 
 • Changed – Update jQuery library in Dashboard UI to version 3.7.1.
