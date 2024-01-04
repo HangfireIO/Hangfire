@@ -10,7 +10,7 @@
     <repository type="git" url="https://github.com/HangfireIO/Hangfire.git" />
     <license type="file">LICENSE.md</license>
     <description>ASP.NET Core support for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2017-2023 Hangfire OÜ</copyright>
+    <copyright>Copyright © 2017-2024 Hangfire OÜ</copyright>
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>
 Release notes are available in our blog https://www.hangfire.io/blog/
