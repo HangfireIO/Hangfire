@@ -439,6 +439,7 @@
           "Cronos": "[0.7.1, )",
           "LibLog": "[1.5.0, )",
           "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
+          "Microsoft.NETFramework.ReferenceAssemblies": "[1.0.3, )",
           "Microsoft.Owin": "[4.2.2, )",
           "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
           "Newtonsoft.Json": "[5.0.1, )",
@@ -453,7 +454,8 @@
           "Hangfire.Core": "[1.0.0, )",
           "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[1.0.0, )",
-          "Microsoft.Extensions.Logging.Abstractions": "[1.0.0, )"
+          "Microsoft.Extensions.Logging.Abstractions": "[1.0.0, )",
+          "Microsoft.NETFramework.ReferenceAssemblies": "[1.0.3, )"
         }
       }
     },
@@ -740,6 +742,7 @@
           "Cronos": "[0.7.1, )",
           "LibLog": "[1.5.0, )",
           "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
+          "Microsoft.NETFramework.ReferenceAssemblies": "[1.0.3, )",
           "Microsoft.Owin": "[4.2.2, )",
           "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
           "Newtonsoft.Json": "[5.0.1, )",
@@ -755,7 +758,8 @@
           "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[2.0.0, )",
           "Microsoft.Extensions.Hosting.Abstractions": "[2.0.0, )",
-          "Microsoft.Extensions.Logging.Abstractions": "[2.0.0, )"
+          "Microsoft.Extensions.Logging.Abstractions": "[2.0.0, )",
+          "Microsoft.NETFramework.ReferenceAssemblies": "[1.0.3, )"
         }
       }
     },

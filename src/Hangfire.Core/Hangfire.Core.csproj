@@ -20,6 +20,7 @@
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework)'=='net451' or '$(TargetFramework)'=='net46'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" />
     <PackageReference Include="Owin" Version="1.0" />
     <PackageReference Include="CronExpressionDescriptor" Version="1.21.0" />
     <PackageReference Include="Newtonsoft.Json" Version="5.0.1" NoWarn="NU1903" />

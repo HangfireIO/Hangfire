@@ -27,6 +27,6 @@
 
     <PropertyGroup Condition="'$(APPVEYOR)' == 'True'">
         <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-        <!--RestoreLockedMode>true</RestoreLockedMode-->
+        <RestoreLockedMode>true</RestoreLockedMode>
     </PropertyGroup>
 </Project>

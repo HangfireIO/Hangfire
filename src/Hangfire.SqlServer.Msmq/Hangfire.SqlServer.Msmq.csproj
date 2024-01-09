@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Hangfire.Core\Hangfire.Core.csproj" />
     <ProjectReference Include="..\Hangfire.SqlServer\Hangfire.SqlServer.csproj" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" />
   </ItemGroup>
 
   <ItemGroup>
