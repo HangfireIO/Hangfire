@@ -87,12 +87,12 @@ Task Pack -Depends Collect -Description "Create NuGet packages and archive files
 
     Create-Archive "Hangfire-$version"
     
-    Create-Package "Hangfire" $version
-    Create-Package "Hangfire.Core" $version
-    Create-Package "Hangfire.SqlServer" $version
-    Create-Package "Hangfire.SqlServer.Msmq" $version
-    Create-Package "Hangfire.AspNetCore" $version
-    Create-Package "Hangfire.NetCore" $version
+    Create-Package2 "Hangfire" $version
+    Create-Package2 "Hangfire.Core" $version
+    Create-Package2 "Hangfire.SqlServer" $version
+    Create-Package2 "Hangfire.SqlServer.Msmq" $version
+    Create-Package2 "Hangfire.AspNetCore" $version
+    Create-Package2 "Hangfire.NetCore" $version
 }
 
 function Collect-Localizations($project, $target) {
@@ -163,4 +163,24 @@ function Repack-Assembly($projectWithOptionalTarget, $internalizeAssemblies, $ta
     Pop-Location
 
     Move-Files "$temp_dir\$project.*" $projectOutput
+}
+
+function Create-Package2($project, $version) {
+    Write-Host "Creating NuGet package for '$project'..." -ForegroundColor "Green"
+
+    Create-Directory $temp_dir
+    Copy-Files "$nuspec_dir\$project.nuspec" $temp_dir
+
+    $commit = (git rev-parse HEAD)
+
+    Try {
+        Write-Host "Patching version with '$version'..." -ForegroundColor "DarkGray"
+        Replace-Content "$nuspec_dir\$project.nuspec" '%version%' $version
+        Write-Host "Patching commit hash with '$commit'..." -ForegroundColor "DarkGray"
+        Replace-Content "$nuspec_dir\$project.nuspec" '%commit%' $commit
+        Exec { .$nuget pack "$nuspec_dir\$project.nuspec" -OutputDirectory "$build_dir" -BasePath "$build_dir" -Version "$version" }
+    }
+    Finally {
+        Move-Files "$temp_dir\$project.nuspec" $nuspec_dir
+    }
 }

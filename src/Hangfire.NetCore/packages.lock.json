@@ -49,6 +49,16 @@
           "Microsoft.NETFramework.ReferenceAssemblies.net451": "1.0.3"
         }
       },
+      "Microsoft.SourceLink.GitHub": {
+        "type": "Direct",
+        "requested": "[8.0.0, )",
+        "resolved": "8.0.0",
+        "contentHash": "G5q7OqtwIyGTkeIOAc3u2ZuV/kicQaec5EaRnc0pIeSnh9LUjj+PYQrJYBURvDt7twGl2PKA7nSN0kz1Zw5bnQ==",
+        "dependencies": {
+          "Microsoft.Build.Tasks.Git": "8.0.0",
+          "Microsoft.SourceLink.Common": "8.0.0"
+        }
+      },
       "CronExpressionDescriptor": {
         "type": "Transitive",
         "resolved": "1.21.0",
@@ -64,6 +74,11 @@
         "resolved": "1.5.0",
         "contentHash": "0bNoz50GPHYnS3fv/qTS2dFBeYgoppM1t//gWULGxY/TM5TNxxknUWqOqzE8eZgLIa2ENfIwzumvbeWFnx14rg=="
       },
+      "Microsoft.Build.Tasks.Git": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "bZKfSIKJRXLTuSzLudMFte/8CempWjVamNUR5eHJizsy+iuOuO/k2gnh7W0dHJmYY0tBf+gUErfluCv5mySAOQ=="
+      },
       "Microsoft.NETFramework.ReferenceAssemblies.net451": {
         "type": "Transitive",
         "resolved": "1.0.3",
@@ -76,6 +91,11 @@
         "dependencies": {
           "Owin": "1.0.0"
         }
+      },
+      "Microsoft.SourceLink.Common": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "dk9JPxTCIevS75HyEQ0E4OVAFhB2N+V9ShCXf8Q6FkUQZDkgLI12y679Nym1YqsiSysuQskT7Z+6nUf3yab6Vw=="
       },
       "MoreLinq.Source.MoreEnumerable.Pairwise": {
         "type": "Transitive",
@@ -170,6 +190,7 @@
           "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
           "Microsoft.NETFramework.ReferenceAssemblies": "[1.0.3, )",
           "Microsoft.Owin": "[4.2.2, )",
+          "Microsoft.SourceLink.GitHub": "[8.0.0, )",
           "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
           "Newtonsoft.Json": "[5.0.1, )",
           "Owin": "[1.0.0, )",
@@ -212,6 +233,16 @@
           "Microsoft.NETFramework.ReferenceAssemblies.net461": "1.0.3"
         }
       },
+      "Microsoft.SourceLink.GitHub": {
+        "type": "Direct",
+        "requested": "[8.0.0, )",
+        "resolved": "8.0.0",
+        "contentHash": "G5q7OqtwIyGTkeIOAc3u2ZuV/kicQaec5EaRnc0pIeSnh9LUjj+PYQrJYBURvDt7twGl2PKA7nSN0kz1Zw5bnQ==",
+        "dependencies": {
+          "Microsoft.Build.Tasks.Git": "8.0.0",
+          "Microsoft.SourceLink.Common": "8.0.0"
+        }
+      },
       "CronExpressionDescriptor": {
         "type": "Transitive",
         "resolved": "1.21.0",
@@ -227,6 +258,11 @@
         "resolved": "1.5.0",
         "contentHash": "0bNoz50GPHYnS3fv/qTS2dFBeYgoppM1t//gWULGxY/TM5TNxxknUWqOqzE8eZgLIa2ENfIwzumvbeWFnx14rg=="
       },
+      "Microsoft.Build.Tasks.Git": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "bZKfSIKJRXLTuSzLudMFte/8CempWjVamNUR5eHJizsy+iuOuO/k2gnh7W0dHJmYY0tBf+gUErfluCv5mySAOQ=="
+      },
       "Microsoft.NETFramework.ReferenceAssemblies.net461": {
         "type": "Transitive",
         "resolved": "1.0.3",
@@ -239,6 +275,11 @@
         "dependencies": {
           "Owin": "1.0.0"
         }
+      },
+      "Microsoft.SourceLink.Common": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "dk9JPxTCIevS75HyEQ0E4OVAFhB2N+V9ShCXf8Q6FkUQZDkgLI12y679Nym1YqsiSysuQskT7Z+6nUf3yab6Vw=="
       },
       "MoreLinq.Source.MoreEnumerable.Pairwise": {
         "type": "Transitive",
@@ -278,6 +319,7 @@
           "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
           "Microsoft.NETFramework.ReferenceAssemblies": "[1.0.3, )",
           "Microsoft.Owin": "[4.2.2, )",
+          "Microsoft.SourceLink.GitHub": "[8.0.0, )",
           "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
           "Newtonsoft.Json": "[5.0.1, )",
           "Owin": "[1.0.0, )",
@@ -323,6 +365,16 @@
           "System.Resources.ResourceManager": "4.0.1",
           "System.Runtime.Extensions": "4.1.0",
           "System.Runtime.InteropServices": "4.1.0"
+        }
+      },
+      "Microsoft.SourceLink.GitHub": {
+        "type": "Direct",
+        "requested": "[8.0.0, )",
+        "resolved": "8.0.0",
+        "contentHash": "G5q7OqtwIyGTkeIOAc3u2ZuV/kicQaec5EaRnc0pIeSnh9LUjj+PYQrJYBURvDt7twGl2PKA7nSN0kz1Zw5bnQ==",
+        "dependencies": {
+          "Microsoft.Build.Tasks.Git": "8.0.0",
+          "Microsoft.SourceLink.Common": "8.0.0"
         }
       },
       "NETStandard.Library": {
@@ -390,6 +442,11 @@
         "resolved": "1.5.0",
         "contentHash": "0bNoz50GPHYnS3fv/qTS2dFBeYgoppM1t//gWULGxY/TM5TNxxknUWqOqzE8eZgLIa2ENfIwzumvbeWFnx14rg=="
       },
+      "Microsoft.Build.Tasks.Git": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "bZKfSIKJRXLTuSzLudMFte/8CempWjVamNUR5eHJizsy+iuOuO/k2gnh7W0dHJmYY0tBf+gUErfluCv5mySAOQ=="
+      },
       "Microsoft.CSharp": {
         "type": "Transitive",
         "resolved": "4.0.1",
@@ -422,6 +479,11 @@
         "type": "Transitive",
         "resolved": "1.1.0",
         "contentHash": "aOZA3BWfz9RXjpzt0sRJJMjAscAUm3Hoa4UWAfceV9UTYxgwZ1lZt5nO2myFf+/jetYQo4uTP7zS8sJY67BBxg=="
+      },
+      "Microsoft.SourceLink.Common": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "dk9JPxTCIevS75HyEQ0E4OVAFhB2N+V9ShCXf8Q6FkUQZDkgLI12y679Nym1YqsiSysuQskT7Z+6nUf3yab6Vw=="
       },
       "Microsoft.Win32.Primitives": {
         "type": "Transitive",
@@ -1209,6 +1271,7 @@
           "Cronos": "[0.7.1, )",
           "LibLog": "[1.5.0, )",
           "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
+          "Microsoft.SourceLink.GitHub": "[8.0.0, )",
           "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
           "NETStandard.Library": "[1.6.1, )",
           "Newtonsoft.Json": "[9.0.1, )",
@@ -1244,6 +1307,16 @@
         "resolved": "2.0.0",
         "contentHash": "6ZCllUYGFukkymSTx3Yr0G/ajRxoNJp7/FqSxSB4fGISST54ifBhgu4Nc0ItGi3i6DqwuNd8SUyObmiC++AO2Q=="
       },
+      "Microsoft.SourceLink.GitHub": {
+        "type": "Direct",
+        "requested": "[8.0.0, )",
+        "resolved": "8.0.0",
+        "contentHash": "G5q7OqtwIyGTkeIOAc3u2ZuV/kicQaec5EaRnc0pIeSnh9LUjj+PYQrJYBURvDt7twGl2PKA7nSN0kz1Zw5bnQ==",
+        "dependencies": {
+          "Microsoft.Build.Tasks.Git": "8.0.0",
+          "Microsoft.SourceLink.Common": "8.0.0"
+        }
+      },
       "NETStandard.Library": {
         "type": "Direct",
         "requested": "[2.0.3, )",
@@ -1263,6 +1336,11 @@
         "resolved": "1.5.0",
         "contentHash": "0bNoz50GPHYnS3fv/qTS2dFBeYgoppM1t//gWULGxY/TM5TNxxknUWqOqzE8eZgLIa2ENfIwzumvbeWFnx14rg=="
       },
+      "Microsoft.Build.Tasks.Git": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "bZKfSIKJRXLTuSzLudMFte/8CempWjVamNUR5eHJizsy+iuOuO/k2gnh7W0dHJmYY0tBf+gUErfluCv5mySAOQ=="
+      },
       "Microsoft.CSharp": {
         "type": "Transitive",
         "resolved": "4.4.0",
@@ -1272,6 +1350,11 @@
         "type": "Transitive",
         "resolved": "1.1.0",
         "contentHash": "kz0PEW2lhqygehI/d6XsPCQzD7ff7gUJaVGPVETX611eadGsA3A877GdSlU0LRVMCTH/+P3o2iDTak+S08V2+A=="
+      },
+      "Microsoft.SourceLink.Common": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "dk9JPxTCIevS75HyEQ0E4OVAFhB2N+V9ShCXf8Q6FkUQZDkgLI12y679Nym1YqsiSysuQskT7Z+6nUf3yab6Vw=="
       },
       "MoreLinq.Source.MoreEnumerable.Pairwise": {
         "type": "Transitive",
@@ -1304,6 +1387,7 @@
           "LibLog": "[1.5.0, )",
           "Microsoft.CSharp": "[4.4.0, )",
           "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
+          "Microsoft.SourceLink.GitHub": "[8.0.0, )",
           "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
           "Newtonsoft.Json": "[11.0.1, )",
           "StackTraceFormatter.Source": "[1.1.0, )",
@@ -1342,6 +1426,16 @@
         "resolved": "3.0.0",
         "contentHash": "+PsosTYZn+omucI0ff9eywo9QcPLwcbIWf7dz7ZLM1zGR8gVZXJ3wo6+tkuIedUNW5iWENlVJPEvrGjiVeoNNQ=="
       },
+      "Microsoft.SourceLink.GitHub": {
+        "type": "Direct",
+        "requested": "[8.0.0, )",
+        "resolved": "8.0.0",
+        "contentHash": "G5q7OqtwIyGTkeIOAc3u2ZuV/kicQaec5EaRnc0pIeSnh9LUjj+PYQrJYBURvDt7twGl2PKA7nSN0kz1Zw5bnQ==",
+        "dependencies": {
+          "Microsoft.Build.Tasks.Git": "8.0.0",
+          "Microsoft.SourceLink.Common": "8.0.0"
+        }
+      },
       "Cronos": {
         "type": "Transitive",
         "resolved": "0.7.1",
@@ -1351,6 +1445,11 @@
         "type": "Transitive",
         "resolved": "1.5.0",
         "contentHash": "0bNoz50GPHYnS3fv/qTS2dFBeYgoppM1t//gWULGxY/TM5TNxxknUWqOqzE8eZgLIa2ENfIwzumvbeWFnx14rg=="
+      },
+      "Microsoft.Build.Tasks.Git": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "bZKfSIKJRXLTuSzLudMFte/8CempWjVamNUR5eHJizsy+iuOuO/k2gnh7W0dHJmYY0tBf+gUErfluCv5mySAOQ=="
       },
       "Microsoft.CSharp": {
         "type": "Transitive",
@@ -1381,6 +1480,11 @@
           "System.Memory": "4.5.2",
           "System.Runtime.CompilerServices.Unsafe": "4.6.0"
         }
+      },
+      "Microsoft.SourceLink.Common": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "dk9JPxTCIevS75HyEQ0E4OVAFhB2N+V9ShCXf8Q6FkUQZDkgLI12y679Nym1YqsiSysuQskT7Z+6nUf3yab6Vw=="
       },
       "MoreLinq.Source.MoreEnumerable.Pairwise": {
         "type": "Transitive",
@@ -1438,6 +1542,7 @@
           "LibLog": "[1.5.0, )",
           "Microsoft.CSharp": "[4.4.0, )",
           "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
+          "Microsoft.SourceLink.GitHub": "[8.0.0, )",
           "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
           "Newtonsoft.Json": "[11.0.1, )",
           "StackTraceFormatter.Source": "[1.1.0, )",

@@ -2,12 +2,12 @@
 <package>
   <metadata>
     <id>Hangfire.Core</id>
-    <version>0.0.0</version>
+    <version>%version%</version>
     <title>Hangfire Core Components</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
     <projectUrl>https://www.hangfire.io/</projectUrl>
-    <repository type="git" url="https://github.com/HangfireIO/Hangfire.git" />
+    <repository type="git" url="https://github.com/HangfireIO/Hangfire.git" commit="%commit%" />
     <license type="file">LICENSE.md</license>
     <summary>An easy way to perform fire-and-forget, delayed and recurring tasks inside ASP.NET applications. No Windows Service required.</summary>
     <description>
@@ -190,29 +190,23 @@ Internals
   <files>
     <file src="net451\Hangfire.Core.dll" target="lib\net451" />
     <file src="net451\Hangfire.Core.xml" target="lib\net451" />
-    <file src="net451\Hangfire.Core.pdb" target="lib\net451" />
 
     <file src="net451\**\Hangfire.Core.resources.dll" target="lib\net451" />
 
     <file src="net46\Hangfire.Core.dll" target="lib\net46" />
     <file src="net46\Hangfire.Core.xml" target="lib\net46" />
-    <file src="net46\Hangfire.Core.pdb" target="lib\net46" />
 
     <file src="net46\**\Hangfire.Core.resources.dll" target="lib\net46" />
     
     <file src="netstandard1.3\Hangfire.Core.dll" target="lib\netstandard1.3" />
     <file src="netstandard1.3\Hangfire.Core.xml" target="lib\netstandard1.3" />
-    <file src="netstandard1.3\Hangfire.Core.pdb" target="lib\netstandard1.3" />
 
     <file src="netstandard1.3\**\Hangfire.Core.resources.dll" target="lib\netstandard1.3" />
 
     <file src="netstandard2.0\Hangfire.Core.dll" target="lib\netstandard2.0" />
     <file src="netstandard2.0\Hangfire.Core.xml" target="lib\netstandard2.0" />
-    <file src="netstandard2.0\Hangfire.Core.pdb" target="lib\netstandard2.0" />
 
     <file src="netstandard2.0\**\Hangfire.Core.resources.dll" target="lib\netstandard2.0" />
-    
-    <file src="..\src\Hangfire.Core\**\*.cs;..\src\Hangfire.Core\**\*.cshtml" target="src" exclude="**\obj*\**\*.cs" />
 
     <file src="LICENSE.md" />
     <file src="COPYING" />
