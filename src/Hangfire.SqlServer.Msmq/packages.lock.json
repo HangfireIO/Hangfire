@@ -17,6 +17,16 @@
           "Microsoft.NETFramework.ReferenceAssemblies.net451": "1.0.3"
         }
       },
+      "Microsoft.SourceLink.GitHub": {
+        "type": "Direct",
+        "requested": "[8.0.0, )",
+        "resolved": "8.0.0",
+        "contentHash": "G5q7OqtwIyGTkeIOAc3u2ZuV/kicQaec5EaRnc0pIeSnh9LUjj+PYQrJYBURvDt7twGl2PKA7nSN0kz1Zw5bnQ==",
+        "dependencies": {
+          "Microsoft.Build.Tasks.Git": "8.0.0",
+          "Microsoft.SourceLink.Common": "8.0.0"
+        }
+      },
       "CronExpressionDescriptor": {
         "type": "Transitive",
         "resolved": "1.21.0",
@@ -37,6 +47,11 @@
         "resolved": "1.5.0",
         "contentHash": "0bNoz50GPHYnS3fv/qTS2dFBeYgoppM1t//gWULGxY/TM5TNxxknUWqOqzE8eZgLIa2ENfIwzumvbeWFnx14rg=="
       },
+      "Microsoft.Build.Tasks.Git": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "bZKfSIKJRXLTuSzLudMFte/8CempWjVamNUR5eHJizsy+iuOuO/k2gnh7W0dHJmYY0tBf+gUErfluCv5mySAOQ=="
+      },
       "Microsoft.NETFramework.ReferenceAssemblies.net451": {
         "type": "Transitive",
         "resolved": "1.0.3",
@@ -49,6 +64,11 @@
         "dependencies": {
           "Owin": "1.0.0"
         }
+      },
+      "Microsoft.SourceLink.Common": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "dk9JPxTCIevS75HyEQ0E4OVAFhB2N+V9ShCXf8Q6FkUQZDkgLI12y679Nym1YqsiSysuQskT7Z+6nUf3yab6Vw=="
       },
       "MoreLinq.Source.MoreEnumerable.Pairwise": {
         "type": "Transitive",
@@ -86,7 +106,9 @@
           "Cronos": "[0.7.1, )",
           "LibLog": "[1.5.0, )",
           "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
+          "Microsoft.NETFramework.ReferenceAssemblies": "[1.0.3, )",
           "Microsoft.Owin": "[4.2.2, )",
+          "Microsoft.SourceLink.GitHub": "[8.0.0, )",
           "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
           "Newtonsoft.Json": "[5.0.1, )",
           "Owin": "[1.0.0, )",
@@ -99,7 +121,9 @@
         "dependencies": {
           "Dapper": "[1.50.1, )",
           "Hangfire.Core": "[1.0.0, )",
-          "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )"
+          "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
+          "Microsoft.NETFramework.ReferenceAssemblies": "[1.0.3, )",
+          "Microsoft.SourceLink.GitHub": "[8.0.0, )"
         }
       }
     }

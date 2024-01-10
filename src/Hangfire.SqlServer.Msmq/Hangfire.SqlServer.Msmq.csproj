@@ -1,18 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net451</TargetFrameworks>
-    <DebugType>portable</DebugType>
+    <TargetFramework>net451</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <RootNamespace>Hangfire.SqlServer.Msmq</RootNamespace>
-  </PropertyGroup>
-  
-  <PropertyGroup Condition="'$(TargetFramework)'=='net451'">
-    <DebugType>full</DebugType>
   </PropertyGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\Hangfire.Core\Hangfire.Core.csproj" />
     <ProjectReference Include="..\Hangfire.SqlServer\Hangfire.SqlServer.csproj" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" />
   </ItemGroup>
 
   <ItemGroup>

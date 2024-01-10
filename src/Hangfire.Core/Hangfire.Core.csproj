@@ -1,13 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net451;net46;netstandard1.3;netstandard2.0;</TargetFrameworks>
-    <DebugType>portable</DebugType>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <RootNamespace>Hangfire</RootNamespace>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(TargetFramework)'=='net451' or '$(TargetFramework)'=='net46'">
-    <DebugType>full</DebugType>
     <DefineConstants>$(DefineConstants);FEATURE_CRONDESCRIPTOR;FEATURE_OWIN;</DefineConstants>
   </PropertyGroup>
   
@@ -20,6 +18,7 @@
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework)'=='net451' or '$(TargetFramework)'=='net46'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" />
     <PackageReference Include="Owin" Version="1.0" />
     <PackageReference Include="CronExpressionDescriptor" Version="1.21.0" />
     <PackageReference Include="Newtonsoft.Json" Version="5.0.1" NoWarn="NU1903" />
