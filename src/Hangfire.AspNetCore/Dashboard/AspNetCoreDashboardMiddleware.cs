@@ -51,7 +51,7 @@ namespace Hangfire.Dashboard
         {
             var context = new AspNetCoreDashboardContext(_storage, _options, httpContext);
             var findResult = _routes.FindDispatcher(httpContext.Request.Path.Value);
-            
+
             if (findResult == null)
             {
                 await _next.Invoke(httpContext);
@@ -63,7 +63,7 @@ namespace Hangfire.Dashboard
             {
                 if (!filter.Authorize(context))
                 {
-                    httpContext.Response.StatusCode = GetUnauthorizedStatusCode(httpContext);
+                    SetResponseStatusCode(httpContext, GetUnauthorizedStatusCode(httpContext));
                     return;
                 }
             }
@@ -72,7 +72,7 @@ namespace Hangfire.Dashboard
             {
                 if (!await filter.AuthorizeAsync(context))
                 {
-                    httpContext.Response.StatusCode = GetUnauthorizedStatusCode(httpContext);
+                    SetResponseStatusCode(httpContext, GetUnauthorizedStatusCode(httpContext));
                     return;
                 }
             }
@@ -88,7 +88,7 @@ namespace Hangfire.Dashboard
                     if (!requestValid)
                     {
                         // Invalid or missing CSRF token
-                        httpContext.Response.StatusCode = (int) HttpStatusCode.Forbidden;
+                        SetResponseStatusCode(httpContext, (int) HttpStatusCode.Forbidden);
                         return;
                     }
                 }
@@ -97,6 +97,14 @@ namespace Hangfire.Dashboard
             context.UriMatch = findResult.Item2;
 
             await findResult.Item1.Dispatch(context);
+        }
+
+        private static void SetResponseStatusCode(HttpContext httpContext, int statusCode)
+        {
+            if (!httpContext.Response.HasStarted)
+            {
+                httpContext.Response.StatusCode = statusCode;
+            }
         }
 
         private static int GetUnauthorizedStatusCode(HttpContext httpContext)

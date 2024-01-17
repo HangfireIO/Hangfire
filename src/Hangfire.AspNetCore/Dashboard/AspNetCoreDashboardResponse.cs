@@ -35,25 +35,45 @@ namespace Hangfire.Dashboard
         public override string ContentType
         {
             get { return _context.Response.ContentType; }
-            set { _context.Response.ContentType = value; }
+            set
+            {
+                if (!_context.Response.HasStarted)
+                {
+                    _context.Response.ContentType = value;
+                }
+            }
         }
 
         public override int StatusCode
         {
             get { return _context.Response.StatusCode; }
-            set { _context.Response.StatusCode = value; }
+            set
+            {
+                if (!_context.Response.HasStarted)
+                {
+                    _context.Response.StatusCode = value;
+                }
+            }
         }
 
         public override Stream Body => _context.Response.Body;
 
         public override Task WriteAsync(string text)
         {
-            return _context.Response.WriteAsync(text);
+            if (!_context.Response.HasStarted)
+            {
+                return _context.Response.WriteAsync(text);
+            }
+
+            return Task.CompletedTask;;
         }
 
         public override void SetExpire(DateTimeOffset? value)
         {
-            _context.Response.Headers["Expires"] = value?.ToString("r", CultureInfo.InvariantCulture);
+            if (!_context.Response.HasStarted)
+            {
+                _context.Response.Headers["Expires"] = value?.ToString("r", CultureInfo.InvariantCulture);
+            }
         }
     }
 }
