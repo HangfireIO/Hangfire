@@ -65,7 +65,7 @@ namespace Hangfire.Dashboard
                 return _context.Response.WriteAsync(text);
             }
 
-            return Task.CompletedTask;;
+            return Task.FromResult(true);
         }
 
         public override void SetExpire(DateTimeOffset? value)
