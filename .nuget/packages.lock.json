@@ -6,7 +6,7 @@
         "type": "Direct",
         "requested": "[18.1.0, 18.1.0]",
         "resolved": "18.1.0",
-        "contentHash": "xPSfTFdYapNIVy6bxEvlfgKVA2NaBuKyWNQAL0HLjtSbr0nFV/3e/vvskERJJ2wbzdkJxAF2Xn9QFYQP/uEI8w=="
+        "contentHash": "jHUxQQLmjSsjR9WS+OPrBYEuHrtSXey6xHIjFjN1Px1MoxyOaIGjYUSo2iayVxMFs64/TiuF/EopCu2mPRoTuA=="
       },
       "Hangfire.Build": {
         "type": "Direct",
