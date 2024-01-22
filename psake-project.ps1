@@ -1,14 +1,9 @@
-Include "packages\Hangfire.Build.0.3.1\tools\psake-common.ps1"
+Include "packages\Hangfire.Build.0.3.2\tools\psake-common.ps1"
 
 Task Default -Depends Collect
 Task CI -Depends Pack
 
-Task MyCompile {
-    Exec { dotnet restore -verbosity:minimal }
-    Exec { msbuild /p:Configuration=Release /nologo /verbosity:minimal /logger:'C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll' }
-}
-
-Task Merge -Depends MyCompile -Description "Run ILRepack /internalize to merge required assemblies." {
+Task Merge -Depends Compile -Description "Run ILRepack /internalize to merge required assemblies." {
     Repack-Assembly @("Hangfire.Core", "net451") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
     Repack-Assembly @("Hangfire.Core", "net46") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
     Repack-Assembly @("Hangfire.SqlServer", "net451") @("Dapper")
