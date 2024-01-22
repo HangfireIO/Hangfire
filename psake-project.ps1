@@ -1,14 +1,9 @@
-Framework 4.5.1
-Include "packages\Hangfire.Build.0.2.6\tools\psake-common.ps1"
+Include "packages\Hangfire.Build.0.3.0\tools\psake-common.ps1"
 
 Task Default -Depends Collect
 Task CI -Depends Pack
 
-Task Build -Depends Clean -Description "Restore all the packages and build the whole solution." {
-    Exec { dotnet build -c Release }
-}
-
-Task Merge -Depends Build -Description "Run ILRepack /internalize to merge required assemblies." {
+Task Merge -Depends Compile -Description "Run ILRepack /internalize to merge required assemblies." {
     Repack-Assembly @("Hangfire.Core", "net451") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
     Repack-Assembly @("Hangfire.Core", "net46") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
     Repack-Assembly @("Hangfire.SqlServer", "net451") @("Dapper")
@@ -79,93 +74,10 @@ Task Pack -Depends Collect -Description "Create NuGet packages and archive files
 
     Create-Archive "Hangfire-$version"
     
-    Create-Package2 "Hangfire" $version
-    Create-Package2 "Hangfire.Core" $version
-    Create-Package2 "Hangfire.SqlServer" $version
-    Create-Package2 "Hangfire.SqlServer.Msmq" $version
-    Create-Package2 "Hangfire.AspNetCore" $version
-    Create-Package2 "Hangfire.NetCore" $version
-}
-
-function Collect-Localizations($project, $target) {
-    Write-Host "Collecting localizations for '$target/$project'..." -ForegroundColor "Green"
-    
-    $output = (Get-SrcOutputDir $project $target)
-    $dirs = Get-ChildItem -Path $output -Directory
-
-    foreach ($dir in $dirs) {
-        $source = "$output\$dir\$project.resources.dll"
-
-        if (Test-Path $source) {
-            Write-Host "  Collecting '$dir' localization..."
-
-            $destination = "$build_dir\$target\$dir"
-
-            Create-Directory $destination
-            Copy-Files $source $destination
-        }
-    }
-}
-
-function Repack-Assembly($projectWithOptionalTarget, $internalizeAssemblies, $target) {
-    $project = $projectWithOptionalTarget
-    $target = $null
-
-    $base_dir = resolve-path .
-    $ilrepack = "$base_dir\packages\ilrepack.*\tools\ilrepack.exe"
-
-    if ($projectWithOptionalTarget -Is [System.Array]) {
-        $project = $projectWithOptionalTarget[0]
-        $target = $projectWithOptionalTarget[1]
-    }
-
-    Write-Host "Merging '$project'/$target with $internalizeAssemblies..." -ForegroundColor "Green"
-
-    $internalizePaths = @()
-
-    $projectOutput = Get-SrcOutputDir $project $target
-
-    foreach ($assembly in $internalizeAssemblies) {
-        $internalizePaths += "$assembly.dll"
-    }
-
-    $primaryAssemblyPath = "$project.dll"
-    $temp_dir = "$base_dir\temp"
-
-    Create-Directory $temp_dir
-
-    Push-Location
-    Set-Location -Path $projectOutput
-
-    Exec { .$ilrepack `
-        /out:"$temp_dir\$project.dll" `
-        /target:library `
-        /internalize `
-        $primaryAssemblyPath `
-        $internalizePaths `
-    }
-
-    Pop-Location
-
-    Move-Files "$temp_dir\$project.*" $projectOutput
-}
-
-function Create-Package2($project, $version) {
-    Write-Host "Creating NuGet package for '$project'..." -ForegroundColor "Green"
-
-    Create-Directory $temp_dir
-    Copy-Files "$nuspec_dir\$project.nuspec" $temp_dir
-
-    $commit = (git rev-parse HEAD)
-
-    Try {
-        Write-Host "Patching version with '$version'..." -ForegroundColor "DarkGray"
-        Replace-Content "$nuspec_dir\$project.nuspec" '%version%' $version
-        Write-Host "Patching commit hash with '$commit'..." -ForegroundColor "DarkGray"
-        Replace-Content "$nuspec_dir\$project.nuspec" '%commit%' $commit
-        Exec { .$nuget pack "$nuspec_dir\$project.nuspec" -OutputDirectory "$build_dir" -BasePath "$build_dir" -Version "$version" }
-    }
-    Finally {
-        Move-Files "$temp_dir\$project.nuspec" $nuspec_dir
-    }
+    Create-Package "Hangfire" $version
+    Create-Package "Hangfire.Core" $version
+    Create-Package "Hangfire.SqlServer" $version
+    Create-Package "Hangfire.SqlServer.Msmq" $version
+    Create-Package "Hangfire.AspNetCore" $version
+    Create-Package "Hangfire.NetCore" $version
 }
