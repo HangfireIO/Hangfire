@@ -12,7 +12,15 @@ Task Merge -Depends Build -Description "Run ILRepack /internalize to merge requi
     Repack-Assembly @("Hangfire.Core", "net451") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
     Repack-Assembly @("Hangfire.Core", "net46") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
     Repack-Assembly @("Hangfire.SqlServer", "net451") @("Dapper")
-
+    
+    # Referenced packages aren't copied to the output folder in .NET Core <= 2.X. To make ILRepack run,
+    # we need to copy them using the `dotnet publish` command prior to merging them. In .NET Core 3.0
+    # everything should be working without this extra step.
+    Publish-Assembly "Hangfire.Core" "netstandard1.3"
+    Publish-Assembly "Hangfire.Core" "netstandard2.0"
+    Publish-Assembly "Hangfire.SqlServer" "netstandard1.3"
+    Publish-Assembly "Hangfire.SqlServer" "netstandard2.0"
+    
     Repack-Assembly @("Hangfire.Core", "netstandard1.3") @("Cronos")
     Repack-Assembly @("Hangfire.Core", "netstandard2.0") @("Cronos")
     Repack-Assembly @("Hangfire.SqlServer", "netstandard1.3") @("Dapper")
