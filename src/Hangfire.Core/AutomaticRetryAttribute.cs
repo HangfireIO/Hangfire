@@ -1,16 +1,16 @@
 ﻿// This file is part of Hangfire. Copyright © 2014 Hangfire OÜ.
-// 
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
@@ -26,54 +26,54 @@ using Newtonsoft.Json;
 namespace Hangfire
 {
     /// <summary>
-    /// Represents a job filter that performs <i>automatic retries</i> for 
-    /// background jobs whose processing was failed due to an exception, with 
+    /// Represents a job filter that performs <i>automatic retries</i> for
+    /// background jobs whose processing was failed due to an exception, with
     /// a limited number of attempts.
     /// </summary>
-    /// 
+    ///
     /// <remarks>
-    /// <para>Filter is added to the global <see cref="GlobalJobFilters.Filters"/> 
-    /// collection by default. Intervals between attempts are based on increasing 
+    /// <para>Filter is added to the global <see cref="GlobalJobFilters.Filters"/>
+    /// collection by default. Intervals between attempts are based on increasing
     /// exponential back-off multiplier in seconds.</para>
-    /// 
+    ///
     /// <para>This filter works in a <i>state election</i> phase by changing the
     /// candidate state from <see cref="FailedState"/> to the <see cref="ScheduledState"/>
     /// when another retry should be attempted, or other state based on the value
     /// of the <see cref="OnAttemptsExceeded"/> property when attempts exceeded.
     /// </para>
     /// </remarks>
-    /// 
+    ///
     /// <example>
     /// <h3>Disabling Automatic Retries</h3>
     /// <para>The following example shows how to disable automatic retries for
     /// a specific job method by applying an attribute to a method.</para>
-    /// 
-    /// <note>Even if you disable <see cref="AutomaticRetryAttribute"/> filter, 
-    /// your background jobs can still be executed several times, due to re-queue 
+    ///
+    /// <note>Even if you disable <see cref="AutomaticRetryAttribute"/> filter,
+    /// your background jobs can still be executed several times, due to re-queue
     /// on shutdown and other compensation logic that guarantees the <i>at least
     /// once</i> processing.</note>
-    /// 
+    ///
     /// <code lang="cs" source="..\Samples\AutomaticRetry.cs" region="Disable Retries" />
-    /// 
+    ///
     /// <h3>Overriding Defaults</h3>
     /// <para>The following example shows how to override the default number of
     /// retry attempts for all of the background jobs by modifying the global
     /// <see cref="GlobalJobFilters.Filters"/> collection.</para>
-    /// 
+    ///
     /// <code lang="cs" source="..\Samples\AutomaticRetry.cs" region="Override Default" />
-    /// 
+    ///
     /// <h3>Specifying Attempts Exceeded Action</h3>
     /// <para>The following example shows how to ignore a background job when
     /// number of retry attempts exceed using the <see cref="OnAttemptsExceeded"/>
     /// property.</para>
-    /// 
-    /// <note type="tip">Choose <see cref="AttemptsExceededAction.Delete"/> action 
+    ///
+    /// <note type="tip">Choose <see cref="AttemptsExceededAction.Delete"/> action
     /// when you aren't interested in processing background job that failed several
     /// times.</note>
-    /// 
+    ///
     /// <code lang="cs" source="..\Samples\AutomaticRetry.cs" region="Attempts Exceeded" />
     /// </example>
-    /// 
+    ///
     /// <threadsafety static="true" instance="true" />
     public sealed class AutomaticRetryAttribute : JobFilterAttribute, IElectStateFilter, IApplyStateFilter
     {
@@ -91,13 +91,14 @@ namespace Hangfire
             return (int)Math.Round(
                 Math.Pow(attempt - 1, 4) + 15 + random.Next(30) * attempt);
         };
-        
+
         private readonly ILog _logger = LogProvider.For<AutomaticRetryAttribute>();
-        
+
         private readonly object _lockObject = new object();
         private int _attempts;
         private int[]  _delaysInSeconds;
         private Func<long, int> _delayInSecondsByAttemptFunc;
+        private Action _onAttemptsExceededAction;
         private AttemptsExceededAction _onAttemptsExceeded;
         private bool _logEvents;
         private Type[] _onlyOn;
@@ -178,7 +179,7 @@ namespace Hangfire
         }
 
         /// <summary>
-        /// Gets or sets a candidate state for a background job that 
+        /// Gets or sets a candidate state for a background job that
         /// will be chosen when number of retry attempts exceeded.
         /// </summary>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
@@ -187,6 +188,18 @@ namespace Hangfire
             get { lock (_lockObject) { return _onAttemptsExceeded; } }
             set { lock (_lockObject) { _onAttemptsExceeded = value; } }
         }
+
+        [JsonIgnore]
+        public Action OnAttemptsExceededAction
+        {
+            get { lock (_lockObject) { return _onAttemptsExceededAction ;} }
+            set
+            {
+                if (value == null) throw new ArgumentNullException(nameof(value));
+                lock (_lockObject) { _onAttemptsExceededAction = value; }
+            }
+        }
+
 
         /// <summary>
         /// Gets or sets whether to produce log messages on retry attempts.
@@ -247,6 +260,7 @@ namespace Hangfire
             }
             else if (retryAttempt > Attempts && OnAttemptsExceeded == AttemptsExceededAction.Delete)
             {
+                OnAttemptsExceededAction?.Invoke();
                 TransitionToDeleted(context, failedState);
             }
             else
@@ -291,7 +305,7 @@ namespace Hangfire
             context.SetJobParameter("RetryCount", retryAttempt);
 
             int delayInSeconds;
-            
+
             if (_delaysInSeconds != null)
             {
                 delayInSeconds = retryAttempt <= _delaysInSeconds.Length
@@ -300,19 +314,19 @@ namespace Hangfire
             }
             else
             {
-                delayInSeconds = DelayInSecondsByAttemptFunc(retryAttempt);                
+                delayInSeconds = DelayInSecondsByAttemptFunc(retryAttempt);
             }
 
-            var delay = TimeSpan.FromSeconds(delayInSeconds);          
+            var delay = TimeSpan.FromSeconds(delayInSeconds);
 
             const int maxMessageLength = 50;
             var exceptionMessage = failedState.Exception.Message.Length > maxMessageLength
-                ? failedState.Exception.Message.Substring(0, maxMessageLength - 1) + "…" 
+                ? failedState.Exception.Message.Substring(0, maxMessageLength - 1) + "…"
                 : failedState.Exception.Message;
 
             // If attempt number is less than max attempts, we should
             // schedule the job to run again later.
-            
+
             var reason = $"Retry attempt {retryAttempt} of {Attempts}: {exceptionMessage}";
 
             context.CandidateState = delay == TimeSpan.Zero
