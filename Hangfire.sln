@@ -12,6 +12,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.SqlServer", "src\Hangfire.SqlServer\Hangfire.SqlServer.csproj", "{A523C0E3-097D-4869-977F-15A717EA3E83}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{766BE831-F758-46BC-AFD3-BBEEFE0F686F}"
+	ProjectSection(SolutionItems) = preProject
+		tests\Directory.Build.props = tests\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{15E186DF-8918-44F1-9285-9756EDAECA5D}"
 	ProjectSection(SolutionItems) = preProject
