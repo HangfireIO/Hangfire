@@ -12,15 +12,7 @@ Task Merge -Depends Build -Description "Run ILRepack /internalize to merge requi
     Repack-Assembly @("Hangfire.Core", "net451") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
     Repack-Assembly @("Hangfire.Core", "net46") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
     Repack-Assembly @("Hangfire.SqlServer", "net451") @("Dapper")
-    
-    # Referenced packages aren't copied to the output folder in .NET Core <= 2.X. To make ILRepack run,
-    # we need to copy them using the `dotnet publish` command prior to merging them. In .NET Core 3.0
-    # everything should be working without this extra step.
-    Publish-Assembly "Hangfire.Core" "netstandard1.3"
-    Publish-Assembly "Hangfire.Core" "netstandard2.0"
-    Publish-Assembly "Hangfire.SqlServer" "netstandard1.3"
-    Publish-Assembly "Hangfire.SqlServer" "netstandard2.0"
-    
+
     Repack-Assembly @("Hangfire.Core", "netstandard1.3") @("Cronos")
     Repack-Assembly @("Hangfire.Core", "netstandard2.0") @("Cronos")
     Repack-Assembly @("Hangfire.SqlServer", "netstandard1.3") @("Dapper")
@@ -113,13 +105,6 @@ function Collect-Localizations($project, $target) {
             Copy-Files $source $destination
         }
     }
-}
-
-function Publish-Assembly($project, $target) {
-    $output = Get-SrcOutputDir $project $target
-    Write-Host "Publishing '$project'/$target to '$output'..." -ForegroundColor "Green"
-    Exec { dotnet publish --no-build -c Release -o $output -f $target "$base_dir\src\$project" }
-    Remove-Item "$output\System.*"
 }
 
 function Repack-Assembly($projectWithOptionalTarget, $internalizeAssemblies, $target) {
