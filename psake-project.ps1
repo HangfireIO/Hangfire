@@ -4,7 +4,8 @@ Task Default -Depends Collect
 Task CI -Depends Pack
 
 Task MyCompile {
-    Exec { dotnet build -nologo -verbosity:minimal -logger:'C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll' }
+    Exec { dotnet restore -c Release -verbosity:minimal }
+    Exec { msbuild /p:Configuration=Release /nologo /verbosity:minimal /logger:'C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll' }
 }
 
 Task Merge -Depends MyCompile -Description "Run ILRepack /internalize to merge required assemblies." {
