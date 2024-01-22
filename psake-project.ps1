@@ -4,7 +4,7 @@ Task Default -Depends Collect
 Task CI -Depends Pack
 
 Task MyCompile {
-    Exec { dotnet restore -c Release -verbosity:minimal }
+    Exec { dotnet restore -verbosity:minimal }
     Exec { msbuild /p:Configuration=Release /nologo /verbosity:minimal /logger:'C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll' }
 }
 
