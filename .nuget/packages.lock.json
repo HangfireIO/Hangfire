@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "dependencies": {
+    "Any,Version=v0.0": {
+      "7-Zip.CommandLine": {
+        "type": "Direct",
+        "requested": "[18.1.0, 18.1.0]",
+        "resolved": "18.1.0",
+        "contentHash": "jHUxQQLmjSsjR9WS+OPrBYEuHrtSXey6xHIjFjN1Px1MoxyOaIGjYUSo2iayVxMFs64/TiuF/EopCu2mPRoTuA=="
+      },
+      "Hangfire.Build": {
+        "type": "Direct",
+        "requested": "[0.2.6, 0.2.6]",
+        "resolved": "0.2.6",
+        "contentHash": "xPSfTFdYapNIVy6bxEvlfgKVA2NaBuKyWNQAL0HLjtSbr0nFV/3e/vvskERJJ2wbzdkJxAF2Xn9QFYQP/uEI8w=="
+      },
+      "ILRepack": {
+        "type": "Direct",
+        "requested": "[2.0.25, 2.0.25]",
+        "resolved": "2.0.25",
+        "contentHash": "7RM1El+8ljGEnha238E2SWpsUujq7bDhHtqXaUoU2sHq3xm4Gz14Wg5bIo2Y9s8XYoK5V/9vc1KavpgVjz6AkA=="
+      },
+      "psake": {
+        "type": "Direct",
+        "requested": "[4.4.1, 4.4.1]",
+        "resolved": "4.4.1",
+        "contentHash": "Hn5kdGPEoapi+wAAjaGjKEZVnuYp7fUrPK3IivLYG6Bn4adhd8l+KXXPMEmte41RmrLvfV7XGZa9KsSTc0gjDA=="
+      },
+      "RazorGenerator.MsBuild": {
+        "type": "Direct",
+        "requested": "[2.5.0, 2.5.0]",
+        "resolved": "2.5.0",
+        "contentHash": "yOu2KEjDFvE20b+YK/+Ovf4czUHWH2DlBB9lIKDXdBjcMh3PXrPJTxPzi468XrFvE1dVEiWu+pGNkVFE9+VpMA=="
+      },
+      "xunit.runner.console": {
+        "type": "Direct",
+        "requested": "[2.2.0, 2.2.0]",
+        "resolved": "2.2.0",
+        "contentHash": "Bz+N1MyQ24rtLJPR/cCdUAb4V8cM2Te7gTopDhsIkPSOqWk4GCO2QfJvr5Wwe0vbBXcpBOWCh2vH75fzhA3cig=="
+      }
+    }
+  }
+}
