@@ -29,9 +29,6 @@ environment:
 services:
   - mssql2017
 
-pull_requests:
-  do_not_increment_build_number: true
-
 #---------------------------------#
 #       build configuration       #
 #---------------------------------#
@@ -40,7 +37,7 @@ pull_requests:
 build_script:
   - cmd: powershell Import-Module ServerManager; Add-WindowsFeature MSMQ; net start msmq
   - ps: IF ($env:APPVEYOR_SCHEDULED_BUILD -or $env:APPVEYOR_REPO_COMMIT_MESSAGE -like "*covscan*") { .\coverity-scan.ps1 }
-  - cmd: IF NOT DEFINED APPVEYOR_SCHEDULED_BUILD build.bat ci
+  - cmd: IF NOT DEFINED APPVEYOR_SCHEDULED_BUILD build.bat
   - sh: nuget locals all -clear
   - sh: chmod +x build.sh; ./build.sh
 
@@ -64,7 +61,6 @@ artifacts:
 
 deploy:
   - provider: NuGet
-    skip_symbols: true
     api_key: 
       secure: GdfWH5BGrFoHBIuQPebg1ci3odJAeUUOZ2KFJR7y0mBU+kwicu/lNow1vRRjLBU3
     on:
