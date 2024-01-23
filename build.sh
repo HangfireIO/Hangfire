@@ -5,9 +5,11 @@ export Hangfire_SqlServer_ConnectionStringTemplate="Server=tcp:127.0.0.1,1433;Da
 
 if hash dotnet 2>/dev/null; 
 then
-  dotnet test -c Release -f netcoreapp3.1 tests/Hangfire.Core.Tests/Hangfire.Core.Tests.csproj;
+  dotnet test -c Release -f netcoreapp3.1 tests/Hangfire.Core.Tests;
+  dotnet test -c Release -f net6.0 tests/Hangfire.Core.Tests;
   if hash sqlcmd 2>/dev/null;
   then
-    dotnet test -c Release -f netcoreapp3.1 tests/Hangfire.SqlServer.Tests/Hangfire.SqlServer.Tests.csproj;
+    dotnet test -c Release -f netcoreapp3.1 tests/Hangfire.SqlServer.Tests;
+    dotnet test -c Release -f net6.0 tests/Hangfire.SqlServer.Tests;
   fi
 fi
