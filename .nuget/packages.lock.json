@@ -10,9 +10,9 @@
       },
       "Hangfire.Build": {
         "type": "Direct",
-        "requested": "[0.3.2, 0.3.2]",
-        "resolved": "0.3.2",
-        "contentHash": "r2rR0zGUVS3UnU3efVXneeeAxZFLK/tnYrCr1n/yeJsRGn+KBcLvkxdI7US1IETOvTxQMGU+vS2d9dQx8myojg=="
+        "requested": "[0.3.3, 0.3.3]",
+        "resolved": "0.3.3",
+        "contentHash": "Jm2wLxCbKVg1LJZrjFRVZmyvKULoEnMWLL07Szoat/Ep9gZ18xh4z20XvBvwCgAJKXeZEch+pIYcne0NO7aWyg=="
       },
       "ILRepack": {
         "type": "Direct",
