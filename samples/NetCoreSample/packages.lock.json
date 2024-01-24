@@ -47,8 +47,8 @@
       },
       "Cronos": {
         "type": "Transitive",
-        "resolved": "0.8.1",
-        "contentHash": "4dZrjOujQ9JrR3dRtwnj8rdRTIZkV0fG6Jg9MGd8qe7AOYVgX2Z8uA0006nn7VtrM0zU9G4Ifm1D9A8WUAHtAw=="
+        "resolved": "0.8.2",
+        "contentHash": "BGrpE6ZIchx1SldOy6AZr0ah8nEUQY2+Gn7qSJLTa8OKeTPy3eQ6O+GsNHPSCIIc6iOrmPo8TszBRV7go2R8Uw=="
       },
       "Dapper": {
         "type": "Transitive",
@@ -297,62 +297,6 @@
           "System.Runtime.CompilerServices.Unsafe": "6.0.0"
         }
       },
-      "Microsoft.NETFramework.ReferenceAssemblies": {
-        "type": "Transitive",
-        "resolved": "1.0.3",
-        "contentHash": "vUc9Npcs14QsyOD01tnv/m8sQUnGTGOw1BCmKcv77LBJY7OxhJ+zJF7UD/sCL3lYNFuqmQEVlkfS4Quif6FyYg==",
-        "dependencies": {
-          "Microsoft.NETFramework.ReferenceAssemblies.net461": "1.0.3"
-        }
-      },
-      "Microsoft.NETFramework.ReferenceAssemblies.net461": {
-        "type": "Transitive",
-        "resolved": "1.0.3",
-        "contentHash": "AmOJZwCqnOCNp6PPcf9joyogScWLtwy0M1WkqfEQ0M9nYwyDD7EX9ZjscKS5iYnyvteX7kzSKFCKt9I9dXA6mA=="
-      },
-      "Microsoft.Owin": {
-        "type": "Transitive",
-        "resolved": "4.0.0",
-        "contentHash": "3TNVMkgF+yhesPYwq67ZOcLGtfKEupNNXcqVO4FRNjkQ1v0gBNb3k8CSuJonrCC8EAUp+OeUYrDTQePiyaVzpw==",
-        "dependencies": {
-          "Owin": "1.0.0"
-        }
-      },
-      "Microsoft.Owin.Diagnostics": {
-        "type": "Transitive",
-        "resolved": "4.0.0",
-        "contentHash": "96t+ud+Ai2kPnkdThUPL8wM9C1MAzZ80zlfTvjK0VwJsy+9F2rylFrsRx+dD7KSsN+ANKAuxSQlaYuzU9O8pZA==",
-        "dependencies": {
-          "Microsoft.Owin": "4.0.0",
-          "Owin": "1.0.0"
-        }
-      },
-      "Microsoft.Owin.Host.HttpListener": {
-        "type": "Transitive",
-        "resolved": "4.0.0",
-        "contentHash": "AC0fcRPFg/gf6AmATmCJBGnD14URhCYOHtAW0g248YzZ4ByIkVA7jHBQbfij+zyIOeOya8uaAwFPCIN1wyiOQw=="
-      },
-      "Microsoft.Owin.Hosting": {
-        "type": "Transitive",
-        "resolved": "4.0.0",
-        "contentHash": "rAkxeyiIliRbMZyPxo83QE+UY7HNTsFOH9+wqQTcQyWBVbYkBQp373meNt4+DpupMB56A1BopLDeyoX9DZJrbA==",
-        "dependencies": {
-          "Microsoft.Owin": "4.0.0",
-          "Owin": "1.0.0"
-        }
-      },
-      "Microsoft.Owin.SelfHost": {
-        "type": "Transitive",
-        "resolved": "4.0.0",
-        "contentHash": "Gsxjg466eKBykIMZyrPP1IA8MIbYPd/1gcSWc6JLGb+CUO/elctCJomSbOJFceh9YU9hj9qURjpx0ns6/AghSA==",
-        "dependencies": {
-          "Microsoft.Owin": "4.0.0",
-          "Microsoft.Owin.Diagnostics": "4.0.0",
-          "Microsoft.Owin.Host.HttpListener": "4.0.0",
-          "Microsoft.Owin.Hosting": "4.0.0",
-          "Owin": "1.0.0"
-        }
-      },
       "Microsoft.SourceLink.Common": {
         "type": "Transitive",
         "resolved": "8.0.0",
@@ -374,13 +318,8 @@
       },
       "Newtonsoft.Json": {
         "type": "Transitive",
-        "resolved": "13.0.2",
-        "contentHash": "R2pZ3B0UjeyHShm9vG+Tu0EBb2lC8b0dFzV9gVn50ofHXh9Smjk6kTn7A/FdAsC8B5cKib1OnGYOXxRBz5XQDg=="
-      },
-      "Owin": {
-        "type": "Transitive",
-        "resolved": "1.0.0",
-        "contentHash": "OseTFniKmyp76mEzOBwIKGBRS5eMoYNkMKaMXOpxx9jv88+b6mh1rSaw43vjBOItNhaLFG3d0a20PfHyibH5sw=="
+        "resolved": "11.0.1",
+        "contentHash": "pNN4l+J6LlpIvHOeNdXlwxv39NPJ2B5klz+Rd2UQZIx30Squ5oND1Yy3wEAUoKn0GPUj6Yxt9lxlYWQqfZcvKg=="
       },
       "StackTraceFormatter.Source": {
         "type": "Transitive",
@@ -431,17 +370,6 @@
           "System.Text.Encodings.Web": "6.0.0"
         }
       },
-      "consolesample": {
-        "type": "Project",
-        "dependencies": {
-          "Hangfire.Core": "[1.0.0, )",
-          "Hangfire.SqlServer": "[1.0.0, )",
-          "Hangfire.SqlServer.Msmq": "[1.0.0, )",
-          "Microsoft.NETFramework.ReferenceAssemblies": "[1.0.3, )",
-          "Microsoft.Owin.SelfHost": "[4.0.0, )",
-          "Newtonsoft.Json": "[13.0.2, )"
-        }
-      },
       "hangfire.aspnetcore": {
         "type": "Project",
         "dependencies": {
@@ -453,7 +381,7 @@
       "hangfire.core": {
         "type": "Project",
         "dependencies": {
-          "Cronos": "[0.8.1, )",
+          "Cronos": "[0.8.2, )",
           "LibLog": "[1.5.0, )",
           "Microsoft.CSharp": "[4.4.0, )",
           "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
@@ -481,16 +409,6 @@
           "Dapper": "[2.0.123, )",
           "Hangfire.Core": "[1.0.0, )",
           "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
-          "Microsoft.SourceLink.GitHub": "[8.0.0, )"
-        }
-      },
-      "hangfire.sqlserver.msmq": {
-        "type": "Project",
-        "dependencies": {
-          "Hangfire.Core": "[1.0.0, )",
-          "Hangfire.SqlServer": "[1.0.0, )",
-          "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
-          "Microsoft.NETFramework.ReferenceAssemblies": "[1.0.3, )",
           "Microsoft.SourceLink.GitHub": "[8.0.0, )"
         }
       }
