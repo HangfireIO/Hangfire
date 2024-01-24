@@ -15,6 +15,11 @@
     <releaseNotes>
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
+      
+1.8.8
+• Project – Enable full source link support with embedded symbols and repository-based sources.
+• Project – Enable repeatable package restore using a lock file.
+• Project – Run unit tests against the `net6.0` platform.
 
 1.8.7
 • Changed – Avoid throwing an exception when a connection string has duplicate property names.

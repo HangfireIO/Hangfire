@@ -13,6 +13,10 @@
     <copyright>Copyright © 2014-2024 Hangfire OÜ</copyright>
     <tags>Hangfire SqlServer MSMQ</tags>
     <releaseNotes>https://www.hangfire.io/blog/
+  
+1.8.8
+• Project – Enable full source link support with embedded symbols and repository-based sources.
+• Project – Enable repeatable package restore using a lock file.
 
 1.8.0
 • Breaking – Dropped the `NET45` platform target in favor of the `NET451` target to support Visual Studio 2022.

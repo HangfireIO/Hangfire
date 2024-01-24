@@ -22,6 +22,36 @@ https://www.hangfire.io/
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.8
+
+Hangfire.Core
+
+• Changed – Use `Environment.MachineName` as a server name if other environment vars aren't available.
+• Changed – Bump the Cronos package version from 0.7.1 to 0.8.1.
+• Changed – Improve portuguese translations (by @filipe-silva).
+• Fixed – Possible `NullReferenceException` on the Deleted Jobs page (regression from 1.8.7).
+• Project – Enable full source link support with embedded symbols and repository-based sources.
+• Project – Enable repeatable package restore using a lock file.
+• Project – Run unit tests against the `net6.0` platform.
+• Project – Modernise the build system and clean up the build scripts.
+
+Hangfire.SqlServer
+
+• Project – Enable full source link support with embedded symbols and repository-based sources.
+• Project – Enable repeatable package restore using a lock file.
+• Project – Run unit tests against the `net6.0` platform.
+
+Hangfire.NetCore
+
+• Project – Enable full source link support with embedded symbols and repository-based sources.
+• Project – Enable repeatable package restore using a lock file.
+
+Hangfire.AspNetCore
+
+• Fixed – Don't attempt to write response headers when response has already started (by @maliming).
+• Project – Enable full source link support with embedded symbols and repository-based sources.
+• Project – Enable repeatable package restore using a lock file.
+
 1.8.7
 
 Hangfire.Core
@@ -32,7 +62,7 @@ Hangfire.Core
 • Added – Show the exception column on the Deleted Jobs page when available and supported by storage.
 • Changed – Reduce package size by stripping unnecessary locales in Moment.js.
 • Changed – Bump Microsoft.Owin package to version 4.2.2.
-• Changed – Log a warning message when a server listens to unsupported queue names.
+• Changed – Log a warning message when a server listens to unsupported queue names (by @MuhamedAbdalla).
 • Changed – Use storage time, if available, to show delay warnings in the Dashboard UI.
 • Fixed – Proper rendering of generic arguments on the Job Details page (by @olivermue).
 • Fixed – Language inconsistency in the Dashboard UI related to date/time description.

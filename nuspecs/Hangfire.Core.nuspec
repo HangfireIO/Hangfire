@@ -21,6 +21,16 @@ https://www.hangfire.io/
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.8
+• Changed – Use `Environment.MachineName` as a server name if other environment vars aren't available.
+• Changed – Bump the Cronos package version from 0.7.1 to 0.8.1.
+• Changed – Improve portuguese translations (by @filipe-silva).
+• Fixed – Possible `NullReferenceException` on the Deleted Jobs page (regression from 1.8.7).
+• Project – Enable full source link support with embedded symbols and repository-based sources.
+• Project – Enable repeatable package restore using a lock file.
+• Project – Run unit tests against the `net6.0` platform.
+• Project – Modernise the build system and clean up the build scripts.
+
 1.8.7
 • Added – Allow using macro expressions like `@hourly` for recurring jobs (by @MuhamedAbdalla).
 • Added – Show storage time in page footer when supported by storage implementation.
