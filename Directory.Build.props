@@ -1,0 +1,10 @@
+<Project>
+    <PropertyGroup>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(APPVEYOR)' == 'True'">
+        <RestoreLockedMode>true</RestoreLockedMode>
+    </PropertyGroup>
+</Project>

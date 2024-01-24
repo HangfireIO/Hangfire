@@ -1,12 +1,6 @@
 <Project>
   <PropertyGroup>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     <NuGetAudit>false</NuGetAudit><!-- We are testing against these packages, not including them into the product -->
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(APPVEYOR)' == 'True'">
-    <RestoreLockedMode>true</RestoreLockedMode>
   </PropertyGroup>
 
   <ItemGroup>
