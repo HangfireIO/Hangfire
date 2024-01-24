@@ -4,7 +4,7 @@
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <DebugType>embedded</DebugType>
-        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <EmbedAllSources>true</EmbedAllSources>
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="..\SharedAssemblyInfo.cs" Link="Properties\SharedAssemblyInfo.cs" />
