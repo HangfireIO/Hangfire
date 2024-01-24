@@ -16,7 +16,7 @@ namespace Hangfire.Dashboard.Pages
     using System.Linq;
     using System.Text;
     
-    #line 2 "../../Dashboard/Pages/_InlineMetric.cshtml"
+    #line 2 "..\..\Dashboard\Pages\_InlineMetric.cshtml"
     using Hangfire.Dashboard;
     
     #line default
@@ -37,7 +37,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 4 "../../Dashboard/Pages/_InlineMetric.cshtml"
+            #line 4 "..\..\Dashboard\Pages\_InlineMetric.cshtml"
   
     var metric = DashboardMetric.Func(this);
     var className = metric == null ? "metric-null" : metric.Style.ToClassName();
@@ -51,7 +51,7 @@ WriteLiteral("<span data-metric=\"");
 
 
             
-            #line 9 "../../Dashboard/Pages/_InlineMetric.cshtml"
+            #line 9 "..\..\Dashboard\Pages\_InlineMetric.cshtml"
               Write(DashboardMetric.Name);
 
             
@@ -61,7 +61,7 @@ WriteLiteral("\" class=\"metric ");
 
 
             
-            #line 9 "../../Dashboard/Pages/_InlineMetric.cshtml"
+            #line 9 "..\..\Dashboard\Pages\_InlineMetric.cshtml"
                                                    Write(className);
 
             
@@ -71,7 +71,7 @@ WriteLiteral(" ");
 
 
             
-            #line 9 "../../Dashboard/Pages/_InlineMetric.cshtml"
+            #line 9 "..\..\Dashboard\Pages\_InlineMetric.cshtml"
                                                               Write(highlighted);
 
             
@@ -81,7 +81,7 @@ WriteLiteral("\">");
 
 
             
-            #line 9 "../../Dashboard/Pages/_InlineMetric.cshtml"
+            #line 9 "..\..\Dashboard\Pages\_InlineMetric.cshtml"
                                                                              Write(metric?.Value);
 
             
