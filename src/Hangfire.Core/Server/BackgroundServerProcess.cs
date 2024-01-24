@@ -165,7 +165,11 @@ namespace Hangfire.Server
         {
             var serverName = _options.ServerName
                  ?? Environment.GetEnvironmentVariable("COMPUTERNAME")
-                 ?? Environment.GetEnvironmentVariable("HOSTNAME");
+                 ?? Environment.GetEnvironmentVariable("HOSTNAME")
+#if !NETSTANDARD1_3
+                 ?? Environment.MachineName
+#endif
+                ;
 
             var guid = Guid.NewGuid().ToString();
 
