@@ -106,7 +106,8 @@
                                         {
                                             ExceptionInfo exception = null;
                                             string typeName = null;
-                                            if (job.Value.StateData.TryGetValue("Exception", out var serializedException))
+                                            if (job.Value.StateData.TryGetValue("Exception", out var serializedException) &&
+                                                !String.IsNullOrWhiteSpace(serializedException))
                                             {
                                                 exception = Common.SerializationHelper.Deserialize<ExceptionInfo>(serializedException, Common.SerializationOption.Internal);
                                                 var commaIndex = exception.Type.IndexOf(",", StringComparison.OrdinalIgnoreCase);
