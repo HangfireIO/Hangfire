@@ -16,7 +16,7 @@ namespace Hangfire.Dashboard.Pages
     using System.Linq;
     using System.Text;
     
-    #line 2 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
+    #line 2 "../../Dashboard/Pages/_PerPageSelector.cshtml"
     using Hangfire.Dashboard.Resources;
     
     #line default
@@ -39,7 +39,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 5 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
+            #line 5 "../../Dashboard/Pages/_PerPageSelector.cshtml"
  if (_pager.TotalPageCount > 1)
 {
 
@@ -50,7 +50,7 @@ WriteLiteral("    <div class=\"btn-group paginator pull-right hidden-xs\">\r\n  
 
 
             
-            #line 8 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
+            #line 8 "../../Dashboard/Pages/_PerPageSelector.cshtml"
             Write(_pager.PageUrl(_pager.CurrentPage > 1 ? _pager.CurrentPage - 1 : 0));
 
             
@@ -60,7 +60,7 @@ WriteLiteral("\" class=\"btn btn-default btn-sm ");
 
 
             
-            #line 8 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
+            #line 8 "../../Dashboard/Pages/_PerPageSelector.cshtml"
                                                                                                                  Write(_pager.CurrentPage == 1 ? "disabled" : null);
 
             
@@ -70,7 +70,7 @@ WriteLiteral("\">\r\n            ");
 
 
             
-            #line 9 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
+            #line 9 "../../Dashboard/Pages/_PerPageSelector.cshtml"
        Write(Strings.Paginator_Prev);
 
             
@@ -80,7 +80,7 @@ WriteLiteral("\r\n        </a>\r\n        <a href=\"");
 
 
             
-            #line 11 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
+            #line 11 "../../Dashboard/Pages/_PerPageSelector.cshtml"
             Write(_pager.PageUrl(_pager.CurrentPage < _pager.TotalPageCount ? _pager.CurrentPage + 1 : 0));
 
             
@@ -90,7 +90,7 @@ WriteLiteral("\" class=\"btn btn-default btn-sm ");
 
 
             
-            #line 11 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
+            #line 11 "../../Dashboard/Pages/_PerPageSelector.cshtml"
                                                                                                                                      Write(_pager.CurrentPage == _pager.TotalPageCount ? "disabled" : null);
 
             
@@ -100,7 +100,7 @@ WriteLiteral("\">\r\n            ");
 
 
             
-            #line 12 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
+            #line 12 "../../Dashboard/Pages/_PerPageSelector.cshtml"
        Write(Strings.Paginator_Next);
 
             
@@ -110,7 +110,7 @@ WriteLiteral("\r\n        </a>\r\n    </div>\r\n");
 
 
             
-            #line 15 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
+            #line 15 "../../Dashboard/Pages/_PerPageSelector.cshtml"
 }
 
             
@@ -120,7 +120,7 @@ WriteLiteral("    <div class=\"btn-group pull-right paginator\">\r\n");
 
 
             
-            #line 17 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
+            #line 17 "../../Dashboard/Pages/_PerPageSelector.cshtml"
          foreach (var count in new[] { 10, 20, 50, 100, 500, 1000, 5000 })
         {
 
@@ -131,7 +131,7 @@ WriteLiteral("            <a class=\"btn btn-sm btn-default ");
 
 
             
-            #line 19 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
+            #line 19 "../../Dashboard/Pages/_PerPageSelector.cshtml"
                                          Write(count == _pager.RecordsPerPage ? "active" : null);
 
             
@@ -141,7 +141,7 @@ WriteLiteral(" ");
 
 
             
-            #line 19 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
+            #line 19 "../../Dashboard/Pages/_PerPageSelector.cshtml"
                                                                                              Write(count > 999 ? "visible-lg" : null);
 
             
@@ -151,7 +151,7 @@ WriteLiteral("\" \r\n                   href=\"");
 
 
             
-            #line 20 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
+            #line 20 "../../Dashboard/Pages/_PerPageSelector.cshtml"
                     Write(_pager.RecordsPerPageUrl(count));
 
             
@@ -161,7 +161,7 @@ WriteLiteral("\">");
 
 
             
-            #line 20 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
+            #line 20 "../../Dashboard/Pages/_PerPageSelector.cshtml"
                                                       Write(count.ToString("N0"));
 
             
@@ -171,7 +171,7 @@ WriteLiteral("</a>    \r\n");
 
 
             
-            #line 21 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
+            #line 21 "../../Dashboard/Pages/_PerPageSelector.cshtml"
         }
 
             
@@ -183,7 +183,7 @@ WriteLiteral("    </div>\r\n    <div class=\"btn-toolbar-spacer pull-right hidde
 
 
             
-            #line 25 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
+            #line 25 "../../Dashboard/Pages/_PerPageSelector.cshtml"
    Write(Strings.PerPageSelector_ItemsPerPage);
 
             

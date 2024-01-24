@@ -12,68 +12,68 @@
 namespace Hangfire.Dashboard.Pages
 {
     
-    #line 2 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+    #line 2 "../../Dashboard/Pages/JobDetailsPage.cshtml"
     using System;
     
     #line default
     #line hidden
     
-    #line 3 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+    #line 3 "../../Dashboard/Pages/JobDetailsPage.cshtml"
     using System.Collections.Generic;
     
     #line default
     #line hidden
     
-    #line 4 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+    #line 4 "../../Dashboard/Pages/JobDetailsPage.cshtml"
     using System.Linq;
     
     #line default
     #line hidden
     using System.Text;
     
-    #line 5 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+    #line 5 "../../Dashboard/Pages/JobDetailsPage.cshtml"
     using Hangfire;
     
     #line default
     #line hidden
     
-    #line 6 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+    #line 6 "../../Dashboard/Pages/JobDetailsPage.cshtml"
     using Hangfire.Common;
     
     #line default
     #line hidden
     
-    #line 7 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+    #line 7 "../../Dashboard/Pages/JobDetailsPage.cshtml"
     using Hangfire.Dashboard;
     
     #line default
     #line hidden
     
-    #line 8 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+    #line 8 "../../Dashboard/Pages/JobDetailsPage.cshtml"
     using Hangfire.Dashboard.Pages;
     
     #line default
     #line hidden
     
-    #line 9 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+    #line 9 "../../Dashboard/Pages/JobDetailsPage.cshtml"
     using Hangfire.Dashboard.Resources;
     
     #line default
     #line hidden
     
-    #line 10 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+    #line 10 "../../Dashboard/Pages/JobDetailsPage.cshtml"
     using Hangfire.States;
     
     #line default
     #line hidden
     
-    #line 11 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+    #line 11 "../../Dashboard/Pages/JobDetailsPage.cshtml"
     using Hangfire.Storage;
     
     #line default
     #line hidden
     
-    #line 12 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+    #line 12 "../../Dashboard/Pages/JobDetailsPage.cshtml"
     using Hangfire.Storage.Monitoring;
     
     #line default
@@ -104,7 +104,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 14 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 14 "../../Dashboard/Pages/JobDetailsPage.cshtml"
   
     var monitor = Storage.GetMonitoringApi();
     var job = monitor.JobDetails(JobId);
@@ -133,7 +133,7 @@ WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-3\">\r\n       
 
 
             
-            #line 37 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 37 "../../Dashboard/Pages/JobDetailsPage.cshtml"
    Write(Html.JobsSidebar());
 
             
@@ -143,7 +143,7 @@ WriteLiteral("\r\n    </div>\r\n    <div class=\"col-md-9\">\r\n        <h1 clas
 
 
             
-            #line 40 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 40 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                            Write(title);
 
             
@@ -153,7 +153,7 @@ WriteLiteral("</h1>\r\n\r\n");
 
 
             
-            #line 42 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 42 "../../Dashboard/Pages/JobDetailsPage.cshtml"
          if (job == null)
         {
 
@@ -164,7 +164,7 @@ WriteLiteral("            <div class=\"alert alert-warning\">\r\n               
 
 
             
-            #line 45 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 45 "../../Dashboard/Pages/JobDetailsPage.cshtml"
            Write(String.Format(Strings.JobDetailsPage_JobExpired, JobId));
 
             
@@ -174,7 +174,7 @@ WriteLiteral("\r\n            </div>\r\n");
 
 
             
-            #line 47 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 47 "../../Dashboard/Pages/JobDetailsPage.cshtml"
         }
         else
         {
@@ -192,7 +192,7 @@ WriteLiteral("                    <div class=\"alert alert-danger\">\r\n        
 
 
             
-            #line 57 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 57 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                    Write(Html.Raw(String.Format(Strings.JobDetailsPage_JobAbortedNotActive_Warning_Html, currentState.Data["ServerId"], Url.To("/servers"))));
 
             
@@ -202,7 +202,7 @@ WriteLiteral("\r\n                    </div>\r\n");
 
 
             
-            #line 59 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 59 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                 }
                 else if (server.Heartbeat.HasValue && server.Heartbeat < (StorageUtcNow ?? ApplicationUtcNow).AddMinutes(-1))
                 {
@@ -214,7 +214,7 @@ WriteLiteral("                    <div class=\"alert alert-warning\">\r\n       
 
 
             
-            #line 63 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 63 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                    Write(Html.Raw(String.Format(Strings.JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html, server.Name)));
 
             
@@ -224,7 +224,7 @@ WriteLiteral("\r\n                    </div>\r\n");
 
 
             
-            #line 65 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 65 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                 }
             }
 
@@ -238,7 +238,7 @@ WriteLiteral("                <div class=\"alert alert-info\">\r\n              
 
 
             
-            #line 71 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 71 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                Write(Html.Raw(String.Format(Strings.JobDetailsPage_JobFinished_Warning_Html, JobHelper.ToTimestamp(job.ExpireAt.Value), job.ExpireAt)));
 
             
@@ -248,7 +248,7 @@ WriteLiteral("\r\n                </div>\r\n");
 
 
             
-            #line 73 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 73 "../../Dashboard/Pages/JobDetailsPage.cshtml"
             }
 
             if (job.Job != null)
@@ -262,7 +262,7 @@ WriteLiteral("                <div class=\"job-snippet\">\r\n                   
 
 
             
-            #line 79 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 79 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                        Write(Strings.JobDetailsPage_JobId);
 
             
@@ -272,7 +272,7 @@ WriteLiteral(": ");
 
 
             
-            #line 79 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 79 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                                                       Write(Html.JobId(JobId.ToString(), false));
 
             
@@ -282,7 +282,7 @@ WriteLiteral("</span>\r\n");
 
 
             
-            #line 80 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 80 "../../Dashboard/Pages/JobDetailsPage.cshtml"
  if (job.Job.Queue != null)
 {
 
@@ -293,7 +293,7 @@ WriteLiteral("<span class=\"comment\">// ");
 
 
             
-            #line 82 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 82 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                     Write(Strings.QueuesPage_Table_Queue);
 
             
@@ -303,7 +303,7 @@ WriteLiteral(": ");
 
 
             
-            #line 82 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 82 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                      Write(job.Job.Queue);
 
             
@@ -313,7 +313,7 @@ WriteLiteral("</span>\r\n");
 
 
             
-            #line 83 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 83 "../../Dashboard/Pages/JobDetailsPage.cshtml"
 }
 
             
@@ -321,7 +321,7 @@ WriteLiteral("</span>\r\n");
             #line hidden
 
             
-            #line 84 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 84 "../../Dashboard/Pages/JobDetailsPage.cshtml"
 Write(JobMethodCallRenderer.Render(job.Job));
 
             
@@ -331,7 +331,7 @@ WriteLiteral("\r\n</code></pre>\r\n                    </div>\r\n               
 
 
             
-            #line 88 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 88 "../../Dashboard/Pages/JobDetailsPage.cshtml"
             }
             else
             {
@@ -346,7 +346,7 @@ WriteLiteral("                <div class=\"alert alert-warning\">\r\n           
 
 
             
-            #line 94 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 94 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                    Write(Strings.Common_CannotFindTargetMethod);
 
             
@@ -358,7 +358,7 @@ WriteLiteral("</h4>\r\n                    <table class=\"table table-condensed 
 
 
             
-            #line 97 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 97 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                            Write(Strings.JobDetailsPage_JobId);
 
             
@@ -368,7 +368,7 @@ WriteLiteral("</td>\r\n                            <td><pre><code>");
 
 
             
-            #line 98 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 98 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                       Write(Html.JobId(JobId, false));
 
             
@@ -378,7 +378,7 @@ WriteLiteral("</code></pre></td>\r\n                        </tr>\r\n");
 
 
             
-            #line 100 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 100 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                          foreach (var parameter in dbgParameters)
                         {
 
@@ -390,7 +390,7 @@ WriteLiteral("                            <tr>\r\n                              
 
 
             
-            #line 103 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 103 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                 Write(parameter.Key.Substring(4));
 
             
@@ -400,7 +400,7 @@ WriteLiteral("</td>\r\n                                <td><pre><code>");
 
 
             
-            #line 104 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 104 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                           Write(parameter.Value);
 
             
@@ -410,7 +410,7 @@ WriteLiteral("</code></pre></td>\r\n                            </tr>\r\n");
 
 
             
-            #line 106 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 106 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                         }
 
             
@@ -420,7 +420,7 @@ WriteLiteral("                    </table>\r\n                </div>\r\n");
 
 
             
-            #line 109 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 109 "../../Dashboard/Pages/JobDetailsPage.cshtml"
             }
 
             var displayParameters = job.Properties.Where(x => !x.Key.StartsWith("DBG_") && x.Key != "Continuations").ToArray();
@@ -435,7 +435,7 @@ WriteLiteral("                <h3 id=\"job-details-parameters\">");
 
 
             
-            #line 115 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 115 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                            Write(Strings.JobDetailsPage_Parameters);
 
             
@@ -450,7 +450,7 @@ WriteLiteral("                <table class=\"table table-condensed job-snippet-p
 
 
             
-            #line 117 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 117 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                      foreach (var parameter in displayParameters)
                     {
 
@@ -462,7 +462,7 @@ WriteLiteral("                        <tr>\r\n                            <td cl
 
 
             
-            #line 120 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 120 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                        Write(parameter.Key);
 
             
@@ -472,7 +472,7 @@ WriteLiteral("</td>\r\n                            <td><pre><code>");
 
 
             
-            #line 121 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 121 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                       Write(parameter.Value);
 
             
@@ -482,7 +482,7 @@ WriteLiteral("</code></pre></td>\r\n                        </tr>\r\n");
 
 
             
-            #line 123 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 123 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                     }
 
             
@@ -492,7 +492,7 @@ WriteLiteral("                </table>\r\n");
 
 
             
-            #line 125 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 125 "../../Dashboard/Pages/JobDetailsPage.cshtml"
             }
 
             if (job.Properties.TryGetValue("Continuations", out var serializedContinuations))
@@ -509,7 +509,7 @@ WriteLiteral("                    <h3 id=\"job-details-continuations\">");
 
 
             
-            #line 133 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 133 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                   Write(Strings.Common_Continuations);
 
             
@@ -527,7 +527,7 @@ WriteLiteral(@"                    <div class=""table-responsive"">
 
 
             
-            #line 138 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 138 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                  Write(Strings.Common_Id);
 
             
@@ -537,7 +537,7 @@ WriteLiteral("</th>\r\n                                <th class=\"min-width\">"
 
 
             
-            #line 139 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 139 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                  Write(Strings.Common_Condition);
 
             
@@ -547,7 +547,7 @@ WriteLiteral("</th>\r\n                                <th class=\"min-width\">"
 
 
             
-            #line 140 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 140 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                  Write(Strings.Common_State);
 
             
@@ -557,7 +557,7 @@ WriteLiteral("</th>\r\n                                <th>");
 
 
             
-            #line 141 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 141 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                Write(Strings.Common_Job);
 
             
@@ -567,7 +567,7 @@ WriteLiteral("</th>\r\n                                <th class=\"align-right\"
 
 
             
-            #line 142 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 142 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                    Write(Strings.Common_Created);
 
             
@@ -578,7 +578,7 @@ WriteLiteral("</th>\r\n                            </tr>\r\n                    
 
 
             
-            #line 146 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 146 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                              foreach (var continuation in continuations)
                             {
                                 JobData jobData;
@@ -596,7 +596,7 @@ WriteLiteral("                                <tr>\r\n");
 
 
             
-            #line 156 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 156 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                      if (jobData == null)
                                     {
 
@@ -607,7 +607,7 @@ WriteLiteral("                                        <td colspan=\"5\"><em>");
 
 
             
-            #line 158 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 158 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                        Write(String.Format(Strings.JobDetailsPage_JobExpired, continuation.JobId));
 
             
@@ -617,7 +617,7 @@ WriteLiteral("</em></td>\r\n");
 
 
             
-            #line 159 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 159 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                     }
                                     else
                                     {
@@ -629,7 +629,7 @@ WriteLiteral("                                        <td class=\"min-width\">")
 
 
             
-            #line 162 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 162 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                          Write(Html.JobIdLink(continuation.JobId));
 
             
@@ -643,7 +643,7 @@ WriteLiteral("                                        <td class=\"min-width\"><c
 
 
             
-            #line 163 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 163 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                                Write(continuation.Options.ToString("G"));
 
             
@@ -657,7 +657,7 @@ WriteLiteral("                                        <td class=\"min-width\">")
 
 
             
-            #line 164 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 164 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                          Write(Html.StateLabel(jobData.State));
 
             
@@ -671,7 +671,7 @@ WriteLiteral("                                        <td class=\"word-break\">"
 
 
             
-            #line 165 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 165 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                           Write(Html.JobNameLink(continuation.JobId, jobData.Job));
 
             
@@ -685,7 +685,7 @@ WriteLiteral("                                        <td class=\"align-right\">
 
 
             
-            #line 166 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 166 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                            Write(Html.RelativeTime(jobData.CreatedAt));
 
             
@@ -695,7 +695,7 @@ WriteLiteral("</td>\r\n");
 
 
             
-            #line 167 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 167 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                     }
 
             
@@ -705,7 +705,7 @@ WriteLiteral("                                </tr>\r\n");
 
 
             
-            #line 169 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 169 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                             }
 
             
@@ -716,7 +716,7 @@ WriteLiteral("                            </tbody>\r\n                        </
 
 
             
-            #line 173 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 173 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                 }
             }
 
@@ -731,14 +731,14 @@ WriteLiteral("                            </tbody>\r\n                        </
             #line default
             #line hidden
             
-            #line 182 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 182 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                    Write(renderer.Item2(dto));
 
             
             #line default
             #line hidden
             
-            #line 182 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 182 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                             
                     }
                     catch (Exception ex)
@@ -751,7 +751,7 @@ WriteLiteral("                        <h4 class=\"exception-type\">");
 
 
             
-            #line 186 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 186 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                               Write(ex.GetType().Name);
 
             
@@ -765,7 +765,7 @@ WriteLiteral("                        <p class=\"text-muted\">");
 
 
             
-            #line 187 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 187 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                          Write(ex.Message);
 
             
@@ -779,7 +779,7 @@ WriteLiteral("                        <pre class=\"stack-trace\">");
 
 
             
-            #line 188 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 188 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                             Write(Html.StackTrace(ex.StackTrace));
 
             
@@ -789,7 +789,7 @@ WriteLiteral("</pre>\r\n");
 
 
             
-            #line 189 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 189 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                     }
                 }
             }
@@ -802,7 +802,7 @@ WriteLiteral("            <h3>\r\n");
 
 
             
-            #line 194 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 194 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                  if (job.History.Count > 1)
                 {
 
@@ -813,7 +813,7 @@ WriteLiteral("                    <span class=\"job-snippet-buttons pull-right\"
 
 
             
-            #line 197 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 197 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                          if (!IsReadOnly)
                         {
 
@@ -825,7 +825,7 @@ WriteLiteral("                            <button class=\"btn btn-sm btn-default
 
 
             
-            #line 200 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 200 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                           Write(Url.To("/jobs/actions/requeue/" + JobId));
 
             
@@ -835,7 +835,7 @@ WriteLiteral("\"\r\n                                    data-loading-text=\"");
 
 
             
-            #line 201 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 201 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                   Write(Strings.Common_Enqueueing);
 
             
@@ -845,7 +845,7 @@ WriteLiteral("\">\r\n                                ");
 
 
             
-            #line 202 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 202 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                            Write(Strings.JobDetailsPage_Requeue);
 
             
@@ -855,7 +855,7 @@ WriteLiteral("\r\n                            </button>\r\n");
 
 
             
-            #line 204 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 204 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                         }
 
             
@@ -863,7 +863,7 @@ WriteLiteral("\r\n                            </button>\r\n");
             #line hidden
 
             
-            #line 205 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 205 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                          if (!IsReadOnly)
                         {
 
@@ -875,7 +875,7 @@ WriteLiteral("                            <button class=\"btn btn-sm btn-death\"
 
 
             
-            #line 208 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 208 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                           Write(Url.To("/jobs/actions/delete/" + JobId));
 
             
@@ -885,7 +885,7 @@ WriteLiteral("\"\r\n                                    data-loading-text=\"");
 
 
             
-            #line 209 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 209 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                   Write(Strings.Common_Deleting);
 
             
@@ -895,7 +895,7 @@ WriteLiteral("\"\r\n                                    data-confirm=\"");
 
 
             
-            #line 210 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 210 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                              Write(Strings.JobDetailsPage_DeleteConfirm);
 
             
@@ -905,7 +905,7 @@ WriteLiteral("\">\r\n                                ");
 
 
             
-            #line 211 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 211 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                            Write(Strings.Common_Delete);
 
             
@@ -915,7 +915,7 @@ WriteLiteral("\r\n                            </button>\r\n");
 
 
             
-            #line 213 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 213 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                         }
 
             
@@ -925,7 +925,7 @@ WriteLiteral("                    </span>\r\n");
 
 
             
-            #line 215 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 215 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                 }
 
             
@@ -935,7 +935,7 @@ WriteLiteral("\r\n                ");
 
 
             
-            #line 217 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 217 "../../Dashboard/Pages/JobDetailsPage.cshtml"
            Write(Strings.JobDetailsPage_State);
 
             
@@ -945,7 +945,7 @@ WriteLiteral("\r\n            </h3>\r\n");
 
 
             
-            #line 219 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 219 "../../Dashboard/Pages/JobDetailsPage.cshtml"
 
             var index = 0;
 
@@ -966,7 +966,7 @@ WriteLiteral("                <div class=\"state-card ");
 
 
             
-            #line 231 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 231 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                    Write(cardCss != null ? "state-card-state-" + cardCss : null);
 
             
@@ -976,7 +976,7 @@ WriteLiteral("\" style=\"");
 
 
             
-            #line 231 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 231 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                                                                     Write(cardStyle);
 
             
@@ -986,7 +986,7 @@ WriteLiteral("\">\r\n                    <h4 class=\"state-card-title\" style=\"
 
 
             
-            #line 232 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 232 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                    Write(cardTitleStyle);
 
             
@@ -996,7 +996,7 @@ WriteLiteral("\">\r\n                        <small class=\"pull-right text-mute
 
 
             
-            #line 234 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 234 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                              if (index == job.History.Count - 1)
                             {
                                 
@@ -1004,14 +1004,14 @@ WriteLiteral("\">\r\n                        <small class=\"pull-right text-mute
             #line default
             #line hidden
             
-            #line 236 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 236 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                            Write(Html.RelativeTime(entry.CreatedAt));
 
             
             #line default
             #line hidden
             
-            #line 236 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 236 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                                    
                             }
                             else
@@ -1030,7 +1030,7 @@ WriteLiteral(" ");
 
 
             
-            #line 244 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 244 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                   Write(Html.RelativeTime(entry.CreatedAt));
 
             
@@ -1040,7 +1040,7 @@ WriteLiteral(" (");
 
 
             
-            #line 244 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 244 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                                        Write(duration);
 
             
@@ -1050,7 +1050,7 @@ WriteLiteral(")\r\n");
 
 
             
-            #line 245 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 245 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                 }
                                 else
                                 {
@@ -1064,7 +1064,7 @@ WriteLiteral(" ");
 
 
             
-            #line 248 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 248 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                   Write(Html.MomentTitle(entry.CreatedAt, duration));
 
             
@@ -1074,7 +1074,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 249 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 249 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                 }
                             }
 
@@ -1085,7 +1085,7 @@ WriteLiteral("                        </small>\r\n\r\n                        ")
 
 
             
-            #line 253 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 253 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                    Write(entry.StateName);
 
             
@@ -1095,7 +1095,7 @@ WriteLiteral("\r\n                    </h4>\r\n\r\n");
 
 
             
-            #line 256 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 256 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                      if (!String.IsNullOrWhiteSpace(entry.Reason))
                     {
 
@@ -1106,7 +1106,7 @@ WriteLiteral("                        <p class=\"state-card-text text-muted\">")
 
 
             
-            #line 258 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 258 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                          Write(entry.Reason);
 
             
@@ -1116,7 +1116,7 @@ WriteLiteral("</p>\r\n");
 
 
             
-            #line 259 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 259 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                     }
 
             
@@ -1126,7 +1126,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 261 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 261 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                       
                         var rendered = Html.RenderHistory(entry.StateName, entry.Data);
                     
@@ -1138,7 +1138,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 265 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 265 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                      if (rendered != null)
                     {
 
@@ -1149,7 +1149,7 @@ WriteLiteral("                        <div class=\"state-card-body\" style=\"");
 
 
             
-            #line 267 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 267 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                                                        Write(cardBackgroundStyle);
 
             
@@ -1159,7 +1159,7 @@ WriteLiteral("\">\r\n                            ");
 
 
             
-            #line 268 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 268 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                        Write(rendered);
 
             
@@ -1169,7 +1169,7 @@ WriteLiteral("\r\n                        </div>\r\n");
 
 
             
-            #line 270 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 270 "../../Dashboard/Pages/JobDetailsPage.cshtml"
                     }
 
             
@@ -1179,7 +1179,7 @@ WriteLiteral("                </div>\r\n");
 
 
             
-            #line 272 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 272 "../../Dashboard/Pages/JobDetailsPage.cshtml"
 
                 index++;
             }

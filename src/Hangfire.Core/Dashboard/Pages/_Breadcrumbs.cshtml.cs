@@ -16,7 +16,7 @@ namespace Hangfire.Dashboard.Pages
     using System.Linq;
     using System.Text;
     
-    #line 2 "..\..\Dashboard\Pages\_Breadcrumbs.cshtml"
+    #line 2 "../../Dashboard/Pages/_Breadcrumbs.cshtml"
     using Hangfire.Dashboard;
     
     #line default
@@ -39,7 +39,7 @@ WriteLiteral("\r\n<ol class=\"breadcrumb\">\r\n    <li><a href=\"");
 
 
             
-            #line 6 "..\..\Dashboard\Pages\_Breadcrumbs.cshtml"
+            #line 6 "../../Dashboard/Pages/_Breadcrumbs.cshtml"
             Write(Url.Home());
 
             
@@ -49,7 +49,7 @@ WriteLiteral("\"><span class=\"glyphicon glyphicon-home\"></span></a></li>\r\n")
 
 
             
-            #line 7 "..\..\Dashboard\Pages\_Breadcrumbs.cshtml"
+            #line 7 "../../Dashboard/Pages/_Breadcrumbs.cshtml"
      foreach (var item in Items)
     {
 
@@ -60,7 +60,7 @@ WriteLiteral("        <li><a href=\"");
 
 
             
-            #line 9 "..\..\Dashboard\Pages\_Breadcrumbs.cshtml"
+            #line 9 "../../Dashboard/Pages/_Breadcrumbs.cshtml"
                 Write(item.Value);
 
             
@@ -70,7 +70,7 @@ WriteLiteral("\">");
 
 
             
-            #line 9 "..\..\Dashboard\Pages\_Breadcrumbs.cshtml"
+            #line 9 "../../Dashboard/Pages/_Breadcrumbs.cshtml"
                              Write(item.Key);
 
             
@@ -80,7 +80,7 @@ WriteLiteral("</a></li>\r\n");
 
 
             
-            #line 10 "..\..\Dashboard\Pages\_Breadcrumbs.cshtml"
+            #line 10 "../../Dashboard/Pages/_Breadcrumbs.cshtml"
     }
 
             
@@ -90,7 +90,7 @@ WriteLiteral("    <li class=\"active\">");
 
 
             
-            #line 11 "..\..\Dashboard\Pages\_Breadcrumbs.cshtml"
+            #line 11 "../../Dashboard/Pages/_Breadcrumbs.cshtml"
                   Write(Title);
 
             

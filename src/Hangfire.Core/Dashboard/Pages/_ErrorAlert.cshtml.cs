@@ -16,7 +16,7 @@ namespace Hangfire.Dashboard.Pages
     using System.Linq;
     using System.Text;
     
-    #line 2 "..\..\Dashboard\Pages\_ErrorAlert.cshtml"
+    #line 2 "../../Dashboard/Pages/_ErrorAlert.cshtml"
     using Hangfire.Dashboard;
     
     #line default
