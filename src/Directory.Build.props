@@ -29,5 +29,7 @@
 
     <PropertyGroup Condition="'$(APPVEYOR)' == 'True'">
         <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+        <!-- Deterministic paths work bad when using ILRepack, because it combines everything with a wrong repository -->
+        <DeterministicSourcePaths>false</DeterministicSourcePaths>
     </PropertyGroup>
 </Project>
