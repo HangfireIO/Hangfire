@@ -30,27 +30,27 @@ Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfi
       <group targetFramework="net451">
         <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="1.0.0" />
         <dependency id="Microsoft.AspNetCore.Antiforgery" version="1.0.0" />
-        <dependency id="Hangfire.NetCore" version="[0.0.0]" />
+        <dependency id="Hangfire.NetCore" version="[%version%]" />
       </group>
       <group targetFramework="netstandard1.3">
         <dependency id="NETStandard.Library" version="1.6.0" />
         <dependency id="System.ComponentModel" version="4.0.1" />
         <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="1.0.0" />
         <dependency id="Microsoft.AspNetCore.Antiforgery" version="1.0.0" />
-        <dependency id="Hangfire.NetCore" version="[0.0.0]" />
+        <dependency id="Hangfire.NetCore" version="[%version%]" />
       </group>
       <group targetFramework="netstandard2.0">
         <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="2.0.0" />
         <dependency id="Microsoft.AspNetCore.Antiforgery" version="2.0.0" />
-        <dependency id="Hangfire.NetCore" version="[0.0.0]" />
+        <dependency id="Hangfire.NetCore" version="[%version%]" />
       </group>
       <group targetFramework="net461">
         <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="2.0.0" />
         <dependency id="Microsoft.AspNetCore.Antiforgery" version="2.0.0" />
-        <dependency id="Hangfire.NetCore" version="[0.0.0]" />
+        <dependency id="Hangfire.NetCore" version="[%version%]" />
       </group>	  
       <group targetFramework="netcoreapp3.0">
-        <dependency id="Hangfire.NetCore" version="[0.0.0]" />
+        <dependency id="Hangfire.NetCore" version="[%version%]" />
       </group>
     </dependencies>
     <frameworkReferences>

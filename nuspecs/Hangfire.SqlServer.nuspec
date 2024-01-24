@@ -76,17 +76,17 @@ Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfi
     </releaseNotes>
     <dependencies>
       <group targetFramework="net451">
-        <dependency id="Hangfire.Core" version="[0.0.0]" />
+        <dependency id="Hangfire.Core" version="[%version%]" />
       </group>
       
       <group targetFramework="netstandard1.3">
         <dependency id="NETStandard.Library" version="1.6.0" />
         <dependency id="System.Data.Common" version="4.1.0" />
-        <dependency id="Hangfire.Core" version="[0.0.0]" />
+        <dependency id="Hangfire.Core" version="[%version%]" />
       </group>
 
       <group targetFramework="netstandard2.0">
-        <dependency id="Hangfire.Core" version="[0.0.0]" />
+        <dependency id="Hangfire.Core" version="[%version%]" />
       </group>
     </dependencies>
   </metadata>

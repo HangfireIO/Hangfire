@@ -314,19 +314,19 @@ Hangfire.SqlServer.Msmq
     </releaseNotes>
     <dependencies>
       <group targetFramework="net451">
-        <dependency id="Hangfire.Core" version="[0.0.0]" />
-        <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
+        <dependency id="Hangfire.Core" version="[%version%]" />
+        <dependency id="Hangfire.SqlServer" version="[%version%]" />
         <dependency id="Microsoft.Owin.Host.SystemWeb" version="3.0.0" />
       </group>
       <group targetFramework="netstandard1.3">
-        <dependency id="Hangfire.Core" version="[0.0.0]" />
-        <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
-        <dependency id="Hangfire.AspNetCore" version="[0.0.0]" />
+        <dependency id="Hangfire.Core" version="[%version%]" />
+        <dependency id="Hangfire.SqlServer" version="[%version%]" />
+        <dependency id="Hangfire.AspNetCore" version="[%version%]" />
       </group>
       <group targetFramework="netstandard2.0">
-        <dependency id="Hangfire.Core" version="[0.0.0]" />
-        <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
-        <dependency id="Hangfire.AspNetCore" version="[0.0.0]" />
+        <dependency id="Hangfire.Core" version="[%version%]" />
+        <dependency id="Hangfire.SqlServer" version="[%version%]" />
+        <dependency id="Hangfire.AspNetCore" version="[%version%]" />
       </group>
     </dependencies>
   </metadata>

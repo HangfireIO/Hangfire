@@ -41,8 +41,8 @@
 • Fixed – Incorrect order of fetching when multiple queues used.
     </releaseNotes>
     <dependencies>
-      <dependency id="Hangfire.Core" version="[0.0.0]" />
-      <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
+      <dependency id="Hangfire.Core" version="[%version%]" />
+      <dependency id="Hangfire.SqlServer" version="[%version%]" />
     </dependencies>
   </metadata>
   <files>

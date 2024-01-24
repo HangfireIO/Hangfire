@@ -43,32 +43,32 @@ Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfi
       <group targetFramework="net451">
         <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="1.0.0" />
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="1.0.0" />
-        <dependency id="Hangfire.Core" version="[0.0.0]" />
+        <dependency id="Hangfire.Core" version="[%version%]" />
       </group>
       <group targetFramework="net461">
         <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="2.0.0" />
         <dependency id="Microsoft.Extensions.Hosting.Abstractions" version="2.0.0" />
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="2.0.0" />
-        <dependency id="Hangfire.Core" version="[0.0.0]" />
+        <dependency id="Hangfire.Core" version="[%version%]" />
       </group>
       <group targetFramework="netstandard1.3">
         <dependency id="NETStandard.Library" version="1.6.0" />
         <dependency id="System.ComponentModel" version="4.0.1" />
         <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="1.0.0" />
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="1.0.0" />
-        <dependency id="Hangfire.Core" version="[0.0.0]" />
+        <dependency id="Hangfire.Core" version="[%version%]" />
       </group>
       <group targetFramework="netstandard2.0">
         <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="2.0.0" />
         <dependency id="Microsoft.Extensions.Hosting.Abstractions" version="2.0.0" />
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="2.0.0" />
-        <dependency id="Hangfire.Core" version="[0.0.0]" />
+        <dependency id="Hangfire.Core" version="[%version%]" />
       </group>
       <group targetFramework="netstandard2.1">
         <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="3.0.0" />
         <dependency id="Microsoft.Extensions.Hosting.Abstractions" version="3.0.0" />
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="3.0.0" />
-        <dependency id="Hangfire.Core" version="[0.0.0]" />
+        <dependency id="Hangfire.Core" version="[%version%]" />
       </group>
     </dependencies>
   </metadata>
