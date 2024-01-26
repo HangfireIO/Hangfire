@@ -1,4 +1,5 @@
 <Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
   <PropertyGroup>
     <NuGetAudit>false</NuGetAudit><!-- We are testing against these packages, not including them into the product -->
   </PropertyGroup>
