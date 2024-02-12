@@ -1,5 +1,5 @@
 cov-configure --cs
-cov-build.exe --dir cov-int build.bat build
+cov-build.exe --dir cov-int build.bat compile
 
 # Compress results.
 "Compressing Coverity results..."
