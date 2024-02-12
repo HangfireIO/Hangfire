@@ -60,12 +60,7 @@ namespace Hangfire.Dashboard
 
         public override Task WriteAsync(string text)
         {
-            if (!_context.Response.HasStarted)
-            {
-                return _context.Response.WriteAsync(text);
-            }
-
-            return Task.FromResult(true);
+            return _context.Response.WriteAsync(text);
         }
 
         public override void SetExpire(DateTimeOffset? value)
