@@ -4,9 +4,9 @@
     ".NETCoreApp,Version=v3.1": {
       "Dapper": {
         "type": "Direct",
-        "requested": "[2.0.123, )",
-        "resolved": "2.0.123",
-        "contentHash": "RDFF4rBLLmbpi6pwkY7q/M6UXHRJEOerplDGE5jwEkP/JGJnBauAClYavNKJPW1yOTWRPIyfj4is3EaJxQXILQ==",
+        "requested": "[2.1.28, )",
+        "resolved": "2.1.28",
+        "contentHash": "ha49pzOEDmCPkMxwfPSR/wxa/6RD3r42TESIgpzpi7FXq/gNVUuJVEO+wtUzntNRhtmq3BKCl0s0aAlSZLkBUA==",
         "dependencies": {
           "System.Reflection.Emit.Lightweight": "4.7.0"
         }
@@ -1493,7 +1493,7 @@
       "hangfire.sqlserver": {
         "type": "Project",
         "dependencies": {
-          "Dapper": "[2.0.123, )",
+          "Dapper": "[2.1.28, )",
           "Hangfire.Core": "[1.0.0, )",
           "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
           "Microsoft.SourceLink.GitHub": "[8.0.0, )"
@@ -1939,9 +1939,9 @@
     "net6.0": {
       "Dapper": {
         "type": "Direct",
-        "requested": "[2.0.123, )",
-        "resolved": "2.0.123",
-        "contentHash": "RDFF4rBLLmbpi6pwkY7q/M6UXHRJEOerplDGE5jwEkP/JGJnBauAClYavNKJPW1yOTWRPIyfj4is3EaJxQXILQ=="
+        "requested": "[2.1.28, )",
+        "resolved": "2.1.28",
+        "contentHash": "ha49pzOEDmCPkMxwfPSR/wxa/6RD3r42TESIgpzpi7FXq/gNVUuJVEO+wtUzntNRhtmq3BKCl0s0aAlSZLkBUA=="
       },
       "Microsoft.Data.SqlClient": {
         "type": "Direct",
@@ -3431,7 +3431,7 @@
       "hangfire.sqlserver": {
         "type": "Project",
         "dependencies": {
-          "Dapper": "[2.0.123, )",
+          "Dapper": "[2.1.28, )",
           "Hangfire.Core": "[1.0.0, )",
           "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
           "Microsoft.SourceLink.GitHub": "[8.0.0, )"
