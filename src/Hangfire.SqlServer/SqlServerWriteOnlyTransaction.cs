@@ -391,7 +391,7 @@ insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
 
             string trimSql =
 $@";with cte as (
-    select row_number() over (order by Id desc) as row_num
+    select row_number() over (order by Id) as row_num
     from [{_storage.SchemaName}].List with (xlock, forceseek)
     where [Key] = @key)
 delete from cte where row_num not between @start and @end";

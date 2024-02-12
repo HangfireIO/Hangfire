@@ -1234,6 +1234,7 @@ select scope_identity() as Id";
                     x.InsertToList("my-key", "1");
                     x.InsertToList("my-key", "2");
                     x.InsertToList("my-key", "3");
+                    x.InsertToList("my-key", "4");
                     x.TrimList("my-key", 1, 2);
                 }, useMicrosoftDataSqlClient, useBatching);
 
