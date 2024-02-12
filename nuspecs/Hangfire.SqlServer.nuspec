@@ -5,7 +5,7 @@
     <version>%version%</version>
     <title>Hangfire SQL Server Storage</title>
     <authors>Sergey Odinokov</authors>
-    <owners>odinserj</owners>
+    <owners>HangfireIO, odinserj</owners>
     <projectUrl>https://www.hangfire.io/</projectUrl>
     <repository type="git" url="https://github.com/HangfireIO/Hangfire.git" commit="%commit%" />
     <license type="file">LICENSE.md</license>
