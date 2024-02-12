@@ -20,6 +20,8 @@ image:
 # environment variables
 environment:
   Hangfire_SqlServer_ConnectionStringTemplate: Server=.\SQL2017;Database={0};User Id=sa;Password=Password12!;Encrypt=False
+  SIGNPATH_API_TOKEN:
+    secure: nvG+jv/K3utFvpHGx/N6Glpv0Wdj0wfBSl8c/tkHbn2AIwGcNe2e4VSOkod7xVpC
   COVERITY_TOKEN:
     secure: r3yBqxgALySnCK9W6uiStqoadsqYtrWQolzxGDVKF74=
   COVERITY_EMAIL:
@@ -34,11 +36,14 @@ services:
 #---------------------------------#
 
 # Installing MSMQ manually to avoid "Cannot initialize 'msmq' service handler" error
-build_script:
+before_build:
   - cmd: powershell Import-Module ServerManager; Add-WindowsFeature MSMQ; net start msmq
-  - ps: IF ($env:APPVEYOR_SCHEDULED_BUILD -or $env:APPVEYOR_REPO_COMMIT_MESSAGE -like "*covscan*") { .\coverity-scan.ps1 }
-  - cmd: IF NOT DEFINED APPVEYOR_SCHEDULED_BUILD build.bat
+  - ps: Install-Module -Name SignPath
   - sh: nuget locals all -clear
+
+build_script:  
+  - ps: IF ($env:APPVEYOR_SCHEDULED_BUILD -or $env:APPVEYOR_REPO_COMMIT_MESSAGE -like "*covscan*") { .\coverity-scan.ps1 }
+  - cmd: IF NOT DEFINED APPVEYOR_SCHEDULED_BUILD build.bat sign
   - sh: chmod +x build.sh; ./build.sh
 
 #---------------------------------#
