@@ -2,17 +2,11 @@
   "version": 1,
   "dependencies": {
     "Any,Version=v0.0": {
-      "7-Zip.CommandLine": {
-        "type": "Direct",
-        "requested": "[18.1.0, 18.1.0]",
-        "resolved": "18.1.0",
-        "contentHash": "jHUxQQLmjSsjR9WS+OPrBYEuHrtSXey6xHIjFjN1Px1MoxyOaIGjYUSo2iayVxMFs64/TiuF/EopCu2mPRoTuA=="
-      },
       "Hangfire.Build": {
         "type": "Direct",
-        "requested": "[0.3.3, 0.3.3]",
-        "resolved": "0.3.3",
-        "contentHash": "Jm2wLxCbKVg1LJZrjFRVZmyvKULoEnMWLL07Szoat/Ep9gZ18xh4z20XvBvwCgAJKXeZEch+pIYcne0NO7aWyg=="
+        "requested": "[0.4.0, 0.4.0]",
+        "resolved": "0.4.0",
+        "contentHash": "rU3NWGiurNYKKkLND8TAP4Dcfla+1NIUmkACqstAnIYgN19aGIeADme6Rx4g4cCU1tsMfEemuV8W2ItA8EMnkw=="
       },
       "ILRepack": {
         "type": "Direct",
@@ -31,12 +25,6 @@
         "requested": "[2.5.0, 2.5.0]",
         "resolved": "2.5.0",
         "contentHash": "yOu2KEjDFvE20b+YK/+Ovf4czUHWH2DlBB9lIKDXdBjcMh3PXrPJTxPzi468XrFvE1dVEiWu+pGNkVFE9+VpMA=="
-      },
-      "xunit.runner.console": {
-        "type": "Direct",
-        "requested": "[2.2.0, 2.2.0]",
-        "resolved": "2.2.0",
-        "contentHash": "Bz+N1MyQ24rtLJPR/cCdUAb4V8cM2Te7gTopDhsIkPSOqWk4GCO2QfJvr5Wwe0vbBXcpBOWCh2vH75fzhA3cig=="
       }
     }
   }
