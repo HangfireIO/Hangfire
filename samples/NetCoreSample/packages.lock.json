@@ -47,8 +47,8 @@
       },
       "Cronos": {
         "type": "Transitive",
-        "resolved": "0.8.2",
-        "contentHash": "BGrpE6ZIchx1SldOy6AZr0ah8nEUQY2+Gn7qSJLTa8OKeTPy3eQ6O+GsNHPSCIIc6iOrmPo8TszBRV7go2R8Uw=="
+        "resolved": "0.8.3",
+        "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw=="
       },
       "Dapper": {
         "type": "Transitive",
@@ -381,7 +381,7 @@
       "hangfire.core": {
         "type": "Project",
         "dependencies": {
-          "Cronos": "[0.8.2, )",
+          "Cronos": "[0.8.3, )",
           "LibLog": "[1.5.0, )",
           "Microsoft.CSharp": "[4.4.0, )",
           "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",

@@ -10,9 +10,9 @@
       },
       "Cronos": {
         "type": "Direct",
-        "requested": "[0.8.2, )",
-        "resolved": "0.8.2",
-        "contentHash": "BGrpE6ZIchx1SldOy6AZr0ah8nEUQY2+Gn7qSJLTa8OKeTPy3eQ6O+GsNHPSCIIc6iOrmPo8TszBRV7go2R8Uw=="
+        "requested": "[0.8.3, )",
+        "resolved": "0.8.3",
+        "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw=="
       },
       "LibLog": {
         "type": "Direct",
@@ -113,9 +113,9 @@
       },
       "Cronos": {
         "type": "Direct",
-        "requested": "[0.8.2, )",
-        "resolved": "0.8.2",
-        "contentHash": "BGrpE6ZIchx1SldOy6AZr0ah8nEUQY2+Gn7qSJLTa8OKeTPy3eQ6O+GsNHPSCIIc6iOrmPo8TszBRV7go2R8Uw=="
+        "requested": "[0.8.3, )",
+        "resolved": "0.8.3",
+        "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw=="
       },
       "LibLog": {
         "type": "Direct",
@@ -210,9 +210,9 @@
     ".NETStandard,Version=v1.3": {
       "Cronos": {
         "type": "Direct",
-        "requested": "[0.8.2, )",
-        "resolved": "0.8.2",
-        "contentHash": "BGrpE6ZIchx1SldOy6AZr0ah8nEUQY2+Gn7qSJLTa8OKeTPy3eQ6O+GsNHPSCIIc6iOrmPo8TszBRV7go2R8Uw==",
+        "requested": "[0.8.3, )",
+        "resolved": "0.8.3",
+        "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw==",
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         }
@@ -1116,9 +1116,9 @@
     ".NETStandard,Version=v2.0": {
       "Cronos": {
         "type": "Direct",
-        "requested": "[0.8.2, )",
-        "resolved": "0.8.2",
-        "contentHash": "BGrpE6ZIchx1SldOy6AZr0ah8nEUQY2+Gn7qSJLTa8OKeTPy3eQ6O+GsNHPSCIIc6iOrmPo8TszBRV7go2R8Uw=="
+        "requested": "[0.8.3, )",
+        "resolved": "0.8.3",
+        "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw=="
       },
       "LibLog": {
         "type": "Direct",
