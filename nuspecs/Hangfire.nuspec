@@ -22,6 +22,29 @@ https://www.hangfire.io/
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.10
+
+Hangfire.Core
+
+• Changed – Added Norwegian translations for new keys (by @khellang).
+• Changed – Update Brazilian Portuguese translation (by @HugoAlames).
+• Changed – Bump Cronos dependency to version 0.8.3.
+
+Hangfire.AspNetCore
+
+• Fixed – Don't check `HasStarted` in `Response.WriteAsync` to avoid breaking dispatchers.
+
+Hangfire.SqlServer
+
+• Changed – Bump Dapper for the `netstandard2.0` platform to version 2.1.28.
+• Changed – Bump Dapper for `net451` and `netstandard1.3` platforms to version 1.60.6.
+
+Hangfire.Core, Hangfire.NetCore, Hangfire.AspNetCore, Hangfire.SqlServer, Hangfire.SqlServer.Msmq
+
+• Project – Enable NuGet package and DLL signing with a company certificate.
+• Project – Require NuGet package signature validation on restore for dependencies.
+• Project – Add `HangfireIO` as a package owner.
+
 1.8.9
 
 Hangfire.Core

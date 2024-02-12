@@ -13,6 +13,11 @@
     <copyright>Copyright © 2014-2024 Hangfire OÜ</copyright>
     <tags>Hangfire SqlServer MSMQ</tags>
     <releaseNotes>https://www.hangfire.io/blog/
+
+1.8.10
+• Project – Enable NuGet package and DLL signing with a company certificate.
+• Project – Require NuGet package signature validation on restore for dependencies.
+• Project – Add `HangfireIO` as a package owner.
   
 1.8.9
 • Project – Enable full source link support with embedded symbols and repository-based sources.
