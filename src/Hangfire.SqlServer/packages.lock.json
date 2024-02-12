@@ -4,9 +4,9 @@
     ".NETFramework,Version=v4.5.1": {
       "Dapper": {
         "type": "Direct",
-        "requested": "[1.50.1, )",
-        "resolved": "1.50.1",
-        "contentHash": "NIE9+9/Dqh0SF1MWBvuMGg0A8bgTdu8S0HMRrpFvlpnpIO/WklVVcaLS4ZtdI3dvxMmYiJoKBn7se3mgndUV9A=="
+        "requested": "[1.60.6, )",
+        "resolved": "1.60.6",
+        "contentHash": "mmnJNhKMeF2KhvVXDoVQlFxre8aJAo71YBJrKqFlvuqzYC2QiXUq94/GCDBJzU7paq4GqpkV2glw3308TcGibw=="
       },
       "Microsoft.CodeAnalysis.NetAnalyzers": {
         "type": "Direct",
@@ -121,9 +121,9 @@
     ".NETStandard,Version=v1.3": {
       "Dapper": {
         "type": "Direct",
-        "requested": "[1.50.7, )",
-        "resolved": "1.50.7",
-        "contentHash": "3ZHVc9uiUnKLaigSNtk79F2riLl32BtE7Za/kV/cjdfA6jbGiVZbxJ851aA3AbjTIG+MDFP8y19deJ6wW8nVSQ==",
+        "requested": "[1.60.6, )",
+        "resolved": "1.60.6",
+        "contentHash": "mmnJNhKMeF2KhvVXDoVQlFxre8aJAo71YBJrKqFlvuqzYC2QiXUq94/GCDBJzU7paq4GqpkV2glw3308TcGibw==",
         "dependencies": {
           "NETStandard.Library": "1.6.1",
           "System.Collections.Concurrent": "4.3.0",

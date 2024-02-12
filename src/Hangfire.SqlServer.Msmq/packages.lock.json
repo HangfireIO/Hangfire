@@ -39,8 +39,8 @@
       },
       "Dapper": {
         "type": "Transitive",
-        "resolved": "1.50.1",
-        "contentHash": "NIE9+9/Dqh0SF1MWBvuMGg0A8bgTdu8S0HMRrpFvlpnpIO/WklVVcaLS4ZtdI3dvxMmYiJoKBn7se3mgndUV9A=="
+        "resolved": "1.60.6",
+        "contentHash": "mmnJNhKMeF2KhvVXDoVQlFxre8aJAo71YBJrKqFlvuqzYC2QiXUq94/GCDBJzU7paq4GqpkV2glw3308TcGibw=="
       },
       "LibLog": {
         "type": "Transitive",
@@ -119,7 +119,7 @@
       "hangfire.sqlserver": {
         "type": "Project",
         "dependencies": {
-          "Dapper": "[1.50.1, )",
+          "Dapper": "[1.60.6, )",
           "Hangfire.Core": "[1.0.0, )",
           "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
           "Microsoft.NETFramework.ReferenceAssemblies": "[1.0.3, )",
