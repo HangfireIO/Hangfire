@@ -10,9 +10,9 @@
       },
       "ILRepack": {
         "type": "Direct",
-        "requested": "[2.0.25, 2.0.25]",
-        "resolved": "2.0.25",
-        "contentHash": "7RM1El+8ljGEnha238E2SWpsUujq7bDhHtqXaUoU2sHq3xm4Gz14Wg5bIo2Y9s8XYoK5V/9vc1KavpgVjz6AkA=="
+        "requested": "[2.0.27, 2.0.27]",
+        "resolved": "2.0.27",
+        "contentHash": "N5nhVwlgU2ipeonLBVuv1HpsIclJI/5QujuLeo3BW7irD2KnSFXkHa5FmXwzdCkB36D0XGOxNMxh99P7kjgU2A=="
       },
       "psake": {
         "type": "Direct",
