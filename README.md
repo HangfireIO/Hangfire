@@ -1,13 +1,13 @@
 Hangfire 
 =========
 
-[![Official Site](https://img.shields.io/badge/site-hangfire.io-blue.svg)](http://hangfire.io) [![Latest version](https://img.shields.io/nuget/v/Hangfire.svg)](https://www.nuget.org/packages?q=hangfire) [![License LGPLv3](https://img.shields.io/badge/license-LGPLv3-green.svg)](https://www.gnu.org/licenses/lgpl-3.0.html) [![Coverity Scan](https://scan.coverity.com/projects/4423/badge.svg?flat=1)](https://scan.coverity.com/projects/hangfireio-hangfire)
+[![Official Site](https://img.shields.io/badge/site-hangfire.io-blue.svg)](https://www.hangfire.io) [![Latest version](https://www.hangfire.io/shields/nuget/v/Hangfire.Core.svg?label=release)](https://www.nuget.org/packages?q=hangfire) [![Downloads](https://www.hangfire.io/shields/nuget/dt/Hangfire.Core.svg?style=flat)](https://www.nuget.org/packages/Hangfire.Core/) [![License LGPLv3](https://img.shields.io/badge/license-LGPLv3-green.svg)](https://www.gnu.org/licenses/lgpl-3.0.html) [![Coverity Scan](https://scan.coverity.com/projects/4423/badge.svg?flat=1)](https://scan.coverity.com/projects/hangfireio-hangfire)
 
 ## Build Status
 
 &nbsp; | `main` | `dev`
 --- | --- | --- 
-**AppVeyor** | [![Windows Build Status](https://ci.appveyor.com/api/projects/status/70m632jkycqpnsp9/branch/main?svg=true)](https://ci.appveyor.com/project/odinserj/hangfire-525)  | [![Windows Build Status](https://ci.appveyor.com/api/projects/status/70m632jkycqpnsp9/branch/dev?svg=true)](https://ci.appveyor.com/project/odinserj/hangfire-525) 
+**AppVeyor** | [![Windows Build Status](https://ci.appveyor.com/api/projects/status/70m632jkycqpnsp9/branch/main?svg=true)](https://ci.appveyor.com/project/HangfireIO/hangfire-525)  | [![Windows Build Status](https://ci.appveyor.com/api/projects/status/70m632jkycqpnsp9/branch/dev?svg=true)](https://ci.appveyor.com/project/HangfireIO/hangfire-525) 
 
 ## Overview
 
@@ -27,9 +27,9 @@ Hangfire provides a unified programming model to handle background tasks in a **
 - database maintenance
 - *…and so on*
 
-Hangfire is a .NET alternative to [Resque](https://github.com/resque/resque), [Sidekiq](http://sidekiq.org), [delayed_job](https://github.com/collectiveidea/delayed_job), [Celery](http://www.celeryproject.org).
+Hangfire is a .NET alternative to [Resque](https://github.com/resque/resque), [Sidekiq](https://sidekiq.org), [delayed_job](https://github.com/collectiveidea/delayed_job), [Celery](https://www.celeryproject.org).
 
-![Hangfire Dashboard](http://hangfire.io/img/ui/dashboard-sm.png)
+![Hangfire Dashboard](https://www.hangfire.io/img/ui/dashboard-sm.png)
 
 Installation
 -------------
@@ -40,7 +40,7 @@ Hangfire is available as a NuGet package. You can install it using the NuGet Pac
 PM> Install-Package Hangfire
 ```
 
-After installation, update your existing [OWIN Startup](http://www.asp.net/aspnet/overview/owin-and-katana/owin-startup-class-detection) file with the following lines of code. If you do not have this class in your project or don't know what is it, please read the [Quick start](http://docs.hangfire.io/en/latest/quick-start.html) guide to learn about how to install Hangfire.
+After installation, update your existing [OWIN Startup](https://www.asp.net/aspnet/overview/owin-and-katana/owin-startup-class-detection) file with the following lines of code. If you do not have this class in your project or don't know what is it, please read the [Quick start](https://docs.hangfire.io/en/latest/getting-started/index.html) guide to learn about how to install Hangfire.
 
 ```csharp
 public void Configuration(IAppBuilder app)
@@ -55,9 +55,9 @@ public void Configuration(IAppBuilder app)
 Usage
 ------
 
-This is an incomplete list of features; to see all of them, check the [official site](http://hangfire.io) and the [documentation](http://docs.hangfire.io).
+This is an incomplete list of features; to see all of them, check the [official site](https://www.hangfire.io) and the [documentation](https://docs.hangfire.io).
 
-[**Fire-and-forget tasks**](http://docs.hangfire.io/en/latest/background-methods/calling-methods-in-background.html)
+[**Fire-and-forget tasks**](https://docs.hangfire.io/en/latest/background-methods/calling-methods-in-background.html)
 
 Dedicated worker pool threads execute queued background jobs as soon as possible, shortening your request's processing time.
 
@@ -65,7 +65,7 @@ Dedicated worker pool threads execute queued background jobs as soon as possible
 BackgroundJob.Enqueue(() => Console.WriteLine("Simple!"));
 ```
 
-[**Delayed tasks**](http://docs.hangfire.io/en/latest/background-methods/calling-methods-with-delay.html)
+[**Delayed tasks**](https://docs.hangfire.io/en/latest/background-methods/calling-methods-with-delay.html)
 
 Scheduled background jobs are executed only after a given amount of time.
 
@@ -73,9 +73,9 @@ Scheduled background jobs are executed only after a given amount of time.
 BackgroundJob.Schedule(() => Console.WriteLine("Reliable!"), TimeSpan.FromDays(7));
 ```
 
-[**Recurring tasks**](http://docs.hangfire.io/en/latest/background-methods/performing-recurrent-tasks.html)
+[**Recurring tasks**](https://docs.hangfire.io/en/latest/background-methods/performing-recurrent-tasks.html)
 
-Recurring jobs have never been simpler; just call the following method to perform any kind of recurring task using the [CRON expressions](http://en.wikipedia.org/wiki/Cron#CRON_expression).
+Recurring jobs have never been simpler; just call the following method to perform any kind of recurring task using the [CRON expressions](https://en.wikipedia.org/wiki/Cron#CRON_expression).
 
 ```csharp
 RecurringJob.AddOrUpdate(() => Console.WriteLine("Transparent!"), Cron.Daily);
@@ -92,7 +92,7 @@ BackgroundJob.ContinueWith(id, () => Console.WriteLine("world!"));
 
 **Process background tasks inside a web application…**
 
-You can process background tasks in any OWIN-compatible application framework, including [ASP.NET MVC](http://www.asp.net/mvc), [ASP.NET Web API](http://www.asp.net/web-api), [FubuMvc](http://fubu-project.org), [Nancy](http://nancyfx.org), etc. Forget about [AppDomain unloads, Web Garden & Web Farm issues](http://haacked.com/archive/2011/10/16/the-dangers-of-implementing-recurring-background-tasks-in-asp-net.aspx/) – Hangfire is reliable for web applications from scratch, even on shared hosting.
+You can process background tasks in any OWIN-compatible application framework, including [ASP.NET MVC](https://www.asp.net/mvc), [ASP.NET Web API](https://www.asp.net/web-api), [FubuMvc](https://fubu-project.org), [Nancy](https://nancyfx.org), etc. Forget about [AppDomain unloads, Web Garden & Web Farm issues](https://haacked.com/archive/2011/10/16/the-dangers-of-implementing-recurring-background-tasks-in-asp-net.aspx/) – Hangfire is reliable for web applications from scratch, even on shared hosting.
 
 ```csharp
 app.UseHangfireServer();
@@ -115,14 +115,14 @@ Questions? Problems?
 
 Open-source projects develop more smoothly when discussions are public.
 
-If you have any questions, problems related to Hangfire usage or if you want to discuss new features, please visit the [discussion forum](http://discuss.hangfire.io). You can sign in there using your existing Google or GitHub account, so it's very simple to start using it.
+If you have any questions, problems related to Hangfire usage or if you want to discuss new features, please visit the [discussion forum](https://discuss.hangfire.io). You can sign in there using your existing Google or GitHub account, so it's very simple to start using it.
 
 If you've discovered a bug, please report it to the [Hangfire GitHub Issues](https://github.com/HangfireIO/Hangfire/issues?state=open). Detailed reports with stack traces, actual and expected behaviours are welcome.
 
 Related Projects
 -----------------
 
-Please see the [Extensions](http://hangfire.io/extensions.html) page on the official site.
+Please see the [Extensions](https://www.hangfire.io/extensions.html) page on the official site.
 
 Building the sources
 ---------------------
@@ -179,7 +179,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
-along with this program.  If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses).
+along with this program.  If not, see [https://www.gnu.org/licenses/](https://www.gnu.org/licenses).
 
 Legal
 ------

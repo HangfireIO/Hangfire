@@ -8,8 +8,9 @@
     <owners>HangfireIO, odinserj</owners>
     <projectUrl>https://www.hangfire.io/</projectUrl>
     <repository type="git" url="https://github.com/HangfireIO/Hangfire.git" commit="%commit%" />
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
+    <license type="file">LICENSE.md</license>
+    <icon>icon.png</icon>
+    <readme>README.md</readme>
     <summary>An easy way to perform fire-and-forget, delayed and recurring tasks inside ASP.NET applications. No Windows Service required.</summary>
     <description>
 An easy and reliable way to perform fire-and-forget, delayed and recurring, long-running, short-running, CPU or I/O intensive tasks inside ASP.NET applications. No Windows Service / Task Scheduler required. Even ASP.NET is not required.
@@ -17,7 +18,7 @@ Backed by Redis, SQL Server, SQL Azure or MSMQ. This is a .NET alternative to Si
 https://www.hangfire.io/
     </description>
     <copyright>Copyright © 2013-2024 Hangfire OÜ</copyright>
-    <tags>Hangfire AspNet MVC AspNetCore SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
+    <tags>Hangfire AspNet MVC AspNetCore NetCore SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
@@ -354,6 +355,14 @@ Hangfire.SqlServer.Msmq
     </dependencies>
   </metadata>
   <files>
-    <file src="Content\readme.txt" target="readme.txt" />
+    <file src="..\nuspecs\icon.png" />
+
+    <file src="README.md" />
+    <file src="LICENSE.md" />
+    <file src="COPYING" />
+    <file src="COPYING.LESSER" />
+    <file src="NOTICES" />
+    <file src="LICENSE_STANDARD" />
+    <file src="LICENSE_ROYALTYFREE" />
   </files>
 </package>

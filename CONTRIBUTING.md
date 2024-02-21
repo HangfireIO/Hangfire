@@ -1,7 +1,7 @@
 # File an Issue
 
 If you have a question rather than an issue, please post it to the [Hangfire Stack 
-Overflow tag](http://stackoverflow.com/questions/tagged/hangfire). For non-security related bugs please log a new issue:
+Overflow tag](https://stackoverflow.com/questions/tagged/hangfire). For non-security related bugs please log a new issue:
 
 1. Search the [issue tracker](https://github.com/HangfireIO/Hangfire/issues) for similar issues.
 2. Specify the **version** of `Hangfire.Core` package in which the bug was occurred.

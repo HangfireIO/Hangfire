@@ -52,7 +52,6 @@ Task Collect -Depends Test -Description "Copy all artifacts to the build folder.
     Collect-Assembly "Hangfire.AspNetCore" "netcoreapp3.0"
     Collect-Assembly "Hangfire.NetCore" "netstandard2.1"
     
-    Collect-Content "content\readme.txt"
     Collect-Tool "src\Hangfire.SqlServer\DefaultInstall.sql"
 
     Collect-Localizations "Hangfire.Core" "net451"
@@ -60,6 +59,7 @@ Task Collect -Depends Test -Description "Copy all artifacts to the build folder.
     Collect-Localizations "Hangfire.Core" "netstandard1.3"
     Collect-Localizations "Hangfire.Core" "netstandard2.0"
 
+    Collect-File "README.md"
     Collect-File "LICENSE.md"
     Collect-File "NOTICES"
     Collect-File "COPYING.LESSER"

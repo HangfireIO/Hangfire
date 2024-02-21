@@ -9,7 +9,8 @@
     <projectUrl>https://www.hangfire.io/</projectUrl>
     <repository type="git" url="https://github.com/HangfireIO/Hangfire.git" commit="%commit%" />
     <license type="file">LICENSE.md</license>
-    <description>ASP.NET Core support for Hangfire (background job system for ASP.NET applications).</description>
+    <icon>icon.png</icon>
+    <description>ASP.NET Core support for Hangfire, a background job framework for .NET applications.</description>
     <copyright>Copyright © 2017-2024 Hangfire OÜ</copyright>
     <tags>hangfire aspnetcore</tags>
     <releaseNotes>
@@ -80,6 +81,8 @@ Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfi
 
     <file src="netcoreapp3.0\Hangfire.AspNetCore.dll" target="lib\netcoreapp3.0" />
     <file src="netcoreapp3.0\Hangfire.AspNetCore.xml" target="lib\netcoreapp3.0" />
+
+    <file src="..\nuspecs\icon.png" />
 
     <file src="LICENSE.md" />
     <file src="COPYING" />
