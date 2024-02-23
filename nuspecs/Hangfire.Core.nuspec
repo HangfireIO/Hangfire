@@ -23,6 +23,11 @@ https://www.hangfire.io/
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.11
+• Changed – Add icons and fix metadata for NuGet packages.
+• Changed – Bump ILRepack to version 2.0.27 to avoid problems with internalizing.
+• Fixed – "Type exists in both Cronos and Hangfire.Core" exception.
+
 1.8.10
 • Changed – Added Norwegian translations for new keys (by @khellang).
 • Changed – Update Brazilian Portuguese translation (by @HugoAlames).
