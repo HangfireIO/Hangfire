@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='net461'">
-    <PackageReference Include="System.Data.SqlClient" Version="4.5.0" NoWarn="NU1902" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.5.0" NoWarn="NU1902;NU1903" />
     <PackageReference Include="Dapper" Version="1.60.6" />
     <PackageReference Include="Newtonsoft.Json" Version="5.0.1" NoWarn="NU1903" />
   </ItemGroup>
