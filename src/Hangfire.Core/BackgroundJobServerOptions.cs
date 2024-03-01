@@ -187,5 +187,15 @@ namespace Hangfire
         
         [CanBeNull]
         public Action<Thread> WorkerThreadConfigurationAction { get; set; }
+
+        /// <summary>
+        /// Experimental option for schedulers, but not for workers. Gets or sets the
+        /// maximum degree of parallelism for the <see cref="RecurringJobScheduler"/>
+        /// process, allows it to enable parallel scheduling of recurring jobs when
+        /// the specified value is greater than <c>1</c>. Parallel work items are
+        /// executed on the task scheduler specified in the <see cref="TaskScheduler"/>
+        /// property.
+        /// </summary>
+        public int MaxDegreeOfParallelismForSchedulers { get; set; } = 1;
     }
 }

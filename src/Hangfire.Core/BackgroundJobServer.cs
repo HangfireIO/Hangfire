@@ -214,7 +214,13 @@ namespace Hangfire
             if (!_options.IsLightweightServer)
             {
                 processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger).UseBackgroundPool(1));
-                processes.Add(new RecurringJobScheduler(factory, _options.SchedulePollingInterval, timeZoneResolver).UseBackgroundPool(1));
+                processes.Add(
+                    new RecurringJobScheduler(factory, _options.SchedulePollingInterval, timeZoneResolver)
+                        {
+                            TaskScheduler = _options.TaskScheduler,
+                            MaxDegreeOfParallelism = _options.MaxDegreeOfParallelismForSchedulers
+                        }
+                        .UseBackgroundPool(1));
             }
 
             return processes;

@@ -16,6 +16,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
@@ -147,6 +149,20 @@ namespace Hangfire.Server
             _profiler = new SlowLogProfiler(_logger);
         }
 
+        /// <summary>
+        /// Gets or sets the maximum degree of parallelism for a scheduler instance.
+        /// When greater than <c>1</c> and batching enabling, recurring jobs will
+        /// be scheduled in parallel under separate connections, increasing the
+        /// throughput.
+        /// </summary>
+        public int MaxDegreeOfParallelism { get; set; }
+
+        /// <summary>
+        /// Gets or sets a task scheduler that will be used when parallel scheduling
+        /// is enabled via the <see cref="MaxDegreeOfParallelism"/> option.
+        /// </summary>
+        public TaskScheduler TaskScheduler { get; set; }
+
         /// <inheritdoc />
         public void Execute(BackgroundProcessContext context)
         {
@@ -200,12 +216,37 @@ namespace Hangfire.Server
 
                     if (recurringJobIds != null)
                     {
-                        foreach (var recurringJobId in recurringJobIds)
+#if !NETSTANDARD1_3
+                        if (MaxDegreeOfParallelism > 1)
                         {
-                            if (context.IsStopping) break;
+                            Parallel.ForEach(
+                                recurringJobIds,
+                                new ParallelOptions
+                                {
+                                    MaxDegreeOfParallelism = MaxDegreeOfParallelism,
+                                    CancellationToken = context.StoppingToken,
+                                    TaskScheduler = TaskScheduler
+                                },
+                                (recurringJobId, state) =>
+                                {
+                                    using (var dedicated = context.Storage.GetConnection())
+                                    {
+                                        TryEnqueueBackgroundJob(context, dedicated, recurringJobId, now);
+                                    }
 
-                            TryEnqueueBackgroundJob(context, connection, recurringJobId, now);
-                            jobsProcessed++;
+                                    Interlocked.Increment(ref jobsProcessed);
+                                });
+                        }
+                        else
+#endif
+                        {
+                            foreach (var recurringJobId in recurringJobIds)
+                            {
+                                if (context.IsStopping) break;
+
+                                TryEnqueueBackgroundJob(context, connection, recurringJobId, now);
+                                jobsProcessed++;
+                            }
                         }
                     }
                 }
