@@ -1452,9 +1452,7 @@ namespace Hangfire.Logging.LogProviders
             // Append stack trace if there is an exception
             if (e != null)
             {
-                stringBuilder.Append(Environment.NewLine).Append(e.GetType());
-                stringBuilder.Append(Environment.NewLine).Append(e.Message);
-                stringBuilder.Append(Environment.NewLine).Append(e.StackTrace);
+                stringBuilder.Append(Environment.NewLine).Append(e);
             }
 
             return stringBuilder.ToString();
