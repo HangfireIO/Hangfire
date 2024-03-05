@@ -1,7 +1,7 @@
 Hangfire 
 =========
 
-[![Official Site](https://img.shields.io/badge/site-hangfire.io-blue.svg)](https://www.hangfire.io) [![Latest version](https://www.hangfire.io/shields/nuget/v/Hangfire.Core.svg?label=release)](https://www.nuget.org/packages?q=hangfire) [![Downloads](https://www.hangfire.io/shields/nuget/dt/Hangfire.Core.svg?style=flat)](https://www.nuget.org/packages/Hangfire.Core/) [![License LGPLv3](https://img.shields.io/badge/license-LGPLv3-green.svg)](https://www.gnu.org/licenses/lgpl-3.0.html) [![Coverity Scan](https://scan.coverity.com/projects/4423/badge.svg?flat=1)](https://scan.coverity.com/projects/hangfireio-hangfire)
+[![Official Site](https://img.shields.io/badge/site-hangfire.io-blue.svg)](https://www.hangfire.io) [![Latest version](https://img.shields.io/nuget/v/Hangfire.svg?label=release)](https://www.nuget.org/packages?q=hangfire) [![Downloads](https://img.shields.io/nuget/dt/Hangfire.Core.svg)](https://www.nuget.org/packages/Hangfire.Core/) [![License LGPLv3](https://img.shields.io/badge/license-LGPLv3-green.svg)](https://www.gnu.org/licenses/lgpl-3.0.html) [![Coverity Scan](https://scan.coverity.com/projects/4423/badge.svg?flat=1)](https://scan.coverity.com/projects/hangfireio-hangfire)
 
 ## Build Status
 
