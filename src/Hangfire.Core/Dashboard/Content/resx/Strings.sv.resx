@@ -381,7 +381,7 @@
         &lt;/p&gt;</value>
   </data>
   <data name="ScheduledJobsPage_EnqueueNow" xml:space="preserve">
-    <value>Köpa upp nu</value>
+    <value>Köa upp nu</value>
   </data>
   <data name="ScheduledJobsPage_NoJobs" xml:space="preserve">
     <value>Det finns inga schemalagda jobb.</value>
@@ -533,7 +533,7 @@
   <data name="ServersPage_Note_Text" xml:space="preserve">
     <value>Vissa servrar har inte gett några livstecken den senaste minuten och kan komma att avbrytas.
             Om dom inte ger några livstecken inom en snar framtid så kommer dom att tas bort automatiskt efter en timeout.
-            Pågående bakgundsjobb på dessa servrar kommer att köras upp igen automatiskt, men du kan snabba upp processen genom att kika på sidan &lt;a href="{0}"&gt;Pågående jobb&lt;/a&gt;.</value>
+            Pågående bakgundsjobb på dessa servrar kommer att köas upp igen automatiskt, men du kan snabba upp processen genom att kika på sidan &lt;a href="{0}"&gt;Pågående jobb&lt;/a&gt;.</value>
   </data>
   <data name="ServersPage_Note_Title" xml:space="preserve">
     <value>Avbrutna servrar kommer att tas bort automatiskt</value>
