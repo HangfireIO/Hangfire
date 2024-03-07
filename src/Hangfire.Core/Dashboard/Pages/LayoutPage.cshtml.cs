@@ -522,33 +522,35 @@ WriteLiteral("\r\n                            </span>\r\n");
                         }
                         else
                         {
-                            
-            
-            #line default
-            #line hidden
-            
-            #line 113 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                       Write(Strings.LayoutPage_Footer_Time);
 
             
             #line default
             #line hidden
+WriteLiteral("                            <span>");
+
+
             
             #line 113 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                                            
-            
-            #line default
-            #line hidden
-            
-            #line 113 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                                       Write(Html.LocalTime(ApplicationUtcNow));
+                             Write(Strings.LayoutPage_Footer_Time);
 
             
             #line default
             #line hidden
+WriteLiteral(" ");
+
+
             
             #line 113 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                                                                              
+                                                             Write(Html.LocalTime(ApplicationUtcNow));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</span>\r\n");
+
+
+            
+            #line 114 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                         }
 
             
