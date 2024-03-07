@@ -206,11 +206,51 @@ where Queue in @queues and
             FetchedJob fetchedJob = null;
             DbTransaction transaction = null;
 
-            string fetchJobSqlTemplate =
-                $@"delete top (1) JQ
-output DELETED.Id, DELETED.JobId, DELETED.Queue
-from [{_storage.SchemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
-where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))";
+            string queueNames = "";
+            for (int i = 0; i < queues.Length; i++)
+            {
+                var queueName = queues[i];
+
+                if (i > 0)
+                {
+                    queueNames += ", ";
+                }
+
+                queueNames += $"('{queueName}', {i + 1})";
+            }
+
+            string fetchJobSqlTemplate = $@"
+declare @queues table (Name nvarchar(255), PriorityNum int)
+declare @output table (Id int, JobId int, Queue nvarchar(255))
+declare @index int = 1
+declare @queue nvarchar(255)
+ 
+insert into @queues values {queueNames}
+ 
+while (@index <= {queues.Length})
+begin
+  select @queue = Name from @queues where PriorityNum = @index
+
+  delete top (1) JQ
+  output DELETED.Id, DELETED.JobId, DELETED.Queue into @output
+  from [{_storage.SchemaName}].JobQueue JQ with(readpast, updlock, rowlock, forceseek)
+  where Queue = @queue and (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))
+
+  if (@@ROWCOUNT = 0)
+  begin
+    select @index = @index + 1
+  end
+  else
+  begin
+    select * from @output
+    break
+  end
+
+  if (@index > {queues.Length})
+  begin
+    select * from @output
+  end
+end";
 
             var pollInterval = _options.QueuePollInterval > TimeSpan.Zero
                 ? _options.QueuePollInterval
@@ -229,7 +269,7 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
                         fetchedJob = connection.Query<FetchedJob>(
                             fetchJobSqlTemplate,
 #pragma warning disable 618
-                        new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds },
+                        new { timeout = _options.InvisibilityTimeout.Negate().TotalSeconds },
 #pragma warning restore 618
                         transaction,
                             commandTimeout: _storage.CommandTimeout).SingleOrDefault();
