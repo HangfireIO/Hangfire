@@ -1,4 +1,4 @@
-Include "packages\Hangfire.Build.0.4.0\tools\psake-common.ps1"
+Include "packages\Hangfire.Build.0.4.3\tools\psake-common.ps1"
 
 Task Default -Depends Pack
 
@@ -83,5 +83,5 @@ Task Pack -Depends Collect -Description "Create NuGet packages and archive files
 
 Task Sign -Depends Pack -Description "Sign artifacts." {
     $version = Get-PackageVersion
-    Sign-ArchiveContents "Hangfire-$version" "hangfire" "nuget-and-assemblies-in-zip-file"
+    Sign-ArchiveContents "Hangfire-$version" "hangfire"
 }
