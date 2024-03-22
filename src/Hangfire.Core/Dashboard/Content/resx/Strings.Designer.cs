@@ -638,6 +638,15 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Source.
+        /// </summary>
+        public static string JobDetailsPage_Source {
+            get {
+                return ResourceManager.GetString("JobDetailsPage_Source", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to State.
         /// </summary>
         public static string JobDetailsPage_State {
