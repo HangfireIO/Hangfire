@@ -17,7 +17,7 @@ Task Test -Depends Merge -Description "Run unit and integration tests against me
     # Dependencies shouldn't be re-built, because we need to run tests against merged assemblies to test
     # the same assemblies that are distributed to users. Since the `dotnet test` command doesn't support
     # the `--no-dependencies` command directly, we need to re-build tests themselves first.
-    Exec { ls "tests\**\*.csproj" | % { dotnet build -c Release --no-dependencies $_.FullName } }
+    Exec { ls "tests\**\*.csproj" | % { dotnet build -c Release --no-restore --no-dependencies $_.FullName } }
 
     # We are running unit test project one by one, because pipelined version like the line above does not
     # support halting the whole execution pipeline when "dotnet test" command fails due to a failed test,
