@@ -30,6 +30,7 @@ namespace Hangfire.Storage.Monitoring
         public JobLoadException LoadException { get; set; }
         public InvocationData InvocationData { get; set; }
         public object Result { get; set; }
+        public long? PerformanceDuration { get; set; }
         public long? TotalDuration { get; set; }
         public DateTime? SucceededAt { get; set; }
         public bool InSucceededState { get; set; }
