@@ -410,6 +410,8 @@ select * from [{_storage.SchemaName}].State with (nolock, forceseek) where JobId
                         CreatedAt = job.CreatedAt,
                         ExpireAt = job.ExpireAt,
                         Job = deserializedJob,
+                        InvocationData = payload,
+                        LoadException = exception,
                         History = history,
                         Properties = parameters
                     };
