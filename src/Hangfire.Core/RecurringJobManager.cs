@@ -111,21 +111,40 @@ namespace Hangfire
             using (var connection = _storage.GetConnection())
             using (connection.AcquireDistributedRecurringJobLock(recurringJobId, DefaultTimeout))
             {
-                var recurringJob = connection.GetOrCreateRecurringJob(recurringJobId, _timeZoneResolver, _nowFactory());
+                var now = _nowFactory();
+                var recurringJob = connection.GetOrCreateRecurringJob(recurringJobId);
+                var scheduleChanged = false;
 
-                recurringJob.Job = job;
-                recurringJob.Cron = cronExpression;
-                recurringJob.TimeZone = options.TimeZone;
+                recurringJob.Job = InvocationData.SerializeJob(job).SerializePayload();
+
+                if (!cronExpression.Equals(recurringJob.Cron, StringComparison.OrdinalIgnoreCase))
+                {
+                    recurringJob.Cron = cronExpression;
+                    scheduleChanged = true;
+                }
+
+                if (!options.TimeZone.Id.Equals(recurringJob.TimeZoneId, StringComparison.OrdinalIgnoreCase))
+                {
+                    recurringJob.TimeZoneId = options.TimeZone.Id;
+                    scheduleChanged = true;
+                }
+
 #pragma warning disable 618
                 recurringJob.Queue = options.QueueName;
 #pragma warning restore 618
                 recurringJob.MisfireHandling = options.MisfireHandling;
+                recurringJob.RetryAttempt = 0;
 
-                if (recurringJob.IsChanged(out var changedFields, out var nextExecution))
+                if (scheduleChanged || recurringJob.Error != null)
+                {
+                    recurringJob.ScheduleNext(_timeZoneResolver, now.AddSeconds(-1));
+                }
+
+                if (recurringJob.IsChanged(now, out var changedFields))
                 {
                     using (var transaction = connection.CreateWriteTransaction())
                     {
-                        transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
+                        transaction.UpdateRecurringJob(recurringJob, changedFields, _logger);
                         transaction.Commit();
                     }
                 }
@@ -161,17 +180,23 @@ namespace Hangfire
             {
                 var now = _nowFactory();
 
-                var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
+                var recurringJob = connection.GetRecurringJob(recurringJobId);
                 if (recurringJob == null) return null;
 
-                if (recurringJob.Errors.Length > 0)
+                BackgroundJob backgroundJob;
+
+                try
                 {
-                    throw new AggregateException($"Can't trigger recurring job '{recurringJobId}' due to errors", recurringJob.Errors);
+                    backgroundJob = _factory.TriggerRecurringJob(_storage, connection, EmptyProfiler.Instance, recurringJob, now);
+                    recurringJob.ScheduleNext(_timeZoneResolver, now);
+                }
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
+                {
+                    // TODO: Preserving backward compatibility, should be removed in 2.0.0.
+                    throw new AggregateException(ex);
                 }
 
-                var backgroundJob = _factory.TriggerRecurringJob(_storage, connection, EmptyProfiler.Instance, recurringJob, now);
-
-                if (recurringJob.IsChanged(out var changedFields, out var nextExecution))
+                if (recurringJob.IsChanged(now, out var changedFields))
                 {
                     using (var transaction = connection.CreateWriteTransaction())
                     {
@@ -187,7 +212,7 @@ namespace Hangfire
                                 EmptyProfiler.Instance);
                         }
 
-                        transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
+                        transaction.UpdateRecurringJob(recurringJob, changedFields, _logger);
                         transaction.Commit();
                     }
 

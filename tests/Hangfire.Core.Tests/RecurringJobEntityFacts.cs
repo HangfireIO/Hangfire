@@ -37,7 +37,7 @@ namespace Hangfire.Core.Tests
         public void Ctor_ThrowsAnException_WhenRecurringJobId_IsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(() =>
-                new RecurringJobEntity(null, _recurringJob, _timeZoneResolver.Object, _nowInstant));
+                new RecurringJobEntity(null, _recurringJob));
 
             Assert.Equal("recurringJobId", exception.ParamName);
         }
@@ -46,18 +46,9 @@ namespace Hangfire.Core.Tests
         public void Ctor_ThrowsAnException_WhenRecurringJob_IsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(() =>
-                new RecurringJobEntity(RecurringJobId, null, _timeZoneResolver.Object, _nowInstant));
+                new RecurringJobEntity(RecurringJobId, null));
 
             Assert.Equal("recurringJob", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenTimeZoneResolver_IsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(() =>
-                new RecurringJobEntity(RecurringJobId, _recurringJob, null, _nowInstant));
-
-            Assert.Equal("timeZoneResolver", exception.ParamName);
         }
 
         [Fact]
@@ -106,7 +97,7 @@ namespace Hangfire.Core.Tests
         {
             var entity = CreateEntity();
 
-            entity.IsChanged(out var fields, out _);
+            entity.IsChanged(_nowInstant, out var fields);
 
             Assert.False(fields.ContainsKey("Misfire"));
         }
@@ -117,7 +108,7 @@ namespace Hangfire.Core.Tests
             _recurringJob["Misfire"] = "0";
             var entity = CreateEntity();
 
-            entity.IsChanged(out var fields, out _);
+            entity.IsChanged(_nowInstant, out var fields);
 
             Assert.False(fields.ContainsKey("Misfire"));
         }
@@ -128,7 +119,7 @@ namespace Hangfire.Core.Tests
             var entity = CreateEntity();
             entity.MisfireHandling = MisfireHandlingMode.Strict;
 
-            entity.IsChanged(out var fields, out _);
+            entity.IsChanged(_nowInstant, out var fields);
 
             Assert.True(fields.ContainsKey("Misfire"));
             Assert.Equal("1", fields["Misfire"]);
@@ -141,7 +132,7 @@ namespace Hangfire.Core.Tests
             var entity = CreateEntity();
             entity.MisfireHandling = MisfireHandlingMode.Relaxed;
 
-            entity.IsChanged(out var fields, out _);
+            entity.IsChanged(_nowInstant, out var fields);
 
             Assert.True(fields.ContainsKey("Misfire"));
             Assert.Equal("0", fields["Misfire"]);
@@ -154,14 +145,14 @@ namespace Hangfire.Core.Tests
             var entity = CreateEntity();
             entity.MisfireHandling = MisfireHandlingMode.Strict;
 
-            entity.IsChanged(out var fields, out _);
+            entity.IsChanged(_nowInstant, out var fields);
 
             Assert.False(fields.ContainsKey("Misfire"));
         }
 
         private RecurringJobEntity CreateEntity()
         {
-            return new RecurringJobEntity(RecurringJobId, _recurringJob, _timeZoneResolver.Object, _nowInstant);
+            return new RecurringJobEntity(RecurringJobId, _recurringJob);
         }
     }
 }
