@@ -252,6 +252,11 @@ namespace Hangfire.Server
                 }
                 else
                 {
+                    if (MaxDegreeOfParallelism > 1)
+                    {
+                        _logger.Warn("Parallel execution is configured but can't be used, because current storage implementation doesn't support batching.");
+                    }
+
                     for (var i = 0; i < BatchSize; i++)
                     {
                         if (context.IsStopping) break;
