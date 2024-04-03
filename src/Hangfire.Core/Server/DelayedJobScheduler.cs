@@ -81,6 +81,7 @@ namespace Hangfire.Server
         private readonly IBackgroundJobStateChanger _stateChanger;
         private readonly IProfiler _profiler;
         private readonly TimeSpan _pollingDelay;
+        private bool _parallelismIssueLogged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DelayedJobScheduler"/>
@@ -234,9 +235,10 @@ namespace Hangfire.Server
                 }
                 else
                 {
-                    if (MaxDegreeOfParallelism > 1)
+                    if (MaxDegreeOfParallelism > 1 && !_parallelismIssueLogged)
                     {
                         _logger.Warn("Parallel execution is configured but can't be used, because current storage implementation doesn't support batching.");
+                        _parallelismIssueLogged = true;
                     }
 
                     for (var i = 0; i < BatchSize; i++)

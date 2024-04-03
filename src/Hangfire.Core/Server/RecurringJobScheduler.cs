@@ -78,6 +78,7 @@ namespace Hangfire.Server
         private readonly ITimeZoneResolver _timeZoneResolver;
         private readonly TimeSpan _pollingDelay;
         private readonly IProfiler _profiler;
+        private bool _parallelismIssueLogged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RecurringJobScheduler"/>
@@ -252,9 +253,10 @@ namespace Hangfire.Server
                 }
                 else
                 {
-                    if (MaxDegreeOfParallelism > 1)
+                    if (MaxDegreeOfParallelism > 1 && !_parallelismIssueLogged)
                     {
                         _logger.Warn("Parallel execution is configured but can't be used, because current storage implementation doesn't support batching.");
+                        _parallelismIssueLogged = true;
                     }
 
                     for (var i = 0; i < BatchSize; i++)
