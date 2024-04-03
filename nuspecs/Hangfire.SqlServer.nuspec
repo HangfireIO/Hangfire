@@ -17,6 +17,9 @@
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.12
+• Fixed – Populate `InvocationData` and `LoadException` properties in `JobDetails` method results.
+
 1.8.10
 • Changed – Bump Dapper for the `netstandard2.0` platform to version 2.1.28.
 • Changed – Bump Dapper for `net451` and `netstandard1.3` platforms to version 1.60.6.

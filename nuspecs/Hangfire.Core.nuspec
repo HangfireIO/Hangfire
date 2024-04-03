@@ -23,6 +23,14 @@ https://www.hangfire.io/
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.12
+• Added – `MaxDegreeOfParallelismForSchedulers` experimental server option if supported by storage.
+• Added – Experimental support for parallel execution of the delayed job scheduler.
+• Added – Experimental support for parallel execution of the recurring job scheduler.
+• Fixed – Recurring job is scheduled to the past after recovering from error with `AddOrUpdate`.
+• Fixed – `AddOrUpdate` triggers execution of a recurring job, even if its next execution is in the future.
+• Fixed – Two very minor errors in the Swedish localization file (by @Uglack).
+
 1.8.11
 • Changed – Add icons and fix metadata for NuGet packages.
 • Changed – Bump ILRepack to version 2.0.27 to avoid problems with internalizing.

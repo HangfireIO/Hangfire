@@ -23,6 +23,21 @@ https://www.hangfire.io/
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.12
+
+Hangfire.Core
+
+• Added – `MaxDegreeOfParallelismForSchedulers` experimental server option if supported by storage.
+• Added – Experimental support for parallel execution of the delayed job scheduler.
+• Added – Experimental support for parallel execution of the recurring job scheduler.
+• Fixed – Recurring job is scheduled to the past after recovering from error with `AddOrUpdate`.
+• Fixed – `AddOrUpdate` triggers execution of a recurring job, even if its next execution is in the future.
+• Fixed – Two very minor errors in the Swedish localization file (by @Uglack).
+
+Hangfire.SqlServer
+
+• Fixed – Populate `InvocationData` and `LoadException` properties in `JobDetails` method results.
+
 1.8.11
 
 Hangfire.Core
