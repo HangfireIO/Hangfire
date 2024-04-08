@@ -49,6 +49,7 @@ namespace Hangfire.Core.Tests.Server
             _timeZoneResolver = new Mock<ITimeZoneResolver>();
             _timeZoneResolver.Setup(x => x.GetTimeZoneById(It.IsAny<string>())).Throws<InvalidTimeZoneException>();
             _timeZoneResolver.Setup(x => x.GetTimeZoneById(timeZone.Id)).Returns(timeZone);
+            _timeZoneResolver.Setup(x => x.GetTimeZoneById("UTC")).Returns(TimeZoneInfo.Utc);
 
             // ReSharper disable once PossibleInvalidOperationException
             _nextInstant = _cronExpression.GetNextOccurrence(_nowInstant, timeZone).Value;
@@ -649,7 +650,7 @@ namespace Hangfire.Core.Tests.Server
 
             // Assert
             _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{RecurringJobId}", It.Is<Dictionary<string, string>>(dict =>
-                dict.ContainsKey("TimeZoneId") && !dict.ContainsKey("NextExecution"))));
+                !dict.ContainsKey("NextExecution"))));
             _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, JobHelper.ToTimestamp(_nowInstant.AddHours(18).AddMinutes(30))));
             _transaction.Verify(x => x.Commit());
         }
@@ -745,6 +746,7 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             SetupConnection(batching);
 
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
             _recurringJob["Cron"] = "some garbage";
             _recurringJob["V"] = "2";
 
@@ -812,6 +814,7 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             SetupConnection(batching);
 
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
             _recurringJob["Job"] = null;
             _recurringJob["V"] = "2";
 
@@ -866,6 +869,8 @@ namespace Hangfire.Core.Tests.Server
             SetupConnection(batching);
 
             _recurringJob["RetryAttempt"] = "10";
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant);
             _recurringJob["Job"] = InvocationData.SerializeJob(
                 Job.FromExpression(() => Console.WriteLine())).SerializePayload().Replace("Console", "SomeNonExistingClass");
 
@@ -893,6 +898,8 @@ namespace Hangfire.Core.Tests.Server
 
             _recurringJob["RetryAttempt"] = "10";
             _recurringJob["Job"] = "Some garbage";
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant);
 
             var scheduler = CreateScheduler();
 
@@ -918,6 +925,8 @@ namespace Hangfire.Core.Tests.Server
 
             _recurringJob["RetryAttempt"] = "10";
             _recurringJob["Job"] = null;
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant);
 
             var scheduler = CreateScheduler();
 
@@ -943,6 +952,8 @@ namespace Hangfire.Core.Tests.Server
 
             _recurringJob["RetryAttempt"] = "10";
             _recurringJob["TimeZoneId"] = "Non-existing time zone";
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant);
 
             var scheduler = CreateScheduler();
 
@@ -965,6 +976,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             SetupConnection(batching);
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
             _recurringJob["V"] = "2";
             _factory.Setup(x => x.Create(It.IsAny<CreateContext>())).Throws<InvalidOperationException>();
 
@@ -997,6 +1009,8 @@ namespace Hangfire.Core.Tests.Server
             SetupConnection(batching);
             _factory.Setup(x => x.Create(It.IsAny<CreateContext>())).Throws(new InvalidOperationException("Invalid operation"));
             _recurringJob["RetryAttempt"] = "10";
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant);
 
             var scheduler = CreateScheduler();
 
