@@ -41,41 +41,34 @@ namespace Hangfire
 
         public static RecurringJobEntity GetRecurringJob(
             [NotNull] this IStorageConnection connection,
-            [NotNull] string recurringJobId,
-            [NotNull] ITimeZoneResolver timeZoneResolver,
-            DateTime now)
+            [NotNull] string recurringJobId)
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
             if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
-            if (timeZoneResolver == null) throw new ArgumentNullException(nameof(timeZoneResolver));
 
             var recurringJob = connection.GetAllEntriesFromHash($"recurring-job:{recurringJobId}");
             if (recurringJob == null || recurringJob.Count == 0) return null;
 
-            return new RecurringJobEntity(recurringJobId, recurringJob, timeZoneResolver, now);
+            return new RecurringJobEntity(recurringJobId, recurringJob);
         }
 
         public static RecurringJobEntity GetOrCreateRecurringJob(
             [NotNull] this IStorageConnection connection,
-            [NotNull] string recurringJobId,
-            [NotNull] ITimeZoneResolver timeZoneResolver,
-            DateTime now)
+            [NotNull] string recurringJobId)
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
             if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
-            if (timeZoneResolver == null) throw new ArgumentNullException(nameof(timeZoneResolver));
 
             var recurringJob = connection.GetAllEntriesFromHash($"recurring-job:{recurringJobId}");
             if (recurringJob == null || recurringJob.Count == 0) recurringJob = new Dictionary<string, string>();
 
-            return new RecurringJobEntity(recurringJobId, recurringJob, timeZoneResolver, now);
+            return new RecurringJobEntity(recurringJobId, recurringJob);
         }
 
         public static void UpdateRecurringJob(
             [NotNull] this IWriteOnlyTransaction transaction,
             [NotNull] RecurringJobEntity recurringJob,
             [NotNull] IReadOnlyDictionary<string, string> changedFields,
-            [CanBeNull] DateTime? nextExecution,
             [CanBeNull] ILog logger)
         {
             if (transaction == null) throw new ArgumentNullException(nameof(transaction));
@@ -87,11 +80,11 @@ namespace Hangfire
                 transaction.SetRangeInHash($"recurring-job:{recurringJob.RecurringJobId}", changedFields);
             }
 
-            var score = nextExecution.HasValue ? JobHelper.ToTimestamp(nextExecution.Value) : -1.0D;
+            var score = recurringJob.NextExecution.HasValue ? JobHelper.ToTimestamp(recurringJob.NextExecution.Value) : -1.0D;
 
             if (logger != null && logger.IsTraceEnabled())
             {
-                logger.Trace($"Recurring job '{recurringJob.RecurringJobId}' is being updated. RecurringJob: ({recurringJob}), Changes: ({String.Join(";", changedFields.Select(x => $"{x.Key}:{x.Value}"))}), NextExecution: ({nextExecution})");
+                logger.Trace($"Recurring job '{recurringJob.RecurringJobId}' is being updated. RecurringJob: ({recurringJob}), Changes: ({String.Join(";", changedFields.Select(x => $"{x.Key}:{x.Value}"))})");
             }
 
             transaction.AddToSet(
@@ -114,7 +107,14 @@ namespace Hangfire
             if (profiler == null) throw new ArgumentNullException(nameof(profiler));
             if (recurringJob == null) throw new ArgumentNullException(nameof(recurringJob));
 
-            var context = new CreateContext(storage, connection, recurringJob.Job, null, profiler);
+            if (recurringJob.Job == null)
+            {
+                throw new InvalidOperationException("The 'Job' field has a null or empty value");
+            }
+
+            var job = InvocationData.DeserializePayload(recurringJob.Job).DeserializeJob();
+
+            var context = new CreateContext(storage, connection, job, null, profiler);
             context.Parameters["RecurringJobId"] = recurringJob.RecurringJobId;
             context.Parameters["Time"] = JobHelper.ToTimestamp(now);
 

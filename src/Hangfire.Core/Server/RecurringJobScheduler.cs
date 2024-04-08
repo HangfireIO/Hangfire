@@ -233,7 +233,7 @@ namespace Hangfire.Server
         {
             using (connection.AcquireDistributedRecurringJobLock(recurringJobId, LockTimeout))
             {
-                var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
+                var recurringJob = connection.GetRecurringJob(recurringJobId);
 
                 if (recurringJob == null)
                 {
@@ -241,19 +241,7 @@ namespace Hangfire.Server
                     return;
                 }
 
-                Exception exception;
-
-                try
-                {
-                    ScheduleRecurringJob(context, connection, recurringJobId, recurringJob, now);
-                    return;
-                }
-                catch (BackgroundJobClientException ex)
-                {
-                    exception = ex.InnerException;
-                }
-
-                RetryRecurringJob(connection, recurringJobId, recurringJob, exception);
+                ScheduleRecurringJob(context, connection, recurringJobId, recurringJob, now);
             }
         }
 
@@ -266,6 +254,8 @@ namespace Hangfire.Server
             // the recurring jobs set.
             using (var transaction = connection.CreateWriteTransaction())
             {
+                Exception exception = null;
+                
                 try
                 {
                     // We can't handle recurring job with unsupported versions - there may be additional
@@ -277,29 +267,35 @@ namespace Hangfire.Server
                         throw new NotSupportedException($"Server '{context.ServerId}' can't process recurring job '{recurringJobId}' of version '{recurringJob.Version ?? 1}'. Max supported version of this server is '{MaxSupportedVersion}'.");
                     }
                     
-                    BackgroundJob backgroundJob = null;
-                    IReadOnlyDictionary<string, string> changedFields;
+                    var backgroundJobs = new List<BackgroundJob>();
+                    var precision = _pollingDelay + _pollingDelay;
 
-                    if (recurringJob.TrySchedule(out var nextExecution, out var error))
+                    var executions = recurringJob.ScheduleNext(
+                        _timeZoneResolver,
+                        recurringJob.LastExecution ?? recurringJob.CreatedAt?.AddSeconds(-1) ?? now.AddSeconds(-1),
+                        now,
+                        precision);
+
+                    foreach (var execution in executions)
                     {
-                        if (nextExecution.HasValue && nextExecution <= now)
+                        var backgroundJob = _factory.TriggerRecurringJob(
+                            context.Storage,
+                            connection,
+                            _profiler,
+                            recurringJob,
+                            execution);
+
+                        if (!String.IsNullOrEmpty(backgroundJob?.Id))
                         {
-                            backgroundJob = _factory.TriggerRecurringJob(context.Storage, connection, _profiler, recurringJob, now);
-
-                            if (String.IsNullOrEmpty(backgroundJob?.Id))
-                            {
-                                _logger.Debug($"Recurring job '{recurringJobId}' execution at '{nextExecution}' has been canceled.");
-                            }
+                            backgroundJobs.Add(backgroundJob);
                         }
-
-                        recurringJob.IsChanged(out changedFields, out nextExecution);
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException("Recurring job can't be scheduled, see inner exception for details.", error);
+                        else
+                        {
+                            _logger.Debug($"Recurring job '{recurringJobId}' execution at '{execution}' has been canceled.");
+                        }
                     }
 
-                    if (backgroundJob != null)
+                    foreach (var backgroundJob in backgroundJobs)
                     {
                         _factory.StateMachine.EnqueueBackgroundJob(
                             context.Storage,
@@ -311,12 +307,20 @@ namespace Hangfire.Server
                             _profiler);
                     }
 
-                    transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
+                    recurringJob.RetryAttempt = 0;
                 }
                 catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
-                    throw new BackgroundJobClientException(ex.Message, ex);
+                    exception = ex;
                 }
+
+                if (exception != null)
+                {
+                    RetryRecurringJob(recurringJobId, recurringJob, now, exception);
+                }
+
+                recurringJob.IsChanged(now, out var changedFields);
+                transaction.UpdateRecurringJob(recurringJob, changedFields, _logger);
 
                 // We should commit transaction outside of the internal try/catch block, because these
                 // exceptions are always due to network issues, and in case of a timeout exception we
@@ -326,12 +330,8 @@ namespace Hangfire.Server
             }
         }
 
-        private void RetryRecurringJob(
-            IStorageConnection connection, string recurringJobId, RecurringJobEntity recurringJob, Exception error)
+        private void RetryRecurringJob(string recurringJobId, RecurringJobEntity recurringJob, DateTime now, Exception error)
         {
-            IReadOnlyDictionary<string, string> changedFields;
-            DateTime? nextExecution;
-
             var errorString = error.ToStringWithOriginalStackTrace(States.FailedState.MaxLinesInExceptionDetails);
 
             if (recurringJob.RetryAttempt < MaxRetryAttemptCount)
@@ -341,19 +341,13 @@ namespace Hangfire.Server
                 _logger.WarnException(
                     $"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be retried in {delay}.",
                     error);
-                recurringJob.ScheduleRetry(delay, errorString, out changedFields, out nextExecution);
+                recurringJob.ScheduleRetry(now.Add(delay), errorString);
             }
             else
             {
                 _logger.ErrorException(
                     $"Recurring job '{recurringJobId}' can't be scheduled due to an error and will be disabled.", error);
-                recurringJob.Disable(errorString, out changedFields, out nextExecution);
-            }
-
-            using (var transaction = connection.CreateWriteTransaction())
-            {
-                transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
-                transaction.Commit();
+                recurringJob.Disable(errorString);
             }
         }
 

@@ -759,7 +759,7 @@ namespace Hangfire.Core.Tests.Server
             Assert.True(_delay > TimeSpan.Zero);
             _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
             _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict =>
-                dict.Count == 2 && dict["RetryAttempt"] == "1" && dict.ContainsKey("Error"))));
+                dict.Count == 3 && dict["RetryAttempt"] == "1" && dict.ContainsKey("Error"))));
             _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, JobHelper.ToTimestamp(_nowInstant.Add(_delay))));
             _transaction.Verify(x => x.Commit());
         }
@@ -829,7 +829,7 @@ namespace Hangfire.Core.Tests.Server
             _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
             
             _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict =>
-                dict.Count == 2 && dict["RetryAttempt"] == "1" && dict.ContainsKey("Error"))));
+                dict.Count == 3 && dict["RetryAttempt"] == "1" && dict.ContainsKey("Error"))));
             
             _transaction.Verify(x => x.AddToSet(
                 "recurring-jobs",
@@ -991,7 +991,7 @@ namespace Hangfire.Core.Tests.Server
             _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Once);
             
             _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict =>
-                dict.Count == 2 && dict["RetryAttempt"] == "1" && dict.ContainsKey("Error"))));
+                dict.Count == 3 && dict["RetryAttempt"] == "1" && dict.ContainsKey("Error"))));
             
             _transaction.Verify(x => x.AddToSet(
                 "recurring-jobs",
