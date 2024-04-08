@@ -544,7 +544,7 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void AddOrUpdate_CanRecoverARecurringJob_FromErrorState()
+        public void AddOrUpdate_CanRecoverARecurringJob_FromErrorState_WithoutSchedulingToThePast()
         {
             // Arrange
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
@@ -597,7 +597,7 @@ namespace Hangfire.Core.Tests
             _transaction.Verify(x => x.SetRangeInHash(
                 $"recurring-job:{_id}",
                 It.Is<Dictionary<string, string>>(dict =>
-                    !dict.ContainsKey("NextExecution"))));
+                    !dict.ContainsKey("NextExecution") || dict["NextExecution"] == JobHelper.SerializeDateTime(_now.AddMinutes(1)))));
             
             _transaction.Verify(x => x.AddToSet("recurring-jobs", _id, JobHelper.ToTimestamp(_now.AddMinutes(1))));
             _transaction.Verify(x => x.Commit());
