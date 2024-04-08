@@ -1,12 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net452;net461;netcoreapp1.0;netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net452;net461;netcoreapp3.1</TargetFrameworks>
     <NoWarn>0618</NoWarn>
-  </PropertyGroup>
-  
-  <PropertyGroup Condition="'$(TargetFramework)'=='netcoreapp1.0'">
-    <NoWarn>$(NoWarn);1701</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,11 +17,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="5.0.1" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp1.0'">
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp2.1' or '$(TargetFramework)'=='netcoreapp3.1'">
+  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp3.1'">
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
   </ItemGroup>
 
