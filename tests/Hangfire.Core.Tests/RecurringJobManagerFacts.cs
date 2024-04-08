@@ -40,7 +40,8 @@ namespace Hangfire.Core.Tests
             _nowFactory = () => _now;
 
             _timeZoneResolver = new Mock<ITimeZoneResolver>();
-            _timeZoneResolver.Setup(x => x.GetTimeZoneById(It.IsAny<string>())).Returns(TimeZoneInfo.Utc);
+            _timeZoneResolver.Setup(x => x.GetTimeZoneById(It.IsAny<string>()))
+                .Returns<string>(TimeZoneInfo.FindSystemTimeZoneById);
 
             _connection = new Mock<IStorageConnection>();
             _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
