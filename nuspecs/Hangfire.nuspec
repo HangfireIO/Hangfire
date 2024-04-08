@@ -22,6 +22,14 @@ https://www.hangfire.io/
 
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.7.html to learn how to upgrade from 1.6.X.
 
+1.7.37
+
+Hangfire.Core
+
+• Fixed – Recurring job is scheduled to the past after recovering from error with `AddOrUpdate` (backported).
+• Fixed – `AddOrUpdate` triggers execution of a recurring job, even if its next execution is in the future (backported).
+• Fixed – Send heartbeats until full background processing server shutdown (backported).
+
 1.7.36
 
 Hangfire.Core
