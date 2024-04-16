@@ -48,8 +48,7 @@ namespace Hangfire.Dashboard
                        _owinContext?.Request.PathBase.Value ??
 #endif
                        _context.Request.PathBase
-                       + relativePath
-                   );
+                   ) + relativePath;
         }
 
         public string Home()
