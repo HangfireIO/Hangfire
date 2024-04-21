@@ -132,7 +132,7 @@ namespace Hangfire.Client
             preContext.Profiler.InvokeMeasured(
                 Tuple.Create(filter, preContext),
                 InvokeOnCreating,
-                $"OnCreating for {preContext.Job.Type.FullName}.{preContext.Job.Method.Name}");
+                () => $"OnCreating for {preContext.Job.Type.FullName}.{preContext.Job.Method.Name}");
 
             if (preContext.Canceled)
             {
@@ -153,7 +153,7 @@ namespace Hangfire.Client
                 postContext.Profiler.InvokeMeasured(
                     Tuple.Create(filter, postContext),
                     InvokeOnCreated,
-                    $"OnCreated for {postContext.BackgroundJob?.Id ?? "(null)"}");
+                    () => $"OnCreated for {postContext.BackgroundJob?.Id ?? "(null)"}");
 
                 if (!postContext.ExceptionHandled)
                 {
@@ -166,7 +166,7 @@ namespace Hangfire.Client
                 postContext.Profiler.InvokeMeasured(
                     Tuple.Create(filter, postContext),
                     InvokeOnCreated,
-                    $"OnCreated for {postContext.BackgroundJob?.Id ?? "(null)"}");
+                    () => $"OnCreated for {postContext.BackgroundJob?.Id ?? "(null)"}");
             }
 
             return postContext;
@@ -206,7 +206,7 @@ namespace Hangfire.Client
                 context.Profiler.InvokeMeasured(
                     Tuple.Create(filter, context),
                     InvokeOnClientException,
-                    $"OnClientException for {context.Job.Type.FullName}.{context.Job.Method.Name}");
+                    () => $"OnClientException for {context.Job.Type.FullName}.{context.Job.Method.Name}");
             }
         }
 

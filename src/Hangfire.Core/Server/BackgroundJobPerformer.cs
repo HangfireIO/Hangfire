@@ -140,7 +140,7 @@ namespace Hangfire.Server
                 preContext.Profiler.InvokeMeasured(
                     Tuple.Create(filter, preContext),
                     InvokeOnPerforming,
-                    $"OnPerforming for {preContext.BackgroundJob.Id}");
+                    () => $"OnPerforming for {preContext.BackgroundJob.Id}");
             }
             catch (Exception filterException) when (filterException.IsCatchableExceptionType())
             {
@@ -178,7 +178,7 @@ namespace Hangfire.Server
                     postContext.Profiler.InvokeMeasured(
                         Tuple.Create(filter, postContext),
                         InvokeOnPerformed,
-                        $"OnPerformed for {postContext.BackgroundJob.Id}");
+                        () => $"OnPerformed for {postContext.BackgroundJob.Id}");
                 }
                 catch (Exception filterException) when (filterException.IsCatchableExceptionType())
                 {
@@ -202,7 +202,7 @@ namespace Hangfire.Server
                     postContext.Profiler.InvokeMeasured(
                         Tuple.Create(filter, postContext),
                         InvokeOnPerformed,
-                        $"OnPerformed for {postContext.BackgroundJob.Id}");
+                        () => $"OnPerformed for {postContext.BackgroundJob.Id}");
                 }
                 catch (Exception filterException) when (filterException.IsCatchableExceptionType())
                 {
@@ -236,7 +236,7 @@ namespace Hangfire.Server
                 context.Profiler.InvokeMeasured(
                     Tuple.Create(filter, context),
                     InvokeOnServerException,
-                    $"OnServerException for {context.BackgroundJob.Id}");
+                    () => $"OnServerException for {context.BackgroundJob.Id}");
             }
         }
 

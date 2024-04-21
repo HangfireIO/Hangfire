@@ -25,6 +25,6 @@ namespace Hangfire.Profiling
         TResult InvokeMeasured<TInstance, TResult>(
             [CanBeNull] TInstance instance, 
             [NotNull, InstantHandle] Func<TInstance, TResult> action,
-            [CanBeNull] string message = null);
+            [CanBeNull] Func<string> messageFunc = null);
     }
 }

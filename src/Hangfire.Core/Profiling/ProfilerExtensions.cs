@@ -24,12 +24,12 @@ namespace Hangfire.Profiling
             [NotNull] this IProfiler profiler,
             [CanBeNull] TInstance instance, 
             [NotNull] Action<TInstance> action,
-            [CanBeNull] string message = null)
+            [CanBeNull] Func<string> messageFunc = null)
         {
             if (profiler == null) throw new ArgumentNullException(nameof(profiler));
             if (action == null) throw new ArgumentNullException(nameof(action));
 
-            profiler.InvokeMeasured(new InstanceAction<TInstance>(instance, action), InvokeAction, message);
+            profiler.InvokeMeasured(new InstanceAction<TInstance>(instance, action), InvokeAction, messageFunc);
         }
 
         private static bool InvokeAction<TInstance>(InstanceAction<TInstance> tuple)

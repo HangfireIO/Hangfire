@@ -62,7 +62,7 @@ namespace Hangfire.States
                 electContext.Profiler.InvokeMeasured(
                     Tuple.Create(filter, electContext),
                     InvokeOnStateElection,
-                    $"OnStateElection for {electContext.BackgroundJob.Id}");
+                    () => $"OnStateElection for {electContext.BackgroundJob.Id}");
             }
 
             foreach (var state in electContext.TraversedStates)
@@ -81,7 +81,7 @@ namespace Hangfire.States
                 context.Profiler.InvokeMeasured(
                     Tuple.Create(filter, context),
                     InvokeOnStateUnapplied,
-                    $"OnStateUnapplied for {context.BackgroundJob.Id}");
+                    () => $"OnStateUnapplied for {context.BackgroundJob.Id}");
             }
 
             foreach (var filter in applyFilters)
@@ -89,7 +89,7 @@ namespace Hangfire.States
                 context.Profiler.InvokeMeasured(
                     Tuple.Create(filter, context),
                     InvokeOnStateApplied,
-                    $"OnStateApplied for {context.BackgroundJob.Id}");
+                    () => $"OnStateApplied for {context.BackgroundJob.Id}");
             }
 
             return _innerStateMachine.ApplyState(context);

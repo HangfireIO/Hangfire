@@ -28,7 +28,7 @@ namespace Hangfire.Profiling
         public TResult InvokeMeasured<TInstance, TResult>(
             TInstance instance, 
             Func<TInstance, TResult> action,
-            string message)
+            Func<string> messageFunc)
         {
             if (action == null) throw new ArgumentNullException(nameof(action));
             return action(instance);
