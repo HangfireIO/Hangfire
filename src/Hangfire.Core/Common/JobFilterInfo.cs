@@ -13,8 +13,10 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Server;
 using Hangfire.States;
@@ -26,29 +28,16 @@ namespace Hangfire.Common
     /// </summary>
     internal class JobFilterInfo
     {
-        private readonly List<IClientFilter> _clientFilters = new List<IClientFilter>();
-        private readonly List<IServerFilter> _serverFilters = new List<IServerFilter>();
-        private readonly List<IElectStateFilter> _electStateFilters = new List<IElectStateFilter>();
-        private readonly List<IApplyStateFilter> _applyStateFilters = new List<IApplyStateFilter>();
-        private readonly List<IClientExceptionFilter> _clientExceptionFilters = new List<IClientExceptionFilter>(); 
-        private readonly List<IServerExceptionFilter> _serverExceptionFilters = new List<IServerExceptionFilter>();
+        private readonly IEnumerable<object> _instances;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JobFilterInfo"/> class using the specified filters collection.
         /// </summary>
         /// <param name="filters">The filters collection.</param>
-        public JobFilterInfo(IEnumerable<JobFilter> filters)
+        public JobFilterInfo([NotNull] IEnumerable<JobFilter> filters)
         {
-            var list = filters.Select(f => f.Instance).ToList();
-
-            _clientFilters.AddRange(list.OfType<IClientFilter>());
-            _serverFilters.AddRange(list.OfType<IServerFilter>());
-
-            _electStateFilters.AddRange(list.OfType<IElectStateFilter>());
-            _applyStateFilters.AddRange(list.OfType<IApplyStateFilter>());
-
-            _clientExceptionFilters.AddRange(list.OfType<IClientExceptionFilter>());
-            _serverExceptionFilters.AddRange(list.OfType<IServerExceptionFilter>());
+            if (filters == null) throw new ArgumentNullException(nameof(filters));
+            _instances = filters.Select(f => f.Instance);
         }
 
         /// <summary>
@@ -58,7 +47,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The client filters.
         /// </returns>
-        public IList<IClientFilter> ClientFilters => _clientFilters;
+        public IList<IClientFilter> ClientFilters => _instances.OfType<IClientFilter>().ToList();
 
         /// <summary>
         /// Gets all the server filters in the application.
@@ -67,7 +56,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The server filters.
         /// </returns>
-        public IList<IServerFilter> ServerFilters => _serverFilters;
+        public IList<IServerFilter> ServerFilters => _instances.OfType<IServerFilter>().ToList();
 
         /// <summary>
         /// Gets all the stat changing filters in the application.
@@ -76,7 +65,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The state changing filters.
         /// </returns>
-        public IList<IElectStateFilter> ElectStateFilters => _electStateFilters;
+        public IList<IElectStateFilter> ElectStateFilters => _instances.OfType<IElectStateFilter>().ToList();
 
         /// <summary>
         /// Gets all the state changed filters in the application.
@@ -85,7 +74,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The state changed filters.
         /// </returns>
-        public IList<IApplyStateFilter> ApplyStateFilters => _applyStateFilters;
+        public IList<IApplyStateFilter> ApplyStateFilters => _instances.OfType<IApplyStateFilter>().ToList();
 
         /// <summary>
         /// Gets all the client exception filters in the application.
@@ -94,7 +83,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The client exception filters.
         /// </returns>
-        public IList<IClientExceptionFilter> ClientExceptionFilters => _clientExceptionFilters;
+        public IList<IClientExceptionFilter> ClientExceptionFilters => _instances.OfType<IClientExceptionFilter>().ToList();
 
         /// <summary>
         /// Gets all the server exception filters in the application.
@@ -103,6 +92,6 @@ namespace Hangfire.Common
         /// <returns>
         /// The server exception filters.
         /// </returns>
-        public IList<IServerExceptionFilter> ServerExceptionFilters => _serverExceptionFilters;
+        public IList<IServerExceptionFilter> ServerExceptionFilters => _instances.OfType<IServerExceptionFilter>().ToList();
     }
 }
