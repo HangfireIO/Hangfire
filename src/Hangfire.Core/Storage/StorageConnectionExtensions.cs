@@ -100,11 +100,12 @@ namespace Hangfire.Storage
                     continue;
                 }
 
-                var dto = new RecurringJobDto
+                var dto = new RecurringJobDto { Id = id };
+
+                if (hash.TryGetValue("Cron", out var cron) && !String.IsNullOrWhiteSpace(cron))
                 {
-                    Id = id,
-                    Cron = hash["Cron"]
-                };
+                    dto.Cron = cron;
+                }
 
                 try
                 {
