@@ -198,18 +198,25 @@ namespace Hangfire.SqlServer
                 count,
                 SucceededState.StateName,
                 descending: true,
-                (sqlJob, job, invocationData, loadException, stateData) => new SucceededJobDto
+                (sqlJob, job, invocationData, loadException, stateData) =>
                 {
-                    Job = job,
-                    LoadException = loadException,
-                    InvocationData = invocationData,
-                    InSucceededState = SucceededState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
-                    Result = stateData["Result"],
-                    TotalDuration = stateData.TryGetValue("PerformanceDuration", out var duration) && stateData.TryGetValue("Latency", out var latency)
-                        ? (long?)long.Parse(duration, CultureInfo.InvariantCulture) + (long?)long.Parse(latency, CultureInfo.InvariantCulture)
-                        : null,
-                    SucceededAt = sqlJob.StateChanged,
-                    StateData = stateData
+                    var isPerformanceDurationSet = stateData.TryGetValue("PerformanceDuration", out var duration);
+                    var performanceDuration =
+                        isPerformanceDurationSet ? (long?)long.Parse(duration, CultureInfo.InvariantCulture) : null;
+                    return new SucceededJobDto
+                    {
+                        Job = job,
+                        LoadException = loadException,
+                        InvocationData = invocationData,
+                        InSucceededState = SucceededState.StateName.Equals(sqlJob.StateName, StringComparison.OrdinalIgnoreCase),
+                        Result = stateData["Result"],
+                        PerformanceDuration = performanceDuration,
+                        TotalDuration = isPerformanceDurationSet && stateData.TryGetValue("Latency", out var latency)
+                            ? performanceDuration + (long?)long.Parse(latency, CultureInfo.InvariantCulture)
+                            : null,
+                        SucceededAt = sqlJob.StateChanged,
+                        StateData = stateData
+                    };
                 }));
         }
 
