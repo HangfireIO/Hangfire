@@ -42,7 +42,7 @@ before_build:
   - sh: nuget locals all -clear
 
 build_script:  
-  - ps: IF ($env:APPVEYOR_SCHEDULED_BUILD -or $env:APPVEYOR_REPO_COMMIT_MESSAGE -like "*covscan*") { .\coverity-scan.ps1 }
+  - pwsh: IF ($IsWindows -and ($env:APPVEYOR_SCHEDULED_BUILD -or $env:APPVEYOR_REPO_COMMIT_MESSAGE -like "*covscan*")) { .\coverity-scan.ps1 }
   - cmd: IF NOT DEFINED APPVEYOR_SCHEDULED_BUILD build.bat sign
   - sh: chmod +x build.sh; ./build.sh
 
