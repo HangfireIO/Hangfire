@@ -37,8 +37,8 @@ services:
 
 # Installing MSMQ manually to avoid "Cannot initialize 'msmq' service handler" error
 before_build:
-  - cmd: powershell Import-Module ServerManager; Add-WindowsFeature MSMQ; net start msmq
-  - ps: Install-Module -Name SignPath
+  - cmd: pwsh Import-Module ServerManager; Add-WindowsFeature MSMQ; net start msmq
+  - pwsh: Install-PSResource -Name SignPath -TrustRepository
   - sh: nuget locals all -clear
 
 build_script:  
