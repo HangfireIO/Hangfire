@@ -11,7 +11,7 @@ version: 1.8.12-build-0{build}
 
 image:
   - Visual Studio 2022
-  - Ubuntu
+  - Ubuntu2004
 
 #---------------------------------#
 #    environment configuration    #
