@@ -27,6 +27,8 @@ namespace Hangfire
 {
     public class ContinuationsSupportAttribute : JobFilterAttribute, IElectStateFilter, IApplyStateFilter
     {
+        internal static readonly HashSet<string> KnownFinalStates = new HashSet<string> { DeletedState.StateName, SucceededState.StateName };
+
         private static readonly TimeSpan AddJobLockTimeout = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan ContinuationStateFetchTimeout = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan ContinuationInvalidTimeout = TimeSpan.FromMinutes(15);
@@ -43,7 +45,7 @@ namespace Hangfire
         }
 
         public ContinuationsSupportAttribute(bool pushResults)
-            : this(pushResults, new HashSet<string> { DeletedState.StateName, SucceededState.StateName })
+            : this(pushResults, KnownFinalStates)
         {
         }
 
