@@ -240,7 +240,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
                 AddCommand(
                     _queueCommands,
                     queue,
-                    $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)",
+                    $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @queue) option (querytraceon 460)",
                     new SqlCommandBatchParameter("@jobId", DbType.Int64) { Value = long.Parse(jobId, CultureInfo.InvariantCulture) },
                     new SqlCommandBatchParameter("@queue", DbType.String) { Value = queue });
 
