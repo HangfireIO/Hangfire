@@ -242,7 +242,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
                     queue,
                     $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)",
                     new SqlCommandBatchParameter("@jobId", DbType.Int64) { Value = long.Parse(jobId, CultureInfo.InvariantCulture) },
-                    new SqlCommandBatchParameter("@queue", DbType.String, 50) { Value = queue });
+                    new SqlCommandBatchParameter("@queue", DbType.String) { Value = queue });
 
                 _afterCommitCommandQueue.Enqueue(() => SqlServerJobQueue.NewItemInQueueEvent.Set());
             }

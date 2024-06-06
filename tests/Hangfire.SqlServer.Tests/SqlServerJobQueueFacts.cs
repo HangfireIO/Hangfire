@@ -2,7 +2,6 @@
 
 using System;
 using System.Data.Common;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using ReferencedDapper::Dapper;
@@ -610,6 +609,34 @@ values (scope_identity(), @queue)";
                 Assert.Equal("1", record.JobId.ToString());
                 Assert.Equal("default", record.Queue);
                 Assert.Null(record.FetchedAt);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Enqueue_ThrowsAnException_WhenTheGivenQueueIsTooLong(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var queueName = "some-really-long-queue-name-that-should-cause-an-exception-to-be-thrown-and-not-ignored";
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: null);
+
+                var exception = Assert.Throws<DbException>(() =>
+                {
+#if NETCOREAPP
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        queue.Enqueue(connection, transaction, queueName, "1");
+                        transaction.Commit();
+                    }
+#else
+                    queue.Enqueue(connection, queueName, "1");
+#endif
+                });
+
+                var record = connection.Query($"select * from [{Constants.DefaultSchema}].JobQueue").SingleOrDefault();
+                Assert.Null(record);
+                Assert.StartsWith("String or binary data would be truncated", exception.Message);
             }, useMicrosoftDataSqlClient);
         }
 

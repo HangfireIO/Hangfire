@@ -395,6 +395,32 @@ select scope_identity() as Id";
             }, useMicrosoftDataSqlClient);
         }
 
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void Enqueue_ThrowsAnException_WhenTheGivenQueueIsTooLong(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var queueName = "some-really-long-queue-name-that-should-cause-an-exception-to-be-thrown-and-not-ignored";
+                // We are relying on the fact that SqlServerJobQueue.Enqueue method will throw with a negative
+                // timeout. If we don't see this exception, and if the record is inserted, then everything is fine.
+                var options = new SqlServerStorageOptions { PrepareSchemaIfNecessary = false, CommandTimeout = TimeSpan.FromSeconds(-5) };
+                _queueProviders.Add(
+                    new SqlServerJobQueueProvider(new Mock<SqlServerStorage>("connection=false;", options).Object, options),
+                    new [] { queueName });
+
+                var exception = Assert.ThrowsAny<DbException>(() =>
+                {
+                    Commit(x => x.AddToQueue(queueName, "1"), useMicrosoftDataSqlClient, useBatching);
+                });
+
+                var record = connection.Query($"select * from [{Constants.DefaultSchema}].JobQueue").SingleOrDefault();
+                Assert.Null(record);
+                Assert.StartsWith("String or binary data would be truncated", exception.Message);
+            }, useMicrosoftDataSqlClient);
+        }
+
         private static dynamic GetTestJob(IDbConnection connection, string jobId)
         {
             return connection
