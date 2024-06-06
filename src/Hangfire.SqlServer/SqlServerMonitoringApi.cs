@@ -642,14 +642,13 @@ where j.Id in @jobIds";
             Func<SqlJob, Job, InvocationData, JobLoadException, SafeDictionary<string, string>, TDto> selector)
         {
             string order = descending ? "desc" : "asc";
-            string searchJoin = !string.IsNullOrWhiteSpace(search) ? " left join [HangFire].JobParameter p with (nolock, forceseek) on p.JobId = j.Id and p.Name = 'RecurringJobId'" : null;
-            string searchWhere = !string.IsNullOrWhiteSpace(search) ? " and (p.Value like @search or j.Arguments like @search or j.InvocationData like @search)" : null;
+            string searchSql = !string.IsNullOrWhiteSpace(search) ? " and (j.InvocationData like @search or j.Arguments like @search)" : null;
             string jobsSql = 
 $@";with cte as 
 (
   select j.Id, row_number() over (order by j.Id {order}) as row_num
-  from [{_storage.SchemaName}].Job j with (nolock, forceseek) {searchJoin}
-  where j.StateName = @stateName {searchWhere}
+  from [{_storage.SchemaName}].Job j with (nolock, forceseek)
+  where j.StateName = @stateName {searchSql}
 )
 select j.*, s.Reason as StateReason, s.Data as StateData, s.CreatedAt as StateChanged
 from [{_storage.SchemaName}].Job j with (nolock, forceseek)
