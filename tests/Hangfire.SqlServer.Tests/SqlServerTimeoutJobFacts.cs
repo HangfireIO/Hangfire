@@ -147,7 +147,7 @@ namespace Hangfire.SqlServer.Tests
                 using (var processingJob = new SqlServerTimeoutJob(storage, id, "1", "default", FetchedAt))
                 {
                     processingJob.DisposeTimer();
-                    Thread.Sleep(TimeSpan.FromSeconds(10));
+                    Thread.Sleep(TimeSpan.FromSeconds(2));
                     processingJob.ExecuteKeepAliveQueryIfRequired();
 
                     var record = sql.Query($"select * from [{Constants.DefaultSchema}].JobQueue").Single();
@@ -170,7 +170,7 @@ namespace Hangfire.SqlServer.Tests
                 var id = CreateJobQueueRecord(sql, "1", "default", FetchedAt);
                 using (var processingJob = new SqlServerTimeoutJob(storage, id, "1", "default", FetchedAt))
                 {
-                    Thread.Sleep(TimeSpan.FromSeconds(10));
+                    Thread.Sleep(TimeSpan.FromSeconds(2));
                     processingJob.DisposeTimer();
 
                     // Act
@@ -193,7 +193,7 @@ namespace Hangfire.SqlServer.Tests
                 var id = CreateJobQueueRecord(sql, "1", "default", FetchedAt);
                 using (var processingJob = new SqlServerTimeoutJob(storage, id, "1", "default", FetchedAt))
                 {
-                    Thread.Sleep(TimeSpan.FromSeconds(10));
+                    Thread.Sleep(TimeSpan.FromSeconds(2));
                     processingJob.DisposeTimer();
 
                     // Act
@@ -240,7 +240,7 @@ select scope_identity() as Id";
         {
             var storage = new SqlServerStorage(
                 () => ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient),
-                new SqlServerStorageOptions { SlidingInvisibilityTimeout = TimeSpan.FromSeconds(10) });
+                new SqlServerStorageOptions { SlidingInvisibilityTimeout = TimeSpan.FromSeconds(5) });
 
             using (var connection = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient))
             {

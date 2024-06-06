@@ -2280,7 +2280,7 @@ values (@jobId, '', '', getutcdate())";
                 {
                     try
                     {
-                        transaction1.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(5));
+                        transaction1.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(1));
 
                         lockAcquired.Set();
                         if (!releaseLock.Wait(TimeSpan.FromSeconds(30)))
@@ -2310,7 +2310,7 @@ values (@jobId, '', '', getutcdate())";
             UseSqlServerTransaction(transaction2 =>
             {
                 Assert.Throws<DistributedLockTimeoutException>(
-                    () => transaction2.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(5)));
+                    () => transaction2.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(1)));
             }, useMicrosoftDataSqlClient, useBatching);
 
             releaseLock.Set();
