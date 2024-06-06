@@ -201,10 +201,10 @@ namespace Hangfire.SqlServer
                 }
 
                 var parts = _connectionString.Split(SemicolonSeparator, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(x => x.Split(EqualSignSeparator, StringSplitOptions.RemoveEmptyEntries))
-                    .Select(x => new { Key = x[0].Trim(), Value = x[1].Trim() })
-                    .GroupBy(x => x.Key, StringComparer.OrdinalIgnoreCase)
-                    .ToDictionary(x => x.Key, x => x.Last().Value, StringComparer.OrdinalIgnoreCase);
+                    .Select(static x => x.Split(EqualSignSeparator, StringSplitOptions.RemoveEmptyEntries))
+                    .Select(static x => new { Key = x[0].Trim(), Value = x[1].Trim() })
+                    .GroupBy(static x => x.Key, StringComparer.OrdinalIgnoreCase)
+                    .ToDictionary(static x => x.Key, static x => x.Last().Value, StringComparer.OrdinalIgnoreCase);
 
                 var builder = new StringBuilder();
 
@@ -534,7 +534,7 @@ namespace Hangfire.SqlServer
         public static readonly DashboardMetric ActiveConnections = new DashboardMetric(
             "connections:active",
             "Metrics_ActiveConnections",
-            page =>
+            static page =>
             {
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
@@ -556,7 +556,7 @@ where dbid = db_id(@name) and status != 'background' and status != 'sleeping'";
         public static readonly DashboardMetric TotalConnections = new DashboardMetric(
             "connections:total",
             "Metrics_TotalConnections",
-            page =>
+            static page =>
             {
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
@@ -578,7 +578,7 @@ where dbid = db_id(@name) and status != 'background'";
         public static readonly DashboardMetric ActiveTransactions = new DashboardMetric(
             "transactions:active",
             "Metrics_SQLServer_ActiveTransactions",
-            page =>
+            static page =>
             {
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
@@ -600,7 +600,7 @@ where dbid = db_id(@name) and status != 'background' and open_tran = 1";
         public static readonly DashboardMetric DataFilesSize = new DashboardMetric(
             "database:files:rows:size",
             "Metrics_SQLServer_DataFilesSize",
-            page =>
+            static page =>
             {
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
@@ -622,7 +622,7 @@ where type = 0;";
         public static readonly DashboardMetric LogFilesSize = new DashboardMetric(
             "database:files:log:size",
             "Metrics_SQLServer_LogFilesSize",
-            page =>
+            static page =>
             {
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
@@ -644,7 +644,7 @@ where type = 1;";
         public static readonly DashboardMetric SchemaVersion = new DashboardMetric(
             "sqlserver:schema",
             "Metrics_SQLServer_SchemaVersion",
-            page =>
+            static page =>
             {
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
@@ -674,7 +674,7 @@ where type = 1;";
             });
 
         public static readonly Func<string, string, string, DashboardMetric> PerformanceCounterDatabaseMetric = 
-            (string objectName, string counterName, string instanceName) => new DashboardMetric(
+            static (string objectName, string counterName, string instanceName) => new DashboardMetric(
             $"sqlserver:counter:{objectName}:{counterName}:{instanceName ?? "db"}",
             counterName,
             page =>

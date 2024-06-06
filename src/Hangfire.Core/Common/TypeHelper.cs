@@ -58,7 +58,7 @@ namespace Hangfire.Common
 
         public static string SimpleAssemblyTypeSerializer(Type type)
         {
-            return TypeSerializerCache.GetOrAdd(type, value =>
+            return TypeSerializerCache.GetOrAdd(type, static value =>
             {
                 var builder = new StringBuilder();
                 SerializeType(value, true, builder);
@@ -85,7 +85,7 @@ namespace Hangfire.Common
 
         public static Type IgnoredAssemblyVersionTypeResolver(string typeName)
         {
-            return TypeResolverCache.GetOrAdd(typeName, value =>
+            return TypeResolverCache.GetOrAdd(typeName, static value =>
             {
                 value = VersionRegex.Replace(value, String.Empty);
                 value = CultureRegex.Replace(value, String.Empty);

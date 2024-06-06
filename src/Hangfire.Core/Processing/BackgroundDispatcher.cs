@@ -59,7 +59,7 @@ namespace Hangfire.Processing
                 throw new ArgumentException("At least one unstarted thread should be created.", nameof(threadFactory));
             }
 
-            if (threads.Any(thread => thread == null || (thread.ThreadState & ThreadState.Unstarted) == 0))
+            if (threads.Any(static thread => thread == null || (thread.ThreadState & ThreadState.Unstarted) == 0))
             {
                 throw new ArgumentException("All the threads should be non-null and in the ThreadState.Unstarted state.", nameof(threadFactory));
             }

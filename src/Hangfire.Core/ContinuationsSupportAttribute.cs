@@ -107,7 +107,7 @@ namespace Hangfire
         {
             var continuations =  SerializationHelper.Deserialize<List<Continuation>>(serialized);
 
-            if (continuations != null && continuations.TrueForAll(x => x.JobId == null))
+            if (continuations != null && continuations.TrueForAll(static x => x.JobId == null))
             {
                 continuations = SerializationHelper.Deserialize<List<Continuation>>(serialized, SerializationOption.User);
             }

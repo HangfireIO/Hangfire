@@ -50,7 +50,7 @@ namespace Hangfire.Common
         {
             IEnumerable<JobFilter> combinedFilters =
                 Items.SelectMany(fp => fp.GetFilters(job))
-                    .OrderBy(filter => filter, _filterComparer);
+                    .OrderBy(static filter => filter, _filterComparer);
 
             // Remove duplicates from the back forward
             return RemoveDuplicates(combinedFilters.Reverse()).Reverse();

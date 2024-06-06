@@ -49,7 +49,7 @@ namespace Hangfire.SqlServer
             };
 
         private static readonly ThreadLocal<Dictionary<string, int>> AcquiredLocks
-            = new ThreadLocal<Dictionary<string, int>>(() => new Dictionary<string, int>()); 
+            = new ThreadLocal<Dictionary<string, int>>(static () => new Dictionary<string, int>()); 
 
         private DbConnection _connection;
         private readonly SqlServerStorage _storage;

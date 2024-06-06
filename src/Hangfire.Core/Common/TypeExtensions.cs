@@ -56,7 +56,7 @@ namespace Hangfire.Common
             if (type.GetTypeInfo().IsInterface)
             {
                 methodCandidates.AddRange(type.GetTypeInfo()
-                    .ImplementedInterfaces.SelectMany(x => x.GetRuntimeMethods()));
+                    .ImplementedInterfaces.SelectMany(static x => x.GetRuntimeMethods()));
             }
 
             foreach (var methodCandidate in methodCandidates)

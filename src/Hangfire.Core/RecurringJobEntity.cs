@@ -279,7 +279,7 @@ namespace Hangfire
 
         public override string ToString()
         {
-            return String.Join(";", _recurringJob.Select(x => $"{x.Key}:{x.Value}"));
+            return String.Join(";", _recurringJob.Select(static x => $"{x.Key}:{x.Value}"));
         }
 
         public static CronExpression ParseCronExpression([NotNull] string cronExpression)

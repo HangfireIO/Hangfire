@@ -30,9 +30,9 @@ namespace Hangfire.Server
         internal static readonly Dictionary<Type, Func<PerformContext, object>> Substitutions
             = new Dictionary<Type, Func<PerformContext, object>>
             {
-                { typeof (IJobCancellationToken), x => x.CancellationToken },
-                { typeof (CancellationToken), x => x.CancellationToken.ShutdownToken },
-                { typeof (PerformContext), x => x }
+                { typeof (IJobCancellationToken), static x => x.CancellationToken },
+                { typeof (CancellationToken), static x => x.CancellationToken.ShutdownToken },
+                { typeof (PerformContext), static x => x }
             };
 
         private readonly JobActivator _activator;

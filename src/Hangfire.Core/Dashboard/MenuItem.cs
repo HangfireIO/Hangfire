@@ -42,7 +42,7 @@ namespace Hangfire.Dashboard
                 metrics.AddRange(Metrics);
             }
 
-            return metrics.Where(x => x != null).ToList();
+            return metrics.Where(static x => x != null).ToList();
         }
     }
 }

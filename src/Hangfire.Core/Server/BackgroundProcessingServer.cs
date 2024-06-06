@@ -222,7 +222,7 @@ namespace Hangfire.Server
         private static IBackgroundProcessDispatcherBuilder[] GetProcesses([NotNull] IEnumerable<IBackgroundProcess> processes)
         {
             if (processes == null) throw new ArgumentNullException(nameof(processes));
-            return processes.Select(x => x.UseBackgroundPool(threadCount: 1)).ToArray();
+            return processes.Select(static x => x.UseBackgroundPool(threadCount: 1)).ToArray();
         }
 
         private IBackgroundDispatcher CreateDispatcher()

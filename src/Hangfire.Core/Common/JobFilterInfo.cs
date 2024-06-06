@@ -39,7 +39,7 @@ namespace Hangfire.Common
         /// <param name="filters">The filters collection.</param>
         public JobFilterInfo(IEnumerable<JobFilter> filters)
         {
-            var list = filters.Select(f => f.Instance).ToList();
+            var list = filters.Select(static f => f.Instance).ToList();
 
             _clientFilters.AddRange(list.OfType<IClientFilter>());
             _serverFilters.AddRange(list.OfType<IServerFilter>());

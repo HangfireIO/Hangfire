@@ -39,7 +39,7 @@ namespace Hangfire
 #endif
                 ;
             Authorization = DefaultAuthorization;
-            IsReadOnlyFunc = _ => false;
+            IsReadOnlyFunc = static _ => false;
             StatsPollingInterval = 2000;
             DisplayStorageConnectionString = true;
             DashboardTitle = "Hangfire Dashboard";

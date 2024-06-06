@@ -59,10 +59,10 @@ namespace Hangfire.Common
             if (job == null) return Enumerable.Empty<JobFilter>();
 
             var typeFilters = GetTypeAttributes(job)
-                .Select(attr => new JobFilter(attr, JobFilterScope.Type, null));
+                .Select(static attr => new JobFilter(attr, JobFilterScope.Type, null));
 
             var methodFilters = GetMethodAttributes(job)
-                .Select(attr => new JobFilter(attr, JobFilterScope.Method, null));
+                .Select(static attr => new JobFilter(attr, JobFilterScope.Method, null));
 
             return typeFilters.Union(methodFilters).ToList();
         }

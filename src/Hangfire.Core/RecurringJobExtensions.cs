@@ -84,7 +84,7 @@ namespace Hangfire
 
             if (logger != null && logger.IsTraceEnabled())
             {
-                logger.Trace($"Recurring job '{recurringJob.RecurringJobId}' is being updated. RecurringJob: ({recurringJob}), Changes: ({String.Join(";", changedFields.Select(x => $"{x.Key}:{x.Value}"))})");
+                logger.Trace($"Recurring job '{recurringJob.RecurringJobId}' is being updated. RecurringJob: ({recurringJob}), Changes: ({String.Join(";", changedFields.Select(static x => $"{x.Key}:{x.Value}"))})");
             }
 
             transaction.AddToSet(

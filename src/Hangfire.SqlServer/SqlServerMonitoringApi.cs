@@ -84,7 +84,7 @@ namespace Hangfire.SqlServer
                 from, count,
                 ProcessingState.StateName,
                 descending: false,
-                (sqlJob, job, invocationData, loadException, stateData) => new ProcessingJobDto
+                static (sqlJob, job, invocationData, loadException, stateData) => new ProcessingJobDto
                 {
                     Job = job,
                     LoadException = loadException,
@@ -103,7 +103,7 @@ namespace Hangfire.SqlServer
                 from, count,
                 ScheduledState.StateName,
                 descending: false,
-                (sqlJob, job, invocationData, loadException, stateData) => new ScheduledJobDto
+                static (sqlJob, job, invocationData, loadException, stateData) => new ScheduledJobDto
                 {
                     Job = job,
                     LoadException = loadException,
@@ -175,7 +175,7 @@ namespace Hangfire.SqlServer
                 count,
                 FailedState.StateName,
                 descending: true,
-                (sqlJob, job, invocationData, loadException, stateData) => new FailedJobDto
+                static (sqlJob, job, invocationData, loadException, stateData) => new FailedJobDto
                 {
                     Job = job,
                     LoadException = loadException,
@@ -198,7 +198,7 @@ namespace Hangfire.SqlServer
                 count,
                 SucceededState.StateName,
                 descending: true,
-                (sqlJob, job, invocationData, loadException, stateData) => new SucceededJobDto
+                static (sqlJob, job, invocationData, loadException, stateData) => new SucceededJobDto
                 {
                     Job = job,
                     LoadException = loadException,
@@ -221,7 +221,7 @@ namespace Hangfire.SqlServer
                 count,
                 DeletedState.StateName,
                 descending: true,
-                (sqlJob, job, invocationData, loadException, stateData) => new DeletedJobDto
+                static (sqlJob, job, invocationData, loadException, stateData) => new DeletedJobDto
                 {
                     Job = job,
                     LoadException = loadException,
@@ -240,7 +240,7 @@ namespace Hangfire.SqlServer
                 count,
                 AwaitingState.StateName,
                 descending: false,
-                (sqlJob, job, invocationData, loadException, stateData) => new AwaitingJobDto
+                static (sqlJob, job, invocationData, loadException, stateData) => new AwaitingJobDto
                 {
                     Job = job,
                     LoadException = loadException,
@@ -251,8 +251,8 @@ namespace Hangfire.SqlServer
                 }));
 
             var parentIds = awaitingJobs
-                .Where(x => x.Value != null && x.Value.InAwaitingState && x.Value.StateData.ContainsKey("ParentId"))
-                .Select(x => long.Parse(x.Value.StateData["ParentId"], CultureInfo.InvariantCulture))
+                .Where(static x => x.Value != null && x.Value.InAwaitingState && x.Value.StateData.ContainsKey("ParentId"))
+                .Select(static x => long.Parse(x.Value.StateData["ParentId"], CultureInfo.InvariantCulture))
                 .ToArray();
 
             var parentStates = UseConnection(connection =>
@@ -261,7 +261,7 @@ namespace Hangfire.SqlServer
                     $"select Id, StateName from [{_storage.SchemaName}].Job with (nolock, forceseek) where Id in @ids",
                     new { ids = parentIds },
                     commandTimeout: _storage.CommandTimeout)
-                .ToDictionary(x => x.Id, x => x.StateName);
+                .ToDictionary(static x => x.Id, static x => x.StateName);
             });
 
             foreach (var awaitingJob in awaitingJobs)
@@ -288,9 +288,9 @@ namespace Hangfire.SqlServer
         public override IList<QueueWithTopEnqueuedJobsDto> Queues()
         {
             var tuples = _storage.QueueProviders
-                .Select(x => x.GetJobQueueMonitoringApi())
-                .SelectMany(x => x.GetQueues(), (monitoring, queue) => new { Monitoring = monitoring, Queue = queue })
-                .OrderBy(x => x.Queue)
+                .Select(static x => x.GetJobQueueMonitoringApi())
+                .SelectMany(static x => x.GetQueues(), static (monitoring, queue) => new { Monitoring = monitoring, Queue = queue })
+                .OrderBy(static x => x.Queue)
                 .ToArray();
 
             var result = new List<QueueWithTopEnqueuedJobsDto>(tuples.Length);
@@ -365,9 +365,9 @@ select * from [{_storage.SchemaName}].State with (nolock, forceseek) where JobId
                     if (job == null) return null;
 
                     var parameters = multi.Read<JobParameter>()
-                        .GroupBy(x => x.Name)
-                        .Select(grp => grp.First())
-                        .ToDictionary(x => x.Name, x => x.Value);
+                        .GroupBy(static x => x.Name)
+                        .Select(static grp => grp.First())
+                        .ToDictionary(static x => x.Name, static x => x.Value);
 
                     var deserializedJob = DeserializeJob(job.InvocationData, job.Arguments, out var payload, out var exception);
 
@@ -394,7 +394,7 @@ select * from [{_storage.SchemaName}].State with (nolock, forceseek) where JobId
                     var history =
                         multi.Read<SqlState>()
                             .ToList()
-                            .Select(x => new StateHistoryDto
+                            .Select(static x => new StateHistoryDto
                             {
                                 StateName = x.Name,
                                 CreatedAt = x.CreatedAt,
@@ -479,7 +479,7 @@ select count(*) from [{0}].[Set] with (nolock, forceseek) where [Key] = N'retrie
             });
 
             statistics.Queues = _storage.QueueProviders
-                .SelectMany(x => x.GetJobQueueMonitoringApi().GetQueues())
+                .SelectMany(static x => x.GetJobQueueMonitoringApi().GetQueues())
                 .Count();
 
             return statistics;
@@ -495,7 +495,7 @@ select count(*) from [{0}].[Set] with (nolock, forceseek) where [Key] = N'retrie
                 endDate = endDate.AddHours(-1);
             }
 
-            var keyMaps = dates.ToDictionary(x => $"stats:{type}:{x.ToString("yyyy-MM-dd-HH", CultureInfo.InvariantCulture)}", x => x);
+            var keyMaps = dates.ToDictionary(x => $"stats:{type}:{x.ToString("yyyy-MM-dd-HH", CultureInfo.InvariantCulture)}", static x => x);
 
             return GetTimelineStats(connection, keyMaps);
         }
@@ -510,7 +510,7 @@ select count(*) from [{0}].[Set] with (nolock, forceseek) where [Key] = N'retrie
                 endDate = endDate.AddDays(-1);
             }
 
-            var keyMaps = dates.ToDictionary(x => $"stats:{type}:{x.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}", x => x);
+            var keyMaps = dates.ToDictionary(x => $"stats:{type}:{x.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}", static x => x);
 
             return GetTimelineStats(connection, keyMaps);
         }
@@ -527,7 +527,7 @@ where [Key] in @keys";
                 sqlQuery,
                 new { keys = keyMaps.Keys },
                 commandTimeout: _storage.CommandTimeout)
-                .ToDictionary(x => (string)x.Key, x => (long)x.Count);
+                .ToDictionary(static x => (string)x.Key, static x => (long)x.Count);
 
             foreach (var key in keyMaps.Keys)
             {
@@ -569,7 +569,7 @@ where j.Id in @jobIds";
                 enqueuedJobsSql,
                 new { jobIds = jobIds },
                 commandTimeout: _storage.CommandTimeout)
-                .ToDictionary(x => x.Id, x => x);
+                .ToDictionary(static x => x.Id, static x => x);
 
             var sortedSqlJobs = jobIds
                 .Select(jobId => jobs.TryGetValue(jobId, out var job) ? job : new SqlJob { Id = jobId })
@@ -577,7 +577,7 @@ where j.Id in @jobIds";
             
             return DeserializeJobs(
                 sortedSqlJobs,
-                (sqlJob, job, invocationData, loadException, stateData) => new EnqueuedJobDto
+                static (sqlJob, job, invocationData, loadException, stateData) => new EnqueuedJobDto
                 {
                     Job = job,
                     LoadException = loadException,

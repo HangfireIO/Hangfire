@@ -103,7 +103,7 @@ namespace Hangfire.Storage
                 if (method == null)
                 {
                     var parametersString = parameterTypes != null
-                        ? String.Join(", ", parameterTypes.Select(x => x.Name))
+                        ? String.Join(", ", parameterTypes.Select(static x => x.Name))
                         : ParameterTypes ?? String.Empty;
                     
                     throw new InvalidOperationException(
@@ -123,12 +123,10 @@ namespace Hangfire.Storage
 
         public static InvocationData SerializeJob(Job job)
         {
-            var typeSerializer = TypeHelper.CurrentTypeSerializer;
-
-            var type = typeSerializer(job.Type);
+            var type = TypeHelper.CurrentTypeSerializer(job.Type);
             var methodName = job.Method.Name;
             var parameterTypes = SerializationHelper.Serialize(
-                job.Method.GetParameters().Select(x => typeSerializer(x.ParameterType)).ToArray());
+                job.Method.GetParameters().Select(static x => TypeHelper.CurrentTypeSerializer(x.ParameterType)).ToArray());
             var arguments = SerializationHelper.Serialize(SerializeArguments(job.Method, job.Args));
 
             return new InvocationData(type, methodName, parameterTypes, arguments, job.Queue);

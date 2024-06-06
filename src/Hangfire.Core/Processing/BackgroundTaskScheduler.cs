@@ -125,7 +125,7 @@ namespace Hangfire.Processing
                 throw new ArgumentException("At least one non-started thread should be created.", nameof(threadFactory));
             }
 
-            if (_threads.Any(thread => thread == null || (thread.ThreadState & ThreadState.Unstarted) == 0))
+            if (_threads.Any(static thread => thread == null || (thread.ThreadState & ThreadState.Unstarted) == 0))
             {
                 throw new ArgumentException("All the threads should be non-null and in the ThreadState.Unstarted state.", nameof(threadFactory));
             }
@@ -135,7 +135,7 @@ namespace Hangfire.Processing
                 thread.Start();
             }
 
-            _ourThreadIds = new HashSet<int>(_threads.Select(x => x.ManagedThreadId));
+            _ourThreadIds = new HashSet<int>(_threads.Select(static x => x.ManagedThreadId));
         }
 
         /// <inheritdoc />

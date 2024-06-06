@@ -105,7 +105,7 @@ namespace Hangfire.Processing
             {
                 if (typeof(Task).GetTypeInfo().IsAssignableFrom(typeInfo))
                 {
-                    getTaskFunc = obj => (Task)obj;
+                    getTaskFunc = static obj => (Task)obj;
                     return true;
                 }
 

@@ -120,7 +120,7 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                         PollingQuantumMs))
                 : configuredPollInterval;
 
-            var queuesString = String.Join("_", queues.OrderBy(x => x));
+            var queuesString = String.Join("_", queues.OrderBy(static x => x));
             var resource = Tuple.Create(_storage, queuesString);
 
             using (var cancellationEvent = cancellationToken.GetCancellationEvent())

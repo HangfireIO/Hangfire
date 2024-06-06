@@ -56,7 +56,7 @@ namespace Hangfire.SqlServer
                 {
                     var result = _storage.UseConnection(null, connection =>
                     {
-                        return connection.Query(sqlQuery, commandTimeout: _storage.CommandTimeout).Select(x => (string) x.Queue).ToList();
+                        return connection.Query(sqlQuery, commandTimeout: _storage.CommandTimeout).Select(static x => (string) x.Queue).ToList();
                     });
 
                     _queuesCache = result;
@@ -84,7 +84,7 @@ where r.row_num between @start and @end";
                     new { queue = queue, start = from + 1, end = @from + perPage },
                     commandTimeout: _storage.CommandTimeout)
                     .ToList()
-                    .Select(x => x.JobId)
+                    .Select(static x => x.JobId)
                     .ToList();
             });
         }
@@ -105,7 +105,7 @@ where r.row_num between @start and @end";
                         fetchedJobsSql,
                         new { queue = queue, start = from + 1, end = @from + perPage })
                     .ToList()
-                    .Select(x => x.JobId)
+                    .Select(static x => x.JobId)
                     .ToList();
             });
         }

@@ -142,7 +142,7 @@ namespace Hangfire.Server
             return new ServerHeartbeatProcess(_options.HeartbeatInterval, _options.ServerTimeout, requestRestart)
                 .UseBackgroundPool(threadCount: 1
 #if !NETSTANDARD1_3
-                    , thread => { thread.Priority = ThreadPriority.AboveNormal; }
+                    , static thread => { thread.Priority = ThreadPriority.AboveNormal; }
 #endif
                 )
                 .Create(heartbeatContext, _options);
@@ -156,7 +156,7 @@ namespace Hangfire.Server
 
         private IEnumerable<IBackgroundProcessDispatcherBuilder> GetStorageComponents()
         {
-            return _storage.GetComponents().Select(component => new ServerProcessDispatcherBuilder(
+            return _storage.GetComponents().Select(static component => new ServerProcessDispatcherBuilder(
                 component, 
                 threadStart => BackgroundProcessExtensions.DefaultThreadFactory(1, component.GetType().Name, threadStart, null)));
         }
@@ -232,7 +232,7 @@ namespace Hangfire.Server
                 throw new InvalidOperationException("No dispatchers registered for the processing server.");
             }
 
-            _logger.Info($"{GetServerTemplate(context.ServerId)} is starting the registered dispatchers: {String.Join(", ", _dispatcherBuilders.Select(builder => $"{builder}"))}...");
+            _logger.Info($"{GetServerTemplate(context.ServerId)} is starting the registered dispatchers: {String.Join(", ", _dispatcherBuilders.Select(static builder => $"{builder}"))}...");
 
             foreach (var dispatcherBuilder in _dispatcherBuilders)
             {
@@ -274,7 +274,7 @@ namespace Hangfire.Server
 
             if (nonStopped.Count > 0)
             {
-                var nonStoppedNames = nonStopped.Select(dispatcher => $"{dispatcher.ToString()}").ToArray();
+                var nonStoppedNames = nonStopped.Select(static dispatcher => $"{dispatcher}").ToArray();
                 _logger.Warn($"{GetServerTemplate(context.ServerId)} stopped non-gracefully due to {String.Join(", ", nonStoppedNames)}. Outstanding work on those dispatchers could be aborted, and there can be delays in background processing. This server instance will be incorrectly shown as active for a while. To avoid non-graceful shutdowns, investigate what prevents from stopping gracefully and add CancellationToken support for those methods.");
             }
             else

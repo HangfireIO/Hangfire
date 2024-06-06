@@ -233,7 +233,7 @@ delete top(@count) from cte option (maxdop 1);";
                 
                 additionalActions?.Invoke(command);
 
-                using (cancellationToken.Register(state => ((DbCommand)state).Cancel(), command))
+                using (cancellationToken.Register(static state => ((DbCommand)state).Cancel(), command))
                 {
                     try
                     {

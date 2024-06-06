@@ -35,7 +35,7 @@ namespace Hangfire.Dashboard
         static DashboardRoutes()
         {
             Routes = new RouteCollection();
-            Routes.AddRazorPage("/", x => new HomePage());
+            Routes.AddRazorPage("/", static _ => new HomePage());
             Routes.Add("/stats", new JsonStats());
 
             var executingAssembly = typeof(DashboardRoutes).GetTypeInfo().Assembly;
@@ -88,67 +88,67 @@ namespace Hangfire.Dashboard
 
             #region Razor pages and commands
 
-            Routes.AddRazorPage("/jobs/enqueued", x => new QueuesPage());
+            Routes.AddRazorPage("/jobs/enqueued", static _ => new QueuesPage());
             Routes.AddRazorPage(
                 "/jobs/enqueued/fetched/(?<Queue>.+)",
-                x => new FetchedJobsPage(x.Groups["Queue"].Value));
+                static x => new FetchedJobsPage(x.Groups["Queue"].Value));
 
-            Routes.AddClientBatchCommand("/jobs/enqueued/delete", (client, jobId) => client.ChangeState(jobId, CreateDeletedState()));
-            Routes.AddClientBatchCommand("/jobs/enqueued/requeue", (client, jobId) => client.ChangeState(jobId, CreateEnqueuedState()));
+            Routes.AddClientBatchCommand("/jobs/enqueued/delete", static (client, jobId) => client.ChangeState(jobId, CreateDeletedState()));
+            Routes.AddClientBatchCommand("/jobs/enqueued/requeue", static (client, jobId) => client.ChangeState(jobId, CreateEnqueuedState()));
 
             Routes.AddRazorPage(
                 "/jobs/enqueued/(?<Queue>.+)",
-                x => new EnqueuedJobsPage(x.Groups["Queue"].Value));
+                static x => new EnqueuedJobsPage(x.Groups["Queue"].Value));
 
-            Routes.AddRazorPage("/jobs/processing", x => new ProcessingJobsPage());
+            Routes.AddRazorPage("/jobs/processing", static _ => new ProcessingJobsPage());
             Routes.AddClientBatchCommand(
                 "/jobs/processing/delete", 
-                (client, jobId) => client.ChangeState(jobId, CreateDeletedState(), ProcessingState.StateName));
+                static (client, jobId) => client.ChangeState(jobId, CreateDeletedState(), ProcessingState.StateName));
 
             Routes.AddClientBatchCommand(
                 "/jobs/processing/requeue",
-                (client, jobId) => client.ChangeState(jobId, CreateEnqueuedState(), ProcessingState.StateName));
+                static (client, jobId) => client.ChangeState(jobId, CreateEnqueuedState(), ProcessingState.StateName));
 
-            Routes.AddRazorPage("/jobs/scheduled", x => new ScheduledJobsPage());
+            Routes.AddRazorPage("/jobs/scheduled", static _ => new ScheduledJobsPage());
 
             Routes.AddClientBatchCommand(
                 "/jobs/scheduled/enqueue", 
-                (client, jobId) => client.ChangeState(jobId, CreateEnqueuedState(), ScheduledState.StateName));
+                static (client, jobId) => client.ChangeState(jobId, CreateEnqueuedState(), ScheduledState.StateName));
 
             Routes.AddClientBatchCommand(
                 "/jobs/scheduled/delete",
-                (client, jobId) => client.ChangeState(jobId, CreateDeletedState(), ScheduledState.StateName));
+                static (client, jobId) => client.ChangeState(jobId, CreateDeletedState(), ScheduledState.StateName));
 
-            Routes.AddRazorPage("/jobs/succeeded", x => new SucceededJobs());
+            Routes.AddRazorPage("/jobs/succeeded", static _ => new SucceededJobs());
             Routes.AddClientBatchCommand(
                 "/jobs/succeeded/requeue",
-                (client, jobId) => client.ChangeState(jobId, CreateEnqueuedState(), SucceededState.StateName));
+                static (client, jobId) => client.ChangeState(jobId, CreateEnqueuedState(), SucceededState.StateName));
 
-            Routes.AddRazorPage("/jobs/failed", x => new FailedJobsPage());
+            Routes.AddRazorPage("/jobs/failed", static _ => new FailedJobsPage());
 
             Routes.AddClientBatchCommand(
                 "/jobs/failed/requeue",
-                (client, jobId) => client.ChangeState(jobId, CreateEnqueuedState(), FailedState.StateName));
+                static (client, jobId) => client.ChangeState(jobId, CreateEnqueuedState(), FailedState.StateName));
 
             Routes.AddClientBatchCommand(
                 "/jobs/failed/delete",
-                (client, jobId) => client.ChangeState(jobId, CreateDeletedState(), FailedState.StateName));
+                static (client, jobId) => client.ChangeState(jobId, CreateDeletedState(), FailedState.StateName));
 
-            Routes.AddRazorPage("/jobs/deleted", x => new DeletedJobsPage());
+            Routes.AddRazorPage("/jobs/deleted", static _ => new DeletedJobsPage());
 
             Routes.AddClientBatchCommand(
                 "/jobs/deleted/requeue",
-                (client, jobId) => client.ChangeState(jobId, CreateEnqueuedState(), DeletedState.StateName));
+                static (client, jobId) => client.ChangeState(jobId, CreateEnqueuedState(), DeletedState.StateName));
 
-            Routes.AddRazorPage("/jobs/awaiting", x => new AwaitingJobsPage());
-            Routes.AddClientBatchCommand("/jobs/awaiting/enqueue", (client, jobId) => client.ChangeState(
+            Routes.AddRazorPage("/jobs/awaiting", static _ => new AwaitingJobsPage());
+            Routes.AddClientBatchCommand("/jobs/awaiting/enqueue", static (client, jobId) => client.ChangeState(
                 jobId, CreateEnqueuedState(), AwaitingState.StateName));
-            Routes.AddClientBatchCommand("/jobs/awaiting/delete", (client, jobId) => client.ChangeState(
+            Routes.AddClientBatchCommand("/jobs/awaiting/delete", static (client, jobId) => client.ChangeState(
                 jobId, CreateDeletedState(), AwaitingState.StateName));
 
             Routes.AddCommand(
                 "/jobs/actions/requeue/(?<JobId>.+)",
-                context =>
+                static context =>
                 {
                     var client = context.GetBackgroundJobClient();
                     return client.ChangeState(context.UriMatch.Groups["JobId"].Value, CreateEnqueuedState());
@@ -156,25 +156,25 @@ namespace Hangfire.Dashboard
 
             Routes.AddCommand(
                 "/jobs/actions/delete/(?<JobId>.+)",
-                context =>
+                static context =>
                 {
                     var client = context.GetBackgroundJobClient();
                     return client.ChangeState(context.UriMatch.Groups["JobId"].Value, CreateDeletedState());
                 });
 
-            Routes.AddRazorPage("/jobs/details/(?<JobId>.+)", x => new JobDetailsPage(x.Groups["JobId"].Value));
+            Routes.AddRazorPage("/jobs/details/(?<JobId>.+)", static x => new JobDetailsPage(x.Groups["JobId"].Value));
 
             Routes.AddRazorPage("/recurring", x => new RecurringJobsPage());
             Routes.AddRecurringBatchCommand(
                 "/recurring/remove", 
-                (manager, jobId) => manager.RemoveIfExists(jobId));
+                static (manager, jobId) => manager.RemoveIfExists(jobId));
 
             Routes.AddRecurringBatchCommand(
                 "/recurring/trigger", 
-                (manager, jobId) => manager.Trigger(jobId));
+                static (manager, jobId) => manager.Trigger(jobId));
 
-            Routes.AddRazorPage("/servers", x => new ServersPage());
-            Routes.AddRazorPage("/retries", x => new RetriesPage());
+            Routes.AddRazorPage("/servers", static _ => new ServersPage());
+            Routes.AddRazorPage("/retries", static _ => new RetriesPage());
 
             #endregion
         }

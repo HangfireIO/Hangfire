@@ -152,7 +152,7 @@ namespace Hangfire
                 if (value != null)
                 {
                     if (value.Length == 0) throw new ArgumentNullException(nameof(value));
-                    if (value.Any(delay => delay < 0))
+                    if (value.Any(static delay => delay < 0))
                         throw new ArgumentException(
                             $@"{nameof(DelaysInSeconds)} value must be an array of non-negative numbers.",
                             nameof(value));

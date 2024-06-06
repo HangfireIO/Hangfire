@@ -105,7 +105,7 @@ namespace Hangfire
 
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
             processes.AddRange(GetRequiredProcesses(filterProvider, activator, factory, performer, stateChanger));
-            processes.AddRange(additionalProcesses.Select(x => x.UseBackgroundPool(1)));
+            processes.AddRange(additionalProcesses.Select(static x => x.UseBackgroundPool(1)));
 
             var properties = new Dictionary<string, object>
             {
@@ -119,7 +119,7 @@ namespace Hangfire
 
             _logger.Info("Using the following options for Hangfire Server:\r\n" +
                 $"    Worker count: {options.WorkerCount}\r\n" +
-                $"    Listening queues: {String.Join(", ", options.Queues.Select(x => "'" + x + "'"))}\r\n" +
+                $"    Listening queues: {String.Join(", ", options.Queues.Select(static x => "'" + x + "'"))}\r\n" +
                 $"    Shutdown timeout: {options.ShutdownTimeout}\r\n" +
                 $"    Schedule polling interval: {options.SchedulePollingInterval}");
 
@@ -134,7 +134,7 @@ namespace Hangfire
 
             if (wrongQueues.Count > 0)
             {
-                _logger.Warn($"These queues fail to match the naming format: {String.Join(", ", wrongQueues.Select(x => $"'{x}'"))}. A queue name must consist of lowercase letters, digits, underscore, and dash characters only.");
+                _logger.Warn($"These queues fail to match the naming format: {String.Join(", ", wrongQueues.Select(static x => $"'{x}'"))}. A queue name must consist of lowercase letters, digits, underscore, and dash characters only.");
             }
 
             _processingServer = new BackgroundProcessingServer(

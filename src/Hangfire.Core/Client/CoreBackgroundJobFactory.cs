@@ -64,8 +64,8 @@ namespace Hangfire.Client
             }
 
             var parameters = context.Parameters.ToDictionary(
-                x => x.Key,
-                x => SerializationHelper.Serialize(x.Value, SerializationOption.User));
+                static x => x.Key,
+                static x => SerializationHelper.Serialize(x.Value, SerializationOption.User));
 
             var createdAt = DateTime.UtcNow;
             var expireIn = TimeSpan.FromDays(30);

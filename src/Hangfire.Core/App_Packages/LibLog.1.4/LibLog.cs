@@ -389,13 +389,13 @@ namespace Hangfire.Logging
         internal static readonly List<Tuple<IsLoggerAvailable, CreateLogProvider>> LogProviderResolvers =
             new List<Tuple<IsLoggerAvailable, CreateLogProvider>>
         {
-            new Tuple<IsLoggerAvailable, CreateLogProvider>(SerilogLogProvider.IsLoggerAvailable, () => new SerilogLogProvider()),
-            new Tuple<IsLoggerAvailable, CreateLogProvider>(NLogLogProvider.IsLoggerAvailable, () => new NLogLogProvider()),
-            new Tuple<IsLoggerAvailable, CreateLogProvider>(Log4NetLogProvider.IsLoggerAvailable, () => new Log4NetLogProvider()),
+            new Tuple<IsLoggerAvailable, CreateLogProvider>(SerilogLogProvider.IsLoggerAvailable, static () => new SerilogLogProvider()),
+            new Tuple<IsLoggerAvailable, CreateLogProvider>(NLogLogProvider.IsLoggerAvailable, static () => new NLogLogProvider()),
+            new Tuple<IsLoggerAvailable, CreateLogProvider>(Log4NetLogProvider.IsLoggerAvailable, static () => new Log4NetLogProvider()),
 #if !NETSTANDARD1_3
-            new Tuple<IsLoggerAvailable, CreateLogProvider>(EntLibLogProvider.IsLoggerAvailable, () => new EntLibLogProvider()),
-            new Tuple<IsLoggerAvailable, CreateLogProvider>(LoupeLogProvider.IsLoggerAvailable, () => new LoupeLogProvider()),
-            new Tuple<IsLoggerAvailable, CreateLogProvider>(ElmahLogProvider.IsLoggerAvailable, () => new ElmahLogProvider()),
+            new Tuple<IsLoggerAvailable, CreateLogProvider>(EntLibLogProvider.IsLoggerAvailable, static () => new EntLibLogProvider()),
+            new Tuple<IsLoggerAvailable, CreateLogProvider>(LoupeLogProvider.IsLoggerAvailable, static () => new LoupeLogProvider()),
+            new Tuple<IsLoggerAvailable, CreateLogProvider>(ElmahLogProvider.IsLoggerAvailable, static () => new ElmahLogProvider()),
 #endif
         };
 
@@ -460,7 +460,7 @@ namespace Hangfire.Logging
                 }
                 catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
-                    Log(LogLevel.Error, () => FailedToGenerateLogMessage, ex);
+                    Log(LogLevel.Error, static () => FailedToGenerateLogMessage, ex);
                 }
                 return null;
             };

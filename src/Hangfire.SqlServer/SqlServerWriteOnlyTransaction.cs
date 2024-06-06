@@ -244,7 +244,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
                     new SqlCommandBatchParameter("@jobId", DbType.Int64) { Value = long.Parse(jobId, CultureInfo.InvariantCulture) },
                     new SqlCommandBatchParameter("@queue", DbType.String) { Value = queue });
 
-                _afterCommitCommandQueue.Enqueue(() => SqlServerJobQueue.NewItemInQueueEvent.Set());
+                _afterCommitCommandQueue.Enqueue(static () => SqlServerJobQueue.NewItemInQueueEvent.Set());
             }
             else
             {

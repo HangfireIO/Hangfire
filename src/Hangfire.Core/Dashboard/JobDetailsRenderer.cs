@@ -54,7 +54,7 @@ namespace Hangfire.Dashboard
             lock (SyncRoot)
             {
                 Renderers.Add(Tuple.Create(order, renderer));
-                Renderers.Sort((x, y) => x.Item1.CompareTo(y.Item1));
+                Renderers.Sort(static (x, y) => x.Item1.CompareTo(y.Item1));
             }
         }
     }

@@ -85,7 +85,7 @@ namespace Hangfire.Dashboard
             if (job.Method.IsGenericMethod)
             {
                 var genericArgumentTypes = job.Method.GetGenericArguments()
-                    .Select(x => WrapType(x.Name))
+                    .Select(static x => WrapType(x.Name))
                     .ToArray();
 
                 builder.Append($"&lt;{String.Join(", ", genericArgumentTypes)}&gt;");
@@ -239,9 +239,9 @@ namespace Hangfire.Dashboard
             if (type == typeof(string)) return null;
 
             return type.GetTypeInfo().ImplementedInterfaces
-                .Where(x => x.GetTypeInfo().IsGenericType
+                .Where(static x => x.GetTypeInfo().IsGenericType
                             && x.GetTypeInfo().GetGenericTypeDefinition() == typeof(IEnumerable<>))
-                .Select(x => x.GetTypeInfo().GetAllGenericArguments()[0])
+                .Select(static x => x.GetTypeInfo().GetAllGenericArguments()[0])
                 .FirstOrDefault();
         }
 
@@ -261,7 +261,7 @@ namespace Hangfire.Dashboard
             private ArgumentRenderer()
             {
                 _enclosingString = "\"";
-                _valueRenderer = value => value == null ? WrapKeyword("null") : WrapString(value);
+                _valueRenderer = static value => value == null ? WrapKeyword("null") : WrapString(value);
             }
 
             public string Render(bool isJson, string deserializedValue, string rawValue)
@@ -332,7 +332,7 @@ namespace Hangfire.Dashboard
                 {
                     return new ArgumentRenderer
                     {
-                        _valueRenderer = value => WrapKeyword(value.ToLowerInvariant()),
+                        _valueRenderer = static value => WrapKeyword(value.ToLowerInvariant()),
                         _enclosingString = String.Empty,
                     };
                 }
@@ -367,7 +367,7 @@ namespace Hangfire.Dashboard
                     return new ArgumentRenderer
                     {
                         _enclosingString = String.Empty,
-                        _valueRenderer = value => $"{WrapType(nameof(CancellationToken))}.None"
+                        _valueRenderer = static _ => $"{WrapType(nameof(CancellationToken))}.None"
                     };
                 }
 

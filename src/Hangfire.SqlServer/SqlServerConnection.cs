@@ -231,9 +231,9 @@ select Name, Value from [{_storage.SchemaName}].JobParameter with (forceseek) wh
                     if (jobData == null) return null;
 
                     var parameters = multi.Read<JobParameter>()
-                        .GroupBy(x => x.Name)
-                        .Select(grp => grp.First())
-                        .ToDictionary(x => x.Name, x => x.Value);
+                        .GroupBy(static x => x.Name)
+                        .Select(static grp => grp.First())
+                        .ToDictionary(static x => x.Name, static x => x.Value);
 
                     // TODO: conversion exception could be thrown.
                     var invocationData = InvocationData.DeserializePayload(jobData.InvocationData);
@@ -456,7 +456,7 @@ end catch";
                     $"select Field, Value from [{_storage.SchemaName}].Hash with (forceseek) where [Key] = @key",
                     new { key },
                     commandTimeout: _storage.CommandTimeout)
-                    .ToDictionary(x => x.Field, x => x.Value);
+                    .ToDictionary(static x => x.Field, static x => x.Value);
 
                 return result.Count != 0 ? result : null;
             });

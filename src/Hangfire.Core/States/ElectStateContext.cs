@@ -47,7 +47,7 @@ namespace Hangfire.States
             Transaction = applyContext.Transaction;
             CurrentState = applyContext.OldStateName;
             Profiler = applyContext.Profiler;
-            CustomData = applyContext.CustomData?.ToDictionary(x => x.Key, x => x.Value);
+            CustomData = applyContext.CustomData?.ToDictionary(static x => x.Key, static x => x.Value);
             StateMachine = stateMachine;
         }
         

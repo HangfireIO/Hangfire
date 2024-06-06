@@ -105,7 +105,7 @@ namespace Hangfire.Server
 
             Func<TaskScheduler> createScheduler = () => new BackgroundTaskScheduler(
                 threadStart => threadFactory(process.GetType().Name, threadStart),
-                exception =>
+                static exception =>
                 {
                     LogProvider.GetLogger(typeof(BackgroundTaskScheduler)).FatalException(
                         "Unhandled exception occurred in scheduler. Please report it to Hangfire developers",
@@ -128,7 +128,7 @@ namespace Hangfire.Server
             if (process == null) throw new ArgumentNullException(nameof(process));
             if (maxConcurrency <= 0) throw new ArgumentOutOfRangeException(nameof(maxConcurrency));
 
-            return new BackgroundProcessDispatcherBuilderAsync(process, () => TaskScheduler.Default, maxConcurrency, false);
+            return new BackgroundProcessDispatcherBuilderAsync(process, static () => TaskScheduler.Default, maxConcurrency, false);
         }
 
         internal static IEnumerable<Thread> DefaultThreadFactory(

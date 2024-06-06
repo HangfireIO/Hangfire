@@ -38,7 +38,7 @@ namespace Hangfire
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
 
-            return configuration.Use(storage, x => JobStorage.Current = x);
+            return configuration.Use(storage, static x => JobStorage.Current = x);
         }
 
         public static IGlobalConfiguration<TStorage> WithJobExpirationTimeout<TStorage>(
@@ -60,7 +60,7 @@ namespace Hangfire
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (activator == null) throw new ArgumentNullException(nameof(activator));
 
-            return configuration.Use(activator, x => JobActivator.Current = x);
+            return configuration.Use(activator, static x => JobActivator.Current = x);
         }
 
         public static IGlobalConfiguration<JobActivator> UseDefaultActivator(
@@ -79,7 +79,7 @@ namespace Hangfire
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (provider == null) throw new ArgumentNullException(nameof(provider));
             
-            return configuration.Use(provider, x => LogProvider.SetCurrentLogProvider(x));
+            return configuration.Use(provider, static x => LogProvider.SetCurrentLogProvider(x));
         }
 
         public static IGlobalConfiguration<NLogLogProvider> UseNLogLogProvider(
@@ -169,7 +169,7 @@ namespace Hangfire
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (filter == null) throw new ArgumentNullException(nameof(filter));
 
-            return configuration.Use(filter, x => GlobalJobFilters.Filters.Add(x));
+            return configuration.Use(filter, static x => GlobalJobFilters.Filters.Add(x));
         }
 
         public static IGlobalConfiguration<TFilterProvider> UseFilterProvider<TFilterProvider>(
@@ -180,7 +180,7 @@ namespace Hangfire
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (filterProvider == null) throw new ArgumentNullException(nameof(filterProvider));
 
-            return configuration.Use(filterProvider, x => JobFilterProviders.Providers.Add(x));
+            return configuration.Use(filterProvider, static x => JobFilterProviders.Providers.Add(x));
         }
 
         public static IGlobalConfiguration UseDashboardMetric(

@@ -71,7 +71,7 @@ namespace Hangfire.Server
             var context = new BackgroundProcessContext(
                 serverContext.ServerId,
                 serverContext.Storage,
-                serverContext.Properties.ToDictionary(x => x.Key, x => x.Value),
+                serverContext.Properties.ToDictionary(static x => x.Key, static x => x.Value),
                 executionId,
                 serverContext.StoppingToken,
                 serverContext.StoppedToken,

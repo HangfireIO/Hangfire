@@ -304,7 +304,7 @@ namespace Hangfire.Dashboard
         [Obsolete("This method is unused and will be removed in 2.0.0.")]
         public string FormatProperties(IDictionary<string, string> properties)
         {
-            return String.Join(", ", properties.Select(x => $"{x.Key}: \"{x.Value}\""));
+            return String.Join(", ", properties.Select(static x => $"{x.Key}: \"{x.Value}\""));
         }
 
         public NonEscapedString QueueLabel(string queue)

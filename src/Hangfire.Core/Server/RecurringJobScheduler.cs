@@ -129,7 +129,7 @@ namespace Hangfire.Server
             [NotNull] IBackgroundJobFactory factory,
             TimeSpan pollingDelay,
             [NotNull] ITimeZoneResolver timeZoneResolver)
-            : this(factory, pollingDelay, timeZoneResolver, () => DateTime.UtcNow)
+            : this(factory, pollingDelay, timeZoneResolver, static () => DateTime.UtcNow)
         {
         }
 
