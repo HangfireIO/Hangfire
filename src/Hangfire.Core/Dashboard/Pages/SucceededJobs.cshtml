@@ -15,7 +15,8 @@
 
     var monitor = Storage.GetMonitoringApi();
     var pager = new Pager(from, perPage, DashboardOptions.DefaultRecordsPerPage, monitor.SucceededListCount());
-    var succeededJobs = monitor.SucceededJobs(pager.FromRecord, pager.RecordsPerPage);
+    var search = Query("search");
+    var succeededJobs = monitor.SucceededJobs(pager.FromRecord, pager.RecordsPerPage, search);
 }
 
 <div class="row">
@@ -46,6 +47,7 @@
                         </button>
                     }
                     @Html.PerPageSelector(pager)
+                    @Html.Search(search)
                 </div>
 
                 <div class="table-responsive">

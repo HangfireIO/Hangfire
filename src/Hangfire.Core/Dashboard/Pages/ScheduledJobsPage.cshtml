@@ -14,7 +14,8 @@
 
     var monitor = Storage.GetMonitoringApi();
     var pager = new Pager(from, perPage, DashboardOptions.DefaultRecordsPerPage, monitor.ScheduledCount());
-    var scheduledJobs = monitor.ScheduledJobs(pager.FromRecord, pager.RecordsPerPage);
+    var search = Query("search");
+    var scheduledJobs = monitor.ScheduledJobs(pager.FromRecord, pager.RecordsPerPage, search);
 }
 
 <div class="row">
@@ -56,6 +57,7 @@
                         </button>
                     }
                     @Html.PerPageSelector(pager)
+                    @Html.Search(search)
                 </div>
 
                 <div class="table-responsive">

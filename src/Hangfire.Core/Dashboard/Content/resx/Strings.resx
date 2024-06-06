@@ -295,7 +295,7 @@
   <data name="LayoutPage_Footer_StorageTime" xml:space="preserve">
     <value>Storage Time:</value>
   </data>
-    <data name="LayoutPage_Footer_TimeIsOutOfSync" xml:space="preserve">
+  <data name="LayoutPage_Footer_TimeIsOutOfSync" xml:space="preserve">
     <value>Application time is out of sync with storage time</value>
   </data>
   <data name="LayoutPage_Footer_Time" xml:space="preserve">
@@ -577,5 +577,8 @@
   </data>
   <data name="Metrics_SQLServer_LogFilesSize" xml:space="preserve">
     <value>Log File(s) Used (MB)</value>
+  </data>
+  <data name="Search_Search" xml:space="preserve">
+    <value>Search</value>
   </data>
 </root>

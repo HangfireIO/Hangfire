@@ -110,6 +110,11 @@ namespace Hangfire.Dashboard
             return RenderPartial(new PerPageSelector(pager));
         }
 
+        public NonEscapedString Search(string search)
+        {
+            return RenderPartial(new Search(search));
+        }
+
         public NonEscapedString RenderPartial(RazorPage partialPage)
         {
             partialPage.Assign(_page);

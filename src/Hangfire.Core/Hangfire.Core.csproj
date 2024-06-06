@@ -124,6 +124,12 @@
     <Compile Update="Dashboard\Pages\_Paginator.cs">
       <DependentUpon>_Paginator.cshtml</DependentUpon>
     </Compile>
+    <Compile Update="Dashboard\Pages\_Search.cs">
+      <DependentUpon>_Search.cshtml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\Pages\_Search.cshtml.cs">
+      <DependentUpon>_Search.cshtml</DependentUpon>
+    </Compile>
     <Compile Update="Dashboard\Pages\_PerPageSelector.cshtml.cs">
       <DependentUpon>_PerPageSelector.cshtml</DependentUpon>
     </Compile>

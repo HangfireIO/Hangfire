@@ -607,6 +607,14 @@
                     e.preventDefault();
                 });
 
+                $(this).on('keydown', '.search', function(e) {
+                    if (e.key === 'Enter') {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        urlParams.set('search', $(this).val());
+                        window.location.search = urlParams.toString();
+                    }
+                });
+
                 updateListState();
             });
         };

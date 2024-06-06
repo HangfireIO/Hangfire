@@ -16,7 +16,8 @@
 
     var monitor = Storage.GetMonitoringApi();
     var pager = new Pager(from, perPage, DashboardOptions.DefaultRecordsPerPage, monitor.ProcessingCount());
-    var processingJobs = monitor.ProcessingJobs(pager.FromRecord, pager.RecordsPerPage);
+    var search = Query("search");
+    var processingJobs = monitor.ProcessingJobs(pager.FromRecord, pager.RecordsPerPage, search);
     var servers = monitor.Servers();
 }
 
@@ -59,6 +60,7 @@
                         </button>
                     }
                     @Html.PerPageSelector(pager)
+                    @Html.Search(search)
                 </div>
 
                 <div class="table-responsive">

@@ -77,13 +77,14 @@ namespace Hangfire.SqlServer
                 GetNumberOfJobsByStateName(connection, ProcessingState.StateName));
         }
 
-        public override JobList<ProcessingJobDto> ProcessingJobs(int @from, int count)
+        public override JobList<ProcessingJobDto> ProcessingJobs(int @from, int count, string search)
         {
             return UseConnection(connection => GetJobs(
                 connection,
                 from, count,
                 ProcessingState.StateName,
                 descending: false,
+                search: search,
                 static (sqlJob, job, invocationData, loadException, stateData) => new ProcessingJobDto
                 {
                     Job = job,
@@ -96,13 +97,14 @@ namespace Hangfire.SqlServer
                 }));
         }
 
-        public override JobList<ScheduledJobDto> ScheduledJobs(int @from, int count)
+        public override JobList<ScheduledJobDto> ScheduledJobs(int @from, int count, string search)
         {
             return UseConnection(connection => GetJobs(
                 connection,
                 from, count,
                 ScheduledState.StateName,
                 descending: false,
+                search: search,
                 static (sqlJob, job, invocationData, loadException, stateData) => new ScheduledJobDto
                 {
                     Job = job,
@@ -167,7 +169,7 @@ namespace Hangfire.SqlServer
             });
         }
 
-        public override JobList<FailedJobDto> FailedJobs(int @from, int count)
+        public override JobList<FailedJobDto> FailedJobs(int @from, int count, string search)
         {
             return UseConnection(connection => GetJobs(
                 connection,
@@ -175,6 +177,7 @@ namespace Hangfire.SqlServer
                 count,
                 FailedState.StateName,
                 descending: true,
+                search: search,
                 static (sqlJob, job, invocationData, loadException, stateData) => new FailedJobDto
                 {
                     Job = job,
@@ -190,7 +193,7 @@ namespace Hangfire.SqlServer
                 }));
         }
 
-        public override JobList<SucceededJobDto> SucceededJobs(int @from, int count)
+        public override JobList<SucceededJobDto> SucceededJobs(int @from, int count, string search)
         {
             return UseConnection(connection => GetJobs(
                 connection,
@@ -198,6 +201,7 @@ namespace Hangfire.SqlServer
                 count,
                 SucceededState.StateName,
                 descending: true,
+                search: search,
                 static (sqlJob, job, invocationData, loadException, stateData) => new SucceededJobDto
                 {
                     Job = job,
@@ -213,7 +217,7 @@ namespace Hangfire.SqlServer
                 }));
         }
 
-        public override JobList<DeletedJobDto> DeletedJobs(int @from, int count)
+        public override JobList<DeletedJobDto> DeletedJobs(int @from, int count, string search)
         {
             return UseConnection(connection => GetJobs(
                 connection,
@@ -221,6 +225,7 @@ namespace Hangfire.SqlServer
                 count,
                 DeletedState.StateName,
                 descending: true,
+                search: search,
                 static (sqlJob, job, invocationData, loadException, stateData) => new DeletedJobDto
                 {
                     Job = job,
@@ -240,6 +245,7 @@ namespace Hangfire.SqlServer
                 count,
                 AwaitingState.StateName,
                 descending: false,
+                null,
                 static (sqlJob, job, invocationData, loadException, stateData) => new AwaitingJobDto
                 {
                     Job = job,
@@ -632,15 +638,18 @@ where j.Id in @jobIds";
             int count,
             string stateName,
             bool descending,
+            string search,
             Func<SqlJob, Job, InvocationData, JobLoadException, SafeDictionary<string, string>, TDto> selector)
         {
             string order = descending ? "desc" : "asc";
+            string searchJoin = !string.IsNullOrWhiteSpace(search) ? " left join [HangFire].JobParameter p with (nolock, forceseek) on p.JobId = j.Id and p.Name = 'RecurringJobId'" : null;
+            string searchWhere = !string.IsNullOrWhiteSpace(search) ? " and (p.Value like @search or j.Arguments like @search or j.InvocationData like @search)" : null;
             string jobsSql = 
 $@";with cte as 
 (
   select j.Id, row_number() over (order by j.Id {order}) as row_num
-  from [{_storage.SchemaName}].Job j with (nolock, forceseek)
-  where j.StateName = @stateName
+  from [{_storage.SchemaName}].Job j with (nolock, forceseek) {searchJoin}
+  where j.StateName = @stateName {searchWhere}
 )
 select j.*, s.Reason as StateReason, s.Data as StateData, s.CreatedAt as StateChanged
 from [{_storage.SchemaName}].Job j with (nolock, forceseek)
@@ -650,7 +659,7 @@ where cte.row_num between @start and @end";
 
             var jobs = connection.Query<SqlJob>(
                         jobsSql,
-                        new { stateName = stateName, start = @from + 1, end = @from + count },
+                        new { stateName = stateName, start = @from + 1, end = @from + count, search = "%" + search + "%" },
                         commandTimeout: _storage.CommandTimeout)
                         .ToList();
 

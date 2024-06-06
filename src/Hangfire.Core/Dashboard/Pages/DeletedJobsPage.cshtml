@@ -14,7 +14,8 @@
 
     var monitor = Storage.GetMonitoringApi();
     var pager = new Pager(from, perPage, DashboardOptions.DefaultRecordsPerPage, monitor.DeletedListCount());
-    var jobs = monitor.DeletedJobs(pager.FromRecord, pager.RecordsPerPage);
+    var search = Query("search");
+    var jobs = monitor.DeletedJobs(pager.FromRecord, pager.RecordsPerPage, search);
 }
 
 <div class="row">
@@ -45,6 +46,7 @@
                         </button>
                     }
                     @Html.PerPageSelector(pager)
+                    @Html.Search(search)
                 </div>
                 <div class="table-responsive">
                     <table class="table" aria-describedby="page-title">
