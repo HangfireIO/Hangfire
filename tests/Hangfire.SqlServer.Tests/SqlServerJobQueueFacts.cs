@@ -621,7 +621,7 @@ values (scope_identity(), @queue)";
                 var queueName = "some-really-long-queue-name-that-should-cause-an-exception-to-be-thrown-and-not-ignored";
                 var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: null);
 
-                var exception = Assert.Throws<DbException>(() =>
+                var exception = Assert.ThrowsAny<DbException>(() =>
                 {
 #if NETCOREAPP
                     using (var transaction = connection.BeginTransaction())
