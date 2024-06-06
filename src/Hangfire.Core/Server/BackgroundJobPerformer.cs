@@ -138,9 +138,9 @@ namespace Hangfire.Server
             try
             {
                 preContext.Profiler.InvokeMeasured(
-                    Tuple.Create(filter, preContext),
+                    new KeyValuePair<IServerFilter, PerformingContext>(filter, preContext),
                     InvokeOnPerforming,
-                    () => $"OnPerforming for {preContext.BackgroundJob.Id}");
+                    static ctx => $"OnPerforming for {ctx.Value.BackgroundJob.Id}" );
             }
             catch (Exception filterException) when (filterException.IsCatchableExceptionType())
             {
@@ -176,9 +176,9 @@ namespace Hangfire.Server
                 try
                 {
                     postContext.Profiler.InvokeMeasured(
-                        Tuple.Create(filter, postContext),
+                        new KeyValuePair<IServerFilter, PerformedContext>(filter, postContext),
                         InvokeOnPerformed,
-                        () => $"OnPerformed for {postContext.BackgroundJob.Id}");
+                        static ctx => $"OnPerformed for {ctx.Value.BackgroundJob.Id}");
                 }
                 catch (Exception filterException) when (filterException.IsCatchableExceptionType())
                 {
@@ -200,9 +200,9 @@ namespace Hangfire.Server
                 try
                 {
                     postContext.Profiler.InvokeMeasured(
-                        Tuple.Create(filter, postContext),
+                        new KeyValuePair<IServerFilter, PerformedContext>(filter, postContext),
                         InvokeOnPerformed,
-                        () => $"OnPerformed for {postContext.BackgroundJob.Id}");
+                        static ctx => $"OnPerformed for {ctx.Value.BackgroundJob.Id}");
                 }
                 catch (Exception filterException) when (filterException.IsCatchableExceptionType())
                 {
@@ -217,14 +217,14 @@ namespace Hangfire.Server
             return postContext;
         }
 
-        private static void InvokeOnPerforming(Tuple<IServerFilter, PerformingContext> x)
+        private static void InvokeOnPerforming(KeyValuePair<IServerFilter, PerformingContext> x)
         {
-            x.Item1.OnPerforming(x.Item2);
+            x.Key.OnPerforming(x.Value);
         }
 
-        private static void InvokeOnPerformed(Tuple<IServerFilter, PerformedContext> x)
+        private static void InvokeOnPerformed(KeyValuePair<IServerFilter, PerformedContext> x)
         {
-            x.Item1.OnPerformed(x.Item2);
+            x.Key.OnPerformed(x.Value);
         }
 
         private static void InvokeServerExceptionFilters(
@@ -234,15 +234,15 @@ namespace Hangfire.Server
             foreach (var filter in filters.Reverse())
             {
                 context.Profiler.InvokeMeasured(
-                    Tuple.Create(filter, context),
+                    new KeyValuePair<IServerExceptionFilter, ServerExceptionContext>(filter, context),
                     InvokeOnServerException,
-                    () => $"OnServerException for {context.BackgroundJob.Id}");
+                    static ctx => $"OnServerException for {ctx.Value.BackgroundJob.Id}");
             }
         }
 
-        private static void InvokeOnServerException(Tuple<IServerExceptionFilter, ServerExceptionContext> x)
+        private static void InvokeOnServerException(KeyValuePair<IServerExceptionFilter, ServerExceptionContext> x)
         {
-            x.Item1.OnServerException(x.Item2);
+            x.Key.OnServerException(x.Value);
         }
     }
 }

@@ -130,9 +130,9 @@ namespace Hangfire.Client
             Func<CreatedContext> continuation)
         {
             preContext.Profiler.InvokeMeasured(
-                Tuple.Create(filter, preContext),
+                new KeyValuePair<IClientFilter, CreatingContext>(filter, preContext),
                 InvokeOnCreating,
-                () => $"OnCreating for {preContext.Job.Type.FullName}.{preContext.Job.Method.Name}");
+                static ctx => $"OnCreating for {ctx.Value.Job.Type.FullName}.{ctx.Value.Job.Method.Name}");
 
             if (preContext.Canceled)
             {
@@ -151,9 +151,9 @@ namespace Hangfire.Client
                 postContext = new CreatedContext(preContext, null, false, ex);
 
                 postContext.Profiler.InvokeMeasured(
-                    Tuple.Create(filter, postContext),
+                    new KeyValuePair<IClientFilter, CreatedContext>(filter, postContext),
                     InvokeOnCreated,
-                    () => $"OnCreated for {postContext.BackgroundJob?.Id ?? "(null)"}");
+                    static ctx => $"OnCreated for {ctx.Value.BackgroundJob?.Id ?? "(null)"}");
 
                 if (!postContext.ExceptionHandled)
                 {
@@ -164,19 +164,19 @@ namespace Hangfire.Client
             if (!wasError)
             {
                 postContext.Profiler.InvokeMeasured(
-                    Tuple.Create(filter, postContext),
+                    new KeyValuePair<IClientFilter, CreatedContext>(filter, postContext),
                     InvokeOnCreated,
-                    () => $"OnCreated for {postContext.BackgroundJob?.Id ?? "(null)"}");
+                    static ctx => $"OnCreated for {ctx.Value.BackgroundJob?.Id ?? "(null)"}");
             }
 
             return postContext;
         }
 
-        private static void InvokeOnCreating(Tuple<IClientFilter, CreatingContext> x)
+        private static void InvokeOnCreating(KeyValuePair<IClientFilter, CreatingContext> x)
         {
             try
             {
-                x.Item1.OnCreating(x.Item2);
+                x.Key.OnCreating(x.Value);
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
@@ -185,11 +185,11 @@ namespace Hangfire.Client
             }
         }
 
-        private static void InvokeOnCreated(Tuple<IClientFilter, CreatedContext> x)
+        private static void InvokeOnCreated(KeyValuePair<IClientFilter, CreatedContext> x)
         {
             try
             {
-                x.Item1.OnCreated(x.Item2);
+                x.Key.OnCreated(x.Value);
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
@@ -204,17 +204,17 @@ namespace Hangfire.Client
             foreach (var filter in filters.Reverse())
             {
                 context.Profiler.InvokeMeasured(
-                    Tuple.Create(filter, context),
+                    new KeyValuePair<IClientExceptionFilter, ClientExceptionContext>(filter, context),
                     InvokeOnClientException,
-                    () => $"OnClientException for {context.Job.Type.FullName}.{context.Job.Method.Name}");
+                    static ctx => $"OnClientException for {ctx.Value.Job.Type.FullName}.{ctx.Value.Job.Method.Name}");
             }
         }
 
-        private static void InvokeOnClientException(Tuple<IClientExceptionFilter, ClientExceptionContext> x)
+        private static void InvokeOnClientException(KeyValuePair<IClientExceptionFilter, ClientExceptionContext> x)
         {
             try
             {
-                x.Item1.OnClientException(x.Item2);
+                x.Key.OnClientException(x.Value);
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
             {

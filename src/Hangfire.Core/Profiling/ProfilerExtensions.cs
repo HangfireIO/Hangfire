@@ -24,12 +24,12 @@ namespace Hangfire.Profiling
             [NotNull] this IProfiler profiler,
             [CanBeNull] TInstance instance, 
             [NotNull] Action<TInstance> action,
-            [CanBeNull] Func<string> messageFunc = null)
+            [CanBeNull] Func<TInstance, string> messageFunc = null)
         {
             if (profiler == null) throw new ArgumentNullException(nameof(profiler));
             if (action == null) throw new ArgumentNullException(nameof(action));
 
-            profiler.InvokeMeasured(new InstanceAction<TInstance>(instance, action), InvokeAction, messageFunc);
+            profiler.InvokeMeasured(new InstanceAction<TInstance>(instance, action, messageFunc), InvokeAction, MessageCallback);
         }
 
         private static bool InvokeAction<TInstance>(InstanceAction<TInstance> tuple)
@@ -38,14 +38,20 @@ namespace Hangfire.Profiling
             return true;
         }
 
-        private struct InstanceAction<TInstance>
+        private static string MessageCallback<TInstance>(InstanceAction<TInstance> action)
         {
-            public InstanceAction([CanBeNull] TInstance instance, [NotNull] Action<TInstance> action)
+            return action.MessageFunc?.Invoke(action.Instance);
+        }
+
+        internal struct InstanceAction<TInstance>
+        {
+            public InstanceAction([CanBeNull] TInstance instance, [NotNull] Action<TInstance> action, [CanBeNull] Func<TInstance, string> messageFunc)
             {
                 if (action == null) throw new ArgumentNullException(nameof(action));
 
                 Instance = instance;
                 Action = action;
+                MessageFunc = messageFunc;
             }
 
             [CanBeNull]
@@ -53,6 +59,9 @@ namespace Hangfire.Profiling
 
             [NotNull]
             public Action<TInstance> Action { get; }
+            
+            [CanBeNull]
+            public Func<TInstance, string> MessageFunc { get; }
 
             public override string ToString()
             {

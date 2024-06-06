@@ -14,6 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Hangfire.Annotations;
 using Hangfire.Common;
@@ -60,9 +61,9 @@ namespace Hangfire.States
             foreach (var filter in electFilters)
             {
                 electContext.Profiler.InvokeMeasured(
-                    Tuple.Create(filter, electContext),
+                    new KeyValuePair<IElectStateFilter, ElectStateContext>(filter, electContext),
                     InvokeOnStateElection,
-                    () => $"OnStateElection for {electContext.BackgroundJob.Id}");
+                    static ctx => $"OnStateElection for {ctx.Value.BackgroundJob.Id}");
             }
 
             foreach (var state in electContext.TraversedStates)
@@ -79,27 +80,27 @@ namespace Hangfire.States
             foreach (var filter in applyFilters)
             {
                 context.Profiler.InvokeMeasured(
-                    Tuple.Create(filter, context),
+                    new KeyValuePair<IApplyStateFilter, ApplyStateContext>(filter, context),
                     InvokeOnStateUnapplied,
-                    () => $"OnStateUnapplied for {context.BackgroundJob.Id}");
+                    static ctx => $"OnStateUnapplied for {ctx.Value.BackgroundJob.Id}");
             }
 
             foreach (var filter in applyFilters)
             {
                 context.Profiler.InvokeMeasured(
-                    Tuple.Create(filter, context),
+                    new KeyValuePair<IApplyStateFilter, ApplyStateContext>(filter, context),
                     InvokeOnStateApplied,
-                    () => $"OnStateApplied for {context.BackgroundJob.Id}");
+                    static ctx => $"OnStateApplied for {ctx.Value.BackgroundJob.Id}");
             }
 
             return _innerStateMachine.ApplyState(context);
         }
 
-        private static void InvokeOnStateElection(Tuple<IElectStateFilter, ElectStateContext> x)
+        private static void InvokeOnStateElection(KeyValuePair<IElectStateFilter, ElectStateContext> x)
         {
             try
             {
-                x.Item1.OnStateElection(x.Item2);
+                x.Key.OnStateElection(x.Value);
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
@@ -108,11 +109,11 @@ namespace Hangfire.States
             }
         }
 
-        private static void InvokeOnStateApplied(Tuple<IApplyStateFilter, ApplyStateContext> x)
+        private static void InvokeOnStateApplied(KeyValuePair<IApplyStateFilter, ApplyStateContext> x)
         {
             try
             {
-                x.Item1.OnStateApplied(x.Item2, x.Item2.Transaction);
+                x.Key.OnStateApplied(x.Value, x.Value.Transaction);
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
@@ -121,11 +122,11 @@ namespace Hangfire.States
             }
         }
 
-        private static void InvokeOnStateUnapplied(Tuple<IApplyStateFilter, ApplyStateContext> x)
+        private static void InvokeOnStateUnapplied(KeyValuePair<IApplyStateFilter, ApplyStateContext> x)
         {
             try
             {
-                x.Item1.OnStateUnapplied(x.Item2, x.Item2.Transaction);
+                x.Key.OnStateUnapplied(x.Value, x.Value.Transaction);
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
             {

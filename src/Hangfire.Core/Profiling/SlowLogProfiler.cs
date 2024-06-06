@@ -40,7 +40,7 @@ namespace Hangfire.Profiling
         public TResult InvokeMeasured<TInstance, TResult>(
             TInstance instance,
             Func<TInstance, TResult> action,
-            Func<string> messageFunc = null)
+            Func<TInstance, string> messageFunc = null)
         {
             if (action == null) throw new ArgumentNullException(nameof(action));
 
@@ -56,7 +56,7 @@ namespace Hangfire.Profiling
 
                 if (stopwatch.Elapsed >= _threshold)
                 {
-                    _logger.Warn($"Slow log: {instance?.ToString() ?? typeof(TInstance).ToString()} performed \"{messageFunc?.Invoke()}\" in {(int)stopwatch.Elapsed.TotalSeconds} sec");
+                    _logger.Warn($"Slow log: {instance?.ToString() ?? typeof(TInstance).ToString()} performed \"{messageFunc?.Invoke(instance)}\" in {(int)stopwatch.Elapsed.TotalSeconds} sec");
                 }
             }
         }
