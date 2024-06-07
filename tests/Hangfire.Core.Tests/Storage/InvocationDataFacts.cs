@@ -971,6 +971,26 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal("critical", invocationData.Queue);
         }
 
+        [Fact]
+        public void Deserialize_CorrectlyHandles_SystemXmlLinqEntities_SerializedWithNETFramework()
+        {
+            var job = InvocationData.DeserializePayload(
+                "{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"XmlLinqMethod\",\"p\":[\"System.Xml.Linq.XElement, System.Xml.Linq\"],\"a\":[\"{\\\"element\\\":\\\"This is a test\\\"}\"]}")
+                .DeserializeJob();
+
+            Assert.Equal(typeof(InvocationDataFacts), job.Type);
+        }
+
+        [Fact]
+        public void Deserialize_CorrectlyHandles_SystemXmlLinqEntities_SerializedWithNETCore()
+        {
+            var job = InvocationData.DeserializePayload(
+                "{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"XmlLinqMethod\",\"p\":[\"System.Xml.Linq.XElement, System.Private.Xml.Linq\"],\"a\":[\"{\\\"element\\\":\\\"This is a test\\\"}\"]}")
+                .DeserializeJob();
+
+            Assert.Equal(typeof(InvocationDataFacts), job.Type);
+        }
+
         private class FieldsOnlyContractResolver: DefaultContractResolver 
         {
             protected override List<MemberInfo> GetSerializableMembers(Type objectType)
@@ -1019,6 +1039,13 @@ namespace Hangfire.Core.Tests.Storage
 
         [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
         public static void NullableDateTimeMethod(DateTime? arg)
+        {
+        }
+
+        [UsedImplicitly]
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+        public static void XmlLinqMethod(System.Xml.Linq.XElement value)
         {
         }
 

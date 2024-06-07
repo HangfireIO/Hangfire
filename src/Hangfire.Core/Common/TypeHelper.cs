@@ -196,6 +196,10 @@ namespace Hangfire.Common
             {
                 assemblyName = MscorlibAssemblyName;
             }
+            else if (assemblyName.Name.Equals("System.Private.Xml.Linq", StringComparison.OrdinalIgnoreCase))
+            {
+                assemblyName = new AssemblyName("System.Xml.Linq, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089");
+            }
 
             var publicKeyToken = assemblyName.GetPublicKeyToken();
 
