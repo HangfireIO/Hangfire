@@ -16,7 +16,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 
 namespace Hangfire.Common
 {
@@ -25,9 +24,6 @@ namespace Hangfire.Common
     /// </summary>
     public class JobFilterProviderCollection : Collection<IJobFilterProvider>, IJobFilterProvider
     {
-        // ReSharper disable once InconsistentNaming
-        private static readonly FilterComparer _filterComparer = new FilterComparer();
-
         /// <summary>
         /// Initializes a new instance of the <see cref="JobFilterProviderCollection"/> 
         /// class.
@@ -48,85 +44,85 @@ namespace Hangfire.Common
         /// <returns>The collection of filter providers.</returns>
         public IEnumerable<JobFilter> GetFilters(Job job)
         {
-            IEnumerable<JobFilter> combinedFilters =
-                Items.SelectMany(fp => fp.GetFilters(job))
-                    .OrderBy(static filter => filter, _filterComparer);
+            var combinedFilters = new List<JobFilter>();
 
-            // Remove duplicates from the back forward
-            return RemoveDuplicates(combinedFilters.Reverse()).Reverse();
+            foreach (var provider in Items)
+            {
+                combinedFilters.AddRange(provider.GetFilters(job));
+            }
+
+            // Sorting before removing duplicates in the correct order
+            combinedFilters.Sort(Comparison);
+
+            RemoveDuplicates(combinedFilters);
+            return combinedFilters;
         }
 
-        private static IEnumerable<JobFilter> RemoveDuplicates(
-            IEnumerable<JobFilter> filters)
+        private static void RemoveDuplicates(List<JobFilter> filters)
         {
             var visitedTypes = new HashSet<Type>();
 
-            foreach (JobFilter filter in filters)
+            // Remove duplicates from the back forward
+            for (var i = filters.Count - 1; i >= 0; i--)
             {
-                var filterInstance = filter.Instance;
-                var filterInstanceType = filterInstance.GetType();
+                var filterInstance = filters[i].Instance;
 
-                if (!visitedTypes.Contains(filterInstanceType) || AllowMultiple(filterInstance))
+                if (!visitedTypes.Add(filterInstance.GetType()) && !AllowMultiple(filterInstance))
                 {
-                    yield return filter;
-                    visitedTypes.Add(filterInstanceType);
+                    filters.RemoveAt(i);
                 }
             }
         }
 
         private static bool AllowMultiple(object filterInstance)
         {
-            var mvcFilter = filterInstance as IJobFilter;
-            if (mvcFilter == null)
+            if (filterInstance is IJobFilter jobFilter)
             {
-                return true;
+                return jobFilter.AllowMultiple;
             }
 
-            return mvcFilter.AllowMultiple;
+            return true;
         }
 
-        private class FilterComparer : IComparer<JobFilter>
+        private static int Comparison(JobFilter x, JobFilter y)
         {
-            public int Compare(JobFilter x, JobFilter y)
+            // Nulls always have to be less than non-nulls
+            if (x == null && y == null)
             {
-                // Nulls always have to be less than non-nulls
-                if (x == null && y == null)
-                {
-                    return 0;
-                }
-                if (x == null)
-                {
-                    return -1;
-                }
-                if (y == null)
-                {
-                    return 1;
-                }
-
-                // Sort first by order...
-
-                if (x.Order < y.Order)
-                {
-                    return -1;
-                }
-                if (x.Order > y.Order)
-                {
-                    return 1;
-                }
-
-                // ...then by scope
-
-                if (x.Scope < y.Scope)
-                {
-                    return -1;
-                }
-                if (x.Scope > y.Scope)
-                {
-                    return 1;
-                }
-
                 return 0;
             }
+            if (x == null)
+            {
+                return -1;
+            }
+            if (y == null)
+            {
+                return 1;
+            }
+
+            // Sort first by order...
+
+            if (x.Order < y.Order)
+            {
+                return -1;
+            }
+            if (x.Order > y.Order)
+            {
+                return 1;
+            }
+
+            // ...then by scope
+
+            if (x.Scope < y.Scope)
+            {
+                return -1;
+            }
+            if (x.Scope > y.Scope)
+            {
+                return 1;
+            }
+
+            return 0;
         }
     }
 }

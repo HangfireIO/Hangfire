@@ -44,10 +44,9 @@ namespace Hangfire.Common
 
             if (order == null)
             {
-                var mvcFilter = instance as IJobFilter;
-                if (mvcFilter != null)
+                if (instance is IJobFilter jobFilter)
                 {
-                    order = mvcFilter.Order;
+                    order = jobFilter.Order;
                 }
             }
 
