@@ -131,11 +131,8 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
 
                 try
                 {
-                    if (useLongPolling)
-                    {
-                        semaphore = Semaphores.GetOrAdd(resource, CreateSemaphoreFunc);
-                        semaphore.Wait(cancellationToken);
-                    }
+                    semaphore = Semaphores.GetOrAdd(resource, CreateSemaphoreFunc);
+                    semaphore.Wait(cancellationToken);
 
                     while (!cancellationToken.IsCancellationRequested)
                     {
