@@ -42,12 +42,9 @@ namespace Hangfire.Common
                 throw new ArgumentNullException(nameof(instance));
             }
 
-            if (order == null)
+            if (order == null && instance is IJobFilter jobFilter)
             {
-                if (instance is IJobFilter jobFilter)
-                {
-                    order = jobFilter.Order;
-                }
+                order = jobFilter.Order;
             }
 
             Instance = instance;
