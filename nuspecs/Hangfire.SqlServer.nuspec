@@ -17,6 +17,12 @@
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.13
+• Changed – Limit polling queries with a semaphore for all configurations.
+• Changed – Better error messages when queue or server names are larger than allowed.
+• Fixed – Don't silently truncate queue names, throw an exception instead.
+• Project – Decrease delays in SQL Server-related tests to complete them faster.
+
 1.8.12
 • Fixed – Populate `InvocationData` and `LoadException` properties in `JobDetails` method results.
 

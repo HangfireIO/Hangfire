@@ -23,6 +23,16 @@ https://www.hangfire.io/
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.13
+• Changed – Partial cache for serialization and deserialization in `InvocationData` to produce less strings.
+• Changed – Add caching for default type serializer and resolver.
+• Changed – Don't let `JobFilter`-related logic to show up in profilers.
+• Changed – Modify `IProfiler` to be less allocatey for diagnostic purposes that almost never run.
+• Fixed – Redirect the "System.Private.Xml.Linq" assembly to the "System.Xml.Linq" one for better interoperability.
+• Fixed – Don't throw `KeyNotFoundException` when recurring job is malformed.
+• Fixed – Proper relative path calculation in `UrlHelper.To` for OWIN-based Dashboard UI (by @LordJZ).
+• Project – Switch to a modern PowerShell 7+ to speed up SignPath installation on AppVeyor.
+
 1.8.12
 • Added – `MaxDegreeOfParallelismForSchedulers` experimental server option if supported by storage.
 • Added – Experimental support for parallel execution of the delayed job scheduler.
