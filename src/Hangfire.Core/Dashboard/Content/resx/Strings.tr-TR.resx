@@ -364,7 +364,7 @@
     <value>Şimdi tetikle</value>
   </data>
   <data name="RetriesPage_NoJobs" xml:space="preserve">
-    <value>Herşey tamamlandı. Tekrarlayan iş bulunmamaktatır.</value>
+    <value>Her şey tamamlandı. Tekrarlayan iş bulunmamaktadır.</value>
   </data>
   <data name="RetriesPage_Title" xml:space="preserve">
     <value>Tekrarlayan İşler</value>
