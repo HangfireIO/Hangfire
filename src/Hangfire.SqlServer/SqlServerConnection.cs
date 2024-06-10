@@ -481,7 +481,7 @@ $@";merge [{_storage.SchemaName}].Server with (holdlock) as Target
 using (VALUES (@id, @data, sysutcdatetime())) as Source (Id, Data, Heartbeat)
 on Target.Id = Source.Id
 when matched then update set Data = Source.Data, LastHeartbeat = Source.Heartbeat
-when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat) option (querytraceon 460);",
+when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat);",
                     new { id = serverId, data = SerializationHelper.Serialize(data) },
                     commandTimeout: _storage.CommandTimeout);
             });

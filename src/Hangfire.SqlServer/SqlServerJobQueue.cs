@@ -77,7 +77,7 @@ namespace Hangfire.SqlServer
 #endif
         {
             string enqueueJobSql =
-$@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @queue) option (querytraceon 460)";
+$@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)";
 
             connection.Execute(
                 enqueueJobSql, 
