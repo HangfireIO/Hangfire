@@ -14,6 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using System.Linq;
 using Hangfire.Client;
 using Hangfire.Server;
 using Hangfire.States;
@@ -23,9 +24,14 @@ namespace Hangfire.Common
     /// <summary>
     /// Encapsulates information about the available job filters.
     /// </summary>
-    internal sealed class JobFilterInfo
+    internal class JobFilterInfo
     {
-        private readonly IEnumerable<JobFilter> _filters;
+        private readonly List<IClientFilter> _clientFilters = new List<IClientFilter>();
+        private readonly List<IServerFilter> _serverFilters = new List<IServerFilter>();
+        private readonly List<IElectStateFilter> _electStateFilters = new List<IElectStateFilter>();
+        private readonly List<IApplyStateFilter> _applyStateFilters = new List<IApplyStateFilter>();
+        private readonly List<IClientExceptionFilter> _clientExceptionFilters = new List<IClientExceptionFilter>(); 
+        private readonly List<IServerExceptionFilter> _serverExceptionFilters = new List<IServerExceptionFilter>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JobFilterInfo"/> class using the specified filters collection.
@@ -33,7 +39,16 @@ namespace Hangfire.Common
         /// <param name="filters">The filters collection.</param>
         public JobFilterInfo(IEnumerable<JobFilter> filters)
         {
-            _filters = filters;
+            var list = filters.Select(static f => f.Instance).ToList();
+
+            _clientFilters.AddRange(list.OfType<IClientFilter>());
+            _serverFilters.AddRange(list.OfType<IServerFilter>());
+
+            _electStateFilters.AddRange(list.OfType<IElectStateFilter>());
+            _applyStateFilters.AddRange(list.OfType<IApplyStateFilter>());
+
+            _clientExceptionFilters.AddRange(list.OfType<IClientExceptionFilter>());
+            _serverExceptionFilters.AddRange(list.OfType<IServerExceptionFilter>());
         }
 
         /// <summary>
@@ -43,7 +58,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The client filters.
         /// </returns>
-        public IEnumerable<IClientFilter> ClientFilters => GetFilters<IClientFilter>();
+        public IList<IClientFilter> ClientFilters => _clientFilters;
 
         /// <summary>
         /// Gets all the server filters in the application.
@@ -52,7 +67,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The server filters.
         /// </returns>
-        public IEnumerable<IServerFilter> ServerFilters => GetFilters<IServerFilter>();
+        public IList<IServerFilter> ServerFilters => _serverFilters;
 
         /// <summary>
         /// Gets all the stat changing filters in the application.
@@ -61,7 +76,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The state changing filters.
         /// </returns>
-        public IEnumerable<IElectStateFilter> ElectStateFilters => GetFilters<IElectStateFilter>();
+        public IList<IElectStateFilter> ElectStateFilters => _electStateFilters;
 
         /// <summary>
         /// Gets all the state changed filters in the application.
@@ -70,7 +85,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The state changed filters.
         /// </returns>
-        public IEnumerable<IApplyStateFilter> ApplyStateFilters => GetFilters<IApplyStateFilter>();
+        public IList<IApplyStateFilter> ApplyStateFilters => _applyStateFilters;
 
         /// <summary>
         /// Gets all the client exception filters in the application.
@@ -79,7 +94,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The client exception filters.
         /// </returns>
-        public IEnumerable<IClientExceptionFilter> ClientExceptionFilters => GetFilters<IClientExceptionFilter>();
+        public IList<IClientExceptionFilter> ClientExceptionFilters => _clientExceptionFilters;
 
         /// <summary>
         /// Gets all the server exception filters in the application.
@@ -88,17 +103,6 @@ namespace Hangfire.Common
         /// <returns>
         /// The server exception filters.
         /// </returns>
-        public IEnumerable<IServerExceptionFilter> ServerExceptionFilters => GetFilters<IServerExceptionFilter>();
-
-        private IEnumerable<T> GetFilters<T>()
-        {
-            foreach (var filter in _filters)
-            {
-                if (filter.Instance is T instance)
-                {
-                    yield return instance;
-                }
-            }
-        }
+        public IList<IServerExceptionFilter> ServerExceptionFilters => _serverExceptionFilters;
     }
 }

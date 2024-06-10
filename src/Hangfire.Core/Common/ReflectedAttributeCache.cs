@@ -49,11 +49,6 @@ namespace Hangfire.Common
             Debug.Assert(memberInfo != null);
             Debug.Assert(lookup != null);
 
-            if (lookup.TryGetValue(memberInfo, out var collection))
-            {
-                return collection;
-            }
-
             return lookup.GetOrAdd(memberInfo, mi => new ReadOnlyCollection<TAttribute>((TAttribute[])memberInfo.GetCustomAttributes(typeof(TAttribute), inherit: true)));
         }
     }

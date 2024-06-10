@@ -58,22 +58,13 @@ namespace Hangfire.Common
         {
             if (job == null) return Enumerable.Empty<JobFilter>();
 
-            var typeAttributes = GetTypeAttributes(job);
-            var methodAttributes = GetMethodAttributes(job);
+            var typeFilters = GetTypeAttributes(job)
+                .Select(static attr => new JobFilter(attr, JobFilterScope.Type, null));
 
-            var combined = new List<JobFilter>();
+            var methodFilters = GetMethodAttributes(job)
+                .Select(static attr => new JobFilter(attr, JobFilterScope.Method, null));
 
-            foreach (var typeAttribute in typeAttributes)
-            {
-                combined.Add(new JobFilter(typeAttribute, JobFilterScope.Type, null));
-            }
-            
-            foreach (var methodAttribute in methodAttributes)
-            {
-                combined.Add(new JobFilter(methodAttribute, JobFilterScope.Method, null));
-            }
-
-            return combined;
+            return typeFilters.Union(methodFilters).ToList();
         }
     }
 }
