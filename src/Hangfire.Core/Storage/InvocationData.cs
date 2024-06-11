@@ -99,8 +99,17 @@ namespace Hangfire.Storage
             {
                 CachedDeserializeMethod(typeResolver, Type, Method, ParameterTypes, out var type, out var method);
 
-                var argumentsArray = SerializationHelper.Deserialize<string[]>(Arguments);
-                var arguments = DeserializeArguments(method, argumentsArray);
+                object[] arguments;
+
+                if (Arguments != null && !Arguments.Equals("[]", StringComparison.Ordinal))
+                {
+                    var argumentsArray = SerializationHelper.Deserialize<string[]>(Arguments);
+                    arguments = DeserializeArguments(method, argumentsArray);
+                }
+                else
+                {
+                    arguments = [];
+                }
 
                 return new Job(type, method, arguments, Queue);
             }
@@ -120,7 +129,9 @@ namespace Hangfire.Storage
                 out var methodName,
                 out var parameterTypes);
 
-            var arguments = SerializationHelper.Serialize(SerializeArguments(job.Method, job.Args));
+            var arguments = job.Args.Count == 0
+                ? "[]"
+                : SerializationHelper.Serialize(SerializeArguments(job.Method, job.Args));
 
             return new InvocationData(typeName, methodName, parameterTypes, arguments, job.Queue);
         }
