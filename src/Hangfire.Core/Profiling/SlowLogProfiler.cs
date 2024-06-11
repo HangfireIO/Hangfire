@@ -23,7 +23,7 @@ namespace Hangfire.Profiling
     {
         private static readonly TimeSpan DefaultThreshold = TimeSpan.FromMinutes(1);
 
-        private readonly TimeSpan _threshold;
+        private readonly int _thresholdMs;
         private readonly ILog _logger;
 
         public SlowLogProfiler(ILog logger)
@@ -33,7 +33,7 @@ namespace Hangfire.Profiling
 
         public SlowLogProfiler(ILog logger, TimeSpan threshold)
         {
-            _threshold = threshold;
+            _thresholdMs = (int)threshold.TotalMilliseconds;
             _logger = logger;
         }
 
@@ -44,7 +44,7 @@ namespace Hangfire.Profiling
         {
             if (action == null) throw new ArgumentNullException(nameof(action));
 
-            var stopwatch = Stopwatch.StartNew();
+            var started = Environment.TickCount;
 
             try
             {
@@ -52,11 +52,10 @@ namespace Hangfire.Profiling
             }
             finally
             {
-                stopwatch.Stop();
-
-                if (stopwatch.Elapsed >= _threshold)
+                var elapsed = unchecked(Environment.TickCount - started); 
+                if (elapsed >= _thresholdMs)
                 {
-                    _logger.Warn($"Slow log: {instance?.ToString() ?? typeof(TInstance).ToString()} performed \"{messageFunc?.Invoke(instance)}\" in {(int)stopwatch.Elapsed.TotalSeconds} sec");
+                    _logger.Warn($"Slow log: {instance?.ToString() ?? typeof(TInstance).ToString()} performed \"{messageFunc?.Invoke(instance)}\" in {elapsed / 1000} sec");
                 }
             }
         }
