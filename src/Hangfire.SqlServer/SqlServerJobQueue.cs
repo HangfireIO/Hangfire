@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
@@ -22,7 +23,6 @@ using System.Linq;
 using System.Threading;
 using Dapper;
 using Hangfire.Annotations;
-using Hangfire.Common;
 using Hangfire.Storage;
 
 // ReSharper disable RedundantAnonymousTypePropertyName
@@ -33,8 +33,8 @@ namespace Hangfire.SqlServer
     {
         // This is an optimization that helps to overcome the polling delay, when
         // both client and server reside in the same process. Everything is working
-        // without this event, but it helps to reduce the delays in processing.
-        internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(false);
+        // without these events, but it helps to reduce the delays in processing.
+        internal static readonly ConcurrentDictionary<string, AutoResetEvent> NewItemInQueueEvents = new();
 
         private static readonly Func<Tuple<SqlServerStorage, string>, SemaphoreSlim> CreateSemaphoreFunc = CreateSemaphore;
         private static readonly TimeSpan LongPollingThreshold = TimeSpan.FromSeconds(1);
@@ -123,7 +123,7 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
             var queuesString = String.Join("_", queues.OrderBy(static x => x));
             var resource = Tuple.Create(_storage, queuesString);
 
-            var waitArray = new WaitHandle[] { cancellationToken.WaitHandle, NewItemInQueueEvent };
+            var waitArray = GetWaitArrayForQueueSignals(queues, cancellationToken);
 
             SemaphoreSlim semaphore = null;
 
@@ -210,6 +210,8 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
                 ? _options.QueuePollInterval
                 : TimeSpan.FromSeconds(1);
 
+            var waitArray = GetWaitArrayForQueueSignals(queues, cancellationToken);
+
             while (!cancellationToken.IsCancellationRequested)
             {
                 var connection = _storage.CreateAndOpenConnection();
@@ -262,11 +264,26 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
                     }
                 }
 
-                WaitHandle.WaitAny(new WaitHandle[] { cancellationToken.WaitHandle, NewItemInQueueEvent }, pollInterval);
+                WaitHandle.WaitAny(waitArray, pollInterval);
             }
                 
             cancellationToken.ThrowIfCancellationRequested();
             return null;
+        }
+
+        private static WaitHandle[] GetWaitArrayForQueueSignals(string[] queues, CancellationToken cancellationToken)
+        {
+            var waitList = new List<WaitHandle>(capacity: queues.Length + 1)
+            {
+                cancellationToken.WaitHandle
+            };
+
+            foreach (var queue in queues)
+            {
+                waitList.Add(NewItemInQueueEvents.GetOrAdd(queue, static _ => new AutoResetEvent(initialState: false)));
+            }
+
+            return waitList.ToArray();
         }
 
         [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]

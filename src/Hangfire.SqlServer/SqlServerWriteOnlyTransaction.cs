@@ -34,7 +34,7 @@ namespace Hangfire.SqlServer
     {
         private readonly Queue<Action<DbConnection, DbTransaction>> _queueCommandQueue
             = new Queue<Action<DbConnection, DbTransaction>>();
-        private readonly Queue<Action> _afterCommitCommandQueue = new Queue<Action>();
+        private readonly HashSet<string> _queuesToSignal = new HashSet<string>();
 
         private readonly SqlServerStorage _storage;
         private readonly SqlServerConnection _connection;
@@ -129,10 +129,7 @@ namespace Hangfire.SqlServer
                 }
             }
 
-            foreach (var command in _afterCommitCommandQueue)
-            {
-                command();
-            }
+            TrySignalListeningWorkers();
         }
 
         public override void Dispose()
@@ -244,7 +241,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
                     new SqlCommandBatchParameter("@jobId", DbType.Int64) { Value = long.Parse(jobId, CultureInfo.InvariantCulture) },
                     new SqlCommandBatchParameter("@queue", DbType.String) { Value = queue });
 
-                _afterCommitCommandQueue.Enqueue(static () => SqlServerJobQueue.NewItemInQueueEvent.Set());
+                _queuesToSignal.Add(queue);
             }
             else
             {
@@ -618,6 +615,17 @@ update [{_storage.SchemaName}].[List] set ExpireAt = null where [Key] = @key";
             if (!_storage.Options.DisableGlobalLocks || _storage.Options.UseFineGrainedLocks)
             {
                 _lockedResources.Add($"{_storage.SchemaName}:{resource}:Lock");
+            }
+        }
+
+        private void TrySignalListeningWorkers()
+        {
+            foreach (var queue in _queuesToSignal)
+            {
+                if (SqlServerJobQueue.NewItemInQueueEvents.TryGetValue(queue, out var signal))
+                {
+                    signal.Set();
+                }
             }
         }
     }
