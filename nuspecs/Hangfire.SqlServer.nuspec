@@ -17,9 +17,9 @@
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
-1.8.13
-• Changed – Limit polling queries with a semaphore for all configurations.
-• Changed – Better error messages when queue or server names are larger than allowed.
+1.8.13 and 1.8.14
+• Changed – Limit polling queries when queues are empty with a semaphore for all configurations.
+• Changed – Use per-queue signaling for same-process workers, instead of having a global signal.
 • Fixed – Don't silently truncate queue names, throw an exception instead.
 • Project – Decrease delays in SQL Server-related tests to complete them faster.
 

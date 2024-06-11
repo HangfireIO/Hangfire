@@ -23,7 +23,7 @@ https://www.hangfire.io/
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
-1.8.13
+1.8.13 and 1.8.14
 
 Hangfire.Core
 
@@ -31,15 +31,18 @@ Hangfire.Core
 • Changed – Add caching for default type serializer and resolver.
 • Changed – Don't let `JobFilter`-related logic to show up in profilers.
 • Changed – Modify `IProfiler` to be less allocatey for diagnostic purposes that almost never run.
+• Changed – Prefer using `CancellationToken.WaitHandle` again, since early .NET Core days are gone.
+• Changed – Fewer allocations when working with `IStateHandler` collections in a state machine.
 • Fixed – Redirect the "System.Private.Xml.Linq" assembly to the "System.Xml.Linq" one for better interoperability.
 • Fixed – Don't throw `KeyNotFoundException` when recurring job is malformed.
 • Fixed – Proper relative path calculation in `UrlHelper.To` for OWIN-based Dashboard UI (by @LordJZ).
+• Fixed – Typo in the Turkish localization file (by @ismkdc).
 • Project – Switch to a modern PowerShell 7+ to speed up SignPath installation on AppVeyor.
 
 Hangfire.SqlServer
 
-• Changed – Limit polling queries with a semaphore for all configurations.
-• Changed – Better error messages when queue or server names are larger than allowed.
+• Changed – Limit polling queries when queues are empty with a semaphore for all configurations.
+• Changed – Use per-queue signaling for same-process workers, instead of having a global signal.
 • Fixed – Don't silently truncate queue names, throw an exception instead.
 • Project – Decrease delays in SQL Server-related tests to complete them faster.
 
