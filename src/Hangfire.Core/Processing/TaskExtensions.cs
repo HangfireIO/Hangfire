@@ -36,41 +36,40 @@ namespace Hangfire.Processing
 
             token.ThrowIfCancellationRequested();
 
-            using (var ev = token.GetCancellationEvent())
+            using var ev = token.GetCancellationEvent();
+
+            var waitHandles = new[] { waitHandle, ev.WaitHandle };
+
+            var stopwatch = Stopwatch.StartNew();
+            var waitResult = WaitHandle.WaitAny(waitHandles, timeout);
+            stopwatch.Stop();
+
+            var timeoutThreshold = TimeSpan.FromMilliseconds(1000);
+            var elapsedThreshold = TimeSpan.FromMilliseconds(500);
+            var protectionTime = TimeSpan.FromSeconds(1);
+
+            if (waitResult == 0)
             {
-                var waitHandles = new[] { waitHandle, ev.WaitHandle };
-
-                var stopwatch = Stopwatch.StartNew();
-                var waitResult = WaitHandle.WaitAny(waitHandles, timeout);
-                stopwatch.Stop();
-
-                var timeoutThreshold = TimeSpan.FromMilliseconds(1000);
-                var elapsedThreshold = TimeSpan.FromMilliseconds(500);
-                var protectionTime = TimeSpan.FromSeconds(1);
-
-                if (waitResult == 0)
-                {
-                    return true;
-                }
-
-                if (!token.IsCancellationRequested &&
-                    timeout >= timeoutThreshold &&
-                    stopwatch.Elapsed < elapsedThreshold)
-                {
-                    try
-                    {
-                        var logger = LogProvider.GetLogger(typeof(TaskExtensions));
-                        logger.Error($"Actual wait time for non-canceled token was '{stopwatch.Elapsed}' instead of '{timeout}', wait result: {waitResult}, using protective wait. Please report this to Hangfire developers.");
-                    }
-                    finally
-                    {
-                        Thread.Sleep(protectionTime);
-                    }
-                }
-
-                token.ThrowIfCancellationRequested();
-                return false;
+                return true;
             }
+
+            if (!token.IsCancellationRequested &&
+                timeout >= timeoutThreshold &&
+                stopwatch.Elapsed < elapsedThreshold)
+            {
+                try
+                {
+                    var logger = LogProvider.GetLogger(typeof(TaskExtensions));
+                    logger.Error($"Actual wait time for non-canceled token was '{stopwatch.Elapsed}' instead of '{timeout}', wait result: {waitResult}, using protective wait. Please report this to Hangfire developers.");
+                }
+                finally
+                {
+                    Thread.Sleep(protectionTime);
+                }
+            }
+
+            token.ThrowIfCancellationRequested();
+            return false;
         }
 
         public static async Task<bool> WaitOneAsync([NotNull] this WaitHandle waitHandle, TimeSpan timeout, CancellationToken token)
