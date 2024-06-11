@@ -36,9 +36,7 @@ namespace Hangfire.Processing
 
             token.ThrowIfCancellationRequested();
 
-            using var ev = token.GetCancellationEvent();
-
-            var waitHandles = new[] { waitHandle, ev.WaitHandle };
+            var waitHandles = new[] { waitHandle, token.WaitHandle };
 
             var stopwatch = Stopwatch.StartNew();
             var waitResult = WaitHandle.WaitAny(waitHandles, timeout);

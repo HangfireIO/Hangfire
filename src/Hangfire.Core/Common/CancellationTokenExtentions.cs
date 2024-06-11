@@ -28,6 +28,7 @@ namespace Hangfire.Common
         /// on cancellation token registration and avoids using the <see cref="CancellationToken.WaitHandle"/>
         /// property as it may lead to high CPU issues.
         /// </summary>
+        [Obsolete("CancellationToken.WaitHandle is now preferred, since early days of .NET Core passed. Will be removed in 2.0.0.")]
         public static CancellationEvent GetCancellationEvent(this CancellationToken cancellationToken)
         {
             return new CancellationEvent(cancellationToken);
@@ -56,10 +57,8 @@ namespace Hangfire.Common
         /// </summary>
         public static bool Wait(this CancellationToken cancellationToken, TimeSpan timeout)
         {
-            using var cancellationEvent = GetCancellationEvent(cancellationToken);
-
             var stopwatch = Stopwatch.StartNew();
-            var waitResult = cancellationEvent.WaitHandle.WaitOne(timeout);
+            var waitResult = cancellationToken.WaitHandle.WaitOne(timeout);
             stopwatch.Stop();
                 
             var timeoutThreshold = TimeSpan.FromMilliseconds(1000);
@@ -84,6 +83,7 @@ namespace Hangfire.Common
             return waitResult;
         }
 
+        [Obsolete("CancellationToken.WaitHandle is now preferred, since early days of .NET Core passed. Will be removed in 2.0.0.")]
         public sealed class CancellationEvent : IDisposable
         {
             private static readonly Action<object> SetEventCallback = SetEvent;

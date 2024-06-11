@@ -182,7 +182,6 @@ namespace Hangfire.Server
             try
             {
                 using (var syncContext = new InlineSynchronizationContext())
-                using (var cancellationEvent = context.CancellationToken.ShutdownToken.GetCancellationEvent())
                 {
                     SynchronizationContext.SetSynchronizationContext(syncContext);
 
@@ -192,7 +191,7 @@ namespace Hangfire.Server
                     var task = getTaskFunc(result);
                     var asyncResult = (IAsyncResult)task;
 
-                    var waitHandles = new[] { syncContext.WaitHandle, asyncResult.AsyncWaitHandle, cancellationEvent.WaitHandle };
+                    var waitHandles = new[] { syncContext.WaitHandle, asyncResult.AsyncWaitHandle, context.CancellationToken.ShutdownToken.WaitHandle };
 
                     while (!asyncResult.IsCompleted && WaitHandle.WaitAny(waitHandles) == 0)
                     {
