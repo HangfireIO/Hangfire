@@ -60,7 +60,7 @@ namespace Hangfire.Common
             var stopwatch = Stopwatch.StartNew();
             var waitResult = cancellationToken.WaitHandle.WaitOne(timeout);
             stopwatch.Stop();
-                
+
             var timeoutThreshold = TimeSpan.FromMilliseconds(1000);
             var elapsedThreshold = TimeSpan.FromMilliseconds(500);
             var protectionTime = TimeSpan.FromSeconds(1);
