@@ -21,6 +21,7 @@ using System.Linq;
 namespace Hangfire.States
 {
     [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "Public API, can not change in minor versions.")]
+    [Obsolete("This was a helper class, and it's not used anymore. Will be removed in 2.0.0.")]
     public class StateHandlerCollection
     {
         private readonly Dictionary<string, List<IStateHandler>> _handlers = 

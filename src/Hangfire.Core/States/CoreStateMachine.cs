@@ -14,20 +14,21 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using Hangfire.Annotations;
 
 namespace Hangfire.States
 {
     internal class CoreStateMachine : IStateMachine
     {
-        private readonly Func<JobStorage, StateHandlerCollection> _stateHandlersThunk;
+        private readonly Func<JobStorage, string, IEnumerable<IStateHandler>> _stateHandlersThunk;
 
         public CoreStateMachine()
             : this(GetStateHandlers)
         {
         }
 
-        internal CoreStateMachine([NotNull] Func<JobStorage, StateHandlerCollection> stateHandlersThunk)
+        internal CoreStateMachine([NotNull] Func<JobStorage, string, IEnumerable<IStateHandler>> stateHandlersThunk)
         {
             if (stateHandlersThunk == null) throw new ArgumentNullException(nameof(stateHandlersThunk));
             _stateHandlersThunk = stateHandlersThunk;
@@ -35,16 +36,14 @@ namespace Hangfire.States
 
         public IState ApplyState(ApplyStateContext context)
         {
-            var handlers = _stateHandlersThunk(context.Storage);
-
-            foreach (var handler in handlers.GetHandlers(context.OldStateName))
+            foreach (var handler in _stateHandlersThunk(context.Storage, context.OldStateName))
             {
                 handler.Unapply(context, context.Transaction);
             }
 
             context.Transaction.SetJobState(context.BackgroundJob.Id, context.NewState);
 
-            foreach (var handler in handlers.GetHandlers(context.NewState.Name))
+            foreach (var handler in _stateHandlersThunk(context.Storage, context.NewState.Name))
             {
                 handler.Apply(context, context.Transaction);
             }
@@ -61,13 +60,23 @@ namespace Hangfire.States
             return context.NewState;
         }
 
-        private static StateHandlerCollection GetStateHandlers(JobStorage storage)
+        private static IEnumerable<IStateHandler> GetStateHandlers(JobStorage storage, string stateName)
         {
-            var stateHandlers = new StateHandlerCollection();
-            stateHandlers.AddRange(GlobalStateHandlers.Handlers);
-            stateHandlers.AddRange(storage.GetStateHandlers());
+            foreach (var globalHandler in GlobalStateHandlers.Handlers)
+            {
+                if (globalHandler.StateName.Equals(stateName, StringComparison.OrdinalIgnoreCase))
+                {
+                    yield return globalHandler;
+                }
+            }
 
-            return stateHandlers;
+            foreach (var storageHandler in storage.GetStateHandlers())
+            {
+                if (storageHandler.StateName.Equals(stateName, StringComparison.OrdinalIgnoreCase))
+                {
+                    yield return storageHandler;
+                }
+            }
         }
     }
 }
