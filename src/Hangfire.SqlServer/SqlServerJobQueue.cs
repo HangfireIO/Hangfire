@@ -123,40 +123,37 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
             var queuesString = String.Join("_", queues.OrderBy(static x => x));
             var resource = Tuple.Create(_storage, queuesString);
 
-            using (var cancellationEvent = cancellationToken.GetCancellationEvent())
+            var waitArray = new WaitHandle[] { cancellationToken.WaitHandle, NewItemInQueueEvent };
+
+            SemaphoreSlim semaphore = null;
+
+            try
             {
-                var waitArray = new WaitHandle[] { cancellationEvent.WaitHandle, NewItemInQueueEvent };
+                semaphore = Semaphores.GetOrAdd(resource, CreateSemaphoreFunc);
+                semaphore.Wait(cancellationToken);
 
-                SemaphoreSlim semaphore = null;
-
-                try
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    semaphore = Semaphores.GetOrAdd(resource, CreateSemaphoreFunc);
-                    semaphore.Wait(cancellationToken);
+                    // For non-first attempts we just trying again and again with
+                    // the determined delay between attempts, until shutdown
+                    // request is received.
+                    fetchedJob = FetchJob(queues);
+                    if (fetchedJob != null) return fetchedJob;
 
-                    while (!cancellationToken.IsCancellationRequested)
-                    {
-                        // For non-first attempts we just trying again and again with
-                        // the determined delay between attempts, until shutdown
-                        // request is received.
-                        fetchedJob = FetchJob(queues);
-                        if (fetchedJob != null) return fetchedJob;
-
-                        WaitHandle.WaitAny(waitArray, pollingDelayMs);
-                        cancellationToken.ThrowIfCancellationRequested();
-                    }
+                    WaitHandle.WaitAny(waitArray, pollingDelayMs);
+                    cancellationToken.ThrowIfCancellationRequested();
                 }
-                finally
-                {
-                    if (semaphore != null && semaphore.CurrentCount == 0)
-                    {
-                        semaphore.Release();
-                    }
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
-                return null;
             }
+            finally
+            {
+                if (semaphore != null && semaphore.CurrentCount == 0)
+                {
+                    semaphore.Release();
+                }
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            return null;
         }
 
         private static SemaphoreSlim CreateSemaphore(Tuple<SqlServerStorage, string> _)
@@ -213,66 +210,63 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
                 ? _options.QueuePollInterval
                 : TimeSpan.FromSeconds(1);
 
-            using (var cancellationEvent = cancellationToken.GetCancellationEvent())
+            while (!cancellationToken.IsCancellationRequested)
             {
-                while (!cancellationToken.IsCancellationRequested)
+                var connection = _storage.CreateAndOpenConnection();
+
+                try
                 {
-                    var connection = _storage.CreateAndOpenConnection();
+                    transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
 
-                    try
-                    {
-                        transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
-
-                        fetchedJob = connection.Query<FetchedJob>(
-                            fetchJobSqlTemplate,
+                    fetchedJob = connection.Query<FetchedJob>(
+                        fetchJobSqlTemplate,
 #pragma warning disable 618
-                        new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds },
+                    new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds },
 #pragma warning restore 618
-                        transaction,
-                            commandTimeout: _storage.CommandTimeout).SingleOrDefault();
+                    transaction,
+                        commandTimeout: _storage.CommandTimeout).SingleOrDefault();
 
-                        if (fetchedJob != null)
-                        {
-                            return new SqlServerTransactionJob(
-                                _storage,
-                                connection,
-                                transaction,
-                                fetchedJob.JobId.ToString(CultureInfo.InvariantCulture),
-                                fetchedJob.Queue);
-                        }
-                        else
-                        {
-                            // Nothing updated, just commit the empty transaction.
-                            transaction.Commit();
-                        }
-                    }
-                    catch (Exception ex) when (ex.IsCatchableExceptionType())
+                    if (fetchedJob != null)
                     {
-                        // Check connection isn't broken first, and that transaction
-                        // can be rolled back without throwing InvalidOperationException
-                        // on older System.Data.SqlClient in .NET Core.
-                        // https://github.com/HangfireIO/Hangfire/issues/1494
-                        // https://github.com/dotnet/efcore/issues/12864
-                        if (transaction?.Connection != null) transaction.Rollback();
-                        throw;
+                        return new SqlServerTransactionJob(
+                            _storage,
+                            connection,
+                            transaction,
+                            fetchedJob.JobId.ToString(CultureInfo.InvariantCulture),
+                            fetchedJob.Queue);
                     }
-                    finally
+                    else
                     {
-                        if (fetchedJob == null)
-                        {
-                            transaction?.Dispose();
-                            transaction = null;
-
-                            _storage.ReleaseConnection(connection);
-                        }
+                        // Nothing updated, just commit the empty transaction.
+                        transaction.Commit();
                     }
-
-                    WaitHandle.WaitAny(new WaitHandle[] { cancellationEvent.WaitHandle, NewItemInQueueEvent }, pollInterval);
                 }
-                
-                cancellationToken.ThrowIfCancellationRequested();
-                return null;
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
+                {
+                    // Check connection isn't broken first, and that transaction
+                    // can be rolled back without throwing InvalidOperationException
+                    // on older System.Data.SqlClient in .NET Core.
+                    // https://github.com/HangfireIO/Hangfire/issues/1494
+                    // https://github.com/dotnet/efcore/issues/12864
+                    if (transaction?.Connection != null) transaction.Rollback();
+                    throw;
+                }
+                finally
+                {
+                    if (fetchedJob == null)
+                    {
+                        transaction?.Dispose();
+                        transaction = null;
+
+                        _storage.ReleaseConnection(connection);
+                    }
+                }
+
+                WaitHandle.WaitAny(new WaitHandle[] { cancellationToken.WaitHandle, NewItemInQueueEvent }, pollInterval);
             }
+                
+            cancellationToken.ThrowIfCancellationRequested();
+            return null;
         }
 
         [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
