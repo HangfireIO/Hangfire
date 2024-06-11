@@ -622,7 +622,7 @@ update [{_storage.SchemaName}].[List] set ExpireAt = null where [Key] = @key";
         {
             foreach (var queue in _queuesToSignal)
             {
-                if (SqlServerJobQueue.NewItemInQueueEvents.TryGetValue(queue, out var signal))
+                if (SqlServerJobQueue.NewItemInQueueEvents.TryGetValue(Tuple.Create(_storage, queue), out var signal))
                 {
                     signal.Set();
                 }

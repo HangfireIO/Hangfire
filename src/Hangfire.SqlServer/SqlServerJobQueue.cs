@@ -34,7 +34,7 @@ namespace Hangfire.SqlServer
         // This is an optimization that helps to overcome the polling delay, when
         // both client and server reside in the same process. Everything is working
         // without these events, but it helps to reduce the delays in processing.
-        internal static readonly ConcurrentDictionary<string, AutoResetEvent> NewItemInQueueEvents = new();
+        internal static readonly ConcurrentDictionary<Tuple<SqlServerStorage, string>, AutoResetEvent> NewItemInQueueEvents = new();
 
         private static readonly Func<Tuple<SqlServerStorage, string>, SemaphoreSlim> CreateSemaphoreFunc = CreateSemaphore;
         private static readonly TimeSpan LongPollingThreshold = TimeSpan.FromSeconds(1);
@@ -123,7 +123,7 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
             var queuesString = String.Join("_", queues.OrderBy(static x => x));
             var resource = Tuple.Create(_storage, queuesString);
 
-            var waitArray = GetWaitArrayForQueueSignals(queues, cancellationToken);
+            var waitArray = GetWaitArrayForQueueSignals(_storage, queues, cancellationToken);
 
             SemaphoreSlim semaphore = null;
 
@@ -210,7 +210,7 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
                 ? _options.QueuePollInterval
                 : TimeSpan.FromSeconds(1);
 
-            var waitArray = GetWaitArrayForQueueSignals(queues, cancellationToken);
+            var waitArray = GetWaitArrayForQueueSignals(_storage, queues, cancellationToken);
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -271,7 +271,7 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
             return null;
         }
 
-        private static WaitHandle[] GetWaitArrayForQueueSignals(string[] queues, CancellationToken cancellationToken)
+        private static WaitHandle[] GetWaitArrayForQueueSignals(SqlServerStorage storage, string[] queues, CancellationToken cancellationToken)
         {
             var waitList = new List<WaitHandle>(capacity: queues.Length + 1)
             {
@@ -280,7 +280,7 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
 
             foreach (var queue in queues)
             {
-                waitList.Add(NewItemInQueueEvents.GetOrAdd(queue, static _ => new AutoResetEvent(initialState: false)));
+                waitList.Add(NewItemInQueueEvents.GetOrAdd(Tuple.Create(storage, queue), static _ => new AutoResetEvent(initialState: false)));
             }
 
             return waitList.ToArray();
