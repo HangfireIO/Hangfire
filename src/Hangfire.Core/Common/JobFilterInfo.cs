@@ -99,7 +99,7 @@ namespace Hangfire.Common
         {
             public Enumerator GetEnumerator() => new Enumerator(filters);
 
-            public struct Enumerator(List<JobFilter> filters)
+            public ref struct Enumerator(List<JobFilter> filters)
             {
                 private readonly List<JobFilter> _filters = filters;
                 private int _index = 0;
@@ -136,7 +136,7 @@ namespace Hangfire.Common
         {
             public ReversedEnumerator GetEnumerator() => new ReversedEnumerator(filters);
 
-            public struct ReversedEnumerator(List<JobFilter> filters)
+            public ref struct ReversedEnumerator(List<JobFilter> filters)
             {
                 private readonly List<JobFilter> _filters = filters;
                 private int _index = filters.Count - 1;

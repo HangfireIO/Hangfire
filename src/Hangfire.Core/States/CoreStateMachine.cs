@@ -72,7 +72,7 @@ namespace Hangfire.States
         {
             public Enumerator GetEnumerator() => new Enumerator(globalHandlers, storageHandlers, stateName);
 
-            public struct Enumerator
+            public ref struct Enumerator
             {
                 private readonly IEnumerator<IStateHandler> _globalEnumerator;
                 private readonly IEnumerator<IStateHandler> _storageEnumerator;
