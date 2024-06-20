@@ -34,11 +34,11 @@ namespace Hangfire.Storage
     public class InvocationData
     {
         private static readonly
-            ConcurrentDictionary<Tuple<Func<string, Type>, string, string, string>, Tuple<Type, MethodInfo>>
+            ConcurrentDictionary<MethodDeserializerCacheKey, MethodDeserializerCacheValue>
             MethodDeserializerCache = new();
 
         private static readonly
-            ConcurrentDictionary<Tuple<Func<Type, string>, Type, MethodInfo>, Tuple<string, string, string>>
+            ConcurrentDictionary<MethodSerializerCacheKey, MethodSerializerCacheValue>
             MethodSerializerCache = new();
 
         private static readonly ConcurrentDictionary<Tuple<Func<Type, string>, string>, string[]>
@@ -311,18 +311,21 @@ namespace Hangfire.Storage
             out string typeName, out string methodName, out string parameterTypes)
         {
             var entry = MethodSerializerCache.GetOrAdd(
-                Tuple.Create(typeSerializer, type, methodInfo), static tuple =>
+                new MethodSerializerCacheKey { TypeSerializer = typeSerializer, Type = type, Method = methodInfo },
+                static key =>
                 {
-                    return Tuple.Create(
-                        tuple.Item1(tuple.Item2),
-                        tuple.Item3.Name,
-                        SerializationHelper.Serialize(
-                            tuple.Item3.GetParameters().Select(x => tuple.Item1(x.ParameterType)).ToArray()));
+                    return new MethodSerializerCacheValue
+                    {
+                        TypeName = key.TypeSerializer(key.Type),
+                        MethodName = key.Method.Name,
+                        ParameterTypes = SerializationHelper.Serialize(
+                            key.Method.GetParameters().Select(x => key.TypeSerializer(x.ParameterType)).ToArray())
+                    };
                 });
 
-            typeName = entry.Item1;
-            methodName = entry.Item2;
-            parameterTypes = entry.Item3;
+            typeName = entry.TypeName;
+            methodName = entry.MethodName;
+            parameterTypes = entry.ParameterTypes;
         }
 
         private static void CachedDeserializeMethod(
@@ -330,28 +333,29 @@ namespace Hangfire.Storage
             out Type type, out MethodInfo methodInfo)
         {
             var entry = MethodDeserializerCache.GetOrAdd(
-                Tuple.Create(typeResolver, typeName, methodName, parameterTypes), static tuple =>
+                new MethodDeserializerCacheKey { TypeResolver = typeResolver, TypeName = typeName, MethodName = methodName, ParameterTypes = parameterTypes },
+                static key =>
                 {
-                    var type = tuple.Item1(tuple.Item2);
-                    var parameterTypesArray = DeserializeParameterTypesArray(TypeHelper.CurrentTypeSerializer, tuple.Item4);
-                    var parameterTypes = parameterTypesArray?.Select(tuple.Item1).ToArray();
-                    var method = type.GetNonOpenMatchingMethod(tuple.Item3, parameterTypes);
+                    var type = key.TypeResolver(key.TypeName);
+                    var parameterTypesArray = DeserializeParameterTypesArray(TypeHelper.CurrentTypeSerializer, key.ParameterTypes);
+                    var parameterTypes = parameterTypesArray?.Select(key.TypeResolver).ToArray();
+                    var method = type.GetNonOpenMatchingMethod(key.MethodName, parameterTypes);
 
                     if (method == null)
                     {
                         var parametersString = parameterTypes != null
                             ? String.Join(", ", parameterTypes.Select(static x => x.Name))
-                            : tuple.Item4 ?? String.Empty;
+                            : key.ParameterTypes ?? String.Empty;
                     
                         throw new InvalidOperationException(
-                            $"The type `{type.FullName}` does not contain a method with signature `{tuple.Item3}({parametersString})`");
+                            $"The type `{type.FullName}` does not contain a method with signature `{key.MethodName}({parametersString})`");
                     }
 
-                    return Tuple.Create(type, method);
+                    return new MethodDeserializerCacheValue { Type = type, Method = method };
                 });
 
-            type = entry.Item1;
-            methodInfo = entry.Item2;
+            type = entry.Type;
+            methodInfo = entry.Method;
         }
 
         private static object DeserializeArgument(string argument, Type type)
@@ -442,6 +446,34 @@ namespace Hangfire.Storage
 
             [JsonProperty("q", NullValueHandling = NullValueHandling.Ignore)]
             public string Queue { get; set; }
+        }
+
+        private readonly record struct MethodDeserializerCacheKey
+        {
+            public Func<string, Type> TypeResolver { get; init; }
+            public string TypeName { get; init; }
+            public string MethodName { get; init; }
+            public string ParameterTypes { get; init; }
+        }
+
+        private readonly record struct MethodDeserializerCacheValue
+        {
+            public Type Type { get; init; }
+            public MethodInfo Method { get; init; }
+        }
+
+        private readonly record struct MethodSerializerCacheKey
+        {
+            public Func<Type, string> TypeSerializer { get; init; }
+            public Type Type { get; init; }
+            public MethodInfo Method { get; init; }
+        }
+        
+        private readonly record struct MethodSerializerCacheValue
+        {
+            public string TypeName { get; init; }
+            public string MethodName { get; init; }
+            public string ParameterTypes { get; init; }
         }
     }
 }
