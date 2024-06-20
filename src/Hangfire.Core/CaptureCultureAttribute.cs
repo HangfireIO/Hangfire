@@ -103,7 +103,13 @@ namespace Hangfire
                 if (cultureName != null)
                 {
                     context.Items["PreviousCulture"] = CultureInfo.CurrentCulture;
-                    SetCurrentCulture(new CultureInfo(cultureName));
+                    SetCurrentCulture(
+#if !NETSTANDARD1_3
+                        CultureInfo.GetCultureInfo(cultureName)
+#else
+                        new CultureInfo(cultureName)
+#endif
+                        );
                 }
             }
             catch (CultureNotFoundException ex)
@@ -117,7 +123,13 @@ namespace Hangfire
                 if (uiCultureName != null)
                 {
                     context.Items["PreviousUICulture"] = CultureInfo.CurrentUICulture;
-                    SetCurrentUICulture(new CultureInfo(uiCultureName));
+                    SetCurrentUICulture(
+#if !NETSTANDARD1_3
+                        CultureInfo.GetCultureInfo(uiCultureName)
+#else
+                        new CultureInfo(uiCultureName)
+#endif
+                        );
                 }
             }
             catch (CultureNotFoundException ex)
