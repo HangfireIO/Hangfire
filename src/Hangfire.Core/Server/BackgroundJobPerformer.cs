@@ -91,7 +91,7 @@ namespace Hangfire.Server
                 }
 
                 var exceptionContext = new ServerExceptionContext(context, ex);
-                InvokeServerExceptionFilters(exceptionContext, filterInfo.ServerExceptionFilters);
+                InvokeServerExceptionFilters(exceptionContext, filterInfo.ServerExceptionFiltersReversed);
 
                 if (!exceptionContext.ExceptionHandled)
                 {
@@ -111,23 +111,23 @@ namespace Hangfire.Server
             return new JobFilterInfo(_filterProvider.GetFilters(job));
         }
 
-        private object PerformJobWithFilters(PerformContext context, IEnumerable<IServerFilter> filters)
+        private object PerformJobWithFilters(PerformContext context, JobFilterInfo.FilterCollection<IServerFilter> filters)
         {
             var preContext = new PerformingContext(context);
-            using var enumerator = filters.GetEnumerator();
+            var enumerator = filters.GetEnumerator();
 
-            return InvokeNextServerFilter(enumerator, _innerPerformer, context, preContext).Result;
+            return InvokeNextServerFilter(ref enumerator, _innerPerformer, context, preContext).Result;
         }
 
         private static PerformedContext InvokeNextServerFilter(
-            IEnumerator<IServerFilter> enumerator,
+            ref JobFilterInfo.FilterCollection<IServerFilter>.Enumerator enumerator,
             IBackgroundJobPerformer innerPerformer,
             PerformContext context,
             PerformingContext preContext)
         {
             if (enumerator.MoveNext())
             {
-                return InvokeServerFilter(enumerator, innerPerformer, context, preContext);
+                return InvokeServerFilter(ref enumerator, innerPerformer, context, preContext);
             }
 
             var result = innerPerformer.Perform(context);
@@ -135,7 +135,7 @@ namespace Hangfire.Server
         }
 
         private static PerformedContext InvokeServerFilter(
-            IEnumerator<IServerFilter> enumerator,
+            ref JobFilterInfo.FilterCollection<IServerFilter>.Enumerator enumerator,
             IBackgroundJobPerformer innerPerformer,
             PerformContext context,
             PerformingContext preContext)
@@ -164,15 +164,14 @@ namespace Hangfire.Server
                     preContext.Items.Add(ContextCanceledKey, filter.GetType().Name);
                 }
                 
-                return new PerformedContext(
-                    preContext, null, true, null);
+                return new PerformedContext(preContext, null, true, null);
             }
 
             var wasError = false;
             PerformedContext postContext;
             try
             {
-                postContext = InvokeNextServerFilter(enumerator, innerPerformer, context, preContext);
+                postContext = InvokeNextServerFilter(ref enumerator, innerPerformer, context, preContext);
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
@@ -236,9 +235,9 @@ namespace Hangfire.Server
 
         private static void InvokeServerExceptionFilters(
             ServerExceptionContext context,
-            IEnumerable<IServerExceptionFilter> filters)
+            JobFilterInfo.ReversedFilterCollection<IServerExceptionFilter> filters)
         {
-            foreach (var filter in filters.Reverse())
+            foreach (var filter in filters)
             {
                 context.Profiler.InvokeMeasured(
                     new KeyValuePair<IServerExceptionFilter, ServerExceptionContext>(filter, context),

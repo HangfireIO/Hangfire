@@ -14,6 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using System.Linq;
 using Hangfire.Client;
 using Hangfire.Server;
 using Hangfire.States;
@@ -23,17 +24,21 @@ namespace Hangfire.Common
     /// <summary>
     /// Encapsulates information about the available job filters.
     /// </summary>
-    internal sealed class JobFilterInfo
+    internal readonly struct JobFilterInfo
     {
-        private readonly IEnumerable<JobFilter> _filters;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="JobFilterInfo"/> class using the specified filters collection.
         /// </summary>
         /// <param name="filters">The filters collection.</param>
         public JobFilterInfo(IEnumerable<JobFilter> filters)
         {
-            _filters = filters;
+            var filtersList = filters as List<JobFilter> ?? filters.ToList();
+            ClientFilters = new FilterCollection<IClientFilter>(filtersList);
+            ServerFilters = new FilterCollection<IServerFilter>(filtersList);
+            ElectStateFilters = new FilterCollection<IElectStateFilter>(filtersList);
+            ApplyStateFilters = new FilterCollection<IApplyStateFilter>(filtersList);
+            ClientExceptionFiltersReversed = new ReversedFilterCollection<IClientExceptionFilter>(filtersList);
+            ServerExceptionFiltersReversed = new ReversedFilterCollection<IServerExceptionFilter>(filtersList);
         }
 
         /// <summary>
@@ -43,7 +48,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The client filters.
         /// </returns>
-        public IEnumerable<IClientFilter> ClientFilters => GetFilters<IClientFilter>();
+        public FilterCollection<IClientFilter> ClientFilters { get; }
 
         /// <summary>
         /// Gets all the server filters in the application.
@@ -52,7 +57,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The server filters.
         /// </returns>
-        public IEnumerable<IServerFilter> ServerFilters => GetFilters<IServerFilter>();
+        public FilterCollection<IServerFilter> ServerFilters { get; }
 
         /// <summary>
         /// Gets all the stat changing filters in the application.
@@ -61,7 +66,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The state changing filters.
         /// </returns>
-        public IEnumerable<IElectStateFilter> ElectStateFilters => GetFilters<IElectStateFilter>();
+        public FilterCollection<IElectStateFilter> ElectStateFilters { get; }
 
         /// <summary>
         /// Gets all the state changed filters in the application.
@@ -70,7 +75,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The state changed filters.
         /// </returns>
-        public IEnumerable<IApplyStateFilter> ApplyStateFilters => GetFilters<IApplyStateFilter>();
+        public FilterCollection<IApplyStateFilter> ApplyStateFilters { get; }
 
         /// <summary>
         /// Gets all the client exception filters in the application.
@@ -79,7 +84,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The client exception filters.
         /// </returns>
-        public IEnumerable<IClientExceptionFilter> ClientExceptionFilters => GetFilters<IClientExceptionFilter>();
+        public ReversedFilterCollection<IClientExceptionFilter> ClientExceptionFiltersReversed { get; }
 
         /// <summary>
         /// Gets all the server exception filters in the application.
@@ -88,15 +93,78 @@ namespace Hangfire.Common
         /// <returns>
         /// The server exception filters.
         /// </returns>
-        public IEnumerable<IServerExceptionFilter> ServerExceptionFilters => GetFilters<IServerExceptionFilter>();
+        public ReversedFilterCollection<IServerExceptionFilter> ServerExceptionFiltersReversed { get; }
 
-        private IEnumerable<T> GetFilters<T>()
+        public readonly struct FilterCollection<T>(List<JobFilter> filters)
         {
-            foreach (var filter in _filters)
+            public Enumerator GetEnumerator() => new Enumerator(filters);
+
+            public struct Enumerator(List<JobFilter> filters)
             {
-                if (filter.Instance is T instance)
+                private readonly List<JobFilter> _filters = filters;
+                private int _index = 0;
+                private T _current = default;
+
+                public bool MoveNext()
                 {
-                    yield return instance;
+                    List<JobFilter> localFilters = _filters;
+
+                    while (_index < localFilters.Count)
+                    {
+                        if (localFilters[_index++].Instance is T instance)
+                        {
+                            _current = instance;
+                            return true;
+                        }
+                    }
+
+                    return MoveNextRare();
+                }
+
+                public T Current => _current;
+
+                private bool MoveNextRare()
+                {
+                    _index = _filters.Count + 1;
+                    _current = default;
+                    return false;
+                }
+            }
+        }
+
+        public readonly struct ReversedFilterCollection<T>(List<JobFilter> filters)
+        {
+            public ReversedEnumerator GetEnumerator() => new ReversedEnumerator(filters);
+
+            public struct ReversedEnumerator(List<JobFilter> filters)
+            {
+                private readonly List<JobFilter> _filters = filters;
+                private int _index = filters.Count - 1;
+                private T _current = default;
+
+                public bool MoveNext()
+                {
+                    List<JobFilter> localFilters = _filters;
+
+                    while (_index >= 0)
+                    {
+                        if (localFilters[_index--].Instance is T instance)
+                        {
+                            _current = instance;
+                            return true;
+                        }
+                    }
+
+                    return MoveNextRare();
+                }
+
+                public T Current => _current;
+
+                private bool MoveNextRare()
+                {
+                    _index = -1;
+                    _current = default;
+                    return false;
                 }
             }
         }

@@ -88,7 +88,7 @@ namespace Hangfire.Client
             {
                 var exceptionContext = new ClientExceptionContext(context, ex);
 
-                InvokeExceptionFilters(exceptionContext, filterInfo.ClientExceptionFilters);
+                InvokeExceptionFilters(exceptionContext, filterInfo.ClientExceptionFiltersReversed);
                 if (!exceptionContext.ExceptionHandled)
                 {
                     throw;
@@ -109,23 +109,23 @@ namespace Hangfire.Client
 
         private CreatedContext CreateWithFilters(
             CreateContext context, 
-            IEnumerable<IClientFilter> filters)
+            JobFilterInfo.FilterCollection<IClientFilter> filters)
         {
             var preContext = new CreatingContext(context);
-            using var enumerator = filters.GetEnumerator();
+            var enumerator = filters.GetEnumerator();
 
-            return InvokeNextClientFilter(enumerator, _innerFactory, context, preContext);
+            return InvokeNextClientFilter(ref enumerator, _innerFactory, context, preContext);
         }
         
         private static CreatedContext InvokeNextClientFilter(
-            IEnumerator<IClientFilter> enumerator,
+            ref JobFilterInfo.FilterCollection<IClientFilter>.Enumerator enumerator,
             IBackgroundJobFactory innerFactory,
             CreateContext context,
             CreatingContext preContext)
         {
             if (enumerator.MoveNext())
             {
-                return InvokeClientFilter(enumerator, innerFactory, context, preContext);
+                return InvokeClientFilter(ref enumerator, innerFactory, context, preContext);
             }
 
             var backgroundJob = innerFactory.Create(context);
@@ -133,7 +133,7 @@ namespace Hangfire.Client
         }
 
         private static CreatedContext InvokeClientFilter(
-            IEnumerator<IClientFilter> enumerator,
+            ref JobFilterInfo.FilterCollection<IClientFilter>.Enumerator enumerator,
             IBackgroundJobFactory innerFactory,
             CreateContext context,
             CreatingContext preContext)
@@ -154,7 +154,7 @@ namespace Hangfire.Client
             CreatedContext postContext;
             try
             {
-                postContext = InvokeNextClientFilter(enumerator, innerFactory, context, preContext);
+                postContext = InvokeNextClientFilter(ref enumerator, innerFactory, context, preContext);
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
@@ -210,9 +210,9 @@ namespace Hangfire.Client
         }
 
         private static void InvokeExceptionFilters(
-            ClientExceptionContext context, IEnumerable<IClientExceptionFilter> filters)
+            ClientExceptionContext context, JobFilterInfo.ReversedFilterCollection<IClientExceptionFilter> filters)
         {
-            foreach (var filter in filters.Reverse())
+            foreach (var filter in filters)
             {
                 context.Profiler.InvokeMeasured(
                     new KeyValuePair<IClientExceptionFilter, ClientExceptionContext>(filter, context),
