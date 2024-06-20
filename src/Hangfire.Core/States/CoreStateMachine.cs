@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Hangfire.Annotations;
 
 namespace Hangfire.States
@@ -62,11 +63,16 @@ namespace Hangfire.States
 
         private static StateHandlersCollection GetStateHandlers(JobStorage storage, string stateName)
         {
-            return new StateHandlersCollection(GlobalStateHandlers.Handlers, storage.GetStateHandlers(), stateName);
+            var globalHandlers = GlobalStateHandlers.Handlers;
+
+            return new StateHandlersCollection(
+                globalHandlers as List<IStateHandler> ?? globalHandlers.ToList(),
+                storage.GetStateHandlers(),
+                stateName);
         }
 
         internal readonly struct StateHandlersCollection(
-            IEnumerable<IStateHandler> globalHandlers,
+            List<IStateHandler> globalHandlers,
             IEnumerable<IStateHandler> storageHandlers,
             string stateName)
         {
@@ -74,12 +80,12 @@ namespace Hangfire.States
 
             public ref struct Enumerator
             {
-                private readonly IEnumerator<IStateHandler> _globalEnumerator;
+                private List<IStateHandler>.Enumerator _globalEnumerator;
                 private readonly IEnumerator<IStateHandler> _storageEnumerator;
                 private readonly string _stateName;
                 private IStateHandler _current;
 
-                public Enumerator(IEnumerable<IStateHandler> globalHandlers, IEnumerable<IStateHandler> storageHandlers, string stateName)
+                public Enumerator(List<IStateHandler> globalHandlers, IEnumerable<IStateHandler> storageHandlers, string stateName)
                 {
                     _globalEnumerator = globalHandlers.GetEnumerator();
                     _storageEnumerator = storageHandlers.GetEnumerator();

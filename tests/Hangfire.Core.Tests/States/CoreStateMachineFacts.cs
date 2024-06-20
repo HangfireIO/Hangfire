@@ -23,10 +23,10 @@ namespace Hangfire.Core.Tests.States
         public CoreStateMachineFacts()
         {
             _stateHandlersThunk = (storage, stateName) => new CoreStateMachine.StateHandlersCollection(
-                _handlers.TryGetValue(stateName, out var handlers) ? handlers.ToArray() : Enumerable.Empty<IStateHandler>(),
+                _handlers.TryGetValue(stateName, out var handlers) ? handlers.ToList() : new List<IStateHandler>(),
                 Enumerable.Empty<IStateHandler>(),
                 stateName);
-            
+
             var backgroundJob = new BackgroundJobMock { Id = JobId };
             _applyContext = new ApplyStateContextMock
             {
