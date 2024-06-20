@@ -51,10 +51,13 @@ namespace Hangfire.Common
                 combinedFilters.AddRange(provider.GetFilters(job));
             }
 
-            // Sorting before removing duplicates in the correct order
-            combinedFilters.Sort(Comparison);
+            if (combinedFilters.Count > 1)
+            {
+                // Sorting before removing duplicates in the correct order
+                combinedFilters.Sort(Comparison);
+                RemoveDuplicates(combinedFilters);
+            }
 
-            RemoveDuplicates(combinedFilters);
             return combinedFilters;
         }
 
