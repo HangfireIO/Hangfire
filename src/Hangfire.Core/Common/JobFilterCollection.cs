@@ -121,7 +121,7 @@ namespace Hangfire.Common
 
         IEnumerable<JobFilter> IJobFilterProvider.GetFilters(Job job)
         {
-            return this;
+            return _filters;
         }
 
         IEnumerator IEnumerable.GetEnumerator()
