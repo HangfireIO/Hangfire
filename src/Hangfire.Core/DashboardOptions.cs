@@ -31,13 +31,7 @@ namespace Hangfire
         {
             AppPath = "/";
             PrefixPath = string.Empty;
-            _asyncAuthorization =
-#if NET451
-                new IDashboardAsyncAuthorizationFilter[0]
-#else
-                Array.Empty<IDashboardAsyncAuthorizationFilter>()
-#endif
-                ;
+            _asyncAuthorization = [];
             Authorization = DefaultAuthorization;
             IsReadOnlyFunc = static _ => false;
             StatsPollingInterval = 2000;
@@ -75,13 +69,7 @@ namespace Hangfire
 
                 if (ReferenceEquals(Authorization, DefaultAuthorization))
                 {
-                    Authorization =
-#if NET451
-                        new IDashboardAuthorizationFilter[0]
-#else
-                        Array.Empty<IDashboardAuthorizationFilter>()
-#endif
-                        ;
+                    Authorization = [];
                 }
             }
         }

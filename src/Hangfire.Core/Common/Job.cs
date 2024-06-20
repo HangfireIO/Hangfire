@@ -76,13 +76,7 @@ namespace Hangfire.Common
     /// <threadsafety static="true" instance="false" />
     public partial class Job
     {
-        private static readonly object[] EmptyObjectArray =
-#if NET451
-                new object[0]
-#else
-                Array.Empty<object>()
-#endif
-            ;
+        private static readonly object[] EmptyObjectArray = [];
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Job"/> class with the
