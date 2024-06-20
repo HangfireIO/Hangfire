@@ -46,6 +46,8 @@ namespace Hangfire.Server
         public static readonly string TransactionalAcknowledgePrefix = JobStorageFeatures.TransactionalAcknowledgePrefix;
 
         private static readonly ConcurrentDictionary<Guid, string> WorkerGuidCache = new();
+        private static readonly string[] EligibleWorkerStates = new[] { EnqueuedState.StateName, ScheduledState.StateName, ProcessingState.StateName };
+        private static readonly string[] ProcessingStateArray = new[] { ProcessingState.StateName };
 
         private readonly TimeSpan _jobInitializationWaitTimeout;
         private readonly int _maxStateChangeAttempts;
@@ -123,7 +125,7 @@ namespace Hangfire.Server
                             fetchedJob.JobId, 
                             processingState, 
                             null,
-                            new[] { EnqueuedState.StateName, ScheduledState.StateName, ProcessingState.StateName },
+                            EligibleWorkerStates,
                             null,
                             out backgroundJob,
                             linkedCts.Token,
@@ -157,7 +159,7 @@ namespace Hangfire.Server
                             fetchedJob.JobId,
                             state,
                             customData,
-                            new[] { ProcessingState.StateName },
+                            ProcessingStateArray,
                             transactionalAck ? fetchedJob : null,
                             out _,
                             CancellationToken.None,
