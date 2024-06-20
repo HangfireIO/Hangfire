@@ -84,11 +84,14 @@ namespace Hangfire.Client
             // identifiers. Since they also will be eventually expired leaving no trace, we can
             // consider that only one background job is created, regardless of retry attempts
             // number.
-            var jobId = RetryOnException(ref attemptsLeft, _ => context.Connection.CreateExpiredJob(
-                context.Job,
-                parameters,
-                createdAt,
-                expireIn));
+            var jobId = RetryOnException(
+                ref attemptsLeft,
+                static (_, ctx) => ctx.Context.Connection.CreateExpiredJob(
+                    ctx.Context.Job,
+                    ctx.Parameters,
+                    ctx.CreatedAt,
+                    ctx.ExpireIn),
+                new JobCreateContext { Context = context, Parameters = parameters, CreatedAt = createdAt, ExpireIn = expireIn });
 
             if (String.IsNullOrEmpty(jobId))
             {
@@ -99,7 +102,7 @@ namespace Hangfire.Client
 
             if (context.InitialState != null)
             {
-                RetryOnException(ref attemptsLeft, attempt =>
+                RetryOnException(ref attemptsLeft, static (attempt, ctx) =>
                 {
                     if (attempt > 0)
                     {
@@ -109,46 +112,46 @@ namespace Hangfire.Client
                         // its state is null, and since only the current thread knows the job's identifier
                         // when its state is null, and since we shouldn't do anything when it's non-null,
                         // there will be no any race conditions.
-                        var data = context.Connection.GetJobData(jobId);
-                        if (data == null) throw new InvalidOperationException($"Was unable to initialize a background job '{jobId}', because it doesn't exists.");
+                        var data = ctx.Context.Connection.GetJobData(ctx.BackgroundJob.Id);
+                        if (data == null) throw new InvalidOperationException($"Was unable to initialize a background job '{ctx.BackgroundJob.Id}', because it doesn't exists.");
 
                         if (!String.IsNullOrEmpty(data.State)) return;
                     }
 
-                    using (var transaction = context.Connection.CreateWriteTransaction())
+                    using (var transaction = ctx.Context.Connection.CreateWriteTransaction())
                     {
                         var applyContext = new ApplyStateContext(
-                            context.Storage,
-                            context.Connection,
+                            ctx.Context.Storage,
+                            ctx.Context.Connection,
                             transaction,
-                            backgroundJob,
-                            context.InitialState,
+                            ctx.BackgroundJob,
+                            ctx.Context.InitialState!,
                             oldStateName: null,
-                            context.Profiler,
-                            StateMachine);
+                            ctx.Context.Profiler,
+                            ctx.StateMachine);
 
-                        StateMachine.ApplyState(applyContext);
+                        ctx.StateMachine.ApplyState(applyContext);
 
                         transaction.Commit();
                     }
-                });
+                }, new JobInitializeContext { Context = context, StateMachine = StateMachine, BackgroundJob = backgroundJob });
             }
 
             return backgroundJob;
         }
 
-        private void RetryOnException(ref int attemptsLeft, Action<int> action)
+        private void RetryOnException<TContext>(ref int attemptsLeft, Action<int, TContext> action, TContext context)
         {
-            RetryOnException(ref attemptsLeft, attempt =>
+            RetryOnException(ref attemptsLeft, static (attempt, ctx) =>
             {
-                action(attempt);
+                ctx.Key(attempt, ctx.Value);
                 return true;
-            });
+            }, new KeyValuePair<Action<int, TContext>, TContext>(action, context));
         }
 
-        private T RetryOnException<T>(ref int attemptsLeft, Func<int, T> action)
+        private TResult RetryOnException<TContext, TResult>(ref int attemptsLeft, Func<int, TContext, TResult> action, TContext context)
         {
-            var exceptions = new List<Exception>();
+            List<Exception> exceptions = null;
             var attempt = 0;
             var delay = TimeSpan.Zero;
 
@@ -161,11 +164,11 @@ namespace Hangfire.Client
                         Thread.Sleep(delay);
                     }
 
-                    return action(attempt++);
+                    return action(attempt++, context);
                 }
                 catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
-                    exceptions.Add(ex);
+                    (exceptions ??= new List<Exception>()).Add(ex);
                     _logger.DebugException("An exception occurred while creating a background job, see inner exception for details.", ex);
                     delay = RetryDelayFunc(attempt);
                 }
@@ -188,6 +191,21 @@ namespace Hangfire.Client
                 case 3: return TimeSpan.FromMilliseconds(100);
                 default: return TimeSpan.FromMilliseconds(500);
             }
+        }
+
+        private readonly record struct JobCreateContext
+        {
+            public required CreateContext Context { get; init; }
+            public required Dictionary<string, string> Parameters { get; init; }
+            public required DateTime CreatedAt { get; init; }
+            public required TimeSpan ExpireIn { get; init; }
+        }
+
+        private readonly record struct JobInitializeContext
+        {
+            public required CreateContext Context { get; init; }
+            public required IStateMachine StateMachine { get; init; }
+            public required BackgroundJob BackgroundJob { get; init; }
         }
     }
 }
