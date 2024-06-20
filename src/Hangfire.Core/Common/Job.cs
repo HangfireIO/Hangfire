@@ -14,6 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -77,6 +78,8 @@ namespace Hangfire.Common
     public partial class Job
     {
         private static readonly object[] EmptyObjectArray = [];
+        private static readonly ConcurrentDictionary<MethodInfo, AsyncStateMachineAttribute>
+            AsyncStateMachineAttributeCache = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Job"/> class with the
@@ -470,7 +473,8 @@ namespace Hangfire.Common
                     typeParameterName);
             }
 
-            if (method.ReturnType == typeof(void) && method.GetCustomAttribute<AsyncStateMachineAttribute>() != null)
+            if (method.ReturnType == typeof(void) &&
+                AsyncStateMachineAttributeCache.GetOrAdd(method, static m => m.GetCustomAttribute<AsyncStateMachineAttribute>()) != null)
             {
                 throw new NotSupportedException("Async void methods are not supported. Use async Task instead.");
             }
