@@ -113,28 +113,35 @@ namespace Hangfire.Server
 
         private object PerformJobWithFilters(PerformContext context, IEnumerable<IServerFilter> filters)
         {
-            object result = null;
-
             var preContext = new PerformingContext(context);
-            Func<PerformedContext> continuation = () =>
-            {
-                result = _innerPerformer.Perform(context);
-                return new PerformedContext(context, result, false, null);
-            };
+            using var enumerator = filters.GetEnumerator();
 
-            var thunk = filters.Reverse().Aggregate(continuation,
-                (next, filter) => () => InvokePerformFilter(filter, preContext, next));
-            
-            thunk();
-
-            return result;
+            return InvokeNextServerFilter(enumerator, _innerPerformer, context, preContext).Result;
         }
 
-        private static PerformedContext InvokePerformFilter(
-            IServerFilter filter, 
-            PerformingContext preContext,
-            Func<PerformedContext> continuation)
+        private static PerformedContext InvokeNextServerFilter(
+            IEnumerator<IServerFilter> enumerator,
+            IBackgroundJobPerformer innerPerformer,
+            PerformContext context,
+            PerformingContext preContext)
         {
+            if (enumerator.MoveNext())
+            {
+                return InvokeServerFilter(enumerator, innerPerformer, context, preContext);
+            }
+
+            var result = innerPerformer.Perform(context);
+            return new PerformedContext(context, result, false, null);
+        }
+
+        private static PerformedContext InvokeServerFilter(
+            IEnumerator<IServerFilter> enumerator,
+            IBackgroundJobPerformer innerPerformer,
+            PerformContext context,
+            PerformingContext preContext)
+        {
+            var filter = enumerator.Current!;
+
             try
             {
                 preContext.Profiler.InvokeMeasured(
@@ -165,7 +172,7 @@ namespace Hangfire.Server
             PerformedContext postContext;
             try
             {
-                postContext = continuation();
+                postContext = InvokeNextServerFilter(enumerator, innerPerformer, context, preContext);
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
             {

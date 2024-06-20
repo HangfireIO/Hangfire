@@ -112,23 +112,34 @@ namespace Hangfire.Client
             IEnumerable<IClientFilter> filters)
         {
             var preContext = new CreatingContext(context);
-            Func<CreatedContext> continuation = () =>
+            using var enumerator = filters.GetEnumerator();
+
+            return InvokeNextClientFilter(enumerator, _innerFactory, context, preContext);
+        }
+        
+        private static CreatedContext InvokeNextClientFilter(
+            IEnumerator<IClientFilter> enumerator,
+            IBackgroundJobFactory innerFactory,
+            CreateContext context,
+            CreatingContext preContext)
+        {
+            if (enumerator.MoveNext())
             {
-                var backgroundJob = _innerFactory.Create(context);
-                return new CreatedContext(context, backgroundJob, false, null);
-            };
+                return InvokeClientFilter(enumerator, innerFactory, context, preContext);
+            }
 
-            var thunk = filters.Reverse().Aggregate(continuation,
-                (next, filter) => () => InvokeClientFilter(filter, preContext, next));
-
-            return thunk();
+            var backgroundJob = innerFactory.Create(context);
+            return new CreatedContext(context, backgroundJob, false, null);
         }
 
         private static CreatedContext InvokeClientFilter(
-            IClientFilter filter,
-            CreatingContext preContext,
-            Func<CreatedContext> continuation)
+            IEnumerator<IClientFilter> enumerator,
+            IBackgroundJobFactory innerFactory,
+            CreateContext context,
+            CreatingContext preContext)
         {
+            var filter = enumerator.Current!;
+
             preContext.Profiler.InvokeMeasured(
                 new KeyValuePair<IClientFilter, CreatingContext>(filter, preContext),
                 InvokeOnCreating,
@@ -143,7 +154,7 @@ namespace Hangfire.Client
             CreatedContext postContext;
             try
             {
-                postContext = continuation();
+                postContext = InvokeNextClientFilter(enumerator, innerFactory, context, preContext);
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
