@@ -21,14 +21,14 @@ namespace Hangfire.States
 {
     internal class CoreStateMachine : IStateMachine
     {
-        private readonly Func<JobStorage, string, IEnumerable<IStateHandler>> _stateHandlersThunk;
+        private readonly Func<JobStorage, string, StateHandlersCollection> _stateHandlersThunk;
 
         public CoreStateMachine()
             : this(GetStateHandlers)
         {
         }
 
-        internal CoreStateMachine([NotNull] Func<JobStorage, string, IEnumerable<IStateHandler>> stateHandlersThunk)
+        internal CoreStateMachine([NotNull] Func<JobStorage, string, StateHandlersCollection> stateHandlersThunk)
         {
             if (stateHandlersThunk == null) throw new ArgumentNullException(nameof(stateHandlersThunk));
             _stateHandlersThunk = stateHandlersThunk;
@@ -60,22 +60,60 @@ namespace Hangfire.States
             return context.NewState;
         }
 
-        private static IEnumerable<IStateHandler> GetStateHandlers(JobStorage storage, string stateName)
+        private static StateHandlersCollection GetStateHandlers(JobStorage storage, string stateName)
         {
-            foreach (var globalHandler in GlobalStateHandlers.Handlers)
-            {
-                if (globalHandler.StateName.Equals(stateName, StringComparison.OrdinalIgnoreCase))
-                {
-                    yield return globalHandler;
-                }
-            }
+            return new StateHandlersCollection(GlobalStateHandlers.Handlers, storage.GetStateHandlers(), stateName);
+        }
 
-            foreach (var storageHandler in storage.GetStateHandlers())
+        internal readonly struct StateHandlersCollection(
+            IEnumerable<IStateHandler> globalHandlers,
+            IEnumerable<IStateHandler> storageHandlers,
+            string stateName)
+        {
+            public Enumerator GetEnumerator() => new Enumerator(globalHandlers, storageHandlers, stateName);
+
+            public struct Enumerator
             {
-                if (storageHandler.StateName.Equals(stateName, StringComparison.OrdinalIgnoreCase))
+                private readonly IEnumerator<IStateHandler> _globalEnumerator;
+                private readonly IEnumerator<IStateHandler> _storageEnumerator;
+                private readonly string _stateName;
+                private IStateHandler _current;
+
+                public Enumerator(IEnumerable<IStateHandler> globalHandlers, IEnumerable<IStateHandler> storageHandlers, string stateName)
                 {
-                    yield return storageHandler;
+                    _globalEnumerator = globalHandlers.GetEnumerator();
+                    _storageEnumerator = storageHandlers.GetEnumerator();
+                    _stateName = stateName;
+                    _current = default;
                 }
+
+                public bool MoveNext()
+                {
+                    while (_globalEnumerator.MoveNext())
+                    {
+                        var current = _globalEnumerator.Current!;
+                        if (current.StateName.Equals(_stateName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            _current = current;
+                            return true;
+                        }
+                    }
+
+                    while (_storageEnumerator.MoveNext())
+                    {
+                        var current = _storageEnumerator.Current!;
+                        if (current.StateName.Equals(_stateName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            _current = current;
+                            return true;
+                        }
+                    }
+
+                    _current = default;
+                    return false;
+                }
+
+                public IStateHandler Current => _current;
             }
         }
     }

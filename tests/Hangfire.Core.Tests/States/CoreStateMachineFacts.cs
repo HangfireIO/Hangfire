@@ -16,13 +16,16 @@ namespace Hangfire.Core.Tests.States
         private const string JobId = "job";
 
         private readonly Dictionary<string, List<IStateHandler>> _handlers = new Dictionary<string, List<IStateHandler>>();
-        private readonly Func<JobStorage, string, IEnumerable<IStateHandler>> _stateHandlersThunk;
+        private readonly Func<JobStorage, string, CoreStateMachine.StateHandlersCollection> _stateHandlersThunk;
         
         private readonly ApplyStateContextMock _applyContext;
 
         public CoreStateMachineFacts()
         {
-            _stateHandlersThunk = (storage, stateName) => _handlers.TryGetValue(stateName, out var handlers) ? handlers : Enumerable.Empty<IStateHandler>();
+            _stateHandlersThunk = (storage, stateName) => new CoreStateMachine.StateHandlersCollection(
+                _handlers.TryGetValue(stateName, out var handlers) ? handlers.ToArray() : Enumerable.Empty<IStateHandler>(),
+                Enumerable.Empty<IStateHandler>(),
+                stateName);
             
             var backgroundJob = new BackgroundJobMock { Id = JobId };
             _applyContext = new ApplyStateContextMock
