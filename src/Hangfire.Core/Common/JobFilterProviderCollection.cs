@@ -46,9 +46,9 @@ namespace Hangfire.Common
         {
             var combinedFilters = new List<JobFilter>();
 
-            foreach (var provider in Items)
+            for (var i = 0; i < Items.Count; i++)
             {
-                combinedFilters.AddRange(provider.GetFilters(job));
+                combinedFilters.AddRange(Items[i].GetFilters(job));
             }
 
             if (combinedFilters.Count > 1)
