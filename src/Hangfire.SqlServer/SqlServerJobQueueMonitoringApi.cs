@@ -124,7 +124,7 @@ from (
 
             return _storage.UseConnection(null, connection =>
             {
-                var result = connection.Query(sqlQuery, new { queue = queue }).Single();
+                var result = connection.QuerySingle(sqlQuery, new { queue = queue });
 
                 return new EnqueuedAndFetchedCountDto
                 {

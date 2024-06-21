@@ -170,12 +170,11 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
                 parameters.Add("@timeoutSs", (int)_options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds);
 
                 var fetchedJob = connection
-                    .Query<FetchedJob>(
+                    .QuerySingleOrDefault<FetchedJob>(
                         GetNonBlockingFetchSql(),
                         parameters,
-                        commandTimeout: _storage.CommandTimeout)
-                    .SingleOrDefault();
-                                
+                        commandTimeout: _storage.CommandTimeout);
+
                 return fetchedJob != null 
                     ? new SqlServerTimeoutJob(_storage, fetchedJob.Id, fetchedJob.JobId.ToString(CultureInfo.InvariantCulture), fetchedJob.Queue, fetchedJob.FetchedAt.Value)
                     : null;
@@ -220,13 +219,13 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
                 {
                     transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
 
-                    fetchedJob = connection.Query<FetchedJob>(
+                    fetchedJob = connection.QuerySingleOrDefault<FetchedJob>(
                         fetchJobSqlTemplate,
 #pragma warning disable 618
                     new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds },
 #pragma warning restore 618
                     transaction,
-                        commandTimeout: _storage.CommandTimeout).SingleOrDefault();
+                        commandTimeout: _storage.CommandTimeout);
 
                     if (fetchedJob != null)
                     {

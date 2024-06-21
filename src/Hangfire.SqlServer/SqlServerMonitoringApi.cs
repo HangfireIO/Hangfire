@@ -361,7 +361,7 @@ select * from [{_storage.SchemaName}].State with (nolock, forceseek) where JobId
 
                 using (var multi = connection.QueryMultiple(sql, new { id = jobId }, commandTimeout: _storage.CommandTimeout))
                 {
-                    var job = multi.Read<SqlJob>().SingleOrDefault();
+                    var job = multi.ReadSingleOrDefault<SqlJob>();
                     if (job == null) return null;
 
                     var parameters = multi.Read<JobParameter>()

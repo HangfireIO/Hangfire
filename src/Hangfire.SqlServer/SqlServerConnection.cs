@@ -227,7 +227,7 @@ select Name, Value from [{_storage.SchemaName}].JobParameter with (forceseek) wh
             {
                 using (var multi = connection.QueryMultiple(sql, new { id = parsedId }, commandTimeout: _storage.CommandTimeout))
                 {
-                    var jobData = multi.Read().SingleOrDefault();
+                    var jobData = multi.ReadSingleOrDefault();
                     if (jobData == null) return null;
 
                     var parameters = multi.Read<JobParameter>()
@@ -285,7 +285,7 @@ where j.Id = @jobId";
 
             return _storage.UseConnection(_dedicatedConnection, connection =>
             {
-                var sqlState = connection.Query<SqlState>(sql, new { jobId = parsedId }, commandTimeout: _storage.CommandTimeout).SingleOrDefault();
+                var sqlState = connection.QuerySingleOrDefault<SqlState>(sql, new { jobId = parsedId }, commandTimeout: _storage.CommandTimeout);
                 if (sqlState == null)
                 {
                     return null;
