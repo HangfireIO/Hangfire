@@ -47,7 +47,7 @@ namespace Hangfire.SqlServer
             Type sqlCommandSetType;
             try
             {
-                sqlCommandSetType = SqlCommandSetType.GetOrAdd(connection.GetType().GetTypeInfo().Assembly, sqlClientAssembly =>
+                sqlCommandSetType = SqlCommandSetType.GetOrAdd(connection.GetType().GetTypeInfo().Assembly, static sqlClientAssembly =>
                 {
                     var assemblyName = sqlClientAssembly.GetName();
                     var version = assemblyName.Version;
