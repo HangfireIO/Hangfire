@@ -29,9 +29,8 @@ namespace Hangfire.Server
     public class PerformContext
     {
         public PerformContext([NotNull] PerformContext context)
-            : this(context.Storage, context.Connection, context.BackgroundJob, context.CancellationToken, context.Profiler, context.ServerId)
+            : this(context.Storage, context.Connection, context.BackgroundJob, context.CancellationToken, context.Profiler, context.ServerId, context.Items)
         {
-            Items = context.Items;
             Performer = context.Performer;
         }
 
@@ -49,7 +48,7 @@ namespace Hangfire.Server
             [NotNull] IStorageConnection connection, 
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IJobCancellationToken cancellationToken)
-            : this(storage, connection, backgroundJob, cancellationToken, EmptyProfiler.Instance, null)
+            : this(storage, connection, backgroundJob, cancellationToken, EmptyProfiler.Instance, null, null)
         {
         }
 
@@ -59,7 +58,8 @@ namespace Hangfire.Server
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IJobCancellationToken cancellationToken,
             [NotNull] IProfiler profiler,
-            [CanBeNull] string serverId)
+            [CanBeNull] string serverId,
+            [CanBeNull] IDictionary<string, object> items)
         {
             Storage = storage;
             Connection = connection ?? throw new ArgumentNullException(nameof(connection));
@@ -68,7 +68,7 @@ namespace Hangfire.Server
             Profiler = profiler ?? throw new ArgumentNullException(nameof(profiler));
             ServerId = serverId;
 
-            Items = new Dictionary<string, object>();
+            Items = items ?? new Dictionary<string, object>();
         }
 
         [CanBeNull]

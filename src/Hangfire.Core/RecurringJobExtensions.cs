@@ -114,7 +114,7 @@ namespace Hangfire
 
             var job = InvocationData.DeserializePayload(recurringJob.Job).DeserializeJob();
 
-            var context = new CreateContext(storage, connection, job, null, null, profiler);
+            var context = new CreateContext(storage, connection, job, null, null, profiler, null);
             context.Parameters["RecurringJobId"] = recurringJob.RecurringJobId;
             context.Parameters["Time"] = JobHelper.ToTimestamp(now);
 
