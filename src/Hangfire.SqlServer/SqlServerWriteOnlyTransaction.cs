@@ -66,13 +66,13 @@ namespace Hangfire.SqlServer
         {
             try
             {
-                _storage.UseTransaction(_connection.DedicatedConnection, (connection, transaction) =>
+                _storage.UseTransaction(_connection.DedicatedConnection, static (storage, connection, transaction, ctx) =>
                 {
-                    using (var commandBatch = new SqlCommandBatch(connection, transaction, preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
+                    using (var commandBatch = new SqlCommandBatch(connection, transaction, preferBatching: storage.CommandBatchMaxTimeout.HasValue))
                     {
                         commandBatch.Append("set xact_abort on;set nocount on;");
 
-                        foreach (var lockedResource in _lockedResources)
+                        foreach (var lockedResource in ctx._lockedResources)
                         {
                             commandBatch.Append(
                                 "exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'",
@@ -82,28 +82,28 @@ namespace Hangfire.SqlServer
                                 });
                         }
 
-                        AppendBatch(_jobCommands, commandBatch);
-                        AppendBatch(_counterCommands, commandBatch);
-                        AppendBatch(_hashCommands, commandBatch);
-                        AppendBatch(_listCommands, commandBatch);
-                        AppendBatch(_setCommands, commandBatch);
-                        AppendBatch(_queueCommands, commandBatch);
+                        AppendBatch(ctx._jobCommands, commandBatch);
+                        AppendBatch(ctx._counterCommands, commandBatch);
+                        AppendBatch(ctx._hashCommands, commandBatch);
+                        AppendBatch(ctx._listCommands, commandBatch);
+                        AppendBatch(ctx._setCommands, commandBatch);
+                        AppendBatch(ctx._queueCommands, commandBatch);
 
-                        foreach (var command in _lockCommands)
+                        foreach (var command in ctx._lockCommands)
                         {
                             commandBatch.Append(command.Item1);
                         }
 
-                        commandBatch.CommandTimeout = _storage.CommandTimeout;
-                        commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
+                        commandBatch.CommandTimeout = storage.CommandTimeout;
+                        commandBatch.CommandBatchMaxTimeout = storage.CommandBatchMaxTimeout;
 
                         commandBatch.ExecuteNonQuery();
-                        foreach (var acquiredLock in _acquiredLocks)
+                        foreach (var acquiredLock in ctx._acquiredLocks)
                         {
                             acquiredLock.TryReportReleased();
                         }
 
-                        foreach (var lockCommand in _lockCommands)
+                        foreach (var lockCommand in ctx._lockCommands)
                         {
                             var releaseResult = (int?) lockCommand.Item2.Value;
                             if (releaseResult.HasValue && releaseResult.Value < 0)
@@ -112,12 +112,12 @@ namespace Hangfire.SqlServer
                             }
                         }
                         
-                        foreach (var queueCommand in _queueCommandQueue)
+                        foreach (var queueCommand in ctx._queueCommandQueue)
                         {
                             queueCommand(connection, transaction);
                         }
                     }
-                });
+                }, this);
 
                 _committed = true;
             }

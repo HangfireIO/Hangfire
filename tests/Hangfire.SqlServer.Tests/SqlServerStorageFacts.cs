@@ -98,7 +98,7 @@ namespace Hangfire.SqlServer.Tests
         public void UseConnection_UsesSystemDataSqlClient_ByDefault_OnNet452Only()
         {
             var storage = CreateStorage();
-            storage.UseConnection(null, connection =>
+            storage.UseConnection(null, (_, connection) =>
             {
                 Assert.IsType<System.Data.SqlClient.SqlConnection>(connection);
             });
@@ -108,7 +108,7 @@ namespace Hangfire.SqlServer.Tests
         public void UseConnection_UsesMicrosoftDataSqlClient_ByDefault()
         {
             var storage = CreateStorage();
-            storage.UseConnection(null, connection =>
+            storage.UseConnection(null, (_, connection) =>
             {
                 Assert.IsType<Microsoft.Data.SqlClient.SqlConnection>(connection);
             });
@@ -121,7 +121,7 @@ namespace Hangfire.SqlServer.Tests
         {
             _options.SqlClientFactory = System.Data.SqlClient.SqlClientFactory.Instance;
             var storage = CreateStorage();
-            storage.UseConnection(null, connection =>
+            storage.UseConnection(null, (_, connection) =>
             {
                 Assert.IsType<System.Data.SqlClient.SqlConnection>(connection);
             });

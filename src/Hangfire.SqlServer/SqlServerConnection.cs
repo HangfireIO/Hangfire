@@ -174,28 +174,29 @@ commit tran;";
                     queryParameters.Add("@value4", parametersArray[3].Value, DbType.String, size: -1);
                 }
 
-                return _storage.UseConnection(_dedicatedConnection, connection => connection
-                    .ExecuteScalar<long>(queryString, queryParameters, commandTimeout: _storage.CommandTimeout)
-                    .ToString(CultureInfo.InvariantCulture));
+                return _storage.UseConnection(_dedicatedConnection, static (storage, connection, ctx) => connection
+                    .ExecuteScalar<long>(ctx.Key, ctx.Value, commandTimeout: storage.CommandTimeout)
+                    .ToString(CultureInfo.InvariantCulture),
+                    new KeyValuePair<string, DynamicParameters>(queryString, queryParameters));
             }
 
-            return _storage.UseTransaction(_dedicatedConnection, (connection, transaction) =>
+            return _storage.UseTransaction(_dedicatedConnection, static (storage, connection, transaction, triple) =>
             {
                 var jobId = connection.ExecuteScalar<long>(
-                    queryString,
-                    queryParameters,
+                    triple.Item1,
+                    triple.Item2,
                     transaction,
-                    commandTimeout: _storage.CommandTimeout).ToString(CultureInfo.InvariantCulture);
+                    commandTimeout: storage.CommandTimeout).ToString(CultureInfo.InvariantCulture);
 
                 var insertParameterSql =
-$@"insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value)";
+$@"insert into [{storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value)";
 
-                using (var commandBatch = new SqlCommandBatch(connection, transaction, preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
+                using (var commandBatch = new SqlCommandBatch(connection, transaction, preferBatching: storage.CommandBatchMaxTimeout.HasValue))
                 {
-                    commandBatch.CommandTimeout = _storage.CommandTimeout;
-                    commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
+                    commandBatch.CommandTimeout = storage.CommandTimeout;
+                    commandBatch.CommandBatchMaxTimeout = storage.CommandBatchMaxTimeout;
 
-                    foreach (var parameter in parametersArray)
+                    foreach (var parameter in triple.Item3)
                     {
                         commandBatch.Append(insertParameterSql,
                             new SqlCommandBatchParameter("@jobId", DbType.Int64) { Value = long.Parse(jobId, CultureInfo.InvariantCulture) },
@@ -207,7 +208,7 @@ $@"insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values 
                 }
 
                 return jobId;
-            }, null);
+            }, CreateTriple(queryString, queryParameters, parametersArray), null);
         }
 
         public override JobData GetJobData(string id)
@@ -219,13 +220,13 @@ $@"insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values 
                 return null;
             }
 
-            string sql =
-$@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.SchemaName}].Job with (readcommittedlock, forceseek) where Id = @id
-select Name, Value from [{_storage.SchemaName}].JobParameter with (forceseek) where JobId = @id";
-
-            return _storage.UseConnection(_dedicatedConnection, connection =>
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, parsedId) =>
             {
-                using (var multi = connection.QueryMultiple(sql, new { id = parsedId }, commandTimeout: _storage.CommandTimeout))
+                var sql =
+$@"select InvocationData, StateName, Arguments, CreatedAt from [{storage.SchemaName}].Job with (readcommittedlock, forceseek) where Id = @id
+select Name, Value from [{storage.SchemaName}].JobParameter with (forceseek) where JobId = @id";
+
+                using (var multi = connection.QueryMultiple(sql, new { id = parsedId }, commandTimeout: storage.CommandTimeout))
                 {
                     var jobData = multi.ReadSingleOrDefault();
                     if (jobData == null) return null;
@@ -265,7 +266,7 @@ select Name, Value from [{_storage.SchemaName}].JobParameter with (forceseek) wh
                         ParametersSnapshot = parameters
                     };
                 }
-            });
+            }, parsedId);
         }
 
         public override StateData GetStateData(string jobId)
@@ -277,15 +278,15 @@ select Name, Value from [{_storage.SchemaName}].JobParameter with (forceseek) wh
                 return null;
             }
 
-            string sql = 
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, parsedId) =>
+            {
+                var sql = 
 $@"select s.Name, s.Reason, s.Data
-from [{_storage.SchemaName}].State s with (readcommittedlock, forceseek)
-inner join [{_storage.SchemaName}].Job j with (readcommittedlock, forceseek) on j.StateId = s.Id and j.Id = s.JobId
+from [{storage.SchemaName}].State s with (readcommittedlock, forceseek)
+inner join [{storage.SchemaName}].Job j with (readcommittedlock, forceseek) on j.StateId = s.Id and j.Id = s.JobId
 where j.Id = @jobId";
 
-            return _storage.UseConnection(_dedicatedConnection, connection =>
-            {
-                var sqlState = connection.QuerySingleOrDefault<SqlState>(sql, new { jobId = parsedId }, commandTimeout: _storage.CommandTimeout);
+                var sqlState = connection.QuerySingleOrDefault<SqlState>(sql, new { jobId = parsedId }, commandTimeout: storage.CommandTimeout);
                 if (sqlState == null)
                 {
                     return null;
@@ -301,7 +302,7 @@ where j.Id = @jobId";
                     Reason = sqlState.Reason,
                     Data = data
                 };
-            });
+            }, parsedId);
         }
 
         public override void SetJobParameter(string id, string name, string value)
@@ -317,26 +318,26 @@ where j.Id = @jobId";
             // https://github.com/HangfireIO/Hangfire/issues/1741 (duplicate entries)
             // https://github.com/HangfireIO/Hangfire/issues/1693#issuecomment-697976133 (records aren't updated)
 
-            var query = $@"
+            _storage.UseConnection(_dedicatedConnection, static (storage, connection, triple) =>
+            {
+                var query = $@"
 set xact_abort off;
 begin try
-  update [{_storage.SchemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
-  if @@ROWCOUNT = 0 insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value);
+  update [{storage.SchemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
+  if @@ROWCOUNT = 0 insert into [{storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value);
 end try
 begin catch
   declare @em nvarchar(4000), @es int, @est int;
   select @em=error_message(),@es=error_severity(),@est=error_state();
   IF ERROR_NUMBER() not in (2601, 2627) raiserror(@em, @es, @est);
-  update [{_storage.SchemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
+  update [{storage.SchemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
 end catch";
 
-            _storage.UseConnection(_dedicatedConnection, connection =>
-            {
-                connection.Execute(
+                return connection.Execute(
                     query,
-                    new { jobId = long.Parse(id, CultureInfo.InvariantCulture), name, value },
-                    commandTimeout: _storage.CommandTimeout);
-            });
+                    new { jobId = triple.Item1, name = triple.Item2, value = triple.Item3 },
+                    commandTimeout: storage.CommandTimeout);
+            }, CreateTriple(long.Parse(id, CultureInfo.InvariantCulture), name, value));
         }
 
         public override string GetJobParameter(string id, string name)
@@ -349,25 +350,26 @@ end catch";
                 return null;
             }
 
-            return _storage.UseConnection(_dedicatedConnection, connection => connection.ExecuteScalar<string>(
-                $@"select top (1) Value from [{_storage.SchemaName}].JobParameter with (forceseek) where JobId = @id and Name = @name",
-                new { id = parsedId, name = name },
-                commandTimeout: _storage.CommandTimeout));
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) => connection.ExecuteScalar<string>(
+                $@"select top (1) Value from [{storage.SchemaName}].JobParameter with (forceseek) where JobId = @id and Name = @name",
+                new { id = pair.Key, name = pair.Value },
+                commandTimeout: storage.CommandTimeout),
+                new KeyValuePair<long, string>(parsedId, name));
         }
 
         public override HashSet<string> GetAllItemsFromSet(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            return _storage.UseConnection(_dedicatedConnection, connection =>
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) =>
             {
                 var result = connection.Query<string>(
-                    $@"select Value from [{_storage.SchemaName}].[Set] with (forceseek) where [Key] = @key",
+                    $@"select Value from [{storage.SchemaName}].[Set] with (forceseek) where [Key] = @key",
                     new { key },
-                    commandTimeout: _storage.CommandTimeout);
+                    commandTimeout: storage.CommandTimeout);
 
                 return new HashSet<string>(result);
-            });
+            }, key);
         }
 
         public override string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
@@ -381,15 +383,15 @@ end catch";
             if (count <= 0) throw new ArgumentException("The value must be a positive number", nameof(count));
             if (toScore < fromScore) throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.", nameof(toScore));
 
-            return _storage.UseConnection(_dedicatedConnection, connection =>
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) =>
             {
                 var result = connection.Query<string>(
-                    $@"select top (@count) Value from [{_storage.SchemaName}].[Set] with (forceseek) where [Key] = @key and Score between @from and @to order by Score",
-                    new { count = count, key, from = fromScore, to = toScore },
-                    commandTimeout: _storage.CommandTimeout);
+                    $@"select top (@count) Value from [{storage.SchemaName}].[Set] with (forceseek) where [Key] = @key and Score between @from and @to order by Score",
+                    new { count = pair.Value.Item3, pair.Key, from = pair.Value.Item1, to = pair.Value.Item2 },
+                    commandTimeout: storage.CommandTimeout);
 
                 return result.ToList();
-            });
+            }, new KeyValuePair<string, ValueTriple<double, double, int>>(key, CreateTriple(fromScore, toScore, count)));
         }
 
         public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
@@ -397,69 +399,69 @@ end catch";
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
 
-            var sql = $@"
+            _storage.UseTransaction(_dedicatedConnection, static (storage, connection, transaction, pair) =>
+            {
+                var sql = $@"
 set xact_abort off;
 begin try
-  insert into [{_storage.SchemaName}].Hash ([Key], Field, Value) values (@key, @field, @value);
-  if @@ROWCOUNT = 0 update [{_storage.SchemaName}].Hash set Value = @value where [Key] = @key and Field = @field;
+  insert into [{storage.SchemaName}].Hash ([Key], Field, Value) values (@key, @field, @value);
+  if @@ROWCOUNT = 0 update [{storage.SchemaName}].Hash set Value = @value where [Key] = @key and Field = @field;
 end try
 begin catch
   declare @em nvarchar(4000), @es int, @est int;
   select @em=error_message(),@es=error_severity(),@est=error_state();
   IF ERROR_NUMBER() not in (2601, 2627) raiserror(@em, @es, @est);
-  update [{_storage.SchemaName}].Hash set Value = @value where [Key] = @key and Field = @field;
+  update [{storage.SchemaName}].Hash set Value = @value where [Key] = @key and Field = @field;
 end catch";
 
-            var lockResourceKey = $"{_storage.SchemaName}:Hash:Lock";
+                var lockResourceKey = $"{storage.SchemaName}:Hash:Lock";
 
-            _storage.UseTransaction(_dedicatedConnection, (connection, transaction) =>
-            {
-                using (var commandBatch = new SqlCommandBatch(connection, transaction, preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
+                using (var commandBatch = new SqlCommandBatch(connection, transaction, preferBatching: storage.CommandBatchMaxTimeout.HasValue))
                 {
-                    if (!_storage.Options.DisableGlobalLocks)
+                    if (!storage.Options.DisableGlobalLocks)
                     {
                         commandBatch.Append(
                             "SET XACT_ABORT ON;exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive', @LockOwner=N'Transaction', @LockTimeout=-1;",
                             new SqlCommandBatchParameter("@resource", DbType.String, 255) { Value = lockResourceKey });
                     }
 
-                    foreach (var keyValuePair in keyValuePairs)
+                    foreach (var keyValuePair in pair.Value)
                     {
                         commandBatch.Append(sql,
-                            new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
+                            new SqlCommandBatchParameter("@key", DbType.String) { Value = pair.Key },
                             new SqlCommandBatchParameter("@field", DbType.String, 100) { Value = keyValuePair.Key },
                             new SqlCommandBatchParameter("@value", DbType.String, -1) { Value = (object) keyValuePair.Value ?? DBNull.Value });
                     }
 
-                    if (!_storage.Options.DisableGlobalLocks)
+                    if (!storage.Options.DisableGlobalLocks)
                     {
                         commandBatch.Append(
                             "exec sp_releaseapplock @Resource=@resource, @LockOwner=N'Transaction';",
                             new SqlCommandBatchParameter("@resource", DbType.String, 255) { Value = lockResourceKey });
                     }
 
-                    commandBatch.CommandTimeout = _storage.CommandTimeout;
-                    commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
+                    commandBatch.CommandTimeout = storage.CommandTimeout;
+                    commandBatch.CommandBatchMaxTimeout = storage.CommandBatchMaxTimeout;
 
                     commandBatch.ExecuteNonQuery();
                 }
-            });
+            }, new KeyValuePair<string, IEnumerable<KeyValuePair<string, string>>>(key, keyValuePairs));
         }
 
         public override Dictionary<string, string> GetAllEntriesFromHash(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            return _storage.UseConnection(_dedicatedConnection, connection =>
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) =>
             {
                 var result = connection.Query<SqlHash>(
-                    $"select Field, Value from [{_storage.SchemaName}].Hash with (forceseek) where [Key] = @key",
+                    $"select Field, Value from [{storage.SchemaName}].Hash with (forceseek) where [Key] = @key",
                     new { key },
-                    commandTimeout: _storage.CommandTimeout)
+                    commandTimeout: storage.CommandTimeout)
                     .ToDictionary(static x => x.Field, static x => x.Value);
 
                 return result.Count != 0 ? result : null;
-            });
+            }, key);
         }
 
         public override void AnnounceServer(string serverId, ServerContext context)
@@ -474,48 +476,50 @@ end catch";
                 StartedAt = DateTime.UtcNow,
             };
 
-            _storage.UseConnection(_dedicatedConnection, connection =>
+            _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) =>
             {
-                connection.Execute(
-$@";merge [{_storage.SchemaName}].Server with (holdlock) as Target
+                return connection.Execute(
+$@";merge [{storage.SchemaName}].Server with (holdlock) as Target
 using (VALUES (@id, @data, sysutcdatetime())) as Source (Id, Data, Heartbeat)
 on Target.Id = Source.Id
 when matched then update set Data = Source.Data, LastHeartbeat = Source.Heartbeat
 when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat);",
-                    new { id = serverId, data = SerializationHelper.Serialize(data) },
-                    commandTimeout: _storage.CommandTimeout);
-            });
+                    new { id = pair.Key, data = pair.Value },
+                    commandTimeout: storage.CommandTimeout);
+            }, new KeyValuePair<string, string>(serverId, SerializationHelper.Serialize(data)));
         }
 
         public override void RemoveServer(string serverId)
         {
             if (serverId == null) throw new ArgumentNullException(nameof(serverId));
 
-            _storage.UseConnection(_dedicatedConnection, connection =>
+            _storage.UseConnection(_dedicatedConnection, static (storage, connection, serverId) =>
             {
-                connection.Execute(
-                    $@"delete S from [{_storage.SchemaName}].Server S with (forceseek) where Id = @id",
+                return connection.Execute(
+                    $@"delete S from [{storage.SchemaName}].Server S with (forceseek) where Id = @id",
                     new { id = serverId },
-                    commandTimeout: _storage.CommandTimeout);
-            });
+                    commandTimeout: storage.CommandTimeout);
+            }, serverId);
         }
 
         public override void Heartbeat(string serverId)
         {
             if (serverId == null) throw new ArgumentNullException(nameof(serverId));
 
-            _storage.UseConnection(_dedicatedConnection, connection =>
+            _storage.UseConnection(_dedicatedConnection, static (storage, connection, serverId) =>
             {
                 var affected = connection.Execute(
-                    $@"update [{_storage.SchemaName}].Server set LastHeartbeat = sysutcdatetime() where Id = @id",
+                    $@"update [{storage.SchemaName}].Server set LastHeartbeat = sysutcdatetime() where Id = @id",
                     new { id = serverId },
-                    commandTimeout: _storage.CommandTimeout);
+                    commandTimeout: storage.CommandTimeout);
 
                 if (affected == 0)
                 {
                     throw new BackgroundServerGoneException();
                 }
-            });
+
+                return affected;
+            }, serverId);
         }
 
         public override int RemoveTimedOutServers(TimeSpan timeOut)
@@ -525,20 +529,20 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
                 throw new ArgumentException("The `timeOut` value must be positive.", nameof(timeOut));
             }
 
-            return _storage.UseConnection(_dedicatedConnection, connection => connection.Execute(
-                $@"delete s from [{_storage.SchemaName}].Server s with (readpast, readcommitted) where LastHeartbeat < dateadd(ms, @timeoutMsNeg, sysutcdatetime())",
-                new { timeoutMsNeg = timeOut.Negate().TotalMilliseconds },
-                commandTimeout: _storage.CommandTimeout));
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, timeout) => connection.Execute(
+                $@"delete s from [{storage.SchemaName}].Server s with (readpast, readcommitted) where LastHeartbeat < dateadd(ms, @timeoutMsNeg, sysutcdatetime())",
+                new { timeoutMsNeg = timeout.Negate().TotalMilliseconds },
+                commandTimeout: storage.CommandTimeout), timeOut);
         }
 
         public override long GetSetCount(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            return _storage.UseConnection(_dedicatedConnection, connection => connection.ExecuteScalar<long>(
-                $"select count(*) from [{_storage.SchemaName}].[Set] with (forceseek) where [Key] = @key",
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) => connection.ExecuteScalar<long>(
+                $"select count(*) from [{storage.SchemaName}].[Set] with (forceseek) where [Key] = @key",
                 new { key = key },
-                commandTimeout: _storage.CommandTimeout));
+                commandTimeout: storage.CommandTimeout), key);
         }
 
         public override long GetSetCount(IEnumerable<string> keys, int limit)
@@ -546,12 +550,13 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
             if (keys == null) throw new ArgumentNullException(nameof(keys));
             if (limit < 0) throw new ArgumentOutOfRangeException(nameof(limit), "Value must be greater or equal to 0.");
 
-            return _storage.UseConnection(_dedicatedConnection, connection => connection.ExecuteScalar<long>(
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) => connection.ExecuteScalar<long>(
 $@"select count(*) from (
-  select top(@limit) 1 as N from [{_storage.SchemaName}].[Set] with (forceseek) where [Key] in @keys
+  select top(@limit) 1 as N from [{storage.SchemaName}].[Set] with (forceseek) where [Key] in @keys
 ) a",
-                new { keys = keys, limit = limit },
-                commandTimeout: _storage.CommandTimeout));
+                new { keys = pair.Key, limit = pair.Value },
+                commandTimeout: storage.CommandTimeout),
+                new KeyValuePair<IEnumerable<string>, int>(keys, limit));
         }
 
         public override bool GetSetContains(string key, string value)
@@ -559,81 +564,91 @@ $@"select count(*) from (
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (value == null) throw new ArgumentNullException(nameof(value));
 
-            return _storage.UseConnection(_dedicatedConnection, connection => connection.ExecuteScalar<int>(
-                $"select count(1) from [{_storage.SchemaName}].[Set] with (forceseek) where [Key] = @key and [Value] = @value",
-                new { key = key, value = value },
-                commandTimeout: _storage.CommandTimeout) == 1); 
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) => connection.ExecuteScalar<int>(
+                $"select count(1) from [{storage.SchemaName}].[Set] with (forceseek) where [Key] = @key and [Value] = @value",
+                new { key = pair.Key, value = pair.Value },
+                commandTimeout: storage.CommandTimeout) == 1, new KeyValuePair<string, string>(key, value)); 
         }
 
         public override List<string> GetRangeFromSet(string key, int startingFrom, int endingAt)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query =
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, triple) =>
+            {
+                var query =
 $@"select [Value] from (
 	select [Value], row_number() over (order by [Score] ASC) as row_num
-	from [{_storage.SchemaName}].[Set] with (forceseek)
+	from [{storage.SchemaName}].[Set] with (forceseek)
 	where [Key] = @key 
 ) as s where s.row_num between @startingFrom and @endingAt";
 
-            return _storage.UseConnection(_dedicatedConnection, connection => connection
-                .Query<string>(query, new { key = key, startingFrom = startingFrom + 1, endingAt = endingAt + 1 }, commandTimeout: _storage.CommandTimeout)
-                .ToList());
+                return connection
+                    .Query<string>(query, new { key = triple.Item1, startingFrom = triple.Item2 + 1, endingAt = triple.Item3 + 1 },
+                        commandTimeout: storage.CommandTimeout)
+                    .ToList();
+            }, CreateTriple(key, startingFrom, endingAt));
         }
 
         public override TimeSpan GetSetTtl(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = $@"select min([ExpireAt]) from [{_storage.SchemaName}].[Set] with (forceseek) where [Key] = @key";
-
-            return _storage.UseConnection(_dedicatedConnection, connection =>
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) =>
             {
-                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: _storage.CommandTimeout);
+                var query = $@"select min([ExpireAt]) from [{storage.SchemaName}].[Set] with (forceseek) where [Key] = @key";
+
+                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: storage.CommandTimeout);
                 if (!result.HasValue) return TimeSpan.FromSeconds(-1);
 
                 return result.Value - DateTime.UtcNow;
-            });
+            }, key);
         }
 
         public override long GetCounter(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = 
-$@"select sum(s.[Value]) from (select sum([Value]) as [Value] from [{_storage.SchemaName}].Counter with (forceseek)
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) =>
+            {
+                var query = 
+$@"select sum(s.[Value]) from (select sum([Value]) as [Value] from [{storage.SchemaName}].Counter with (forceseek)
 where [Key] = @key
 union all
-select [Value] from [{_storage.SchemaName}].AggregatedCounter with (forceseek)
+select [Value] from [{storage.SchemaName}].AggregatedCounter with (forceseek)
 where [Key] = @key) as s";
 
-            return _storage.UseConnection(_dedicatedConnection, connection => 
-                connection.ExecuteScalar<long?>(query, new { key = key }, commandTimeout: _storage.CommandTimeout) ?? 0);
+                return connection.ExecuteScalar<long?>(query, new { key = key },
+                    commandTimeout: storage.CommandTimeout) ?? 0;
+            }, key);
         }
 
         public override long GetHashCount(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = $@"select count(*) from [{_storage.SchemaName}].Hash with (forceseek) where [Key] = @key";
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) =>
+            {
+                var query = $@"select count(*) from [{storage.SchemaName}].Hash with (forceseek) where [Key] = @key";
 
-            return _storage.UseConnection(_dedicatedConnection, connection => 
-                connection.ExecuteScalar<long>(query, new { key = key }, commandTimeout: _storage.CommandTimeout));
+                return connection.ExecuteScalar<long>(query, new { key = key },
+                    commandTimeout: storage.CommandTimeout);
+            }, key);
         }
 
         public override TimeSpan GetHashTtl(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = $@"select min([ExpireAt]) from [{_storage.SchemaName}].Hash with (forceseek) where [Key] = @key";
-
-            return _storage.UseConnection(_dedicatedConnection, connection =>
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) =>
             {
-                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: _storage.CommandTimeout);
+                var query = $@"select min([ExpireAt]) from [{storage.SchemaName}].Hash with (forceseek) where [Key] = @key";
+
+                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: storage.CommandTimeout);
                 if (!result.HasValue) return TimeSpan.FromSeconds(-1);
 
                 return result.Value - DateTime.UtcNow;
-            });
+            }, key);
         }
 
         public override string GetValueFromHash(string key, string name)
@@ -641,74 +656,89 @@ where [Key] = @key) as s";
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (name == null) throw new ArgumentNullException(nameof(name));
 
-            string query =
-$@"select [Value] from [{_storage.SchemaName}].Hash with (forceseek)
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) =>
+            {
+                var query =
+$@"select [Value] from [{storage.SchemaName}].Hash with (forceseek)
 where [Key] = @key and [Field] = @field";
 
-            return _storage.UseConnection(_dedicatedConnection, connection => connection
-                .ExecuteScalar<string>(query, new { key = key, field = name }, commandTimeout: _storage.CommandTimeout));
+                return connection.ExecuteScalar<string>(query, new { key = pair.Key, field = pair.Value },
+                    commandTimeout: storage.CommandTimeout);
+            }, new KeyValuePair<string, string>(key, name));
         }
 
         public override long GetListCount(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = 
-$@"select count(*) from [{_storage.SchemaName}].List with (forceseek)
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) =>
+            {
+                var query = 
+$@"select count(*) from [{storage.SchemaName}].List with (forceseek)
 where [Key] = @key";
 
-            return _storage.UseConnection(_dedicatedConnection, connection => 
-                connection.ExecuteScalar<long>(query, new { key = key }, commandTimeout: _storage.CommandTimeout));
+                return connection.ExecuteScalar<long>(query, new { key = key },
+                    commandTimeout: storage.CommandTimeout);
+            }, key);
         }
 
         public override TimeSpan GetListTtl(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = 
-$@"select min([ExpireAt]) from [{_storage.SchemaName}].List with (forceseek)
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) =>
+            {
+                var query = 
+$@"select min([ExpireAt]) from [{storage.SchemaName}].List with (forceseek)
 where [Key] = @key";
 
-            return _storage.UseConnection(_dedicatedConnection, connection =>
-            {
-                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: _storage.CommandTimeout);
+                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: storage.CommandTimeout);
                 if (!result.HasValue) return TimeSpan.FromSeconds(-1);
 
                 return result.Value - DateTime.UtcNow;
-            });
+            }, key);
         }
 
         public override List<string> GetRangeFromList(string key, int startingFrom, int endingAt)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query =
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, triple) =>
+            {
+                var query =
 $@"select [Value] from (
 	select [Value], row_number() over (order by [Id] desc) as row_num 
-	from [{_storage.SchemaName}].List with (forceseek)
+	from [{storage.SchemaName}].List with (forceseek)
 	where [Key] = @key 
 ) as s where s.row_num between @startingFrom and @endingAt";
 
-            return _storage.UseConnection(_dedicatedConnection, connection => connection
-                .Query<string>(query, new { key = key, startingFrom = startingFrom + 1, endingAt = endingAt + 1 }, commandTimeout: _storage.CommandTimeout)
-                .ToList());
+                return connection
+                    .Query<string>(query, new { key = triple.Item1, startingFrom = triple.Item2 + 1, endingAt = triple.Item3 + 1 },
+                        commandTimeout: storage.CommandTimeout)
+                    .ToList();
+            }, CreateTriple(key, startingFrom, endingAt));
         }
 
         public override List<string> GetAllItemsFromList(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query =
-$@"select [Value] from [{_storage.SchemaName}].List with (forceseek)
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) =>
+            {
+                var query =
+$@"select [Value] from [{storage.SchemaName}].List with (forceseek)
 where [Key] = @key
 order by [Id] desc";
 
-            return _storage.UseConnection(_dedicatedConnection, connection => connection.Query<string>(query, new { key = key }, commandTimeout: _storage.CommandTimeout).ToList());
+                return connection
+                    .Query<string>(query, new { key = key }, commandTimeout: storage.CommandTimeout)
+                    .ToList();
+            }, key);
         }
 
         public override DateTime GetUtcDateTime()
         {
-            return _storage.UseConnection(_dedicatedConnection, connection =>
+            return _storage.UseConnection(_dedicatedConnection, static (_, connection) =>
                 DateTime.SpecifyKind(connection.ExecuteScalar<DateTime>("SELECT SYSUTCDATETIME()"), DateTimeKind.Utc));
         }
 
@@ -816,6 +846,19 @@ order by [Id] desc";
             {
                 if (OwnLock) ReleasedExternally = true;
             }
+        }
+
+        private static ValueTriple<T1, T2, T3> CreateTriple<T1, T2, T3>(T1 item1, T2 item2, T3 item3)
+        {
+            return new ValueTriple<T1, T2, T3>(item1, item2, item3);
+        }
+
+        // .NET Framework 4.5 doesn't have ValueTuple class.
+        private readonly struct ValueTriple<T1, T2, T3>(T1 item1, T2 item2, T3 item3)
+        {
+            public T1 Item1 { get; } = item1;
+            public T2 Item2 { get; } = item2;
+            public T3 Item3 { get; } = item3;
         }
     }
 }

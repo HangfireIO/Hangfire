@@ -48,17 +48,14 @@ namespace Hangfire.SqlServer
         {
             _logger.Debug("Aggregating records in 'Counter' table...");
 
-            int removedCount = 0;
+            int removedCount;
 
             do
             {
-                _storage.UseConnection(null, connection =>
-                {
-                    removedCount = connection.Execute(
-                        GetAggregationQuery(_storage),
-                        new { now = DateTime.UtcNow, count = NumberOfRecordsInSinglePass },
-                        commandTimeout: 0);
-                });
+                removedCount = _storage.UseConnection(null, static (storage, connection) => connection.Execute(
+                    GetAggregationQuery(storage),
+                    new { now = DateTime.UtcNow, count = NumberOfRecordsInSinglePass },
+                    commandTimeout: 0));
 
                 if (removedCount >= NumberOfRecordsInSinglePass)
                 {

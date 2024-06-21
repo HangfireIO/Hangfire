@@ -76,13 +76,13 @@ namespace Hangfire.SqlServer
                 if (_transaction != null && _transaction.Committed) return;
                 if (!FetchedAt.HasValue) return;
 
-                _storage.UseConnection(null, connection =>
-                {
-                    connection.Execute(
-                        $"delete JQ from [{_storage.SchemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
-                        new { queue = Queue, id = Id, fetchedAt = FetchedAt },
-                        commandTimeout: _storage.CommandTimeout);
-                });
+                _storage.UseConnection(
+                    null,
+                    static (storage, connection, ctx) => connection.Execute(
+                        $"delete JQ from [{storage.SchemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
+                        new { queue = ctx.Queue, id = ctx.Id, fetchedAt = ctx.FetchedAt },
+                        commandTimeout: storage.CommandTimeout),
+                    this);
 
                 _removedFromQueue = true;
             }
@@ -96,13 +96,13 @@ namespace Hangfire.SqlServer
 
                 if (!FetchedAt.HasValue) return;
 
-                _storage.UseConnection(null, connection =>
-                {
-                    connection.Execute(
-                        $"update JQ set FetchedAt = null from [{_storage.SchemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
-                        new { queue = Queue, id = Id, fetchedAt = FetchedAt },
-                        commandTimeout: _storage.CommandTimeout);
-                });
+                _storage.UseConnection(
+                    null,
+                    static (storage, connection, ctx) => connection.Execute(
+                         $"update JQ set FetchedAt = null from [{storage.SchemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
+                         new { queue = ctx.Queue, id = ctx.Id, fetchedAt = ctx.FetchedAt },
+                         commandTimeout: storage.CommandTimeout),
+                    this);
 
                 FetchedAt = null;
                 _requeued = true;
@@ -153,13 +153,13 @@ namespace Hangfire.SqlServer
 
                     try
                     {
-                        _storage.UseConnection(null, connection =>
-                        {
-                            FetchedAt = connection.ExecuteScalar<DateTime?>(
-                                $"update JQ set FetchedAt = getutcdate() output INSERTED.FetchedAt from [{_storage.SchemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
-                                new { queue = Queue, id = Id, fetchedAt = FetchedAt },
-                                commandTimeout: _storage.CommandTimeout);
-                        });
+                        FetchedAt = _storage.UseConnection(
+                            null,
+                            static (storage, connection, ctx) => connection.ExecuteScalar<DateTime?>(
+                                $"update JQ set FetchedAt = getutcdate() output INSERTED.FetchedAt from [{storage.SchemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
+                                new { queue = ctx.Queue, id = ctx.Id, fetchedAt = ctx.FetchedAt },
+                                commandTimeout: storage.CommandTimeout),
+                            this);
 
                         if (!FetchedAt.HasValue)
                         {

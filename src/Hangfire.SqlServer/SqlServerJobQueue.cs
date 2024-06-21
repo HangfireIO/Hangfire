@@ -163,25 +163,25 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
 
         private SqlServerTimeoutJob FetchJob(string[] queues)
         {
-            return _storage.UseConnection(null, connection =>
+            return _storage.UseConnection(null, static (storage, connection, queues) =>
             {
                 var parameters = new DynamicParameters();
                 parameters.Add("@queues", queues);
-                parameters.Add("@timeoutSs", (int)_options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds);
+                parameters.Add("@timeoutSs", (int)storage.Options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds);
 
                 var fetchedJob = connection
                     .QuerySingleOrDefault<FetchedJob>(
-                        GetNonBlockingFetchSql(),
+                        GetNonBlockingFetchSql(storage),
                         parameters,
-                        commandTimeout: _storage.CommandTimeout);
+                        commandTimeout: storage.CommandTimeout);
 
                 return fetchedJob != null 
-                    ? new SqlServerTimeoutJob(_storage, fetchedJob.Id, fetchedJob.JobId.ToString(CultureInfo.InvariantCulture), fetchedJob.Queue, fetchedJob.FetchedAt.Value)
+                    ? new SqlServerTimeoutJob(storage, fetchedJob.Id, fetchedJob.JobId.ToString(CultureInfo.InvariantCulture), fetchedJob.Queue, fetchedJob.FetchedAt.Value)
                     : null;
-            });
+            }, queues);
         }
 
-        private string GetNonBlockingFetchSql()
+        private static string GetNonBlockingFetchSql(SqlServerStorage storage)
         {
             return $@"
 set nocount on;set xact_abort on;set tran isolation level read committed;
@@ -189,7 +189,7 @@ set nocount on;set xact_abort on;set tran isolation level read committed;
 update top (1) JQ
 set FetchedAt = GETUTCDATE()
 output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
-from [{_storage.SchemaName}].JobQueue JQ with (forceseek, readpast, updlock, rowlock)
+from [{storage.SchemaName}].JobQueue JQ with (forceseek, readpast, updlock, rowlock)
 where Queue in @queues and
 (FetchedAt is null or FetchedAt < DATEADD(second, @timeoutSs, GETUTCDATE()));";
         }

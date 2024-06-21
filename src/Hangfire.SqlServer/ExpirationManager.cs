@@ -128,28 +128,30 @@ namespace Hangfire.SqlServer
                         additionalActions,
                         cancellationToken);
                 } while (affected == numberOfRecordsInSinglePass);
+
+                return affected;
             });
 
             _logger.Trace($"Outdated records removed from the '{table}' table.");
         }
 
-        private void UseConnectionDistributedLock(SqlServerStorage storage, Action<DbConnection> action)
+        private T UseConnectionDistributedLock<T>(SqlServerStorage storage, Func<DbConnection, T> action)
         {
             try
             {
-                storage.UseConnection(null, connection =>
+                return storage.UseConnection(null, static (_, connection, ctx) =>
                 {
                     SqlServerDistributedLock.Acquire(connection, DistributedLockKey, DefaultLockTimeout);
 
                     try
                     {
-                        action(connection);
+                        return ctx(connection);
                     }
                     finally
                     {
                         SqlServerDistributedLock.Release(connection, DistributedLockKey);
                     }
-                });
+                }, action);
             }
             catch (DistributedLockTimeoutException e) when (e.Resource == DistributedLockKey)
             {
@@ -160,6 +162,7 @@ namespace Hangfire.SqlServer
                     () => $@"An exception was thrown during acquiring distributed lock on the {DistributedLockKey} resource within {DefaultLockTimeout.TotalSeconds} seconds. Outdated records were not removed.
 It will be retried in {_checkInterval.TotalSeconds} seconds.",
                     e);
+                return default;
             }
         }
 

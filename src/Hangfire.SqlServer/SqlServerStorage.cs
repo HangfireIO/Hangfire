@@ -238,23 +238,35 @@ namespace Hangfire.SqlServer
             }
         }
 
-        internal void UseConnection(DbConnection dedicatedConnection, [InstantHandle] Action<DbConnection> action)
+        internal void UseConnection(
+            DbConnection dedicatedConnection,
+            [InstantHandle] Action<SqlServerStorage, DbConnection> action)
         {
-            UseConnection(dedicatedConnection, connection =>
+            UseConnection(dedicatedConnection, static (storage, connection, ctx) =>
             {
-                action(connection);
+                ctx(storage, connection);
                 return true;
-            });
+            }, action);
         }
 
-        internal T UseConnection<T>(DbConnection dedicatedConnection, [InstantHandle] Func<DbConnection, T> func)
+        internal TResult UseConnection<TResult>(
+            DbConnection dedicatedConnection,
+            [InstantHandle] Func<SqlServerStorage, DbConnection, TResult> action)
+        {
+            return UseConnection(dedicatedConnection, static (storage, connection, ctx) => ctx(storage, connection), action);
+        }
+
+        internal TResult UseConnection<TContext, TResult>(
+            DbConnection dedicatedConnection,
+            [InstantHandle] Func<SqlServerStorage, DbConnection, TContext, TResult> func,
+            TContext context)
         {
             DbConnection connection = null;
 
             try
             {
                 connection = dedicatedConnection ?? CreateAndOpenConnection();
-                return func(connection);
+                return func(this, connection, context);
             }
             finally
             {
@@ -265,18 +277,22 @@ namespace Hangfire.SqlServer
             }
         }
 
-        internal void UseTransaction(DbConnection dedicatedConnection, [InstantHandle] Action<DbConnection, DbTransaction> action)
+        internal void UseTransaction<TContext>(
+            DbConnection dedicatedConnection,
+            [InstantHandle] Action<SqlServerStorage, DbConnection, DbTransaction, TContext> action,
+            TContext context)
         {
-            UseTransaction(dedicatedConnection, (connection, transaction) =>
+            UseTransaction(dedicatedConnection, static (storage, connection, transaction, ctx) =>
             {
-                action(connection, transaction);
+                ctx.Key(storage, connection, transaction, ctx.Value);
                 return true;
-            }, null);
+            }, new KeyValuePair<Action<SqlServerStorage, DbConnection, DbTransaction, TContext>, TContext>(action, context), null);
         }
         
-        internal T UseTransaction<T>(
+        internal TResult UseTransaction<TContext, TResult>(
             DbConnection dedicatedConnection,
-            [InstantHandle] Func<DbConnection, DbTransaction, T> func, 
+            [InstantHandle] Func<SqlServerStorage, DbConnection, DbTransaction, TContext, TResult> func,
+            TContext context,
             IsolationLevel? isolationLevel)
         {
             isolationLevel = isolationLevel ?? (_options.UseRecommendedIsolationLevel
@@ -290,11 +306,11 @@ namespace Hangfire.SqlServer
             {
                 using (var transaction = CreateTransaction(isolationLevel))
                 {
-                    var result = UseConnection(dedicatedConnection, connection =>
+                    var result = UseConnection(dedicatedConnection, static (storage, connection, ctx) =>
                     {
                         connection.EnlistTransaction(Transaction.Current);
-                        return func(connection, null);
-                    });
+                        return ctx.Key(storage, connection, null, ctx.Value);
+                    }, new KeyValuePair<Func<SqlServerStorage, DbConnection, DbTransaction, TContext, TResult>, TContext>(func, context));
 
                     transaction.Complete();
 
@@ -304,19 +320,19 @@ namespace Hangfire.SqlServer
             else
 #endif
             {
-                return UseConnection(dedicatedConnection, connection =>
+                return UseConnection(dedicatedConnection, static (storage, connection, ctx) =>
                 {
                     using (var transaction = connection.BeginTransaction(
 #if !FEATURE_TRANSACTIONSCOPE
-                        isolationLevel ??
+                        ctx.Value.Value ??
 #endif
                         System.Data.IsolationLevel.ReadCommitted))
                     {
-                        T result;
+                        TResult result;
 
                         try
                         {
-                            result = func(connection, transaction);
+                            result = ctx.Key(storage, connection, transaction, ctx.Value.Key);
                             transaction.Commit();
                         }
                         catch (Exception ex) when (ex.IsCatchableExceptionType())
@@ -346,7 +362,9 @@ namespace Hangfire.SqlServer
 
                         return result;
                     }
-                });
+                }, new KeyValuePair<Func<SqlServerStorage, DbConnection, DbTransaction, TContext, TResult>, KeyValuePair<TContext, IsolationLevel?>>(
+                    func,
+                    new KeyValuePair<TContext, IsolationLevel?>(context, isolationLevel)));
             }
         }
 
@@ -421,9 +439,10 @@ namespace Hangfire.SqlServer
                 {
                     try
                     {
-                        UseConnection(null, connection =>
+                        UseConnection(null, static (storage, connection) =>
                         {
-                            SqlServerObjectsInstaller.Install(connection, _options.SchemaName, _options.EnableHeavyMigrations);
+                            // TODO: Escape schema here???
+                            SqlServerObjectsInstaller.Install(connection, storage.Options.SchemaName, storage.Options.EnableHeavyMigrations);
                         });
 
                         lastException = null;
@@ -450,12 +469,8 @@ namespace Hangfire.SqlServer
             {
                 try
                 {
-                    int? schema = null;
-
-                    UseConnection(null, connection =>
-                    {
-                        schema = connection.ExecuteScalar<int>($"select top (1) [Version] from [{SchemaName}].[Schema]");
-                    });
+                    int? schema = UseConnection(null, static (storage, connection) =>
+                        connection.ExecuteScalar<int>($"select top (1) [Version] from [{storage.SchemaName}].[Schema]"));
 
                     _options.UseRecommendedIsolationLevel = true;
                     _options.UseIgnoreDupKeyOption = schema >= 8;
@@ -539,15 +554,14 @@ namespace Hangfire.SqlServer
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(null, connection =>
+                return sqlStorage.UseConnection(null, static (_, connection) =>
                 {
                     var sqlQuery = @"
 select count(*) from sys.sysprocesses
 where dbid = db_id(@name) and status != 'background' and status != 'sleeping'";
 
                     var value = connection
-                        .Query<int>(sqlQuery, new { name = connection.Database })
-                        .Single();
+                        .QuerySingle<int>(sqlQuery, new { name = connection.Database });
 
                     return new Metric(value);
                 });
@@ -561,15 +575,14 @@ where dbid = db_id(@name) and status != 'background' and status != 'sleeping'";
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(null, connection =>
+                return sqlStorage.UseConnection(null, static (_, connection) =>
                 {
                     var sqlQuery = @"
 select count(*) from sys.sysprocesses
 where dbid = db_id(@name) and status != 'background'";
 
                     var value = connection
-                        .Query<int>(sqlQuery, new { name = connection.Database })
-                        .Single();
+                        .QuerySingle<int>(sqlQuery, new { name = connection.Database });
 
                     return new Metric(value);
                 });
@@ -583,15 +596,14 @@ where dbid = db_id(@name) and status != 'background'";
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(null, connection =>
+                return sqlStorage.UseConnection(null, static (_, connection) =>
                 {
                     var sqlQuery = @"
 select count(*) from sys.sysprocesses
 where dbid = db_id(@name) and status != 'background' and open_tran = 1";
 
                     var value = connection
-                        .Query<int>(sqlQuery, new { name = connection.Database })
-                        .Single();
+                        .QuerySingle<int>(sqlQuery, new { name = connection.Database });
 
                     return new Metric(value);
                 });
@@ -605,15 +617,13 @@ where dbid = db_id(@name) and status != 'background' and open_tran = 1";
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(null, connection =>
+                return sqlStorage.UseConnection(null, static (_, connection) =>
                 {
                     var sqlQuery = @"
 select SUM(CAST(FILEPROPERTY(name, 'SpaceUsed') AS INT)/128.0) as RowsSizeMB from sys.database_files
 where type = 0;";
 
-                    var value = connection
-                        .Query<double>(sqlQuery)
-                        .Single();
+                    var value = connection.QuerySingle<double>(sqlQuery);
 
                     return new Metric(value.ToString("F", CultureInfo.CurrentCulture));
                 });
@@ -627,15 +637,13 @@ where type = 0;";
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(null, connection =>
+                return sqlStorage.UseConnection(null, static (_, connection) =>
                 {
                     var sqlQuery = @"
 select SUM(CAST(FILEPROPERTY(name, 'SpaceUsed') AS INT)/128.0) as LogSizeMB from sys.database_files
 where type = 1;";
 
-                    var value = connection
-                        .Query<double>(sqlQuery)
-                        .Single();
+                    var value = connection.QuerySingle<double>(sqlQuery);
 
                     return new Metric(value.ToString("F", CultureInfo.CurrentCulture));
                 });
@@ -649,10 +657,10 @@ where type = 1;";
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(null, connection =>
+                return sqlStorage.UseConnection(null, static (storage, connection) =>
                 {
-                    var sqlQuery = $@"select top(1) [Version] from [{sqlStorage.SchemaName}].[Schema]";
-                    var version = connection.Query<int?>(sqlQuery).SingleOrDefault();
+                    var sqlQuery = $@"select top(1) [Version] from [{storage.SchemaName}].[Schema]";
+                    var version = connection.QuerySingleOrDefault<int?>(sqlQuery);
 
                     if (!version.HasValue)
                     {
@@ -685,19 +693,19 @@ where type = 1;";
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(null, connection =>
+                return sqlStorage.UseConnection(null, static (_, connection, ctx) =>
                 {
                     var sqlQuery = $@"SELECT cntr_value FROM sys.dm_os_performance_counters where object_name = @objectName and instance_name = @instanceName and counter_name = @counterName";
                     long? value;
 
                     try
                     {
-                        value = connection.Query<long>(sqlQuery, new
+                        value = connection.QuerySingle<long>(sqlQuery, new
                         {
-                            objectName = objectName,
-                            instanceName = instanceName ?? connection.Database,
-                            counterName = counterName
-                        }).Single();
+                            objectName = ctx.Item1,
+                            instanceName = ctx.Item2 ?? connection.Database,
+                            counterName = ctx.Item3
+                        });
                     }
                     catch
                     {
@@ -705,7 +713,7 @@ where type = 1;";
                     }
 
                     return value != null ? new Metric(value.Value) : new Metric("???");
-                });
+                }, Tuple.Create(objectName, instanceName, counterName));
             });
     }
 }
