@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -516,9 +517,17 @@ namespace Hangfire.Common
             }
         }
 
-        private static object[] GetExpressionValues(IEnumerable<Expression> expressions)
+        private static object[] GetExpressionValues(ReadOnlyCollection<Expression> expressions)
         {
-            return expressions.Select(GetExpressionValue).ToArray();
+            var result = expressions.Count > 0 ? new object[expressions.Count] : [];
+            var index = 0;
+
+            foreach (var expression in expressions)
+            {
+                result[index++] = GetExpressionValue(expression);
+            }
+
+            return result;
         }
 
         private static object GetExpressionValue(Expression expression)
