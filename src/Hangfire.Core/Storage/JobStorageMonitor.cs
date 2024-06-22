@@ -28,11 +28,11 @@ namespace Hangfire.Storage
         public abstract StatisticsDto GetStatistics();
         public abstract JobList<EnqueuedJobDto> EnqueuedJobs(string queue, int from, int perPage);
         public abstract JobList<FetchedJobDto> FetchedJobs(string queue, int from, int perPage);
-        public abstract JobList<ProcessingJobDto> ProcessingJobs(int from, int count);
-        public abstract JobList<ScheduledJobDto> ScheduledJobs(int from, int count);
-        public abstract JobList<SucceededJobDto> SucceededJobs(int from, int count);
-        public abstract JobList<FailedJobDto> FailedJobs(int from, int count);
-        public abstract JobList<DeletedJobDto> DeletedJobs(int from, int count);
+        public abstract JobList<ProcessingJobDto> ProcessingJobs(int from, int count, string search);
+        public abstract JobList<ScheduledJobDto> ScheduledJobs(int from, int count, string search);
+        public abstract JobList<SucceededJobDto> SucceededJobs(int from, int count, string search);
+        public abstract JobList<FailedJobDto> FailedJobs(int from, int count, string search);
+        public abstract JobList<DeletedJobDto> DeletedJobs(int from, int count, string search);
 
         public virtual JobList<AwaitingJobDto> AwaitingJobs(int from, int count)
         {
