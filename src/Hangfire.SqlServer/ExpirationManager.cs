@@ -213,35 +213,22 @@ delete top(@count) from cte option (maxdop 1);");
             Action<DbCommand> additionalActions,
             CancellationToken cancellationToken)
         {
-            using (var command = connection.CreateCommand())
+            using var command = connection.Create(commandText, timeout: 0)
+                .AddParameter("@count", numberOfRecordsInSinglePass, DbType.Int32)
+                .AddParameter("@now", DateTime.UtcNow, DbType.DateTime);
+
+            additionalActions?.Invoke(command);
+
+            using (cancellationToken.Register(static state => ((DbCommand)state).Cancel(), command))
             {
-                command.CommandText = commandText;
-                command.CommandTimeout = 0;
-
-                var countParameter = command.CreateParameter();
-                countParameter.ParameterName = "@count";
-                countParameter.Value = numberOfRecordsInSinglePass;
-
-                var nowParameter = command.CreateParameter();
-                nowParameter.ParameterName = "@now";
-                nowParameter.Value = DateTime.UtcNow;
-
-                command.Parameters.Add(countParameter);
-                command.Parameters.Add(nowParameter);
-                
-                additionalActions?.Invoke(command);
-
-                using (cancellationToken.Register(static state => ((DbCommand)state).Cancel(), command))
+                try
                 {
-                    try
-                    {
-                        return command.ExecuteNonQuery();
-                    }
-                    catch (DbException ex) when (cancellationToken.IsCancellationRequested || ex.Message.Contains("Lock request time out period exceeded"))
-                    {
-                        // Exception was triggered due to the Cancel method call, ignoring
-                        return 0;
-                    }
+                    return command.ExecuteNonQuery();
+                }
+                catch (DbException ex) when (cancellationToken.IsCancellationRequested || ex.Message.Contains("Lock request time out period exceeded"))
+                {
+                    // Exception was triggered due to the Cancel method call, ignoring
+                    return 0;
                 }
             }
         }

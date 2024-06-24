@@ -191,12 +191,8 @@ namespace Hangfire.SqlServer
 
             do
             {
-                var command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "sp_getapplock";
-                command.CommandTimeout = (int)(lockTimeout / 1000) + 5;
-
-                command
+                var command = connection
+                    .Create("sp_getapplock", CommandType.StoredProcedure, timeout: (int)(lockTimeout / 1000) + 5)
                     .AddParameter("@Resource", resource, DbType.String, size: 255)
                     .AddParameter("@DbPrincipal", "public", DbType.String, size: 32)
                     .AddParameter("@LockMode", LockMode, DbType.String, size: 32)
@@ -245,11 +241,7 @@ namespace Hangfire.SqlServer
             string resource,
             out DbParameter resultParameter)
         {
-            var command = connection.CreateCommand();
-            command.CommandType = CommandType.StoredProcedure;
-            command.CommandText = "sp_releaseapplock";
-
-            return command
+            return connection.Create("sp_releaseapplock", CommandType.StoredProcedure)
                 .AddParameter("@Resource", resource, DbType.String, size: 255)
                 .AddParameter("@LockOwner", LockOwner, DbType.String, size: 32)
                 .AddReturnParameter("@Result", out resultParameter, DbType.Int32);

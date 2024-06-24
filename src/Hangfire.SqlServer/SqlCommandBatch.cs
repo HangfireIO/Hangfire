@@ -23,14 +23,37 @@ namespace Hangfire.SqlServer
 {
     internal static class DbCommandExtensions
     {
+        public static DbCommand Create(
+            [NotNull] this DbConnection connection,
+            [NotNull] string text,
+            CommandType type = CommandType.Text,
+            int? timeout = null)
+        {
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            if (text == null) throw new ArgumentNullException(nameof(text));
+
+            var command = connection.CreateCommand();
+            command.CommandType = type;
+            command.CommandText = text;
+
+            if (timeout.HasValue)
+            {
+                command.CommandTimeout = timeout.Value;
+            }
+
+            return command;
+        }
+
         public static DbCommand AddParameter(
             [NotNull] this DbCommand command,
-            string parameterName,
-            object value,
+            [NotNull] string parameterName,
+            [NotNull] object value,
             DbType dbType,
-            int? size = null)
+            [CanBeNull] int? size = null)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
+            if (parameterName == null) throw new ArgumentNullException(nameof(parameterName));
+            if (value == null) throw new ArgumentNullException(nameof(value));
 
             var parameter = command.CreateParameter();
             parameter.ParameterName = parameterName;
@@ -103,14 +126,6 @@ namespace Hangfire.SqlServer
             }
 
             _commandSet?.Dispose();
-        }
-
-        public DbCommand Create(string commandText)
-        {
-            var command = Connection.CreateCommand();
-            command.CommandText = commandText;
-
-            return command;
         }
 
         public void Append(DbCommand command)

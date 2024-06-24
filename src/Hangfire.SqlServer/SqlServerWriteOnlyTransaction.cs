@@ -38,12 +38,12 @@ namespace Hangfire.SqlServer
         private readonly SqlServerStorage _storage;
         private readonly SqlServerConnection _connection;
 
-        private readonly SortedDictionary<long, List<Func<SqlCommandBatch, DbCommand>>> _jobCommands = new();
-        private readonly SortedDictionary<string, List<Func<SqlCommandBatch, DbCommand>>> _counterCommands = new();
-        private readonly SortedDictionary<string, List<Func<SqlCommandBatch, DbCommand>>> _hashCommands = new();
-        private readonly SortedDictionary<string, List<Func<SqlCommandBatch, DbCommand>>> _listCommands = new();
-        private readonly SortedDictionary<string, List<Func<SqlCommandBatch, DbCommand>>> _setCommands = new();
-        private readonly SortedDictionary<string, List<Func<SqlCommandBatch, DbCommand>>> _queueCommands = new();
+        private readonly SortedDictionary<long, List<Func<DbConnection, DbCommand>>> _jobCommands = new();
+        private readonly SortedDictionary<string, List<Func<DbConnection, DbCommand>>> _counterCommands = new();
+        private readonly SortedDictionary<string, List<Func<DbConnection, DbCommand>>> _hashCommands = new();
+        private readonly SortedDictionary<string, List<Func<DbConnection, DbCommand>>> _listCommands = new();
+        private readonly SortedDictionary<string, List<Func<DbConnection, DbCommand>>> _setCommands = new();
+        private readonly SortedDictionary<string, List<Func<DbConnection, DbCommand>>> _queueCommands = new();
         private readonly List<Tuple<DbCommand, DbParameter, string>> _lockCommands = new();
 
         private readonly List<SqlServerConnection.DisposableLock> _acquiredLocks = new();
@@ -69,11 +69,11 @@ namespace Hangfire.SqlServer
                 {
                     using (var commandBatch = new SqlCommandBatch(connection, transaction, preferBatching: storage.CommandBatchMaxTimeout.HasValue))
                     {
-                        commandBatch.Append(commandBatch.Create("set xact_abort on;set nocount on;"));
+                        commandBatch.Append(connection.Create("set xact_abort on;set nocount on;"));
 
                         foreach (var lockedResource in ctx._lockedResources)
                         {
-                            commandBatch.Append(commandBatch
+                            commandBatch.Append(connection
                                 .Create("exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'")
                                 .AddParameter("@resource", lockedResource, DbType.String, size: 255));
                         }
@@ -556,29 +556,27 @@ $@"delete JQ from [{schemaName}].JobQueue JQ with (forceseek, rowlock) where Que
         }
 
         private static void AppendBatch<TKey>(
-            SortedDictionary<TKey, List<Func<SqlCommandBatch, DbCommand>>> collection,
+            SortedDictionary<TKey, List<Func<DbConnection, DbCommand>>> collection,
             SqlCommandBatch batch)
         {
             foreach (var pair in collection)
             {
                 foreach (var command in pair.Value)
                 {
-                    var dbCommand = command(batch);
+                    var dbCommand = command(batch.Connection);
                     batch.Append(dbCommand);
                 }
             }
         }
 
         private static void AddCommand<TKey>(
-            SortedDictionary<TKey, List<Func<SqlCommandBatch, DbCommand>>> collection,
+            SortedDictionary<TKey, List<Func<DbConnection, DbCommand>>> collection,
             TKey key,
-            Func<SqlCommandBatch, DbCommand> command)
+            Func<DbConnection, DbCommand> command)
         {
-            List<Func<SqlCommandBatch, DbCommand>> commands;
-
-            if (!collection.TryGetValue(key, out commands))
+            if (!collection.TryGetValue(key, out var commands))
             {
-                commands = new List<Func<SqlCommandBatch, DbCommand>>();
+                commands = new List<Func<DbConnection, DbCommand>>();
                 collection.Add(key, commands);
             }
 

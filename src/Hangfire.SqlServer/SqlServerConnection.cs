@@ -198,7 +198,7 @@ $@"insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, 
 
                     foreach (var parameter in triple.Item3)
                     {
-                        var command = commandBatch.Create(query)
+                        var command = connection.Create(query)
                             .AddParameter("@jobId", long.Parse(jobId, CultureInfo.InvariantCulture), DbType.Int64)
                             .AddParameter("@name", parameter.Key, DbType.String, size: 40)
                             .AddParameter("@value", (object)parameter.Value ?? DBNull.Value, DbType.String, size: -1);
@@ -433,7 +433,7 @@ end catch");
                 {
                     if (!storage.Options.DisableGlobalLocks)
                     {
-                        var command = commandBatch
+                        var command = connection
                             .Create("SET XACT_ABORT ON;exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive', @LockOwner=N'Transaction', @LockTimeout=-1;")
                             .AddParameter("@resource", lockResourceKey, DbType.String, size: 255);
                         commandBatch.Append(command);
@@ -441,7 +441,7 @@ end catch");
 
                     foreach (var keyValuePair in pair.Value)
                     {
-                        var command = commandBatch.Create(query)
+                        var command = connection.Create(query)
                             .AddParameter("@key", pair.Key, DbType.String)
                             .AddParameter("@field", keyValuePair.Key, DbType.String, size: 100)
                             .AddParameter("@value", (object)keyValuePair.Value ?? DBNull.Value, DbType.String, size: -1);
@@ -450,7 +450,7 @@ end catch");
 
                     if (!storage.Options.DisableGlobalLocks)
                     {
-                        var command = commandBatch
+                        var command = connection
                             .Create("exec sp_releaseapplock @Resource=@resource, @LockOwner=N'Transaction';")
                             .AddParameter("@resource", lockResourceKey, DbType.String, size: 255);
                         commandBatch.Append(command);
