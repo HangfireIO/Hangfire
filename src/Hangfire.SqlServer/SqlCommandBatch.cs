@@ -17,9 +17,33 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using Hangfire.Annotations;
 
 namespace Hangfire.SqlServer
 {
+    internal static class DbCommandExtensions
+    {
+        public static DbCommand AddParameter(
+            [NotNull] this DbCommand command,
+            string parameterName,
+            object value,
+            DbType dbType,
+            int? size = null)
+        {
+            if (command == null) throw new ArgumentNullException(nameof(command));
+
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = parameterName;
+            parameter.DbType = dbType;
+            parameter.Value = value;
+
+            if (size.HasValue) parameter.Size = size.Value;
+
+            command.Parameters.Add(parameter);
+            return command;
+        }
+    }
+
     internal sealed class SqlCommandBatch : IDisposable
     {
         private readonly List<DbCommand> _commandList = new List<DbCommand>();
@@ -61,17 +85,12 @@ namespace Hangfire.SqlServer
             _commandSet?.Dispose();
         }
 
-        public void Append(string commandText, params SqlCommandBatchParameter[] parameters)
+        public DbCommand Create(string commandText)
         {
             var command = Connection.CreateCommand();
             command.CommandText = commandText;
 
-            foreach (var parameter in parameters)
-            {
-                parameter.AddToCommand(command);
-            }
-
-            Append(command);
+            return command;
         }
 
         public void Append(DbCommand command)
@@ -121,34 +140,6 @@ namespace Hangfire.SqlServer
 
                 command.ExecuteNonQuery();
             }
-        }
-    }
-
-    internal sealed class SqlCommandBatchParameter
-    {
-        public SqlCommandBatchParameter(string parameterName, DbType dbType, int? size = null)
-        {
-            ParameterName = parameterName;
-            DbType = dbType;
-            Size = size;
-        }
-
-        public string ParameterName { get; }
-        public DbType DbType { get; }
-        public int? Size { get; }
-        public object Value { get; set; }
-
-        public void AddToCommand(DbCommand command)
-        {
-            var parameter = command.CreateParameter();
-            parameter.ParameterName = ParameterName;
-            parameter.DbType = DbType;
-
-            if (Size.HasValue) parameter.Size = Size.Value;
-
-            parameter.Value = Value;
-
-            command.Parameters.Add(parameter);
         }
     }
 }

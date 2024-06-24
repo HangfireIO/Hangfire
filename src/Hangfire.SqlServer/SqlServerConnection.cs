@@ -198,10 +198,12 @@ $@"insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, 
 
                     foreach (var parameter in triple.Item3)
                     {
-                        commandBatch.Append(query,
-                            new SqlCommandBatchParameter("@jobId", DbType.Int64) { Value = long.Parse(jobId, CultureInfo.InvariantCulture) },
-                            new SqlCommandBatchParameter("@name",DbType.String, 40) { Value = parameter.Key },
-                            new SqlCommandBatchParameter("@value", DbType.String, -1) { Value = (object)parameter.Value ?? DBNull.Value });
+                        var command = commandBatch.Create(query)
+                            .AddParameter("@jobId", long.Parse(jobId, CultureInfo.InvariantCulture), DbType.Int64)
+                            .AddParameter("@name", parameter.Key, DbType.String, size: 40)
+                            .AddParameter("@value", (object)parameter.Value ?? DBNull.Value, DbType.String, size: -1);
+
+                        commandBatch.Append(command);
                     }
 
                     commandBatch.ExecuteNonQuery();
@@ -431,24 +433,27 @@ end catch");
                 {
                     if (!storage.Options.DisableGlobalLocks)
                     {
-                        commandBatch.Append(
-                            "SET XACT_ABORT ON;exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive', @LockOwner=N'Transaction', @LockTimeout=-1;",
-                            new SqlCommandBatchParameter("@resource", DbType.String, 255) { Value = lockResourceKey });
+                        var command = commandBatch
+                            .Create("SET XACT_ABORT ON;exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive', @LockOwner=N'Transaction', @LockTimeout=-1;")
+                            .AddParameter("@resource", lockResourceKey, DbType.String, size: 255);
+                        commandBatch.Append(command);
                     }
 
                     foreach (var keyValuePair in pair.Value)
                     {
-                        commandBatch.Append(query,
-                            new SqlCommandBatchParameter("@key", DbType.String) { Value = pair.Key },
-                            new SqlCommandBatchParameter("@field", DbType.String, 100) { Value = keyValuePair.Key },
-                            new SqlCommandBatchParameter("@value", DbType.String, -1) { Value = (object) keyValuePair.Value ?? DBNull.Value });
+                        var command = commandBatch.Create(query)
+                            .AddParameter("@key", pair.Key, DbType.String)
+                            .AddParameter("@field", keyValuePair.Key, DbType.String, size: 100)
+                            .AddParameter("@value", (object)keyValuePair.Value ?? DBNull.Value, DbType.String, size: -1);
+                        commandBatch.Append(command);
                     }
 
                     if (!storage.Options.DisableGlobalLocks)
                     {
-                        commandBatch.Append(
-                            "exec sp_releaseapplock @Resource=@resource, @LockOwner=N'Transaction';",
-                            new SqlCommandBatchParameter("@resource", DbType.String, 255) { Value = lockResourceKey });
+                        var command = commandBatch
+                            .Create("exec sp_releaseapplock @Resource=@resource, @LockOwner=N'Transaction';")
+                            .AddParameter("@resource", lockResourceKey, DbType.String, size: 255);
+                        commandBatch.Append(command);
                     }
 
                     commandBatch.CommandTimeout = storage.CommandTimeout;
