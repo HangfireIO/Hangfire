@@ -231,10 +231,14 @@ select Name, Value from [{schemaName}].JobParameter with (forceseek) where JobId
                     var jobData = multi.ReadSingleOrDefault();
                     if (jobData == null) return null;
 
-                    var parameters = multi.Read<JobParameter>()
-                        .GroupBy(static x => x.Name)
-                        .Select(static grp => grp.First())
-                        .ToDictionary(static x => x.Name, static x => x.Value);
+                    var parameters = new Dictionary<string, string>();
+
+                    var jobParameters = multi.Read<JobParameter>().ToArray();
+                    for (var i = 0; i < jobParameters.Length; i++)
+                    {
+                        var jobParameter = jobParameters[i];
+                        parameters[jobParameter.Name] = jobParameter.Value;
+                    }
 
                     // TODO: conversion exception could be thrown.
                     var invocationData = InvocationData.DeserializePayload(jobData.InvocationData);
