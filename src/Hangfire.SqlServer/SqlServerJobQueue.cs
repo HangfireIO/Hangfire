@@ -165,14 +165,10 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
         {
             return _storage.UseConnection(null, static (storage, connection, queues) =>
             {
-                var parameters = new DynamicParameters();
-                parameters.Add("@queues", queues);
-                parameters.Add("@timeoutSs", (int)storage.Options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds);
-
                 var fetchedJob = connection
                     .QuerySingleOrDefault<FetchedJob>(
                         GetNonBlockingFetchSql(storage),
-                        parameters,
+                        new { queues = queues, timeoutSs = (int)storage.Options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds },
                         commandTimeout: storage.CommandTimeout);
 
                 return fetchedJob != null 
