@@ -54,8 +54,10 @@ namespace Hangfire.SqlServer
                 {
                     var result = _storage.UseConnection(null, static (storage, connection) =>
                     {
-                        string sqlQuery = $@"select distinct(Queue) from [{storage.SchemaName}].JobQueue with (nolock)";
-                        return connection.Query(sqlQuery, commandTimeout: storage.CommandTimeout).Select(static x => (string) x.Queue).ToList();
+                        var query = storage.GetQueryFromTemplate(static schemaName =>
+$@"select distinct(Queue) from [{schemaName}].JobQueue with (nolock)");
+
+                        return connection.Query(query, commandTimeout: storage.CommandTimeout).Select(static x => (string) x.Queue).ToList();
                     });
 
                     _queuesCache = result;
@@ -70,16 +72,16 @@ namespace Hangfire.SqlServer
         {
             return _storage.UseConnection(null, static (storage, connection, ctx) =>
             {
-                var sqlQuery =
+                var query = storage.GetQueryFromTemplate(static schemaName =>
 $@"select r.JobId from (
   select jq.JobId, row_number() over (order by jq.Id) as row_num 
-  from [{storage.SchemaName}].JobQueue jq with (nolock, forceseek)
+  from [{schemaName}].JobQueue jq with (nolock, forceseek)
   where jq.Queue = @queue and jq.FetchedAt is null
 ) as r
-where r.row_num between @start and @end";
+where r.row_num between @start and @end");
 
                 return connection.Query<JobIdDto>(
-                    sqlQuery,
+                    query,
                     new { queue = ctx.Queue, start = ctx.From + 1, end = ctx.From + ctx.PerPage },
                     commandTimeout: storage.CommandTimeout)
                     .ToList()
@@ -92,16 +94,16 @@ where r.row_num between @start and @end";
         {
             return _storage.UseConnection(null, static (storage, connection, ctx) =>
             {
-                var fetchedJobsSql = $@"
+                var query = storage.GetQueryFromTemplate(static schemaName => $@"
 select r.JobId from (
   select jq.JobId, jq.FetchedAt, row_number() over (order by jq.Id) as row_num 
-  from [{storage.SchemaName}].JobQueue jq with (nolock, forceseek)
+  from [{schemaName}].JobQueue jq with (nolock, forceseek)
   where jq.Queue = @queue and jq.FetchedAt is not null
 ) as r
-where r.row_num between @start and @end";
+where r.row_num between @start and @end");
 
                 return connection.Query<JobIdDto>(
-                        fetchedJobsSql,
+                        query,
                         new { queue = ctx.Queue, start = ctx.From + 1, end = ctx.From + ctx.PerPage })
                     .ToList()
                     .Select(static x => x.JobId)
@@ -120,17 +122,17 @@ where r.row_num between @start and @end";
         {
             return _storage.UseConnection(null, static (storage, connection, q) =>
             {
-                var sqlQuery = $@"
+                var query = storage.GetQueryFromTemplate(static schemaName => $@"
 select sum(Enqueued) as EnqueuedCount, sum(Fetched) as FetchedCount 
 from (
     select 
         case when FetchedAt is null then 1 else 0 end as Enqueued,
         case when FetchedAt is not null then 1 else 0 end as Fetched
-    from [{storage.SchemaName}].JobQueue with (nolock, forceseek)
+    from [{schemaName}].JobQueue with (nolock, forceseek)
     where Queue = @queue
-) q";
+) q");
 
-                var result = connection.QuerySingle(sqlQuery, new { queue = q });
+                var result = connection.QuerySingle(query, new { queue = q });
 
                 return new EnqueuedAndFetchedCountDto
                 {

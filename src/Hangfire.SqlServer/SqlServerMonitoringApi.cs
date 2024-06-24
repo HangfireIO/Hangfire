@@ -138,7 +138,9 @@ namespace Hangfire.SqlServer
             return UseConnection<IList<ServerDto>>(connection =>
             {
                 var servers = connection.Query<Entities.Server>(
-                    $@"select * from [{_storage.SchemaName}].Server with (nolock)", commandTimeout: _storage.CommandTimeout)
+                    _storage.GetQueryFromTemplate(static schemaName =>
+                        $@"select * from [{schemaName}].Server with (nolock)"),
+                    commandTimeout: _storage.CommandTimeout)
                     .ToList();
 
                 var result = new List<ServerDto>();
@@ -258,7 +260,8 @@ namespace Hangfire.SqlServer
             var parentStates = UseConnection(connection =>
             {
                 return connection.Query<ParentStateDto>(
-                    $"select Id, StateName from [{_storage.SchemaName}].Job with (nolock, forceseek) where Id in @ids",
+                    _storage.GetQueryFromTemplate(static schemaName =>
+                        $@"select Id, StateName from [{schemaName}].Job with (nolock, forceseek) where Id in @ids"),
                     new { ids = parentIds },
                     commandTimeout: _storage.CommandTimeout)
                 .ToDictionary(static x => x.Id, static x => x.StateName);
@@ -354,12 +357,12 @@ namespace Hangfire.SqlServer
         {
             return UseConnection(connection =>
             {
-                string sql = $@"
-select * from [{_storage.SchemaName}].Job with (nolock, forceseek) where Id = @id
-select * from [{_storage.SchemaName}].JobParameter with (nolock, forceseek) where JobId = @id
-select * from [{_storage.SchemaName}].State with (nolock, forceseek) where JobId = @id order by Id desc";
+                var query = _storage.GetQueryFromTemplate(static schemaName => $@"
+select * from [{schemaName}].Job with (nolock, forceseek) where Id = @id
+select * from [{schemaName}].JobParameter with (nolock, forceseek) where JobId = @id
+select * from [{schemaName}].State with (nolock, forceseek) where JobId = @id order by Id desc");
 
-                using (var multi = connection.QueryMultiple(sql, new { id = jobId }, commandTimeout: _storage.CommandTimeout))
+                using (var multi = connection.QueryMultiple(query, new { id = jobId }, commandTimeout: _storage.CommandTimeout))
                 {
                     var job = multi.ReadSingleOrDefault<SqlJob>();
                     if (job == null) return null;
@@ -433,33 +436,33 @@ select * from [{_storage.SchemaName}].State with (nolock, forceseek) where JobId
 
         public override StatisticsDto GetStatistics()
         {
-            string sql = String.Format(CultureInfo.InvariantCulture, @"
+            var query = _storage.GetQueryFromTemplate(static schemaName => $@"
 set transaction isolation level read committed;
-select count(Id) from [{0}].Job with (nolock, forceseek) where StateName = N'Enqueued';
-select count(Id) from [{0}].Job with (nolock, forceseek) where StateName = N'Failed';
-select count(Id) from [{0}].Job with (nolock, forceseek) where StateName = N'Processing';
-select count(Id) from [{0}].Job with (nolock, forceseek) where StateName = N'Scheduled';
-select count(Id) from [{0}].Job with (nolock, forceseek) where StateName = N'Awaiting';
-select count(Id) from [{0}].Server with (nolock);
+select count(Id) from [{schemaName}].Job with (nolock, forceseek) where StateName = N'Enqueued';
+select count(Id) from [{schemaName}].Job with (nolock, forceseek) where StateName = N'Failed';
+select count(Id) from [{schemaName}].Job with (nolock, forceseek) where StateName = N'Processing';
+select count(Id) from [{schemaName}].Job with (nolock, forceseek) where StateName = N'Scheduled';
+select count(Id) from [{schemaName}].Job with (nolock, forceseek) where StateName = N'Awaiting';
+select count(Id) from [{schemaName}].Server with (nolock);
 select sum(s.[Value]) from (
-    select sum([Value]) as [Value] from [{0}].Counter with (nolock, forceseek) where [Key] = N'stats:succeeded'
+    select sum([Value]) as [Value] from [{schemaName}].Counter with (nolock, forceseek) where [Key] = N'stats:succeeded'
     union all
-    select [Value] from [{0}].AggregatedCounter with (nolock, forceseek) where [Key] = N'stats:succeeded'
+    select [Value] from [{schemaName}].AggregatedCounter with (nolock, forceseek) where [Key] = N'stats:succeeded'
 ) as s;
 select sum(s.[Value]) from (
-    select sum([Value]) as [Value] from [{0}].Counter with (nolock, forceseek) where [Key] = N'stats:deleted'
+    select sum([Value]) as [Value] from [{schemaName}].Counter with (nolock, forceseek) where [Key] = N'stats:deleted'
     union all
-    select [Value] from [{0}].AggregatedCounter with (nolock, forceseek) where [Key] = N'stats:deleted'
+    select [Value] from [{schemaName}].AggregatedCounter with (nolock, forceseek) where [Key] = N'stats:deleted'
 ) as s;
 
-select count(*) from [{0}].[Set] with (nolock, forceseek) where [Key] = N'recurring-jobs';
-select count(*) from [{0}].[Set] with (nolock, forceseek) where [Key] = N'retries';
-                ", _storage.SchemaName);
+select count(*) from [{schemaName}].[Set] with (nolock, forceseek) where [Key] = N'recurring-jobs';
+select count(*) from [{schemaName}].[Set] with (nolock, forceseek) where [Key] = N'retries';
+                ");
 
             var statistics = UseConnection(connection =>
             {
                 var stats = new StatisticsDto();
-                using (var multi = connection.QueryMultiple(sql, commandTimeout: _storage.CommandTimeout))
+                using (var multi = connection.QueryMultiple(query, commandTimeout: _storage.CommandTimeout))
                 {
                     stats.Enqueued = multi.ReadSingle<int>();
                     stats.Failed = multi.ReadSingle<int>();
@@ -519,12 +522,12 @@ select count(*) from [{0}].[Set] with (nolock, forceseek) where [Key] = N'retrie
             DbConnection connection,
             IDictionary<string, DateTime> keyMaps)
         {
-            string sqlQuery =
-$@"select [Key], [Value] as [Count] from [{_storage.SchemaName}].AggregatedCounter with (nolock, forceseek)
-where [Key] in @keys";
+            var query = _storage.GetQueryFromTemplate(static schemaName =>
+$@"select [Key], [Value] as [Count] from [{schemaName}].AggregatedCounter with (nolock, forceseek)
+where [Key] in @keys");
 
             var valuesMap = connection.Query(
-                sqlQuery,
+                query,
                 new { keys = keyMaps.Keys },
                 commandTimeout: _storage.CommandTimeout)
                 .ToDictionary(static x => (string)x.Key, static x => (long)x.Count);
@@ -559,14 +562,14 @@ where [Key] in @keys";
 
         private JobList<EnqueuedJobDto> EnqueuedJobs(DbConnection connection, long[] jobIds)
         {
-            string enqueuedJobsSql = 
+            var query = _storage.GetQueryFromTemplate(static schemaName =>
 $@"select j.*, s.Reason as StateReason, s.Data as StateData, s.CreatedAt as StateChanged
-from [{_storage.SchemaName}].Job j with (nolock, forceseek)
-left join [{_storage.SchemaName}].State s with (nolock, forceseek) on s.Id = j.StateId and s.JobId = j.Id
-where j.Id in @jobIds";
+from [{schemaName}].Job j with (nolock, forceseek)
+left join [{schemaName}].State s with (nolock, forceseek) on s.Id = j.StateId and s.JobId = j.Id
+where j.Id in @jobIds");
 
             var jobs = connection.Query<SqlJob>(
-                enqueuedJobsSql,
+                query,
                 new { jobIds = jobIds },
                 commandTimeout: _storage.CommandTimeout)
                 .ToDictionary(static x => x.Id, static x => x);
@@ -593,12 +596,12 @@ where j.Id in @jobIds";
 
         private long GetNumberOfJobsByStateName(DbConnection connection, string stateName)
         {
-            var sqlQuery = _jobListLimit.HasValue
-                ? $@"select count(j.Id) from (select top (@limit) Id from [{_storage.SchemaName}].Job with (nolock, forceseek) where StateName = @state) as j"
-                : $@"select count(Id) from [{_storage.SchemaName}].Job with (nolock, forceseek) where StateName = @state";
+            var query = _storage.GetQueryFromTemplate(_jobListLimit.HasValue
+                ? static schemaName => $@"select count(j.Id) from (select top (@limit) Id from [{schemaName}].Job with (nolock, forceseek) where StateName = @state) as j"
+                : static schemaName => $@"select count(Id) from [{schemaName}].Job with (nolock, forceseek) where StateName = @state");
 
             var count = connection.ExecuteScalar<int>(
-                 sqlQuery,
+                 query,
                  new { state = stateName, limit = _jobListLimit },
                  commandTimeout: _storage.CommandTimeout);
 
@@ -634,22 +637,22 @@ where j.Id in @jobIds";
             bool descending,
             Func<SqlJob, Job, InvocationData, JobLoadException, SafeDictionary<string, string>, TDto> selector)
         {
-            string order = descending ? "desc" : "asc";
-            string jobsSql = 
+            var order = descending ? "desc" : "asc";
+            var query = String.Format(CultureInfo.InvariantCulture, _storage.GetQueryFromTemplate(static schemaName =>
 $@";with cte as 
 (
-  select j.Id, row_number() over (order by j.Id {order}) as row_num
-  from [{_storage.SchemaName}].Job j with (nolock, forceseek)
+  select j.Id, row_number() over (order by j.Id {{0}}) as row_num
+  from [{schemaName}].Job j with (nolock, forceseek)
   where j.StateName = @stateName
 )
 select j.*, s.Reason as StateReason, s.Data as StateData, s.CreatedAt as StateChanged
-from [{_storage.SchemaName}].Job j with (nolock, forceseek)
+from [{schemaName}].Job j with (nolock, forceseek)
 inner join cte on cte.Id = j.Id
-left join [{_storage.SchemaName}].State s with (nolock, forceseek) on j.StateId = s.Id and j.Id = s.JobId
-where cte.row_num between @start and @end";
+left join [{schemaName}].State s with (nolock, forceseek) on j.StateId = s.Id and j.Id = s.JobId
+where cte.row_num between @start and @end"), order);
 
             var jobs = connection.Query<SqlJob>(
-                        jobsSql,
+                        query,
                         new { stateName = stateName, start = @from + 1, end = @from + count },
                         commandTimeout: _storage.CommandTimeout)
                         .ToList();
@@ -687,14 +690,14 @@ where cte.row_num between @start and @end";
 
         private JobList<FetchedJobDto> FetchedJobs(DbConnection connection, IEnumerable<long> jobIds)
         { 
-            string fetchedJobsSql = 
+            var query = _storage.GetQueryFromTemplate(static schemaName =>
 $@"select j.*, s.Reason as StateReason, s.Data as StateData 
-from [{_storage.SchemaName}].Job j with (nolock, forceseek)
-left join [{_storage.SchemaName}].State s with (nolock, forceseek) on s.Id = j.StateId and s.JobId = j.Id
-where j.Id in @jobIds";
+from [{schemaName}].Job j with (nolock, forceseek)
+left join [{schemaName}].State s with (nolock, forceseek) on s.Id = j.StateId and s.JobId = j.Id
+where j.Id in @jobIds");
 
             var jobs = connection.Query<SqlJob>(
-                fetchedJobsSql,
+                query,
                 new { jobIds = jobIds },
                 commandTimeout: _storage.CommandTimeout)
                 .ToList();

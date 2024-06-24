@@ -79,7 +79,8 @@ namespace Hangfire.SqlServer
                 _storage.UseConnection(
                     null,
                     static (storage, connection, ctx) => connection.Execute(
-                        $"delete JQ from [{storage.SchemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
+                        storage.GetQueryFromTemplate(static schemaName =>
+                            $@"delete JQ from [{schemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt"),
                         new { queue = ctx.Queue, id = ctx.Id, fetchedAt = ctx.FetchedAt },
                         commandTimeout: storage.CommandTimeout),
                     this);
@@ -99,7 +100,8 @@ namespace Hangfire.SqlServer
                 _storage.UseConnection(
                     null,
                     static (storage, connection, ctx) => connection.Execute(
-                         $"update JQ set FetchedAt = null from [{storage.SchemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
+                        storage.GetQueryFromTemplate(static schemaName =>
+                            $@"update JQ set FetchedAt = null from [{schemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt"),
                          new { queue = ctx.Queue, id = ctx.Id, fetchedAt = ctx.FetchedAt },
                          commandTimeout: storage.CommandTimeout),
                     this);
@@ -156,7 +158,8 @@ namespace Hangfire.SqlServer
                         FetchedAt = _storage.UseConnection(
                             null,
                             static (storage, connection, ctx) => connection.ExecuteScalar<DateTime?>(
-                                $"update JQ set FetchedAt = getutcdate() output INSERTED.FetchedAt from [{storage.SchemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
+                                storage.GetQueryFromTemplate(static schemaName =>
+                                    $@"update JQ set FetchedAt = getutcdate() output INSERTED.FetchedAt from [{schemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt"),
                                 new { queue = ctx.Queue, id = ctx.Id, fetchedAt = ctx.FetchedAt },
                                 commandTimeout: storage.CommandTimeout),
                             this);

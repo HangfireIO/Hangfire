@@ -76,11 +76,11 @@ namespace Hangfire.SqlServer
         public void Enqueue(DbConnection connection, DbTransaction transaction, string queue, string jobId)
 #endif
         {
-            string enqueueJobSql =
-$@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)";
+            var query = _storage.GetQueryFromTemplate(static schemaName =>
+$@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
 
             connection.Execute(
-                enqueueJobSql, 
+                query, 
                 new { jobId = long.Parse(jobId, CultureInfo.InvariantCulture), queue = queue }
 #if !FEATURE_TRANSACTIONSCOPE
                 , transaction
@@ -183,15 +183,15 @@ $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @
 
         private static string GetNonBlockingFetchSql(SqlServerStorage storage)
         {
-            return $@"
+            return storage.GetQueryFromTemplate(static schemaName => $@"
 set nocount on;set xact_abort on;set tran isolation level read committed;
 
 update top (1) JQ
 set FetchedAt = GETUTCDATE()
 output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
-from [{storage.SchemaName}].JobQueue JQ with (forceseek, readpast, updlock, rowlock)
+from [{schemaName}].JobQueue JQ with (forceseek, readpast, updlock, rowlock)
 where Queue in @queues and
-(FetchedAt is null or FetchedAt < DATEADD(second, @timeoutSs, GETUTCDATE()));";
+(FetchedAt is null or FetchedAt < DATEADD(second, @timeoutSs, GETUTCDATE()));");
         }
 
         private SqlServerTransactionJob DequeueUsingTransaction(string[] queues, CancellationToken cancellationToken)
@@ -199,11 +199,11 @@ where Queue in @queues and
             FetchedJob fetchedJob = null;
             DbTransaction transaction = null;
 
-            string fetchJobSqlTemplate =
-                $@"delete top (1) JQ
+            var query = _storage.GetQueryFromTemplate(static schemaName =>
+$@"delete top (1) JQ
 output DELETED.Id, DELETED.JobId, DELETED.Queue
-from [{_storage.SchemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
-where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))";
+from [{schemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
+where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))");
 
             var pollInterval = _options.QueuePollInterval > TimeSpan.Zero
                 ? _options.QueuePollInterval
@@ -220,7 +220,7 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
                     transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
 
                     fetchedJob = connection.QuerySingleOrDefault<FetchedJob>(
-                        fetchJobSqlTemplate,
+                        query,
 #pragma warning disable 618
                     new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds },
 #pragma warning restore 618

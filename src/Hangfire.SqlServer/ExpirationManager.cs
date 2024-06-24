@@ -15,6 +15,7 @@
 
 using System;
 using System.Data.Common;
+using System.Globalization;
 using System.Threading;
 using Hangfire.Common;
 using Hangfire.Logging;
@@ -74,7 +75,7 @@ namespace Hangfire.SqlServer
             {
                 try
                 {
-                    CleanupTable(GetExpireQuery(_storage.SchemaName, table), table, numberOfRecordsInSinglePass, cancellationToken);
+                    CleanupTable(GetExpireQuery(_storage, table), table, numberOfRecordsInSinglePass, cancellationToken);
                 }
                 catch (DbException ex)
                 {
@@ -86,7 +87,7 @@ namespace Hangfire.SqlServer
             {
                 try
                 {
-                    CleanupTable(GetStateCleanupQuery(_storage.SchemaName), "State", numberOfRecordsInSinglePass,
+                    CleanupTable(GetStateCleanupQuery(_storage), "State", numberOfRecordsInSinglePass,
                         cancellationToken,
                         command =>
                         {
@@ -166,36 +167,36 @@ It will be retried in {_checkInterval.TotalSeconds} seconds.",
             }
         }
 
-        private static string GetExpireQuery(string schemaName, string table)
+        private static string GetExpireQuery(SqlServerStorage storage, string table)
         {
             if (table.Equals("AggregatedCounter", StringComparison.OrdinalIgnoreCase))
             {
                 // Schema 5, which still should be supported by Hangfire doesn't have an index that covers
                 // the `ExpireAt` column, making it impossible to run the query.
-                return $@"
+                return String.Format(CultureInfo.InvariantCulture, storage.GetQueryFromTemplate(static schemaName => $@"
 set deadlock_priority low;
 set transaction isolation level read committed;
 set xact_abort on;
 set lock_timeout 1000;
-delete top (@count) T from [{schemaName}].[{table}] T
+delete top (@count) T from [{schemaName}].[{{0}}] T
 where ExpireAt < @now
-option (loop join, optimize for (@count = 20000));";
+option (loop join, optimize for (@count = 20000));"), table);
             }
 
-            return $@"
+            return String.Format(CultureInfo.InvariantCulture, storage.GetQueryFromTemplate(static schemaName => $@"
 set deadlock_priority low;
 set transaction isolation level read committed;
 set xact_abort on;
 set lock_timeout 1000;
-delete top (@count) T from [{schemaName}].[{table}] T with (forceseek)
+delete top (@count) T from [{schemaName}].[{{0}}] T with (forceseek)
 where ExpireAt < @now
-option (loop join, optimize for (@count = 20000));";
+option (loop join, optimize for (@count = 20000));"), table);
         }
 
-        private static string GetStateCleanupQuery(string schemaName)
+        private static string GetStateCleanupQuery(SqlServerStorage storage)
         {
             // TODO: Make expiration condition configurable
-            return $@"
+            return storage.GetQueryFromTemplate(static schemaName => $@"
 set deadlock_priority low;
 set transaction isolation level read committed;
 set xact_abort on;
@@ -208,7 +209,7 @@ set lock_timeout 1000;
 	and exists (
 		select * from [{schemaName}].[Job] j with (forceseek)
 		where j.[Id] = s.[JobId] and j.[StateId] != s.[Id]))
-delete top(@count) from cte option (maxdop 1);";
+delete top(@count) from cte option (maxdop 1);");
         }
 
         private static int ExecuteNonQuery(

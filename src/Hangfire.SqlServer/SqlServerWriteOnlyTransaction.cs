@@ -164,10 +164,13 @@ namespace Hangfire.SqlServer
         {
             if (jobId == null) throw new ArgumentNullException(nameof(jobId));
 
+            var query = _storage.GetQueryFromTemplate(static schemaName =>
+$@"update J set ExpireAt = @expireAt from [{schemaName}].Job J with (forceseek) where Id = @id;");
+
             AddCommand(
                 _jobCommands,
                 long.Parse(jobId, CultureInfo.InvariantCulture),
-                $@"update J set ExpireAt = @expireAt from [{_storage.SchemaName}].Job J with (forceseek) where Id = @id;",
+                query,
                 new SqlCommandBatchParameter("@expireAt", DbType.DateTime) { Value = DateTime.UtcNow.Add(expireIn) },
                 new SqlCommandBatchParameter("@id", DbType.Int64) { Value = long.Parse(jobId, CultureInfo.InvariantCulture) });
         }
@@ -176,10 +179,13 @@ namespace Hangfire.SqlServer
         {
             if (jobId == null) throw new ArgumentNullException(nameof(jobId));
 
+            var query = _storage.GetQueryFromTemplate(static schemaName =>
+$@"update J set ExpireAt = NULL from [{schemaName}].Job J with (forceseek) where Id = @id;");
+
             AddCommand(
                 _jobCommands,
                 long.Parse(jobId, CultureInfo.InvariantCulture),
-                $@"update J set ExpireAt = NULL from [{_storage.SchemaName}].Job J with (forceseek) where Id = @id;",
+                query,
                 new SqlCommandBatchParameter("@id", DbType.Int64) { Value = long.Parse(jobId, CultureInfo.InvariantCulture) });
         }
 
@@ -188,15 +194,15 @@ namespace Hangfire.SqlServer
             if (jobId == null) throw new ArgumentNullException(nameof(jobId));
             if (state == null) throw new ArgumentNullException(nameof(state));
 
-            string addAndSetStateSql = 
-$@"insert into [{_storage.SchemaName}].State (JobId, Name, Reason, CreatedAt, Data)
+            var query = _storage.GetQueryFromTemplate(static schemaName =>
+$@"insert into [{schemaName}].State (JobId, Name, Reason, CreatedAt, Data)
 values (@jobId, @name, @reason, @createdAt, @data);
-update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @name where Id = @jobId;";
+update [{schemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @name where Id = @jobId;");
 
             AddCommand(
                 _jobCommands,
                 long.Parse(jobId, CultureInfo.InvariantCulture),
-                addAndSetStateSql,
+                query,
                 new SqlCommandBatchParameter("@jobId", DbType.Int64) { Value = long.Parse(jobId, CultureInfo.InvariantCulture) },
                 new SqlCommandBatchParameter("@name", DbType.String, 20) { Value = state.Name },
                 new SqlCommandBatchParameter("@reason", DbType.String, 100) { Value = (object)state.Reason?.Substring(0, Math.Min(99, state.Reason.Length)) ?? DBNull.Value },
@@ -209,14 +215,14 @@ update [{_storage.SchemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @
             if (jobId == null) throw new ArgumentNullException(nameof(jobId));
             if (state == null) throw new ArgumentNullException(nameof(state));
 
-            string addStateSql =
-$@"insert into [{_storage.SchemaName}].State (JobId, Name, Reason, CreatedAt, Data)
-values (@jobId, @name, @reason, @createdAt, @data)";
+            var query = _storage.GetQueryFromTemplate(static schemaName =>
+$@"insert into [{schemaName}].State (JobId, Name, Reason, CreatedAt, Data)
+values (@jobId, @name, @reason, @createdAt, @data)");
 
             AddCommand(
                 _jobCommands,
                 long.Parse(jobId, CultureInfo.InvariantCulture),
-                addStateSql,
+                query,
                 new SqlCommandBatchParameter("@jobId", DbType.Int64) { Value = long.Parse(jobId, CultureInfo.InvariantCulture) },
                 new SqlCommandBatchParameter("@name", DbType.String, 20) { Value = state.Name },
                 new SqlCommandBatchParameter("@reason", DbType.String, 100) { Value = (object)state.Reason?.Substring(0, Math.Min(99, state.Reason.Length)) ?? DBNull.Value },
@@ -234,10 +240,13 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
             if (persistentQueue.GetType() == typeof(SqlServerJobQueue))
             {
+                var query = _storage.GetQueryFromTemplate(static schemaName =>
+$@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
+
                 AddCommand(
                     _queueCommands,
                     queue,
-                    $@"insert into [{_storage.SchemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)",
+                    query,
                     new SqlCommandBatchParameter("@jobId", DbType.Int64) { Value = long.Parse(jobId, CultureInfo.InvariantCulture) },
                     new SqlCommandBatchParameter("@queue", DbType.String) { Value = queue });
 
@@ -259,10 +268,13 @@ values (@jobId, @name, @reason, @createdAt, @data)";
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
+            var query = _storage.GetQueryFromTemplate(static schemaName =>
+$@"insert into [{schemaName}].Counter ([Key], [Value]) values (@key, @value)");
+
             AddCommand(
                 _counterCommands,
                 key,
-                $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value]) values (@key, @value)",
+                query,
                 new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.Int32) { Value = +1 });
         }
@@ -271,10 +283,13 @@ values (@jobId, @name, @reason, @createdAt, @data)";
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
+            var query = _storage.GetQueryFromTemplate(static schemaName =>
+$@"insert into [{schemaName}].Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)");
+
             AddCommand(
                 _counterCommands,
                 key,
-                $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
+                query,
                 new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.Int32) { Value = +1 },
                 new SqlCommandBatchParameter("@expireAt", DbType.DateTime) { Value = DateTime.UtcNow.Add(expireIn) });
@@ -284,10 +299,13 @@ values (@jobId, @name, @reason, @createdAt, @data)";
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
+            var query = _storage.GetQueryFromTemplate(static schemaName =>
+$@"insert into [{schemaName}].Counter ([Key], [Value]) values (@key, @value)");
+
             AddCommand(
                 _counterCommands,
                 key,
-                $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value]) values (@key, @value)",
+                query,
                 new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.Int32) { Value = -1 });
         }
@@ -296,10 +314,13 @@ values (@jobId, @name, @reason, @createdAt, @data)";
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
+            var query = _storage.GetQueryFromTemplate(static schemaName =>
+$@"insert into [{schemaName}].Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)");
+
             AddCommand(
                 _counterCommands,
                 key,
-                $@"insert into [{_storage.SchemaName}].Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
+                query,
                 new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.Int32) { Value = -1 },
                 new SqlCommandBatchParameter("@expireAt", DbType.DateTime) { Value = DateTime.UtcNow.Add(expireIn) });
@@ -315,21 +336,21 @@ values (@jobId, @name, @reason, @createdAt, @data)";
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (value == null) throw new ArgumentNullException(nameof(value));
 
-            string addSql = _storage.Options.UseIgnoreDupKeyOption
-                ? $@"insert into [{_storage.SchemaName}].[Set] ([Key], Value, Score) values (@key, @value, @score);
-if @@ROWCOUNT = 0 update [{_storage.SchemaName}].[Set] set Score = @score where [Key] = @key and Value = @value;"
+            var query = _storage.GetQueryFromTemplate(_storage.Options.UseIgnoreDupKeyOption
+                ? static schemaName => $@"insert into [{schemaName}].[Set] ([Key], Value, Score) values (@key, @value, @score);
+if @@ROWCOUNT = 0 update [{schemaName}].[Set] set Score = @score where [Key] = @key and Value = @value;"
 
-                : $@";merge [{_storage.SchemaName}].[Set] with (xlock) as Target
+                : static schemaName => $@";merge [{schemaName}].[Set] with (xlock) as Target
 using (VALUES (@key, @value, @score)) as Source ([Key], Value, Score)
 on Target.[Key] = Source.[Key] and Target.Value = Source.Value
 when matched then update set Score = Source.Score
-when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.Value, Source.Score);";
+when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.Value, Source.Score);");
 
             AcquireSetLock(key);
             AddCommand(
                 _setCommands,
                 key,
-                addSql,
+                query,
                 new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.String, 256) { Value = value },
                 new SqlCommandBatchParameter("@score", DbType.Double, 53) { Value = score });
@@ -340,7 +361,8 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (value == null) throw new ArgumentNullException(nameof(value));
 
-            string query = $@"delete S from [{_storage.SchemaName}].[Set] S with (forceseek) where [Key] = @key and Value = @value";
+            var query = _storage.GetQueryFromTemplate(static schemaName =>
+$@"delete S from [{schemaName}].[Set] S with (forceseek) where [Key] = @key and Value = @value");
 
             AcquireSetLock(key);
             AddCommand(
@@ -356,14 +378,16 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (value == null) throw new ArgumentNullException(nameof(value));
 
+            var query = _storage.GetQueryFromTemplate(static schemaName => $@"
+select [Key] from [{schemaName}].List with (xlock, forceseek)
+where [Key] = @key;
+insert into [{schemaName}].List ([Key], Value) values (@key, @value);");
+
             AcquireListLock(key);
             AddCommand(
                 _listCommands,
                 key,
-                $@"
-select [Key] from [{_storage.SchemaName}].List with (xlock, forceseek)
-where [Key] = @key;
-insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
+                query,
                 new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.String, -1) { Value = value });
         }
@@ -373,11 +397,14 @@ insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (value == null) throw new ArgumentNullException(nameof(value));
 
+            var query = _storage.GetQueryFromTemplate(static schemaName =>
+$@"delete L from [{schemaName}].List L with (forceseek) where [Key] = @key and Value = @value");
+
             AcquireListLock(key);
             AddCommand(
                 _listCommands,
                 key,
-                $@"delete L from [{_storage.SchemaName}].List L with (forceseek) where [Key] = @key and Value = @value",
+                query,
                 new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@value", DbType.String, -1) { Value = value });
         }
@@ -386,19 +413,19 @@ insert into [{_storage.SchemaName}].List ([Key], Value) values (@key, @value);",
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string trimSql =
+            var query = _storage.GetQueryFromTemplate(static schemaName =>
 $@";with cte as (
     select row_number() over (order by Id desc) as row_num
-    from [{_storage.SchemaName}].List with (xlock, forceseek)
+    from [{schemaName}].List with (xlock, forceseek)
     where [Key] = @key)
-delete from cte where row_num not between @start and @end";
+delete from cte where row_num not between @start and @end");
 
             AcquireListLock(key);
 
             AddCommand(
                 _listCommands,
                 key, 
-                trimSql,
+                query,
                 new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                 new SqlCommandBatchParameter("@start", DbType.Int32) { Value = keepStartingFrom + 1 },
                 new SqlCommandBatchParameter("@end", DbType.Int32) { Value = keepEndingAt + 1 });
@@ -409,15 +436,15 @@ delete from cte where row_num not between @start and @end";
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
 
-            string sql = _storage.Options.UseIgnoreDupKeyOption
-                ? $@"insert into [{_storage.SchemaName}].Hash ([Key], Field, Value) values (@key, @field, @value);
-if @@ROWCOUNT = 0 update [{_storage.SchemaName}].Hash set Value = @value where [Key] = @key and Field = @field;"
+            var query = _storage.GetQueryFromTemplate(_storage.Options.UseIgnoreDupKeyOption
+                ? static schemaName => $@"insert into [{schemaName}].Hash ([Key], Field, Value) values (@key, @field, @value);
+if @@ROWCOUNT = 0 update [{schemaName}].Hash set Value = @value where [Key] = @key and Field = @field;"
 
-                : $@";merge [{_storage.SchemaName}].Hash with (xlock) as Target
+                : static schemaName => $@";merge [{schemaName}].Hash with (xlock) as Target
 using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
 on Target.[Key] = Source.[Key] and Target.Field = Source.Field
 when matched then update set Value = Source.Value
-when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
+when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);");
 
             AcquireHashLock(key);
 
@@ -426,7 +453,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
                 AddCommand(
                     _hashCommands,
                     key,
-                    sql,
+                    query,
                     new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
                     new SqlCommandBatchParameter("@field", DbType.String, 100) { Value = pair.Key },
                     new SqlCommandBatchParameter("@value", DbType.String, -1) { Value = (object)pair.Value ?? DBNull.Value });
@@ -437,7 +464,8 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = $@"delete H from [{_storage.SchemaName}].Hash H with (forceseek) where [Key] = @key";
+            var query = _storage.GetQueryFromTemplate(static schemaName =>
+$@"delete H from [{schemaName}].Hash H with (forceseek) where [Key] = @key");
 
             AcquireHashLock(key);
             AddCommand(_hashCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String) { Value = key });
@@ -448,7 +476,8 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (items == null) throw new ArgumentNullException(nameof(items));
 
-            string query = $@"insert into [{_storage.SchemaName}].[Set] ([Key], Value, Score) values (@key, @value, 0.0)";
+            var query = _storage.GetQueryFromTemplate(static schemaName =>
+$@"insert into [{schemaName}].[Set] ([Key], Value, Score) values (@key, @value, 0.0)");
 
             AcquireSetLock(key);
 
@@ -464,7 +493,8 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = $@"delete S from [{_storage.SchemaName}].[Set] S with (forceseek) where [Key] = @key";
+            var query = _storage.GetQueryFromTemplate(static schemaName =>
+$@"delete S from [{schemaName}].[Set] S with (forceseek) where [Key] = @key");
 
             AcquireSetLock(key);
             AddCommand(_setCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String) { Value = key });
@@ -474,8 +504,8 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-             string query = $@"
-update [{_storage.SchemaName}].[Hash] set ExpireAt = @expireAt where [Key] = @key";
+             var query = _storage.GetQueryFromTemplate(static schemaName => $@"
+update [{schemaName}].[Hash] set ExpireAt = @expireAt where [Key] = @key");
 
             AcquireHashLock(key);
             AddCommand(_hashCommands, key, query,
@@ -487,8 +517,8 @@ update [{_storage.SchemaName}].[Hash] set ExpireAt = @expireAt where [Key] = @ke
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = $@"
-update [{_storage.SchemaName}].[Set] set ExpireAt = @expireAt where [Key] = @key";
+            var query = _storage.GetQueryFromTemplate(static schemaName => $@"
+update [{schemaName}].[Set] set ExpireAt = @expireAt where [Key] = @key");
 
             AcquireSetLock(key);
             AddCommand(_setCommands, key, query,
@@ -500,8 +530,8 @@ update [{_storage.SchemaName}].[Set] set ExpireAt = @expireAt where [Key] = @key
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = $@"
-update [{_storage.SchemaName}].[List] set ExpireAt = @expireAt where [Key] = @key";
+            var query = _storage.GetQueryFromTemplate(static schemaName => $@"
+update [{schemaName}].[List] set ExpireAt = @expireAt where [Key] = @key");
 
             AcquireListLock(key);
             AddCommand(_listCommands, key, query,
@@ -513,8 +543,8 @@ update [{_storage.SchemaName}].[List] set ExpireAt = @expireAt where [Key] = @ke
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = $@"
-update [{_storage.SchemaName}].Hash set ExpireAt = null where [Key] = @key";
+            var query = _storage.GetQueryFromTemplate(static schemaName => $@"
+update [{schemaName}].Hash set ExpireAt = null where [Key] = @key");
 
             AcquireHashLock(key);
             AddCommand(_hashCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String) { Value = key });
@@ -524,8 +554,8 @@ update [{_storage.SchemaName}].Hash set ExpireAt = null where [Key] = @key";
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = $@"
-update [{_storage.SchemaName}].[Set] set ExpireAt = null where [Key] = @key";
+            var query = _storage.GetQueryFromTemplate(static schemaName => $@"
+update [{schemaName}].[Set] set ExpireAt = null where [Key] = @key");
 
             AcquireSetLock(key);
             AddCommand(_setCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String) { Value = key });
@@ -535,8 +565,8 @@ update [{_storage.SchemaName}].[Set] set ExpireAt = null where [Key] = @key";
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = $@"
-update [{_storage.SchemaName}].[List] set ExpireAt = null where [Key] = @key";
+            var query = _storage.GetQueryFromTemplate(static schemaName => $@"
+update [{schemaName}].[List] set ExpireAt = null where [Key] = @key");
 
             AcquireListLock(key);
             AddCommand(_listCommands, key, query, new SqlCommandBatchParameter("@key", DbType.String) { Value = key });
@@ -548,10 +578,13 @@ update [{_storage.SchemaName}].[List] set ExpireAt = null where [Key] = @key";
 
             if (fetchedJob is SqlServerTimeoutJob timeoutJob)
             {
+                var query = _storage.GetQueryFromTemplate(static schemaName =>
+$@"delete JQ from [{schemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt");
+
                 AddCommand(
                     _queueCommands,
                     timeoutJob.Queue,
-                    $"delete JQ from [{_storage.SchemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt",
+                    query,
                     new SqlCommandBatchParameter("@queue", DbType.String) { Value = timeoutJob.Queue },
                     new SqlCommandBatchParameter("@id", DbType.Int64) { Value = timeoutJob.Id },
                     new SqlCommandBatchParameter("@fetchedAt", DbType.DateTime) { Value = timeoutJob.FetchedAt });

@@ -14,6 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -40,6 +41,8 @@ namespace Hangfire.SqlServer
     {
         private static readonly char[] SemicolonSeparator = new[] { ';' };
         private static readonly char[] EqualSignSeparator = new[] { '=' };
+
+        private readonly ConcurrentDictionary<KeyValuePair<Func<string, string>, string>, string> _queryTemplateCache = new(new QueryTemplateKeyEqualityComparer());
 
         private readonly DbConnection _existingConnection;
         private readonly Func<DbConnection> _connectionFactory;
@@ -236,6 +239,13 @@ namespace Hangfire.SqlServer
             {
                 return canNotParseMessage;
             }
+        }
+
+        internal string GetQueryFromTemplate(Func<string, string> templateFunc)
+        {
+            return _queryTemplateCache.GetOrAdd(
+                new KeyValuePair<Func<string, string>, string>(templateFunc, SchemaName),
+                static pair => pair.Key(pair.Value));
         }
 
         internal void UseConnection(
@@ -715,5 +725,22 @@ where type = 1;";
                     return value != null ? new Metric(value.Value) : new Metric("???");
                 }, Tuple.Create(objectName, instanceName, counterName));
             });
+
+        private sealed class
+            QueryTemplateKeyEqualityComparer : IEqualityComparer<KeyValuePair<Func<string, string>, string>>
+        {
+            public bool Equals(KeyValuePair<Func<string, string>, string> x, KeyValuePair<Func<string, string>, string> y)
+            {
+                return x.Key.Equals(y.Key) && x.Value == y.Value;
+            }
+
+            public int GetHashCode(KeyValuePair<Func<string, string>, string> obj)
+            {
+                unchecked
+                {
+                    return (obj.Key.GetHashCode() * 397) ^ obj.Value.GetHashCode();
+                }
+            }
+        }
     }
 }

@@ -81,7 +81,7 @@ namespace Hangfire.SqlServer
             // much lower cost by adding a clustered index on [Key] column.
             // However extended support for SQL Server 2012 SP4 ends only on
             // July 12, 2022.
-            return
+            return storage.GetQueryFromTemplate(static schemaName =>
 $@"DECLARE @RecordsToAggregate TABLE
 (
 	[Key] NVARCHAR(100) COLLATE DATABASE_DEFAULT NOT NULL,
@@ -96,11 +96,11 @@ BEGIN TRAN
 
 DELETE TOP (@count) C
 OUTPUT DELETED.[Key], DELETED.[Value], DELETED.[ExpireAt] INTO @RecordsToAggregate
-FROM [{storage.SchemaName}].[Counter] C WITH (READPAST, XLOCK, INDEX(0))
+FROM [{schemaName}].[Counter] C WITH (READPAST, XLOCK, INDEX(0))
 
 SET NOCOUNT ON
 
-;MERGE [{storage.SchemaName}].[AggregatedCounter] WITH (FORCESEEK, HOLDLOCK) AS [Target]
+;MERGE [{schemaName}].[AggregatedCounter] WITH (FORCESEEK, HOLDLOCK) AS [Target]
 USING (
 	SELECT [Key], SUM([Value]) as [Value], MAX([ExpireAt]) AS [ExpireAt] FROM @RecordsToAggregate
 	GROUP BY [Key]) AS [Source] ([Key], [Value], [ExpireAt])
@@ -110,7 +110,7 @@ WHEN MATCHED THEN UPDATE SET
 	[Target].[ExpireAt] = (SELECT MAX([ExpireAt]) FROM (VALUES ([Source].ExpireAt), ([Target].[ExpireAt])) AS MaxExpireAt([ExpireAt]))
 WHEN NOT MATCHED THEN INSERT ([Key], [Value], [ExpireAt]) VALUES ([Source].[Key], [Source].[Value], [Source].[ExpireAt]);
 
-COMMIT TRAN";
+COMMIT TRAN");
         }
     }
 }
