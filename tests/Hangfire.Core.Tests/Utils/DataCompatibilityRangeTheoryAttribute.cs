@@ -6,7 +6,7 @@ namespace Hangfire.Core.Tests
 {
     [XunitTestCaseDiscoverer("Hangfire.Core.Tests.DataCompatibilityRangeTheoryDiscoverer", "Hangfire.Core.Tests")]
     [AttributeUsage(AttributeTargets.Method)]
-    internal class DataCompatibilityRangeTheoryAttribute : TheoryAttribute
+    internal sealed class DataCompatibilityRangeTheoryAttribute : TheoryAttribute
     {
         public DataCompatibilityRangeTheoryAttribute()
         {

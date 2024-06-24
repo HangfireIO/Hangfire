@@ -22,7 +22,7 @@ using Hangfire.Storage;
 
 namespace Hangfire.SqlServer.Msmq
 {
-    internal class MsmqJobQueue : IPersistentJobQueue
+    internal sealed class MsmqJobQueue : IPersistentJobQueue
     {
         private static readonly TimeSpan SyncReceiveTimeout = TimeSpan.FromSeconds(5);
 

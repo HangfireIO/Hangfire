@@ -5,7 +5,7 @@ using Xunit.Sdk;
 
 namespace Hangfire.Core.Tests
 {
-    internal class CleanSerializerSettingsAttribute : BeforeAfterTestAttribute
+    internal sealed class CleanSerializerSettingsAttribute : BeforeAfterTestAttribute
     {
         public override void Before(MethodInfo methodUnderTest)
         {

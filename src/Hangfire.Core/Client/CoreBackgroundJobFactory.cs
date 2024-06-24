@@ -26,7 +26,7 @@ using Hangfire.Storage;
 
 namespace Hangfire.Client
 {
-    internal class CoreBackgroundJobFactory : IBackgroundJobFactory
+    internal sealed class CoreBackgroundJobFactory : IBackgroundJobFactory
     {
         private readonly ILog _logger = LogProvider.GetLogger(typeof(CoreBackgroundJobFactory));
         private readonly object _syncRoot = new object();

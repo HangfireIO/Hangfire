@@ -30,7 +30,7 @@ using Hangfire.Storage.Monitoring;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlServerMonitoringApi : JobStorageMonitor
+    internal sealed class SqlServerMonitoringApi : JobStorageMonitor
     {
         private readonly SqlServerStorage _storage;
         private readonly int? _jobListLimit;
@@ -723,7 +723,7 @@ where j.Id in @jobIds");
         /// Overloaded dictionary that doesn't throw if given an invalid key
         /// Fixes issues such as https://github.com/HangfireIO/Hangfire/issues/871
         /// </summary>
-        private class SafeDictionary<TKey, TValue> : Dictionary<TKey, TValue>
+        private sealed class SafeDictionary<TKey, TValue> : Dictionary<TKey, TValue>
         {
             public SafeDictionary(IDictionary<TKey, TValue> dictionary, IEqualityComparer<TKey> comparer) 
                 : base(dictionary, comparer)
@@ -737,7 +737,7 @@ where j.Id in @jobIds");
             }
         }
 
-        private class ParentStateDto
+        private sealed class ParentStateDto
         {
             public long Id { get; set; }
             public string StateName { get; set; }

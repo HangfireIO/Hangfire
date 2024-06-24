@@ -18,7 +18,7 @@ using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
-    internal class ServerWatchdog : IBackgroundProcess
+    internal sealed class ServerWatchdog : IBackgroundProcess
     {
         public static readonly TimeSpan DefaultCheckInterval = TimeSpan.FromMinutes(5);
         public static readonly TimeSpan DefaultServerTimeout = TimeSpan.FromMinutes(5);

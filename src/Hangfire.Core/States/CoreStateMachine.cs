@@ -20,7 +20,7 @@ using Hangfire.Annotations;
 
 namespace Hangfire.States
 {
-    internal class CoreStateMachine : IStateMachine
+    internal sealed class CoreStateMachine : IStateMachine
     {
         private readonly Func<JobStorage, string, StateHandlersCollection> _stateHandlersThunk;
 

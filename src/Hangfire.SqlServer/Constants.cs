@@ -15,7 +15,7 @@
 
 namespace Hangfire.SqlServer
 {
-    internal class Constants
+    internal sealed class Constants
     {
         public static readonly string DefaultSchema = "HangFire";
     }

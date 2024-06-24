@@ -9,7 +9,7 @@ using Xunit.Sdk;
 
 namespace Hangfire.Core.Tests
 {
-    internal class DataCompatibilityRangeTestRunner : XunitTestRunner
+    internal sealed class DataCompatibilityRangeTestRunner : XunitTestRunner
     {
         private static readonly SemaphoreSlim SyncRoot = new SemaphoreSlim(1, 1);
 

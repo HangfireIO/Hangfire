@@ -18,7 +18,7 @@ using System.Messaging;
 
 namespace Hangfire.SqlServer.Msmq
 {
-    internal class MsmqInternalTransaction : IMsmqTransaction
+    internal sealed class MsmqInternalTransaction : IMsmqTransaction
     {
         private readonly MessageQueueTransaction _transaction;
 

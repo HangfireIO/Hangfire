@@ -22,7 +22,7 @@ using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlServerTimeoutJob : IFetchedJob
+    internal sealed class SqlServerTimeoutJob : IFetchedJob
     {
         private readonly ILog _logger = LogProvider.GetLogger(typeof(SqlServerTimeoutJob));
 

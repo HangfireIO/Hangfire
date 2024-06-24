@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace Hangfire.Dashboard
 {
-    internal class RazorPageDispatcher : IDashboardDispatcher
+    internal sealed class RazorPageDispatcher : IDashboardDispatcher
     {
         private readonly Func<Match, RazorPage> _pageFunc;
 

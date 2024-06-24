@@ -423,7 +423,7 @@ namespace Hangfire
             return new ConfigurationEntry<T>(entry);
         }
 
-        private class ConfigurationEntry<T> : IGlobalConfiguration<T>
+        private sealed class ConfigurationEntry<T> : IGlobalConfiguration<T>
         {
             public ConfigurationEntry(T entry)
             {

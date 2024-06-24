@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace Hangfire.Dashboard
 {
-    internal class BatchCommandDispatcher : IDashboardDispatcher
+    internal sealed class BatchCommandDispatcher : IDashboardDispatcher
     {
         private readonly Action<DashboardContext, string> _command;
 

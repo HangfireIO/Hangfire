@@ -421,7 +421,7 @@ namespace Hangfire.Logging
             return null;
         }
 
-        internal class NoOpLogger : ILog
+        internal sealed class NoOpLogger : ILog
         {
             public bool Log(LogLevel logLevel, Func<string> messageFunc, Exception exception)
             {
@@ -430,7 +430,7 @@ namespace Hangfire.Logging
         }
     }
 
-    internal class LoggerExecutionWrapper : ILog
+    internal sealed class LoggerExecutionWrapper : ILog
     {
         private readonly ILog _logger;
         public const string FailedToGenerateLogMessage = "Failed to generate log message";
@@ -523,7 +523,7 @@ namespace Hangfire.Logging.LogProviders
             return Expression.Lambda<Func<string, object>>(methodCall, new[] { nameParam }).Compile();
         }
 
-        internal class NLogLogger : ILog
+        internal sealed class NLogLogger : ILog
         {
             private readonly dynamic _logger;
 
@@ -705,7 +705,7 @@ namespace Hangfire.Logging.LogProviders
             return Expression.Lambda<Func<string, object>>(methodCall, new[] { nameParam }).Compile();
         }
 
-        internal class Log4NetLogger : ILog
+        internal sealed class Log4NetLogger : ILog
         {
             private readonly dynamic _logger;
 
@@ -929,7 +929,7 @@ namespace Hangfire.Logging.LogProviders
             return memberInit;
         }
 
-        internal class EntLibLogger : ILog
+        internal sealed class EntLibLogger : ILog
         {
             private readonly string _loggerName;
             private readonly Action<string, string, TraceEventType> _writeLog;
@@ -1044,7 +1044,7 @@ namespace Hangfire.Logging.LogProviders
             return name => func("SourceContext", name, false);
         }
 
-        internal class SerilogCallbacks
+        internal sealed class SerilogCallbacks
         {
             private static object[] EmptyArray = [];
             public readonly object DebugLevel;
@@ -1121,7 +1121,7 @@ namespace Hangfire.Logging.LogProviders
             }
         }
 
-        internal class SerilogLogger : ILog
+        internal sealed class SerilogLogger : ILog
         {
             private readonly SerilogCallbacks _callbacks;
             private readonly object _logger;
@@ -1301,7 +1301,7 @@ namespace Hangfire.Logging.LogProviders
             return (WriteDelegate) method.CreateDelegate(typeof (WriteDelegate));
         }
 
-        internal class LoupeLogger : ILog
+        internal sealed class LoupeLogger : ILog
         {
             private const string LogSystem = "LibLog";
 
@@ -1453,7 +1453,7 @@ namespace Hangfire.Logging.LogProviders
             return stringBuilder.ToString();
         }
 
-        internal class ColouredConsoleLogger : ILog
+        internal sealed class ColouredConsoleLogger : ILog
         {
             private static readonly object Lock = new object();
             private readonly string _name;
@@ -1481,7 +1481,7 @@ namespace Hangfire.Logging.LogProviders
                 return true;
             }
 
-            protected void Write(LogLevel logLevel, string message, Exception e = null)
+            private void Write(LogLevel logLevel, string message, Exception e = null)
             {
                 var formattedMessage = MessageFormatter(_name, logLevel, message, e);
                 ConsoleColor color;
@@ -1581,7 +1581,7 @@ namespace Hangfire.Logging.LogProviders
             return Expression.Lambda<Func<object>>(methodCall).Compile();
         }
 
-        internal class ElmahLog : ILog
+        internal sealed class ElmahLog : ILog
         {
             private readonly LogLevel _minLevel;
             private readonly Type _errorType;

@@ -19,7 +19,7 @@ using Hangfire.Logging;
 
 namespace Hangfire.Profiling
 {
-    internal class SlowLogProfiler : IProfiler
+    internal sealed class SlowLogProfiler : IProfiler
     {
         private static readonly TimeSpan DefaultThreshold = TimeSpan.FromMinutes(1);
 

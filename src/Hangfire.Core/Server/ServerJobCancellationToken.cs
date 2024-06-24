@@ -25,7 +25,7 @@ using System.Linq;
 
 namespace Hangfire.Server
 {
-    internal class ServerJobCancellationToken : IJobCancellationToken, IDisposable
+    internal sealed class ServerJobCancellationToken : IJobCancellationToken, IDisposable
     {
         private static readonly ConcurrentDictionary<string, ConcurrentDictionary<ServerJobCancellationToken, object>> WatchedServers
             = new ConcurrentDictionary<string, ConcurrentDictionary<ServerJobCancellationToken, object>>();
@@ -221,7 +221,7 @@ namespace Hangfire.Server
             }
         }
 
-        private class CancellationTokenHolder : IDisposable
+        private sealed class CancellationTokenHolder : IDisposable
         {
             private readonly CancellationTokenSource _abortedTokenSource;
             private readonly CancellationTokenSource _linkedTokenSource;

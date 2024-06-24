@@ -17,7 +17,7 @@ using System;
 
 namespace Hangfire.SqlServer.Entities
 {
-    internal class SqlHash
+    internal sealed class SqlHash
     {
         public string Key { get; set; }
         public string Field { get; set; }

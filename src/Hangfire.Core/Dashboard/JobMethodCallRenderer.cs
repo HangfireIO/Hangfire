@@ -252,7 +252,7 @@ namespace Hangfire.Dashboard
             return index == -1 ? name : name.Substring(0, index);
         }
 
-        private class ArgumentRenderer
+        private sealed class ArgumentRenderer
         {
             private string _enclosingString;
             private Type _deserializationType;

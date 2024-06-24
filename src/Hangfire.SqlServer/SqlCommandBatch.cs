@@ -20,7 +20,7 @@ using System.Data.Common;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlCommandBatch : IDisposable
+    internal sealed class SqlCommandBatch : IDisposable
     {
         private readonly List<DbCommand> _commandList = new List<DbCommand>();
         private readonly SqlCommandSet _commandSet;
@@ -124,7 +124,7 @@ namespace Hangfire.SqlServer
         }
     }
 
-    internal class SqlCommandBatchParameter
+    internal sealed class SqlCommandBatchParameter
     {
         public SqlCommandBatchParameter(string parameterName, DbType dbType, int? size = null)
         {

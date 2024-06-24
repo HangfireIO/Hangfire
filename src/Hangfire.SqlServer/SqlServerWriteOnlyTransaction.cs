@@ -30,7 +30,7 @@ using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlServerWriteOnlyTransaction : JobStorageTransaction
+    internal sealed class SqlServerWriteOnlyTransaction : JobStorageTransaction
     {
         private readonly Queue<Action<DbConnection, DbTransaction>> _queueCommandQueue
             = new Queue<Action<DbConnection, DbTransaction>>();

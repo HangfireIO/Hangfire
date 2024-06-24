@@ -18,7 +18,7 @@ using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
-    internal class ServerJobCancellationWatcher : IBackgroundProcess
+    internal sealed class ServerJobCancellationWatcher : IBackgroundProcess
     {
         public static readonly TimeSpan DefaultCheckInterval = TimeSpan.FromSeconds(5);
         

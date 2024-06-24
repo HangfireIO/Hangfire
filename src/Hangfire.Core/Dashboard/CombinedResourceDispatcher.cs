@@ -22,7 +22,7 @@ using Hangfire.Annotations;
 
 namespace Hangfire.Dashboard
 {
-    internal class CombinedResourceDispatcher : EmbeddedResourceDispatcher
+    internal sealed class CombinedResourceDispatcher : EmbeddedResourceDispatcher
     {
         private readonly IEnumerable<Tuple<Assembly, string>> _resources;
 

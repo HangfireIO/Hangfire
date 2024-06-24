@@ -23,7 +23,7 @@ using Hangfire.Server;
 namespace Hangfire.SqlServer
 {
 #pragma warning disable 618
-    internal class CountersAggregator : IServerComponent
+    internal sealed class CountersAggregator : IServerComponent
 #pragma warning restore 618
     {
         // This number should be high enough to aggregate counters efficiently,

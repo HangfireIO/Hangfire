@@ -22,7 +22,7 @@ using MQTools;
 
 namespace Hangfire.SqlServer.Msmq
 {
-    internal class MsmqJobQueueMonitoringApi : IPersistentJobQueueMonitoringApi
+    internal sealed class MsmqJobQueueMonitoringApi : IPersistentJobQueueMonitoringApi
     {
         private readonly string _pathPattern;
         private readonly IEnumerable<string> _queues;

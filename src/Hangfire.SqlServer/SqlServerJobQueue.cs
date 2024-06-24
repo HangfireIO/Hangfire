@@ -29,7 +29,7 @@ using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlServerJobQueue : IPersistentJobQueue
+    internal sealed class SqlServerJobQueue : IPersistentJobQueue
     {
         // This is an optimization that helps to overcome the polling delay, when
         // both client and server reside in the same process. Everything is working
@@ -286,7 +286,7 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
         }
 
         [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
-        private class FetchedJob
+        private sealed class FetchedJob
         {
             public long Id { get; set; }
             public long JobId { get; set; }

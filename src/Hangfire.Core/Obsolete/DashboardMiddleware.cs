@@ -25,7 +25,7 @@ using Microsoft.Owin;
 // ReSharper disable once CheckNamespace
 namespace Hangfire.Dashboard
 {
-    internal class DashboardMiddleware : OwinMiddleware
+    internal sealed class DashboardMiddleware : OwinMiddleware
     {
         private readonly string _appPath;
         private readonly int _statsPollingInterval;

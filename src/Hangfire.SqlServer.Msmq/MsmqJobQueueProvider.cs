@@ -17,7 +17,7 @@ using System.Collections.Generic;
 
 namespace Hangfire.SqlServer.Msmq
 {
-    internal class MsmqJobQueueProvider : IPersistentJobQueueProvider
+    internal sealed class MsmqJobQueueProvider : IPersistentJobQueueProvider
     {
         private readonly MsmqJobQueue _jobQueue;
         private readonly MsmqJobQueueMonitoringApi _monitoringApi;

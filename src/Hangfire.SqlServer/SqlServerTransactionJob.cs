@@ -22,7 +22,7 @@ using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlServerTransactionJob : IFetchedJob
+    internal sealed class SqlServerTransactionJob : IFetchedJob
     {
         // Connections to SQL Azure Database that are idle for 30 minutes 
         // or longer will be terminated. And since we are using separate

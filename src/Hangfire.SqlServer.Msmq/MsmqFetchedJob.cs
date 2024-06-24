@@ -19,7 +19,7 @@ using Hangfire.Storage;
 
 namespace Hangfire.SqlServer.Msmq
 {
-    internal class MsmqFetchedJob : IFetchedJob
+    internal sealed class MsmqFetchedJob : IFetchedJob
     {
         private readonly IMsmqTransaction _transaction;
 

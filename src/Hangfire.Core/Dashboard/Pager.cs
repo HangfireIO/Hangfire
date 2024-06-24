@@ -150,7 +150,7 @@ namespace Hangfire.Dashboard
             results.Add(item);
         }
 
-        internal class Item
+        internal sealed class Item
         {
             public Item(int pageIndex, bool disabled, ItemType type)
             {

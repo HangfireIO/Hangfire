@@ -17,7 +17,7 @@ using System;
 
 namespace Hangfire.SqlServer.Entities
 {
-    internal class SqlState
+    internal sealed class SqlState
     {
         public long JobId { get; set; }
         public string Name { get; set; }

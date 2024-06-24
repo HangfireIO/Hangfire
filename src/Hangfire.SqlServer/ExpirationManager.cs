@@ -25,7 +25,7 @@ using Hangfire.Storage;
 namespace Hangfire.SqlServer
 {
 #pragma warning disable 618
-    internal class ExpirationManager : IServerComponent
+    internal sealed class ExpirationManager : IServerComponent
 #pragma warning restore 618
     {
         private const string DistributedLockKey = "locks:expirationmanager";

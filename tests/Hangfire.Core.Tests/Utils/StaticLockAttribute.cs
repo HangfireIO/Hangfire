@@ -6,7 +6,7 @@ using Xunit.Sdk;
 
 namespace Hangfire.Core.Tests
 {
-    internal class StaticLockAttribute : BeforeAfterTestAttribute
+    internal sealed class StaticLockAttribute : BeforeAfterTestAttribute
     {
         private readonly ConcurrentDictionary<Type, object> _locks
             = new ConcurrentDictionary<Type, object>(); 

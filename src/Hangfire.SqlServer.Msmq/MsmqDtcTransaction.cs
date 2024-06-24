@@ -19,7 +19,7 @@ using System.Transactions;
 
 namespace Hangfire.SqlServer.Msmq
 {
-    internal class MsmqDtcTransaction : IMsmqTransaction
+    internal sealed class MsmqDtcTransaction : IMsmqTransaction
     {
         private readonly TransactionScope _scope;
         private TransactionScope _suppressedScope;

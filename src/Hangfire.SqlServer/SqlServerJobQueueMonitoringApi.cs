@@ -30,7 +30,7 @@ using Hangfire.Annotations;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlServerJobQueueMonitoringApi : IPersistentJobQueueMonitoringApi
+    internal sealed class SqlServerJobQueueMonitoringApi : IPersistentJobQueueMonitoringApi
     {
         private static readonly TimeSpan QueuesCacheTimeout = TimeSpan.FromSeconds(5);
 
@@ -142,7 +142,7 @@ from (
             }, queue);
         }
 
-        private class JobIdDto
+        private sealed class JobIdDto
         {
             [UsedImplicitly]
             public long JobId { get; set; }

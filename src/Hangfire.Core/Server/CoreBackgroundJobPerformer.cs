@@ -25,7 +25,7 @@ using Hangfire.Processing;
 
 namespace Hangfire.Server
 {
-    internal class CoreBackgroundJobPerformer : IBackgroundJobPerformer
+    internal sealed class CoreBackgroundJobPerformer : IBackgroundJobPerformer
     {
         internal static readonly Dictionary<Type, Func<PerformContext, object>> Substitutions
             = new Dictionary<Type, Func<PerformContext, object>>

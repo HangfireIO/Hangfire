@@ -931,7 +931,7 @@ namespace Hangfire.Core.Tests.Common
             void DispatchTyped<TCommand>(TCommand command);
         }
 
-        private class CommandDispatcher : ICommandDispatcher
+        private sealed class CommandDispatcher : ICommandDispatcher
         {
             public void DispatchTyped<TCommand>(TCommand command)
             {

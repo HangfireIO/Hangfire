@@ -18,7 +18,7 @@ using Hangfire.Annotations;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlServerJobQueueProvider : IPersistentJobQueueProvider
+    internal sealed class SqlServerJobQueueProvider : IPersistentJobQueueProvider
     {
         private readonly IPersistentJobQueue _jobQueue;
         private readonly IPersistentJobQueueMonitoringApi _monitoringApi;

@@ -31,7 +31,7 @@ using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlServerConnection : JobStorageConnection
+    internal sealed class SqlServerConnection : JobStorageConnection
     {
         private readonly SqlServerStorage _storage;
         private readonly Dictionary<string, HashSet<Guid>> _lockedResources = new Dictionary<string, HashSet<Guid>>();
@@ -846,7 +846,7 @@ order by [Id] desc");
             }
         }
 
-        internal class DisposableLock : IDisposable
+        internal sealed class DisposableLock : IDisposable
         {
             private bool _disposed;
             private readonly SqlServerConnection _connection;

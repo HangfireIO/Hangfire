@@ -21,7 +21,7 @@ namespace Hangfire
 {
     /// <exclude />
     [Obsolete]
-    internal class BootstrapperConfiguration : IBootstrapperConfiguration
+    internal sealed class BootstrapperConfiguration : IBootstrapperConfiguration
     {
         public BootstrapperConfiguration()
         {

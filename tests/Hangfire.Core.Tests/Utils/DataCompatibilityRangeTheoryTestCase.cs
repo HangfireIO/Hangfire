@@ -7,7 +7,7 @@ using Xunit.Sdk;
 
 namespace Hangfire.Core.Tests
 {
-    internal class DataCompatibilityRangeTheoryTestCase : XunitTestCase
+    internal sealed class DataCompatibilityRangeTheoryTestCase : XunitTestCase
     {
         [Obsolete("Called by the de-serializer; should only be called by deriving classes for de-serialization purposes")]
         [UsedImplicitly]

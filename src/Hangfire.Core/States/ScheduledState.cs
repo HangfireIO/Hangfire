@@ -162,7 +162,7 @@ namespace Hangfire.States
             };
         }
 
-        internal class Handler : IStateHandler
+        internal sealed class Handler : IStateHandler
         {
             public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {

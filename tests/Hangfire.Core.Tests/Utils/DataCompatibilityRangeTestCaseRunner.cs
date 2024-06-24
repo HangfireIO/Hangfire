@@ -4,7 +4,7 @@ using Xunit.Sdk;
 
 namespace Hangfire.Core.Tests
 {
-    internal class DataCompatibilityRangeTestCaseRunner : XunitTestCaseRunner
+    internal sealed class DataCompatibilityRangeTestCaseRunner : XunitTestCaseRunner
     {
         public DataCompatibilityRangeTestCaseRunner(
             IXunitTestCase testCase,

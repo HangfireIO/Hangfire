@@ -430,7 +430,7 @@ namespace Hangfire.Storage
             return result;
         }
 
-        private class JobPayload
+        private sealed class JobPayload
         {
             [JsonProperty("t")]
             public string TypeName { get; set; }

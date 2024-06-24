@@ -8,7 +8,7 @@ using Xunit.Sdk;
 namespace Hangfire.Core.Tests
 {
     [UsedImplicitly]
-    internal class DataCompatibilityRangeFactDiscoverer : IXunitTestCaseDiscoverer
+    internal sealed class DataCompatibilityRangeFactDiscoverer : IXunitTestCaseDiscoverer
     {
         public IMessageSink DiagnosticMessageSink { get; }
 

@@ -23,7 +23,7 @@ using Hangfire.Common;
 
 namespace Hangfire
 {
-    internal class RecurringJobEntity
+    internal sealed class RecurringJobEntity
     {
         private static readonly char[] SeparatorCharacters = new[] { ' ', '\t' };
 

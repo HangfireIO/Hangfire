@@ -22,7 +22,7 @@ using System.Reflection;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlCommandSet : IDisposable
+    internal sealed class SqlCommandSet : IDisposable
     {
         private static readonly ConcurrentDictionary<Assembly, Type> SqlCommandSetType = new ConcurrentDictionary<Assembly, Type>();
         private static readonly ConcurrentDictionary<Type, Action<object, DbConnection>> SetConnection = new ConcurrentDictionary<Type, Action<object, DbConnection>>();
