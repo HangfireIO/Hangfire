@@ -42,6 +42,26 @@ namespace Hangfire.SqlServer
             command.Parameters.Add(parameter);
             return command;
         }
+
+        public static DbCommand AddReturnParameter(
+            [NotNull] this DbCommand command,
+            string parameterName,
+            out DbParameter parameter,
+            DbType dbType,
+            int? size = null)
+        {
+            if (command == null) throw new ArgumentNullException(nameof(command));
+
+            parameter = command.CreateParameter();
+            parameter.ParameterName = parameterName;
+            parameter.DbType = dbType;
+            parameter.Direction = ParameterDirection.ReturnValue;
+
+            if (size.HasValue) parameter.Size = size.Value;
+
+            command.Parameters.Add(parameter);
+            return command;
+        }
     }
 
     internal sealed class SqlCommandBatch : IDisposable

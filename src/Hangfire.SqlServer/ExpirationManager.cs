@@ -14,6 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.Threading;
@@ -89,14 +90,7 @@ namespace Hangfire.SqlServer
                 {
                     CleanupTable(GetStateCleanupQuery(_storage), "State", numberOfRecordsInSinglePass,
                         cancellationToken,
-                        command =>
-                        {
-                            var expireMinParameter = command.CreateParameter();
-                            expireMinParameter.ParameterName = "@expireMin";
-                            expireMinParameter.Value = (long)_stateExpirationTimeout.Negate().TotalMinutes;
-
-                            command.Parameters.Add(expireMinParameter);
-                        });
+                        command => command.AddParameter("@expireMin", (long)_stateExpirationTimeout.Negate().TotalMinutes, DbType.Int64));
                 }
                 catch (DbException ex)
                 {
