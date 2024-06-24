@@ -103,11 +103,13 @@ values (@invocationData, @arguments, @createdAt, @expireAt)");
             var invocationData = InvocationData.SerializeJob(job);
             var payload = invocationData.SerializePayload(excludeArguments: true);
 
-            var queryParameters = new DynamicParameters();
-            queryParameters.Add("@invocationData", payload, DbType.String, size: -1);
-            queryParameters.Add("@arguments", invocationData.Arguments, DbType.String, size: -1);
-            queryParameters.Add("@createdAt", createdAt, DbType.DateTime);
-            queryParameters.Add("@expireAt", createdAt.Add(expireIn), DbType.DateTime);
+            Action<DbCommand> queryParameters = cmd => cmd
+                .AddParameter("@invocationData", payload, DbType.String, size: -1)
+                .AddParameter("@arguments", invocationData.Arguments, DbType.String, size: -1)
+                .AddParameter("@createdAt", createdAt, DbType.DateTime)
+                .AddParameter("@expireAt", createdAt.Add(expireIn), DbType.DateTime);
+
+            Action<DbCommand> additionalParameters = null;
 
             var parametersArray = parameters.ToArray();
 
@@ -122,8 +124,9 @@ insert into [{schemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) 
 select @jobId = scope_identity(); select @jobId;
 insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value);
 commit tran;");
-                    queryParameters.Add("@name", parametersArray[0].Key, DbType.String, size: 40);
-                    queryParameters.Add("@value", parametersArray[0].Value, DbType.String, size: -1);
+                    additionalParameters = cmd => cmd
+                        .AddParameter("@name", parametersArray[0].Key, DbType.String, size: 40)
+                        .AddParameter("@value", parametersArray[0].Value, DbType.String, size: -1);
                 }
                 else if (parametersArray.Length == 2)
                 {
@@ -134,10 +137,11 @@ insert into [{schemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) 
 select @jobId = scope_identity(); select @jobId;
 insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name1, @value1), (@jobId, @name2, @value2);
 commit tran;");
-                    queryParameters.Add("@name1", parametersArray[0].Key, DbType.String, size: 40);
-                    queryParameters.Add("@value1", parametersArray[0].Value, DbType.String, size: -1);
-                    queryParameters.Add("@name2", parametersArray[1].Key, DbType.String, size: 40);
-                    queryParameters.Add("@value2", parametersArray[1].Value, DbType.String, size: -1);
+                    additionalParameters = cmd => cmd
+                        .AddParameter("@name1", parametersArray[0].Key, DbType.String, size: 40)
+                        .AddParameter("@value1", parametersArray[0].Value, DbType.String, size: -1)
+                        .AddParameter("@name2", parametersArray[1].Key, DbType.String, size: 40)
+                        .AddParameter("@value2", parametersArray[1].Value, DbType.String, size: -1);
                 }
                 else if (parametersArray.Length == 3)
                 {
@@ -148,12 +152,13 @@ insert into [{schemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) 
 select @jobId = scope_identity(); select @jobId;
 insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name1, @value1), (@jobId, @name2, @value2), (@jobId, @name3, @value3);
 commit tran;");
-                    queryParameters.Add("@name1", parametersArray[0].Key, DbType.String, size: 40);
-                    queryParameters.Add("@value1", parametersArray[0].Value, DbType.String, size: -1);
-                    queryParameters.Add("@name2", parametersArray[1].Key, DbType.String, size: 40);
-                    queryParameters.Add("@value2", parametersArray[1].Value, DbType.String, size: -1);
-                    queryParameters.Add("@name3", parametersArray[2].Key, DbType.String, size: 40);
-                    queryParameters.Add("@value3", parametersArray[2].Value, DbType.String, size: -1);
+                    additionalParameters = cmd => cmd
+                        .AddParameter("@name1", parametersArray[0].Key, DbType.String, size: 40)
+                        .AddParameter("@value1", parametersArray[0].Value, DbType.String, size: -1)
+                        .AddParameter("@name2", parametersArray[1].Key, DbType.String, size: 40)
+                        .AddParameter("@value2", parametersArray[1].Value, DbType.String, size: -1)
+                        .AddParameter("@name3", parametersArray[2].Key, DbType.String, size: 40)
+                        .AddParameter("@value3", parametersArray[2].Value, DbType.String, size: -1);
                 }
                 else if (parametersArray.Length == 4)
                 {
@@ -164,29 +169,38 @@ insert into [{schemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) 
 select @jobId = scope_identity(); select @jobId;
 insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name1, @value1), (@jobId, @name2, @value2), (@jobId, @name3, @value3), (@jobId, @name4, @value4);
 commit tran;");
-                    queryParameters.Add("@name1", parametersArray[0].Key, DbType.String, size: 40);
-                    queryParameters.Add("@value1", parametersArray[0].Value, DbType.String, size: -1);
-                    queryParameters.Add("@name2", parametersArray[1].Key, DbType.String, size: 40);
-                    queryParameters.Add("@value2", parametersArray[1].Value, DbType.String, size: -1);
-                    queryParameters.Add("@name3", parametersArray[2].Key, DbType.String, size: 40);
-                    queryParameters.Add("@value3", parametersArray[2].Value, DbType.String, size: -1);
-                    queryParameters.Add("@name4", parametersArray[3].Key, DbType.String, size: 40);
-                    queryParameters.Add("@value4", parametersArray[3].Value, DbType.String, size: -1);
+                    additionalParameters = cmd => cmd
+                        .AddParameter("@name1", parametersArray[0].Key, DbType.String, size: 40)
+                        .AddParameter("@value1", parametersArray[0].Value, DbType.String, size: -1)
+                        .AddParameter("@name2", parametersArray[1].Key, DbType.String, size: 40)
+                        .AddParameter("@value2", parametersArray[1].Value, DbType.String, size: -1)
+                        .AddParameter("@name3", parametersArray[2].Key, DbType.String, size: 40)
+                        .AddParameter("@value3", parametersArray[2].Value, DbType.String, size: -1)
+                        .AddParameter("@name4", parametersArray[3].Key, DbType.String, size: 40)
+                        .AddParameter("@value4", parametersArray[3].Value, DbType.String, size: -1);
                 }
 
-                return _storage.UseConnection(_dedicatedConnection, static (storage, connection, ctx) => connection
-                    .ExecuteScalar<long>(ctx.Key, ctx.Value, commandTimeout: storage.CommandTimeout)
-                    .ToString(CultureInfo.InvariantCulture),
-                    new KeyValuePair<string, DynamicParameters>(queryString, queryParameters));
+                return _storage.UseConnection(_dedicatedConnection, static (storage, connection, ctx) =>
+                    {
+                        using var command = connection.Create(ctx.Key, timeout: storage.CommandTimeout);
+                        ctx.Value.Key(command);
+                        ctx.Value.Value?.Invoke(command);
+
+                        return ((long)command.ExecuteScalar()).ToString(CultureInfo.InvariantCulture);
+                    },
+                    new KeyValuePair<string, KeyValuePair<Action<DbCommand>, Action<DbCommand>>>(
+                        queryString,
+                        new KeyValuePair<Action<DbCommand>, Action<DbCommand>>(queryParameters, additionalParameters)));
             }
 
             return _storage.UseTransaction(_dedicatedConnection, static (storage, connection, transaction, triple) =>
             {
-                var jobId = connection.ExecuteScalar<long>(
-                    triple.Item1,
-                    triple.Item2,
-                    transaction,
-                    commandTimeout: storage.CommandTimeout).ToString(CultureInfo.InvariantCulture);
+                using var jobCommand = connection.Create(triple.Item1, timeout: storage.CommandTimeout);
+                triple.Item2(jobCommand);
+
+                jobCommand.Transaction = transaction;
+
+                var jobId = ((long)jobCommand.ExecuteScalar()).ToString(CultureInfo.InvariantCulture);
 
                 var query = storage.GetQueryFromTemplate(static schemaName =>
 $@"insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value)");
