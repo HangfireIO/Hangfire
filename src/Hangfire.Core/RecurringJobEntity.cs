@@ -127,6 +127,7 @@ namespace Hangfire
         public int? Version { get; private set; }
         public int RetryAttempt { get; set; }
         public string Error { get; set; }
+        public bool Disabled { get; set; }
 
         public void ScheduleNext(ITimeZoneResolver timeZoneResolver, DateTime from)
         {
