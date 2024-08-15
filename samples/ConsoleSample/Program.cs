@@ -49,6 +49,10 @@ namespace ConsoleSample
             RecurringJob.AddOrUpdate("Console.WriteLine", () => Console.WriteLine("Hello, world!"), Cron.Minutely);
             RecurringJob.AddOrUpdate("hourly", () => Console.WriteLine("Hello"), "25 15 * * *");
             RecurringJob.AddOrUpdate("neverfires", () => Console.WriteLine("Can only be triggered"), "0 0 31 2 *");
+            RecurringJob.AddOrUpdate("enable_disable", () => Console.WriteLine("Hello, you can disable me!"), "*/15 * * * * *", new RecurringJobOptions
+            {
+                IsDisabled = true,
+            });
 
             RecurringJob.AddOrUpdate("Hawaiian", () => Console.WriteLine("Hawaiian"), "15 08 * * *", new RecurringJobOptions
             {

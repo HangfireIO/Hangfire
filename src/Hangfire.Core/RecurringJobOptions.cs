@@ -23,6 +23,7 @@ namespace Hangfire
     {
         private TimeZoneInfo _timeZone;
         private string _queueName;
+        private bool _isDisabled;
 
         public RecurringJobOptions()
         {
@@ -31,6 +32,7 @@ namespace Hangfire
             QueueName = EnqueuedState.DefaultQueue;
 #pragma warning restore 618
             MisfireHandling = MisfireHandlingMode.Relaxed;
+            IsDisabled = false;
         }
 
         [NotNull]
@@ -58,5 +60,16 @@ namespace Hangfire
         }
 
         public MisfireHandlingMode MisfireHandling { get; set; }
+
+
+        [NotNull]
+        public bool IsDisabled 
+        {
+            get { return _isDisabled; }
+            set
+            {
+                _isDisabled = value;
+            }
+        }
     }
 }

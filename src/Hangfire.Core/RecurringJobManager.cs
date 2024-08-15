@@ -129,6 +129,12 @@ namespace Hangfire
                     scheduleChanged = true;
                 }
 
+                if (!options.IsDisabled.Equals(recurringJob.Disabled)) 
+                {
+                    recurringJob.Disabled = options.IsDisabled;
+                    scheduleChanged = true;
+                }
+
 #pragma warning disable 618
                 recurringJob.Queue = options.QueueName;
 #pragma warning restore 618
@@ -235,6 +241,34 @@ namespace Hangfire
                 transaction.RemoveFromSet("recurring-jobs", recurringJobId);
 
                 transaction.Commit();
+            }
+        }
+
+        public void EnableOrDisable(string recurringJobId)
+        {
+            if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
+
+            using (var connection = _storage.GetConnection())
+            using (connection.AcquireDistributedRecurringJobLock(recurringJobId, DefaultTimeout))
+            {
+                var now = _nowFactory();
+                var recurringJob = connection.GetRecurringJob(recurringJobId);
+
+                if (recurringJob == null) { 
+                    return;
+                }
+
+                recurringJob.Disabled = !recurringJob.Disabled;
+                recurringJob.ScheduleNext(_timeZoneResolver, now.AddSeconds(-1));
+
+                if (recurringJob.IsChanged(now, out var changedFields))
+                {
+                    using (var transaction = connection.CreateWriteTransaction())
+                    {
+                        transaction.UpdateRecurringJob(recurringJob, changedFields, _logger);
+                        transaction.Commit();
+                    }
+                }
             }
         }
     }

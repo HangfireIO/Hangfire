@@ -68,6 +68,17 @@
                             @Strings.Common_Delete
                         </button>
                     }
+                    @if (!IsReadOnly)
+                    {
+                        <button class="js-jobs-list-command btn btn-sm btn-default"
+                                data-url="@Url.To("/recurring/enableordisable")"
+                                data-loading-text="..."
+                                data-confirm="@Strings.Common_EnableDisableConfirm"
+                                disabled="disabled">
+                            <span class="glyphicon glyphicon-random"></span>
+                            @Strings.Common_EnableDisable
+                        </button>
+                    }
                     @if (pager != null)
                     {
                         @: @Html.PerPageSelector(pager)
@@ -206,9 +217,12 @@
                                             {
                                                 <span class="label label-danger text-uppercase">@Strings.Common_Error</span>
                                             }
+                                            if(job.Disabled){
+                                                <span class="label label-default text-uppercase" title="@Strings.RecurringJobsPage_RecurringJobDisabled_Tooltip">@Strings.Common_Disabled</span>
+                                            }
                                             else
                                             {
-                                                <span class="label label-default text-uppercase" title="@Strings.RecurringJobsPage_RecurringJobDisabled_Tooltip">@Strings.Common_Disabled</span>
+                                                <span class="label label-default text-uppercase" title="@Strings.RecurringJobsPage_NoNextExecution_Tooltip">@Strings.Common_Disabled</span>
                                             }
 
                                         }

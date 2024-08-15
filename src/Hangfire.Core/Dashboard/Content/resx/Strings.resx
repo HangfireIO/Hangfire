@@ -295,7 +295,7 @@
   <data name="LayoutPage_Footer_StorageTime" xml:space="preserve">
     <value>Storage Time:</value>
   </data>
-    <data name="LayoutPage_Footer_TimeIsOutOfSync" xml:space="preserve">
+  <data name="LayoutPage_Footer_TimeIsOutOfSync" xml:space="preserve">
     <value>Application time is out of sync with storage time</value>
   </data>
   <data name="LayoutPage_Footer_Time" xml:space="preserve">
@@ -542,7 +542,7 @@
     <value>Disabled</value>
   </data>
   <data name="RecurringJobsPage_RecurringJobDisabled_Tooltip" xml:space="preserve">
-    <value>Cron expression is invalid or don't have any occurrences over the next 100 years</value>
+    <value>Job is disabled</value>
   </data>
   <data name="ServersPage_Note_Text" xml:space="preserve">
     <value>Some of the servers don't have heartbeat reported within the last minute and may be aborted. If they don't report heartbeat in the near future, they will be removed automatically after timeout is exceeded, no manual action is required.
@@ -577,5 +577,17 @@
   </data>
   <data name="Metrics_SQLServer_LogFilesSize" xml:space="preserve">
     <value>Log File(s) Used (MB)</value>
+  </data>
+  <data name="RecurringJobsPage_NoNextExecution_Tooltip" xml:space="preserve">
+    <value>Cron expression is invalid or don't have any occurrences over the next 100 years</value>
+  </data>
+  <data name="Common_EnableDisable" xml:space="preserve">
+    <value>Enable/Disable</value>
+  </data>
+  <data name="RecurringJobsPage_Table_Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="Common_EnableDisableConfirm" xml:space="preserve">
+    <value>Do you really want to switch ENABLE or DISABLE ALL selected jobs?</value>
   </data>
 </root>

@@ -205,6 +205,24 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Enable/Disable.
+        /// </summary>
+        public static string Common_EnableDisable {
+            get {
+                return ResourceManager.GetString("Common_EnableDisable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Do you really want to switch ENABLE or DISABLE ALL selected jobs?.
+        /// </summary>
+        public static string Common_EnableDisableConfirm {
+            get {
+                return ResourceManager.GetString("Common_EnableDisableConfirm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Enqueue jobs.
         /// </summary>
         public static string Common_EnqueueButton_Text {
@@ -1099,9 +1117,27 @@ namespace Hangfire.Dashboard.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Cron expression is invalid or don&apos;t have any occurrences over the next 100 years.
         /// </summary>
+        public static string RecurringJobsPage_NoNextExecution_Tooltip {
+            get {
+                return ResourceManager.GetString("RecurringJobsPage_NoNextExecution_Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Job is disabled.
+        /// </summary>
         public static string RecurringJobsPage_RecurringJobDisabled_Tooltip {
             get {
                 return ResourceManager.GetString("RecurringJobsPage_RecurringJobDisabled_Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Active.
+        /// </summary>
+        public static string RecurringJobsPage_Table_Active {
+            get {
+                return ResourceManager.GetString("RecurringJobsPage_Table_Active", resourceCulture);
             }
         }
         

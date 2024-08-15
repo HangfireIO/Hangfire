@@ -59,7 +59,8 @@ namespace Hangfire.Core.Tests.Server
             {
                 { "Cron", _expressionString },
                 { "Job", InvocationData.SerializeJob(Job.FromExpression(() => Console.WriteLine())).SerializePayload() },
-                { "TimeZoneId", timeZone.Id }
+                { "TimeZoneId", timeZone.Id },
+                { "Disabled", "false" }
             };
 
             _connection = new Mock<JobStorageConnection>();

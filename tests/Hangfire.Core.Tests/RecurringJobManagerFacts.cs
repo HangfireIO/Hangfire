@@ -295,7 +295,8 @@ namespace Hangfire.Core.Tests
                 { "NextExecution", JobHelper.SerializeDateTime(_now) },
                 { "Queue", "default" },
                 { "TimeZoneId", "UTC" },
-                { "LastJobId", "1384" }
+                { "LastJobId", "1384" },
+                { "Disabled", "false" }
             });
 
             var manager = CreateManager();

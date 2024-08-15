@@ -171,6 +171,11 @@ namespace Hangfire.Storage
                     dto.RetryAttempt = 0;
                 }
 
+                if (hash.TryGetValue("Disabled", out var disabledString) && bool.TryParse(disabledString, out var disabled))
+                {
+                    dto.Disabled = disabled;
+                }
+
                 result.Add(dto);
             }
             
