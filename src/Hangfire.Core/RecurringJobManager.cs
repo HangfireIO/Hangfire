@@ -244,7 +244,17 @@ namespace Hangfire
             }
         }
 
-        public void EnableOrDisable(string recurringJobId)
+        public void EnableIfExists(string recurringJobId)
+        {
+            EnableOrDisable(recurringJobId, false);
+        }
+
+        public void DisableIfExists(string recurringJobId)
+        {
+            EnableOrDisable(recurringJobId, true);
+        }
+
+        private void EnableOrDisable(string recurringJobId, bool disabled = false)
         {
             if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
 
@@ -258,7 +268,12 @@ namespace Hangfire
                     return;
                 }
 
-                recurringJob.Disabled = !recurringJob.Disabled;
+                if(recurringJob.Disabled == disabled)
+                {
+                    return;
+                }
+
+                recurringJob.Disabled = disabled;
                 recurringJob.ScheduleNext(_timeZoneResolver, now.AddSeconds(-1));
 
                 if (recurringJob.IsChanged(now, out var changedFields))

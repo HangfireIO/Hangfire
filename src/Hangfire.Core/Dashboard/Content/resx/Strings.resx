@@ -581,13 +581,25 @@
   <data name="RecurringJobsPage_NoNextExecution_Tooltip" xml:space="preserve">
     <value>Cron expression is invalid or don't have any occurrences over the next 100 years</value>
   </data>
-  <data name="Common_EnableDisable" xml:space="preserve">
-    <value>Enable/Disable</value>
+  <data name="Common_Enable" xml:space="preserve">
+    <value>Enable</value>
   </data>
   <data name="RecurringJobsPage_Table_Active" xml:space="preserve">
     <value>Active</value>
   </data>
-  <data name="Common_EnableDisableConfirm" xml:space="preserve">
-    <value>Do you really want to switch ENABLE or DISABLE ALL selected jobs?</value>
+  <data name="Common_EnableConfirm" xml:space="preserve">
+    <value>Do you really want to ENABLE ALL selected jobs?</value>
+  </data>
+  <data name="Common_Disable" xml:space="preserve">
+    <value>Disable</value>
+  </data>
+  <data name="Common_DisableConfirm" xml:space="preserve">
+    <value>Do you really want to DISABLE ALL selected jobs?</value>
+  </data>
+  <data name="Common_Disabling" xml:space="preserve">
+    <value>Disabling...</value>
+  </data>
+  <data name="Common_Enabling" xml:space="preserve">
+    <value>Enabling...</value>
   </data>
 </root>

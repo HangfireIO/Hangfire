@@ -37,6 +37,7 @@ namespace Hangfire
 
         void Trigger([NotNull] string recurringJobId);
         void RemoveIfExists([NotNull] string recurringJobId);
-        void EnableOrDisable([NotNull] string recurringJobId);
+        void EnableIfExists([NotNull] string recurringJobId);
+        void DisableIfExists([NotNull] string recurringJobId);
     }
 }

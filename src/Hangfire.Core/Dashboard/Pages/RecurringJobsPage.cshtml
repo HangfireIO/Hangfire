@@ -71,12 +71,21 @@
                     @if (!IsReadOnly)
                     {
                         <button class="js-jobs-list-command btn btn-sm btn-default"
-                                data-url="@Url.To("/recurring/enableordisable")"
-                                data-loading-text="..."
-                                data-confirm="@Strings.Common_EnableDisableConfirm"
+                                data-url="@Url.To("/recurring/enable")"
+                                data-loading-text="@Strings.Common_Enabling"
+                                data-confirm="@Strings.Common_EnableConfirm"
                                 disabled="disabled">
-                            <span class="glyphicon glyphicon-random"></span>
-                            @Strings.Common_EnableDisable
+                            <span class="glyphicon glyphicon-play"></span>
+                            @Strings.Common_Enable
+                        </button>
+
+                        <button class="js-jobs-list-command btn btn-sm btn-default"
+                                data-url="@Url.To("/recurring/disable")"
+                                data-loading-text="@Strings.Common_Disabling"
+                                data-confirm="@Strings.Common_DisableConfirm"
+                                disabled="disabled">
+                            <span class="glyphicon glyphicon-stop"></span>
+                            @Strings.Common_Disable
                         </button>
                     }
                     @if (pager != null)

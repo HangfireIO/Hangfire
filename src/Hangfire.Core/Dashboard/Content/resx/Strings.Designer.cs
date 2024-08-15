@@ -196,6 +196,24 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Disable.
+        /// </summary>
+        public static string Common_Disable {
+            get {
+                return ResourceManager.GetString("Common_Disable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Do you really want to DISABLE ALL selected jobs?.
+        /// </summary>
+        public static string Common_DisableConfirm {
+            get {
+                return ResourceManager.GetString("Common_DisableConfirm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Disabled.
         /// </summary>
         public static string Common_Disabled {
@@ -205,20 +223,38 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enable/Disable.
+        ///   Looks up a localized string similar to Disabling....
         /// </summary>
-        public static string Common_EnableDisable {
+        public static string Common_Disabling {
             get {
-                return ResourceManager.GetString("Common_EnableDisable", resourceCulture);
+                return ResourceManager.GetString("Common_Disabling", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Do you really want to switch ENABLE or DISABLE ALL selected jobs?.
+        ///   Looks up a localized string similar to Enable.
         /// </summary>
-        public static string Common_EnableDisableConfirm {
+        public static string Common_Enable {
             get {
-                return ResourceManager.GetString("Common_EnableDisableConfirm", resourceCulture);
+                return ResourceManager.GetString("Common_Enable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Do you really want to ENABLE ALL selected jobs?.
+        /// </summary>
+        public static string Common_EnableConfirm {
+            get {
+                return ResourceManager.GetString("Common_EnableConfirm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enabling....
+        /// </summary>
+        public static string Common_Enabling {
+            get {
+                return ResourceManager.GetString("Common_Enabling", resourceCulture);
             }
         }
         
