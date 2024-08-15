@@ -1,0 +1,17 @@
+Clone source code from : https://github.com/HangfireIO/Hangfire
+
+Download the nuget package from https://www.nuget.org/packages/RazorGenerator.MsBuild
+use the 7Zip and extract content to razorgenerator.msbuild.2.5.0 folder
+Place the "razorgenerator.msbuild.2.5.0 " under <Hangfire source code location>/packages/
+Build the Hangfire solution - should be build without errors
+
+Run the application  samples/NetcoreSample
+this is not running -> need to install the 'Microsoft.Data.SqlClient'
+After installing 'Microsoft.Data.SqlClient' there is a connection DB connection string issue
+create the 'Hangfire.Sample' database in your SQL server and point the connection to that DB in Program.cs
+samples/NetcoreSample doent set up for Hanfiredashboad
+
+
+Run the application  samples/ConsoleSample
+create the 'Hangfire.Sample' database in your SQL server and point the connection to that DB in Program.cs
+

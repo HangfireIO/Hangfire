@@ -136,7 +136,7 @@
                                                 {
                                                     RecurringJobEntity.ParseCronExpression(job.Cron);
                                                 }
-                                                catch (Exception ex) when (ex.IsCatchableExceptionType())
+                                                catch (Exception ex)
                                                 {
                                                     cronDescription = ex.Message;
                                                     cronError = true;
@@ -183,7 +183,7 @@
                                                 var resolver = DashboardOptions.TimeZoneResolver ?? new DefaultTimeZoneResolver();
                                                 displayName = resolver.GetTimeZoneById(job.TimeZoneId).DisplayName;
                                             }
-                                            catch (Exception ex) when (ex.IsCatchableExceptionType())
+                                            catch (Exception ex)
                                             {
                                                 displayName = null;
                                                 exception = ex;
