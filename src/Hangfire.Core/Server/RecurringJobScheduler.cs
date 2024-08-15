@@ -293,6 +293,11 @@ namespace Hangfire.Server
                     return;
                 }
 
+                if (!recurringJob.Enabled)
+                {
+                    return;
+                }
+
                 ScheduleRecurringJob(context, connection, recurringJobId, recurringJob, now);
             }
         }

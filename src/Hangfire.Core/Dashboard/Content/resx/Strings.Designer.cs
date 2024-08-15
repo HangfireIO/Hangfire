@@ -196,11 +196,74 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Disable.
+        /// </summary>
+        public static string Common_Disable {
+            get {
+                return ResourceManager.GetString("Common_Disable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Do you really want to DISABLE ALL selected jobs?.
+        /// </summary>
+        public static string Common_DisableConfirm {
+            get {
+                return ResourceManager.GetString("Common_DisableConfirm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Disabled.
         /// </summary>
         public static string Common_Disabled {
             get {
                 return ResourceManager.GetString("Common_Disabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disabling....
+        /// </summary>
+        public static string Common_Disabling {
+            get {
+                return ResourceManager.GetString("Common_Disabling", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable.
+        /// </summary>
+        public static string Common_Enable {
+            get {
+                return ResourceManager.GetString("Common_Enable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Do you really want to ENABLE ALL selected jobs?.
+        /// </summary>
+        public static string Common_EnableConfirm {
+            get {
+                return ResourceManager.GetString("Common_EnableConfirm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enabled.
+        /// </summary>
+        public static string Common_Enabled {
+            get {
+                return ResourceManager.GetString("Common_Enabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enabling....
+        /// </summary>
+        public static string Common_Enabling {
+            get {
+                return ResourceManager.GetString("Common_Enabling", resourceCulture);
             }
         }
         

@@ -58,6 +58,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreSample", "samples\Ne
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.NetCore", "src\Hangfire.NetCore\Hangfire.NetCore.csproj", "{AA8E3A67-8731-423A-9B69-EE44EC6B8E1A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinimalApiSample", "samples\MinimalApiSample\MinimalApiSample.csproj", "{BB3A67A7-BDC8-4B27-85F4-EE3B27C33F61}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -104,6 +106,10 @@ Global
 		{AA8E3A67-8731-423A-9B69-EE44EC6B8E1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA8E3A67-8731-423A-9B69-EE44EC6B8E1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA8E3A67-8731-423A-9B69-EE44EC6B8E1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB3A67A7-BDC8-4B27-85F4-EE3B27C33F61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB3A67A7-BDC8-4B27-85F4-EE3B27C33F61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB3A67A7-BDC8-4B27-85F4-EE3B27C33F61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB3A67A7-BDC8-4B27-85F4-EE3B27C33F61}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -114,6 +120,7 @@ Global
 		{6DFFA275-C483-4501-823A-741AC9EC0846} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
 		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
 		{FA751692-20C8-4986-8164-D21F505B2172} = {119DA7FA-B94C-4B63-AEC9-428EF834E0D8}
+		{BB3A67A7-BDC8-4B27-85F4-EE3B27C33F61} = {119DA7FA-B94C-4B63-AEC9-428EF834E0D8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7597454C-C272-4016-87A2-CF1196347355}

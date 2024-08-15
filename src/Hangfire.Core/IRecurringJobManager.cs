@@ -25,6 +25,9 @@ namespace Hangfire
 
         [CanBeNull]
         string TriggerJob([NotNull] string recurringJobId);
+        void DisableIfExists([NotNull] string recurringJobId);
+        void EnableIfExists([NotNull] string recurringJobId);
+        void RescheduleIfExists([NotNull] string recurringJobId, [NotNull] string cronExpression);
     }
 
     public interface IRecurringJobManager

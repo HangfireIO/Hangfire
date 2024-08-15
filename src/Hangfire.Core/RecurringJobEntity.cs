@@ -109,6 +109,11 @@ namespace Hangfire
             {
                 Error = error;
             }
+
+            if (recurringJob.TryGetValue("Enabled", out var enabled) && !String.IsNullOrWhiteSpace(enabled))
+            {
+                Enabled = bool.Parse(enabled);
+            }
         }
 
         public string RecurringJobId { get; }
@@ -127,7 +132,7 @@ namespace Hangfire
         public int? Version { get; private set; }
         public int RetryAttempt { get; set; }
         public string Error { get; set; }
-        public bool Disabled { get; set; }
+        public bool Enabled { get; set; } = true;
 
         public void ScheduleNext(ITimeZoneResolver timeZoneResolver, DateTime from)
         {
@@ -273,6 +278,11 @@ namespace Hangfire
                 {
                     result.Add("RetryAttempt", retryAttemptValue);
                 }
+            }
+
+            if ((_recurringJob.TryGetValue("Enabled", out var enabled) ? enabled : "True") != Enabled.ToString())
+            {
+                result.Add("Enabled", enabled);
             }
 
             return result;

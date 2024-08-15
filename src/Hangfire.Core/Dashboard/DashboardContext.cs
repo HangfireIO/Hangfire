@@ -59,5 +59,10 @@ namespace Hangfire.Dashboard
                 JobFilterProviders.Providers,
                 Options.TimeZoneResolver ?? new DefaultTimeZoneResolver());
         }
+
+        public virtual IRecurringJobManagerV2 GetRecurringJobManagerV2()
+        {
+            return (IRecurringJobManagerV2)GetRecurringJobManager();
+        }
     }
 }
