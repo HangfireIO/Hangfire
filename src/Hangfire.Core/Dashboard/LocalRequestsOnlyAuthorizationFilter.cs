@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 
 namespace Hangfire.Dashboard
 {
@@ -39,7 +40,8 @@ namespace Hangfire.Dashboard
             if (context.Request.RemoteIpAddress == context.Request.LocalIpAddress)
                 return true;
 
-            return false;
+            // Handle addresses such as ::ffff:127.0.0.1 (IP v4 mapped to IP v6)
+            return IPAddress.TryParse(context.Request.RemoteIpAddress, out IPAddress address) && IPAddress.IsLoopback(address);
         }
 
 #if FEATURE_OWIN
@@ -59,7 +61,8 @@ namespace Hangfire.Dashboard
             if (context.Request.RemoteIpAddress == context.Request.LocalIpAddress)
                 return true;
 
-            return false;
+            // Handle addresses such as ::ffff:127.0.0.1 (IP v4 mapped to IP v6)
+            return IPAddress.TryParse(context.Request.RemoteIpAddress, out IPAddress address) && IPAddress.IsLoopback(address);
         }
 #endif
     }

@@ -1,4 +1,4 @@
-Include "packages\Hangfire.Build.0.4.5\tools\psake-common.ps1"
+Include "packages\Hangfire.Build.0.5.0\tools\psake-common.ps1"
 
 Task Default -Depends Pack
 
