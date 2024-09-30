@@ -57,7 +57,7 @@ namespace Hangfire.Processing
                 try
                 {
                     var logger = LogProvider.GetLogger(typeof(TaskExtensions));
-                    logger.Error($"Actual wait time for non-canceled token was '{stopwatch.Elapsed}' instead of '{timeout}', wait result: {waitResult}, using protective wait. Please report this to Hangfire developers.");
+                    logger.Error($"Actual wait time for non-canceled token was '{stopwatch.Elapsed.TotalMilliseconds}' ms instead of '{timeout.TotalMilliseconds}' ms, wait result: {waitResult}, using protective wait. Please report this to Hangfire developers.");
                 }
                 finally
                 {
