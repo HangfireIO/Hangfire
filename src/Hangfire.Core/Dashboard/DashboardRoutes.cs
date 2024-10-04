@@ -22,6 +22,19 @@ using Hangfire.States;
 
 namespace Hangfire.Dashboard
 {
+    /// <summary>
+    /// Provides the routing mechanisms for the Dashboard UI. This class is used to register custom
+    /// request dispatchers, allowing developers to write extensions for the Dashboard UI, such as
+    /// custom pages, API endpoints or adding custom JavaScript or CSS files.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="DashboardRoutes"/> class contains a collection of routes that the Dashboard UI uses to dispatch requests to handlers.
+    /// Developers can use this class to add custom scripts, stylesheets, and register custom routes for extending the dashboard functionality.
+    /// 
+    /// To add a custom route, use the <see cref="DashboardRoutes.Routes"/> property which is an instance of <see cref="RouteCollection"/>.
+    /// </remarks>
+    /// <seealso cref="RouteCollection"/>
+    /// <seealso cref="IDashboardDispatcher"/>
     public static class DashboardRoutes
     {
         private static readonly List<Tuple<Assembly, string>> JavaScripts = new List<Tuple<Assembly, string>>();
@@ -187,8 +200,22 @@ namespace Hangfire.Dashboard
             #endregion
         }
 
+        /// <summary>
+        /// Gets the collection of routes for the Dashboard UI. Use this property to register
+        /// custom request dispatchers.
+        /// </summary>
         public static RouteCollection Routes { get; }
 
+        /// <summary>
+        /// Adds a stylesheet resource embedded into the given assembly to be included in the dashboard.
+        /// </summary>
+        /// <remarks>
+        /// The specified resource should be an embedded resource file within the referenced assembly.
+        /// You can discover embedded resource names by calling the <c>assembly.GetManifestResourceNames()</c> method.
+        /// </remarks>
+        /// <param name="assembly">The assembly containing the embedded stylesheet resource.</param>
+        /// <param name="resource">The name of the stylesheet embedded resource.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="assembly"/> or <paramref name="resource"/> is <c>null</c>.</exception>
         public static void AddStylesheet([NotNull] Assembly assembly, [NotNull] string resource)
         {
             if (assembly == null) throw new ArgumentNullException(nameof(assembly));
@@ -201,6 +228,17 @@ namespace Hangfire.Dashboard
             }
         }
 
+        /// <summary>
+        /// Adds a resource embedded into the given assembly that will only be included in the dashboard
+        /// when the <see cref="DashboardOptions.DarkModeEnabled"/> is set to <c>true</c>.
+        /// </summary>
+        /// <remarks>
+        /// The specified resource should be an embedded resource file within the referenced assembly.
+        /// You can discover embedded resource names by calling the <c>assembly.GetManifestResourceNames()</c> method.
+        /// </remarks>
+        /// <param name="assembly">The assembly containing the dark-mode stylesheet embedded resource.</param>
+        /// <param name="resource">The name of the dark-mode stylesheet embedded resource.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="assembly"/> or <paramref name="resource"/> is <c>null</c>.</exception>
         public static void AddStylesheetDarkMode([NotNull] Assembly assembly, [NotNull] string resource)
         {
             if (assembly == null) throw new ArgumentNullException(nameof(assembly));
@@ -213,6 +251,16 @@ namespace Hangfire.Dashboard
             }
         }
 
+        /// <summary>
+        /// Adds a JavaScript resource embedded into the given assembly to be included in the dashboard.
+        /// </summary>
+        /// <remarks>
+        /// The specified resource should be an embedded resource file within the referenced assembly.
+        /// You can discover embedded resource names by calling the <c>assembly.GetManifestResourceNames()</c> method.
+        /// </remarks>
+        /// <param name="assembly">The assembly containing the JavaScript embedded resource.</param>
+        /// <param name="resource">The name of the JavaScript embedded resource.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="assembly"/> or <paramref name="resource"/> is <c>null</c>.</exception>
         public static void AddJavaScript([NotNull] Assembly assembly, [NotNull] string resource)
         {
             if (assembly == null) throw new ArgumentNullException(nameof(assembly));

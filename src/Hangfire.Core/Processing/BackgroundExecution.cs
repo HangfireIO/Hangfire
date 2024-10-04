@@ -475,21 +475,21 @@ namespace Hangfire.Processing
                     // If threshold is zero, we'll go to the Failed state directly and log error anyway.
                     if (_options.ErrorThreshold > TimeSpan.Zero)
                     {
-                        _logger.DebugException($"{GetExecutionTemplate()} is in the Faulted state now due to an exception, execution will be retried no more than in {retryDelay}", exception);
+                        _logger.DebugException($"{GetExecutionTemplate()} is in the Faulted state now due to an exception, execution will be retried in no more than {retryDelay}", exception);
                     }
                 }
 
                 if (_failedSince == null && _faultedSince.Elapsed > _options.ErrorThreshold)
                 {
                     // Transition to Failed state, we should log the error message.
-                    _logger.ErrorException($"{GetExecutionTemplate()} is in the Failed state now due to an exception, execution will be retried no more than in {retryDelay}", exception);
+                    _logger.ErrorException($"{GetExecutionTemplate()} is in the Failed state now due to an exception, execution will be retried in no more than {retryDelay}", exception);
                     _failedSince = Stopwatch.StartNew();
                 }
                 else if (_failedSince != null && _lastException.Elapsed >= _options.StillErrorThreshold)
                 {
                     // Still in the Failed state, we should log the error message as a reminder,
                     // but shouldn't do this too often, especially for short retry intervals.
-                    _logger.ErrorException($"{GetExecutionTemplate()} is still in the Failed state for {_failedSince?.Elapsed} due to an exception, will be retried no more than in {retryDelay}", exception);
+                    _logger.ErrorException($"{GetExecutionTemplate()} is still in the Failed state for {_failedSince?.Elapsed} due to an exception, will be retried in no more than {retryDelay}", exception);
                 }
             }
         }
