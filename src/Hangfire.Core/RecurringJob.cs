@@ -625,6 +625,21 @@ namespace Hangfire
             Instance.Value.RemoveIfExists(recurringJobId);
         }
 
+        public static void DisableIfExists([NotNull] string recurringJobId)
+        {
+            Instance.Value.DisableIfExists(recurringJobId);
+        }
+
+        public static void EnableIfExists([NotNull] string recurringJobId)
+        {
+            Instance.Value.EnableIfExists(recurringJobId);
+        }
+
+        public static void RescheduleIfExists([NotNull] string recurringJobId, [NotNull] string cronExpression)
+        {
+            Instance.Value.RescheduleIfExists(recurringJobId, cronExpression);
+        }
+
         [Obsolete("Please use the TriggerJob method instead. Will be removed in 2.0.0.")]
         public static void Trigger([NotNull] string recurringJobId)
         {

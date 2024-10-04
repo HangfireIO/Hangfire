@@ -69,5 +69,16 @@ namespace Hangfire.Dashboard
 
             return HttpContext.RequestServices.GetService<IRecurringJobManager>() ?? base.GetRecurringJobManager();
         }
+        
+        public override IRecurringJobManagerV2 GetRecurringJobManagerV2()
+        {
+            var factory = HttpContext.RequestServices.GetService<IRecurringJobManagerFactoryV2>();
+            if (factory != null)
+            {
+                return factory.GetManagerV2(Storage);
+            }
+
+            return HttpContext.RequestServices.GetService<IRecurringJobManagerV2>() ?? base.GetRecurringJobManagerV2();
+        }
     }
 }

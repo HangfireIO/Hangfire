@@ -115,6 +115,20 @@ namespace Hangfire.Dashboard
                 command(manager, jobId);
             });
         }
+
+        public static void AddRecurringBatchCommandV2(
+            this RouteCollection routes,
+            string pathTemplate,
+            [NotNull] Action<IRecurringJobManagerV2, string> command)
+        {
+            if (command == null) throw new ArgumentNullException(nameof(command));
+            
+            routes.AddBatchCommand(pathTemplate, (context, jobId) =>
+            {
+                var manager = context.GetRecurringJobManagerV2();
+                command(manager, jobId);
+            });
+        }
         
         [EditorBrowsable(EditorBrowsableState.Never)]
         [Obsolete("For binary compatibility only. Use overload with Action<IRecurringJobManager, string> instead.")]

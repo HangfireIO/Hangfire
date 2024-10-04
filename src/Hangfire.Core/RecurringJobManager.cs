@@ -135,7 +135,7 @@ namespace Hangfire
                 recurringJob.MisfireHandling = options.MisfireHandling;
                 recurringJob.RetryAttempt = 0;
 
-                if (scheduleChanged || recurringJob.Error != null)
+                if ((scheduleChanged || recurringJob.Error != null) && recurringJob.Enabled)
                 {
                     recurringJob.ScheduleNext(_timeZoneResolver, now.AddSeconds(-1));
                 }
@@ -183,6 +183,8 @@ namespace Hangfire
                 var recurringJob = connection.GetRecurringJob(recurringJobId);
                 if (recurringJob == null) return null;
 
+                if (!recurringJob.Enabled) return null;
+
                 BackgroundJob backgroundJob;
 
                 try
@@ -220,6 +222,93 @@ namespace Hangfire
                 }
 
                 return null;
+            }
+        }
+
+        public void DisableIfExists(string recurringJobId)
+        {
+            ToggleEnabledIfExists(recurringJobId, false);
+        }
+
+        public void EnableIfExists(string recurringJobId)
+        {
+            ToggleEnabledIfExists(recurringJobId, true);
+        }
+
+        internal void ToggleEnabledIfExists(string recurringJobId, bool enabled)
+        {
+            if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
+
+            using (var connection = _storage.GetConnection())
+            using (connection.AcquireDistributedRecurringJobLock(recurringJobId, DefaultTimeout))
+            {
+                var now = _nowFactory();
+                var recurringJob = connection.GetRecurringJob(recurringJobId);
+
+                if (recurringJob is null) return;
+                
+                recurringJob.RetryAttempt = 0;
+                recurringJob.Enabled = enabled;
+
+                switch (enabled)
+                {
+                    case true:
+                        recurringJob.ScheduleNext(_timeZoneResolver, now);
+                        break;
+                    case false:
+                        recurringJob.Disable(null);
+                        break;
+                }
+
+                if (recurringJob.IsChanged(now, out var changedFields))
+                {
+                    using (var transaction = connection.CreateWriteTransaction())
+                    {
+                        transaction.UpdateRecurringJob(recurringJob, changedFields, _logger);
+                        transaction.Commit();
+                    }
+                }
+            }
+        }
+
+        public void RescheduleIfExists(string recurringJobId, string cronExpression)
+        {
+            if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
+
+            ValidateCronExpression(cronExpression);
+
+            using (var connection = _storage.GetConnection())
+            using (connection.AcquireDistributedRecurringJobLock(recurringJobId, DefaultTimeout))
+            {
+                var now = _nowFactory();
+                var recurringJob = connection.GetRecurringJob(recurringJobId);
+
+                if (recurringJob is null) return;
+                
+                var scheduleChanged = false;
+
+                if (!cronExpression.Equals(recurringJob.Cron, StringComparison.OrdinalIgnoreCase))
+                {
+                    recurringJob.Cron = cronExpression;
+                    scheduleChanged = true;
+                }
+                
+                recurringJob.RetryAttempt = 0;
+
+                if (scheduleChanged || recurringJob.Error != null)
+                {
+                    recurringJob.ScheduleNext(_timeZoneResolver, now.AddSeconds(-1));
+                }
+
+                if (recurringJob.IsChanged(now, out var changedFields))
+                {
+                    using (var transaction = connection.CreateWriteTransaction())
+                    {
+                        transaction.UpdateRecurringJob(recurringJob, changedFields, _logger);
+                        transaction.Commit();
+                    }
+                }
             }
         }
 

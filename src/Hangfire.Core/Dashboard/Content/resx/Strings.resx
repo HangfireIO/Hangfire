@@ -578,4 +578,25 @@
   <data name="Metrics_SQLServer_LogFilesSize" xml:space="preserve">
     <value>Log File(s) Used (MB)</value>
   </data>
+  <data name="Common_Disable" xml:space="preserve">
+    <value>Disable</value>
+  </data>
+  <data name="Common_Enable" xml:space="preserve">
+    <value>Enable</value>
+  </data>
+  <data name="Common_Enabled" xml:space="preserve">
+    <value>Enabled</value>
+  </data>
+  <data name="Common_Disabling" xml:space="preserve">
+    <value>Disabling...</value>
+  </data>
+  <data name="Common_Enabling" xml:space="preserve">
+    <value>Enabling...</value>
+  </data>
+  <data name="Common_DisableConfirm" xml:space="preserve">
+    <value>Do you really want to DISABLE ALL selected jobs?</value>
+  </data>
+  <data name="Common_EnableConfirm" xml:space="preserve">
+    <value>Do you really want to ENABLE ALL selected jobs?</value>
+  </data>
 </root>
