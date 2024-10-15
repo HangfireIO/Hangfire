@@ -541,7 +541,7 @@ WriteLiteral("\r\n                                            </div>\r\n");
 
             
             #line 113 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                                             if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))
+                                             if (!String.IsNullOrEmpty(job.Value.ExceptionMessage) || !String.IsNullOrEmpty(job.Value.ExceptionDetails))
                                             {
 
             

@@ -110,7 +110,7 @@
                                             <div class="word-break">
                                                 @Html.JobNameLink(job.Key, job.Value.Job)
                                             </div>
-                                            @if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))
+                                            @if (!String.IsNullOrEmpty(job.Value.ExceptionMessage) || !String.IsNullOrEmpty(job.Value.ExceptionDetails))
                                             {
                                                 <div class="text-muted">
                                                     @job.Value.Reason <a class="expander" href="#">@(index == 0 ? Strings.Common_LessDetails : Strings.Common_MoreDetails)</a>
