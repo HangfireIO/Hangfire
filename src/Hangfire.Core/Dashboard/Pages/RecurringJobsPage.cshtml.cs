@@ -1026,18 +1026,18 @@ WriteLiteral("                                                </a>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                                                <em>\r\n                           " +
-"                         ");
+WriteLiteral("                                                <span class=\"label label-default " +
+"label-state-inactive\" title=\"");
 
 
             
-            #line 250 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                               Write(Strings.RecurringJobsPage_Canceled);
+            #line 249 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+                                                                                                         Write(Strings.RecurringJobsPage_Canceled);
 
             
             #line default
             #line hidden
-WriteLiteral(" ");
+WriteLiteral("\">\r\n                                                    ");
 
 
             
@@ -1047,7 +1047,7 @@ WriteLiteral(" ");
             
             #line default
             #line hidden
-WriteLiteral("\r\n                                                </em>\r\n");
+WriteLiteral("\r\n                                                </span>\r\n");
 
 
             

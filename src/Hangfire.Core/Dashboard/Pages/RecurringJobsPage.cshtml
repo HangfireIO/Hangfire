@@ -246,9 +246,9 @@
                                             }
                                             else
                                             {
-                                                <em>
-                                                    @Strings.RecurringJobsPage_Canceled @Html.RelativeTime(job.LastExecution.Value)
-                                                </em>
+                                                <span class="label label-default label-state-inactive" title="@Strings.RecurringJobsPage_Canceled">
+                                                    @Html.RelativeTime(job.LastExecution.Value)
+                                                </span>
                                             }
                                         }
                                         else
