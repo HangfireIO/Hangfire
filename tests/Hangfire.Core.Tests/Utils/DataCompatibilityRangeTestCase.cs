@@ -5,7 +5,7 @@ using Xunit.Sdk;
 
 namespace Hangfire.Core.Tests
 {
-    internal class DataCompatibilityRangeTestCase : XunitTestCase
+    internal sealed class DataCompatibilityRangeTestCase : XunitTestCase
     {
 #pragma warning disable 618
         public DataCompatibilityRangeTestCase()

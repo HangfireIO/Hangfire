@@ -3,10 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using System.Data.Common;
 using System.Linq;
+using System.Threading;
 using ReferencedDapper::Dapper;
 using Hangfire.States;
+using Hangfire.Storage;
 using Moq;
 using Xunit;
 
@@ -31,30 +33,32 @@ namespace Hangfire.SqlServer.Tests
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_IfStorageIsNull()
+        public void Ctor_ThrowsAnException_IfConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerWriteOnlyTransaction(null, () => null));
+                () => new SqlServerWriteOnlyTransaction(null));
 
-            Assert.Equal("storage", exception.ParamName);
+            Assert.Equal("connection", exception.ParamName);
         }
 
-        [Fact, CleanDatabase]
-        public void ExpireJob_ThrowsAnException_WhenJobIdIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void ExpireJob_ThrowsAnException_WhenJobIdIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.ExpireJob(null, TimeSpan.Zero), false));
+                    () => Commit(x => x.ExpireJob(null, TimeSpan.Zero), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("jobId", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void ExpireJob_SetsJobExpirationData(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void ExpireJob_SetsJobExpirationData(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
@@ -66,32 +70,34 @@ select scope_identity() as Id";
                 var jobId = sql.Query(arrangeSql).Single().Id.ToString();
                 var anotherJobId = sql.Query(arrangeSql).Single().Id.ToString();
 
-                Commit(sql, x => x.ExpireJob(jobId, TimeSpan.FromHours(24)), useBatching);
+                Commit(x => x.ExpireJob(jobId, TimeSpan.FromHours(24)), useMicrosoftDataSqlClient, useBatching);
 
                 var job = GetTestJob(sql, jobId);
                 Assert.True(DateTime.UtcNow.AddHours(23) < job.ExpireAt && job.ExpireAt < DateTime.UtcNow.AddHours(25));
 
                 var anotherJob = GetTestJob(sql, anotherJobId);
                 Assert.Null(anotherJob.ExpireAt);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void PersistJob_ThrowsAnException_WhenJobIdIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void PersistJob_ThrowsAnException_WhenJobIdIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.PersistJob(null), false));
+                    () => Commit(x => x.PersistJob(null), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("jobId", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void PersistJob_ClearsTheJobExpirationData(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void PersistJob_ClearsTheJobExpirationData(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt, ExpireAt)
@@ -103,44 +109,48 @@ select scope_identity() as Id";
                 var jobId = sql.Query(arrangeSql).Single().Id.ToString();
                 var anotherJobId = sql.Query(arrangeSql).Single().Id.ToString();
 
-                Commit(sql, x => x.PersistJob(jobId), useBatching);
+                Commit(x => x.PersistJob(jobId), useMicrosoftDataSqlClient, useBatching);
 
                 var job = GetTestJob(sql, jobId);
                 Assert.Null(job.ExpireAt);
 
                 var anotherJob = GetTestJob(sql, anotherJobId);
                 Assert.NotNull(anotherJob.ExpireAt);
-            });
-        }
-
-        [Fact, CleanDatabase]
-        public void SetJobState_ThrowsAnException_WhenJobIdIsNull()
-        {
-            UseConnection(sql =>
-            {
-                var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.SetJobState(null, new Mock<IState>().Object), false));
-
-                Assert.Equal("jobId", exception.ParamName);
-            });
-        }
-
-        [Fact, CleanDatabase]
-        public void SetJobState_ThrowsAnException_WhenStateIsNull()
-        {
-            UseConnection(sql =>
-            {
-                var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.SetJobState("my-job", null), false));
-
-                Assert.Equal("state", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void SetJobState_AppendsAStateAndSetItToTheJob(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void SetJobState_ThrowsAnException_WhenJobIdIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(x => x.SetJobState(null, new Mock<IState>().Object), useMicrosoftDataSqlClient, useBatching));
+
+                Assert.Equal("jobId", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void SetJobState_ThrowsAnException_WhenStateIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(x => x.SetJobState("my-job", null), useMicrosoftDataSqlClient, useBatching));
+
+                Assert.Equal("state", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void SetJobState_AppendsAStateAndSetItToTheJob(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
@@ -158,7 +168,7 @@ select scope_identity() as Id";
                 state.Setup(x => x.SerializeData())
                     .Returns(new Dictionary<string, string> { { "Name", "Value" } });
 
-                Commit(sql, x => x.SetJobState(jobId, state.Object), useBatching);
+                Commit(x => x.SetJobState(jobId, state.Object), useMicrosoftDataSqlClient, useBatching);
 
                 var job = GetTestJob(sql, jobId);
                 Assert.Equal("State", job.StateName);
@@ -174,13 +184,13 @@ select scope_identity() as Id";
                 Assert.Equal("Reason", jobState.Reason);
                 Assert.NotNull(jobState.CreatedAt);
                 Assert.Equal("{\"Name\":\"Value\"}", jobState.Data);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void SetJobState_CanBeCalledWithNullReasonAndData(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void SetJobState_CanBeCalledWithNullReasonAndData(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
@@ -196,7 +206,7 @@ select scope_identity() as Id";
                 state.Setup(x => x.Reason).Returns((string)null);
                 state.Setup(x => x.SerializeData()).Returns((Dictionary<string, string>)null);
 
-                Commit(sql, x => x.SetJobState(jobId, state.Object), useBatching);
+                Commit(x => x.SetJobState(jobId, state.Object), useMicrosoftDataSqlClient, useBatching);
 
                 var job = GetTestJob(sql, jobId);
                 Assert.Equal("State", job.StateName);
@@ -206,37 +216,41 @@ select scope_identity() as Id";
                 Assert.Equal("State", jobState.Name);
                 Assert.Equal(null, jobState.Reason);
                 Assert.Equal(null, jobState.Data);
-            });
-        }
-
-        [Fact, CleanDatabase]
-        public void AddJobState_ThrowsAnException_WhenJobIdIsNull()
-        {
-            UseConnection(sql =>
-            {
-                var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.AddJobState(null, new Mock<IState>().Object), false));
-
-                Assert.Equal("jobId", exception.ParamName);
-            });
-        }
-
-        [Fact, CleanDatabase]
-        public void AddJobState_ThrowsAnException_WhenStateIsNull()
-        {
-            UseConnection(sql =>
-            {
-                var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.AddJobState("my-job", null), false));
-
-                Assert.Equal("state", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void AddJobState_JustAddsANewRecordInATable(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddJobState_ThrowsAnException_WhenJobIdIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(x => x.AddJobState(null, new Mock<IState>().Object), useMicrosoftDataSqlClient, useBatching));
+
+                Assert.Equal("jobId", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddJobState_ThrowsAnException_WhenStateIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(x => x.AddJobState("my-job", null), useMicrosoftDataSqlClient, useBatching));
+
+                Assert.Equal("state", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddJobState_JustAddsANewRecordInATable(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
@@ -253,7 +267,7 @@ select scope_identity() as Id";
                 state.Setup(x => x.SerializeData())
                     .Returns(new Dictionary<string, string> { { "Name", "Value" } });
 
-                Commit(sql, x => x.AddJobState(jobId, state.Object), useBatching);
+                Commit(x => x.AddJobState(jobId, state.Object), useMicrosoftDataSqlClient, useBatching);
 
                 var job = GetTestJob(sql, jobId);
                 Assert.Null(job.StateName);
@@ -265,13 +279,13 @@ select scope_identity() as Id";
                 Assert.Equal("Reason", jobState.Reason);
                 Assert.NotNull(jobState.CreatedAt);
                 Assert.Equal("{\"Name\":\"Value\"}", jobState.Data);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void AddJobState_CanBeCalledWithNullReasonAndData(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddJobState_CanBeCalledWithNullReasonAndData(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, CreatedAt)
@@ -287,7 +301,7 @@ select scope_identity() as Id";
                 state.Setup(x => x.Reason).Returns((string)null);
                 state.Setup(x => x.SerializeData()).Returns((Dictionary<string, string>)null);
 
-                Commit(sql, x => x.AddJobState(jobId, state.Object), useBatching);
+                Commit(x => x.AddJobState(jobId, state.Object), useMicrosoftDataSqlClient, useBatching);
 
                 var job = GetTestJob(sql, jobId);
                 Assert.Null(job.StateName);
@@ -299,37 +313,41 @@ select scope_identity() as Id";
                 Assert.Equal(null, jobState.Reason);
                 Assert.NotNull(jobState.CreatedAt);
                 Assert.Equal(null, jobState.Data);
-            });
-        }
-
-        [Fact, CleanDatabase]
-        public void AddToQueue_ThrowsAnException_WhenQueueIsNull()
-        {
-            UseConnection(sql =>
-            {
-                var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.AddToQueue(null, "my-job"), false));
-
-                Assert.Equal("queue", exception.ParamName);
-            });
-        }
-
-        [Fact, CleanDatabase]
-        public void AddToQueue_ThrowsAnException_WhenJobIdIsNull()
-        {
-            UseConnection(sql =>
-            {
-                var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.AddToQueue("my-queue", null), false));
-
-                Assert.Equal("jobId", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void AddToQueue_CallsEnqueue_OnTargetPersistentQueue(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddToQueue_ThrowsAnException_WhenQueueIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(x => x.AddToQueue(null, "my-job"), useMicrosoftDataSqlClient, useBatching));
+
+                Assert.Equal("queue", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddToQueue_ThrowsAnException_WhenJobIdIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(x => x.AddToQueue("my-queue", null), useMicrosoftDataSqlClient, useBatching));
+
+                Assert.Equal("jobId", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddToQueue_CallsEnqueue_OnTargetPersistentQueue(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             var correctJobQueue = new Mock<IPersistentJobQueue>();
             var correctProvider = new Mock<IPersistentJobQueueProvider>();
@@ -340,7 +358,7 @@ select scope_identity() as Id";
 
             UseConnection(sql =>
             {
-                Commit(sql, x => x.AddToQueue("default", "1"), useBatching);
+                Commit(x => x.AddToQueue("default", "1"), useMicrosoftDataSqlClient, useBatching);
 
                 correctJobQueue.Verify(x => x.Enqueue(
 #if NETCOREAPP
@@ -351,13 +369,13 @@ select scope_identity() as Id";
 #endif
                     "default", 
                     "1"));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void AddToQueue_EnqueuesAJobDirectly_WhenDefaultQueueProviderIsUsed(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddToQueue_EnqueuesAJobDirectly_WhenDefaultQueueProviderIsUsed(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             // We are relying on the fact that SqlServerJobQueue.Enqueue method will throw with a negative
             // timeout. If we don't see this exception, and if the record is inserted, then everything is fine.
@@ -368,13 +386,39 @@ select scope_identity() as Id";
 
             UseConnection(sql =>
             {
-                Commit(sql, x => x.AddToQueue("default", "1"), useBatching);
+                Commit(x => x.AddToQueue("default", "1"), useMicrosoftDataSqlClient, useBatching);
 
                 var record = sql.Query($"select * from [{Constants.DefaultSchema}].JobQueue").Single();
                 Assert.Equal("1", record.JobId.ToString());
                 Assert.Equal("default", record.Queue);
                 Assert.Null(record.FetchedAt);
-            });
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void Enqueue_ThrowsAnException_WhenTheGivenQueueIsTooLong(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var queueName = "some-really-long-queue-name-that-should-cause-an-exception-to-be-thrown-and-not-ignored";
+                // We are relying on the fact that SqlServerJobQueue.Enqueue method will throw with a negative
+                // timeout. If we don't see this exception, and if the record is inserted, then everything is fine.
+                var options = new SqlServerStorageOptions { PrepareSchemaIfNecessary = false, CommandTimeout = TimeSpan.FromSeconds(-5) };
+                _queueProviders.Add(
+                    new SqlServerJobQueueProvider(new Mock<SqlServerStorage>("connection=false;", options).Object, options),
+                    new [] { queueName });
+
+                var exception = Assert.ThrowsAny<DbException>(() =>
+                {
+                    Commit(x => x.AddToQueue(queueName, "1"), useMicrosoftDataSqlClient, useBatching);
+                });
+
+                var record = connection.Query($"select * from [{Constants.DefaultSchema}].JobQueue").SingleOrDefault();
+                Assert.Null(record);
+                Assert.StartsWith("String or binary data would be truncated", exception.Message);
+            }, useMicrosoftDataSqlClient);
         }
 
         private static dynamic GetTestJob(IDbConnection connection, string jobId)
@@ -384,81 +428,87 @@ select scope_identity() as Id";
                 .Single();
         }
 
-        [Fact, CleanDatabase]
-        public void IncrementCounter_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void IncrementCounter_ThrowsAnException_WhenKeyIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.IncrementCounter(null), false));
+                    () => Commit(x => x.IncrementCounter(null), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("key", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void IncrementCounter_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void IncrementCounter_ThrowsAnException_WhenKeyIsTooLong(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                var exception = Assert.Throws<SqlException>(() => 
-                    Commit(sql, x => x.IncrementCounter(TooLongKey), useBatching));
+                var exception = Assert.ThrowsAny<DbException>(() => 
+                    Commit(x => x.IncrementCounter(TooLongKey), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Contains("data would be truncated", exception.Message);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void IncrementCounter_AddsRecordToCounterTable_WithPositiveValue(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void IncrementCounter_AddsRecordToCounterTable_WithPositiveValue(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x => x.IncrementCounter("my-key"), useBatching);
+                Commit(x => x.IncrementCounter("my-key"), useMicrosoftDataSqlClient, useBatching);
 
                 var record = sql.Query($"select * from [{Constants.DefaultSchema}].Counter").Single();
                 
                 Assert.Equal("my-key", record.Key);
                 Assert.Equal(1, record.Value);
                 Assert.Equal((DateTime?)null, record.ExpireAt);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void IncrementCounter_WithExpiry_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void IncrementCounter_WithExpiry_ThrowsAnException_WhenKeyIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.IncrementCounter(null, TimeSpan.FromHours(1)), false));
+                    () => Commit(x => x.IncrementCounter(null, TimeSpan.FromHours(1)), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("key", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void IncrementCounter_WithExpiry_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void IncrementCounter_WithExpiry_ThrowsAnException_WhenKeyIsTooLong(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                var exception = Assert.Throws<SqlException>(() =>
-                    Commit(sql, x => x.IncrementCounter(TooLongKey, TimeSpan.FromHours(1)), useBatching));
+                var exception = Assert.ThrowsAny<DbException>(() =>
+                    Commit(x => x.IncrementCounter(TooLongKey, TimeSpan.FromHours(1)), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Contains("data would be truncated", exception.Message);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void IncrementCounter_WithExpiry_AddsARecord_WithExpirationTimeSet(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void IncrementCounter_WithExpiry_AddsARecord_WithExpirationTimeSet(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x => x.IncrementCounter("my-key", TimeSpan.FromDays(1)), useBatching);
+                Commit(x => x.IncrementCounter("my-key", TimeSpan.FromDays(1)), useMicrosoftDataSqlClient, useBatching);
 
                 var record = sql.Query($"select * from [{Constants.DefaultSchema}].Counter").Single();
 
@@ -470,103 +520,109 @@ select scope_identity() as Id";
 
                 Assert.True(DateTime.UtcNow.AddHours(23) < expireAt);
                 Assert.True(expireAt < DateTime.UtcNow.AddHours(25));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void IncrementCounter_WithExistingKey_AddsAnotherRecord(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void IncrementCounter_WithExistingKey_AddsAnotherRecord(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x =>
+                Commit(x =>
                 {
                     x.IncrementCounter("my-key");
                     x.IncrementCounter("my-key");
-                }, useBatching);
+                }, useMicrosoftDataSqlClient, useBatching);
 
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].Counter").Single();
                 
                 Assert.Equal(2, recordCount);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void DecrementCounter_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void DecrementCounter_ThrowsAnException_WhenKeyIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.DecrementCounter(null), false));
+                    () => Commit(x => x.DecrementCounter(null), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("key", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void DecrementCounter_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void DecrementCounter_ThrowsAnException_WhenKeyIsTooLong(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                var exception = Assert.Throws<SqlException>(() =>
-                    Commit(sql, x => x.DecrementCounter(TooLongKey), useBatching));
+                var exception = Assert.ThrowsAny<DbException>(() =>
+                    Commit(x => x.DecrementCounter(TooLongKey), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Contains("data would be truncated", exception.Message);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void DecrementCounter_AddsRecordToCounterTable_WithNegativeValue(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void DecrementCounter_AddsRecordToCounterTable_WithNegativeValue(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x => x.DecrementCounter("my-key"), useBatching);
+                Commit(x => x.DecrementCounter("my-key"), useMicrosoftDataSqlClient, useBatching);
 
                 var record = sql.Query($"select * from [{Constants.DefaultSchema}].Counter").Single();
 
                 Assert.Equal("my-key", record.Key);
                 Assert.Equal(-1, record.Value);
                 Assert.Equal((DateTime?)null, record.ExpireAt);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void DecrementCounter_WithExpiry_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void DecrementCounter_WithExpiry_ThrowsAnException_WhenKeyIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.DecrementCounter(null, TimeSpan.FromHours(1)), false));
+                    () => Commit(x => x.DecrementCounter(null, TimeSpan.FromHours(1)), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("key", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void DecrementCounter_WithExpiry_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void DecrementCounter_WithExpiry_ThrowsAnException_WhenKeyIsTooLong(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                var exception = Assert.Throws<SqlException>(() =>
-                    Commit(sql, x => x.DecrementCounter(TooLongKey, TimeSpan.FromHours(1)), useBatching));
+                var exception = Assert.ThrowsAny<DbException>(() =>
+                    Commit(x => x.DecrementCounter(TooLongKey, TimeSpan.FromHours(1)), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Contains("data would be truncated", exception.Message);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void DecrementCounter_WithExpiry_AddsARecord_WithExpirationTimeSet(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void DecrementCounter_WithExpiry_AddsARecord_WithExpirationTimeSet(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x => x.DecrementCounter("my-key", TimeSpan.FromDays(1)), useBatching);
+                Commit(x => x.DecrementCounter("my-key", TimeSpan.FromDays(1)), useMicrosoftDataSqlClient, useBatching);
 
                 var record = sql.Query($"select * from [{Constants.DefaultSchema}].Counter").Single();
 
@@ -578,196 +634,207 @@ select scope_identity() as Id";
 
                 Assert.True(DateTime.UtcNow.AddHours(23) < expireAt);
                 Assert.True(expireAt < DateTime.UtcNow.AddHours(25));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void DecrementCounter_WithExistingKey_AddsAnotherRecord(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void DecrementCounter_WithExistingKey_AddsAnotherRecord(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x =>
+                Commit(x =>
                 {
                     x.DecrementCounter("my-key");
                     x.DecrementCounter("my-key");
-                }, useBatching);
+                }, useMicrosoftDataSqlClient, useBatching);
 
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].Counter").Single();
 
                 Assert.Equal(2, recordCount);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void AddToSet_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddToSet_ThrowsAnException_WhenKeyIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.AddToSet(null, "value"), false));
+                    () => Commit(x => x.AddToSet(null, "value"), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("key", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void AddToSet_ThrowsAnException_WhenValueIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddToSet_ThrowsAnException_WhenValueIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.AddToSet("my-set", null), false));
+                    () => Commit(x => x.AddToSet("my-set", null), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("value", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void AddToSet_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddToSet_ThrowsAnException_WhenKeyIsTooLong(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                var exception = Assert.Throws<SqlException>(() =>
-                    Commit(sql, x => x.AddToSet(TooLongKey, "value"), useBatching));
+                var exception = Assert.ThrowsAny<DbException>(() =>
+                    Commit(x => x.AddToSet(TooLongKey, "value"), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Contains("data would be truncated", exception.Message);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void AddToSet_AddsARecord_IfThereIsNo_SuchKeyAndValue(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddToSet_AddsARecord_IfThereIsNo_SuchKeyAndValue(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x => x.AddToSet("my-key", "my-value"), useBatching);
+                Commit(x => x.AddToSet("my-key", "my-value"), useMicrosoftDataSqlClient, useBatching);
 
                 var record = sql.Query($"select * from [{Constants.DefaultSchema}].[Set]").Single();
 
                 Assert.Equal("my-key", record.Key);
                 Assert.Equal("my-value", record.Value);
                 Assert.Equal(0.0, record.Score, 2);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void AddToSet_AddsARecord_WhenKeyIsExists_ButValuesAreDifferent(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddToSet_AddsARecord_WhenKeyIsExists_ButValuesAreDifferent(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x =>
+                Commit(x =>
                 {
                     x.AddToSet("my-key", "my-value");
                     x.AddToSet("my-key", "another-value");
-                }, useBatching);
+                }, useMicrosoftDataSqlClient, useBatching);
 
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].[Set]").Single();
 
                 Assert.Equal(2, recordCount);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void AddToSet_DoesNotAddARecord_WhenBothKeyAndValueAreExist(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddToSet_DoesNotAddARecord_WhenBothKeyAndValueAreExist(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x =>
+                Commit(x =>
                 {
                     x.AddToSet("my-key", "my-value");
                     x.AddToSet("my-key", "my-value");
-                }, useBatching);
+                }, useMicrosoftDataSqlClient, useBatching);
 
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].[Set]").Single();
                 
                 Assert.Equal(1, recordCount);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void AddToSet_WithScore_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddToSet_WithScore_ThrowsAnException_WhenKeyIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.AddToSet(null, "value", 1.2D), false));
+                    () => Commit(x => x.AddToSet(null, "value", 1.2D), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("key", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void AddToSet_WithScore_ThrowsAnException_WhenValueIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddToSet_WithScore_ThrowsAnException_WhenValueIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.AddToSet("my-set", null, 1.2D), false));
+                    () => Commit(x => x.AddToSet("my-set", null, 1.2D), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("value", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void AddToSet_WithScore_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddToSet_WithScore_ThrowsAnException_WhenKeyIsTooLong(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                var exception = Assert.Throws<SqlException>(() =>
-                    Commit(sql, x => x.AddToSet(TooLongKey, "value", 1.2D), useBatching));
+                var exception = Assert.ThrowsAny<DbException>(() =>
+                    Commit(x => x.AddToSet(TooLongKey, "value", 1.2D), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Contains("data would be truncated", exception.Message);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void AddToSet_WithScore_AddsARecordWithScore_WhenBothKeyAndValueAreNotExist(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddToSet_WithScore_AddsARecordWithScore_WhenBothKeyAndValueAreNotExist(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x => x.AddToSet("my-key", "my-value", 3.2), useBatching);
+                Commit(x => x.AddToSet("my-key", "my-value", 3.2), useMicrosoftDataSqlClient, useBatching);
 
                 var record = sql.Query($"select * from [{Constants.DefaultSchema}].[Set]").Single();
 
                 Assert.Equal("my-key", record.Key);
                 Assert.Equal("my-value", record.Value);
                 Assert.Equal(3.2, record.Score, 3);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void AddToSet_WithScore_UpdatesAScore_WhenBothKeyAndValueAreExist(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddToSet_WithScore_UpdatesAScore_WhenBothKeyAndValueAreExist(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x =>
+                Commit(x =>
                 {
                     x.AddToSet("my-key", "my-value");
                     x.AddToSet("my-key", "my-value", 3.2);
-                }, useBatching);
+                }, useMicrosoftDataSqlClient, useBatching);
 
                 var record = sql.Query($"select * from [{Constants.DefaultSchema}].[Set]").Single();
 
                 Assert.Equal(3.2, record.Score, 3);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void AddToSet_WithIgnoreDupKeyOption_InsertsNonExistingValue(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddToSet_WithIgnoreDupKeyOption_InsertsNonExistingValue(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             try
             {
@@ -775,24 +842,26 @@ select scope_identity() as Id";
                 {
                     sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = ON)");
 
-                    Commit(sql, x =>
+                    Commit(x =>
                         x.AddToSet("my-key","my-value", 3.2),
+                        useMicrosoftDataSqlClient,
                         useBatching,
                         options => options.UseIgnoreDupKeyOption = true);
 
                     var record = sql.Query($"select * from [{Constants.DefaultSchema}].[Set]").Single();
                     Assert.Equal(3.2, record.Score, 3);
-                });
+                }, useMicrosoftDataSqlClient);
             }
             finally
             {
-                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = OFF)"));
+                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useMicrosoftDataSqlClient);
             }
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void AddToSet_WithIgnoreDupKeyOption_UpdatesExistingValue_WhenIgnoreDupKeyOptionIsSet(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddToSet_WithIgnoreDupKeyOption_UpdatesExistingValue_WhenIgnoreDupKeyOptionIsSet(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             try
             {
@@ -804,9 +873,9 @@ select scope_identity() as Id";
 (N'my-key1', N'value2', 1.2),
 (N'my-key2', N'value1', 1.2)");
 
-                    Commit(sql, x => 
+                    Commit(x =>
                         x.AddToSet("my-key1", "value1", 2.3), 
-                        useBatching, options => options.UseIgnoreDupKeyOption = true);
+                        useMicrosoftDataSqlClient, useBatching, options => options.UseIgnoreDupKeyOption = true);
 
                     var record1 = sql.Query($"select * from [{Constants.DefaultSchema}].[Set] where [Key] = N'my-key1' and Value = N'value1'").Single();
                     Assert.Equal(2.3, record1.Score, 3);
@@ -816,67 +885,80 @@ select scope_identity() as Id";
 
                     var record3 = sql.Query($"select * from [{Constants.DefaultSchema}].[Set] where [Key] = N'my-key2' and Value = N'value1'").Single();
                     Assert.Equal(1.2, record3.Score, 3);
-                });
+                }, useMicrosoftDataSqlClient);
             }
             finally
             {
-                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = OFF)"));
+                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useMicrosoftDataSqlClient);
             }
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void AddToSet_WithIgnoreDupKeyOption_FailsToUpdateExistingValue_WhenIgnoreDupKeyOptionWasNotSet(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddToSet_WithIgnoreDupKeyOption_FailsToUpdateExistingValue_WhenIgnoreDupKeyOptionWasNotSet(bool useBatching, bool useMicrosoftDataSqlClient)
         {
-            UseConnection(sql =>
+            try
             {
-                sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = OFF)");
-                sql.Execute($"insert into [{Constants.DefaultSchema}].[Set] ([Key], Value, Score) VALUES (N'key1', N'value1', 1.2)");
+                UseConnection(sql =>
+                {
+                    sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = OFF)");
+                    sql.Execute($"insert into [{Constants.DefaultSchema}].[Set] ([Key], Value, Score) VALUES (N'key1', N'value1', 1.2)");
 
-                var exception = Assert.Throws<SqlException>(() =>
-                    Commit(sql, x => 
-                        x.AddToSet("key1", "value1"),
-                    useBatching, options => options.UseIgnoreDupKeyOption = true));
+                    var exception = Assert.ThrowsAny<DbException>(() =>
+                        Commit(x => 
+                            x.AddToSet("key1", "value1"),
+                            useMicrosoftDataSqlClient, useBatching, options => options.UseIgnoreDupKeyOption = true));
 
-                Assert.Contains("Violation of PRIMARY KEY", exception.Message);
-            });
-        }
-
-        [Fact, CleanDatabase]
-        public void RemoveFromSet_ThrowsAnException_WhenKeyIsNull()
-        {
-            UseConnection(sql =>
+                    Assert.Contains("Violation of PRIMARY KEY", exception.Message);
+                }, useMicrosoftDataSqlClient);
+            }
+            finally
             {
-                var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.RemoveFromSet(null, "value"), false));
-
-                Assert.Equal("key", exception.ParamName);
-            });
-        }
-
-        [Fact, CleanDatabase]
-        public void RemoveFromSet_ThrowsAnException_WhenValueIsNull()
-        {
-            UseConnection(sql =>
-            {
-                var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.RemoveFromSet("my-set", null), false));
-
-                Assert.Equal("value", exception.ParamName);
-            });
+                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useMicrosoftDataSqlClient);
+            }
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void RemoveFromSet_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void RemoveFromSet_ThrowsAnException_WhenKeyIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(x => x.RemoveFromSet(null, "value"), useMicrosoftDataSqlClient, useBatching));
+
+                Assert.Equal("key", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void RemoveFromSet_ThrowsAnException_WhenValueIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(x => x.RemoveFromSet("my-set", null), useMicrosoftDataSqlClient, useBatching));
+
+                Assert.Equal("value", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void RemoveFromSet_DoesNotTruncateKey_BeforeUsingIt(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 // Arrange
-                Commit(sql, x => x.AddToSet(TooLongTruncatedKey, "value"), useBatching);
+                Commit(x => x.AddToSet(TooLongTruncatedKey, "value"), useMicrosoftDataSqlClient, useBatching);
 
                 // Act
-                Commit(sql, x => x.RemoveFromSet(TooLongKey, "value"), useBatching);
+                Commit(x => x.RemoveFromSet(TooLongKey, "value"), useMicrosoftDataSqlClient, useBatching);
 
                 // Assert
                 var result = sql.Query(
@@ -884,173 +966,183 @@ select scope_identity() as Id";
                     new { key = TooLongTruncatedKey }).Single();
 
                 Assert.Equal("value", result.Value);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void RemoveFromSet_RemovesARecord_WithGivenKeyAndValue(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void RemoveFromSet_RemovesARecord_WithGivenKeyAndValue(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x =>
+                Commit(x =>
                 {
                     x.AddToSet("my-key", "my-value");
                     x.RemoveFromSet("my-key", "my-value");
-                }, useBatching);
+                }, useMicrosoftDataSqlClient, useBatching);
 
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].[Set]").Single();
 
                 Assert.Equal(0, recordCount);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void RemoveFromSet_DoesNotRemoveRecord_WithSameKey_AndDifferentValue(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void RemoveFromSet_DoesNotRemoveRecord_WithSameKey_AndDifferentValue(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x =>
+                Commit(x =>
                 {
                     x.AddToSet("my-key", "my-value");
                     x.RemoveFromSet("my-key", "different-value");
-                }, useBatching);
+                }, useMicrosoftDataSqlClient, useBatching);
 
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].[Set]").Single();
 
                 Assert.Equal(1, recordCount);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void RemoveFromSet_DoesNotRemoveRecord_WithSameValue_AndDifferentKey(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void RemoveFromSet_DoesNotRemoveRecord_WithSameValue_AndDifferentKey(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x =>
+                Commit(x =>
                 {
                     x.AddToSet("my-key", "my-value");
                     x.RemoveFromSet("different-key", "my-value");
-                }, useBatching);
+                }, useMicrosoftDataSqlClient, useBatching);
 
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].[Set]").Single();
 
                 Assert.Equal(1, recordCount);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void InsertToList_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void InsertToList_ThrowsAnException_WhenKeyIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.InsertToList(null, "value"), false));
+                    () => Commit(x => x.InsertToList(null, "value"), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("key", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void InsertToList_ThrowsAnException_WhenValueIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void InsertToList_ThrowsAnException_WhenValueIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.InsertToList("my-list", null), false));
+                    () => Commit(x => x.InsertToList("my-list", null), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("value", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void InsertToList_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void InsertToList_ThrowsAnException_WhenKeyIsTooLong(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                var exception = Assert.Throws<SqlException>(() =>
-                    Commit(sql, x => x.InsertToList(TooLongKey, "value"), useBatching));
+                var exception = Assert.ThrowsAny<DbException>(() =>
+                    Commit(x => x.InsertToList(TooLongKey, "value"), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Contains("data would be truncated", exception.Message);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void InsertToList_AddsARecord_WithGivenValues(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void InsertToList_AddsARecord_WithGivenValues(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x => x.InsertToList("my-key", "my-value"), useBatching);
+                Commit(x => x.InsertToList("my-key", "my-value"), useMicrosoftDataSqlClient, useBatching);
 
                 var record = sql.Query($"select * from [{Constants.DefaultSchema}].List").Single();
 
                 Assert.Equal("my-key", record.Key);
                 Assert.Equal("my-value", record.Value);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void InsertToList_AddsAnotherRecord_WhenBothKeyAndValueAreExist(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void InsertToList_AddsAnotherRecord_WhenBothKeyAndValueAreExist(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x =>
+                Commit(x =>
                 {
                     x.InsertToList("my-key", "my-value");
                     x.InsertToList("my-key", "my-value");
-                }, useBatching);
+                }, useMicrosoftDataSqlClient, useBatching);
 
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].List").Single();
 
                 Assert.Equal(2, recordCount);
-            });
-        }
-
-        [Fact, CleanDatabase]
-        public void RemoveFromList_ThrowsAnException_WhenKeyIsNull()
-        {
-            UseConnection(sql =>
-            {
-                var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.RemoveFromList(null, "value"), false));
-
-                Assert.Equal("key", exception.ParamName);
-            });
-        }
-
-        [Fact, CleanDatabase]
-        public void RemoveFromList_ThrowsAnException_WhenValueIsNull()
-        {
-            UseConnection(sql =>
-            {
-                var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.RemoveFromList("my-list", null), false));
-
-                Assert.Equal("value", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void RemoveFromList_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void RemoveFromList_ThrowsAnException_WhenKeyIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(x => x.RemoveFromList(null, "value"), useMicrosoftDataSqlClient, useBatching));
+
+                Assert.Equal("key", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void RemoveFromList_ThrowsAnException_WhenValueIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(x => x.RemoveFromList("my-list", null), useMicrosoftDataSqlClient, useBatching));
+
+                Assert.Equal("value", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void RemoveFromList_DoesNotTruncateKey_BeforeUsingIt(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 // Arrange
-                Commit(sql, x => x.InsertToList(TooLongTruncatedKey, "value"), useBatching);
+                Commit(x => x.InsertToList(TooLongTruncatedKey, "value"), useMicrosoftDataSqlClient, useBatching);
 
                 // Act
-                Commit(sql, x => x.RemoveFromList(TooLongKey, "value"), useBatching);
+                Commit(x => x.RemoveFromList(TooLongKey, "value"), useMicrosoftDataSqlClient, useBatching);
 
                 // Assert
                 var result = sql.Query(
@@ -1058,90 +1150,93 @@ select scope_identity() as Id";
                     new { key = TooLongTruncatedKey }).Single();
 
                 Assert.Equal("value", result.Value);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void RemoveFromList_RemovesAllRecords_WithGivenKeyAndValue(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void RemoveFromList_RemovesAllRecords_WithGivenKeyAndValue(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x =>
+                Commit(x =>
                 {
                     x.InsertToList("my-key", "my-value");
                     x.InsertToList("my-key", "my-value");
                     x.RemoveFromList("my-key", "my-value");
-                }, useBatching);
+                }, useMicrosoftDataSqlClient, useBatching);
 
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].List").Single();
 
                 Assert.Equal(0, recordCount);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void RemoveFromList_DoesNotRemoveRecords_WithSameKey_ButDifferentValue(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void RemoveFromList_DoesNotRemoveRecords_WithSameKey_ButDifferentValue(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x =>
+                Commit(x =>
                 {
                     x.InsertToList("my-key", "my-value");
                     x.RemoveFromList("my-key", "different-value");
-                }, useBatching);
+                }, useMicrosoftDataSqlClient, useBatching);
 
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].List").Single();
 
                 Assert.Equal(1, recordCount);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void RemoveFromList_DoesNotRemoveRecords_WithSameValue_ButDifferentKey(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void RemoveFromList_DoesNotRemoveRecords_WithSameValue_ButDifferentKey(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x =>
+                Commit(x =>
                 {
                     x.InsertToList("my-key", "my-value");
                     x.RemoveFromList("different-key", "my-value");
-                }, useBatching);
+                }, useMicrosoftDataSqlClient, useBatching);
 
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].List").Single();
 
                 Assert.Equal(1, recordCount);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void TrimList_ThrowsAnException_WhenKeyIsNull()
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void TrimList_ThrowsAnException_WhenKeyIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.TrimList(null, 0, 1), false));
+                    () => Commit(x => x.TrimList(null, 0, 1), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("key", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void TrimList_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void TrimList_DoesNotTruncateKey_BeforeUsingIt(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 // Arrange
-                Commit(sql, x => x.InsertToList(TooLongTruncatedKey, "value"), useBatching);
+                Commit(x => x.InsertToList(TooLongTruncatedKey, "value"), useMicrosoftDataSqlClient, useBatching);
 
                 // Act
-                Commit(sql, x => x.TrimList(TooLongKey, 1, 2), useBatching);
+                Commit(x => x.TrimList(TooLongKey, 1, 2), useMicrosoftDataSqlClient, useBatching);
 
                 // Assert
                 var result = sql.Query(
@@ -1149,166 +1244,167 @@ select scope_identity() as Id";
                     new { key = TooLongTruncatedKey }).Single();
 
                 Assert.Equal("value", result.Value);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void TrimList_TrimsAList_ToASpecifiedRange(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void TrimList_TrimsAList_ToASpecifiedRange(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x =>
+                Commit(x =>
                 {
                     x.InsertToList("my-key", "0");
                     x.InsertToList("my-key", "1");
                     x.InsertToList("my-key", "2");
                     x.InsertToList("my-key", "3");
                     x.TrimList("my-key", 1, 2);
-                }, useBatching);
+                }, useMicrosoftDataSqlClient, useBatching);
 
                 var records = sql.Query($"select * from [{Constants.DefaultSchema}].List").ToArray();
 
                 Assert.Equal(2, records.Length);
                 Assert.Equal("1", records[0].Value);
                 Assert.Equal("2", records[1].Value);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void TrimList_RemovesRecordsToEnd_IfKeepAndingAt_GreaterThanMaxElementIndex(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void TrimList_RemovesRecordsToEnd_IfKeepAndingAt_GreaterThanMaxElementIndex(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x =>
+                Commit(x =>
                 {
                     x.InsertToList("my-key", "0");
                     x.InsertToList("my-key", "1");
                     x.InsertToList("my-key", "2");
                     x.TrimList("my-key", 1, 100);
-                }, useBatching);
+                }, useMicrosoftDataSqlClient, useBatching);
 
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].List").Single();
 
                 Assert.Equal(2, recordCount);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void TrimList_RemovesAllRecords_WhenStartingFromValue_GreaterThanMaxElementIndex(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void TrimList_RemovesAllRecords_WhenStartingFromValue_GreaterThanMaxElementIndex(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x =>
+                Commit(x =>
                 {
                     x.InsertToList("my-key", "0");
                     x.TrimList("my-key", 1, 100);
-                }, useBatching);
+                }, useMicrosoftDataSqlClient, useBatching);
 
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].List").Single();
 
                 Assert.Equal(0, recordCount);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void TrimList_RemovesAllRecords_IfStartFromGreaterThanEndingAt(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void TrimList_RemovesAllRecords_IfStartFromGreaterThanEndingAt(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x =>
+                Commit(x =>
                 {
                     x.InsertToList("my-key", "0");
                     x.TrimList("my-key", 1, 0);
-                }, useBatching);
+                }, useMicrosoftDataSqlClient, useBatching);
 
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].List").Single();
 
                 Assert.Equal(0, recordCount);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void TrimList_RemovesRecords_OnlyOfAGivenKey(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void TrimList_RemovesRecords_OnlyOfAGivenKey(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x =>
+                Commit(x =>
                 {
                     x.InsertToList("my-key", "0");
                     x.TrimList("another-key", 1, 0);
-                }, useBatching);
+                }, useMicrosoftDataSqlClient, useBatching);
 
                 var recordCount = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].List").Single();
 
                 Assert.Equal(1, recordCount);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void SetRangeInHash_ThrowsAnException_WhenKeyIsNull(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void SetRangeInHash_ThrowsAnException_WhenKeyIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.SetRangeInHash(null, new Dictionary<string, string>()), useBatching));
+                    () => Commit(x => x.SetRangeInHash(null, new Dictionary<string, string>()), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("key", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void SetRangeInHash_ThrowsAnException_WhenKeyValuePairsArgumentIsNull(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void SetRangeInHash_ThrowsAnException_WhenKeyValuePairsArgumentIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.SetRangeInHash("some-hash", null), useBatching));
+                    () => Commit(x => x.SetRangeInHash("some-hash", null), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("keyValuePairs", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void SetRangeInHash_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void SetRangeInHash_ThrowsAnException_WhenKeyIsTooLong(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                var exception = Assert.Throws<SqlException>(() =>
-                    Commit(sql, x => x.SetRangeInHash(
+                var exception = Assert.ThrowsAny<DbException>(() =>
+                    Commit(x => x.SetRangeInHash(
                         TooLongKey,
-                        new Dictionary<string, string> { { "field", "value" } }), useBatching));
+                        new Dictionary<string, string> { { "field", "value" } }), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Contains("data would be truncated", exception.Message);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void SetRangeInHash_MergesAllRecords(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void SetRangeInHash_MergesAllRecords(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x => x.SetRangeInHash("some-hash", new Dictionary<string, string>
+                Commit(x => x.SetRangeInHash("some-hash", new Dictionary<string, string>
                 {
                     { "Key1", "Value1" },
                     { "Key2", "Value2" }
-                }), useBatching);
+                }), useMicrosoftDataSqlClient, useBatching);
 
                 var result = sql.Query(
                     $"select * from [{Constants.DefaultSchema}].Hash where [Key] = @key",
@@ -1317,33 +1413,34 @@ select scope_identity() as Id";
 
                 Assert.Equal("Value1", result["Key1"]);
                 Assert.Equal("Value2", result["Key2"]);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void SetRangeInHash_CanSetANullValue(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void SetRangeInHash_CanSetANullValue(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                Commit(sql, x => x.SetRangeInHash("some-hash", new Dictionary<string, string>
+                Commit(x => x.SetRangeInHash("some-hash", new Dictionary<string, string>
                 {
                     { "Key1", null }
-                }), useBatching);
+                }), useMicrosoftDataSqlClient, useBatching);
 
                 var result = sql.Query(
                         $"select * from [{Constants.DefaultSchema}].Hash where [Key] = @key",
                         new { key = "some-hash" })
                     .ToDictionary(x => (string)x.Field, x => (string)x.Value);
 
-                Assert.Equal(null, result["Key1"]);
-            });
+                Assert.Null(result["Key1"]);
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void SetRangeInHash_WithIgnoreDupKeyOption_InsertsNonExistingValue(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void SetRangeInHash_WithIgnoreDupKeyOption_InsertsNonExistingValue(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             try
             {
@@ -1351,27 +1448,28 @@ select scope_identity() as Id";
                 {
                     sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = ON)");
 
-                    Commit(sql, x => x.SetRangeInHash("some-hash", new Dictionary<string, string>
+                    Commit(x => x.SetRangeInHash("some-hash", new Dictionary<string, string>
                     {
                         { "key", "value" }
-                    }), useBatching, options => options.UseIgnoreDupKeyOption = true);
+                    }), useMicrosoftDataSqlClient, useBatching, options => options.UseIgnoreDupKeyOption = true);
 
                     var result = sql
                         .Query($"select * from [{Constants.DefaultSchema}].Hash where [Key] = N'some-hash'")
                         .ToDictionary(x => (string)x.Field, x => (string)x.Value);
 
                     Assert.Equal("value", result["key"]);
-                });
+                }, useMicrosoftDataSqlClient);
             }
             finally
             {
-                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = OFF)"));
+                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useMicrosoftDataSqlClient);
             }
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void SetRangeInHash_WithIgnoreDupKeyOption_UpdatesExistingValue_WhenIgnoreDupKeyOptionIsSet(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void SetRangeInHash_WithIgnoreDupKeyOption_UpdatesExistingValue_WhenIgnoreDupKeyOptionIsSet(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             try
             {
@@ -1383,10 +1481,10 @@ select scope_identity() as Id";
 (N'some-hash', N'key2', N'value1'),
 (N'othr-hash', N'key1', N'value1')");
 
-                    Commit(sql, x => x.SetRangeInHash("some-hash", new Dictionary<string, string>
+                    Commit(x => x.SetRangeInHash("some-hash", new Dictionary<string, string>
                     {
                         { "key1", "value2" }
-                    }), useBatching, options => options.UseIgnoreDupKeyOption = true);
+                    }), useMicrosoftDataSqlClient, useBatching, options => options.UseIgnoreDupKeyOption = true);
 
                     var someResult = sql
                         .Query($"select * from [{Constants.DefaultSchema}].Hash where [Key] = N'some-hash'")
@@ -1400,58 +1498,67 @@ select scope_identity() as Id";
                         .ToDictionary(x => (string)x.Field, x => (string)x.Value);
 
                     Assert.Equal("value1", othrResult["key1"]);
-                });
+                }, useMicrosoftDataSqlClient);
             }
             finally
             {
-                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = OFF)"));
+                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useMicrosoftDataSqlClient);
             }
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void SetRangeInHash_WithIgnoreDupKeyOption_FailsToUpdateExistingValue_WhenIgnoreDupKeyOptionWasNotSet(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void SetRangeInHash_WithIgnoreDupKeyOption_FailsToUpdateExistingValue_WhenIgnoreDupKeyOptionWasNotSet(bool useBatching, bool useMicrosoftDataSqlClient)
         {
-            UseConnection(sql =>
+            try
             {
-                sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = OFF)");
-                sql.Execute($"insert into [{Constants.DefaultSchema}].Hash([Key], Field, Value) VALUES (N'some-hash', N'key', N'value1')");
+                UseConnection(sql =>
+                {
+                    sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = OFF)");
+                    sql.Execute($"insert into [{Constants.DefaultSchema}].Hash([Key], Field, Value) VALUES (N'some-hash', N'key', N'value1')");
 
-                var exception = Assert.Throws<SqlException>(() =>
-                    Commit(sql, x => x.SetRangeInHash("some-hash", new Dictionary<string, string>
-                    {
-                        { "key", "value2" }
-                    }), useBatching, options => options.UseIgnoreDupKeyOption = true));
+                    var exception = Assert.ThrowsAny<DbException>(() =>
+                        Commit(x => x.SetRangeInHash("some-hash", new Dictionary<string, string>
+                        {
+                            { "key", "value2" }
+                        }), useMicrosoftDataSqlClient, useBatching, options => options.UseIgnoreDupKeyOption = true));
 
-                Assert.Contains("Violation of PRIMARY KEY", exception.Message);
-            });
+                    Assert.Contains("Violation of PRIMARY KEY", exception.Message);
+                }, useMicrosoftDataSqlClient);
+            }
+            finally
+            {
+                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useMicrosoftDataSqlClient);
+            }
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void RemoveHash_ThrowsAnException_WhenKeyIsNull(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void RemoveHash_ThrowsAnException_WhenKeyIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.RemoveHash(null), useBatching));
-            });
+                    () => Commit(x => x.RemoveHash(null), useMicrosoftDataSqlClient, useBatching));
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void RemoveHash_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void RemoveHash_DoesNotTruncateKey_BeforeUsingIt(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 // Arrange
-                Commit(sql, x => x.SetRangeInHash(
+                Commit(x => x.SetRangeInHash(
                     TooLongTruncatedKey,
-                    new Dictionary<string, string> {{ "field", "value" }}), useBatching);
+                    new Dictionary<string, string> {{ "field", "value" }}), useMicrosoftDataSqlClient, useBatching);
 
                 // Act
-                Commit(sql, x => x.RemoveHash(TooLongKey), useBatching);
+                Commit(x => x.RemoveHash(TooLongKey), useMicrosoftDataSqlClient, useBatching);
 
                 // Assert
                 var result = sql.Query(
@@ -1459,95 +1566,96 @@ select scope_identity() as Id";
                     new { key = TooLongTruncatedKey }).Single();
 
                 Assert.Equal("value", result.Value);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void RemoveHash_RemovesAllHashRecords(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void RemoveHash_RemovesAllHashRecords(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 // Arrange
-                Commit(sql, x => x.SetRangeInHash("some-hash", new Dictionary<string, string>
+                Commit(x => x.SetRangeInHash("some-hash", new Dictionary<string, string>
                 {
                     { "Key1", "Value1" },
                     { "Key2", "Value2" }
-                }), useBatching);
+                }), useMicrosoftDataSqlClient, useBatching);
 
                 // Act
-                Commit(sql, x => x.RemoveHash("some-hash"), useBatching);
+                Commit(x => x.RemoveHash("some-hash"), useMicrosoftDataSqlClient, useBatching);
 
                 // Assert
                 var count = sql.Query<int>($"select count(*) from [{Constants.DefaultSchema}].Hash").Single();
                 Assert.Equal(0, count);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void AddRangeToSet_ThrowsAnException_WhenKeyIsNull(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddRangeToSet_ThrowsAnException_WhenKeyIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.AddRangeToSet(null, new List<string>()), useBatching));
+                    () => Commit(x => x.AddRangeToSet(null, new List<string>()), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("key", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void AddRangeToSet_ThrowsAnException_WhenKeyIsTooLong(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddRangeToSet_ThrowsAnException_WhenKeyIsTooLong(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
-                var exception = Assert.Throws<SqlException>(() =>
-                    Commit(sql, x => x.AddRangeToSet(
+                var exception = Assert.ThrowsAny<DbException>(() =>
+                    Commit(x => x.AddRangeToSet(
                         TooLongKey,
-                        new List<string> { "field" }), useBatching));
+                        new List<string> { "field" }), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Contains("data would be truncated", exception.Message);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void AddRangeToSet_ThrowsAnException_WhenItemsValueIsNull(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddRangeToSet_ThrowsAnException_WhenItemsValueIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.AddRangeToSet("my-set", null), useBatching));
+                    () => Commit(x => x.AddRangeToSet("my-set", null), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("items", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void AddRangeToSet_AddsAllItems_ToAGivenSet(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddRangeToSet_AddsAllItems_ToAGivenSet(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var items = new List<string> { "1", "2", "3" };
 
-                Commit(sql, x => x.AddRangeToSet("my-set", items), useBatching);
+                Commit(x => x.AddRangeToSet("my-set", items), useMicrosoftDataSqlClient, useBatching);
 
                 var records = sql.Query<string>($"select [Value] from [{Constants.DefaultSchema}].[Set] where [Key] = N'my-set'");
                 Assert.Equal(items, records);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void AddRangeToSet_DoesNotFailWithException_WhenIgnoreDupKeyOptionIsSet(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddRangeToSet_DoesNotFailWithException_WhenIgnoreDupKeyOptionIsSet(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             try
             {
@@ -1561,41 +1669,42 @@ select scope_identity() as Id";
 
                     var items = new List<string> { "1", "2", "3" };
 
-                    Commit(sql, x => x.AddRangeToSet("my-set", items), useBatching);
+                    Commit(x => x.AddRangeToSet("my-set", items), useMicrosoftDataSqlClient, useBatching);
 
                     var records = sql.Query<string>($"select [Value] from [{Constants.DefaultSchema}].[Set] where [Key] = N'my-set'");
                     Assert.Equal(new List<string> { "1", "2", "3", "4" }, records);
-                });
+                }, useMicrosoftDataSqlClient);
             }
             finally
             {
-                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = OFF)"));
+                UseConnection(sql => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Set] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useMicrosoftDataSqlClient);
             }
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void RemoveSet_ThrowsAnException_WhenKeyIsNull(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void RemoveSet_ThrowsAnException_WhenKeyIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.RemoveSet(null), useBatching));
-            });
+                    () => Commit(x => x.RemoveSet(null), useMicrosoftDataSqlClient, useBatching));
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void RemoveSet_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void RemoveSet_DoesNotTruncateKey_BeforeUsingIt(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 // Arrange
-                Commit(sql, x => x.AddToSet(TooLongTruncatedKey, "value"), useBatching);
+                Commit(x => x.AddToSet(TooLongTruncatedKey, "value"), useMicrosoftDataSqlClient, useBatching);
 
                 // Act
-                Commit(sql, x => x.RemoveSet(TooLongKey), useBatching);
+                Commit(x => x.RemoveSet(TooLongKey), useMicrosoftDataSqlClient, useBatching);
 
                 // Assert
                 var result = sql.Query(
@@ -1603,13 +1712,13 @@ select scope_identity() as Id";
                     new { key = TooLongTruncatedKey }).Single();
 
                 Assert.Equal("value", result.Value);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void RemoveSet_RemovesASet_WithAGivenKey(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void RemoveSet_RemovesASet_WithAGivenKey(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score]) values (@key, @value, 0.0)";
@@ -1622,40 +1731,41 @@ insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score]) values (
                     new { key = "set-2", value = "1" }
                 });
 
-                Commit(sql, x => x.RemoveSet("set-1"), useBatching);
+                Commit(x => x.RemoveSet("set-1"), useMicrosoftDataSqlClient, useBatching);
 
                 var record = sql.Query($"select * from [{Constants.DefaultSchema}].[Set]").Single();
                 Assert.Equal("set-2", record.Key);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void ExpireHash_ThrowsAnException_WhenKeyIsNull(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void ExpireHash_ThrowsAnException_WhenKeyIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.ExpireHash(null, TimeSpan.FromMinutes(5)), useBatching));
+                    () => Commit(x => x.ExpireHash(null, TimeSpan.FromMinutes(5)), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("key", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void ExpireHash_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void ExpireHash_DoesNotTruncateKey_BeforeUsingIt(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 // Arrange
-                Commit(sql, x => x.SetRangeInHash(
+                Commit(x => x.SetRangeInHash(
                     TooLongTruncatedKey,
-                    new Dictionary<string, string> {{ "field", "value" }}), useBatching);
+                    new Dictionary<string, string> {{ "field", "value" }}), useMicrosoftDataSqlClient, useBatching);
 
                 // Act
-                Commit(sql, x => x.ExpireHash(TooLongKey, TimeSpan.FromHours(1)), useBatching);
+                Commit(x => x.ExpireHash(TooLongKey, TimeSpan.FromHours(1)), useMicrosoftDataSqlClient, useBatching);
 
                 // Assert
                 var result = sql.Query(
@@ -1663,13 +1773,13 @@ insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score]) values (
                     new { key = TooLongTruncatedKey }).Single();
 
                 Assert.Null(result.ExpireAt);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void ExpireHash_SetsExpirationTimeOnAHash_WithGivenKey(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void ExpireHash_SetsExpirationTimeOnAHash_WithGivenKey(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Hash ([Key], [Field])
@@ -1685,41 +1795,42 @@ values (@key, @field)";
                 });
 
                 // Act
-                Commit(sql, x => x.ExpireHash("hash-1", TimeSpan.FromMinutes(60)), useBatching);
+                Commit(x => x.ExpireHash("hash-1", TimeSpan.FromMinutes(60)), useMicrosoftDataSqlClient, useBatching);
 
                 // Assert
                 var records = sql.Query($"select * from [{Constants.DefaultSchema}].Hash").ToDictionary(x => (string)x.Key, x => (DateTime?)x.ExpireAt);
                 Assert.True(DateTime.UtcNow.AddMinutes(59) < records["hash-1"]);
                 Assert.True(records["hash-1"] < DateTime.UtcNow.AddMinutes(61));
                 Assert.Null(records["hash-2"]);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void ExpireSet_ThrowsAnException_WhenKeyIsNull(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void ExpireSet_ThrowsAnException_WhenKeyIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.ExpireSet(null, TimeSpan.FromSeconds(45)), useBatching));
+                    () => Commit(x => x.ExpireSet(null, TimeSpan.FromSeconds(45)), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("key", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void ExpireSet_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void ExpireSet_DoesNotTruncateKey_BeforeUsingIt(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 // Arrange
-                Commit(sql, x => x.AddToSet(TooLongTruncatedKey, "value"), useBatching);
+                Commit(x => x.AddToSet(TooLongTruncatedKey, "value"), useMicrosoftDataSqlClient, useBatching);
 
                 // Act
-                Commit(sql, x => x.ExpireSet(TooLongKey, TimeSpan.FromHours(1)), useBatching);
+                Commit(x => x.ExpireSet(TooLongKey, TimeSpan.FromHours(1)), useMicrosoftDataSqlClient, useBatching);
 
                 // Assert
                 var result = sql.Query(
@@ -1727,13 +1838,13 @@ values (@key, @field)";
                     new { key = TooLongTruncatedKey }).Single();
 
                 Assert.Null(result.ExpireAt);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void ExpireSet_SetsExpirationTime_OnASet_WithGivenKey(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void ExpireSet_SetsExpirationTime_OnASet_WithGivenKey(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
@@ -1749,41 +1860,42 @@ values (@key, @value, 0.0)";
                 });
 
                 // Act
-                Commit(sql, x => x.ExpireSet("set-1", TimeSpan.FromMinutes(60)), useBatching);
+                Commit(x => x.ExpireSet("set-1", TimeSpan.FromMinutes(60)), useMicrosoftDataSqlClient, useBatching);
 
                 // Assert
                 var records = sql.Query($"select * from [{Constants.DefaultSchema}].[Set]").ToDictionary(x => (string)x.Key, x => (DateTime?)x.ExpireAt);
                 Assert.True(DateTime.UtcNow.AddMinutes(59) < records["set-1"]);
                 Assert.True(records["set-1"] < DateTime.UtcNow.AddMinutes(61));
                 Assert.Null(records["set-2"]);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void ExpireList_ThrowsAnException_WhenKeyIsNull(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void ExpireList_ThrowsAnException_WhenKeyIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.ExpireList(null, TimeSpan.FromSeconds(45)), useBatching));
+                    () => Commit(x => x.ExpireList(null, TimeSpan.FromSeconds(45)), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("key", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void ExpireList_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void ExpireList_DoesNotTruncateKey_BeforeUsingIt(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 // Arrange
-                Commit(sql, x => x.InsertToList(TooLongTruncatedKey, "value"), useBatching);
+                Commit(x => x.InsertToList(TooLongTruncatedKey, "value"), useMicrosoftDataSqlClient, useBatching);
 
                 // Act
-                Commit(sql, x => x.ExpireList(TooLongKey, TimeSpan.FromHours(1)), useBatching);
+                Commit(x => x.ExpireList(TooLongKey, TimeSpan.FromHours(1)), useMicrosoftDataSqlClient, useBatching);
 
                 // Assert
                 var result = sql.Query(
@@ -1791,13 +1903,13 @@ values (@key, @value, 0.0)";
                     new { key = TooLongTruncatedKey }).Single();
 
                 Assert.Null(result.ExpireAt);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void ExpireList_SetsExpirationTime_OnAList_WithGivenKey(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void ExpireList_SetsExpirationTime_OnAList_WithGivenKey(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].[List] ([Key]) values (@key)";
@@ -1812,45 +1924,46 @@ insert into [{Constants.DefaultSchema}].[List] ([Key]) values (@key)";
                 });
 
                 // Act
-                Commit(sql, x => x.ExpireList("list-1", TimeSpan.FromMinutes(60)), useBatching);
+                Commit(x => x.ExpireList("list-1", TimeSpan.FromMinutes(60)), useMicrosoftDataSqlClient, useBatching);
 
                 // Assert
                 var records = sql.Query($"select * from [{Constants.DefaultSchema}].[List]").ToDictionary(x => (string)x.Key, x => (DateTime?)x.ExpireAt);
                 Assert.True(DateTime.UtcNow.AddMinutes(59) < records["list-1"]);
                 Assert.True(records["list-1"] < DateTime.UtcNow.AddMinutes(61));
                 Assert.Null(records["list-2"]);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void PersistHash_ThrowsAnException_WhenKeyIsNull(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void PersistHash_ThrowsAnException_WhenKeyIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.PersistHash(null), useBatching));
+                    () => Commit(x => x.PersistHash(null), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("key", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void PersistHash_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void PersistHash_DoesNotTruncateKey_BeforeUsingIt(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 // Arrange
-                Commit(sql, x =>
+                Commit(x =>
                 {
                     x.SetRangeInHash(TooLongTruncatedKey, new Dictionary<string, string> { { "field", "value" } });
                     x.ExpireHash(TooLongTruncatedKey, TimeSpan.FromHours(1));
-                }, useBatching);
+                }, useMicrosoftDataSqlClient, useBatching);
 
                 // Act
-                Commit(sql, x => x.PersistHash(TooLongKey), useBatching);
+                Commit(x => x.PersistHash(TooLongKey), useMicrosoftDataSqlClient, useBatching);
 
                 // Assert
                 var result = sql.Query(
@@ -1858,13 +1971,13 @@ insert into [{Constants.DefaultSchema}].[List] ([Key]) values (@key)";
                     new { key = TooLongTruncatedKey }).Single();
 
                 Assert.NotNull(result.ExpireAt);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void PersistHash_ClearsExpirationTime_OnAGivenHash(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void PersistHash_ClearsExpirationTime_OnAGivenHash(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].Hash ([Key], [Field], [ExpireAt])
@@ -1880,44 +1993,45 @@ values (@key, @field, @expireAt)";
                 });
 
                 // Act
-                Commit(sql, x => x.PersistHash("hash-1"), useBatching);
+                Commit(x => x.PersistHash("hash-1"), useMicrosoftDataSqlClient, useBatching);
 
                 // Assert
                 var records = sql.Query($"select * from [{Constants.DefaultSchema}].Hash").ToDictionary(x => (string)x.Key, x => (DateTime?)x.ExpireAt);
                 Assert.Null(records["hash-1"]);
                 Assert.NotNull(records["hash-2"]);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void PersistSet_ThrowsAnException_WhenKeyIsNull(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void PersistSet_ThrowsAnException_WhenKeyIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.PersistSet(null), useBatching));
+                    () => Commit(x => x.PersistSet(null), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("key", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void PersistSet_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void PersistSet_DoesNotTruncateKey_BeforeUsingIt(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 // Arrange
-                Commit(sql, x =>
+                Commit(x =>
                 {
                     x.AddToSet(TooLongTruncatedKey, "value");
                     x.ExpireSet(TooLongTruncatedKey, TimeSpan.FromHours(1));
-                }, useBatching);
+                }, useMicrosoftDataSqlClient, useBatching);
 
                 // Act
-                Commit(sql, x => x.PersistSet(TooLongKey), useBatching);
+                Commit(x => x.PersistSet(TooLongKey), useMicrosoftDataSqlClient, useBatching);
 
                 // Assert
                 var result = sql.Query(
@@ -1925,13 +2039,13 @@ values (@key, @field, @expireAt)";
                     new { key = TooLongTruncatedKey }).Single();
 
                 Assert.NotNull(result.ExpireAt);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void PersistSet_ClearsExpirationTime_OnAGivenHash(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void PersistSet_ClearsExpirationTime_OnAGivenHash(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [ExpireAt], [Score])
@@ -1947,44 +2061,45 @@ values (@key, @value, @expireAt, 0.0)";
                 });
 
                 // Act
-                Commit(sql, x => x.PersistSet("set-1"), useBatching);
+                Commit(x => x.PersistSet("set-1"), useMicrosoftDataSqlClient, useBatching);
 
                 // Assert
                 var records = sql.Query($"select * from [{Constants.DefaultSchema}].[Set]").ToDictionary(x => (string)x.Key, x => (DateTime?)x.ExpireAt);
                 Assert.Null(records["set-1"]);
                 Assert.NotNull(records["set-2"]);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void PersistList_ThrowsAnException_WhenKeyIsNull(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void PersistList_ThrowsAnException_WhenKeyIsNull(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => Commit(sql, x => x.PersistList(null), useBatching));
+                    () => Commit(x => x.PersistList(null), useMicrosoftDataSqlClient, useBatching));
 
                 Assert.Equal("key", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true), InlineData(false)]
-        public void PersistList_DoesNotTruncateKey_BeforeUsingIt(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void PersistList_DoesNotTruncateKey_BeforeUsingIt(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 // Arrange
-                Commit(sql, x =>
+                Commit(x =>
                 {
                     x.InsertToList(TooLongTruncatedKey, "value");
                     x.ExpireList(TooLongTruncatedKey, TimeSpan.FromHours(1));
-                }, useBatching);
+                }, useMicrosoftDataSqlClient, useBatching);
 
                 // Act
-                Commit(sql, x => x.PersistList(TooLongKey), useBatching);
+                Commit(x => x.PersistList(TooLongKey), useMicrosoftDataSqlClient, useBatching);
 
                 // Assert
                 var result = sql.Query(
@@ -1992,13 +2107,13 @@ values (@key, @value, @expireAt, 0.0)";
                     new { key = TooLongTruncatedKey }).Single();
 
                 Assert.NotNull(result.ExpireAt);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void PersistList_ClearsExpirationTime_OnAGivenHash(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void PersistList_ClearsExpirationTime_OnAGivenHash(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].[List] ([Key], [ExpireAt])
@@ -2014,36 +2129,36 @@ values (@key, @expireAt)";
                 });
 
                 // Act
-                Commit(sql, x => x.PersistList("list-1"), useBatching);
+                Commit(x => x.PersistList("list-1"), useMicrosoftDataSqlClient, useBatching);
 
                 // Assert
                 var records = sql.Query($"select * from [{Constants.DefaultSchema}].[List]").ToDictionary(x => (string)x.Key, x => (DateTime?)x.ExpireAt);
                 Assert.Null(records["list-1"]);
                 Assert.NotNull(records["list-2"]);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void InsertToList_HandlesListIdCanExceedInt32Max(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void InsertToList_HandlesListIdCanExceedInt32Max(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
                 sql.Query($"DBCC CHECKIDENT('[{Constants.DefaultSchema}].List', RESEED, {int.MaxValue + 1L});");
 
-                Commit(sql, x => x.InsertToList("my-key", "my-value"), useBatching);
+                Commit(x => x.InsertToList("my-key", "my-value"), useMicrosoftDataSqlClient, useBatching);
 
                 var record = sql.Query($"select * from [{Constants.DefaultSchema}].List").Single();
 
                 Assert.True(int.MaxValue < record.Id);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void ExpireJob_SetsJobExpirationData_WhenJobIdIsLongValue(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void ExpireJob_SetsJobExpirationData_WhenJobIdIsLongValue(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 SET IDENTITY_INSERT [{Constants.DefaultSchema}].Job ON
@@ -2056,17 +2171,17 @@ values (@jobId, '', '', getutcdate())";
                     arrangeSql,
                     new { jobId = int.MaxValue + 1L });
 
-                Commit(sql, x => x.ExpireJob((int.MaxValue + 1L).ToString(), TimeSpan.FromDays(1)), useBatching);
+                Commit(x => x.ExpireJob((int.MaxValue + 1L).ToString(), TimeSpan.FromDays(1)), useMicrosoftDataSqlClient, useBatching);
 
                 var job = GetTestJob(sql, (int.MaxValue + 1L).ToString());
                 Assert.True(DateTime.UtcNow.AddMinutes(-1) < job.ExpireAt && job.ExpireAt <= DateTime.UtcNow.AddDays(2));
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void PersistJob_ClearsTheJobExpirationData_WhenJobIdIsLongValue(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void PersistJob_ClearsTheJobExpirationData_WhenJobIdIsLongValue(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 SET IDENTITY_INSERT [{Constants.DefaultSchema}].Job ON
@@ -2079,17 +2194,17 @@ values (@jobId, '', '', getutcdate(), getutcdate())";
                     arrangeSql,
                     new { jobId = int.MaxValue + 1L });
 
-                Commit(sql, x => x.PersistJob((int.MaxValue + 1L).ToString()), useBatching);
+                Commit(x => x.PersistJob((int.MaxValue + 1L).ToString()), useMicrosoftDataSqlClient, useBatching);
 
                 var job = GetTestJob(sql, (int.MaxValue + 1L).ToString());
                 Assert.Null(job.ExpireAt);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void SetJobState_WorksCorrect_WhenJobIdIsLongValue(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void SetJobState_WorksCorrect_WhenJobIdIsLongValue(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 SET IDENTITY_INSERT [{Constants.DefaultSchema}].Job ON
@@ -2105,19 +2220,19 @@ values (@jobId, '', '', getutcdate())";
                 var state = new Mock<IState>();
                 state.Setup(x => x.Name).Returns("State");
 
-                Commit(sql, x => x.SetJobState((int.MaxValue + 1L).ToString(), state.Object), useBatching);
+                Commit(x => x.SetJobState((int.MaxValue + 1L).ToString(), state.Object), useMicrosoftDataSqlClient, useBatching);
                 var job = GetTestJob(sql, (int.MaxValue + 1L).ToString());
 
                 var jobState = sql.Query($"select * from [{Constants.DefaultSchema}].State").Single();
                 Assert.Equal(int.MaxValue + 1L, jobState.JobId);
                 Assert.Equal(job.StateId, jobState.Id);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void AddJobState_AddsAState_WhenJobIdIsLongValue(bool useBatching)
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AddJobState_AddsAState_WhenJobIdIsLongValue(bool useBatching, bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 SET IDENTITY_INSERT [{Constants.DefaultSchema}].Job ON
@@ -2133,39 +2248,217 @@ values (@jobId, '', '', getutcdate())";
                 var state = new Mock<IState>();
                 state.Setup(x => x.Name).Returns("State");
 
-                Commit(sql, x => x.AddJobState((int.MaxValue + 1L).ToString(), state.Object), useBatching);
+                Commit(x => x.AddJobState((int.MaxValue + 1L).ToString(), state.Object), useMicrosoftDataSqlClient, useBatching);
 
                 var jobState = sql.Query($"select * from [{Constants.DefaultSchema}].State").Single();
 
                 Assert.Equal(int.MaxValue + 1L, jobState.JobId);
-            });
+            }, useMicrosoftDataSqlClient);
+        }
+        
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AcquireDistributedLock_ThrowsAnException_WhenResourceIsNullOrEmpty(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseSqlServerTransaction(transaction =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                () => transaction.AcquireDistributedLock("", TimeSpan.FromSeconds(15)));
+
+                Assert.Equal("resource", exception.ParamName);
+            }, useMicrosoftDataSqlClient, useBatching);
         }
 
-        private static void UseConnection(Action<SqlConnection> action)
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AcquireDistributedLock_AcquiresExclusiveApplicationLock_OnSession(bool useBatching, bool useMicrosoftDataSqlClient)
         {
-            using (var connection = ConnectionUtils.CreateConnection())
+            using (var sql = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient))
+            {
+                var options = new SqlServerStorageOptions { CommandBatchMaxTimeout = useBatching ? (TimeSpan?)TimeSpan.FromMinutes(5) : null };
+                var storage = new SqlServerStorage(sql, options);
+
+                using (var connection = new SqlServerConnection(storage))
+                using (var transaction = new SqlServerWriteOnlyTransaction(connection))
+                {
+                    transaction.AcquireDistributedLock("hello", TimeSpan.FromSeconds(15));
+                    var lockMode = sql.Query<string>(
+                        $"select applock_mode('public', '{Constants.DefaultSchema}:hello', 'session')").Single();
+
+                    Assert.Equal("Exclusive", lockMode);
+                    transaction.Commit();
+                }
+            }
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AcquireDistributedLock_ThrowsAnException_IfLockCanNotBeGranted(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            var releaseLock = new ManualResetEventSlim(false);
+            var lockAcquired = new ManualResetEventSlim(false);
+
+            var thread = new Thread(
+                () => UseSqlServerTransaction(transaction1 =>
+                {
+                    try
+                    {
+                        transaction1.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(1));
+
+                        lockAcquired.Set();
+                        if (!releaseLock.Wait(TimeSpan.FromSeconds(30)))
+                            throw new TimeoutException("Waiting for too long in transaction1 block");
+
+                        transaction1.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        try
+                        {
+                            Assert.True(false, ex.ToString());
+                        }
+                        catch
+                        {
+                            // Need only message
+                        }
+                    }
+                }, useMicrosoftDataSqlClient, useBatching));
+            thread.Start();
+
+            if (!lockAcquired.Wait(TimeSpan.FromSeconds(30)))
+            {
+                throw new TimeoutException("Waiting for too long in transaction2 block");
+            }
+
+            UseSqlServerTransaction(transaction2 =>
+            {
+                Assert.Throws<DistributedLockTimeoutException>(
+                    () => transaction2.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(1)));
+            }, useMicrosoftDataSqlClient, useBatching);
+
+            releaseLock.Set();
+            thread.Join();
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AcquireDistributedLock_TransactionCommit_ReleasesExclusiveApplicationLock(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(sql =>
+            {
+                var options = new SqlServerStorageOptions { CommandBatchMaxTimeout = useBatching ? (TimeSpan?)TimeSpan.FromMinutes(5) : null };
+                var storage = new SqlServerStorage(sql, options);
+
+                using (var connection = new SqlServerConnection(storage))
+                using (var transaction = new SqlServerWriteOnlyTransaction(connection))
+                {
+                    transaction.AcquireDistributedLock("hello", TimeSpan.FromSeconds(15));
+                    transaction.Commit();
+                }
+
+                var lockMode = sql.Query<string>($"select applock_mode('public', '{Constants.DefaultSchema}:hello', 'session')").Single();
+
+                Assert.Equal("NoLock", lockMode);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AcquireDistributedLock_TransactionCommit_DoesNotReleaseLock_IfItsOwnedByConnection(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(sql =>
+            {
+                var options = new SqlServerStorageOptions { CommandBatchMaxTimeout = useBatching ? (TimeSpan?)TimeSpan.FromMinutes(5) : null };
+                var storage = new SqlServerStorage(sql, options);
+
+                using (var connection = new SqlServerConnection(storage))
+                using (connection.AcquireDistributedLock("hello", TimeSpan.FromSeconds(15)))
+                {
+                    using (var transaction = new SqlServerWriteOnlyTransaction(connection))
+                    {
+                        transaction.AcquireDistributedLock("hello", TimeSpan.FromSeconds(15));
+                        transaction.Commit();
+                    }
+
+                    var lockMode = sql
+                        .Query<string>($"select applock_mode('public', '{Constants.DefaultSchema}:hello', 'session')")
+                        .Single();
+
+                    Assert.Equal("Exclusive", lockMode);
+                }
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false, false), InlineData(false, true)]
+        [InlineData(true, false), InlineData(true, true)]
+        public void AcquireDistributedLock_IsReentrant_FromTheSameTransaction_OnTheSameResource(bool useBatching, bool useMicrosoftDataSqlClient)
+        {
+            UseSqlServerTransaction(transaction =>
+            {
+                transaction.AcquireDistributedLock("hello", TimeSpan.FromSeconds(15));
+                transaction.AcquireDistributedLock("hello", TimeSpan.FromSeconds(15));
+                transaction.Commit();
+            }, useMicrosoftDataSqlClient, useBatching);
+        }
+
+        private static void UseConnection(Action<DbConnection> action, bool useMicrosoftDataSqlClient)
+        {
+            using (var connection = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient))
             {
                 action(connection);
             }
         }
 
-        private void Commit(
-            SqlConnection connection,
-            Action<SqlServerWriteOnlyTransaction> action,
-            bool useBatching,
+        private void UseSqlServerConnection(
+            Action<SqlServerConnection> action,
+            bool useMicrosoftDataSqlClient,
+            bool useBatching = false,
             Action<SqlServerStorageOptions> optionsAction = null)
         {
             var options = new SqlServerStorageOptions { CommandBatchMaxTimeout = useBatching ? TimeSpan.FromMinutes(1) : (TimeSpan?) null };
             optionsAction?.Invoke(options);
 
-            var storage = new Mock<SqlServerStorage>(connection, options);
+            var storage = new Mock<SqlServerStorage>((Func<DbConnection>) (() => ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient)), options);
             storage.Setup(x => x.QueueProviders).Returns(_queueProviders);
 
-            using (var transaction = new SqlServerWriteOnlyTransaction(storage.Object, () => null))
+            using (var connection = new SqlServerConnection(storage.Object))
+            {
+                action(connection);
+            }
+        }
+
+        private void UseSqlServerTransaction(
+            Action<SqlServerWriteOnlyTransaction> action,
+            bool useMicrosoftDataSqlClient,
+            bool useBatching,
+            Action<SqlServerStorageOptions> optionsAction = null)
+        {
+            UseSqlServerConnection(connection =>
+            {
+                using (var transaction = new SqlServerWriteOnlyTransaction(connection))
+                {
+                    action(transaction);
+                }
+            }, useMicrosoftDataSqlClient, useBatching, optionsAction);
+        }
+
+        private void Commit(
+            Action<SqlServerWriteOnlyTransaction> action,
+            bool useMicrosoftDataSqlClient,
+            bool useBatching,
+            Action<SqlServerStorageOptions> optionsAction = null)
+        {
+            UseSqlServerTransaction(transaction =>
             {
                 action(transaction);
                 transaction.Commit();
-            }
+            }, useMicrosoftDataSqlClient, useBatching, optionsAction);
         }
     }
 }

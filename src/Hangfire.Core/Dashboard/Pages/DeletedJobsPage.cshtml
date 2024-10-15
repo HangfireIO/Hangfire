@@ -13,7 +13,7 @@
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    var pager = new Pager(from, perPage, monitor.DeletedListCount());
+    var pager = new Pager(from, perPage, DashboardOptions.DefaultRecordsPerPage, monitor.DeletedListCount());
     var jobs = monitor.DeletedJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 
@@ -22,7 +22,7 @@
         @Html.JobsSidebar()
     </div>
     <div class="col-md-9">
-        <h1 class="page-header">@Strings.DeletedJobsPage_Title</h1>
+        <h1 id="page-title" class="page-header">@Strings.DeletedJobsPage_Title</h1>
 
         @if (pager.TotalPageCount == 0)
         {
@@ -47,7 +47,7 @@
                     @Html.PerPageSelector(pager)
                 </div>
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="table" aria-describedby="page-title">
                         <thead>
                             <tr>
                                 @if (!IsReadOnly)
@@ -58,6 +58,10 @@
                                 }
                                 <th class="min-width">@Strings.Common_Id</th>
                                 <th>@Strings.Common_Job</th>
+                                @if (jobs.Any(x => x.Value?.StateData != null))
+                                {
+                                    <th class="min-width">@Strings.DeletedJobsPage_Table_Exception</th>
+                                }
                                 <th class="align-right">@Strings.DeletedJobsPage_Table_Deleted</th>
                             </tr>
                         </thead>
@@ -68,7 +72,7 @@
                                     @if (!IsReadOnly)
                                     {
                                         <td>
-                                            @if (job.Value == null || job.Value.InDeletedState)
+                                            @if (job.Value != null && job.Value.InDeletedState)
                                             {
                                                 <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
                                             }
@@ -84,14 +88,41 @@
 
                                     @if (job.Value == null)
                                     {
-                                        <td colspan="2"><em>@Strings.Common_JobExpired</em></td>
+                                        if (jobs.Any(x => x.Value?.StateData != null))
+                                        {
+                                            <td colspan="3"><em>@Strings.Common_JobExpired</em></td>
+                                        }
+                                        else
+                                        {
+                                            <td colspan="2"><em>@Strings.Common_JobExpired</em></td>
+                                        }
                                     }
                                     else
                                     {
                                         <td class="word-break">
                                             @Html.JobNameLink(job.Key, job.Value.Job)
                                         </td>
-                                        <td class="align-right">
+                                        if (job.Value.StateData != null)
+                                        {
+                                            ExceptionInfo exception = null;
+                                            string typeName = null;
+                                            if (job.Value.StateData.TryGetValue("Exception", out var serializedException) &&
+                                                !String.IsNullOrWhiteSpace(serializedException))
+                                            {
+                                                exception = Common.SerializationHelper.Deserialize<ExceptionInfo>(serializedException, Common.SerializationOption.Internal);
+                                                var commaIndex = exception.Type.IndexOf(",", StringComparison.OrdinalIgnoreCase);
+                                                typeName = commaIndex > 0 
+                                                    ? exception.Type.Substring(0, commaIndex)
+                                                    : exception.Type;
+                                            }
+                                            <td class=min-width>
+                                                @if (!String.IsNullOrEmpty(typeName))
+                                                {
+                                                    <code title="@exception.Message">@typeName</code>
+                                                }
+                                            </td>
+                                        }
+                                        <td class="min-width align-right">
                                             @if (job.Value.DeletedAt.HasValue)
                                             {
                                                 @Html.RelativeTime(job.Value.DeletedAt.Value)

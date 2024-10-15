@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright � 2013-2014 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -15,20 +14,22 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Hangfire.Annotations;
 
 namespace Hangfire.States
 {
-    internal class CoreStateMachine : IStateMachine
+    internal sealed class CoreStateMachine : IStateMachine
     {
-        private readonly Func<JobStorage, StateHandlerCollection> _stateHandlersThunk;
+        private readonly Func<JobStorage, string, StateHandlersCollection> _stateHandlersThunk;
 
         public CoreStateMachine()
             : this(GetStateHandlers)
         {
         }
 
-        internal CoreStateMachine([NotNull] Func<JobStorage, StateHandlerCollection> stateHandlersThunk)
+        internal CoreStateMachine([NotNull] Func<JobStorage, string, StateHandlersCollection> stateHandlersThunk)
         {
             if (stateHandlersThunk == null) throw new ArgumentNullException(nameof(stateHandlersThunk));
             _stateHandlersThunk = stateHandlersThunk;
@@ -36,16 +37,14 @@ namespace Hangfire.States
 
         public IState ApplyState(ApplyStateContext context)
         {
-            var handlers = _stateHandlersThunk(context.Storage);
-
-            foreach (var handler in handlers.GetHandlers(context.OldStateName))
+            foreach (var handler in _stateHandlersThunk(context.Storage, context.OldStateName))
             {
                 handler.Unapply(context, context.Transaction);
             }
 
             context.Transaction.SetJobState(context.BackgroundJob.Id, context.NewState);
 
-            foreach (var handler in handlers.GetHandlers(context.NewState.Name))
+            foreach (var handler in _stateHandlersThunk(context.Storage, context.NewState.Name))
             {
                 handler.Apply(context, context.Transaction);
             }
@@ -62,13 +61,66 @@ namespace Hangfire.States
             return context.NewState;
         }
 
-        private static StateHandlerCollection GetStateHandlers(JobStorage storage)
+        private static StateHandlersCollection GetStateHandlers(JobStorage storage, string stateName)
         {
-            var stateHandlers = new StateHandlerCollection();
-            stateHandlers.AddRange(GlobalStateHandlers.Handlers);
-            stateHandlers.AddRange(storage.GetStateHandlers());
+            var globalHandlers = GlobalStateHandlers.Handlers;
 
-            return stateHandlers;
+            return new StateHandlersCollection(
+                globalHandlers as List<IStateHandler> ?? globalHandlers.ToList(),
+                storage.GetStateHandlers(),
+                stateName);
+        }
+
+        internal readonly struct StateHandlersCollection(
+            List<IStateHandler> globalHandlers,
+            IEnumerable<IStateHandler> storageHandlers,
+            string stateName)
+        {
+            public Enumerator GetEnumerator() => new Enumerator(globalHandlers, storageHandlers, stateName);
+
+            public ref struct Enumerator
+            {
+                private List<IStateHandler>.Enumerator _globalEnumerator;
+                private readonly IEnumerator<IStateHandler> _storageEnumerator;
+                private readonly string _stateName;
+                private IStateHandler _current;
+
+                public Enumerator(List<IStateHandler> globalHandlers, IEnumerable<IStateHandler> storageHandlers, string stateName)
+                {
+                    _globalEnumerator = globalHandlers.GetEnumerator();
+                    _storageEnumerator = storageHandlers.GetEnumerator();
+                    _stateName = stateName;
+                    _current = default;
+                }
+
+                public bool MoveNext()
+                {
+                    while (_globalEnumerator.MoveNext())
+                    {
+                        var current = _globalEnumerator.Current!;
+                        if (current.StateName.Equals(_stateName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            _current = current;
+                            return true;
+                        }
+                    }
+
+                    while (_storageEnumerator.MoveNext())
+                    {
+                        var current = _storageEnumerator.Current!;
+                        if (current.StateName.Equals(_stateName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            _current = current;
+                            return true;
+                        }
+                    }
+
+                    _current = default;
+                    return false;
+                }
+
+                public IStateHandler Current => _current;
+            }
         }
     }
 }

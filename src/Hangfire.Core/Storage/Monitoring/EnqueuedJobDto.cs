@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -15,6 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using Hangfire.Common;
 
 namespace Hangfire.Storage.Monitoring
@@ -27,8 +27,11 @@ namespace Hangfire.Storage.Monitoring
         }
 
         public Job Job { get; set; }
+        public JobLoadException LoadException { get; set; }
+        public InvocationData InvocationData { get; set; }
         public string State { get; set; }
         public DateTime? EnqueuedAt { get; set; }
         public bool InEnqueuedState { get; set; }
+        public IDictionary<string, string> StateData { get; set; }
     }
 }

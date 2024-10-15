@@ -5,7 +5,7 @@ using System.Messaging;
 
 namespace Hangfire.SqlServer.Msmq.Tests
 {
-    internal class MsmqUtils
+    internal sealed class MsmqUtils
     {
         public static void EnqueueJobId(string queue, string jobId)
         {

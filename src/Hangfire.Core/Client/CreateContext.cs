@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -30,10 +29,9 @@ namespace Hangfire.Client
     public class CreateContext
     {
         public CreateContext([NotNull] CreateContext context)
-            : this(context.Storage, context.Connection, context.Job, context.InitialState, context.Profiler)
+            : this(context.Storage, context.Connection, context.Job, context.InitialState, context.Parameters, context.Profiler, context.Items)
         {
-            Items = context.Items;
-            Parameters = context.Parameters;
+            Factory = context.Factory;
         }
 
         public CreateContext(
@@ -41,7 +39,17 @@ namespace Hangfire.Client
             [NotNull] IStorageConnection connection,
             [NotNull] Job job,
             [CanBeNull] IState initialState)
-            : this(storage, connection, job, initialState, EmptyProfiler.Instance)
+            : this(storage, connection, job, initialState, null)
+        {
+        }
+
+        public CreateContext(
+            [NotNull] JobStorage storage,
+            [NotNull] IStorageConnection connection,
+            [NotNull] Job job,
+            [CanBeNull] IState initialState,
+            [CanBeNull] IDictionary<string, object> parameters)
+            : this(storage, connection, job, initialState, parameters, EmptyProfiler.Instance, null)
         {
         }
 
@@ -50,7 +58,9 @@ namespace Hangfire.Client
             [NotNull] IStorageConnection connection, 
             [NotNull] Job job, 
             [CanBeNull] IState initialState,
-            [NotNull] IProfiler profiler)
+            [CanBeNull] IDictionary<string, object> parameters,
+            [NotNull] IProfiler profiler,
+            [CanBeNull] IDictionary<string, object> items)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (connection == null) throw new ArgumentNullException(nameof(connection));
@@ -62,8 +72,8 @@ namespace Hangfire.Client
             InitialState = initialState;
             Profiler = profiler;
 
-            Items = new Dictionary<string, object>();
-            Parameters = new Dictionary<string, object>();
+            Items = items ?? new Dictionary<string, object>();
+            Parameters = parameters ?? new Dictionary<string, object>();
         }
 
         [NotNull]
@@ -97,5 +107,8 @@ namespace Hangfire.Client
 
         [NotNull]
         internal IProfiler Profiler { get; }
+        
+        [CanBeNull]
+        public IBackgroundJobFactory Factory { get; internal set; }
     }
 }

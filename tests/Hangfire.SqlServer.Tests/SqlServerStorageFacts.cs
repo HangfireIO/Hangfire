@@ -2,7 +2,6 @@
 using System;
 using System.Data.Common;
 using System.Linq;
-using System.Transactions;
 using Xunit;
 
 namespace Hangfire.SqlServer.Tests
@@ -34,13 +33,15 @@ namespace Hangfire.SqlServer.Tests
             Assert.Equal("options", exception.ParamName);
         }
 
-        [Fact, CleanDatabase]
-        public void Ctor_CanCreateSqlServerStorage_WithExistingConnection()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Ctor_CanCreateSqlServerStorage_WithExistingConnection(bool useMicrosoftDataSqlClient)
         {
-            var connection = ConnectionUtils.CreateConnection();
-            var storage = new SqlServerStorage(connection);
-
-            Assert.NotNull(storage);
+            using (var connection = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient))
+            {
+                var storage = new SqlServerStorage(connection);
+                Assert.NotNull(storage);
+            }
         }
 
         [Fact]
@@ -54,10 +55,11 @@ namespace Hangfire.SqlServer.Tests
             Assert.Equal("connectionFactory", exception.ParamName);
         }
 
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenOptionsValueIsNull_WithConnectionFactory()
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Ctor_ThrowsAnException_WhenOptionsValueIsNull_WithConnectionFactory(bool useMicrosoftDataSqlClient)
         {
-            Func<DbConnection> connectionFactory = ConnectionUtils.CreateConnection;
+            Func<DbConnection> connectionFactory = () => ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient);
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new SqlServerStorage(connectionFactory, null));
 
@@ -73,7 +75,7 @@ namespace Hangfire.SqlServer.Tests
             Assert.Same(connection.Object, storage.CreateAndOpenConnection());
         }
 
-        [Fact, CleanDatabase(isolationLevel: IsolationLevel.ReadUncommitted)]
+        [Fact, CleanDatabase]
         public void GetMonitoringApi_ReturnsNonNullInstance()
         {
             var storage = CreateStorage();
@@ -91,6 +93,41 @@ namespace Hangfire.SqlServer.Tests
             }
         }
 
+#if NET452 || NET461
+        [Fact, CleanDatabase]
+        public void UseConnection_UsesSystemDataSqlClient_ByDefault_OnNet452Only()
+        {
+            var storage = CreateStorage();
+            storage.UseConnection(null, (_, connection) =>
+            {
+                Assert.IsType<System.Data.SqlClient.SqlConnection>(connection);
+            });
+        }
+#else
+        [Fact, CleanDatabase]
+        public void UseConnection_UsesMicrosoftDataSqlClient_ByDefault()
+        {
+            var storage = CreateStorage();
+            storage.UseConnection(null, (_, connection) =>
+            {
+                Assert.IsType<Microsoft.Data.SqlClient.SqlConnection>(connection);
+            });
+        }
+#endif
+
+#if !NET452
+        [Fact, CleanDatabase]
+        public void UseConnection_UsesSystemDataSqlClient_WhenSqlClientFactoryIsSet()
+        {
+            _options.SqlClientFactory = System.Data.SqlClient.SqlClientFactory.Instance;
+            var storage = CreateStorage();
+            storage.UseConnection(null, (_, connection) =>
+            {
+                Assert.IsType<System.Data.SqlClient.SqlConnection>(connection);
+            });
+        }
+#endif
+
         [Fact, CleanDatabase]
         public void GetComponents_ReturnsAllNeededComponents()
         {
@@ -100,6 +137,96 @@ namespace Hangfire.SqlServer.Tests
 
             var componentTypes = components.Select(x => x.GetType()).ToArray();
             Assert.Contains(typeof(ExpirationManager), componentTypes);
+        }
+
+        [Fact, CleanDatabase]
+        public void HasFeature_Connection_GetUtcDateTime_ReturnsTrue()
+        {
+            var storage = CreateStorage();
+
+            var result = storage.HasFeature("Connection.GetUtcDateTime");
+
+            Assert.True(result);
+        }
+
+        [Fact, CleanDatabase]
+        public void HasFeature_Connection_GetSetContains_ReturnsTrue()
+        {
+            var storage = CreateStorage();
+
+            var result = storage.HasFeature("Connection.GetSetContains");
+
+            Assert.True(result);
+        }
+
+        [Fact, CleanDatabase]
+        public void HasFeature_Connection_GetSetCount_Limited_ReturnsTrue()
+        {
+            var storage = CreateStorage();
+
+            var result = storage.HasFeature("Connection.GetSetCount.Limited");
+
+            Assert.True(result);
+        }
+
+        [Fact, CleanDatabase]
+        public void HasFeature_Connection_BatchedGetFirstByLowestScoreFromSet_ReturnsTrue()
+        {
+            var storage = CreateStorage();
+
+            var result = storage.HasFeature("Connection.BatchedGetFirstByLowestScoreFromSet");
+
+            Assert.True(result);
+        }
+
+        [Fact, CleanDatabase]
+        public void HasFeature_Job_Queue_ReturnsTrue()
+        {
+            var storage = CreateStorage();
+
+            var result = storage.HasFeature("Job.Queue");
+
+            Assert.True(result);
+        }
+
+        [Fact, CleanDatabase]
+        public void HasFeature_Storage_ExtendedApi_ReturnsTrue()
+        {
+            var storage = CreateStorage();
+
+            var result = storage.HasFeature("Storage.ExtendedApi");
+
+            Assert.True(result);
+        }
+
+        [Fact, CleanDatabase]
+        public void HasFeature_Transaction_AcquireDistributedLock_ReturnsTrue()
+        {
+            var storage = CreateStorage();
+
+            var result = storage.HasFeature("Transaction.AcquireDistributedLock");
+
+            Assert.True(result);
+        }
+
+        [Fact, CleanDatabase]
+        public void HasFeature_Monitoring_AwaitingJobs_ReturnsTrue()
+        {
+            var storage = CreateStorage();
+
+            var result = storage.HasFeature("Monitoring.AwaitingJobs");
+
+            Assert.True(result);
+        }
+
+        [Fact, CleanDatabase]
+        public void HasFeature_Monitoring_DeletedStateGraphs_ReturnsTrue()
+        {
+            var storage = CreateStorage();
+
+            var result = storage.HasFeature("Monitoring.DeletedStateGraphs");
+
+            Assert.True(result);
         }
 
         private SqlServerStorage CreateStorage()

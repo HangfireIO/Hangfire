@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright © 2017 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -18,11 +17,76 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
+using Hangfire.Annotations;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlCommandBatch : IDisposable
+    internal static class DbCommandExtensions
+    {
+        public static DbCommand Create(
+            [NotNull] this DbConnection connection,
+            [NotNull] string text,
+            CommandType type = CommandType.Text,
+            int? timeout = null)
+        {
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            if (text == null) throw new ArgumentNullException(nameof(text));
+
+            var command = connection.CreateCommand();
+            command.CommandType = type;
+            command.CommandText = text;
+
+            if (timeout.HasValue)
+            {
+                command.CommandTimeout = timeout.Value;
+            }
+
+            return command;
+        }
+
+        public static DbCommand AddParameter(
+            [NotNull] this DbCommand command,
+            [NotNull] string parameterName,
+            [CanBeNull] object value,
+            DbType dbType,
+            [CanBeNull] int? size = null)
+        {
+            if (command == null) throw new ArgumentNullException(nameof(command));
+            if (parameterName == null) throw new ArgumentNullException(nameof(parameterName));
+
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = parameterName;
+            parameter.DbType = dbType;
+            parameter.Value = value ?? DBNull.Value;
+
+            if (size.HasValue) parameter.Size = size.Value;
+
+            command.Parameters.Add(parameter);
+            return command;
+        }
+
+        public static DbCommand AddReturnParameter(
+            [NotNull] this DbCommand command,
+            string parameterName,
+            out DbParameter parameter,
+            DbType dbType,
+            int? size = null)
+        {
+            if (command == null) throw new ArgumentNullException(nameof(command));
+
+            parameter = command.CreateParameter();
+            parameter.ParameterName = parameterName;
+            parameter.DbType = dbType;
+            parameter.Direction = ParameterDirection.ReturnValue;
+
+            if (size.HasValue) parameter.Size = size.Value;
+
+            command.Parameters.Add(parameter);
+            return command;
+        }
+    }
+
+    internal sealed class SqlCommandBatch : IDisposable
     {
         private readonly List<DbCommand> _commandList = new List<DbCommand>();
         private readonly SqlCommandSet _commandSet;
@@ -33,14 +97,14 @@ namespace Hangfire.SqlServer
             Connection = connection;
             Transaction = transaction;
 
-            if (connection is SqlConnection && SqlCommandSet.IsAvailable && preferBatching)
+            if (preferBatching)
             {
                 try
                 {
-                    _commandSet = new SqlCommandSet();
+                    _commandSet = new SqlCommandSet(connection);
                     _defaultTimeout = _commandSet.BatchCommand.CommandTimeout;
                 }
-                catch (Exception)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     _commandSet = null;
                 }
@@ -63,24 +127,11 @@ namespace Hangfire.SqlServer
             _commandSet?.Dispose();
         }
 
-        public void Append(string commandText, params SqlCommandBatchParameter[] parameters)
-        {
-            var command = Connection.CreateCommand();
-            command.CommandText = commandText;
-
-            foreach (var parameter in parameters)
-            {
-                parameter.AddToCommand(command);
-            }
-
-            Append(command);
-        }
-
         public void Append(DbCommand command)
         {
-            if (_commandSet != null && command is SqlCommand)
+            if (_commandSet != null)
             {
-                _commandSet.Append((SqlCommand)command);
+                _commandSet.Append(command);
             }
             else
             {
@@ -92,8 +143,8 @@ namespace Hangfire.SqlServer
         {
             if (_commandSet != null && _commandSet.CommandCount > 0)
             {
-                _commandSet.Connection = Connection as SqlConnection;
-                _commandSet.Transaction = Transaction as SqlTransaction;
+                _commandSet.Connection = Connection;
+                _commandSet.Transaction = Transaction;
 
                 var batchTimeout = CommandTimeout ?? _defaultTimeout;
 
@@ -123,34 +174,6 @@ namespace Hangfire.SqlServer
 
                 command.ExecuteNonQuery();
             }
-        }
-    }
-
-    internal class SqlCommandBatchParameter
-    {
-        public SqlCommandBatchParameter(string parameterName, DbType dbType, int? size = null)
-        {
-            ParameterName = parameterName;
-            DbType = dbType;
-            Size = size;
-        }
-
-        public string ParameterName { get; }
-        public DbType DbType { get; }
-        public int? Size { get; }
-        public object Value { get; set; }
-
-        public void AddToCommand(DbCommand command)
-        {
-            var parameter = command.CreateParameter();
-            parameter.ParameterName = ParameterName;
-            parameter.DbType = DbType;
-
-            if (Size.HasValue) parameter.Size = Size.Value;
-
-            parameter.Value = Value;
-
-            command.Parameters.Add(parameter);
         }
     }
 }

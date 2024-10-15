@@ -60,7 +60,7 @@ namespace Hangfire.Core.Tests.States
 
             var data = state.SerializeData();
 
-            Assert.Equal(1, data.Count);
+            Assert.Single(data);
             Assert.True(JobHelper.DeserializeDateTime(data["DeletedAt"]) != default(DateTime));
         }
 

@@ -1,7 +1,7 @@
 # File an Issue
 
 If you have a question rather than an issue, please post it to the [Hangfire Stack 
-Overflow tag](http://stackoverflow.com/questions/tagged/hangfire). For non-security related bugs please log a new issue:
+Overflow tag](https://stackoverflow.com/questions/tagged/hangfire). For non-security related bugs please log a new issue:
 
 1. Search the [issue tracker](https://github.com/HangfireIO/Hangfire/issues) for similar issues.
 2. Specify the **version** of `Hangfire.Core` package in which the bug was occurred.
@@ -16,7 +16,7 @@ ProTip!
   problem. You can simply use <kbd>Print Screen</kbd>, then <kbd>Ctrl + V</kbd> directly 
  into the comment window on GitHub.
 * Include log messages, written by Hangfire when a problem occurred. Don't forget to tell your logger to dump all the exception details.
-* Include stack trace dump, if your background processing stucked. You can use 
+* Include stack trace dump, if your background processing is stuck. You can use 
    [`stdump`](https://github.com/odinserj/stdump) utility to get them either from a minidump file,
    or from a running process without interrupting it: `stdump w3wp > stacktrace.txt`
 

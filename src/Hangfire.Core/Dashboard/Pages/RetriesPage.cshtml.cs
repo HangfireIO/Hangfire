@@ -96,13 +96,13 @@ WriteLiteral("\r\n");
     Pager pager = null;
     List<string> jobIds = null;
 
-    using (var connection = Storage.GetConnection())
+    using (var connection = Storage.GetReadOnlyConnection())
     {
         var storageConnection = connection as JobStorageConnection;
 
         if (storageConnection != null)
         {
-            pager = new Pager(@from, perPage, storageConnection.GetSetCount("retries"));
+            pager = new Pager(@from, perPage, DashboardOptions.DefaultRecordsPerPage, storageConnection.GetSetCount("retries"));
             jobIds = storageConnection.GetRangeFromSet("retries", pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
         }
     }
@@ -144,13 +144,13 @@ else
             
             #line default
             #line hidden
-WriteLiteral("    <div class=\"row\">\r\n        <div class=\"col-md-12\">\r\n            <h1 class=\"pa" +
-"ge-header\">");
+WriteLiteral("    <div class=\"row\">\r\n        <div class=\"col-md-12\">\r\n            <h1 id=\"page-" +
+"title\" class=\"page-header\">");
 
 
             
             #line 44 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                               Write(Strings.RetriesPage_Title);
+                                               Write(Strings.RetriesPage_Title);
 
             
             #line default
@@ -316,8 +316,9 @@ WriteLiteral("                        ");
             #line default
             #line hidden
 WriteLiteral("\r\n                    </div>\r\n\r\n                    <div class=\"table-responsive\"" +
-">\r\n                        <table class=\"table table-hover\">\r\n                  " +
-"          <thead>\r\n                                <tr>\r\n");
+">\r\n                        <table class=\"table table-hover\" aria-describedby=\"pa" +
+"ge-title\">\r\n                            <thead>\r\n                               " +
+" <tr>\r\n");
 
 
             
@@ -411,7 +412,7 @@ WriteLiteral("</th>\r\n                                </tr>\r\n                
                                     JobData jobData;
                                     StateData stateData;
 
-                                    using (var connection = Storage.GetConnection())
+                                    using (var connection = Storage.GetReadOnlyConnection())
                                     {
                                         jobData = connection.GetJobData(jobId);
                                         stateData = connection.GetStateData(jobId);

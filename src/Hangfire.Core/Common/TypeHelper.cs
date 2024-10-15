@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright © 2019 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2019 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -24,17 +23,21 @@ using System.Threading;
 
 namespace Hangfire.Common
 {
-    internal class TypeHelper
+    public class TypeHelper
     {
-        private static readonly ConcurrentDictionary<Type, string> TypeSerializerCache = new ConcurrentDictionary<Type, string>();
+        private static readonly ConcurrentDictionary<Type, string> DefaultTypeSerializerCache = new ConcurrentDictionary<Type, string>();
+        private static readonly ConcurrentDictionary<Type, string> SimpleAssemblyTypeSerializerCache = new ConcurrentDictionary<Type, string>();
 
+        private static readonly ConcurrentDictionary<string, Type> DefaultTypeResolverCache = new ConcurrentDictionary<string, Type>();
+        private static readonly ConcurrentDictionary<string, Type> IgnoredAssemblyVersionTypeResolverCache = new ConcurrentDictionary<string, Type>();
+
+        private static readonly Assembly CoreLibrary = typeof(int).GetTypeInfo().Assembly;
         private static readonly AssemblyName MscorlibAssemblyName = new AssemblyName("mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089");
         private static readonly ConcurrentDictionary<string, Assembly> AssemblyCache = new ConcurrentDictionary<string, Assembly>();
-        private static readonly ConcurrentDictionary<string, Type> TypeResolverCache = new ConcurrentDictionary<string, Type>();
 
-        private static readonly Regex VersionRegex = new Regex(@", Version=\d+.\d+.\d+.\d+", RegexOptions.Compiled);
-        private static readonly Regex CultureRegex = new Regex(@", Culture=\w+", RegexOptions.Compiled);
-        private static readonly Regex PublicKeyTokenRegex = new Regex(@", PublicKeyToken=\w+", RegexOptions.Compiled);
+        private static readonly Regex VersionRegex = new Regex(@", Version=\d+.\d+.\d+.\d+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
+        private static readonly Regex CultureRegex = new Regex(@", Culture=\w+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
+        private static readonly Regex PublicKeyTokenRegex = new Regex(@", PublicKeyToken=\w+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
 
         private static Func<string, Type> _currentTypeResolver;
         private static Func<Type, string> _currentTypeSerializer;
@@ -53,12 +56,12 @@ namespace Hangfire.Common
 
         public static string DefaultTypeSerializer(Type type)
         {
-            return type.AssemblyQualifiedName;
+            return DefaultTypeSerializerCache.GetOrAdd(type, static t => t.AssemblyQualifiedName);
         }
 
         public static string SimpleAssemblyTypeSerializer(Type type)
         {
-            return TypeSerializerCache.GetOrAdd(type, value =>
+            return SimpleAssemblyTypeSerializerCache.GetOrAdd(type, static value =>
             {
                 var builder = new StringBuilder();
                 SerializeType(value, true, builder);
@@ -69,23 +72,26 @@ namespace Hangfire.Common
 
         public static Type DefaultTypeResolver(string typeName)
         {
+            return DefaultTypeResolverCache.GetOrAdd(typeName, static name =>
+            {
 #if NETSTANDARD1_3
-            typeName = typeName.Replace("System.Private.CoreLib", "mscorlib");
-            return Type.GetType(
-                typeName,
-                throwOnError: true);
+                name = name.Replace("System.Private.CoreLib", "mscorlib");
+                return Type.GetType(
+                    name,
+                    throwOnError: true);
 #else
-            return Type.GetType(
-                typeName,
-                typeResolver: TypeResolver,
-                assemblyResolver: CachedAssemblyResolver,
-                throwOnError: true);
+                return Type.GetType(
+                    name,
+                    typeResolver: TypeResolver,
+                    assemblyResolver: CachedAssemblyResolver,
+                    throwOnError: true);
 #endif
+            });
         }
 
         public static Type IgnoredAssemblyVersionTypeResolver(string typeName)
         {
-            return TypeResolverCache.GetOrAdd(typeName, value =>
+            return IgnoredAssemblyVersionTypeResolverCache.GetOrAdd(typeName, static value =>
             {
                 value = VersionRegex.Replace(value, String.Empty);
                 value = CultureRegex.Replace(value, String.Empty);
@@ -190,6 +196,10 @@ namespace Hangfire.Common
             {
                 assemblyName = MscorlibAssemblyName;
             }
+            else if (assemblyName.Name.Equals("System.Private.Xml.Linq", StringComparison.OrdinalIgnoreCase))
+            {
+                assemblyName = new AssemblyName("System.Xml.Linq, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089");
+            }
 
             var publicKeyToken = assemblyName.GetPublicKeyToken();
 
@@ -206,7 +216,7 @@ namespace Hangfire.Common
             {
                 return Assembly.Load(assemblyName);
             }
-            catch (Exception)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 var shortName = new AssemblyName(assemblyName.Name);
                 if (publicKeyToken != null)
@@ -225,7 +235,19 @@ namespace Hangfire.Common
                 return typeof(System.Diagnostics.Debug);
             }
 
-            assembly = assembly ?? typeof(int).GetTypeInfo().Assembly;
+            assembly = assembly ?? CoreLibrary;
+
+            if (assembly != CoreLibrary &&
+                assembly.GetName().Name.Equals("mscorlib", StringComparison.OrdinalIgnoreCase))
+            {
+                // Everything defaults to `mscorlib` for interoperability reasons between
+                // .NET Framework and .NET Core. Most of the types have the proper forwarding,
+                // but newer types like DateOnly or TimeOnly don't. So for types from `mscorlib`
+                // we perform the first search in the current core library.
+                var type = CoreLibrary.GetType(typeName, false, ignoreCase);
+                if (type != null) return type;
+            }
+
             return assembly.GetType(typeName, true, ignoreCase);
         }
     }

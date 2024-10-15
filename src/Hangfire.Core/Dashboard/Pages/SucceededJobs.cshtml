@@ -14,7 +14,7 @@
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    var pager = new Pager(from, perPage, monitor.SucceededListCount());
+    var pager = new Pager(from, perPage, DashboardOptions.DefaultRecordsPerPage, monitor.SucceededListCount());
     var succeededJobs = monitor.SucceededJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 
@@ -23,7 +23,7 @@
         @Html.JobsSidebar()
     </div>
     <div class="col-md-9">
-        <h1 class="page-header">@Strings.SucceededJobsPage_Title</h1>
+        <h1 id="page-title" class="page-header">@Strings.SucceededJobsPage_Title</h1>
 
         @if (pager.TotalPageCount == 0)
         {
@@ -49,7 +49,7 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="table" aria-describedby="page-title">
                         <thead>
                             <tr>
                                 @if (!IsReadOnly)
@@ -60,7 +60,15 @@
                                 }
                                 <th class="min-width">@Strings.Common_Id</th>
                                 <th>@Strings.Common_Job</th>
-                                <th class="min-width">@Strings.SucceededJobsPage_Table_TotalDuration</th>
+                                @if (succeededJobs.Any(x => x.Value?.StateData != null))
+                                {
+                                    <th class="min-width">@Strings.SucceededJobsPage_Table_Duration</th>
+                                    <th class="min-width">@Strings.SucceededJobsPage_Table_Latency</th>
+                                }
+                                else
+                                {
+                                    <th class="min-width">@Strings.SucceededJobsPage_Table_TotalDuration</th>
+                                }
                                 <th class="align-right">@Strings.SucceededJobsPage_Table_Succeeded</th>
                             </tr>
                         </thead>
@@ -71,7 +79,7 @@
                                     @if (!IsReadOnly)
                                     {
                                         <td>
-                                            @if (job.Value == null || job.Value.InSucceededState)
+                                            @if (job.Value != null && job.Value.InSucceededState)
                                             {
                                                 <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
                                             }
@@ -87,21 +95,44 @@
 
                                     @if (job.Value == null)
                                     {
-                                        <td colspan="3">
-                                            <em>@Strings.Common_JobExpired</em>
-                                        </td>
+                                        if (succeededJobs.Any(x => x.Value?.StateData != null))
+                                        {
+                                            <td colspan="4"><em>@Strings.Common_JobExpired</em></td>
+                                        }
+                                        else
+                                        {
+                                            <td colspan="3"><em>@Strings.Common_JobExpired</em></td>
+                                        }
                                     }
                                     else
                                     {
                                         <td class="word-break">
                                             @Html.JobNameLink(job.Key, job.Value.Job)
                                         </td>
-                                        <td class="min-width align-right">
-                                            @if (job.Value.TotalDuration.HasValue)
-                                            {
-                                                @Html.ToHumanDuration(TimeSpan.FromMilliseconds(job.Value.TotalDuration.Value), false)
-                                            }
-                                        </td>
+                                        if (job.Value.StateData != null)
+                                        {
+                                            <td class="min-width align-right">
+                                                @if (job.Value.StateData.TryGetValue("PerformanceDuration", out var duration))
+                                                {
+                                                    @Html.ToHumanDuration(TimeSpan.FromMilliseconds(long.Parse(duration, System.Globalization.CultureInfo.InvariantCulture)), false)
+                                                }
+                                            </td>
+                                            <td class="min-width align-right">
+                                                @if (job.Value.StateData.TryGetValue("Latency", out var latency))
+                                                {
+                                                    @Html.ToHumanDuration(TimeSpan.FromMilliseconds(long.Parse(latency, System.Globalization.CultureInfo.InvariantCulture)), false)
+                                                }
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td class="min-width align-right">
+                                                @if (job.Value.TotalDuration.HasValue)
+                                                {
+                                                    @Html.ToHumanDuration(TimeSpan.FromMilliseconds(job.Value.TotalDuration.Value), false)
+                                                }
+                                            </td>
+                                        }
                                         <td class="min-width align-right">
                                             @if (job.Value.SucceededAt.HasValue)
                                             {

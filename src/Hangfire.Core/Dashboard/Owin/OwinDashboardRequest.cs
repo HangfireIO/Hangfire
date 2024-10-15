@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2016 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2016 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -45,9 +44,9 @@ namespace Hangfire.Dashboard
         {
             IList<string> values;
 
-            if(_context.Environment.ContainsKey(FormCollectionKey))
+            if(_context.Environment.TryGetValue(FormCollectionKey, out var formCollection))
             {
-                if(_context.Environment[FormCollectionKey] is IFormCollection)
+                if (formCollection is IFormCollection)
                 {
                     var form = (IFormCollection)_context.Request.Environment[FormCollectionKey];
                     values = form.GetValues(key);

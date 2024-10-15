@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -30,8 +29,8 @@ namespace Hangfire.States
     /// and <see cref="FailedState"/> tells Hangfire that a job should be investigated 
     /// by a developer.</para>
     /// 
-    /// <para>Each state have some essential properties like <see cref="Name"/>,
-    /// <see cref="IsFinal"/> and a custom ones that are exposed through
+    /// <para>Each state has some essential properties like <see cref="Name"/>,
+    /// <see cref="IsFinal"/> and custom ones that are exposed through
     /// the <see cref="SerializeData"/> method. Serialized data may be used during
     /// the processing stage.</para>
     /// 
@@ -45,9 +44,9 @@ namespace Hangfire.States
     /// </remarks>
     /// 
     /// <example>
-    /// <para>Let's create a new state. Consider you haves background jobs that
+    /// <para>Let's create a new state. Consider you have background jobs that
     /// throw a transient exception from time to time, and you want to simply
-    /// ignore those exceptions. By default, Hangfire will move a job that throwed
+    /// ignore those exceptions. By default, Hangfire will move a job that threw
     /// an exception to the <see cref="FailedState"/>, however a job in the <i>failed</i>
     /// state will live in a Failed jobs page forever, unless we use <see cref="AutomaticRetryAttribute"/>,
     /// delete or retry it manually, because the <see cref="FailedState"/> is not

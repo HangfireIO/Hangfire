@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -23,7 +22,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace Hangfire.Dashboard
 {
-    internal class JsonStats : IDashboardDispatcher
+    internal sealed class JsonStats : IDashboardDispatcher
     {
         public async Task Dispatch(DashboardContext context)
         {
@@ -51,7 +50,7 @@ namespace Hangfire.Dashboard
             await context.Response.WriteAsync(serialized).ConfigureAwait(false);
         }
 
-        private class StubPage : RazorPage
+        private sealed class StubPage : RazorPage
         {
             public override void Execute()
             {

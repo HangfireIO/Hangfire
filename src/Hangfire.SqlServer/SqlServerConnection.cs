@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -18,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Dapper;
@@ -31,7 +31,7 @@ using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlServerConnection : JobStorageConnection
+    internal sealed class SqlServerConnection : JobStorageConnection
     {
         private readonly SqlServerStorage _storage;
         private readonly Dictionary<string, HashSet<Guid>> _lockedResources = new Dictionary<string, HashSet<Guid>>();
@@ -42,6 +42,9 @@ namespace Hangfire.SqlServer
             _storage = storage;
         }
 
+        public SqlServerStorage Storage => _storage;
+        public DbConnection DedicatedConnection => _dedicatedConnection;
+
         public override void Dispose()
         {
             if (_dedicatedConnection != null)
@@ -49,11 +52,13 @@ namespace Hangfire.SqlServer
                 _dedicatedConnection.Dispose();
                 _dedicatedConnection = null;
             }
+
+            base.Dispose();
         }
 
         public override IWriteOnlyTransaction CreateWriteTransaction()
         {
-            return new SqlServerWriteOnlyTransaction(_storage, () => _dedicatedConnection);
+            return new SqlServerWriteOnlyTransaction(this);
         }
 
         public override IDisposable AcquireDistributedLock([NotNull] string resource, TimeSpan timeout)
@@ -90,19 +95,21 @@ namespace Hangfire.SqlServer
             if (job == null) throw new ArgumentNullException(nameof(job));
             if (parameters == null) throw new ArgumentNullException(nameof(parameters));
 
-            var queryString =
-$@"insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt)
+            var queryString = _storage.GetQueryFromTemplate(static schemaName =>
+$@"insert into [{schemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt)
 output inserted.Id
-values (@invocationData, @arguments, @createdAt, @expireAt)";
+values (@invocationData, @arguments, @createdAt, @expireAt)");
 
             var invocationData = InvocationData.SerializeJob(job);
             var payload = invocationData.SerializePayload(excludeArguments: true);
 
-            var queryParameters = new DynamicParameters();
-            queryParameters.Add("@invocationData", payload, DbType.String, size: -1);
-            queryParameters.Add("@arguments", invocationData.Arguments, DbType.String, size: -1);
-            queryParameters.Add("@createdAt", createdAt, DbType.DateTime);
-            queryParameters.Add("@expireAt", createdAt.Add(expireIn), DbType.DateTime);
+            Action<DbCommand> queryParameters = cmd => cmd
+                .AddParameter("@invocationData", payload, DbType.String, size: -1)
+                .AddParameter("@arguments", invocationData.Arguments, DbType.String, size: -1)
+                .AddParameter("@createdAt", createdAt, DbType.DateTime)
+                .AddParameter("@expireAt", createdAt.Add(expireIn), DbType.DateTime);
+
+            Action<DbCommand> additionalParameters = null;
 
             var parametersArray = parameters.ToArray();
 
@@ -110,158 +117,196 @@ values (@invocationData, @arguments, @createdAt, @expireAt)";
             {
                 if (parametersArray.Length == 1)
                 {
-                    queryString = $@"
+                    queryString = _storage.GetQueryFromTemplate(static schemaName => $@"
 set xact_abort on; set nocount on; declare @jobId bigint;
 begin tran;
-insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) values (@invocationData, @arguments, @createdAt, @expireAt);
+insert into [{schemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) values (@invocationData, @arguments, @createdAt, @expireAt);
 select @jobId = scope_identity(); select @jobId;
-insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value);
-commit tran;";
-                    queryParameters.Add("@name", parametersArray[0].Key, DbType.String, size: 40);
-                    queryParameters.Add("@value", parametersArray[0].Value, DbType.String, size: -1);
+insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value);
+commit tran;");
+                    additionalParameters = cmd => cmd
+                        .AddParameter("@name", parametersArray[0].Key, DbType.String, size: 40)
+                        .AddParameter("@value", parametersArray[0].Value, DbType.String, size: -1);
                 }
                 else if (parametersArray.Length == 2)
                 {
-                    queryString = $@"
+                    queryString = _storage.GetQueryFromTemplate(static schemaName => $@"
 set xact_abort on; set nocount on; declare @jobId bigint;
 begin tran;
-insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) values (@invocationData, @arguments, @createdAt, @expireAt);
+insert into [{schemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) values (@invocationData, @arguments, @createdAt, @expireAt);
 select @jobId = scope_identity(); select @jobId;
-insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name1, @value1), (@jobId, @name2, @value2);
-commit tran;";
-                    queryParameters.Add("@name1", parametersArray[0].Key, DbType.String, size: 40);
-                    queryParameters.Add("@value1", parametersArray[0].Value, DbType.String, size: -1);
-                    queryParameters.Add("@name2", parametersArray[1].Key, DbType.String, size: 40);
-                    queryParameters.Add("@value2", parametersArray[1].Value, DbType.String, size: -1);
+insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name1, @value1), (@jobId, @name2, @value2);
+commit tran;");
+                    additionalParameters = cmd => cmd
+                        .AddParameter("@name1", parametersArray[0].Key, DbType.String, size: 40)
+                        .AddParameter("@value1", parametersArray[0].Value, DbType.String, size: -1)
+                        .AddParameter("@name2", parametersArray[1].Key, DbType.String, size: 40)
+                        .AddParameter("@value2", parametersArray[1].Value, DbType.String, size: -1);
                 }
                 else if (parametersArray.Length == 3)
                 {
-                    queryString = $@"
+                    queryString = _storage.GetQueryFromTemplate(static schemaName => $@"
 set xact_abort on; set nocount on; declare @jobId bigint;
 begin tran;
-insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) values (@invocationData, @arguments, @createdAt, @expireAt);
+insert into [{schemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) values (@invocationData, @arguments, @createdAt, @expireAt);
 select @jobId = scope_identity(); select @jobId;
-insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name1, @value1), (@jobId, @name2, @value2), (@jobId, @name3, @value3);
-commit tran;";
-                    queryParameters.Add("@name1", parametersArray[0].Key, DbType.String, size: 40);
-                    queryParameters.Add("@value1", parametersArray[0].Value, DbType.String, size: -1);
-                    queryParameters.Add("@name2", parametersArray[1].Key, DbType.String, size: 40);
-                    queryParameters.Add("@value2", parametersArray[1].Value, DbType.String, size: -1);
-                    queryParameters.Add("@name3", parametersArray[2].Key, DbType.String, size: 40);
-                    queryParameters.Add("@value3", parametersArray[2].Value, DbType.String, size: -1);
+insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name1, @value1), (@jobId, @name2, @value2), (@jobId, @name3, @value3);
+commit tran;");
+                    additionalParameters = cmd => cmd
+                        .AddParameter("@name1", parametersArray[0].Key, DbType.String, size: 40)
+                        .AddParameter("@value1", parametersArray[0].Value, DbType.String, size: -1)
+                        .AddParameter("@name2", parametersArray[1].Key, DbType.String, size: 40)
+                        .AddParameter("@value2", parametersArray[1].Value, DbType.String, size: -1)
+                        .AddParameter("@name3", parametersArray[2].Key, DbType.String, size: 40)
+                        .AddParameter("@value3", parametersArray[2].Value, DbType.String, size: -1);
                 }
                 else if (parametersArray.Length == 4)
                 {
-                    queryString = $@"
+                    queryString = _storage.GetQueryFromTemplate(static schemaName => $@"
 set xact_abort on; set nocount on; declare @jobId bigint;
 begin tran;
-insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) values (@invocationData, @arguments, @createdAt, @expireAt);
+insert into [{schemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt) values (@invocationData, @arguments, @createdAt, @expireAt);
 select @jobId = scope_identity(); select @jobId;
-insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name1, @value1), (@jobId, @name2, @value2), (@jobId, @name3, @value3), (@jobId, @name4, @value4);
-commit tran;";
-                    queryParameters.Add("@name1", parametersArray[0].Key, DbType.String, size: 40);
-                    queryParameters.Add("@value1", parametersArray[0].Value, DbType.String, size: -1);
-                    queryParameters.Add("@name2", parametersArray[1].Key, DbType.String, size: 40);
-                    queryParameters.Add("@value2", parametersArray[1].Value, DbType.String, size: -1);
-                    queryParameters.Add("@name3", parametersArray[2].Key, DbType.String, size: 40);
-                    queryParameters.Add("@value3", parametersArray[2].Value, DbType.String, size: -1);
-                    queryParameters.Add("@name4", parametersArray[3].Key, DbType.String, size: 40);
-                    queryParameters.Add("@value4", parametersArray[3].Value, DbType.String, size: -1);
+insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name1, @value1), (@jobId, @name2, @value2), (@jobId, @name3, @value3), (@jobId, @name4, @value4);
+commit tran;");
+                    additionalParameters = cmd => cmd
+                        .AddParameter("@name1", parametersArray[0].Key, DbType.String, size: 40)
+                        .AddParameter("@value1", parametersArray[0].Value, DbType.String, size: -1)
+                        .AddParameter("@name2", parametersArray[1].Key, DbType.String, size: 40)
+                        .AddParameter("@value2", parametersArray[1].Value, DbType.String, size: -1)
+                        .AddParameter("@name3", parametersArray[2].Key, DbType.String, size: 40)
+                        .AddParameter("@value3", parametersArray[2].Value, DbType.String, size: -1)
+                        .AddParameter("@name4", parametersArray[3].Key, DbType.String, size: 40)
+                        .AddParameter("@value4", parametersArray[3].Value, DbType.String, size: -1);
                 }
 
-                return _storage.UseConnection(_dedicatedConnection, connection => connection
-                    .ExecuteScalar<long>(queryString, queryParameters, commandTimeout: _storage.CommandTimeout)
-                    .ToString());
+                return _storage.UseConnection(_dedicatedConnection, static (storage, connection, ctx) =>
+                    {
+                        using var command = connection.Create(ctx.Key, timeout: storage.CommandTimeout);
+                        ctx.Value.Key(command);
+                        ctx.Value.Value?.Invoke(command);
+
+                        return ((long)command.ExecuteScalar()).ToString(CultureInfo.InvariantCulture);
+                    },
+                    new KeyValuePair<string, KeyValuePair<Action<DbCommand>, Action<DbCommand>>>(
+                        queryString,
+                        new KeyValuePair<Action<DbCommand>, Action<DbCommand>>(queryParameters, additionalParameters)));
             }
 
-            return _storage.UseTransaction(_dedicatedConnection, (connection, transaction) =>
+            return _storage.UseTransaction(_dedicatedConnection, static (storage, connection, transaction, triple) =>
             {
-                var jobId = connection.ExecuteScalar<long>(
-                    queryString,
-                    queryParameters,
-                    transaction,
-                    commandTimeout: _storage.CommandTimeout).ToString();
+                using var jobCommand = connection.Create(triple.Item1, timeout: storage.CommandTimeout);
+                triple.Item2(jobCommand);
 
-                var insertParameterSql =
-$@"insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value)";
+                jobCommand.Transaction = transaction;
 
-                using (var commandBatch = new SqlCommandBatch(connection, transaction, preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
+                var jobId = ((long)jobCommand.ExecuteScalar()).ToString(CultureInfo.InvariantCulture);
+
+                var query = storage.GetQueryFromTemplate(static schemaName =>
+$@"insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value)");
+
+                using (var commandBatch = new SqlCommandBatch(connection, transaction, preferBatching: storage.CommandBatchMaxTimeout.HasValue))
                 {
-                    commandBatch.CommandTimeout = _storage.CommandTimeout;
-                    commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
+                    commandBatch.CommandTimeout = storage.CommandTimeout;
+                    commandBatch.CommandBatchMaxTimeout = storage.CommandBatchMaxTimeout;
 
-                    foreach (var parameter in parametersArray)
+                    foreach (var parameter in triple.Item3)
                     {
-                        commandBatch.Append(insertParameterSql,
-                            new SqlCommandBatchParameter("@jobId", DbType.Int64) { Value = long.Parse(jobId) },
-                            new SqlCommandBatchParameter("@name",DbType.String, 40) { Value = parameter.Key },
-                            new SqlCommandBatchParameter("@value", DbType.String, -1) { Value = (object)parameter.Value ?? DBNull.Value });
+                        var command = connection.Create(query)
+                            .AddParameter("@jobId", long.Parse(jobId, CultureInfo.InvariantCulture), DbType.Int64)
+                            .AddParameter("@name", parameter.Key, DbType.String, size: 40)
+                            .AddParameter("@value", (object)parameter.Value ?? DBNull.Value, DbType.String, size: -1);
+
+                        commandBatch.Append(command);
                     }
 
                     commandBatch.ExecuteNonQuery();
                 }
 
                 return jobId;
-            }, null);
+            }, CreateTriple(queryString, queryParameters, parametersArray), null);
         }
 
         public override JobData GetJobData(string id)
         {
             if (id == null) throw new ArgumentNullException(nameof(id));
 
-            string sql =
-$@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.SchemaName}].Job with (readcommittedlock, forceseek) where Id = @id";
-
-            return _storage.UseConnection(_dedicatedConnection, connection =>
+            if (!long.TryParse(id, out var parsedId))
             {
-                var jobData = connection.Query<SqlJob>(sql, new { id = long.Parse(id) }, commandTimeout: _storage.CommandTimeout)
-                    .SingleOrDefault();
+                return null;
+            }
 
-                if (jobData == null) return null;
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, parsedId) =>
+            {
+                var query = storage.GetQueryFromTemplate(static schemaName =>
+$@"select InvocationData, StateName, Arguments, CreatedAt from [{schemaName}].Job with (readcommittedlock, forceseek) where Id = @id
+select Name, Value from [{schemaName}].JobParameter with (forceseek) where JobId = @id");
 
-                // TODO: conversion exception could be thrown.
-                var invocationData = InvocationData.DeserializePayload(jobData.InvocationData);
-
-                if (!String.IsNullOrEmpty(jobData.Arguments))
+                using (var multi = connection.QueryMultiple(query, new { id = parsedId }, commandTimeout: storage.CommandTimeout))
                 {
-                    invocationData.Arguments = jobData.Arguments;
+                    var jobData = multi.ReadSingleOrDefault();
+                    if (jobData == null) return null;
+
+                    var parameters = new Dictionary<string, string>();
+
+                    var jobParameters = multi.Read<JobParameter>().ToArray();
+                    for (var i = 0; i < jobParameters.Length; i++)
+                    {
+                        var jobParameter = jobParameters[i];
+                        parameters[jobParameter.Name] = jobParameter.Value;
+                    }
+
+                    // TODO: conversion exception could be thrown.
+                    var invocationData = InvocationData.DeserializePayload(jobData.InvocationData);
+
+                    if (!String.IsNullOrEmpty(jobData.Arguments))
+                    {
+                        invocationData.Arguments = jobData.Arguments;
+                    }
+
+                    Job job = null;
+                    JobLoadException loadException = null;
+
+                    try
+                    {
+                        job = invocationData.DeserializeJob();
+                    }
+                    catch (JobLoadException ex)
+                    {
+                        loadException = ex;
+                    }
+
+                    return new JobData
+                    {
+                        Job = job,
+                        InvocationData = invocationData,
+                        State = jobData.StateName,
+                        CreatedAt = jobData.CreatedAt,
+                        LoadException = loadException,
+                        ParametersSnapshot = parameters
+                    };
                 }
-
-                Job job = null;
-                JobLoadException loadException = null;
-
-                try
-                {
-                    job = invocationData.DeserializeJob();
-                }
-                catch (JobLoadException ex)
-                {
-                    loadException = ex;
-                }
-
-                return new JobData
-                {
-                    Job = job,
-                    State = jobData.StateName,
-                    CreatedAt = jobData.CreatedAt,
-                    LoadException = loadException
-                };
-            });
+            }, parsedId);
         }
 
         public override StateData GetStateData(string jobId)
         {
             if (jobId == null) throw new ArgumentNullException(nameof(jobId));
 
-            string sql = 
-$@"select s.Name, s.Reason, s.Data
-from [{_storage.SchemaName}].State s with (readcommittedlock, forceseek)
-inner join [{_storage.SchemaName}].Job j with (readcommittedlock, forceseek) on j.StateId = s.Id and j.Id = s.JobId
-where j.Id = @jobId";
-
-            return _storage.UseConnection(_dedicatedConnection, connection =>
+            if (!long.TryParse(jobId, out var parsedId))
             {
-                var sqlState = connection.Query<SqlState>(sql, new { jobId = long.Parse(jobId) }, commandTimeout: _storage.CommandTimeout).SingleOrDefault();
+                return null;
+            }
+
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, parsedId) =>
+            {
+                var query = storage.GetQueryFromTemplate(static schemaName =>
+$@"select s.Name, s.Reason, s.Data
+from [{schemaName}].State s with (readcommittedlock, forceseek)
+inner join [{schemaName}].Job j with (readcommittedlock, forceseek) on j.StateId = s.Id and j.Id = s.JobId
+where j.Id = @jobId");
+
+                var sqlState = connection.QuerySingleOrDefault<SqlState>(query, new { jobId = parsedId }, commandTimeout: storage.CommandTimeout);
                 if (sqlState == null)
                 {
                     return null;
@@ -277,7 +322,7 @@ where j.Id = @jobId";
                     Reason = sqlState.Reason,
                     Data = data
                 };
-            });
+            }, parsedId);
         }
 
         public override void SetJobParameter(string id, string name, string value)
@@ -293,26 +338,26 @@ where j.Id = @jobId";
             // https://github.com/HangfireIO/Hangfire/issues/1741 (duplicate entries)
             // https://github.com/HangfireIO/Hangfire/issues/1693#issuecomment-697976133 (records aren't updated)
 
-            var query = $@"
+            _storage.UseConnection(_dedicatedConnection, static (storage, connection, triple) =>
+            {
+                var query = storage.GetQueryFromTemplate(static schemaName => $@"
 set xact_abort off;
 begin try
-  update [{_storage.SchemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
-  if @@ROWCOUNT = 0 insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value);
+  update [{schemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
+  if @@ROWCOUNT = 0 insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, @name, @value);
 end try
 begin catch
   declare @em nvarchar(4000), @es int, @est int;
   select @em=error_message(),@es=error_severity(),@est=error_state();
   IF ERROR_NUMBER() not in (2601, 2627) raiserror(@em, @es, @est);
-  update [{_storage.SchemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
-end catch";
+  update [{schemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
+end catch");
 
-            _storage.UseConnection(_dedicatedConnection, connection =>
-            {
-                connection.Execute(
+                return connection.Execute(
                     query,
-                    new { jobId = long.Parse(id), name, value },
-                    commandTimeout: _storage.CommandTimeout);
-            });
+                    new { jobId = triple.Item1, name = triple.Item2, value = triple.Item3 },
+                    commandTimeout: storage.CommandTimeout);
+            }, CreateTriple(long.Parse(id, CultureInfo.InvariantCulture), name, value));
         }
 
         public override string GetJobParameter(string id, string name)
@@ -320,25 +365,35 @@ end catch";
             if (id == null) throw new ArgumentNullException(nameof(id));
             if (name == null) throw new ArgumentNullException(nameof(name));
 
-            return _storage.UseConnection(_dedicatedConnection, connection => connection.ExecuteScalar<string>(
-                $@"select top (1) Value from [{_storage.SchemaName}].JobParameter with (readcommittedlock, forceseek) where JobId = @id and Name = @name",
-                new { id = long.Parse(id), name = name },
-                commandTimeout: _storage.CommandTimeout));
+            if (!long.TryParse(id, out var parsedId))
+            {
+                return null;
+            }
+
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) => connection.ExecuteScalar<string>(
+                storage.GetQueryFromTemplate(static schemaName =>
+                    $@"select top (1) Value from [{schemaName}].JobParameter with (forceseek) where JobId = @id and Name = @name"),
+                new { id = pair.Key, name = pair.Value },
+                commandTimeout: storage.CommandTimeout),
+                new KeyValuePair<long, string>(parsedId, name));
         }
 
         public override HashSet<string> GetAllItemsFromSet(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            return _storage.UseConnection(_dedicatedConnection, connection =>
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) =>
             {
+                var query = storage.GetQueryFromTemplate(static schemaName =>
+$@"select Value from [{schemaName}].[Set] with (forceseek) where [Key] = @key");
+
                 var result = connection.Query<string>(
-                    $@"select Value from [{_storage.SchemaName}].[Set] with (readcommittedlock, forceseek) where [Key] = @key",
+                    query,
                     new { key },
-                    commandTimeout: _storage.CommandTimeout);
+                    commandTimeout: storage.CommandTimeout);
 
                 return new HashSet<string>(result);
-            });
+            }, key);
         }
 
         public override string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
@@ -352,15 +407,18 @@ end catch";
             if (count <= 0) throw new ArgumentException("The value must be a positive number", nameof(count));
             if (toScore < fromScore) throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.", nameof(toScore));
 
-            return _storage.UseConnection(_dedicatedConnection, connection =>
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) =>
             {
+                var query = storage.GetQueryFromTemplate(static schemaName =>
+$@"select top (@count) Value from [{schemaName}].[Set] with (forceseek) where [Key] = @key and Score between @from and @to order by Score");
+
                 var result = connection.Query<string>(
-                    $@"select top (@count) Value from [{_storage.SchemaName}].[Set] with (readcommittedlock, forceseek) where [Key] = @key and Score between @from and @to order by Score",
-                    new { count = count, key, from = fromScore, to = toScore },
-                    commandTimeout: _storage.CommandTimeout);
+                    query,
+                    new { count = pair.Value.Item3, pair.Key, from = pair.Value.Item1, to = pair.Value.Item2 },
+                    commandTimeout: storage.CommandTimeout);
 
                 return result.ToList();
-            });
+            }, new KeyValuePair<string, ValueTriple<double, double, int>>(key, CreateTriple(fromScore, toScore, count)));
         }
 
         public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
@@ -368,69 +426,75 @@ end catch";
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
 
-            var sql = $@"
+            _storage.UseTransaction(_dedicatedConnection, static (storage, connection, transaction, pair) =>
+            {
+                var query = storage.GetQueryFromTemplate(static schemaName => $@"
 set xact_abort off;
 begin try
-  insert into [{_storage.SchemaName}].Hash ([Key], Field, Value) values (@key, @field, @value);
-  if @@ROWCOUNT = 0 update [{_storage.SchemaName}].Hash set Value = @value where [Key] = @key and Field = @field;
+  insert into [{schemaName}].Hash ([Key], Field, Value) values (@key, @field, @value);
+  if @@ROWCOUNT = 0 update [{schemaName}].Hash set Value = @value where [Key] = @key and Field = @field;
 end try
 begin catch
   declare @em nvarchar(4000), @es int, @est int;
   select @em=error_message(),@es=error_severity(),@est=error_state();
   IF ERROR_NUMBER() not in (2601, 2627) raiserror(@em, @es, @est);
-  update [{_storage.SchemaName}].Hash set Value = @value where [Key] = @key and Field = @field;
-end catch";
+  update [{schemaName}].Hash set Value = @value where [Key] = @key and Field = @field;
+end catch");
 
-            var lockResourceKey = $"{_storage.SchemaName}:Hash:Lock";
+                var lockResourceKey = $"{storage.SchemaName}:Hash:Lock";
 
-            _storage.UseTransaction(_dedicatedConnection, (connection, transaction) =>
-            {
-                using (var commandBatch = new SqlCommandBatch(connection, transaction, preferBatching: _storage.CommandBatchMaxTimeout.HasValue))
+                using (var commandBatch = new SqlCommandBatch(connection, transaction, preferBatching: storage.CommandBatchMaxTimeout.HasValue))
                 {
-                    if (!_storage.Options.DisableGlobalLocks)
+                    if (!storage.Options.DisableGlobalLocks)
                     {
-                        commandBatch.Append(
-                            "SET XACT_ABORT ON;exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive', @LockOwner=N'Transaction', @LockTimeout=-1;",
-                            new SqlCommandBatchParameter("@resource", DbType.String, 255) { Value = lockResourceKey });
+                        var command = connection
+                            .Create("SET XACT_ABORT ON;exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive', @LockOwner=N'Transaction', @LockTimeout=-1;")
+                            .AddParameter("@resource", lockResourceKey, DbType.String, size: 255);
+                        commandBatch.Append(command);
                     }
 
-                    foreach (var keyValuePair in keyValuePairs)
+                    foreach (var keyValuePair in pair.Value)
                     {
-                        commandBatch.Append(sql,
-                            new SqlCommandBatchParameter("@key", DbType.String) { Value = key },
-                            new SqlCommandBatchParameter("@field", DbType.String, 100) { Value = keyValuePair.Key },
-                            new SqlCommandBatchParameter("@value", DbType.String, -1) { Value = (object) keyValuePair.Value ?? DBNull.Value });
+                        var command = connection.Create(query)
+                            .AddParameter("@key", pair.Key, DbType.String)
+                            .AddParameter("@field", keyValuePair.Key, DbType.String, size: 100)
+                            .AddParameter("@value", (object)keyValuePair.Value ?? DBNull.Value, DbType.String, size: -1);
+                        commandBatch.Append(command);
                     }
 
-                    if (!_storage.Options.DisableGlobalLocks)
+                    if (!storage.Options.DisableGlobalLocks)
                     {
-                        commandBatch.Append(
-                            "exec sp_releaseapplock @Resource=@resource, @LockOwner=N'Transaction';",
-                            new SqlCommandBatchParameter("@resource", DbType.String, 255) { Value = lockResourceKey });
+                        var command = connection
+                            .Create("exec sp_releaseapplock @Resource=@resource, @LockOwner=N'Transaction';")
+                            .AddParameter("@resource", lockResourceKey, DbType.String, size: 255);
+                        commandBatch.Append(command);
                     }
 
-                    commandBatch.CommandTimeout = _storage.CommandTimeout;
-                    commandBatch.CommandBatchMaxTimeout = _storage.CommandBatchMaxTimeout;
+                    commandBatch.CommandTimeout = storage.CommandTimeout;
+                    commandBatch.CommandBatchMaxTimeout = storage.CommandBatchMaxTimeout;
 
                     commandBatch.ExecuteNonQuery();
                 }
-            });
+            }, new KeyValuePair<string, IEnumerable<KeyValuePair<string, string>>>(key, keyValuePairs));
         }
 
         public override Dictionary<string, string> GetAllEntriesFromHash(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            return _storage.UseConnection(_dedicatedConnection, connection =>
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) =>
             {
+                var query = storage.GetQueryFromTemplate(static schemaName =>
+$@"select Field, Value from [{schemaName}].Hash with (forceseek) where [Key] = @key");
+
                 var result = connection.Query<SqlHash>(
-                    $"select Field, Value from [{_storage.SchemaName}].Hash with (forceseek, readcommittedlock) where [Key] = @key",
+                    query,
                     new { key },
-                    commandTimeout: _storage.CommandTimeout)
-                    .ToDictionary(x => x.Field, x => x.Value);
+                    commandTimeout: storage.CommandTimeout)
+                    .ToDictionary(static x => x.Field, static x => x.Value);
 
                 return result.Count != 0 ? result : null;
-            });
+            }, key);
         }
 
         public override void AnnounceServer(string serverId, ServerContext context)
@@ -445,48 +509,59 @@ end catch";
                 StartedAt = DateTime.UtcNow,
             };
 
-            _storage.UseConnection(_dedicatedConnection, connection =>
+            _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) =>
             {
-                connection.Execute(
-$@";merge [{_storage.SchemaName}].Server with (holdlock) as Target
-using (VALUES (@id, @data, @heartbeat)) as Source (Id, Data, Heartbeat)
+                var query = storage.GetQueryFromTemplate(static schemaName =>
+$@";merge [{schemaName}].Server with (holdlock) as Target
+using (VALUES (@id, @data, sysutcdatetime())) as Source (Id, Data, Heartbeat)
 on Target.Id = Source.Id
 when matched then update set Data = Source.Data, LastHeartbeat = Source.Heartbeat
-when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat);",
-                    new { id = serverId, data = SerializationHelper.Serialize(data), heartbeat = DateTime.UtcNow },
-                    commandTimeout: _storage.CommandTimeout);
-            });
+when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat);");
+
+                return connection.Execute(
+                    query,
+                    new { id = pair.Key, data = pair.Value },
+                    commandTimeout: storage.CommandTimeout);
+            }, new KeyValuePair<string, string>(serverId, SerializationHelper.Serialize(data)));
         }
 
         public override void RemoveServer(string serverId)
         {
             if (serverId == null) throw new ArgumentNullException(nameof(serverId));
 
-            _storage.UseConnection(_dedicatedConnection, connection =>
+            _storage.UseConnection(_dedicatedConnection, static (storage, connection, serverId) =>
             {
-                connection.Execute(
-                    $@"delete from [{_storage.SchemaName}].Server where Id = @id",
+                var query = storage.GetQueryFromTemplate(static schemaName =>
+$@"delete S from [{schemaName}].Server S with (forceseek) where Id = @id");
+
+                return connection.Execute(
+                    query,
                     new { id = serverId },
-                    commandTimeout: _storage.CommandTimeout);
-            });
+                    commandTimeout: storage.CommandTimeout);
+            }, serverId);
         }
 
         public override void Heartbeat(string serverId)
         {
             if (serverId == null) throw new ArgumentNullException(nameof(serverId));
 
-            _storage.UseConnection(_dedicatedConnection, connection =>
+            _storage.UseConnection(_dedicatedConnection, static (storage, connection, serverId) =>
             {
+                var query = storage.GetQueryFromTemplate(static schemaName =>
+$@"update [{schemaName}].Server set LastHeartbeat = sysutcdatetime() where Id = @id");
+
                 var affected = connection.Execute(
-                    $@"update [{_storage.SchemaName}].Server set LastHeartbeat = @now where Id = @id",
-                    new { now = DateTime.UtcNow, id = serverId },
-                    commandTimeout: _storage.CommandTimeout);
+                    query,
+                    new { id = serverId },
+                    commandTimeout: storage.CommandTimeout);
 
                 if (affected == 0)
                 {
                     throw new BackgroundServerGoneException();
                 }
-            });
+
+                return affected;
+            }, serverId);
         }
 
         public override int RemoveTimedOutServers(TimeSpan timeOut)
@@ -496,91 +571,133 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
                 throw new ArgumentException("The `timeOut` value must be positive.", nameof(timeOut));
             }
 
-            return _storage.UseConnection(_dedicatedConnection, connection => connection.Execute(
-                $@"delete from [{_storage.SchemaName}].Server where LastHeartbeat < @timeOutAt",
-                new { timeOutAt = DateTime.UtcNow.Add(timeOut.Negate()) },
-                commandTimeout: _storage.CommandTimeout));
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, timeout) => connection.Execute(
+                storage.GetQueryFromTemplate(static schemaName =>
+                    $@"delete s from [{schemaName}].Server s with (readpast, readcommitted) where LastHeartbeat < dateadd(ms, @timeoutMsNeg, sysutcdatetime())"),
+                new { timeoutMsNeg = timeout.Negate().TotalMilliseconds },
+                commandTimeout: storage.CommandTimeout), timeOut);
         }
 
         public override long GetSetCount(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            return _storage.UseConnection(_dedicatedConnection, connection => connection.Query<int>(
-                $"select count(*) from [{_storage.SchemaName}].[Set] with (readcommittedlock, forceseek) where [Key] = @key",
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) => connection.ExecuteScalar<long>(
+                storage.GetQueryFromTemplate(static schemaName =>
+                    $@"select count(*) from [{schemaName}].[Set] with (forceseek) where [Key] = @key"),
                 new { key = key },
-                commandTimeout: _storage.CommandTimeout).First());
+                commandTimeout: storage.CommandTimeout), key);
+        }
+
+        public override long GetSetCount(IEnumerable<string> keys, int limit)
+        {
+            if (keys == null) throw new ArgumentNullException(nameof(keys));
+            if (limit < 0) throw new ArgumentOutOfRangeException(nameof(limit), "Value must be greater or equal to 0.");
+
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) => connection.ExecuteScalar<long>(
+                storage.GetQueryFromTemplate(static schemaName =>
+$@"select count(*) from (
+  select top(@limit) 1 as N from [{schemaName}].[Set] with (forceseek) where [Key] in @keys
+) a"),
+                new { keys = pair.Key, limit = pair.Value },
+                commandTimeout: storage.CommandTimeout),
+                new KeyValuePair<IEnumerable<string>, int>(keys, limit));
+        }
+
+        public override bool GetSetContains(string key, string value)
+        {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (value == null) throw new ArgumentNullException(nameof(value));
+
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) => connection.ExecuteScalar<int>(
+                storage.GetQueryFromTemplate(static schemaName =>
+                    $@"select count(1) from [{schemaName}].[Set] with (forceseek) where [Key] = @key and [Value] = @value"),
+                new { key = pair.Key, value = pair.Value },
+                commandTimeout: storage.CommandTimeout) == 1, new KeyValuePair<string, string>(key, value)); 
         }
 
         public override List<string> GetRangeFromSet(string key, int startingFrom, int endingAt)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query =
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, triple) =>
+            {
+                var query = storage.GetQueryFromTemplate(static schemaName =>
 $@"select [Value] from (
 	select [Value], row_number() over (order by [Score] ASC) as row_num
-	from [{_storage.SchemaName}].[Set] with (readcommittedlock, forceseek)
+	from [{schemaName}].[Set] with (forceseek)
 	where [Key] = @key 
-) as s where s.row_num between @startingFrom and @endingAt";
+) as s where s.row_num between @startingFrom and @endingAt");
 
-            return _storage.UseConnection(_dedicatedConnection, connection => connection
-                .Query<string>(query, new { key = key, startingFrom = startingFrom + 1, endingAt = endingAt + 1 }, commandTimeout: _storage.CommandTimeout)
-                .ToList());
+                return connection
+                    .Query<string>(query, new { key = triple.Item1, startingFrom = triple.Item2 + 1, endingAt = triple.Item3 + 1 },
+                        commandTimeout: storage.CommandTimeout)
+                    .ToList();
+            }, CreateTriple(key, startingFrom, endingAt));
         }
 
         public override TimeSpan GetSetTtl(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = $@"select min([ExpireAt]) from [{_storage.SchemaName}].[Set] with (readcommittedlock, forceseek) where [Key] = @key";
-
-            return _storage.UseConnection(_dedicatedConnection, connection =>
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) =>
             {
-                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: _storage.CommandTimeout);
+                var query = storage.GetQueryFromTemplate(static schemaName =>
+$@"select min([ExpireAt]) from [{schemaName}].[Set] with (forceseek) where [Key] = @key");
+
+                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: storage.CommandTimeout);
                 if (!result.HasValue) return TimeSpan.FromSeconds(-1);
 
                 return result.Value - DateTime.UtcNow;
-            });
+            }, key);
         }
 
         public override long GetCounter(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = 
-$@"select sum(s.[Value]) from (select sum([Value]) as [Value] from [{_storage.SchemaName}].Counter with (readcommittedlock, forceseek)
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) =>
+            {
+                var query = storage.GetQueryFromTemplate(static schemaName =>
+$@"select sum(s.[Value]) from (select sum([Value]) as [Value] from [{schemaName}].Counter with (forceseek)
 where [Key] = @key
 union all
-select [Value] from [{_storage.SchemaName}].AggregatedCounter with (readcommittedlock, forceseek)
-where [Key] = @key) as s";
+select [Value] from [{schemaName}].AggregatedCounter with (forceseek)
+where [Key] = @key) as s");
 
-            return _storage.UseConnection(_dedicatedConnection, connection => 
-                connection.ExecuteScalar<long?>(query, new { key = key }, commandTimeout: _storage.CommandTimeout) ?? 0);
+                return connection.ExecuteScalar<long?>(query, new { key = key },
+                    commandTimeout: storage.CommandTimeout) ?? 0;
+            }, key);
         }
 
         public override long GetHashCount(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = $@"select count(*) from [{_storage.SchemaName}].Hash with (readcommittedlock, forceseek) where [Key] = @key";
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) =>
+            {
+                var query = storage.GetQueryFromTemplate(static schemaName =>
+$@"select count(*) from [{schemaName}].Hash with (forceseek) where [Key] = @key");
 
-            return _storage.UseConnection(_dedicatedConnection, connection => 
-                connection.ExecuteScalar<long>(query, new { key = key }, commandTimeout: _storage.CommandTimeout));
+                return connection.ExecuteScalar<long>(query, new { key = key },
+                    commandTimeout: storage.CommandTimeout);
+            }, key);
         }
 
         public override TimeSpan GetHashTtl(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = $@"select min([ExpireAt]) from [{_storage.SchemaName}].Hash with (readcommittedlock, forceseek) where [Key] = @key";
-
-            return _storage.UseConnection(_dedicatedConnection, connection =>
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) =>
             {
-                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: _storage.CommandTimeout);
+                var query = storage.GetQueryFromTemplate(static schemaName =>
+$@"select min([ExpireAt]) from [{schemaName}].Hash with (forceseek) where [Key] = @key");
+
+                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: storage.CommandTimeout);
                 if (!result.HasValue) return TimeSpan.FromSeconds(-1);
 
                 return result.Value - DateTime.UtcNow;
-            });
+            }, key);
         }
 
         public override string GetValueFromHash(string key, string name)
@@ -588,74 +705,95 @@ where [Key] = @key) as s";
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (name == null) throw new ArgumentNullException(nameof(name));
 
-            string query =
-$@"select [Value] from [{_storage.SchemaName}].Hash with (readcommittedlock, forceseek)
-where [Key] = @key and [Field] = @field";
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) =>
+            {
+                var query = storage.GetQueryFromTemplate(static schemaName =>
+$@"select [Value] from [{schemaName}].Hash with (forceseek)
+where [Key] = @key and [Field] = @field");
 
-            return _storage.UseConnection(_dedicatedConnection, connection => connection
-                .ExecuteScalar<string>(query, new { key = key, field = name }, commandTimeout: _storage.CommandTimeout));
+                return connection.ExecuteScalar<string>(query, new { key = pair.Key, field = pair.Value },
+                    commandTimeout: storage.CommandTimeout);
+            }, new KeyValuePair<string, string>(key, name));
         }
 
         public override long GetListCount(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = 
-$@"select count(*) from [{_storage.SchemaName}].List with (readcommittedlock, forceseek)
-where [Key] = @key";
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) =>
+            {
+                var query = storage.GetQueryFromTemplate(static schemaName =>
+$@"select count(*) from [{schemaName}].List with (forceseek)
+where [Key] = @key");
 
-            return _storage.UseConnection(_dedicatedConnection, connection => 
-                connection.ExecuteScalar<long>(query, new { key = key }, commandTimeout: _storage.CommandTimeout));
+                return connection.ExecuteScalar<long>(query, new { key = key },
+                    commandTimeout: storage.CommandTimeout);
+            }, key);
         }
 
         public override TimeSpan GetListTtl(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query = 
-$@"select min([ExpireAt]) from [{_storage.SchemaName}].List with (readcommittedlock, forceseek)
-where [Key] = @key";
-
-            return _storage.UseConnection(_dedicatedConnection, connection =>
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) =>
             {
-                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: _storage.CommandTimeout);
+                var query = storage.GetQueryFromTemplate(static schemaName =>
+$@"select min([ExpireAt]) from [{schemaName}].List with (forceseek)
+where [Key] = @key");
+
+                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: storage.CommandTimeout);
                 if (!result.HasValue) return TimeSpan.FromSeconds(-1);
 
                 return result.Value - DateTime.UtcNow;
-            });
+            }, key);
         }
 
         public override List<string> GetRangeFromList(string key, int startingFrom, int endingAt)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query =
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, triple) =>
+            {
+                var query = storage.GetQueryFromTemplate(static schemaName =>
 $@"select [Value] from (
 	select [Value], row_number() over (order by [Id] desc) as row_num 
-	from [{_storage.SchemaName}].List with (readcommittedlock, forceseek)
+	from [{schemaName}].List with (forceseek)
 	where [Key] = @key 
-) as s where s.row_num between @startingFrom and @endingAt";
+) as s where s.row_num between @startingFrom and @endingAt");
 
-            return _storage.UseConnection(_dedicatedConnection, connection => connection
-                .Query<string>(query, new { key = key, startingFrom = startingFrom + 1, endingAt = endingAt + 1 }, commandTimeout: _storage.CommandTimeout)
-                .ToList());
+                return connection
+                    .Query<string>(query, new { key = triple.Item1, startingFrom = triple.Item2 + 1, endingAt = triple.Item3 + 1 },
+                        commandTimeout: storage.CommandTimeout)
+                    .ToList();
+            }, CreateTriple(key, startingFrom, endingAt));
         }
 
         public override List<string> GetAllItemsFromList(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            string query =
-$@"select [Value] from [{_storage.SchemaName}].List with (readcommittedlock, forceseek)
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) =>
+            {
+                var query = storage.GetQueryFromTemplate(static schemaName =>
+$@"select [Value] from [{schemaName}].List with (forceseek)
 where [Key] = @key
-order by [Id] desc";
+order by [Id] desc");
 
-            return _storage.UseConnection(_dedicatedConnection, connection => connection.Query<string>(query, new { key = key }, commandTimeout: _storage.CommandTimeout).ToList());
+                return connection
+                    .Query<string>(query, new { key = key }, commandTimeout: storage.CommandTimeout)
+                    .ToList();
+            }, key);
+        }
+
+        public override DateTime GetUtcDateTime()
+        {
+            return _storage.UseConnection(_dedicatedConnection, static (_, connection) =>
+                DateTime.SpecifyKind(connection.ExecuteScalar<DateTime>("SELECT SYSUTCDATETIME()"), DateTimeKind.Utc));
         }
 
         private DbConnection _dedicatedConnection;
 
-        private IDisposable AcquireLock(string resource, TimeSpan timeout)
+        internal DisposableLock AcquireLock(string resource, TimeSpan timeout)
         {
             if (_dedicatedConnection == null)
             {
@@ -663,36 +801,38 @@ order by [Id] desc";
             }
 
             var lockId = Guid.NewGuid();
+            var ownLock = false;
 
-            if (!_lockedResources.ContainsKey(resource))
+            if (!_lockedResources.TryGetValue(resource, out var lockIds))
             {
                 try
                 {
                     SqlServerDistributedLock.Acquire(_dedicatedConnection, resource, timeout);
+                    ownLock = true;
                 }
-                catch (Exception)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
-                    ReleaseLock(resource, lockId, true);
+                    ReleaseLock(resource, lockId, true, false);
                     throw;
                 }
 
-                _lockedResources.Add(resource, new HashSet<Guid>());
+                _lockedResources.Add(resource, lockIds = new HashSet<Guid>());
             }
 
-            _lockedResources[resource].Add(lockId);
-            return new DisposableLock(this, resource, lockId);
+            lockIds.Add(lockId);
+            return new DisposableLock(this, resource, lockId, ownLock);
         }
 
-        private void ReleaseLock(string resource, Guid lockId, bool onDisposing)
+        private void ReleaseLock(string resource, Guid lockId, bool onDisposing, bool releasedExternally)
         {
             try
             {
-                if (_lockedResources.ContainsKey(resource))
+                if (_lockedResources.TryGetValue(resource, out var lockIds))
                 {
-                    if (_lockedResources[resource].Contains(lockId))
+                    if (lockIds.Contains(lockId))
                     {
-                        if (_lockedResources[resource].Remove(lockId) &&
-                            _lockedResources[resource].Count == 0 &&
+                        if (lockIds.Remove(lockId) &&
+                            lockIds.Count == 0 &&
                             _lockedResources.Remove(resource) &&
                             _dedicatedConnection.State == ConnectionState.Open)
                         {
@@ -700,43 +840,74 @@ order by [Id] desc";
                             // is open. When connection is closed or broken, for example, when
                             // there was an error, application lock is already released by SQL
                             // Server itself, and we shouldn't do anything.
-                            SqlServerDistributedLock.Release(_dedicatedConnection, resource);
+                            if (!releasedExternally)
+                            {
+                                SqlServerDistributedLock.Release(_dedicatedConnection, resource);
+                            }
                         }
                     }
                 }
-
-                if (_lockedResources.Count == 0)
-                {
-                    _storage.ReleaseConnection(_dedicatedConnection);
-                    _dedicatedConnection = null;
-                }
             }
-            catch (Exception)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 if (!onDisposing)
                 {
                     throw;
                 }
             }
+            finally
+            {
+                if (_lockedResources.Count == 0)
+                {
+                    _storage.ReleaseConnection(_dedicatedConnection);
+                    _dedicatedConnection = null;
+                }
+            }
         }
 
-        private class DisposableLock : IDisposable
+        internal sealed class DisposableLock : IDisposable
         {
+            private bool _disposed;
             private readonly SqlServerConnection _connection;
             private readonly string _resource;
             private readonly Guid _lockId;
 
-            public DisposableLock(SqlServerConnection connection, string resource, Guid lockId)
+            public DisposableLock(SqlServerConnection connection, string resource, Guid lockId, bool ownLock)
             {
                 _connection = connection;
                 _resource = resource;
                 _lockId = lockId;
+                OwnLock = ownLock;
             }
+
+            public string Resource => _resource;
+            public bool OwnLock { get; }
+            public bool ReleasedExternally { get; private set; }
 
             public void Dispose()
             {
-                _connection.ReleaseLock(_resource, _lockId, true);
+                if (_disposed) return;
+                _disposed = true;
+                _connection.ReleaseLock(_resource, _lockId, true, ReleasedExternally);
             }
+
+            public void TryReportReleased()
+            {
+                if (OwnLock) ReleasedExternally = true;
+            }
+        }
+
+        private static ValueTriple<T1, T2, T3> CreateTriple<T1, T2, T3>(T1 item1, T2 item2, T3 item3)
+        {
+            return new ValueTriple<T1, T2, T3>(item1, item2, item3);
+        }
+
+        // .NET Framework 4.5 doesn't have ValueTuple class.
+        private readonly struct ValueTriple<T1, T2, T3>(T1 item1, T2 item2, T3 item3)
+        {
+            public T1 Item1 { get; } = item1;
+            public T2 Item2 { get; } = item2;
+            public T3 Item3 { get; } = item3;
         }
     }
 }

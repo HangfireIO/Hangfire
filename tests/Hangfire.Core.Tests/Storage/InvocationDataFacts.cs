@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Hangfire.Common;
 using Hangfire.Storage;
@@ -9,6 +10,7 @@ using Xunit;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using Hangfire.Annotations;
 using Newtonsoft.Json.Serialization;
 
 #pragma warning disable 618
@@ -17,6 +19,30 @@ namespace Hangfire.Core.Tests.Storage
 {
     public class InvocationDataFacts
     {
+        [Fact]
+        public void Ctor_InitializesAllTheGivenProperties()
+        {
+            var invocationData = new InvocationData("type", "method", "parameterTypes", "arguments");
+
+            Assert.Equal("type", invocationData.Type);
+            Assert.Equal("method", invocationData.Method);
+            Assert.Equal("parameterTypes", invocationData.ParameterTypes);
+            Assert.Equal("arguments", invocationData.Arguments);
+            Assert.Null(invocationData.Queue);
+        }
+
+        [Fact]
+        public void Ctor_WithQueue_InitializesAllTheGivenProperties()
+        {
+            var invocationData = new InvocationData("type", "method", "parameterTypes", "arguments", "critical");
+
+            Assert.Equal("type", invocationData.Type);
+            Assert.Equal("method", invocationData.Method);
+            Assert.Equal("parameterTypes", invocationData.ParameterTypes);
+            Assert.Equal("arguments", invocationData.Arguments);
+            Assert.Equal("critical", invocationData.Queue);
+        }
+
         [DataCompatibilityRangeFact]
         public void Deserialize_CorrectlyDeserializes_AllTheData()
         {
@@ -35,6 +61,22 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(type, job.Type);
             Assert.Equal(methodInfo, job.Method);
             Assert.Equal("Hello", job.Args[0]);
+            Assert.Null(job.Queue);
+        }
+
+        [DataCompatibilityRangeFact]
+        public void Deserialize_CorrectlyDeserializes_QueueProperty()
+        {
+            var serializedData = new InvocationData(
+                "Hangfire.JobStorage, Hangfire.Core",
+                "GetConnection",
+                String.Empty,
+                null,
+                "critical");
+
+            var job = serializedData.Deserialize();
+
+            Assert.Equal("critical", job.Queue);
         }
 
         [DataCompatibilityRangeFact]
@@ -48,7 +90,7 @@ namespace Hangfire.Core.Tests.Storage
 
             var job = serializedData.Deserialize();
 
-            Assert.Equal(job.Type, typeof(JobStorage));
+            Assert.Equal(typeof(JobStorage), job.Type);
         }
 
         [DataCompatibilityRangeFact]
@@ -62,7 +104,7 @@ namespace Hangfire.Core.Tests.Storage
 
             var job = serializedData.Deserialize();
 
-            Assert.Equal(job.Type, typeof(DateTime));
+            Assert.Equal(typeof(DateTime), job.Type);
         }
 
         [DataCompatibilityRangeFact]
@@ -76,7 +118,7 @@ namespace Hangfire.Core.Tests.Storage
 
             var job = serializedData.Deserialize();
 
-            Assert.Equal(job.Type, typeof(InvocationDataFacts));
+            Assert.Equal(typeof(InvocationDataFacts), job.Type);
         }
 
         [DataCompatibilityRangeFact]
@@ -90,7 +132,7 @@ namespace Hangfire.Core.Tests.Storage
 
             var job = serializedData.Deserialize();
 
-            Assert.Equal(job.Type, typeof(InvocationDataFacts));
+            Assert.Equal(typeof(InvocationDataFacts), job.Type);
         }
 
         [DataCompatibilityRangeFact]
@@ -108,7 +150,7 @@ namespace Hangfire.Core.Tests.Storage
 
                 var job = serializedData.Deserialize();
 
-                Assert.Equal(job.Type, typeof(InvocationDataFacts));
+                Assert.Equal(typeof(InvocationDataFacts), job.Type);
             }
             finally
             {
@@ -131,7 +173,7 @@ namespace Hangfire.Core.Tests.Storage
 
                 var job = serializedData.Deserialize();
 
-                Assert.Equal(job.Type, typeof(InvocationDataFacts));
+                Assert.Equal(typeof(InvocationDataFacts), job.Type);
             }
             finally
             {
@@ -154,7 +196,7 @@ namespace Hangfire.Core.Tests.Storage
 
                 var job = serializedData.Deserialize();
 
-                Assert.Equal(job.Type, typeof(GenericType<int>));
+                Assert.Equal(typeof(GenericType<int>), job.Type);
                 Assert.Equal("Method", job.Method.Name);
                 Assert.Equal(123, job.Args[0]);
             }
@@ -226,6 +268,18 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal("Sample", invocationData.Method);
             Assert.Equal(JobHelper.ToJson(new[] { typeof(string) }), invocationData.ParameterTypes);
             Assert.Equal(JobHelper.ToJson(new[] { "\"Hello\"" }), invocationData.Arguments);
+            Assert.Null(invocationData.Queue);
+        }
+
+        [DataCompatibilityRangeFact]
+        public void Serialize_CorrectlySerializes_TheJobQueueProperty()
+        {
+            var job = Job.FromExpression(() => Sample("Hello"), "critical");
+
+            var invocationData = InvocationData.Serialize(job);
+
+            Assert.Equal("Sample", invocationData.Method);
+            Assert.Equal("critical", invocationData.Queue);
         }
 
         [DataCompatibilityRangeFact]
@@ -320,6 +374,23 @@ namespace Hangfire.Core.Tests.Storage
         }
 
         [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
+        public void SerializePayload_CorrectlySerializesInvocationDataWithQueueToString_WithOldFormat_InVersion_Pre_170()
+        {
+            var invocationData = new InvocationData(
+                "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests",
+                "Sample",
+                "[\"System.String\"]",
+                "[\"\\\"Hello\\\"\"]",
+                "critical");
+
+            var payload = invocationData.SerializePayload();
+
+            Assert.Equal(
+                "{\"Type\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"Method\":\"Sample\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"Hello\\\\\\\"\\\"]\",\"Queue\":\"critical\"}",
+                payload);
+        }
+
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_170)]
         public void SerializePayload_DoesNotIncludeArgumentsWhenStatedSo_WithOldFormat_InVersion_Pre_170()
         {
             var invocationData = new InvocationData(
@@ -364,6 +435,23 @@ namespace Hangfire.Core.Tests.Storage
 
             Assert.Equal(
                 "{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"Sample\",\"p\":[\"System.String\"],\"a\":[\"\\\"Hello\\\"\"]}",
+                payload);
+        }
+
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_170)]
+        public void SerializePayload_CorrectlySerializesInvocationDataWithQueueToString_WithNewFormat_InVersion_170()
+        {
+            var invocationData = new InvocationData(
+                "Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests",
+                "Sample",
+                "[\"System.String\"]",
+                "[\"\\\"Hello\\\"\"]",
+                "critical");
+
+            var payload = invocationData.SerializePayload();
+
+            Assert.Equal(
+                "{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"Sample\",\"p\":[\"System.String\"],\"a\":[\"\\\"Hello\\\"\"],\"q\":\"critical\"}",
                 payload);
         }
 
@@ -441,7 +529,7 @@ namespace Hangfire.Core.Tests.Storage
 
             Assert.False(job.Type.GetTypeInfo().ContainsGenericParameters);
             Assert.Equal("Empty", job.Method.Name);
-            Assert.Equal(0, job.Method.GetParameters().Length);
+            Assert.Empty(job.Method.GetParameters());
             Assert.Equal(0, job.Args.Count);
         }
 
@@ -536,7 +624,7 @@ namespace Hangfire.Core.Tests.Storage
         {
             var deserializedJob = new InvocationData(typeName, method, parameterTypes, serializedArgs).Deserialize();
 
-#if NETCOREAPP1_0
+#if NETCOREAPP1_0 || NETCOREAPP2_1
             Assert.Equal(job.Type.FullName, deserializedJob.Type.FullName);
             Assert.Equal(job.Method.Name, deserializedJob.Method.Name);
 #else
@@ -814,16 +902,17 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal(typeof(InvocationDataFacts), job.Type);
             Assert.Equal(2, job.Args.Count);
 
-            Assert.Equal(typeof(List<string>), job.Args[0].GetType());
+            Assert.Equal(typeof(List<string>), job.Args[0]?.GetType());
             Assert.Equal("one", (job.Args[0] as List<string>)?[0]);
             Assert.Equal("two", (job.Args[0] as List<string>)?[1]);
 
-            Assert.Equal(typeof(SomeClass), job.Args[1].GetType());
+            Assert.Equal(typeof(SomeClass), job.Args[1]?.GetType());
             Assert.Equal("value", (job.Args[1] as SomeClass)?.StringValue);
             Assert.Equal(0, (job.Args[1] as SomeClass)?.DefaultValue);
-            Assert.Equal(null, (job.Args[1] as SomeClass)?.NullObject);
+            Assert.Null((job.Args[1] as SomeClass)?.NullObject);
         }
 
+#if !NET452 && !NET461
         [DataCompatibilityRangeFact, CleanSerializerSettings]
         public void DeserializeJob_CanPreviousFormat_WhenTypeNameHandlingOptionIsSetToAll()
         {
@@ -841,6 +930,16 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal("System.Console", job.Type.FullName);
             Assert.Equal("WriteLine", job.Method.Name);
             Assert.Equal("Hello ", job.Args[0]);
+        }
+#endif
+
+        [Fact]
+        public void DeserializePayload_ThrowsAnException_WhenPayloadIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => InvocationData.DeserializePayload(null));
+
+            Assert.Equal("payload", exception.ParamName);
         }
 
         // https://github.com/HangfireIO/Hangfire/issues/1470
@@ -860,6 +959,38 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal("[]", data.Arguments);
         }
 
+        [DataCompatibilityRangeTheory]
+        [InlineData("{\"Type\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null\",\"Method\":\"Sample\",\"ParameterTypes\":\"[\\\"System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"Hello\\\\\\\"\\\"]\",\"Queue\":\"critical\"}")]
+        [InlineData("{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"Sample\",\"p\":[\"System.String\"],\"a\":[\"\\\"Hello\\\"\"],\"q\":\"critical\"}")]
+        public void DeserializePayload_WithQueueNameSet_ReturnsCorrectInvocationData(string payload)
+        {
+            var invocationData = InvocationData.DeserializePayload(payload);
+
+            Assert.Contains("InvocationDataFacts", invocationData.Type);
+            Assert.Equal("Sample", invocationData.Method);
+            Assert.Equal("critical", invocationData.Queue);
+        }
+
+        [Fact]
+        public void Deserialize_CorrectlyHandles_SystemXmlLinqEntities_SerializedWithNETFramework()
+        {
+            var job = InvocationData.DeserializePayload(
+                "{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"XmlLinqMethod\",\"p\":[\"System.Xml.Linq.XElement, System.Xml.Linq\"],\"a\":[\"{\\\"element\\\":\\\"This is a test\\\"}\"]}")
+                .DeserializeJob();
+
+            Assert.Equal(typeof(InvocationDataFacts), job.Type);
+        }
+
+        [Fact]
+        public void Deserialize_CorrectlyHandles_SystemXmlLinqEntities_SerializedWithNETCore()
+        {
+            var job = InvocationData.DeserializePayload(
+                "{\"t\":\"Hangfire.Core.Tests.Storage.InvocationDataFacts, Hangfire.Core.Tests\",\"m\":\"XmlLinqMethod\",\"p\":[\"System.Xml.Linq.XElement, System.Private.Xml.Linq\"],\"a\":[\"{\\\"element\\\":\\\"This is a test\\\"}\"]}")
+                .DeserializeJob();
+
+            Assert.Equal(typeof(InvocationDataFacts), job.Type);
+        }
+
         private class FieldsOnlyContractResolver: DefaultContractResolver 
         {
             protected override List<MemberInfo> GetSerializableMembers(Type objectType)
@@ -871,31 +1002,50 @@ namespace Hangfire.Core.Tests.Storage
                 => base.CreateProperties(type, MemberSerialization.Fields);
         }
 
+        [UsedImplicitly]
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
         public static void Empty()
         {
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void Sample(string arg)
         {
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void ListMethod(IList<string> arg)
         {
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void GenericMethod<T>(T arg)
         {
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void OtherGenericMethod<T1,T2>(T1 arg1, T2 arg2)
         {
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
         public static void DateTimeMethod(DateTime arg)
         {
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
         public static void NullableDateTimeMethod(DateTime? arg)
+        {
+        }
+
+        [UsedImplicitly]
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+        public static void XmlLinqMethod(System.Xml.Linq.XElement value)
         {
         }
 
@@ -917,6 +1067,8 @@ namespace Hangfire.Core.Tests.Storage
             }
         }
 
+        [UsedImplicitly]
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
         public static void ComplicatedMethod(IList<string> arg, SomeClass objArg)
         {
         }
@@ -928,9 +1080,15 @@ namespace Hangfire.Core.Tests.Storage
             public int DefaultValue { get; set; }
         }
 
+        [UsedImplicitly]
         public class NestedType
         {
+            [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
+            [SuppressMessage("Performance", "CA1822:Mark members as static")]
             public void Method() { }
+
+            [SuppressMessage("Performance", "CA1822:Mark members as static")]
+            [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
             public void NestedGenericMethod<T>(T arg1) { }
         }
 
@@ -946,32 +1104,48 @@ namespace Hangfire.Core.Tests.Storage
 
 }
 
+[UsedImplicitly]
+[SuppressMessage("Design", "CA1050:Declare types in namespaces")]
 public class GlobalType
 {
+    [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
+    [SuppressMessage("Performance", "CA1822:Mark members as static")]
     public void Method() {}
+
+    [SuppressMessage("Performance", "CA1822:Mark members as static")]
+    [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
     public void GenericMethod<T>(T arg) {}
 
+    [UsedImplicitly]
     public class NestedType
     {
+        [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static")]
         public void NestedMethod() { }
     }
 
+    [UsedImplicitly]
     public class NestedGenericType<T>
     {
         public void NestedGenericMethod<T1>(T arg1, T1 arg2) { }
     }
 }
 
+[UsedImplicitly]
+[SuppressMessage("Design", "CA1050:Declare types in namespaces")]
 public class GlobalGenericType<T>
 {
     public void Method() { }
     public void GenericMethod<T1>(T1 arg) { }
 
+    [UsedImplicitly]
     public class NestedType
     {
+        [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
         public void Method() { }
     }
 
+    [UsedImplicitly]
     public class NestedGenericType<T1>
     {
         public void Method(T arg1, T1 arg2) { }

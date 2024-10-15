@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -23,7 +22,7 @@ using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlServerTransactionJob : IFetchedJob
+    internal sealed class SqlServerTransactionJob : IFetchedJob
     {
         // Connections to SQL Azure Database that are idle for 30 minutes 
         // or longer will be terminated. And since we are using separate
@@ -104,7 +103,7 @@ namespace Hangfire.SqlServer
                 {
                     _connection?.Execute("SELECT 1;", transaction: _transaction);
                 }
-                catch
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     // Connection was closed. So we can't continue to send
                     // keep-alive queries. Unlike for distributed locks,

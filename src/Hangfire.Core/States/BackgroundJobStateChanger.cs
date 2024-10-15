@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -26,8 +25,6 @@ namespace Hangfire.States
     public class BackgroundJobStateChanger : IBackgroundJobStateChanger
     {
         private static readonly TimeSpan JobLockTimeout = TimeSpan.FromMinutes(15);
-
-        private readonly IStateMachine _innerStateMachine;
         private readonly StateMachine _stateMachine;
 
         public BackgroundJobStateChanger()
@@ -36,13 +33,20 @@ namespace Hangfire.States
         }
 
         public BackgroundJobStateChanger([NotNull] IJobFilterProvider filterProvider)
-            : this(filterProvider, new CoreStateMachine())
+            : this(new StateMachine(filterProvider, new CoreStateMachine()))
         {
+        }
+
+        public BackgroundJobStateChanger([NotNull] StateMachine stateMachine)
+        {
+            _stateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
         }
 
         internal BackgroundJobStateChanger([NotNull] IJobFilterProvider filterProvider, [NotNull] IStateMachine stateMachine)
         {
-            _innerStateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
+            if (filterProvider == null) throw new ArgumentNullException(nameof(filterProvider));
+            if (stateMachine == null) throw new ArgumentNullException(nameof(stateMachine));
+
             _stateMachine = new StateMachine(filterProvider, stateMachine);
         }
         
@@ -54,7 +58,18 @@ namespace Hangfire.States
             // execution of this method. To guarantee this behavior, we are
             // using distributed application locks and rely on fact, that
             // any state transitions will be made only within a such lock.
-            using (context.Connection.AcquireDistributedJobLock(context.BackgroundJobId, JobLockTimeout))
+            IDisposable distributedLock = null;
+
+            if (context.Transaction != null)
+            {
+                context.Transaction.AcquireDistributedJobLock(context.BackgroundJobId, JobLockTimeout);
+            }
+            else
+            {
+                distributedLock = context.Connection.AcquireDistributedJobLock(context.BackgroundJobId, JobLockTimeout);
+            }
+
+            using (distributedLock)
             {
                 var jobData = GetJobData(context);
 
@@ -88,23 +103,40 @@ namespace Hangfire.States
                     // will not.
                     if (!stateToApply.IgnoreJobLoadException)
                     {
-                        stateToApply = new FailedState(ex.InnerException)
+                        stateToApply = new FailedState(ex.InnerException, context.ServerId)
                         {
                             Reason = $"Can not change the state to '{stateToApply.Name}': target method was not found."
                         };
                     }
                 }
 
-                using (var transaction = context.Connection.CreateWriteTransaction())
+                IWriteOnlyTransaction transaction;
+                IDisposable disposableTransaction;
+
+                if (context.Transaction == null)
+                {
+                    disposableTransaction = transaction = context.Connection.CreateWriteTransaction();
+                }
+                else
+                {
+                    transaction = context.Transaction;
+                    disposableTransaction = null;
+                }
+                
+                var backgroundJob = new BackgroundJob(context.BackgroundJobId, jobData.Job, jobData.CreatedAt, jobData.ParametersSnapshot);
+
+                using (disposableTransaction)
                 {
                     var applyContext = new ApplyStateContext(
                         context.Storage,
                         context.Connection,
                         transaction,
-                        new BackgroundJob(context.BackgroundJobId, jobData.Job, jobData.CreatedAt),
+                        backgroundJob,
                         stateToApply,
                         jobData.State,
-                        context.Profiler);
+                        context.Profiler,
+                        _stateMachine,
+                        context.CustomData);
 
                     // State changing process can fail due to an exception in state filters themselves,
                     // and DisableFilters property will cause state machine to perform a state transition
@@ -113,11 +145,24 @@ namespace Hangfire.States
                     // In this case all the filters are ignored, which may lead to confusion, so it's
                     // highly recommended to use the DisableFilters property only when changing state
                     // to the FailedState.
-                    var stateMachine = context.DisableFilters ? _innerStateMachine : _stateMachine;
+                    var stateMachine = context.DisableFilters ? _stateMachine.InnerStateMachine : _stateMachine;
                     var appliedState = stateMachine.ApplyState(applyContext);
+
+                    if (context.CompleteJob != null)
+                    {
+                        if (transaction is JobStorageTransaction jobStorageTransaction)
+                        {
+                            jobStorageTransaction.RemoveFromQueue(context.CompleteJob);
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException("Storage transaction class must inherit the " + nameof(JobStorageTransaction) + " class to use transactional acknowledge");
+                        }
+                    }
 
                     transaction.Commit();
 
+                    context.ProcessedJob = backgroundJob;
                     return appliedState;
                 }
             }
@@ -147,7 +192,12 @@ namespace Hangfire.States
             // 
             // In recent versions, Hangfire.SqlServer uses query hints to make all the
             // reads linearizable no matter what, but there may be other storages that
-            // still require this workaround.
+            // still require this workaround. So we leave this part implemented, but
+            // decrease the number of attempt from infinite to only a few, because most
+            // storages will provide linearizable reads anyway. It's better to have
+            // "hanging" job in the Processing jobs page in the Dashboard UI than use
+            // infinite loop under the hoods - the former case is better discoverable,
+            // and it's not hard to improve the storage implementation.
 
             // TODO 2.0:
             // Eliminate the need of this timeout by placing an explicit requirement to
@@ -155,9 +205,7 @@ namespace Hangfire.States
             // the operations inside a transaction; or make all the reads linearizable and
             // execute queueing operations after all the other ones in a transaction.
 
-            var firstAttempt = true;
-
-            while (true)
+            for (var retryAttempt = 0; retryAttempt < 5; retryAttempt++)
             {
                 var jobData = context.Connection.GetJobData(context.BackgroundJobId);
 
@@ -194,9 +242,10 @@ namespace Hangfire.States
                     return null;
                 }
 
-                context.CancellationToken.Wait(TimeSpan.FromMilliseconds(firstAttempt ? 0 : 100));
-                firstAttempt = false;
+                context.CancellationToken.Wait(TimeSpan.FromSeconds(retryAttempt));
             }
+
+            return null;
         }
     }
 }

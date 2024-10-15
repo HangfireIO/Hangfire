@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -23,16 +22,24 @@ namespace Hangfire
 {
     public class DashboardOptions
     {
+        private static readonly IDashboardAuthorizationFilter[] DefaultAuthorization =
+            new[] { new LocalRequestsOnlyAuthorizationFilter() };
+
+        private IEnumerable<IDashboardAsyncAuthorizationFilter> _asyncAuthorization;
+
         public DashboardOptions()
         {
             AppPath = "/";
             PrefixPath = string.Empty;
-            Authorization = new[] { new LocalRequestsOnlyAuthorizationFilter() };
-            IsReadOnlyFunc = _ => false;
+            _asyncAuthorization = [];
+            Authorization = DefaultAuthorization;
+            IsReadOnlyFunc = static _ => false;
             StatsPollingInterval = 2000;
             DisplayStorageConnectionString = true;
             DashboardTitle = "Hangfire Dashboard";
             DisplayNameFunc = null;
+            DefaultRecordsPerPage = 20;
+            DarkModeEnabled = true;
         }
 
         /// <summary>
@@ -52,6 +59,20 @@ namespace Hangfire
 #endif
 
         public IEnumerable<IDashboardAuthorizationFilter> Authorization { get; set; }
+
+        public IEnumerable<IDashboardAsyncAuthorizationFilter> AsyncAuthorization
+        {
+            get => _asyncAuthorization;
+            set
+            {
+                _asyncAuthorization = value;
+
+                if (ReferenceEquals(Authorization, DefaultAuthorization))
+                {
+                    Authorization = [];
+                }
+            }
+        }
 
         public Func<DashboardContext, bool> IsReadOnlyFunc { get; set; }
         
@@ -75,5 +96,21 @@ namespace Hangfire
         public bool IgnoreAntiforgeryToken { get; set; }
 
         public ITimeZoneResolver TimeZoneResolver { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default number of records per page.
+        /// </summary>
+        public int DefaultRecordsPerPage { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether dark mode support is enabled by including
+        /// or excluding the corresponding CSS files.
+        /// </summary>
+        public bool DarkModeEnabled { get; set; }
+
+        /// <summary>
+        /// Optional favicon path
+        /// </summary>
+        public string FaviconPath { get; set; } = string.Empty;
     }
 }

@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -106,7 +105,7 @@ namespace Hangfire
 
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
             processes.AddRange(GetRequiredProcesses(filterProvider, activator, factory, performer, stateChanger));
-            processes.AddRange(additionalProcesses.Select(x => x.UseBackgroundPool(1)));
+            processes.AddRange(additionalProcesses.Select(static x => x.UseBackgroundPool(1)));
 
             var properties = new Dictionary<string, object>
             {
@@ -120,10 +119,24 @@ namespace Hangfire
 
             _logger.Info("Using the following options for Hangfire Server:\r\n" +
                 $"    Worker count: {options.WorkerCount}\r\n" +
-                $"    Listening queues: {String.Join(", ", options.Queues.Select(x => "'" + x + "'"))}\r\n" +
+                $"    Listening queues: {String.Join(", ", options.Queues.Select(static x => "'" + x + "'"))}\r\n" +
                 $"    Shutdown timeout: {options.ShutdownTimeout}\r\n" +
                 $"    Schedule polling interval: {options.SchedulePollingInterval}");
-            
+
+            var wrongQueues = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var queue in options.Queues)
+            {
+                if (!EnqueuedState.TryValidateQueueName(queue))
+                {
+                    wrongQueues.Add(queue);
+                }
+            }
+
+            if (wrongQueues.Count > 0)
+            {
+                _logger.Warn($"These queues fail to match the naming format: {String.Join(", ", wrongQueues.Select(static x => $"'{x}'"))}. A queue name must consist of lowercase letters, digits, underscore, and dash characters only.");
+            }
+
             _processingServer = new BackgroundProcessingServer(
                 storage, 
                 processes, 
@@ -140,6 +153,7 @@ namespace Hangfire
         public void Dispose()
         {
             _processingServer.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         [Obsolete("This method is a stub. There is no need to call the `Start` method. Will be removed in version 2.0.0.")]
@@ -195,9 +209,26 @@ namespace Hangfire
                 if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
             }
 
-            processes.Add(new Worker(_options.Queues, performer, stateChanger).UseBackgroundPool(_options.WorkerCount));
-            processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger).UseBackgroundPool(1));
-            processes.Add(new RecurringJobScheduler(factory, _options.SchedulePollingInterval, timeZoneResolver).UseBackgroundPool(1));
+            processes.Add(new Worker(_options.Queues, performer, stateChanger).UseBackgroundPool(_options.WorkerCount, _options.WorkerThreadConfigurationAction));
+
+            if (!_options.IsLightweightServer)
+            {
+                processes.Add(
+                    new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger)
+                    {
+                        TaskScheduler = _options.TaskScheduler,
+                        MaxDegreeOfParallelism = _options.MaxDegreeOfParallelismForSchedulers
+                    }
+                    .UseBackgroundPool(1));
+
+                processes.Add(
+                    new RecurringJobScheduler(factory, _options.SchedulePollingInterval, timeZoneResolver)
+                        {
+                            TaskScheduler = _options.TaskScheduler,
+                            MaxDegreeOfParallelism = _options.MaxDegreeOfParallelismForSchedulers
+                        }
+                        .UseBackgroundPool(1));
+            }
 
             return processes;
         }
@@ -214,7 +245,8 @@ namespace Hangfire
                 ServerTimeout = _options.ServerWatchdogOptions?.ServerTimeout ?? _options.ServerTimeout,
 #pragma warning restore 618
                 CancellationCheckInterval = _options.CancellationCheckInterval,
-                ServerName = _options.ServerName
+                ServerName = _options.ServerName,
+                ExcludeStorageProcesses = _options.IsLightweightServer
             };
         }
     }

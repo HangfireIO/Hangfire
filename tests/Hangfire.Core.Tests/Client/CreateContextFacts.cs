@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
@@ -84,6 +85,8 @@ namespace Hangfire.Core.Tests.Client
             Assert.Same(context.Parameters, contextCopy.Parameters);
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void Method()
         {
         }

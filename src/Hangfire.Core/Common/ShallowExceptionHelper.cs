@@ -1,17 +1,16 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2017 Sergey Odinokov.
-//
+﻿// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
+// 
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as
-// published by the Free Software Foundation, either version 3
+// it under the terms of the GNU Lesser General Public License as 
+// published by the Free Software Foundation, either version 3 
 // of the License, or any later version.
-//
+// 
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
+// 
+// You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
@@ -27,7 +26,10 @@ namespace Hangfire.Common
 
         public static void PreserveOriginalStackTrace(this Exception exception)
         {
-            exception?.Data.Add(DataKey, exception.StackTrace);
+            if (exception != null && !exception.Data.Contains(DataKey))
+            {
+                exception.Data.Add(DataKey, exception.StackTrace);
+            }
         }
 
         public static string ToStringWithOriginalStackTrace([NotNull] this Exception exception, int? numLines)
@@ -54,13 +56,13 @@ namespace Hangfire.Common
                 sb.Append(" ---> ");
                 sb.Append(ToStringHelper(exception.InnerException, true));
             }
-            else sb.Append("\n");
+            else sb.Append('\n');
 
             var stackTrace = exception.Data.Contains(DataKey) ? (string)exception.Data[DataKey] : exception.StackTrace;
             if (!String.IsNullOrWhiteSpace(stackTrace))
             {
                 sb.Append(stackTrace);
-                sb.Append("\n");
+                sb.Append('\n');
             }
 
             if (isInner) sb.Append("   --- End of inner exception stack trace ---\n");
@@ -71,7 +73,7 @@ namespace Hangfire.Common
         private static string GetFirstLines(string text, int? numLines)
         {
             if (text == null) return null;
-            if (!numLines.HasValue || numLines.Value <= 0) return text;
+            if (!numLines.HasValue || numLines.Value < 0) return text;
 
             using (var reader = new StringReader(text))
             {

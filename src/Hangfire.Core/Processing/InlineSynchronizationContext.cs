@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2019 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2019 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -20,7 +19,7 @@ using System.Threading;
 
 namespace Hangfire.Processing
 {
-    internal class InlineSynchronizationContext : SynchronizationContext, IDisposable
+    internal sealed class InlineSynchronizationContext : SynchronizationContext, IDisposable
     {
         private readonly ConcurrentQueue<Tuple<SendOrPostCallback, object>> _queue = new ConcurrentQueue<Tuple<SendOrPostCallback, object>>();
         private readonly Semaphore _semaphore = new Semaphore(0, Int32.MaxValue);

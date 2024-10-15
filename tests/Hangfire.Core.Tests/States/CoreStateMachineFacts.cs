@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
@@ -13,15 +15,18 @@ namespace Hangfire.Core.Tests.States
         private const string StateName = "State";
         private const string JobId = "job";
 
-        private readonly StateHandlerCollection _handlers = new StateHandlerCollection();
-        private readonly Func<JobStorage, StateHandlerCollection> _stateHandlersThunk;
+        private readonly Dictionary<string, List<IStateHandler>> _handlers = new Dictionary<string, List<IStateHandler>>();
+        private readonly Func<JobStorage, string, CoreStateMachine.StateHandlersCollection> _stateHandlersThunk;
         
         private readonly ApplyStateContextMock _applyContext;
 
         public CoreStateMachineFacts()
         {
-            _stateHandlersThunk = storage => _handlers;
-            
+            _stateHandlersThunk = (storage, stateName) => new CoreStateMachine.StateHandlersCollection(
+                _handlers.TryGetValue(stateName, out var handlers) ? handlers.ToList() : new List<IStateHandler>(),
+                Enumerable.Empty<IStateHandler>(),
+                stateName);
+
             var backgroundJob = new BackgroundJobMock { Id = JobId };
             _applyContext = new ApplyStateContextMock
             {
@@ -153,7 +158,8 @@ namespace Hangfire.Core.Tests.States
             var handler = new Mock<IStateHandler>();
             handler.Setup(x => x.StateName).Returns(stateName);
 
-            _handlers.AddHandler(handler.Object);
+            if (!_handlers.ContainsKey(stateName)) _handlers.Add(stateName, new List<IStateHandler>());
+            _handlers[stateName].Add(handler.Object);
             return handler;
         }
     }

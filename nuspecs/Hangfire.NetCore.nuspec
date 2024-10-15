@@ -2,61 +2,104 @@
 <package>
   <metadata>
     <id>Hangfire.NetCore</id>
-    <version>0.0.0</version>
+    <version>%version%</version>
     <title>Hangfire .NET Core's Worker Service Support</title>
     <authors>Sergey Odinokov</authors>
-    <owners>odinserj</owners>
+    <owners>HangfireIO, odinserj</owners>
     <projectUrl>https://www.hangfire.io/</projectUrl>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
-    <description>.NET Core's Worker Service host support for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2019 Sergey Odinokov</copyright>
+    <repository type="git" url="https://github.com/HangfireIO/Hangfire.git" commit="%commit%" />
+    <license type="file">LICENSE.md</license>
+    <icon>icon.png</icon>
+    <description>.NET Core's Worker Service host support for Hangfire, a background job framework for .NET applications.</description>
+    <copyright>Copyright © 2019-2024 Hangfire OÜ</copyright>
     <tags>hangfire netcore</tags>
-    <releaseNotes>https://www.hangfire.io/blog/
+    <releaseNotes>
+Release notes are available in our blog https://www.hangfire.io/blog/
+Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
-1.7.7
-• Changed – Add explicit `netcoreapp3.0` target with reference to "3.0.0" packages.
+1.8.10
+• Project – Enable NuGet package and DLL signing with a company certificate.
+• Project – Require NuGet package signature validation on restore for dependencies.
+• Project – Add `HangfireIO` as a package owner.
 
-1.7.5
-• Fixed – Add missing overload for the `AddHangfireServer` method with "options" action.
+1.8.9
+• Project – Enable full source link support with embedded symbols and repository-based sources.
+• Project – Enable repeatable package restore using a lock file.
 
-1.7.2
-• Fixed – Allow to resolve `IJobFilterProvider` service from the `AddHangfire` method.
+1.8.6
+• Fixed – Include assembly information to the Hangfire.NetCore assembly.
 
-1.7.1
-• Added – Worker Service host support for .NET Core without unnecessary dependencies to ASP.NET Core.
+1.8.4
+• Changed – Send the stop signal earlier in the shutdown pipeline when hosting in .NET Core 3.1 or higher.
+• Changed – Set processing server to null in hosted service to avoid `ObjectDisposedException`.
+• Fixed – Other `IHostedService` implementations can block Hangfire server from being stopped.
+      
+1.8.1
+• Fixed – Add `net461` target for Hangfire.NetCore package to avoid missing method exceptions.
+
+1.8.0
+• Added – `IApplicationBuilder.UseHangfireServer` that accepts custom factory for `IBackgroundProcessingServer`.
+• Added – `net451` and `netstandard1.3` targets for the package.
+• Changed – Use `netstandard2.1` target instead of `netcoreapp3.0` for the package.
+• Changed – Send the "stop" signal earlier when the host supports .NET Standard 2.1.
+• Changed – Don't throw `ObjectDisposedException` when hosted service is disposed twice.
 
     </releaseNotes>
     <dependencies>
+      <group targetFramework="net451">
+        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="1.0.0" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="1.0.0" />
+        <dependency id="Hangfire.Core" version="[%version%]" />
+      </group>
+      <group targetFramework="net461">
+        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="2.0.0" />
+        <dependency id="Microsoft.Extensions.Hosting.Abstractions" version="2.0.0" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="2.0.0" />
+        <dependency id="Hangfire.Core" version="[%version%]" />
+      </group>
+      <group targetFramework="netstandard1.3">
+        <dependency id="NETStandard.Library" version="1.6.0" />
+        <dependency id="System.ComponentModel" version="4.0.1" />
+        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="1.0.0" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="1.0.0" />
+        <dependency id="Hangfire.Core" version="[%version%]" />
+      </group>
       <group targetFramework="netstandard2.0">
         <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="2.0.0" />
         <dependency id="Microsoft.Extensions.Hosting.Abstractions" version="2.0.0" />
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="2.0.0" />
-        <dependency id="Hangfire.Core" version="[0.0.0]" />
+        <dependency id="Hangfire.Core" version="[%version%]" />
       </group>
-      <group targetFramework="netcoreapp3.0">
+      <group targetFramework="netstandard2.1">
         <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="3.0.0" />
         <dependency id="Microsoft.Extensions.Hosting.Abstractions" version="3.0.0" />
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="3.0.0" />
-        <dependency id="Hangfire.Core" version="[0.0.0]" />
+        <dependency id="Hangfire.Core" version="[%version%]" />
       </group>
     </dependencies>
   </metadata>
   <files>
+    <file src="net451\Hangfire.NetCore.dll" target="lib\net451" />
+    <file src="net451\Hangfire.NetCore.xml" target="lib\net451" />
+
+    <file src="net461\Hangfire.NetCore.dll" target="lib\net461" />
+    <file src="net461\Hangfire.NetCore.xml" target="lib\net461" />
+
+    <file src="netstandard1.3\Hangfire.NetCore.dll" target="lib\netstandard1.3" />
+    <file src="netstandard1.3\Hangfire.NetCore.xml" target="lib\netstandard1.3" />
+
     <file src="netstandard2.0\Hangfire.NetCore.dll" target="lib\netstandard2.0" />
     <file src="netstandard2.0\Hangfire.NetCore.xml" target="lib\netstandard2.0" />
-    <file src="netstandard2.0\Hangfire.NetCore.pdb" target="lib\netstandard2.0" />
 
-    <file src="netcoreapp3.0\Hangfire.NetCore.dll" target="lib\netcoreapp3.0" />
-    <file src="netcoreapp3.0\Hangfire.NetCore.xml" target="lib\netcoreapp3.0" />
-    <file src="netcoreapp3.0\Hangfire.NetCore.pdb" target="lib\netcoreapp3.0" />
-    
-    <file src="..\src\Hangfire.AspNetCore\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
+    <file src="netstandard2.1\Hangfire.NetCore.dll" target="lib\netstandard2.1" />
+    <file src="netstandard2.1\Hangfire.NetCore.xml" target="lib\netstandard2.1" />
+
+    <file src="..\nuspecs\icon.png" />
 
     <file src="LICENSE.md" />
-    <file src="NOTICES" />
     <file src="COPYING" />
     <file src="COPYING.LESSER" />
+    <file src="NOTICES" />
     <file src="LICENSE_STANDARD" />
     <file src="LICENSE_ROYALTYFREE" />
   </files>

@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -18,6 +17,7 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using System.Text;
+using Hangfire.Storage;
 using Hangfire.Storage.Monitoring;
 
 namespace Hangfire.Dashboard
@@ -25,6 +25,7 @@ namespace Hangfire.Dashboard
     public abstract class RazorPage
     {
         private Lazy<StatisticsDto> _statisticsLazy;
+        private Lazy<Tuple<DateTime?, DateTime, TimeSpan?>> _dateTimeLazy;
 
         private readonly StringBuilder _content = new StringBuilder();
         private string _body;
@@ -43,6 +44,33 @@ namespace Hangfire.Dashboard
         public string AppPath => Context.Options.AppPath;
         public DashboardOptions DashboardOptions => Context.Options;
         public Stopwatch GenerationTime { get; private set; }
+
+        public DateTime? StorageUtcNow
+        {
+            get
+            {
+                if (_dateTimeLazy == null) throw new InvalidOperationException("Page is not initialized.");
+                return _dateTimeLazy.Value.Item1;
+            }
+        }
+
+        public DateTime ApplicationUtcNow
+        {
+            get
+            {
+                if (_dateTimeLazy == null) throw new InvalidOperationException("Page is not initialized.");
+                return _dateTimeLazy.Value.Item2;
+            }
+        }
+
+        public TimeSpan? TimeDifference
+        {
+            get
+            {
+                if (_dateTimeLazy == null) throw new InvalidOperationException("Page is not initialized.");
+                return _dateTimeLazy.Value.Item3;
+            }
+        }
 
         public StatisticsDto Statistics
         {
@@ -83,6 +111,7 @@ namespace Hangfire.Dashboard
 
             GenerationTime = parentPage.GenerationTime;
             _statisticsLazy = parentPage._statisticsLazy;
+            _dateTimeLazy = parentPage._dateTimeLazy;
         }
 
         internal void Assign(DashboardContext context)
@@ -94,6 +123,30 @@ namespace Hangfire.Dashboard
             {
                 var monitoring = Storage.GetMonitoringApi();
                 return monitoring.GetStatistics();
+            });
+
+            _dateTimeLazy = new Lazy<Tuple<DateTime?, DateTime, TimeSpan?>>(() =>
+            {
+                DateTime? storageUtcNow = null;
+                TimeSpan? difference = null;
+
+                if (Storage.HasFeature(JobStorageFeatures.Connection.GetUtcDateTime))
+                {
+                    using (var connection = Storage.GetReadOnlyConnection() as JobStorageConnection)
+                    {
+                        storageUtcNow = connection?.GetUtcDateTime();
+                        
+                    }
+                }
+
+                var applicationUtcNow = DateTime.UtcNow;
+
+                if (storageUtcNow.HasValue)
+                {
+                    difference = applicationUtcNow - storageUtcNow;
+                }
+
+                return new Tuple<DateTime?, DateTime, TimeSpan?>(storageUtcNow, applicationUtcNow, difference);
             });
         }
 

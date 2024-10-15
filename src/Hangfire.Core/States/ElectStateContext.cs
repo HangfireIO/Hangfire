@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -32,6 +31,11 @@ namespace Hangfire.States
         private IState _candidateState;
 
         public ElectStateContext([NotNull] ApplyStateContext applyContext)
+            : this(applyContext, null)
+        {
+        }
+
+        public ElectStateContext([NotNull] ApplyStateContext applyContext, [CanBeNull] StateMachine stateMachine)
         {
             if (applyContext == null) throw new ArgumentNullException(nameof(applyContext));
             
@@ -43,6 +47,8 @@ namespace Hangfire.States
             Transaction = applyContext.Transaction;
             CurrentState = applyContext.OldStateName;
             Profiler = applyContext.Profiler;
+            CustomData = applyContext.CustomData?.ToDictionary(static x => x.Key, static x => x.Value);
+            StateMachine = stateMachine;
         }
         
         public override BackgroundJob BackgroundJob { get; }
@@ -59,7 +65,7 @@ namespace Hangfire.States
         [NotNull]
         public IState CandidateState
         {
-            get { return _candidateState; }
+            get => _candidateState;
             set
             {
                 if (value == null)
@@ -76,7 +82,7 @@ namespace Hangfire.States
         }
 
         [CanBeNull]
-        public string CurrentState { get; private set; }
+        public string CurrentState { get; }
 
         [NotNull]
         public IState[] TraversedStates => _traversedStates.ToArray();
@@ -84,16 +90,44 @@ namespace Hangfire.States
         [NotNull]
         internal IProfiler Profiler { get; }
 
-        public void SetJobParameter<T>(string name, T value)
+        [CanBeNull]
+        public IDictionary<string, object> CustomData { get; }
+        
+        [CanBeNull]
+        public StateMachine StateMachine { get; }
+
+        public void SetJobParameter<T>([NotNull] string name, T value)
         {
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
             Connection.SetJobParameter(BackgroundJob.Id, name, SerializationHelper.Serialize(value, SerializationOption.User));
         }
 
-        public T GetJobParameter<T>(string name)
+        public T GetJobParameter<T>([NotNull] string name) => GetJobParameter<T>(name, allowStale: false);
+
+        public T GetJobParameter<T>([NotNull] string name, bool allowStale)
         {
-            return SerializationHelper.Deserialize<T>(
-                Connection.GetJobParameter(BackgroundJob.Id, name),
-                SerializationOption.User);
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+
+            try
+            {
+                string value;
+
+                if (allowStale && BackgroundJob.ParametersSnapshot != null)
+                {
+                    BackgroundJob.ParametersSnapshot.TryGetValue(name, out value);
+                }
+                else
+                {
+                    value = Connection.GetJobParameter(BackgroundJob.Id, name);                
+                }
+
+                return SerializationHelper.Deserialize<T>(value, SerializationOption.User);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    $"Could not get a value of the job parameter `{name}`. See inner exception for details.", ex);
+            }
         }
     }
 }

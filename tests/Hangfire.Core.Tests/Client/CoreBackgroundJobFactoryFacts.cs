@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Diagnostics.CodeAnalysis;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
@@ -18,13 +18,19 @@ namespace Hangfire.Core.Tests.Client
         private const string JobId = "jobId";
         private readonly Mock<IStateMachine> _stateMachine;
         private readonly CreateContextMock _context;
-        private readonly Mock<IWriteOnlyTransaction> _transaction;
+        private readonly Mock<JobStorageTransaction> _transaction;
 
         public CoreBackgroundJobFactoryFacts()
         {
             _stateMachine = new Mock<IStateMachine>();
             _context = new CreateContextMock();
-            _transaction = new Mock<IWriteOnlyTransaction>();
+            _transaction = new Mock<JobStorageTransaction>();
+
+            _transaction.Setup(x => x.CreateJob(
+                It.IsNotNull<Job>(),
+                It.IsNotNull<IDictionary<string, string>>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<TimeSpan>())).Returns(JobId);
 
             _context.Connection.Setup(x => x.CreateExpiredJob(
                 It.IsAny<Job>(),
@@ -43,6 +49,29 @@ namespace Hangfire.Core.Tests.Client
                 () => new CoreBackgroundJobFactory(null));
 
             Assert.Equal("stateMachine", exception.ParamName);
+        }
+
+        [Fact]
+        public void Create_ThrowsAnException_WhenContextIsNull()
+        {
+            var factory = CreateFactory();
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => factory.Create(null));
+
+            Assert.Equal("context", exception.ParamName);
+        }
+
+        [Fact]
+        public void Create_ThrowsAnException_WhenJobQueueIsSet_ButStorageDoesNotSupportIt()
+        {
+            // Arrange
+            _context.Storage.Setup(x => x.HasFeature(JobStorageFeatures.JobQueueProperty)).Returns(false);
+            _context.Job = Job.FromExpression(() => Method(), "some-queue");
+
+            var factory = CreateFactory();
+
+            // Act & Assert
+            Assert.Throws<NotSupportedException>(() => factory.Create(_context.Object));
         }
 
         [Fact]
@@ -289,6 +318,12 @@ namespace Hangfire.Core.Tests.Client
             if (retries.HasValue) factory.RetryAttempts = retries.Value;
 
             return factory;
+        }
+
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+        public static void Method()
+        {
         }
     }
 }

@@ -5,7 +5,7 @@ using Xunit.Sdk;
 
 namespace Hangfire.SqlServer.Tests
 {
-    internal class CleanSerializerSettingsAttribute : BeforeAfterTestAttribute
+    internal sealed class CleanSerializerSettingsAttribute : BeforeAfterTestAttribute
     {
         public override void Before(MethodInfo methodUnderTest)
         {
@@ -23,7 +23,9 @@ namespace Hangfire.SqlServer.Tests
             JobHelper.SetSerializerSettings(null);
 #pragma warning restore 618
             GlobalConfiguration.Configuration.UseSerializerSettings(null);
+#if !NET452 && !NET461
             JsonConvert.DefaultSettings = null;
+#endif
         }
     }
 }

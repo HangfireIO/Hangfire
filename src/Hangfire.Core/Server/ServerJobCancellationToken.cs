@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright � 2013-2014 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -21,11 +20,12 @@ using Hangfire.States;
 using Hangfire.Storage;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Hangfire.Server
 {
-    internal class ServerJobCancellationToken : IJobCancellationToken, IDisposable
+    internal sealed class ServerJobCancellationToken : IJobCancellationToken, IDisposable
     {
         private static readonly ConcurrentDictionary<string, ConcurrentDictionary<ServerJobCancellationToken, object>> WatchedServers
             = new ConcurrentDictionary<string, ConcurrentDictionary<ServerJobCancellationToken, object>>();
@@ -80,6 +80,7 @@ namespace Hangfire.Server
             }
         }
 
+        [SuppressMessage("SonarLint", "S4275:GettersAndSettersShouldAccessTheExpectedFields", Justification = "Bad property naming for backwards compatibility.")]
         public CancellationToken ShutdownToken
         {
             get
@@ -199,12 +200,12 @@ namespace Hangfire.Server
                 return true;
             }
 
-            if (!state.Data.ContainsKey("ServerId") || !state.Data["ServerId"].Equals(_serverId, StringComparison.OrdinalIgnoreCase))
+            if (!state.Data.TryGetValue("ServerId", out var serverId) || !serverId.Equals(_serverId, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
 
-            if (!state.Data.ContainsKey("WorkerId") || !state.Data["WorkerId"].Equals(_workerId, StringComparison.OrdinalIgnoreCase))
+            if (!state.Data.TryGetValue("WorkerId", out var workerId) || !workerId.Equals(_workerId, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -220,7 +221,7 @@ namespace Hangfire.Server
             }
         }
 
-        private class CancellationTokenHolder : IDisposable
+        private sealed class CancellationTokenHolder : IDisposable
         {
             private readonly CancellationTokenSource _abortedTokenSource;
             private readonly CancellationTokenSource _linkedTokenSource;

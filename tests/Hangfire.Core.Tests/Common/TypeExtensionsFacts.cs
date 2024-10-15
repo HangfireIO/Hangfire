@@ -13,39 +13,39 @@ public class ClassWithoutNamespace
 
 namespace Hangfire.Core.Tests.Common
 {
-	public class TypeExtensionsFacts
-	{
+    public class TypeExtensionsFacts
+    {
         [Fact]
         public void ToGenericTypeString_PrintsNonGenericNestedClassName_WithDot()
         {
-            Assert.Equal(typeof(NonGenericClass).ToGenericTypeString(), "NonGenericClass");
-            Assert.Equal(typeof(NonGenericClass.NestedNonGenericClass).ToGenericTypeString(), "NonGenericClass.NestedNonGenericClass");
-            Assert.Equal(typeof(NonGenericClass.NestedNonGenericClass.DoubleNestedNonGenericClass).ToGenericTypeString(), "NonGenericClass.NestedNonGenericClass.DoubleNestedNonGenericClass");
-        }	    
+            Assert.Equal("NonGenericClass", typeof(NonGenericClass).ToGenericTypeString());
+            Assert.Equal("NonGenericClass.NestedNonGenericClass", typeof(NonGenericClass.NestedNonGenericClass).ToGenericTypeString());
+            Assert.Equal("NonGenericClass.NestedNonGenericClass.DoubleNestedNonGenericClass", typeof(NonGenericClass.NestedNonGenericClass.DoubleNestedNonGenericClass).ToGenericTypeString());
+        }
 
         [Fact]
         public void ToGenericTypeString_PrintsOpenGenericNestedClassName_WithGenericParameters()
-	    {
-            Assert.Equal(typeof(NonGenericClass.NestedGenericClass<,>).ToGenericTypeString(), "NonGenericClass.NestedGenericClass<T1,T2>");
-	        Assert.Equal(typeof(GenericClass<>).ToGenericTypeString(), "GenericClass<T1>");
-            Assert.Equal(typeof(GenericClass<>.NestedNonGenericClass).ToGenericTypeString(), "GenericClass<T1>.NestedNonGenericClass");
-            Assert.Equal(typeof(GenericClass<>.NestedNonGenericClass.DoubleNestedGenericClass<,,>).ToGenericTypeString(), "GenericClass<T1>.NestedNonGenericClass.DoubleNestedGenericClass<T2,T3,T4>");
-        }	    
+        {
+            Assert.Equal("NonGenericClass.NestedGenericClass<T1,T2>", typeof(NonGenericClass.NestedGenericClass<,>).ToGenericTypeString());
+            Assert.Equal("GenericClass<T1>", typeof(GenericClass<>).ToGenericTypeString());
+            Assert.Equal("GenericClass<T1>.NestedNonGenericClass", typeof(GenericClass<>.NestedNonGenericClass).ToGenericTypeString());
+            Assert.Equal("GenericClass<T1>.NestedNonGenericClass.DoubleNestedGenericClass<T2,T3,T4>", typeof(GenericClass<>.NestedNonGenericClass.DoubleNestedGenericClass<,,>).ToGenericTypeString());
+        }
         
         [Fact]
         public void ToGenericTypeString_PrintsClosedGenericNestedClassName_WithGivenTypes()
-	    {
-            Assert.Equal(typeof(NonGenericClass.NestedGenericClass<Assert, List<Assert>>).ToGenericTypeString(), "NonGenericClass.NestedGenericClass<Assert,List<Assert>>");
-            Assert.Equal(typeof(GenericClass<Assert>).ToGenericTypeString(), "GenericClass<Assert>");
-            Assert.Equal(typeof(GenericClass<List<Assert>>.NestedNonGenericClass).ToGenericTypeString(), "GenericClass<List<Assert>>.NestedNonGenericClass");
-            Assert.Equal(typeof(GenericClass<List<GenericClass<List<Assert>>.NestedNonGenericClass.DoubleNestedGenericClass<Assert, List<Assert>, Stack<Assert>>>>.NestedNonGenericClass.DoubleNestedGenericClass<Assert, List<Assert>, Stack<Assert>>).ToGenericTypeString(), "GenericClass<List<GenericClass<List<Assert>>.NestedNonGenericClass.DoubleNestedGenericClass<Assert,List<Assert>,Stack<Assert>>>>.NestedNonGenericClass.DoubleNestedGenericClass<Assert,List<Assert>,Stack<Assert>>");        
-	    }
+        {
+            Assert.Equal("NonGenericClass.NestedGenericClass<Assert,List<Assert>>", typeof(NonGenericClass.NestedGenericClass<Assert, List<Assert>>).ToGenericTypeString());
+            Assert.Equal("GenericClass<Assert>", typeof(GenericClass<Assert>).ToGenericTypeString());
+            Assert.Equal("GenericClass<List<Assert>>.NestedNonGenericClass", typeof(GenericClass<List<Assert>>.NestedNonGenericClass).ToGenericTypeString());
+            Assert.Equal("GenericClass<List<GenericClass<List<Assert>>.NestedNonGenericClass.DoubleNestedGenericClass<Assert,List<Assert>,Stack<Assert>>>>.NestedNonGenericClass.DoubleNestedGenericClass<Assert,List<Assert>,Stack<Assert>>", typeof(GenericClass<List<GenericClass<List<Assert>>.NestedNonGenericClass.DoubleNestedGenericClass<Assert, List<Assert>, Stack<Assert>>>>.NestedNonGenericClass.DoubleNestedGenericClass<Assert, List<Assert>, Stack<Assert>>).ToGenericTypeString());        
+        }
 
-	    [Fact]
-	    public void ToGenericTypeString_CorrectlyHandlesTypesWithoutNamespace()
-	    {
-	        Assert.Equal("ClassWithoutNamespace", typeof(ClassWithoutNamespace).ToGenericTypeString());
-	    }
+        [Fact]
+        public void ToGenericTypeString_CorrectlyHandlesTypesWithoutNamespace()
+        {
+            Assert.Equal("ClassWithoutNamespace", typeof(ClassWithoutNamespace).ToGenericTypeString());
+        }
 
         [Fact]
         public void GetNonOpenMatchingMethod_ThrowsAnException_WhenTypeIsNull()
@@ -91,7 +91,7 @@ namespace Hangfire.Core.Tests.Common
 
             Assert.Equal("Method", method.Name);
             Assert.Equal(typeof(NonGenericClass), method.DeclaringType);
-            Assert.Equal(1, method.GetParameters().Length);
+            Assert.Single(method.GetParameters());
             Assert.Equal(typeof(int), method.GetParameters()[0].ParameterType);
         }
 
@@ -130,8 +130,8 @@ namespace Hangfire.Core.Tests.Common
 
             Assert.Equal("TrivialGenericMethod", method.Name);
             Assert.Equal(typeof(NonGenericClass), method.DeclaringType);
-            Assert.Equal(true, method.IsGenericMethod);
-            Assert.Equal(false, method.ContainsGenericParameters);
+            Assert.True(method.IsGenericMethod);
+            Assert.False(method.ContainsGenericParameters);
         }
 
         [Fact]
@@ -139,7 +139,7 @@ namespace Hangfire.Core.Tests.Common
         {
             var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "NonExistingMethod", new Type[0]);
 
-            Assert.Equal(null, method);
+            Assert.Null(method);
         }
 
         [Fact]
@@ -148,7 +148,7 @@ namespace Hangfire.Core.Tests.Common
             var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "Method",
                 new[] { typeof(object), typeof(int) });
 
-            Assert.Equal(null, method);
+            Assert.Null(method);
         }
 
         [Fact]
@@ -156,7 +156,7 @@ namespace Hangfire.Core.Tests.Common
         {
             var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "method", new Type[0]);
 
-            Assert.Equal(null, method);
+            Assert.Null(method);
         }
 
         [Fact]
@@ -165,7 +165,7 @@ namespace Hangfire.Core.Tests.Common
             var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "Method",
                 new[] { typeof(NonGenericClass) });
 
-            Assert.Equal(null, method);
+            Assert.Null(method);
         }
 
         [Fact]
@@ -175,7 +175,7 @@ namespace Hangfire.Core.Tests.Common
                 new[] { typeof(IEnumerable<int>) });
 
             Assert.Equal("OtherGenericMethod", method.Name);
-            Assert.Equal(1, method.GetParameters().Length);
+            Assert.Single(method.GetParameters());
             Assert.Equal(typeof(IEnumerable<int>), method.GetParameters()[0].ParameterType);
         }
 
@@ -186,7 +186,7 @@ namespace Hangfire.Core.Tests.Common
                 new[] { typeof(List<IEnumerable<int>>) });
 
             Assert.Equal("OtherGenericMethod", method.Name);
-            Assert.Equal(1, method.GetParameters().Length);
+            Assert.Single(method.GetParameters());
             Assert.Equal(typeof(List<IEnumerable<int>>), method.GetParameters()[0].ParameterType);
         }
 
@@ -197,7 +197,7 @@ namespace Hangfire.Core.Tests.Common
                 new[] { typeof(Tuple<int, double>) });
 
             Assert.Equal("OtherGenericMethod", method.Name);
-            Assert.Equal(1, method.GetParameters().Length);
+            Assert.Single(method.GetParameters());
             Assert.Equal(typeof(Tuple<int, double>), method.GetParameters()[0].ParameterType);
         }
 
@@ -208,7 +208,7 @@ namespace Hangfire.Core.Tests.Common
                 new[] { typeof(Tuple<int, double, float>) });
 
             Assert.Equal("OneMoreGenericMethod", method.Name);
-            Assert.Equal(1, method.GetParameters().Length);
+            Assert.Single(method.GetParameters());
             Assert.Equal(typeof(Tuple<int, double, float>), method.GetParameters()[0].ParameterType);
         }
 
@@ -244,7 +244,7 @@ namespace Hangfire.Core.Tests.Common
                 new[] { typeof(Tuple<double, List<int>>)  });
 
             Assert.Equal("GenericMethod", method.Name);
-            Assert.Equal(1, method.GetParameters().Length);
+            Assert.Single(method.GetParameters());
             Assert.Equal(typeof(Tuple<double,List<int>>), method.GetParameters()[0].ParameterType);
         }
 
@@ -254,7 +254,7 @@ namespace Hangfire.Core.Tests.Common
             var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "GenericMethod",
                 new[] { typeof(int), typeof(double) });
 
-            Assert.Equal(null, method);
+            Assert.Null(method);
         }
 
         [Fact]
@@ -263,7 +263,7 @@ namespace Hangfire.Core.Tests.Common
             var method = TypeExtensions.GetNonOpenMatchingMethod(typeof(NonGenericClass), "OtherGenericMethod",
                 new[] { typeof(List<int>)});
 
-            Assert.Equal(null, method);
+            Assert.Null(method);
         }
 
         [Fact]

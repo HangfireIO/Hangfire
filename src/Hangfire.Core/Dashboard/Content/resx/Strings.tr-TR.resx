@@ -1,0 +1,553 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AwaitingJobsPage_ContinuationsWarning_Text" xml:space="preserve">
+    <value> 
+		Endişelenmeyin, continuations beklendiği gibi çalışıyor. Ancak mevcut iş kaynaklarınız bu sayfayı göstermek için gereken bazı sorguları desteklemiyor. Lütfen iş kaynaklarınızı güncellemeyi deneyin veya tüm entegrasyon tamamlana kadar bekleyin.
+	</value>
+  </data>
+  <data name="AwaitingJobsPage_ContinuationsWarning_Title" xml:space="preserve">
+    <value>Continuations işleriniz çalışıyor ancak sayfa gösterilemiyor.</value>
+  </data>
+  <data name="AwaitingJobsPage_NoJobs" xml:space="preserve">
+    <value>Bekleyen bir işiniz bulunmamaktadır.</value>
+  </data>
+  <data name="AwaitingJobsPage_Table_Options" xml:space="preserve">
+    <value>Ayarlar</value>
+  </data>
+  <data name="AwaitingJobsPage_Table_Parent" xml:space="preserve">
+    <value>Üst</value>
+  </data>
+  <data name="AwaitingJobsPage_Title" xml:space="preserve">
+    <value>Bekleyen İşler</value>
+  </data>
+  <data name="Common_Created" xml:space="preserve">
+    <value>Oluşturan</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Sil</value>
+  </data>
+  <data name="Common_DeleteConfirm" xml:space="preserve">
+    <value> TÜM SEÇİLİ işleri silmek istediğine emin misin?</value>
+  </data>
+  <data name="Common_Deleting" xml:space="preserve">
+    <value>Siliniyor...</value>
+  </data>
+  <data name="Common_DeleteSelected" xml:space="preserve">
+    <value>Seçilileri Sil</value>
+  </data>
+  <data name="Common_EnqueueButton_Text" xml:space="preserve">
+    <value>Kuyruklu işler</value>
+  </data>
+  <data name="Common_Enqueueing" xml:space="preserve">
+    <value>Kuyruğa alınıyor...</value>
+  </data>
+  <data name="Common_Fetched" xml:space="preserve">
+    <value>Getirildi</value>
+  </data>
+  <data name="Common_Id" xml:space="preserve">
+    <value>Kimlik</value>
+  </data>
+  <data name="Common_Job" xml:space="preserve">
+    <value>İş</value>
+  </data>
+  <data name="Common_JobExpired" xml:space="preserve">
+    <value>İşin süresi doldu.</value>
+  </data>
+  <data name="Common_JobStateChanged_Text" xml:space="preserve">
+    <value>Veriler alınırken işin durumu değiştirildi.</value>
+  </data>
+  <data name="Common_LessDetails" xml:space="preserve">
+    <value>Daha az detay...</value>
+  </data>
+  <data name="Common_MoreDetails" xml:space="preserve">
+    <value>Detay fazla detay...</value>
+  </data>
+  <data name="Common_NotAvailable" xml:space="preserve">
+    <value>Yok</value>
+  </data>
+  <data name="Common_PeriodDay" xml:space="preserve">
+    <value>Gün</value>
+  </data>
+  <data name="Common_PeriodWeek" xml:space="preserve">
+    <value>Hafta</value>
+  </data>
+  <data name="Common_Reason" xml:space="preserve">
+    <value>Neden</value>
+  </data>
+  <data name="Common_RequeueJobs" xml:space="preserve">
+    <value>İşleri yeniden sıraya al</value>
+  </data>
+  <data name="Common_Retry" xml:space="preserve">
+    <value>Tekrar</value>
+  </data>
+  <data name="Common_Server" xml:space="preserve">
+    <value>Sunucu</value>
+  </data>
+  <data name="Common_State" xml:space="preserve">
+    <value>Durum</value>
+  </data>
+  <data name="Common_Unknown" xml:space="preserve">
+    <value>Bilinmeyen</value>
+  </data>
+  <data name="DeletedJobsPage_NoJobs" xml:space="preserve">
+    <value>Silinen işler bulunamadı.</value>
+  </data>
+  <data name="DeletedJobsPage_Table_Deleted" xml:space="preserve">
+    <value>Silindi</value>
+  </data>
+  <data name="DeletedJobsPage_Title" xml:space="preserve">
+    <value>Silinen İşler</value>
+  </data>
+  <data name="EnqueuedJobsPage_NoJobs" xml:space="preserve">
+    <value>Kuyruk boş.</value>
+  </data>
+  <data name="EnqueuedJobsPage_Title" xml:space="preserve">
+    <value>Sıralanmış İşler</value>
+  </data>
+  <data name="FailedJobsPage_FailedJobsNotExpire_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;Başarısız olan işlerin süresi dolmaz.&lt;/strong&gt; Bu işleri yeniden sıraya koymanız için zamanı iyi ayarlamalısınız.
+                Bu işleri manuel olarak tekrar kuyruğa alabilir veya silebilirsiniz. İpucu : &lt;code&gt;AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)&lt;/code&gt;
+                attribute'unu ekleyerek otomatik olarak silebilrsiniz. </value>
+  </data>
+  <data name="FailedJobsPage_NoJobs" xml:space="preserve">
+    <value> Şu anda Başarısız iş bulunmamaktadır. </value>
+  </data>
+  <data name="FailedJobsPage_Table_Failed" xml:space="preserve">
+    <value>Başarısız</value>
+  </data>
+  <data name="FailedJobsPage_Title" xml:space="preserve">
+    <value>Başarısız İşler</value>
+  </data>
+  <data name="FetchedJobsPage_NoJobs" xml:space="preserve">
+    <value>Kuyruk boş</value>
+  </data>
+  <data name="FetchedJobsPage_Title" xml:space="preserve">
+    <value>İş Sonuçları</value>
+  </data>
+  <data name="HomePage_HistoryGraph" xml:space="preserve">
+    <value>Geçmiş Grafiği</value>
+  </data>
+  <data name="HomePage_RealtimeGraph" xml:space="preserve">
+    <value>Canlı Grafik</value>
+  </data>
+  <data name="HomePage_Title" xml:space="preserve">
+    <value>Genel Bakış</value>
+  </data>
+  <data name="JobDetailsPage_Created" xml:space="preserve">
+    <value>Oluşturulan</value>
+  </data>
+  <data name="JobDetailsPage_DeleteConfirm" xml:space="preserve">
+    <value>Bu işi gerçekten silmek istediğine emin misin?</value>
+  </data>
+  <data name="JobDetailsPage_State" xml:space="preserve">
+    <value>Durum</value>
+  </data>
+  <data name="JobDetailsPage_JobAbortedNotActive_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;Bu iş iptal edildi&lt;/strong&gt; – Sunucu tarafından işlendi.
+                        &lt;code&gt;{0}&lt;/code&gt; which is not in the 
+                        &lt;a href="{1}"&gt;active servers&lt;/a&gt; list for now.
+                        Zaman aşımı sonrası tekrardan yenilenecektir, ancak manuel olarakta
+                        tekrar kuyruğa alabilir veya silebilirsiniz. </value>
+  </data>
+  <data name="JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;İş iptal edilmiş görüntüleniyor.&lt;/strong&gt; – Sunucu tarafından işlendi.
+                        &lt;code&gt;{0}&lt;/code&gt;, tarafından kontrol zamanın 1 dakikadan fazla olduğunu raporladı.
+                        Zaman aşımı sonrası tekrardan yenilenecektir, ancak manuel olarakta
+                        tekrar kuyruğa alabilir veya silebilirsiniz.</value>
+  </data>
+  <data name="JobDetailsPage_JobExpired" xml:space="preserve">
+    <value>Arkaplan işi '{0}' zaman aşımına uğradı veya sunucu tarafından bulunamadı.</value>
+  </data>
+  <data name="JobDetailsPage_JobFinished_Warning_Html" xml:space="preserve">
+    <value>&lt;strong&gt;İş tamamlandı&lt;/strong&gt;.
+                  Otomatik olarak silinecektir. &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;.</value>
+  </data>
+  <data name="JobDetailsPage_JobId" xml:space="preserve">
+    <value>İş Kimliği</value>
+  </data>
+  <data name="JobDetailsPage_Requeue" xml:space="preserve">
+    <value>Yeniden sıraya al</value>
+  </data>
+  <data name="LayoutPage_Back" xml:space="preserve">
+    <value>Siteye geri dön</value>
+  </data>
+  <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
+    <value>Oluşturuldu: {0}ms</value>
+  </data>
+  <data name="LayoutPage_Footer_Time" xml:space="preserve">
+    <value>Zaman:</value>
+  </data>
+  <data name="Paginator_Next" xml:space="preserve">
+    <value>İleri</value>
+  </data>
+  <data name="Paginator_Prev" xml:space="preserve">
+    <value>Geri</value>
+  </data>
+  <data name="Paginator_TotalItems" xml:space="preserve">
+    <value>Toplam eleman</value>
+  </data>
+  <data name="PerPageSelector_ItemsPerPage" xml:space="preserve">
+    <value>Görüntülenme adeti</value>
+  </data>
+  <data name="ProcessingJobsPage_Aborted" xml:space="preserve">
+    <value>İş iptal edildi</value>
+  </data>
+  <data name="ProcessingJobsPage_NoJobs" xml:space="preserve">
+    <value>Şuan hiç bir iş işlenemiyor.</value>
+  </data>
+  <data name="ProcessingJobsPage_Table_Started" xml:space="preserve">
+    <value>Başlatıldı.</value>
+  </data>
+  <data name="ProcessingJobsPage_Title" xml:space="preserve">
+    <value>Çalışan İşler</value>
+  </data>
+  <data name="QueuesPage_NoJobs" xml:space="preserve">
+    <value>Sıraya alınmış iş yok.</value>
+  </data>
+  <data name="QueuesPage_NoQueues" xml:space="preserve">
+    <value>Kuyruğa alınmış iş bulunamadı. Bir işi kuyruğa almaya çalışın.</value>
+  </data>
+  <data name="QueuesPage_Table_Length" xml:space="preserve">
+    <value>Bekleyenler</value>
+  </data>
+  <data name="QueuesPage_Table_NextsJobs" xml:space="preserve">
+    <value>Sonraki işler</value>
+  </data>
+  <data name="QueuesPage_Table_Queue" xml:space="preserve">
+    <value>Kuyruk</value>
+  </data>
+  <data name="QueuesPage_Title" xml:space="preserve">
+    <value>Kuyruklar</value>
+  </data>
+  <data name="RecurringJobsPage_Canceled" xml:space="preserve">
+    <value>İptal edildi</value>
+  </data>
+  <data name="RecurringJobsPage_NoJobs" xml:space="preserve">
+    <value>Tekrarlayan iş bulunamadı.</value>
+  </data>
+  <data name="RecurringJobsPage_Table_Cron" xml:space="preserve">
+    <value>Cron</value>
+  </data>
+  <data name="RecurringJobsPage_Table_LastExecution" xml:space="preserve">
+    <value>Son Yürütme</value>
+  </data>
+  <data name="RecurringJobsPage_Table_NextExecution" xml:space="preserve">
+    <value>Sonraki yürütme</value>
+  </data>
+  <data name="RecurringJobsPage_Table_TimeZone" xml:space="preserve">
+    <value>Saat dilimi</value>
+  </data>
+  <data name="RecurringJobsPage_Title" xml:space="preserve">
+    <value>Tekrarlayan İşler</value>
+  </data>
+  <data name="RecurringJobsPage_Triggering" xml:space="preserve">
+    <value>Tetikleniyor...</value>
+  </data>
+  <data name="RecurringJobsPage_TriggerNow" xml:space="preserve">
+    <value>Şimdi tetikle</value>
+  </data>
+  <data name="RetriesPage_NoJobs" xml:space="preserve">
+    <value>Her şey tamamlandı. Tekrarlayan iş bulunmamaktadır.</value>
+  </data>
+  <data name="RetriesPage_Title" xml:space="preserve">
+    <value>Tekrarlayan İşler</value>
+  </data>
+  <data name="RetriesPage_Warning_Html" xml:space="preserve">
+    <value>&lt;h4&gt;Tekrarlayan işler çalışıyor, ancak sayfa gösterilemiyor&lt;/h4&gt;
+        &lt;p&gt;
+            Merak etmeyin, yeniden denemeler beklendiği gibi çalışıyor.
+			Mevcuttaki iş kaynağı bazı sorguları göstermek için desteklemiyor. Lütfen kaynağı güncelleyin veya 
+			tüm komut seti entegre edilene kadar bekleyin.
+        &lt;/p&gt;
+        &lt;p&gt;
+            Lütfen &lt;a href="{0}"&gt;Planlanmış işler&lt;/a&gt; sayfasına gidip planmış ve yeniden tetiklenmiş işleri görüntüleyiniz.
+        &lt;/p&gt;</value>
+  </data>
+  <data name="ScheduledJobsPage_EnqueueNow" xml:space="preserve">
+    <value>Sıraya al</value>
+  </data>
+  <data name="ScheduledJobsPage_NoJobs" xml:space="preserve">
+    <value>Planlanmış bir iş bulunmamakta.</value>
+  </data>
+  <data name="ScheduledJobsPage_Table_Enqueue" xml:space="preserve">
+    <value>Sıraya al</value>
+  </data>
+  <data name="ScheduledJobsPage_Table_Scheduled" xml:space="preserve">
+    <value>Planlanmış</value>
+  </data>
+  <data name="ScheduledJobsPage_Title" xml:space="preserve">
+    <value>Planlanmış İşler</value>
+  </data>
+  <data name="ServersPage_NoServers" xml:space="preserve">
+    <value>Aktif sunucu bulunamadı Arkaplan işleri işlenemiyor.</value>
+  </data>
+  <data name="ServersPage_Table_Heartbeat" xml:space="preserve">
+    <value>Kontrol Zamanı</value>
+  </data>
+  <data name="ServersPage_Table_Name" xml:space="preserve">
+    <value>İsim</value>
+  </data>
+  <data name="ServersPage_Table_Queues" xml:space="preserve">
+    <value>Kuyruklar</value>
+  </data>
+  <data name="ServersPage_Table_Started" xml:space="preserve">
+    <value>Başlatıldı</value>
+  </data>
+  <data name="ServersPage_Table_Workers" xml:space="preserve">
+    <value>Çalışan Servisler</value>
+  </data>
+  <data name="ServersPage_Title" xml:space="preserve">
+    <value>Sunucular</value>
+  </data>
+  <data name="SucceededJobsPage_NoJobs" xml:space="preserve">
+    <value>Tamamlanmış iş bulunamadı.</value>
+  </data>
+  <data name="SucceededJobsPage_Table_Succeeded" xml:space="preserve">
+    <value>Başarılı</value>
+  </data>
+  <data name="SucceededJobsPage_Table_TotalDuration" xml:space="preserve">
+    <value>Toplam Süre</value>
+  </data>
+  <data name="SucceededJobsPage_Title" xml:space="preserve">
+    <value>Başarılı işler</value>
+  </data>
+  <data name="JobsSidebarMenu_Awaiting" xml:space="preserve">
+    <value>Beklenenler</value>
+  </data>
+  <data name="JobsSidebarMenu_Deleted" xml:space="preserve">
+    <value>Silinenler</value>
+  </data>
+  <data name="JobsSidebarMenu_Failed" xml:space="preserve">
+    <value>Başarısızlar</value>
+  </data>
+  <data name="JobsSidebarMenu_Processing" xml:space="preserve">
+    <value>İşlenenler</value>
+  </data>
+  <data name="JobsSidebarMenu_Scheduled" xml:space="preserve">
+    <value>Planlananlar</value>
+  </data>
+  <data name="JobsSidebarMenu_Succeeded" xml:space="preserve">
+    <value>Başarılılar</value>
+  </data>
+  <data name="NavigationMenu_Jobs" xml:space="preserve">
+    <value>İşler</value>
+  </data>
+  <data name="NavigationMenu_RecurringJobs" xml:space="preserve">
+    <value>Tekrarlayan İşler</value>
+  </data>
+  <data name="NavigationMenu_Retries" xml:space="preserve">
+    <value>Yeniden Denenenler</value>
+  </data>
+  <data name="NavigationMenu_Servers" xml:space="preserve">
+    <value>Sunucular</value>
+  </data>
+  <data name="Common_CannotFindTargetMethod" xml:space="preserve">
+    <value>Çalıştırılacak method bulunamadı.</value>
+  </data>
+  <data name="Common_Enqueued" xml:space="preserve">
+    <value>Kuyruğa alındı</value>
+  </data>
+  <data name="Common_NoState" xml:space="preserve">
+    <value>Durum yok</value>
+  </data>
+  <data name="JobsSidebarMenu_Enqueued" xml:space="preserve">
+    <value>Sıradakiler</value>
+  </data>
+  <data name="Metrics_ActiveConnections" xml:space="preserve">
+    <value>Aktif Bağlantılar</value>
+  </data>
+  <data name="Metrics_DeletedJobs" xml:space="preserve">
+    <value>Silinen İşler</value>
+  </data>
+  <data name="Metrics_FailedJobs" xml:space="preserve">
+    <value>Başarısız İşler</value>
+  </data>
+  <data name="Metrics_ProcessingJobs" xml:space="preserve">
+    <value>İşlenen İşler</value>
+  </data>
+  <data name="Metrics_RecurringJobs" xml:space="preserve">
+    <value>Tekrarlayan İşler</value>
+  </data>
+  <data name="Metrics_Retries" xml:space="preserve">
+    <value>Yeniden Denenenler</value>
+  </data>
+  <data name="Metrics_ScheduledJobs" xml:space="preserve">
+    <value>Planlanan İşler</value>
+  </data>
+  <data name="Metrics_Servers" xml:space="preserve">
+    <value>Sunucular</value>
+  </data>
+  <data name="Metrics_SucceededJobs" xml:space="preserve">
+    <value>Başarılı İşler</value>
+  </data>
+  <data name="Metrics_TotalConnections" xml:space="preserve">
+    <value>Toplam Bağlantı</value>
+  </data>
+  <data name="Common_Condition" xml:space="preserve">
+    <value>Durum</value>
+  </data>
+  <data name="Common_Continuations" xml:space="preserve">
+    <value>Sürekli</value>
+  </data>
+  <data name="Metrics_AwaitingCount" xml:space="preserve">
+    <value>Bekliyor</value>
+  </data>
+  <data name="Metrics_EnqueuedCountOrNull" xml:space="preserve">
+    <value>Kuyruğa alındı</value>
+  </data>
+  <data name="Metrics_EnqueuedQueuesCount" xml:space="preserve">
+    <value>Kuyruğa Alınan</value>
+  </data>
+  <data name="Metrics_FailedCountOrNull" xml:space="preserve">
+    <value>{0} başarısız iş bulundu. Tekrar deneyin veya manuel silin.</value>
+  </data>
+  <data name="HomePage_GraphHover_Failed" xml:space="preserve">
+    <value>Başarısız</value>
+  </data>
+  <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
+    <value>Başarılı</value>
+  </data>
+  <data name="Common_Disabled" xml:space="preserve">
+    <value>Etkisiz</value>
+  </data>
+  <data name="RecurringJobsPage_RecurringJobDisabled_Tooltip" xml:space="preserve">
+    <value>Cron ifadesi geçersiz veya 100 yıldan büyük bir ifade içermektedir.</value>
+  </data>
+  <data name="ServersPage_Note_Text" xml:space="preserve">
+    <value>
+	 	Bazı sunuculardan cevap alınamadığı gözlenlendi. Zaman aşımı içinde cevap vermedikleri taktirde, otomatik olarak silineceklerdir. Bu işlem için herhangi bir müdaheleye gerek yoktur.
+                    Tamamlanmayan arkaplan işleri bu sunucularda çalışmaya devam edecektir. Hızlıca &lt;a href="{0}"&gt;İşlenen İşler&lt;/a&gt; sayfasından ilgili işleri kontrol edebilirsiniz.</value>
+  </data>
+  <data name="ServersPage_Note_Title" xml:space="preserve">
+    <value>İptal edilen sunucular otomatik olarak kaldırılacaktır.</value>
+  </data>
+  <data name="ServersPage_Active" xml:space="preserve">
+    <value>Aktif</value>
+  </data>
+  <data name="ServersPage_Possibly_Aborted" xml:space="preserve">
+    <value>İptal edilmiş.</value>
+  </data>
+  <data name="Common_Error" xml:space="preserve">
+    <value>Hata</value>
+  </data>
+  <data name="JobDetailsPage_Parameters" xml:space="preserve">
+    <value>Parametreler</value>
+  </data>
+</root>

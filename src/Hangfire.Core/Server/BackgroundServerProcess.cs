@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2017 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -28,6 +27,8 @@ namespace Hangfire.Server
 {
     internal sealed class BackgroundServerProcess : IBackgroundServerProcess
     {
+        private static readonly char[] ColonSeparator = new [] { ':' };
+
         private readonly ILog _logger = LogProvider.GetLogger(typeof(BackgroundServerProcess));
         private readonly JobStorage _storage;
         private readonly BackgroundProcessingServerOptions _options;
@@ -48,7 +49,10 @@ namespace Hangfire.Server
 
             var builders = new List<IBackgroundProcessDispatcherBuilder>();
             builders.AddRange(GetRequiredProcesses());
-            builders.AddRange(GetStorageComponents());
+            if (!options.ExcludeStorageProcesses)
+            {
+                builders.AddRange(GetStorageComponents());
+            }
             builders.AddRange(dispatcherBuilders);
 
             _dispatcherBuilders = builders.ToArray();
@@ -124,13 +128,24 @@ namespace Hangfire.Server
 
         private IBackgroundDispatcher CreateHeartbeatProcess(BackgroundServerContext context, Action requestRestart)
         {
+            // We need to ensure that heartbeats are sent until server shutdown. Otherwise our server
+            // can be considered as dead before completing all the background jobs on a graceful
+            // shutdown.
+            var heartbeatContext = new BackgroundServerContext(
+                context.ServerId,
+                context.Storage,
+                context.Properties,
+                context.ShutdownToken,
+                context.ShutdownToken,
+                context.ShutdownToken);
+
             return new ServerHeartbeatProcess(_options.HeartbeatInterval, _options.ServerTimeout, requestRestart)
                 .UseBackgroundPool(threadCount: 1
 #if !NETSTANDARD1_3
-                    , thread => { thread.Priority = ThreadPriority.AboveNormal; }
+                    , static thread => { thread.Priority = ThreadPriority.AboveNormal; }
 #endif
                 )
-                .Create(context, _options);
+                .Create(heartbeatContext, _options);
         }
 
         private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses()
@@ -141,16 +156,20 @@ namespace Hangfire.Server
 
         private IEnumerable<IBackgroundProcessDispatcherBuilder> GetStorageComponents()
         {
-            return _storage.GetComponents().Select(component => new ServerProcessDispatcherBuilder(
+            return _storage.GetComponents().Select(static component => new ServerProcessDispatcherBuilder(
                 component, 
-                threadStart => BackgroundProcessExtensions.DefaultThreadFactory(1, component.GetType().Name, threadStart)));
+                threadStart => BackgroundProcessExtensions.DefaultThreadFactory(1, component.GetType().Name, threadStart, null)));
         }
 
         private string GetServerId()
         {
             var serverName = _options.ServerName
                  ?? Environment.GetEnvironmentVariable("COMPUTERNAME")
-                 ?? Environment.GetEnvironmentVariable("HOSTNAME");
+                 ?? Environment.GetEnvironmentVariable("HOSTNAME")
+#if !NETSTANDARD1_3
+                 ?? Environment.MachineName
+#endif
+                ;
 
             var guid = Guid.NewGuid().ToString();
 
@@ -200,7 +219,7 @@ namespace Hangfire.Server
                 _logger.Info($"{GetServerTemplate(context.ServerId)} successfully reported itself as stopped in {stopwatch.Elapsed.TotalMilliseconds} ms");
                 _logger.Info($"{GetServerTemplate(context.ServerId)} has been stopped in total {stoppedAt?.Elapsed.TotalMilliseconds ?? 0} ms");
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 _logger.WarnException($"{GetServerTemplate(context.ServerId)} there was an exception, server may not be removed", ex);
             }
@@ -213,7 +232,7 @@ namespace Hangfire.Server
                 throw new InvalidOperationException("No dispatchers registered for the processing server.");
             }
 
-            _logger.Info($"{GetServerTemplate(context.ServerId)} is starting the registered dispatchers: {String.Join(", ", _dispatcherBuilders.Select(builder => $"{builder}"))}...");
+            _logger.Info($"{GetServerTemplate(context.ServerId)} is starting the registered dispatchers: {String.Join(", ", _dispatcherBuilders.Select(static builder => $"{builder}"))}...");
 
             foreach (var dispatcherBuilder in _dispatcherBuilders)
             {
@@ -255,7 +274,7 @@ namespace Hangfire.Server
 
             if (nonStopped.Count > 0)
             {
-                var nonStoppedNames = nonStopped.Select(dispatcher => $"{dispatcher.ToString()}").ToArray();
+                var nonStoppedNames = nonStopped.Select(static dispatcher => $"{dispatcher}").ToArray();
                 _logger.Warn($"{GetServerTemplate(context.ServerId)} stopped non-gracefully due to {String.Join(", ", nonStoppedNames)}. Outstanding work on those dispatchers could be aborted, and there can be delays in background processing. This server instance will be incorrectly shown as active for a while. To avoid non-graceful shutdowns, investigate what prevents from stopping gracefully and add CancellationToken support for those methods.");
             }
             else
@@ -276,14 +295,14 @@ namespace Hangfire.Server
         {
             var serverContext = new ServerContext();
 
-            if (properties.ContainsKey("Queues") && properties["Queues"] is string[] array)
+            if (properties.TryGetValue("Queues", out var queues) && queues is string[] array)
             {
                 serverContext.Queues = array;
             }
 
-            if (properties.ContainsKey("WorkerCount"))
+            if (properties.TryGetValue("WorkerCount", out var workerCount))
             {
-                serverContext.WorkerCount = (int)properties["WorkerCount"];
+                serverContext.WorkerCount = (int)workerCount;
             }
 
             return serverContext;
@@ -295,13 +314,13 @@ namespace Hangfire.Server
 
             try
             {
-                var split = serverId.Split(new [] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+                var split = serverId.Split(ColonSeparator, StringSplitOptions.RemoveEmptyEntries);
                 if (split.Length == 3 && split[2].Length > 8)
                 {
                     name = $"{split[0]}:{split[1]}:{split[2].Substring(0, 8)}";
                 }
             }
-            catch
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 // ignored
             }

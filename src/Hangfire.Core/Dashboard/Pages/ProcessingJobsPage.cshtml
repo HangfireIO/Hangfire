@@ -15,7 +15,7 @@
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    var pager = new Pager(from, perPage, monitor.ProcessingCount());
+    var pager = new Pager(from, perPage, DashboardOptions.DefaultRecordsPerPage, monitor.ProcessingCount());
     var processingJobs = monitor.ProcessingJobs(pager.FromRecord, pager.RecordsPerPage);
     var servers = monitor.Servers();
 }
@@ -25,7 +25,7 @@
         @Html.JobsSidebar()
     </div>
     <div class="col-md-9">
-        <h1 class="page-header">@Strings.ProcessingJobsPage_Title</h1>
+        <h1 id="page-title" class="page-header">@Strings.ProcessingJobsPage_Title</h1>
 
         @if (pager.TotalPageCount == 0)
         {
@@ -62,7 +62,7 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="table" aria-describedby="page-title">
                         <thead>
                             <tr>
                                 @if (!IsReadOnly)
@@ -80,11 +80,11 @@
                         <tbody>
                             @foreach (var job in processingJobs)
                             {
-                                <tr class="js-jobs-list-row @(!job.Value.InProcessingState ? "obsolete-data" : null) @(job.Value.InProcessingState ? "hover" : null)">
+                                <tr class="js-jobs-list-row @(job.Value == null || !job.Value.InProcessingState ? "obsolete-data" : null) @(job.Value != null && job.Value.InProcessingState ? "hover" : null)">
                                     @if (!IsReadOnly)
                                     {
                                         <td>
-                                            @if (job.Value.InProcessingState)
+                                            @if (job.Value != null && job.Value.InProcessingState)
                                             {
                                                 <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
                                             }
@@ -92,12 +92,16 @@
                                     }
                                     <td class="min-width">
                                         @Html.JobIdLink(job.Key)
-                                        @if (!job.Value.InProcessingState)
+                                        @if (job.Value != null && !job.Value.InProcessingState)
                                         {
                                             <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
                                         }
                                     </td>
-                                    @if (!job.Value.InProcessingState)
+                                    @if (job.Value == null)
+                                    {
+                                        <td colspan="3"><em>@Strings.Common_JobExpired</em></td>
+                                    }
+                                    else if (!job.Value.InProcessingState)
                                     {
                                         <td colspan="3">@Strings.Common_JobStateChanged_Text</td>
                                     }
@@ -107,9 +111,9 @@
                                             @Html.ServerId(job.Value.ServerId)
                                         </td>
                                         <td class="word-break">
-                                            @if (servers.All(x => x.Name != job.Value.ServerId || x.Heartbeat < DateTime.UtcNow.AddMinutes(-1)))
+                                            @if (servers.All(x => x.Name != job.Value.ServerId || x.Heartbeat < (StorageUtcNow ?? ApplicationUtcNow).AddMinutes(-1)))
                                             {
-                                                <span title="@Strings.ProcessingJobsPage_Aborted" class="glyphicon glyphicon-warning-sign" style="font-size: 10px;"></span>
+                                                <span title="@Strings.ProcessingJobsPage_Aborted" class="glyphicon glyphicon-warning-sign glyphicon-sm text-warning"></span>
                                             }
 
                                             @Html.JobNameLink(job.Key, job.Value.Job)

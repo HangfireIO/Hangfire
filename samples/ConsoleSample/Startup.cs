@@ -14,7 +14,8 @@ namespace ConsoleSample
             app.UseHangfireServer(new BackgroundJobServerOptions
             {
                 Queues = new[] { "critical", "default" },
-                TaskScheduler = null
+                TaskScheduler = null,
+                SchedulePollingInterval = TimeSpan.FromSeconds(1)
             });
         }
     }

@@ -317,7 +317,7 @@ Vous devriez les remettre en file d'attente ou les supprimer manuellement, ou ap
     <value>Aucune tâche en file d'attente.</value>
   </data>
   <data name="QueuesPage_NoQueues" xml:space="preserve">
-    <value>Aucune tâche trouvée en file d'attente. Essayez de mettre en tâche en file d'attente.</value>
+    <value>Aucune tâche trouvée en file d'attente. Essayez de mettre une tâche en file d'attente.</value>
   </data>
   <data name="QueuesPage_Table_Length" xml:space="preserve">
     <value>Longueur</value>
@@ -524,7 +524,7 @@ Vous devriez les remettre en file d'attente ou les supprimer manuellement, ou ap
     <value>L'expression Cron est invalide ou n'a pas d'occurrence dans les 100 prochaines années.</value>
   </data>
   <data name="ServersPage_Note_Text" xml:space="preserve">
-    <value>Certains serveurs n'ont pas eu de pulsation dans la dernière minute et pourraient être abandonnés. Si ils ne reportent pas de pulsation dans un futur proche ils seront automatiquement retirés une fois le temps d'attente dépassé, aucune action manuelle n'est requise. Les tâches de fond incomplètes de ces serveurs seront remises en file d'attente automatiquement, mais vous pouvez accélérer le processus en vérifiant la page &lt;a href="{0}"&gt;Tâches en cours&lt;/a&gt;.</value>
+    <value>Certains serveurs n'ont pas eu de pulsation dans la dernière minute et pourraient être abandonnés. S'ils ne reportent pas de pulsation dans un futur proche ils seront automatiquement retirés une fois le temps d'attente dépassé, aucune action manuelle n'est requise. Les tâches de fond incomplètes de ces serveurs seront remises en file d'attente automatiquement, mais vous pouvez accélérer le processus en vérifiant la page &lt;a href="{0}"&gt;Tâches en cours&lt;/a&gt;.</value>
   </data>
   <data name="ServersPage_Note_Title" xml:space="preserve">
     <value>Les serveurs abandonnés seront retirés automatiquement</value>

@@ -78,12 +78,13 @@ WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-3\">\r\n       
             
             #line default
             #line hidden
-WriteLiteral("\r\n    </div>\r\n    <div class=\"col-md-9\">\r\n        <h1 class=\"page-header\">");
+WriteLiteral("\r\n    </div>\r\n    <div class=\"col-md-9\">\r\n        <h1 id=\"page-title\" class=\"page" +
+"-header\">");
 
 
             
             #line 19 "..\..\Dashboard\Pages\QueuesPage.cshtml"
-                           Write(Strings.QueuesPage_Title);
+                                           Write(Strings.QueuesPage_Title);
 
             
             #line default
@@ -122,13 +123,14 @@ WriteLiteral("\r\n            </div>\r\n");
             #line default
             #line hidden
 WriteLiteral("            <div class=\"table-responsive\">\r\n                <table class=\"table t" +
-"able-striped\">\r\n                    <thead>\r\n                        <tr>\r\n     " +
-"                       <th style=\"min-width: 200px;\">");
+"able-striped\" aria-describedby=\"page-title\">\r\n                    <thead>\r\n     " +
+"                   <tr>\r\n                            <th class=\"min-width-200p\">" +
+"");
 
 
             
             #line 33 "..\..\Dashboard\Pages\QueuesPage.cshtml"
-                                                     Write(Strings.QueuesPage_Table_Queue);
+                                                  Write(Strings.QueuesPage_Table_Queue);
 
             
             #line default

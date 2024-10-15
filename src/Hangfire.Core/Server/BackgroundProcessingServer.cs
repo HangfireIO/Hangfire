@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -32,7 +31,7 @@ namespace Hangfire.Server
     /// <remarks>
     /// Immediately starts the processes in a background thread.
     /// Responsible for announcing/removing a server, bound to a storage.
-    /// Wraps all the processes with a infinite loop and automatic retry.
+    /// Wraps all the processes with an infinite loop and automatic retry.
     /// Executes all the processes in a single context.
     /// Uses timeout in dispose method, waits for all the components, cancel signals shutdown
     /// Contains some required processes and uses storage processes.
@@ -42,7 +41,7 @@ namespace Hangfire.Server
     public sealed class BackgroundProcessingServer : IBackgroundProcessingServer
     {
         public static readonly TimeSpan DefaultShutdownTimeout = TimeSpan.FromSeconds(15);
-        private static int _lastThreadId = 0;
+        private static int _lastThreadId;
 
         private readonly ILog _logger = LogProvider.GetLogger(typeof(BackgroundProcessingServer));
 
@@ -188,7 +187,11 @@ namespace Hangfire.Server
             _stoppedCts.Cancel();
             _shutdownCts.Cancel();
 
-            WaitForShutdown(_options.LastChanceTimeout);
+            if (!AspNetShutdownDetector.IsSucceeded)
+            {
+                // ASP.NET can be very sensitive to any delays during AppDomain unload.
+                WaitForShutdown(_options.LastChanceTimeout);
+            }
         }
 
         private void OnAspNetShutdown()
@@ -219,20 +222,20 @@ namespace Hangfire.Server
         private static IBackgroundProcessDispatcherBuilder[] GetProcesses([NotNull] IEnumerable<IBackgroundProcess> processes)
         {
             if (processes == null) throw new ArgumentNullException(nameof(processes));
-            return processes.Select(x => x.UseBackgroundPool(threadCount: 1)).ToArray();
+            return processes.Select(static x => x.UseBackgroundPool(threadCount: 1)).ToArray();
         }
 
         private IBackgroundDispatcher CreateDispatcher()
         {
             var execution = new BackgroundExecution(
-                _stoppingCts.Token,
                 new BackgroundExecutionOptions
                 {
                     Name = nameof(BackgroundServerProcess),
                     ErrorThreshold = TimeSpan.Zero,
                     StillErrorThreshold = TimeSpan.Zero,
                     RetryDelay = retry => _options.RestartDelay
-                });
+                },
+                _stoppingCts.Token);
 
             return new BackgroundDispatcher(
                 execution,

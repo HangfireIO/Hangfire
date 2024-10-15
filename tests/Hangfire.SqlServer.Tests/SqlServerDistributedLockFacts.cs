@@ -5,7 +5,6 @@ using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using System.Transactions;
 using ReferencedDapper::Dapper;
 using Hangfire.Storage;
 using Xunit;
@@ -27,8 +26,9 @@ namespace Hangfire.SqlServer.Tests
             Assert.Equal("storage", exception.ParamName);
         }
 
-        [Fact, CleanDatabase]
-        public void Ctor_ThrowsAnException_WhenResourceIsNullOrEmpty()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Ctor_ThrowsAnException_WhenResourceIsNullOrEmpty(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
@@ -38,11 +38,12 @@ namespace Hangfire.SqlServer.Tests
                 () => new SqlServerDistributedLock(storage, "", _timeout));
 
                 Assert.Equal("resource", exception.ParamName);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Ctor_AcquiresExclusiveApplicationLock_OnSession()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Ctor_AcquiresExclusiveApplicationLock_OnSession(bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
@@ -55,11 +56,12 @@ namespace Hangfire.SqlServer.Tests
 
                     Assert.Equal("Exclusive", lockMode);
                 }
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase]
-        public void Ctor_ThrowsAnException_IfLockCanNotBeGranted()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Ctor_ThrowsAnException_IfLockCanNotBeGranted(bool useMicrosoftDataSqlClient)
         {
             var releaseLock = new ManualResetEventSlim(false);
             var lockAcquired = new ManualResetEventSlim(false);
@@ -73,7 +75,7 @@ namespace Hangfire.SqlServer.Tests
                         lockAcquired.Set();
                         releaseLock.Wait();
                     }
-                }));
+                }, useMicrosoftDataSqlClient));
             thread.Start();
 
             lockAcquired.Wait();
@@ -88,14 +90,15 @@ namespace Hangfire.SqlServer.Tests
                         {
                         }
                     });
-            });
+            }, useMicrosoftDataSqlClient);
 
             releaseLock.Set();
             thread.Join();
         }
 
-        [Fact, CleanDatabase]
-        public void Dispose_ReleasesExclusiveApplicationLock()
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void Dispose_ReleasesExclusiveApplicationLock(bool useMicrosoftDataSqlClient)
         {
             UseConnection(sql =>
             {
@@ -107,10 +110,10 @@ namespace Hangfire.SqlServer.Tests
                     "select applock_mode('public', 'hello', 'session')").Single();
 
                 Assert.Equal("NoLock", lockMode);
-            });
+            }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase(IsolationLevel.Unspecified)]
+        [Fact, CleanDatabase]
         public void DistributedLocks_AreReEntrant_FromTheSameThread_OnTheSameResource()
         {
             var storage = new SqlServerStorage(ConnectionUtils.GetConnectionString());
@@ -122,7 +125,7 @@ namespace Hangfire.SqlServer.Tests
             }
         }
 
-        [Fact, CleanDatabase(IsolationLevel.Unspecified)]
+        [Fact, CleanDatabase]
         public void InnerDistributedLock_DoesNotConsumeADatabaseConnection()
         {
             // Arrange
@@ -147,9 +150,9 @@ namespace Hangfire.SqlServer.Tests
             return new SqlServerStorage(connection);
         }
 
-        private static void UseConnection(Action<DbConnection> action)
+        private static void UseConnection(Action<DbConnection> action, bool useMicrosoftDataSqlClient)
         {
-            using (var connection = ConnectionUtils.CreateConnection())
+            using (var connection = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient))
             {
                 action(connection);
             }

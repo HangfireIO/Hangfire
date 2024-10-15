@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -17,7 +16,9 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Dapper;
 using Hangfire.Annotations;
@@ -48,9 +49,9 @@ namespace Hangfire.SqlServer
             };
 
         private static readonly ThreadLocal<Dictionary<string, int>> AcquiredLocks
-            = new ThreadLocal<Dictionary<string, int>>(() => new Dictionary<string, int>()); 
+            = new ThreadLocal<Dictionary<string, int>>(static () => new Dictionary<string, int>()); 
 
-        private IDbConnection _connection;
+        private DbConnection _connection;
         private readonly SqlServerStorage _storage;
         private readonly string _resource;
         private readonly Timer _timer;
@@ -59,6 +60,7 @@ namespace Hangfire.SqlServer
         private bool _completed;
 
         [Obsolete("Don't use this class directly, use SqlServerConnection.AcquireDistributedLock instead as it provides better safety. Will be removed in 2.0.0.")]
+        [SuppressMessage("Performance", "CA1854:Prefer the \'IDictionary.TryGetValue(TKey, out TValue)\' method")]
         public SqlServerDistributedLock([NotNull] SqlServerStorage storage, [NotNull] string resource, TimeSpan timeout)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
@@ -75,7 +77,7 @@ namespace Hangfire.SqlServer
                 {
                     Acquire(_connection, _resource, timeout);
                 }
-                catch (Exception)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     storage.ReleaseConnection(_connection);
                     throw;
@@ -94,6 +96,7 @@ namespace Hangfire.SqlServer
             }
         }
 
+        [SuppressMessage("Performance", "CA1854:Prefer the \'IDictionary.TryGetValue(TKey, out TValue)\' method")]
         public void Dispose()
         {
             if (_completed) return;
@@ -132,6 +135,8 @@ namespace Hangfire.SqlServer
                     _connection = null;
                 }
             }
+
+            GC.SuppressFinalize(this);
         }
 
         private void ExecuteKeepAliveQuery(object obj)
@@ -159,7 +164,7 @@ namespace Hangfire.SqlServer
             }
         }
 
-        internal static void Acquire(IDbConnection connection, string resource, TimeSpan timeout)
+        internal static void Acquire(DbConnection connection, string resource, TimeSpan timeout)
         {
             if (connection.State != ConnectionState.Open)
             {
@@ -186,21 +191,18 @@ namespace Hangfire.SqlServer
 
             do
             {
-                var parameters = new DynamicParameters();
-                parameters.Add("@Resource", resource);
-                parameters.Add("@DbPrincipal", "public");
-                parameters.Add("@LockMode", LockMode);
-                parameters.Add("@LockOwner", LockOwner);
-                parameters.Add("@LockTimeout", lockTimeout);
-                parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
+                var command = connection
+                    .Create("sp_getapplock", CommandType.StoredProcedure, timeout: (int)(lockTimeout / 1000) + 5)
+                    .AddParameter("@Resource", resource, DbType.String, size: 255)
+                    .AddParameter("@DbPrincipal", "public", DbType.String, size: 32)
+                    .AddParameter("@LockMode", LockMode, DbType.String, size: 32)
+                    .AddParameter("@LockOwner", LockOwner, DbType.String, size: 32)
+                    .AddParameter("@LockTimeout", lockTimeout, DbType.Int32)
+                    .AddReturnParameter("@Result", out var resultParameter, DbType.Int32);
 
-                connection.Execute(
-                    @"sp_getapplock",
-                    parameters,
-                    commandTimeout: (int) (lockTimeout / 1000) + 5,
-                    commandType: CommandType.StoredProcedure);
+                command.ExecuteNonQuery();
 
-                var lockResult = parameters.Get<int>("@Result");
+                var lockResult = (int)resultParameter.Value;
 
                 if (lockResult >= 0)
                 {
@@ -211,32 +213,38 @@ namespace Hangfire.SqlServer
                 if (lockResult == -999 /* Indicates a parameter validation or other call error. */)
                 {
                     throw new SqlServerDistributedLockException(
-                        $"Could not place a lock on the resource '{resource}': {(LockErrorMessages.ContainsKey(lockResult) ? LockErrorMessages[lockResult] : $"Server returned the '{lockResult}' error.")}.");
+                        $"Could not place a lock on the resource '{resource}': {(LockErrorMessages.TryGetValue(lockResult, out var message) ? message : $"Server returned the '{lockResult}' error.")}.");
                 }
             } while (started.Elapsed < timeout);
 
             throw new DistributedLockTimeoutException(resource);
         }
 
-        internal static void Release(IDbConnection connection, string resource)
+        internal static void Release(DbConnection connection, string resource)
         {
-            var parameters = new DynamicParameters();
-            parameters.Add("@Resource", resource);
-            parameters.Add("@LockOwner", LockOwner);
-            parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
-
-            connection.Execute(
-                @"sp_releaseapplock",
-                parameters,
-                commandType: CommandType.StoredProcedure);
-
-            var releaseResult = parameters.Get<int>("@Result");
-
-            if (releaseResult < 0)
+            using (var command = CreateReleaseCommand(connection, resource, out var resultParameter))
             {
-                throw new SqlServerDistributedLockException(
-                    $"Could not release a lock on the resource '{resource}': Server returned the '{releaseResult}' error.");
+                command.ExecuteNonQuery();
+
+                var releaseResult = (int)resultParameter.Value;
+
+                if (releaseResult < 0)
+                {
+                    throw new SqlServerDistributedLockException(
+                        $"Could not release a lock on the resource '{resource}': Server returned the '{releaseResult}' error.");
+                }
             }
+        }
+
+        internal static DbCommand CreateReleaseCommand(
+            DbConnection connection,
+            string resource,
+            out DbParameter resultParameter)
+        {
+            return connection.Create("sp_releaseapplock", CommandType.StoredProcedure)
+                .AddParameter("@Resource", resource, DbType.String, size: 255)
+                .AddParameter("@LockOwner", LockOwner, DbType.String, size: 32)
+                .AddReturnParameter("@Result", out resultParameter, DbType.Int32);
         }
     }
 }
