@@ -101,6 +101,7 @@ namespace Hangfire
         private AttemptsExceededAction _onAttemptsExceeded;
         private bool _logEvents;
         private Type[] _onlyOn;
+        private Type[] _exceptOn;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AutomaticRetryAttribute"/>
@@ -212,6 +213,21 @@ namespace Hangfire
             set { lock (_lockObject) { _onlyOn = value; } }
         }
 
+        /// <summary>
+        /// Gets or sets the array of exception types on which the automatic retry mechanism
+        /// should not be applied.
+        /// </summary>
+        /// <value>
+        /// An array of <see cref="System.Type"/> objects representing the exception types to
+        /// be excluded from automatic retries.
+        /// </value>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public Type[] ExceptOn
+        {
+            get { lock (_lockObject) { return _exceptOn; } }
+            set { lock (_lockObject) { _exceptOn = value; } }
+        }
+
         /// <inheritdoc />
         public void OnStateElection(ElectStateContext context)
         {
@@ -232,6 +248,23 @@ namespace Hangfire
                     if (onlyOn.GetTypeInfo().IsAssignableFrom(exceptionType.GetTypeInfo()))
                     {
                         satisfied = true;
+                        break;
+                    }
+                }
+
+                if (!satisfied) return;
+            }
+
+            if (_exceptOn != null && _exceptOn.Length > 0)
+            {
+                var exceptionType = failedState.Exception.GetType();
+                var satisfied = true;
+
+                foreach (var exceptOn in _exceptOn)
+                {
+                    if (exceptOn.GetTypeInfo().IsAssignableFrom(exceptionType.GetTypeInfo()))
+                    {
+                        satisfied = false;
                         break;
                     }
                 }
