@@ -238,6 +238,41 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void OnStateElection_DoesNotDoAnything_WhenOnlyOnIsSpecified_AndIneligibleExceptionIsPassed()
+        {
+            var filter = new AutomaticRetryAttribute { OnlyOn = new[] { typeof(FormatException), typeof(NullReferenceException) } };
+            _context.ApplyContext.NewStateObject = new FailedState(new ArgumentException());
+
+            filter.OnStateElection(_context.Object);
+
+            Assert.IsType<FailedState>(_context.Object.CandidateState);
+            _connection.Verify(x => x.GetJobParameter(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public void OnStateElection_WorksAsExpected_WhenOnlyOnIsSpecified_AndAnEligibleExceptionIsPassed()
+        {
+            var filter = new AutomaticRetryAttribute { OnlyOn = new[] { typeof(NullReferenceException), typeof(InvalidOperationException) } };
+
+            filter.OnStateElection(_context.Object);
+
+            Assert.IsType<ScheduledState>(_context.Object.CandidateState);
+            _connection.Verify(x => x.SetJobParameter(JobId, "RetryCount", "1"));
+        }
+
+        [Fact]
+        public void OnStateElection_WorksAsExpected_WhenOnlyOnIsSpecified_AndADerivedClassOfAnEligibleExceptionIsPassed()
+        {
+            var filter = new AutomaticRetryAttribute { OnlyOn = new[] { typeof(ArgumentException) } };
+            _context.ApplyContext.NewStateObject = new FailedState(new ArgumentNullException());
+
+            filter.OnStateElection(_context.Object);
+
+            Assert.IsType<ScheduledState>(_context.Object.CandidateState);
+            _connection.Verify(x => x.SetJobParameter(JobId, "RetryCount", "1"));
+        }
+
+        [Fact]
         public void OnStateApplied_AddsJobToRetriesSet_IfNewStateIsScheduled()
         {
             // Arrange
