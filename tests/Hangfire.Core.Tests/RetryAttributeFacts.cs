@@ -250,6 +250,18 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void OnStateElection_TriggersRetryAnyway_WhenEmptyOnlyOnIsSpecified()
+        {
+            var filter = new AutomaticRetryAttribute { OnlyOn = Type.EmptyTypes };
+            _context.ApplyContext.NewStateObject = new FailedState(new ArgumentException());
+
+            filter.OnStateElection(_context.Object);
+
+            Assert.IsType<ScheduledState>(_context.Object.CandidateState);
+            _connection.Verify(x => x.SetJobParameter(JobId, "RetryCount", "1"));
+        }
+
+        [Fact]
         public void OnStateElection_WorksAsExpected_WhenOnlyOnIsSpecified_AndAnEligibleExceptionIsPassed()
         {
             var filter = new AutomaticRetryAttribute { OnlyOn = new[] { typeof(NullReferenceException), typeof(InvalidOperationException) } };
