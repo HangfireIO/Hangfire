@@ -13,7 +13,7 @@
     <description>MSMQ queues support for SQL Server job storage implementation for Hangfire, a background job framework for .NET applications.</description>
     <copyright>Copyright © 2014-2024 Hangfire OÜ</copyright>
     <tags>Hangfire SqlServer MSMQ</tags>
-    <releaseNotes>https://www.hangfire.io/blog/
+    <releaseNotes><![CDATA[https://www.hangfire.io/blog/
 
 1.8.10
 • Project – Enable NuGet package and DLL signing with a company certificate.
@@ -45,6 +45,7 @@
 1.4.0
 • Changed – Speed up `GetCount` method with native implementation.
 • Fixed – Incorrect order of fetching when multiple queues used.
+]]>
     </releaseNotes>
     <dependencies>
       <group targetFramework="net451">

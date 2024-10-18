@@ -19,9 +19,25 @@ https://www.hangfire.io/
     </description>
     <copyright>Copyright © 2013-2024 Hangfire OÜ</copyright>
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
-    <releaseNotes>
+    <releaseNotes><![CDATA[
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
+
+1.8.15
+• Added – New `AutomaticRetryAttribute.ExceptOn` property to skip retries for specific exceptions.
+• Changed – Refactor filters pipeline to use less LINQ magic and fewer allocations.
+• Changed – Use `GetCultureInfo` instead of creating an instance in the `CaptureCultureAttribute` filter.
+• Changed – Cache some immutable data to avoid extra allocations.
+• Fixed – Improve loopback address detection (by @meziantou).
+• Fixed – Reformulate misleading error messages regarding retry timings (by @RGFuaWVs).
+• Fixed – Problem with missing localizations in the previous version.
+• Fixed – Don't hide exception details on Failed Jobs page when the exception message is empty.
+• Fixed – Problems with the first restore when using the `build.bat` command.
+• Fixed – Better display of canceled recurring jobs in dashboard.
+• Fixed – Less overall allocations with using static delegates and struct-based iterators.
+• Fixed – Improve precision of some diagnostic messages in the wait protection logic.
+• Fixed – Make all private and internal classes sealed to improve code consistency.
+• Fixed – Less overall pressure on garbage collector.
 
 1.8.13 and 1.8.14
 • Changed – Partial cache for serialization and deserialization in `InvocationData` to produce less strings.
@@ -212,6 +228,7 @@ Internals
 • Changed – Turn the `JobContinuationOptions` enum into flags while still possible.
 • Changed – Re-implement `TaskExtensions.WaitOneAsync` only with the `RegisterWaitForSingleObject` method.
 • Changed – `ServerHeartbeatProcess` now uses `ThreadPriority.AboveNormal` to prioritize heartbeats.
+]]>
     </releaseNotes>
     <dependencies>
       <group targetFramework="net451">

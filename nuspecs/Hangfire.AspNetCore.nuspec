@@ -13,7 +13,7 @@
     <description>ASP.NET Core support for Hangfire, a background job framework for .NET applications.</description>
     <copyright>Copyright © 2017-2024 Hangfire OÜ</copyright>
     <tags>hangfire aspnetcore</tags>
-    <releaseNotes>
+    <releaseNotes><![CDATA[
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
@@ -31,7 +31,7 @@ Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfi
 1.8.0
 • Breaking – Make the package to be dependent on Hangfire.NetCore and use the same types.
 • Added – `IApplicationBuilder.UseHangfireServer` that accepts custom factory for `IBackgroundProcessingServer`.
-
+]]>
     </releaseNotes>
     <dependencies>
       <group targetFramework="net451">

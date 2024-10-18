@@ -13,9 +13,15 @@
     <description>SQL Server 2008+ (including Express), SQL Server LocalDB and SQL Azure storage support for Hangfire, a background job framework for .NET applications.</description>
     <copyright>Copyright © 2013-2024 Hangfire OÜ</copyright>
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
-    <releaseNotes>
+    <releaseNotes><![CDATA[
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
+
+1.8.15
+• Changed – Use query template caching based on schema name to avoid excessive `string` allocations.
+• Changed – Use static callbacks almost anywhere to avoid unnecessary delegate allocations.
+• Changed – Use `QuerySingle`* or `ReadSingle`* where possible to avoid allocating lists.
+• Changed – Unify `DbCommand` and `DbParameter` creation logic to improve code consistency.
 
 1.8.13 and 1.8.14
 • Changed – Limit polling queries when queues are empty with a semaphore for all configurations.
@@ -89,7 +95,7 @@ Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfi
 • Changed – Enable common metrics for SQL Server storage to be shown by default.
 • Changed – Enable the `Monitoring.AwaitingJobs` feature for SQL storage.
 • Deprecated – `UsePageLocksOnDequeue` option is now obsolete and doesn't affect anything.
-
+]]>
     </releaseNotes>
     <dependencies>
       <group targetFramework="net451">

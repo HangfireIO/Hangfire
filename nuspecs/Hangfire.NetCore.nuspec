@@ -13,7 +13,7 @@
     <description>.NET Core's Worker Service host support for Hangfire, a background job framework for .NET applications.</description>
     <copyright>Copyright © 2019-2024 Hangfire OÜ</copyright>
     <tags>hangfire netcore</tags>
-    <releaseNotes>
+    <releaseNotes><![CDATA[
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
@@ -43,7 +43,7 @@ Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfi
 • Changed – Use `netstandard2.1` target instead of `netcoreapp3.0` for the package.
 • Changed – Send the "stop" signal earlier when the host supports .NET Standard 2.1.
 • Changed – Don't throw `ObjectDisposedException` when hosted service is disposed twice.
-
+]]>
     </releaseNotes>
     <dependencies>
       <group targetFramework="net451">
