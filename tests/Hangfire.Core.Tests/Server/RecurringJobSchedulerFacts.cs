@@ -31,7 +31,7 @@ namespace Hangfire.Core.Tests.Server
         private readonly BackgroundJobMock _backgroundJobMock;
 
         private static readonly string _expressionString = "* * * * *";
-        private static readonly TimeSpan _delay = TimeSpan.FromMilliseconds(100);
+        private static readonly TimeSpan _delay = TimeSpan.FromMilliseconds(1);
         private readonly CronExpression _cronExpression = CronExpression.Parse(_expressionString);
         private readonly DateTime _nowInstant = new DateTime(2017, 03, 30, 15, 30, 0, DateTimeKind.Utc);
         private readonly DateTime _nextInstant;
@@ -716,7 +716,7 @@ namespace Hangfire.Core.Tests.Server
             _recurringJob["Cron"] = "0 * * * *";
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(delay: TimeSpan.FromMilliseconds(100));
 
             // Act
             scheduler.Execute(_context.Object);
@@ -747,7 +747,7 @@ namespace Hangfire.Core.Tests.Server
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddHours(-3));
             _recurringJob["Misfire"] = MisfireHandlingMode.Strict.ToString("D");
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(delay: TimeSpan.FromMilliseconds(100));
 
             // Act
             scheduler.Execute(_context.Object);
@@ -786,7 +786,7 @@ namespace Hangfire.Core.Tests.Server
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddHours(-3));
             _recurringJob["Misfire"] = MisfireHandlingMode.Ignorable.ToString("D");
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(delay: TimeSpan.FromMilliseconds(100));
 
             // Act
             scheduler.Execute(_context.Object);
@@ -816,7 +816,7 @@ namespace Hangfire.Core.Tests.Server
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddHours(-3));
             _recurringJob["Misfire"] = MisfireHandlingMode.Ignorable.ToString("D");
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(delay: TimeSpan.FromMilliseconds(100));
 
             // Act
             scheduler.Execute(_context.Object);
@@ -847,7 +847,7 @@ namespace Hangfire.Core.Tests.Server
             _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddHours(-3));
             _recurringJob["Misfire"] = mode.ToString("D");
 
-            var scheduler = CreateScheduler();
+            var scheduler = CreateScheduler(delay: TimeSpan.FromMilliseconds(100));
 
             // Act
             scheduler.Execute(_context.Object);
@@ -1310,11 +1310,11 @@ namespace Hangfire.Core.Tests.Server
                 .Throws(new ArgumentNullException("key"));
         }
 
-        private RecurringJobScheduler CreateScheduler(DateTime? lastExecution = null)
+        private RecurringJobScheduler CreateScheduler(DateTime? lastExecution = null, TimeSpan? delay = null)
         {
             var scheduler = new RecurringJobScheduler(
                 _factory.Object,
-                _delay,
+                delay ?? _delay,
                 _timeZoneResolver.Object,
                 _nowInstantFactory);
 
