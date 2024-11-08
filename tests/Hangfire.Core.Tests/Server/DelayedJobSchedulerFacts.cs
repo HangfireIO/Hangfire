@@ -226,7 +226,8 @@ namespace Hangfire.Core.Tests.Server
                 .Throws<InvalidOperationException>();
 
             var scheduler = CreateScheduler();
-            
+            scheduler.RetryDelayFunc = _ => TimeSpan.FromMilliseconds(50);
+
             // Act
             scheduler.Execute(_context.Object);
             

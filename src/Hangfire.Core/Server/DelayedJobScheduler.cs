@@ -134,6 +134,8 @@ namespace Hangfire.Server
         /// </summary>
         public TaskScheduler TaskScheduler { get; set; }
 
+        internal Func<int, TimeSpan> RetryDelayFunc { get; set; } = attempt => TimeSpan.FromSeconds(attempt);
+
         /// <inheritdoc />
         public void Execute(BackgroundProcessContext context)
         {
@@ -341,7 +343,7 @@ namespace Hangfire.Server
                     exception = ex;
                 }
 
-                context.Wait(TimeSpan.FromSeconds(retryAttempt));
+                context.Wait(RetryDelayFunc(retryAttempt));
             }
 
             _logger.ErrorException(
