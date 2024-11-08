@@ -20,9 +20,16 @@
     <PackageReference Include="Newtonsoft.Json" Version="5.0.1" NoWarn="NU1903" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp3.1' or '$(TargetFramework)'=='net6.0'">
+  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp3.1'">
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" NoWarn="NU1902" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="3.1.5" NoWarn="NU1902" />
+    <PackageReference Include="Dapper" Version="2.1.28" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net6.0'">
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.6" NoWarn="NU1902" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" NoWarn="NU1902" />
     <PackageReference Include="Dapper" Version="2.1.28" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
