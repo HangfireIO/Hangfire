@@ -389,7 +389,7 @@ $@"select Value from [{schemaName}].[Set] with (forceseek) where [Key] = @key");
 
                 var result = connection.Query<string>(
                     query,
-                    new { key },
+                    new { key = key },
                     commandTimeout: storage.CommandTimeout);
 
                 return new HashSet<string>(result);
@@ -414,7 +414,7 @@ $@"select top (@count) Value from [{schemaName}].[Set] with (forceseek) where [K
 
                 var result = connection.Query<string>(
                     query,
-                    new { count = pair.Value.Item3, pair.Key, from = pair.Value.Item1, to = pair.Value.Item2 },
+                    new { count = pair.Value.Item3, key = pair.Key, from = pair.Value.Item1, to = pair.Value.Item2 },
                     commandTimeout: storage.CommandTimeout);
 
                 return result.ToList();
@@ -489,7 +489,7 @@ $@"select Field, Value from [{schemaName}].Hash with (forceseek) where [Key] = @
 
                 var result = connection.Query<SqlHash>(
                     query,
-                    new { key },
+                    new { key = key },
                     commandTimeout: storage.CommandTimeout)
                     .ToDictionary(static x => x.Field, static x => x.Value);
 
