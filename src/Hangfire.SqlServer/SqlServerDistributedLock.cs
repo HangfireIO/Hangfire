@@ -28,7 +28,7 @@ namespace Hangfire.SqlServer
 {
     public class SqlServerDistributedLock : IDisposable
     {
-        private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(1);
 
         private const string LockMode = "Exclusive";
         private const string LockOwner = "Session";
@@ -191,7 +191,7 @@ namespace Hangfire.SqlServer
 
             do
             {
-                var command = connection
+                using var command = connection
                     .Create("sp_getapplock", CommandType.StoredProcedure, timeout: (int)(lockTimeout / 1000) + 5)
                     .AddParameter("@Resource", resource, DbType.String, size: 255)
                     .AddParameter("@DbPrincipal", "public", DbType.String, size: 32)
