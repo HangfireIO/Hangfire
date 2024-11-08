@@ -70,7 +70,7 @@ namespace Hangfire.SqlServer.Tests
                 () => UseConnection(connection1 =>
                 {
                     var storage = CreateStorage(connection1);
-                    using (new SqlServerDistributedLock(storage, "exclusive", _timeout))
+                    using (new SqlServerDistributedLock(storage, "exclusive", TimeSpan.Zero))
                     {
                         lockAcquired.Set();
                         releaseLock.Wait();
@@ -86,7 +86,7 @@ namespace Hangfire.SqlServer.Tests
                 Assert.Throws<DistributedLockTimeoutException>(
                     () =>
                     {
-                        using (new SqlServerDistributedLock(storage, "exclusive", _timeout))
+                        using (new SqlServerDistributedLock(storage, "exclusive", TimeSpan.FromSeconds(1)))
                         {
                         }
                     });

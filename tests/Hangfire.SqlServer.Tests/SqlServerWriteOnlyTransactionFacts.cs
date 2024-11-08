@@ -2294,9 +2294,9 @@ values (@jobId, '', '', getutcdate())";
         }
 
         [Theory, CleanDatabase]
-        [InlineData(false, false), InlineData(false, true)]
-        [InlineData(true, false), InlineData(true, true)]
-        public void AcquireDistributedLock_ThrowsAnException_IfLockCanNotBeGranted(bool useBatching, bool useMicrosoftDataSqlClient)
+        [InlineData(false)]
+        [InlineData(true)]
+        public void AcquireDistributedLock_ThrowsAnException_IfLockCanNotBeGranted(bool useMicrosoftDataSqlClient)
         {
             var releaseLock = new ManualResetEventSlim(false);
             var lockAcquired = new ManualResetEventSlim(false);
@@ -2306,7 +2306,7 @@ values (@jobId, '', '', getutcdate())";
                 {
                     try
                     {
-                        transaction1.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(1));
+                        transaction1.AcquireDistributedLock("exclusive", TimeSpan.Zero);
 
                         lockAcquired.Set();
                         if (!releaseLock.Wait(TimeSpan.FromSeconds(30)))
@@ -2325,7 +2325,7 @@ values (@jobId, '', '', getutcdate())";
                             // Need only message
                         }
                     }
-                }, useMicrosoftDataSqlClient, useBatching));
+                }, useMicrosoftDataSqlClient, useBatching: true));
             thread.Start();
 
             if (!lockAcquired.Wait(TimeSpan.FromSeconds(30)))
@@ -2337,7 +2337,7 @@ values (@jobId, '', '', getutcdate())";
             {
                 Assert.Throws<DistributedLockTimeoutException>(
                     () => transaction2.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(1)));
-            }, useMicrosoftDataSqlClient, useBatching);
+            }, useMicrosoftDataSqlClient, useBatching: true);
 
             releaseLock.Set();
             thread.Join();

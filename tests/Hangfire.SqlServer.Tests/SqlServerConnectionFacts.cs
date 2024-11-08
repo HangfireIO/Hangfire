@@ -140,7 +140,7 @@ namespace Hangfire.SqlServer.Tests
             var thread = new Thread(
                 () => UseConnection(connection1 =>
                 {
-                    using (connection1.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(5)))
+                    using (connection1.AcquireDistributedLock("exclusive", TimeSpan.Zero))
                     {
                         lockAcquired.Set();
                         releaseLock.Wait();
@@ -155,7 +155,7 @@ namespace Hangfire.SqlServer.Tests
                 Assert.Throws<DistributedLockTimeoutException>(
                     () =>
                     {
-                        using (connection2.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(5)))
+                        using (connection2.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(1)))
                         {
                         }
                     });

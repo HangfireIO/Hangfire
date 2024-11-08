@@ -170,7 +170,7 @@ namespace Hangfire.SqlServer.Tests
                 var id = CreateJobQueueRecord(sql, "1", "default", FetchedAt);
                 using (var processingJob = new SqlServerTimeoutJob(storage, id, "1", "default", FetchedAt))
                 {
-                    Thread.Sleep(TimeSpan.FromSeconds(2));
+                    Thread.Sleep(TimeSpan.FromSeconds(1));
                     processingJob.DisposeTimer();
 
                     // Act
@@ -193,7 +193,7 @@ namespace Hangfire.SqlServer.Tests
                 var id = CreateJobQueueRecord(sql, "1", "default", FetchedAt);
                 using (var processingJob = new SqlServerTimeoutJob(storage, id, "1", "default", FetchedAt))
                 {
-                    Thread.Sleep(TimeSpan.FromSeconds(2));
+                    Thread.Sleep(TimeSpan.FromSeconds(1));
                     processingJob.DisposeTimer();
 
                     // Act
