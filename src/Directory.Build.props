@@ -7,6 +7,7 @@
         <DebugType>embedded</DebugType>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <LangVersion>Latest</LangVersion>
+        <NuGetAuditMode>direct</NuGetAuditMode>
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="..\SharedAssemblyInfo.cs" Link="Properties\SharedAssemblyInfo.cs" />
