@@ -4,6 +4,7 @@ using System;
 using System.Data.Common;
 using System.Linq;
 using System.Threading;
+using Hangfire.Annotations;
 using ReferencedDapper::Dapper;
 using Xunit;
 // ReSharper disable ArgumentsStyleLiteral
@@ -675,7 +676,7 @@ values (scope_identity(), @queue)";
             return new SqlServerJobQueue(storage, new SqlServerStorageOptions { SlidingInvisibilityTimeout = invisibilityTimeout });
         }
 
-        private static void UseConnection(Action<DbConnection> action, bool useMicrosoftDataSqlClient)
+        private static void UseConnection([InstantHandle] Action<DbConnection> action, bool useMicrosoftDataSqlClient)
         {
             using (var connection = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient))
             {
