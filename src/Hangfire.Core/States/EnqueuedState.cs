@@ -63,8 +63,6 @@ namespace Hangfire.States
     /// <threadsafety static="true" instance="false" />
     public class EnqueuedState : IState
     {
-        private static readonly Regex ValidationRegex = new Regex(@"^[a-z0-9_-]+$", RegexOptions.Compiled | RegexOptions.CultureInvariant, TimeSpan.FromSeconds(5));
-
         /// <summary>
         /// Represents the default queue name. This field is constant.
         /// </summary>
@@ -232,7 +230,7 @@ namespace Hangfire.States
                 throw new ArgumentNullException(nameof(value));
             }
 
-            return ValidationRegex.IsMatch(value);
+            return ValidateQueueNameInner(value);
         }
 
         internal static void ValidateQueueName([InvokerParameterName] string parameterName, [NotNull] string value)
@@ -242,12 +240,26 @@ namespace Hangfire.States
                 throw new ArgumentNullException(parameterName);
             }
 
-            if (!ValidationRegex.IsMatch(value))
+            if (!ValidateQueueNameInner(value))
             {
                 throw new ArgumentException(
                     $"The queue name must consist of lowercase letters, digits, underscore, and dash characters only. Given: '{value}'.",
                     parameterName);
             }
+        }
+
+        private static bool ValidateQueueNameInner(string value)
+        {
+            foreach (var ch in value)
+            {
+                // ^[a-z0-9_-]+$
+                if (!((ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '-' || ch == '_'))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         internal sealed class Handler : IStateHandler
