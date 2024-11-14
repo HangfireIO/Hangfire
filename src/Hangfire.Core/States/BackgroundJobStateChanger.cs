@@ -160,7 +160,10 @@ namespace Hangfire.States
                         }
                     }
 
-                    transaction.Commit();
+                    if (context.Transaction == null)
+                    {
+                        transaction.Commit();
+                    }
 
                     context.ProcessedJob = backgroundJob;
                     return appliedState;
