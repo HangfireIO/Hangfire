@@ -67,8 +67,8 @@
       },
       "Microsoft.CodeAnalysis.NetAnalyzers": {
         "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "DxiTgkCl3CGq1rYmBX2wjY7XGbxiBdL4J+/AJIAFLKy5z70NxhnVRnPghnicXZ8oF6JKVXlW3xwznRbI3ioEKg=="
+        "resolved": "9.0.0",
+        "contentHash": "JajbvkrBgtdRghavIjcJuNHMOja4lqBmEezbhZyqWPYh2cpLhT5mPpfC7NQVDO4IehWQum9t/nwF4v+qQGtYWg=="
       },
       "Microsoft.CSharp": {
         "type": "Transitive",
@@ -374,7 +374,7 @@
         "type": "Project",
         "dependencies": {
           "Hangfire.NetCore": "[1.0.0, )",
-          "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
+          "Microsoft.CodeAnalysis.NetAnalyzers": "[9.0.0, )",
           "Microsoft.SourceLink.GitHub": "[8.0.0, )"
         }
       },
@@ -384,7 +384,7 @@
           "Cronos": "[0.8.3, )",
           "LibLog": "[1.5.0, )",
           "Microsoft.CSharp": "[4.4.0, )",
-          "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
+          "Microsoft.CodeAnalysis.NetAnalyzers": "[9.0.0, )",
           "Microsoft.SourceLink.GitHub": "[8.0.0, )",
           "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
           "Newtonsoft.Json": "[11.0.1, )",
@@ -396,7 +396,7 @@
         "type": "Project",
         "dependencies": {
           "Hangfire.Core": "[1.0.0, )",
-          "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
+          "Microsoft.CodeAnalysis.NetAnalyzers": "[9.0.0, )",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[3.0.0, )",
           "Microsoft.Extensions.Hosting.Abstractions": "[3.0.0, )",
           "Microsoft.Extensions.Logging.Abstractions": "[3.0.0, )",
@@ -408,7 +408,7 @@
         "dependencies": {
           "Dapper": "[2.1.28, )",
           "Hangfire.Core": "[1.0.0, )",
-          "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
+          "Microsoft.CodeAnalysis.NetAnalyzers": "[9.0.0, )",
           "Microsoft.SourceLink.GitHub": "[8.0.0, )"
         }
       }
