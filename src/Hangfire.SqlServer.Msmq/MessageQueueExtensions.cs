@@ -132,7 +132,7 @@ namespace MQTools
             {
                 cProp = 1,
                 aPropID = Marshal.AllocHGlobal(sizeof(int)),
-                aPropVar = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(MQPROPVariant))),
+                aPropVar = Marshal.AllocHGlobal(Marshal.SizeOf<MQPROPVariant>()),
                 status = Marshal.AllocHGlobal(sizeof(int))
             };
 
@@ -157,7 +157,7 @@ namespace MQTools
                 if (Marshal.ReadInt32(props.status) != 0)
                     return -1;
 
-                var variant = (MQPROPVariant)Marshal.PtrToStructure(props.aPropVar, typeof(MQPROPVariant));
+                var variant = (MQPROPVariant)Marshal.PtrToStructure<MQPROPVariant>(props.aPropVar);
                 if (variant.vt != VT_UI4)
                     return -2;
 
