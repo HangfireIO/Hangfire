@@ -43,6 +43,8 @@ namespace Hangfire.SqlServer
         private static readonly int MinPollingDelayMs = 100;
         private static readonly ConcurrentDictionary<Tuple<SqlServerStorage, string>, SemaphoreSlim> Semaphores =
             new ConcurrentDictionary<Tuple<SqlServerStorage, string>, SemaphoreSlim>();
+        private static readonly ConcurrentDictionary<KeyValuePair<SqlServerStorage, int>, string> NonBlockingQueriesCache =
+            new ConcurrentDictionary<KeyValuePair<SqlServerStorage, int>, string>();
 
         private readonly SqlServerStorage _storage;
         private readonly SqlServerStorageOptions _options;
@@ -165,21 +167,43 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
         {
             return _storage.UseConnection(null, static (storage, connection, queues) =>
             {
-                var fetchedJob = connection
-                    .QuerySingleOrDefault<FetchedJob>(
-                        GetNonBlockingFetchSql(storage),
-                        new { queues = queues, timeoutSs = (int)storage.Options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds },
-                        commandTimeout: storage.CommandTimeout);
+                if (!storage.Options.SlidingInvisibilityTimeout.HasValue)
+                {
+                    throw new InvalidOperationException("This method should be called only when SlidingInvisibilityTimeout is set.");
+                }
 
-                return fetchedJob != null 
-                    ? new SqlServerTimeoutJob(storage, fetchedJob.Id, fetchedJob.JobId.ToString(CultureInfo.InvariantCulture), fetchedJob.Queue, fetchedJob.FetchedAt.Value)
-                    : null;
+                var invisibilityTimeout = (int)storage.Options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds;
+
+                using var command = CreateNonBlockingFetchCommand(storage, connection, queues, invisibilityTimeout);
+                using var reader = command.ExecuteReader();
+
+                if (!reader.Read()) return null;
+
+                var id = reader.GetInt64(reader.GetOrdinal("Id"));
+                var jobId = reader.GetInt64(reader.GetOrdinal("JobId"));
+                var queue = reader.GetString(reader.GetOrdinal("Queue"));
+                var fetchedAt = reader.GetDateTime(reader.GetOrdinal("FetchedAt"));
+
+                if (reader.Read())
+                {
+                    throw new InvalidOperationException("Multiple rows returned from SQL Server, while expecting single or none.");
+                }
+
+                return new SqlServerTimeoutJob(storage, id, jobId.ToString(CultureInfo.InvariantCulture), queue, fetchedAt);
             }, queues);
         }
 
-        private static string GetNonBlockingFetchSql(SqlServerStorage storage)
+        private static DbCommand CreateNonBlockingFetchCommand(
+            SqlServerStorage storage,
+            DbConnection connection,
+            string[] queues,
+            int invisibilityTimeout)
         {
-            return storage.GetQueryFromTemplate(static schemaName => $@"
+            var query = NonBlockingQueriesCache.GetOrAdd(
+                new KeyValuePair<SqlServerStorage, int>(storage, queues.Length),
+                static pair =>
+                {
+                    var template = pair.Key.GetQueryFromTemplate(static schemaName => $@"
 set nocount on;set xact_abort on;set tran isolation level read committed;
 
 update top (1) JQ
@@ -188,6 +212,21 @@ output INSERTED.Id, INSERTED.JobId, INSERTED.Queue, INSERTED.FetchedAt
 from [{schemaName}].JobQueue JQ with (forceseek, readpast, updlock, rowlock)
 where Queue in @queues and
 (FetchedAt is null or FetchedAt < DATEADD(second, @timeoutSs, GETUTCDATE()));");
+
+                    return template.Replace(
+                        "@queues", 
+                        "(" + String.Join(",", Enumerable.Range(0, pair.Value).Select(static i => "@queue" + i.ToString(CultureInfo.InvariantCulture))) + ")");
+                });
+
+            var command = connection.Create(query, timeout: storage.CommandTimeout);
+            command.AddParameter("@timeoutSs", invisibilityTimeout, DbType.Int32);
+
+            for (var i = 0; i < queues.Length; i++)
+            {
+                command.AddParameter("@queue" + i, queues[i], DbType.String);
+            };
+
+            return command;
         }
 
         private SqlServerTransactionJob DequeueUsingTransaction(string[] queues, CancellationToken cancellationToken)
