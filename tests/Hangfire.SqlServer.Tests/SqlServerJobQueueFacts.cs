@@ -422,6 +422,35 @@ select scope_identity() as Id;";
 
         [Theory, CleanDatabase]
         [InlineData(false), InlineData(true)]
+        public void Dequeue_InvisibilityTimeout_ShouldFetchTheFirstJob_FromTheSpecifiedQueue(bool useMicrosoftDataSqlClient)
+        {
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].JobQueue (JobId, Queue)
+output inserted.Id
+values (@jobId1, @queue), (@jobId2, @queue);";
+
+            // Arrange
+            UseConnection(connection =>
+            {
+                var id = (int)connection.Query(
+                    arrangeSql,
+                    new { jobId1 = 1, jobId2 = 2, queue = "default" }).First().Id;
+                var queue = CreateJobQueue(useMicrosoftDataSqlClient, invisibilityTimeout: DefaultTimeout);
+
+                // Act
+                var payload = (SqlServerTimeoutJob)queue.Dequeue(
+                    DefaultQueues,
+                    CreateTimingOutCancellationToken());
+
+                // Assert
+                Assert.Equal(id, payload.Id);
+                Assert.Equal("1", payload.JobId);
+                Assert.Equal("default", payload.Queue);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
         public void Dequeue_InvisibilityTimeout_ShouldLeaveJobInTheQueue_ButSetItsFetchedAtValue(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
