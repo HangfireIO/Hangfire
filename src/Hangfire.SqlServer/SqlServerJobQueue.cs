@@ -21,7 +21,6 @@ using System.Data.Common;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Storage;
 
@@ -44,6 +43,8 @@ namespace Hangfire.SqlServer
         private static readonly ConcurrentDictionary<Tuple<SqlServerStorage, string>, SemaphoreSlim> Semaphores =
             new ConcurrentDictionary<Tuple<SqlServerStorage, string>, SemaphoreSlim>();
         private static readonly ConcurrentDictionary<KeyValuePair<SqlServerStorage, int>, string> NonBlockingQueriesCache =
+            new ConcurrentDictionary<KeyValuePair<SqlServerStorage, int>, string>();
+        private static readonly ConcurrentDictionary<KeyValuePair<SqlServerStorage, int>, string> TransactionalQueriesCache =
             new ConcurrentDictionary<KeyValuePair<SqlServerStorage, int>, string>();
 
         private readonly SqlServerStorage _storage;
@@ -81,13 +82,15 @@ namespace Hangfire.SqlServer
             var query = _storage.GetQueryFromTemplate(static schemaName =>
 $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
 
-            connection.Execute(
-                query, 
-                new { jobId = long.Parse(jobId, CultureInfo.InvariantCulture), queue = queue }
+            var command = ((DbConnection)connection).Create(query, timeout: _storage.CommandTimeout);
+            command.AddParameter("@jobId", long.Parse(jobId, CultureInfo.InvariantCulture), DbType.Int64);
+            command.AddParameter("@queue", queue, DbType.String);
+
 #if !FEATURE_TRANSACTIONSCOPE
-                , transaction
+            command.Transaction = transaction;
 #endif
-                , commandTimeout: _storage.CommandTimeout);
+
+            command.ExecuteNonQuery();
         }
 
         private SqlServerTimeoutJob DequeueUsingSlidingInvisibilityTimeout(string[] queues, CancellationToken cancellationToken)
@@ -224,21 +227,14 @@ where Queue in @queues and
             for (var i = 0; i < queues.Length; i++)
             {
                 command.AddParameter("@queue" + i, queues[i], DbType.String);
-            };
+            }
 
             return command;
         }
 
         private SqlServerTransactionJob DequeueUsingTransaction(string[] queues, CancellationToken cancellationToken)
         {
-            FetchedJob fetchedJob = null;
             DbTransaction transaction = null;
-
-            var query = _storage.GetQueryFromTemplate(static schemaName =>
-$@"delete top (1) JQ
-output DELETED.Id, DELETED.JobId, DELETED.Queue
-from [{schemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
-where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))");
 
             var pollInterval = _options.QueuePollInterval > TimeSpan.Zero
                 ? _options.QueuePollInterval
@@ -254,28 +250,37 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
                 {
                     transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
 
-                    fetchedJob = connection.QuerySingleOrDefault<FetchedJob>(
-                        query,
 #pragma warning disable 618
-                    new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds },
+                    using var command = CreateTransactionalFetchCommand(_storage, connection, queues, (int)_options.InvisibilityTimeout.Negate().TotalSeconds);
 #pragma warning restore 618
-                    transaction,
-                        commandTimeout: _storage.CommandTimeout);
+                    command.Transaction = transaction;
 
-                    if (fetchedJob != null)
+                    using (var reader = command.ExecuteReader())
                     {
-                        return new SqlServerTransactionJob(
-                            _storage,
-                            connection,
-                            transaction,
-                            fetchedJob.JobId.ToString(CultureInfo.InvariantCulture),
-                            fetchedJob.Queue);
+                        if (reader.Read())
+                        {
+                            var jobId = reader.GetInt64(reader.GetOrdinal("JobId"));
+                            var queue = reader.GetString(reader.GetOrdinal("Queue"));
+
+                            if (reader.Read())
+                            {
+                                throw new InvalidOperationException(
+                                    "Multiple rows returned from SQL Server, while expecting single or none.");
+                            }
+
+                            var result = new SqlServerTransactionJob(_storage, connection, transaction,
+                                jobId.ToString(CultureInfo.InvariantCulture), queue);
+
+                            // We shouldn't dispose them, because their ownership is now related
+                            // to the SqlServerTransactionJob instance.
+                            connection = null;
+                            transaction = null;
+                            return result;
+                        }
                     }
-                    else
-                    {
-                        // Nothing updated, just commit the empty transaction.
-                        transaction.Commit();
-                    }
+
+                    // Nothing updated, just commit the empty transaction.
+                    transaction.Commit();
                 }
                 catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
@@ -289,20 +294,47 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
                 }
                 finally
                 {
-                    if (fetchedJob == null)
-                    {
-                        transaction?.Dispose();
-                        transaction = null;
-
-                        _storage.ReleaseConnection(connection);
-                    }
+                    transaction?.Dispose();
+                    _storage.ReleaseConnection(connection);
                 }
 
                 WaitHandle.WaitAny(waitArray, pollInterval);
             }
-                
+
             cancellationToken.ThrowIfCancellationRequested();
             return null;
+        }
+
+        private static DbCommand CreateTransactionalFetchCommand(
+            SqlServerStorage storage,
+            DbConnection connection,
+            string[] queues,
+            int invisibilityTimeout)
+        {
+            var query = TransactionalQueriesCache.GetOrAdd(
+                new KeyValuePair<SqlServerStorage, int>(storage, queues.Length),
+                static pair =>
+                {
+                    var template = pair.Key.GetQueryFromTemplate(static schemaName => 
+$@"delete top (1) JQ
+output DELETED.Id, DELETED.JobId, DELETED.Queue
+from [{schemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
+where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))");
+
+                    return template.Replace(
+                        "@queues", 
+                        "(" + String.Join(",", Enumerable.Range(0, pair.Value).Select(static i => "@queue" + i.ToString(CultureInfo.InvariantCulture))) + ")");
+                });
+
+            var command = connection.Create(query, timeout: storage.CommandTimeout);
+            command.AddParameter("@timeout", invisibilityTimeout, DbType.Int32);
+
+            for (var i = 0; i < queues.Length; i++)
+            {
+                command.AddParameter("@queue" + i, queues[i], DbType.String);
+            }
+
+            return command;
         }
 
         private static WaitHandle[] GetWaitArrayForQueueSignals(SqlServerStorage storage, string[] queues, CancellationToken cancellationToken)
