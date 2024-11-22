@@ -295,6 +295,7 @@ where Queue in @queues and
                 finally
                 {
                     transaction?.Dispose();
+                    transaction = null;
                     _storage.ReleaseConnection(connection);
                 }
 
