@@ -142,20 +142,10 @@ namespace Hangfire.Server
         {
             var filter = enumerator.Current!;
 
-            try
-            {
-                preContext.Profiler.InvokeMeasured(
-                    new KeyValuePair<IServerFilter, PerformingContext>(filter, preContext),
-                    InvokeOnPerforming,
-                    static ctx => $"OnPerforming for {ctx.Value.BackgroundJob.Id}" );
-            }
-            catch (Exception filterException) when (filterException.IsCatchableExceptionType())
-            {
-                CoreBackgroundJobPerformer.HandleJobPerformanceException(
-                    filterException,
-                    preContext.CancellationToken, preContext.BackgroundJob);
-                throw;
-            }
+            preContext.Profiler.InvokeMeasured(
+                new KeyValuePair<IServerFilter, PerformingContext>(filter, preContext),
+                InvokeOnPerforming,
+                static ctx => $"OnPerforming for {ctx.Value.BackgroundJob.Id}" );
             
             if (preContext.Canceled)
             {
@@ -179,21 +169,10 @@ namespace Hangfire.Server
                 postContext = new PerformedContext(
                     preContext, null, false, ex);
 
-                try
-                {
-                    postContext.Profiler.InvokeMeasured(
-                        new KeyValuePair<IServerFilter, PerformedContext>(filter, postContext),
-                        InvokeOnPerformed,
-                        static ctx => $"OnPerformed for {ctx.Value.BackgroundJob.Id}");
-                }
-                catch (Exception filterException) when (filterException.IsCatchableExceptionType())
-                {
-                    CoreBackgroundJobPerformer.HandleJobPerformanceException(
-                        filterException,
-                        postContext.CancellationToken, postContext.BackgroundJob);
-
-                    throw;
-                }
+                postContext.Profiler.InvokeMeasured(
+                    new KeyValuePair<IServerFilter, PerformedContext>(filter, postContext),
+                    InvokeOnPerformed,
+                    static ctx => $"OnPerformed for {ctx.Value.BackgroundJob.Id}");
 
                 if (!postContext.ExceptionHandled)
                 {
@@ -203,34 +182,41 @@ namespace Hangfire.Server
 
             if (!wasError)
             {
-                try
-                {
-                    postContext.Profiler.InvokeMeasured(
-                        new KeyValuePair<IServerFilter, PerformedContext>(filter, postContext),
-                        InvokeOnPerformed,
-                        static ctx => $"OnPerformed for {ctx.Value.BackgroundJob.Id}");
-                }
-                catch (Exception filterException) when (filterException.IsCatchableExceptionType())
-                {
-                    CoreBackgroundJobPerformer.HandleJobPerformanceException(
-                        filterException,
-                        postContext.CancellationToken, postContext.BackgroundJob);
-
-                    throw;
-                }
+                postContext.Profiler.InvokeMeasured(
+                    new KeyValuePair<IServerFilter, PerformedContext>(filter, postContext),
+                    InvokeOnPerformed,
+                    static ctx => $"OnPerformed for {ctx.Value.BackgroundJob.Id}");
             }
 
             return postContext;
         }
 
-        private static void InvokeOnPerforming(KeyValuePair<IServerFilter, PerformingContext> x)
+        private static void InvokeOnPerforming(KeyValuePair<IServerFilter, PerformingContext> ctx)
         {
-            x.Key.OnPerforming(x.Value);
+            try
+            {
+                ctx.Key.OnPerforming(ctx.Value);
+            }
+            catch (Exception filterException) when (filterException.IsCatchableExceptionType())
+            {
+                CoreBackgroundJobPerformer.HandleJobPerformanceException(
+                    filterException,
+                    ctx.Value.CancellationToken, ctx.Value.BackgroundJob);
+            }
         }
 
-        private static void InvokeOnPerformed(KeyValuePair<IServerFilter, PerformedContext> x)
+        private static void InvokeOnPerformed(KeyValuePair<IServerFilter, PerformedContext> ctx)
         {
-            x.Key.OnPerformed(x.Value);
+            try
+            {
+                ctx.Key.OnPerformed(ctx.Value);
+            }
+            catch (Exception filterException) when (filterException.IsCatchableExceptionType())
+            {
+                CoreBackgroundJobPerformer.HandleJobPerformanceException(
+                    filterException,
+                    ctx.Value.CancellationToken, ctx.Value.BackgroundJob);
+            }
         }
 
         private static void InvokeServerExceptionFilters(
@@ -246,9 +232,18 @@ namespace Hangfire.Server
             }
         }
 
-        private static void InvokeOnServerException(KeyValuePair<IServerExceptionFilter, ServerExceptionContext> x)
+        private static void InvokeOnServerException(KeyValuePair<IServerExceptionFilter, ServerExceptionContext> ctx)
         {
-            x.Key.OnServerException(x.Value);
+            try
+            {
+                ctx.Key.OnServerException(ctx.Value);
+            }
+            catch (Exception filterException) when (filterException.IsCatchableExceptionType())
+            {
+                CoreBackgroundJobPerformer.HandleJobPerformanceException(
+                    filterException,
+                    ctx.Value.CancellationToken, ctx.Value.BackgroundJob);
+            }
         }
     }
 }
