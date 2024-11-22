@@ -36,11 +36,6 @@ namespace Hangfire.Common
         {
             if (exception == null) throw new ArgumentNullException(nameof(exception));
 
-            if (!exception.Data.Contains(DataKey))
-            {
-                return GetFirstLines(exception.ToString(), numLines);
-            }
-
             return GetFirstLines(ToStringHelper(exception, false), numLines);
         }
 
