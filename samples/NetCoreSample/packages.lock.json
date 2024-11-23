@@ -358,7 +358,8 @@
         "dependencies": {
           "Cronos": "[0.8.3, )",
           "Microsoft.CSharp": "[4.4.0, )",
-          "Newtonsoft.Json": "[11.0.1, )"
+          "Newtonsoft.Json": "[11.0.1, )",
+          "System.Diagnostics.DiagnosticSource": "[5.0.0, )"
         }
       },
       "hangfire.netcore": {
