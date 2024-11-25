@@ -202,13 +202,7 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
             string[] queues,
             int invisibilityTimeout)
         {
-            const string queuesParameterName = "@queues";
-
-            var query = NonBlockingQueriesCache.GetOrAdd(
-                new KeyValuePair<SqlServerStorage, int>(storage, queues.Length),
-                static pair =>
-                {
-                    var template = pair.Key.GetQueryFromTemplate(static schemaName => $@"
+            var template = storage.GetQueryFromTemplate(static schemaName => $@"
 set nocount on;set xact_abort on;set tran isolation level read committed;
 
 update top (1) JQ
@@ -218,20 +212,9 @@ from [{schemaName}].JobQueue JQ with (forceseek, readpast, updlock, rowlock)
 where Queue in @queues and
 (FetchedAt is null or FetchedAt < DATEADD(second, @timeoutSs, GETUTCDATE()));");
 
-                    return template.Replace(
-                        queuesParameterName, 
-                        "(" + String.Join(",", Enumerable.Range(0, pair.Value).Select(static i => queuesParameterName + i.ToString(CultureInfo.InvariantCulture))) + ")");
-                });
-
-            var command = connection.Create(query, timeout: storage.CommandTimeout);
-            command.AddParameter("@timeoutSs", invisibilityTimeout, DbType.Int32);
-
-            for (var i = 0; i < queues.Length; i++)
-            {
-                command.AddParameter(queuesParameterName + i, queues[i], DbType.String);
-            }
-
-            return command;
+            return connection.Create(template, timeout: storage.CommandTimeout)
+                .AddParameter("@timeoutSs", invisibilityTimeout, DbType.Int32)
+                .AddExpandedParameter("@queues", queues, DbType.String);
         }
 
         private SqlServerTransactionJob DequeueUsingTransaction(string[] queues, CancellationToken cancellationToken)
@@ -314,32 +297,16 @@ where Queue in @queues and
             string[] queues,
             int invisibilityTimeout)
         {
-            const string queuesParameterName = "@queues";
-
-            var query = TransactionalQueriesCache.GetOrAdd(
-                new KeyValuePair<SqlServerStorage, int>(storage, queues.Length),
-                static pair =>
-                {
-                    var template = pair.Key.GetQueryFromTemplate(static schemaName => 
-$@"delete top (1) JQ
+            var template = storage.GetQueryFromTemplate(static schemaName => 
+                $@"delete top (1) JQ
 output DELETED.Id, DELETED.JobId, DELETED.Queue
 from [{schemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
 where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))");
-
-                    return template.Replace(
-                        queuesParameterName, 
-                        "(" + String.Join(",", Enumerable.Range(0, pair.Value).Select(static i => queuesParameterName + i.ToString(CultureInfo.InvariantCulture))) + ")");
-                });
-
-            var command = connection.Create(query, timeout: storage.CommandTimeout);
-            command.AddParameter("@timeout", invisibilityTimeout, DbType.Int32);
-
-            for (var i = 0; i < queues.Length; i++)
-            {
-                command.AddParameter(queuesParameterName + i, queues[i], DbType.String);
-            }
-
-            return command;
+            
+            return connection
+                .Create(template, timeout: storage.CommandTimeout)
+                .AddParameter("@timeout", invisibilityTimeout, DbType.Int32)
+                .AddExpandedParameter("@queues", queues, DbType.String);
         }
 
         private static WaitHandle[] GetWaitArrayForQueueSignals(SqlServerStorage storage, string[] queues, CancellationToken cancellationToken)

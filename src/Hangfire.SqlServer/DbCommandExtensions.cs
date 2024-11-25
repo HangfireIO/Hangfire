@@ -14,14 +14,21 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Globalization;
+using System.Linq;
 using Hangfire.Annotations;
 
 namespace Hangfire.SqlServer
 {
     internal static class DbCommandExtensions
     {
+        private static readonly ConcurrentDictionary<KeyValuePair<string, KeyValuePair<string, int>>, string> ExpandedQueries =
+            new ConcurrentDictionary<KeyValuePair<string, KeyValuePair<string, int>>, string>();
+
         public static DbCommand Create(
             [NotNull] this DbConnection connection,
             [NotNull] string text,
@@ -81,6 +88,34 @@ namespace Hangfire.SqlServer
             if (size.HasValue) parameter.Size = size.Value;
 
             command.Parameters.Add(parameter);
+            return command;
+        }
+
+        public static DbCommand AddExpandedParameter<T>(
+            [NotNull] this DbCommand command,
+            [NotNull] string parameterName,
+            [NotNull] T[] parameterValues,
+            DbType parameterType,
+            int? parameterSize = null)
+        {
+            if (command == null) throw new ArgumentNullException(nameof(command));
+            if (parameterName == null) throw new ArgumentNullException(nameof(parameterName));
+            if (parameterValues == null) throw new ArgumentNullException(nameof(parameterValues));
+
+            command.CommandText = ExpandedQueries.GetOrAdd(
+                new KeyValuePair<string, KeyValuePair<string, int>>(command.CommandText, new KeyValuePair<string, int>(parameterName, parameterValues.Length)),
+                static pair =>
+                {
+                    return pair.Key.Replace(
+                        pair.Value.Key, 
+                        "(" + String.Join(",", Enumerable.Range(0, pair.Value.Value).Select(i => pair.Value.Key + i.ToString(CultureInfo.InvariantCulture))) + ")");
+                });
+
+            for (var i = 0; i < parameterValues.Length; i++)
+            {
+                command.AddParameter(parameterName + i.ToString(CultureInfo.InvariantCulture), parameterValues[i], parameterType, parameterSize);
+            }
+
             return command;
         }
     }
