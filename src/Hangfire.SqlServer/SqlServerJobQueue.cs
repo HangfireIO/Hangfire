@@ -42,10 +42,6 @@ namespace Hangfire.SqlServer
         private static readonly int MinPollingDelayMs = 100;
         private static readonly ConcurrentDictionary<Tuple<SqlServerStorage, string>, SemaphoreSlim> Semaphores =
             new ConcurrentDictionary<Tuple<SqlServerStorage, string>, SemaphoreSlim>();
-        private static readonly ConcurrentDictionary<KeyValuePair<SqlServerStorage, int>, string> NonBlockingQueriesCache =
-            new ConcurrentDictionary<KeyValuePair<SqlServerStorage, int>, string>();
-        private static readonly ConcurrentDictionary<KeyValuePair<SqlServerStorage, int>, string> TransactionalQueriesCache =
-            new ConcurrentDictionary<KeyValuePair<SqlServerStorage, int>, string>();
 
         private readonly SqlServerStorage _storage;
         private readonly SqlServerStorageOptions _options;
