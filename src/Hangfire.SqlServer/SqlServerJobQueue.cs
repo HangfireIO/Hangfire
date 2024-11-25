@@ -202,6 +202,8 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
             string[] queues,
             int invisibilityTimeout)
         {
+            const string queuesParameterName = "@queues";
+
             var query = NonBlockingQueriesCache.GetOrAdd(
                 new KeyValuePair<SqlServerStorage, int>(storage, queues.Length),
                 static pair =>
@@ -217,8 +219,8 @@ where Queue in @queues and
 (FetchedAt is null or FetchedAt < DATEADD(second, @timeoutSs, GETUTCDATE()));");
 
                     return template.Replace(
-                        "@queues", 
-                        "(" + String.Join(",", Enumerable.Range(0, pair.Value).Select(static i => "@queue" + i.ToString(CultureInfo.InvariantCulture))) + ")");
+                        queuesParameterName, 
+                        "(" + String.Join(",", Enumerable.Range(0, pair.Value).Select(static i => queuesParameterName + i.ToString(CultureInfo.InvariantCulture))) + ")");
                 });
 
             var command = connection.Create(query, timeout: storage.CommandTimeout);
@@ -226,7 +228,7 @@ where Queue in @queues and
 
             for (var i = 0; i < queues.Length; i++)
             {
-                command.AddParameter("@queue" + i, queues[i], DbType.String);
+                command.AddParameter(queuesParameterName + i, queues[i], DbType.String);
             }
 
             return command;
@@ -312,6 +314,8 @@ where Queue in @queues and
             string[] queues,
             int invisibilityTimeout)
         {
+            const string queuesParameterName = "@queues";
+
             var query = TransactionalQueriesCache.GetOrAdd(
                 new KeyValuePair<SqlServerStorage, int>(storage, queues.Length),
                 static pair =>
@@ -323,8 +327,8 @@ from [{schemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
 where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))");
 
                     return template.Replace(
-                        "@queues", 
-                        "(" + String.Join(",", Enumerable.Range(0, pair.Value).Select(static i => "@queue" + i.ToString(CultureInfo.InvariantCulture))) + ")");
+                        queuesParameterName, 
+                        "(" + String.Join(",", Enumerable.Range(0, pair.Value).Select(static i => queuesParameterName + i.ToString(CultureInfo.InvariantCulture))) + ")");
                 });
 
             var command = connection.Create(query, timeout: storage.CommandTimeout);
@@ -332,7 +336,7 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
 
             for (var i = 0; i < queues.Length; i++)
             {
-                command.AddParameter("@queue" + i, queues[i], DbType.String);
+                command.AddParameter(queuesParameterName + i, queues[i], DbType.String);
             }
 
             return command;
