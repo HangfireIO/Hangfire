@@ -23,6 +23,29 @@ https://www.hangfire.io/
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.16
+
+Hangfire.Core
+
+• Changed – Include fewer stack frames in exceptions come from `IServerFilter` implementations.
+• Changed – Don't include file information in the `ExceptionDetails` property of a FailedState instance.
+• Changed – Switch back to `CancellationEvent` usage instead of `CancellationToken.WaitHandle`.
+• Fixed – Don't commit external transaction in the `BackgroundJobStateChanger` implementation.
+• Fixed – Use safe default serializer settings for Newtonsoft.Json 12.X and below.
+• Project – Fix builds for the `net451` platform when using .NET 9.0.
+• Project – Significantly reduce execution time of unit tests in the `RecurringJobSchedulerFacts` class.
+• Project – Bump `Microsoft.CodeAnalysis.NetAnalyzers` package to version 9.0.0.
+
+Hangfire.SqlServer
+
+• Changed – Use vanilla ADO.NET when fetching a job in the `SqlServerJobQueue` implementation.
+• Fixed – SqlException: Must declare the scalar variable "@key" in delayed and recurring job schedulers.
+• Fixed – Decrease the `LockTimeout` time when calling the `sp_getapplock` procedure to 1 second for less blocking.
+• Project – Disable parallel tests execution when building under .NET 9.0.
+• Project – Run tests over the latest Microsoft.Data.SqlClient package and the `net6.0` platform.
+• Project – Reduce execution time of integration tests.
+• Project – Disable `PoolBlockingPeriod` setting on AppVeyor to handle transient test failures.
+
 1.8.15
 
 Hangfire.Core
