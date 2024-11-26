@@ -22,6 +22,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Hangfire.Annotations;
+using Hangfire.Common;
 using Hangfire.Storage;
 
 // ReSharper disable RedundantAnonymousTypePropertyName
@@ -124,7 +125,8 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
             var queuesString = String.Join("_", queues.OrderBy(static x => x));
             var resource = Tuple.Create(_storage, queuesString);
 
-            var waitArray = GetWaitArrayForQueueSignals(_storage, queues, cancellationToken);
+            using var cancellationEvent = cancellationToken.GetCancellationEvent();
+            var waitArray = GetWaitArrayForQueueSignals(_storage, queues, cancellationEvent);
 
             SemaphoreSlim semaphore = null;
 
@@ -221,7 +223,8 @@ where Queue in @queues and
                 ? _options.QueuePollInterval
                 : TimeSpan.FromSeconds(1);
 
-            var waitArray = GetWaitArrayForQueueSignals(_storage, queues, cancellationToken);
+            using var cancellationEvent = cancellationToken.GetCancellationEvent();
+            var waitArray = GetWaitArrayForQueueSignals(_storage, queues, cancellationEvent);
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -305,11 +308,11 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
                 .AddExpandedParameter("@queues", queues, DbType.String);
         }
 
-        private static WaitHandle[] GetWaitArrayForQueueSignals(SqlServerStorage storage, string[] queues, CancellationToken cancellationToken)
+        private static WaitHandle[] GetWaitArrayForQueueSignals(SqlServerStorage storage, string[] queues, CancellationTokenExtentions.CancellationEvent cancellationEvent)
         {
             var waitList = new List<WaitHandle>(capacity: queues.Length + 1)
             {
-                cancellationToken.WaitHandle
+                cancellationEvent.WaitHandle
             };
 
             foreach (var queue in queues)

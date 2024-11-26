@@ -66,6 +66,9 @@ namespace Hangfire.Common
             var elapsedThreshold = TimeSpan.FromMilliseconds(500);
             var protectionTime = TimeSpan.FromSeconds(1);
 
+            // There was a precedent of the following message logged when CancellationToken.WaitHandle
+            // was used directly, instead of having our custom CancellationEvent class used, please see
+            // https://github.com/HangfireIO/Hangfire/issues/2447
             if (!cancellationToken.IsCancellationRequested &&
                 timeout >= timeoutThreshold &&
                 stopwatch.Elapsed < elapsedThreshold)
