@@ -20,7 +20,6 @@ using Hangfire.States;
 using Hangfire.Storage;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Hangfire.Server
@@ -80,7 +79,7 @@ namespace Hangfire.Server
             }
         }
 
-        [SuppressMessage("SonarLint", "S4275:GettersAndSettersShouldAccessTheExpectedFields", Justification = "Bad property naming for backwards compatibility.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("SonarLint", "S4275:GettersAndSettersShouldAccessTheExpectedFields", Justification = "Bad property naming for backwards compatibility.")]
         public CancellationToken ShutdownToken
         {
             get

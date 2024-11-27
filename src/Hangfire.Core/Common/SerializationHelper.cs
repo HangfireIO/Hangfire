@@ -216,6 +216,7 @@ namespace Hangfire.Common
             serializerSettings.DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate;
             serializerSettings.NullValueHandling = NullValueHandling.Ignore;
             serializerSettings.CheckAdditionalContent = true; // Default option in JsonConvert.Deserialize method
+            serializerSettings.MaxDepth = 128;
 #if NETSTANDARD2_0
             serializerSettings.SerializationBinder = new TypeHelperSerializationBinder();
 #else
@@ -234,6 +235,7 @@ namespace Hangfire.Common
         {
             var serializerSettings = new JsonSerializerSettings();
             serializerSettings.TypeNameHandling = TypeNameHandling.Objects;
+            serializerSettings.MaxDepth = 128;
 
             SetSimpleTypeNameAssemblyFormat(serializerSettings);
 

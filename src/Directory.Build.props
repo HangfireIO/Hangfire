@@ -8,6 +8,7 @@
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <LangVersion>Latest</LangVersion>
         <NuGetAuditMode>direct</NuGetAuditMode>
+        <CheckNotRecommendedTargetFramework>false</CheckNotRecommendedTargetFramework>
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="..\SharedAssemblyInfo.cs" Link="Properties\SharedAssemblyInfo.cs" />
@@ -15,7 +16,7 @@
 
     <!-- Plugging in Roslyn Analysers -->
     <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" />
     </ItemGroup>
 
     <PropertyGroup>

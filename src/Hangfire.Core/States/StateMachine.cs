@@ -15,7 +15,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Profiling;
@@ -46,7 +45,7 @@ namespace Hangfire.States
 
         public IStateMachine InnerStateMachine => _innerStateMachine;
 
-        [SuppressMessage("Naming", "CA1725:Parameter names should match base declaration", Justification = "Parameter name changed to avoid ambiguity and errors in the method's implementation.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1725:Parameter names should match base declaration", Justification = "Parameter name changed to avoid ambiguity and errors in the method's implementation.")]
         public IState ApplyState(ApplyStateContext initialContext)
         {
             if (initialContext == null) throw new ArgumentNullException(nameof(initialContext));

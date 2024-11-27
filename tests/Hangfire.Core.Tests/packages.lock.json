@@ -97,8 +97,8 @@
       },
       "Microsoft.CodeAnalysis.NetAnalyzers": {
         "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "DxiTgkCl3CGq1rYmBX2wjY7XGbxiBdL4J+/AJIAFLKy5z70NxhnVRnPghnicXZ8oF6JKVXlW3xwznRbI3ioEKg=="
+        "resolved": "9.0.0",
+        "contentHash": "JajbvkrBgtdRghavIjcJuNHMOja4lqBmEezbhZyqWPYh2cpLhT5mPpfC7NQVDO4IehWQum9t/nwF4v+qQGtYWg=="
       },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
@@ -1256,7 +1256,7 @@
           "Cronos": "[0.8.3, )",
           "LibLog": "[1.5.0, )",
           "Microsoft.CSharp": "[4.4.0, )",
-          "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
+          "Microsoft.CodeAnalysis.NetAnalyzers": "[9.0.0, )",
           "Microsoft.SourceLink.GitHub": "[8.0.0, )",
           "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
           "Newtonsoft.Json": "[11.0.1, )",
@@ -1351,8 +1351,8 @@
       },
       "Microsoft.CodeAnalysis.NetAnalyzers": {
         "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "DxiTgkCl3CGq1rYmBX2wjY7XGbxiBdL4J+/AJIAFLKy5z70NxhnVRnPghnicXZ8oF6JKVXlW3xwznRbI3ioEKg=="
+        "resolved": "9.0.0",
+        "contentHash": "JajbvkrBgtdRghavIjcJuNHMOja4lqBmEezbhZyqWPYh2cpLhT5mPpfC7NQVDO4IehWQum9t/nwF4v+qQGtYWg=="
       },
       "Microsoft.NETFramework.ReferenceAssemblies.net452": {
         "type": "Transitive",
@@ -1461,7 +1461,7 @@
           "CronExpressionDescriptor": "[1.21.0, )",
           "Cronos": "[0.8.3, )",
           "LibLog": "[1.5.0, )",
-          "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
+          "Microsoft.CodeAnalysis.NetAnalyzers": "[9.0.0, )",
           "Microsoft.NETFramework.ReferenceAssemblies": "[1.0.3, )",
           "Microsoft.Owin": "[4.2.2, )",
           "Microsoft.SourceLink.GitHub": "[8.0.0, )",
@@ -1559,8 +1559,8 @@
       },
       "Microsoft.CodeAnalysis.NetAnalyzers": {
         "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "DxiTgkCl3CGq1rYmBX2wjY7XGbxiBdL4J+/AJIAFLKy5z70NxhnVRnPghnicXZ8oF6JKVXlW3xwznRbI3ioEKg=="
+        "resolved": "9.0.0",
+        "contentHash": "JajbvkrBgtdRghavIjcJuNHMOja4lqBmEezbhZyqWPYh2cpLhT5mPpfC7NQVDO4IehWQum9t/nwF4v+qQGtYWg=="
       },
       "Microsoft.NETFramework.ReferenceAssemblies.net461": {
         "type": "Transitive",
@@ -1669,7 +1669,7 @@
           "CronExpressionDescriptor": "[1.21.0, )",
           "Cronos": "[0.8.3, )",
           "LibLog": "[1.5.0, )",
-          "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
+          "Microsoft.CodeAnalysis.NetAnalyzers": "[9.0.0, )",
           "Microsoft.NETFramework.ReferenceAssemblies": "[1.0.3, )",
           "Microsoft.Owin": "[4.2.2, )",
           "Microsoft.SourceLink.GitHub": "[8.0.0, )",
@@ -1777,8 +1777,8 @@
       },
       "Microsoft.CodeAnalysis.NetAnalyzers": {
         "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "DxiTgkCl3CGq1rYmBX2wjY7XGbxiBdL4J+/AJIAFLKy5z70NxhnVRnPghnicXZ8oF6JKVXlW3xwznRbI3ioEKg=="
+        "resolved": "9.0.0",
+        "contentHash": "JajbvkrBgtdRghavIjcJuNHMOja4lqBmEezbhZyqWPYh2cpLhT5mPpfC7NQVDO4IehWQum9t/nwF4v+qQGtYWg=="
       },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
@@ -2936,7 +2936,7 @@
           "Cronos": "[0.8.3, )",
           "LibLog": "[1.5.0, )",
           "Microsoft.CSharp": "[4.4.0, )",
-          "Microsoft.CodeAnalysis.NetAnalyzers": "[8.0.0, )",
+          "Microsoft.CodeAnalysis.NetAnalyzers": "[9.0.0, )",
           "Microsoft.SourceLink.GitHub": "[8.0.0, )",
           "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
           "Newtonsoft.Json": "[11.0.1, )",

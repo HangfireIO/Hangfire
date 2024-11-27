@@ -256,9 +256,7 @@ namespace Hangfire.Common
 
         private static IEnumerable<JobFilterAttribute> GetFilterAttributes(MemberInfo memberInfo)
         {
-            return memberInfo
-                .GetCustomAttributes(typeof(JobFilterAttribute), inherit: true)
-                .Cast<JobFilterAttribute>();
+            return memberInfo.GetCustomAttributes<JobFilterAttribute>(inherit: true);
         }
 
         /// <summary>

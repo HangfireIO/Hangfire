@@ -7,7 +7,7 @@
 #   - Section names should be unique on each level.
 
 # Please don't edit it manually, use the `build.bat version` command instead.
-version: 1.8.15-build-0{build}
+version: 1.8.16-build-0{build}
 
 image:
   - Visual Studio 2022
@@ -19,7 +19,7 @@ image:
 
 # environment variables
 environment:
-  Hangfire_SqlServer_ConnectionStringTemplate: Server=.\SQL2017;Database={0};User Id=sa;Password=Password12!;TrustServerCertificate=True
+  Hangfire_SqlServer_ConnectionStringTemplate: Server=.\SQL2017;Database={0};User Id=sa;Password=Password12!;TrustServerCertificate=True;PoolBlockingPeriod=NeverBlock
   SIGNPATH_API_TOKEN:
     secure: nvG+jv/K3utFvpHGx/N6Glpv0Wdj0wfBSl8c/tkHbn2AIwGcNe2e4VSOkod7xVpC
   COVERITY_TOKEN:

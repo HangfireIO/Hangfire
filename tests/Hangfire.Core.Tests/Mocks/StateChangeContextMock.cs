@@ -26,10 +26,12 @@ namespace Hangfire.Core.Tests
                 () => new StateChangeContext(
                     Storage.Object,
                     Connection.Object,
+                    Transaction?.Object,
                     BackgroundJobId,
                     NewState.Object,
                     ExpectedStates,
                     DisableFilters,
+                    CompleteJob?.Object,
                     CancellationToken,
                     EmptyProfiler.Instance,
                     ServerId,
@@ -38,6 +40,8 @@ namespace Hangfire.Core.Tests
 
         public Mock<JobStorage> Storage { get; set; }
         public Mock<IStorageConnection> Connection { get; set; }
+        public Mock<JobStorageTransaction> Transaction { get; set; }
+        public Mock<IFetchedJob> CompleteJob { get; set; }
         public string BackgroundJobId { get; set; }
         public Mock<IState> NewState { get; set; }
         public IEnumerable<string> ExpectedStates { get; set; }

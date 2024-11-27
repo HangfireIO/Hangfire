@@ -59,8 +59,7 @@ namespace Hangfire.Common
             return MultiuseAttributeCache.GetOrAdd(
                 attributeType,
                 static type => type.GetTypeInfo()
-                            .GetCustomAttributes(typeof(AttributeUsageAttribute), true)
-                            .Cast<AttributeUsageAttribute>()
+                            .GetCustomAttributes<AttributeUsageAttribute>(inherit: true)
                             .First()
                             .AllowMultiple);
         }

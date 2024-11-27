@@ -495,6 +495,45 @@ namespace Hangfire.Core.Tests.States
             _transaction.Verify(x => x.Commit());
         }
 
+        [Fact]
+        public void ChangeState_WithTransaction_PassesTheGivenTransaction_AndDoesNotCommitTheImplicitOne()
+        {
+            _context.Transaction = new Mock<JobStorageTransaction>();
+            var stateChanger = CreateStateChanger();
+
+            stateChanger.ChangeState(_context.Object);
+
+            _stateMachine.Verify(x => x.ApplyState(It.Is<ApplyStateContext>(
+                ctx => ctx.Transaction == _context.Transaction.Object)));
+
+            _connection.Verify(x => x.CreateWriteTransaction(), Times.Never);
+            _transaction.Verify(x => x.Commit(), Times.Never);
+        }
+
+        [Fact]
+        public void ChangeState_WithTransaction_DoesNotCommitAndDoesNotDisposeTheExplicitTransaction()
+        {
+            _context.Transaction = new Mock<JobStorageTransaction>();
+            var stateChanger = CreateStateChanger();
+
+            stateChanger.ChangeState(_context.Object);
+
+            _context.Transaction.Verify(x => x.Commit(), Times.Never);
+            _context.Transaction.Verify(x => x.Dispose(), Times.Never);
+        }
+
+        [Fact]
+        public void ChangeState_WithTransaction_AcquiresATransactionLevelLockInstead()
+        {
+            _context.Transaction = new Mock<JobStorageTransaction>();
+            var stateChanger = CreateStateChanger();
+
+            stateChanger.ChangeState(_context.Object);
+
+            _context.Transaction.Verify(x => x.AcquireDistributedLock($"job:{JobId}:state-lock", It.IsAny<TimeSpan>()));
+            _connection.Verify(x => x.AcquireDistributedLock(It.IsAny<string>(), It.IsAny<TimeSpan>()), Times.Never);
+        }
+
         private BackgroundJobStateChanger CreateStateChanger()
         {
             return new BackgroundJobStateChanger(_filterProvider.Object, _stateMachine.Object);

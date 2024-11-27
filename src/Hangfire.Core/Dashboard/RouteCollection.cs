@@ -15,13 +15,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 
 namespace Hangfire.Dashboard
 {
-    [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "Public API, can not change in minor versions.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "Public API, can not change in minor versions.")]
     public class RouteCollection
     {
         private readonly List<Tuple<string, IDashboardDispatcher>> _dispatchers

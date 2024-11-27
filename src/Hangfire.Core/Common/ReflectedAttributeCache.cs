@@ -18,6 +18,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 
 namespace Hangfire.Common
@@ -49,7 +50,7 @@ namespace Hangfire.Common
             Debug.Assert(memberInfo != null);
             Debug.Assert(lookup != null);
 
-            return lookup.GetOrAdd(memberInfo, static mi => new ReadOnlyCollection<TAttribute>((TAttribute[])mi.GetCustomAttributes(typeof(TAttribute), inherit: true)));
+            return lookup.GetOrAdd(memberInfo, static mi => new ReadOnlyCollection<TAttribute>(mi.GetCustomAttributes<TAttribute>(inherit: true).ToArray()));
         }
     }
 }

@@ -28,18 +28,13 @@ namespace Hangfire.Common
         {
             if (exception != null && !exception.Data.Contains(DataKey))
             {
-                exception.Data.Add(DataKey, exception.StackTrace);
+                exception.Data.Add(DataKey, GetStackTraceNoFileInfo(exception));
             }
         }
 
         public static string ToStringWithOriginalStackTrace([NotNull] this Exception exception, int? numLines)
         {
             if (exception == null) throw new ArgumentNullException(nameof(exception));
-
-            if (!exception.Data.Contains(DataKey))
-            {
-                return GetFirstLines(exception.ToString(), numLines);
-            }
 
             return GetFirstLines(ToStringHelper(exception, false), numLines);
         }
@@ -58,7 +53,7 @@ namespace Hangfire.Common
             }
             else sb.Append('\n');
 
-            var stackTrace = exception.Data.Contains(DataKey) ? (string)exception.Data[DataKey] : exception.StackTrace;
+            var stackTrace = exception.Data.Contains(DataKey) ? (string)exception.Data[DataKey] : GetStackTraceNoFileInfo(exception);
             if (!String.IsNullOrWhiteSpace(stackTrace))
             {
                 sb.Append(stackTrace);
@@ -90,6 +85,15 @@ namespace Hangfire.Common
 
                 return builder.ToString();
             }
+        }
+
+        private static string GetStackTraceNoFileInfo(Exception ex)
+        {
+#if NETSTANDARD1_3
+            return ex.StackTrace;
+#else
+            return new System.Diagnostics.StackTrace(ex, fNeedFileInfo: false).ToString();
+#endif
         }
     }
 }
