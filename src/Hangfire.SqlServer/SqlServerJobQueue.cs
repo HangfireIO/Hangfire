@@ -180,8 +180,8 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
 
                 if (!reader.Read()) return null;
 
-                var id = reader.GetInt64(reader.GetOrdinal("Id"));
-                var jobId = reader.GetInt64(reader.GetOrdinal("JobId"));
+                var id = Convert.ToInt64(reader.GetValue(reader.GetOrdinal("Id")), CultureInfo.InvariantCulture); // Can be Int32 in older schemas
+                var jobId = Convert.ToInt64(reader.GetValue(reader.GetOrdinal("JobId")), CultureInfo.InvariantCulture); // Can be Int32 in older schemas
                 var queue = reader.GetString(reader.GetOrdinal("Queue"));
                 var fetchedAt = reader.GetDateTime(reader.GetOrdinal("FetchedAt"));
 
@@ -243,7 +243,7 @@ where Queue in @queues and
                     {
                         if (reader.Read())
                         {
-                            var jobId = reader.GetInt64(reader.GetOrdinal("JobId"));
+                            var jobId = Convert.ToInt64(reader.GetValue(reader.GetOrdinal("JobId")), CultureInfo.InvariantCulture); // Can be Int32 in older schemas
                             var queue = reader.GetString(reader.GetOrdinal("Queue"));
 
                             if (reader.Read())
