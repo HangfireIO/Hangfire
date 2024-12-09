@@ -135,7 +135,7 @@ namespace Hangfire.Common
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Job"/> class with the 
-        /// type, metadata of a method and the given list of arguments.
+        /// type, metadata of a method, and the given list of arguments.
         /// </summary>
         /// 
         /// <param name="type">Type that contains the given method.</param>
@@ -157,7 +157,29 @@ namespace Hangfire.Common
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Job"/> class with the type, metadata of a method,
-        /// the given list of arguments and the default target queue for a job.
+        /// and the given list of arguments, specified in a read-only list.
+        /// </summary>
+        /// 
+        /// <param name="type">Type that contains the given method.</param>
+        /// <param name="method">Method that should be invoked.</param>
+        /// <param name="args">Arguments that should be passed during the method call.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="type"/> argument is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="method"/> argument is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="args"/> argument is null.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="type"/> does not contain the given <paramref name="method"/>.
+        /// </exception>
+        /// <exception cref="ArgumentException">Parameter/argument count mismatch.</exception>
+        /// <exception cref="NotSupportedException"><paramref name="method"/> is not supported.</exception>
+        public Job([NotNull] Type type, [NotNull] MethodInfo method, [NotNull] IReadOnlyList<object> args)
+            : this(type, method, args, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Job"/> class with the type, metadata of a method,
+        /// the given list of arguments, and the default target queue for a job.
         /// </summary>
         ///
         /// <param name="type">Type that contains the given method.</param>

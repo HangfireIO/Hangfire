@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -145,6 +146,18 @@ namespace Hangfire.Core.Tests.Common
 
             Assert.Throws<NotSupportedException>(
                 () => new Job(_type, method, new[] { "hello!" }));
+        }
+
+        [Fact]
+        public void Ctor_CorrectlyPasses_ReadOnlyListOfArguments()
+        {
+            var method = _type.GetMethod("MethodWithArguments");
+            IReadOnlyList<object> args = new List<object> { "hello", 123 };
+            var job = new Job(_type, method, args);
+
+            Assert.NotNull(job);
+            Assert.Equal("hello", job.Args[0]);
+            Assert.Equal(123, job.Args[1]);
         }
 
         [Fact]
