@@ -34,6 +34,9 @@ namespace Hangfire
             Filters.Add(new AutomaticRetryAttribute());
             Filters.Add(new StatisticsHistoryAttribute());
             Filters.Add(new ContinuationsSupportAttribute());
+#if NETSTANDARD2_0
+            Filters.Add(new DiagnosticsActivityFilter());
+#endif
         }
 
         /// <summary>
