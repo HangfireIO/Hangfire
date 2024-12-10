@@ -149,15 +149,17 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void Ctor_CorrectlyPasses_ReadOnlyListOfArguments()
+        public void Ctor_CanUsePropertyValues_OfAnotherJob_AsItsArguments()
         {
             var method = _type.GetMethod("MethodWithArguments");
-            IReadOnlyList<object> args = new List<object> { "hello", 123 };
-            var job = new Job(_type, method, args);
+            var job = new Job(_type, method, "hello", 456);
 
-            Assert.NotNull(job);
-            Assert.Equal("hello", job.Args[0]);
-            Assert.Equal(123, job.Args[1]);
+            var anotherJob = new Job(job.Type, job.Method, job.Args);
+
+            Assert.Equal(_type, anotherJob.Type);
+            Assert.Equal(method, anotherJob.Method);
+            Assert.Equal("hello", anotherJob.Args[0]);
+            Assert.Equal(456, anotherJob.Args[1]);
         }
 
         [Fact]
