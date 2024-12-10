@@ -1,42 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net45;netstandard1.3;netstandard2.0;</TargetFrameworks>
-    <DebugType>portable</DebugType>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <TargetFrameworks>net451;netstandard1.3;netstandard2.0;</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>1591</NoWarn>
     <RootNamespace>Hangfire.SqlServer</RootNamespace>
   </PropertyGroup>
   
-  <PropertyGroup Condition="'$(TargetFramework)'=='net45'">
-    <DebugType>full</DebugType>
+  <PropertyGroup Condition="'$(TargetFramework)'=='net451'">
     <DefineConstants>$(DefineConstants);FEATURE_TRANSACTIONSCOPE;FEATURE_CONFIGURATIONMANAGER</DefineConstants>
   </PropertyGroup>
-  
-  <ItemGroup>
-    <Compile Include="..\SharedAssemblyInfo.cs" Link="Properties\SharedAssemblyInfo.cs" />
-  </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\Hangfire.Core\Hangfire.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
-    <PackageReference Include="Dapper" Version="2.0.4" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />
-  </ItemGroup>
-  
-  <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
-    <PackageReference Include="Dapper" Version="1.50.7" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)'=='net45'">
-    <PackageReference Include="Dapper" Version="1.50.1" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)'=='net45'">
+  <ItemGroup Condition="'$(TargetFramework)'=='net451'">
     <Reference Include="System.Configuration" />
     <Reference Include="System.Transactions" />
+
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" />
+    <PackageReference Include="Dapper" Version="1.60.6" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
+    <PackageReference Include="Dapper" Version="1.60.6" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+    <PackageReference Include="Dapper" Version="2.1.28" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3' or '$(TargetFramework)'=='netstandard2.0'">

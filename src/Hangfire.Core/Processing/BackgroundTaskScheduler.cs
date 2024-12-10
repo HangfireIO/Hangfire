@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2017 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -126,7 +125,7 @@ namespace Hangfire.Processing
                 throw new ArgumentException("At least one non-started thread should be created.", nameof(threadFactory));
             }
 
-            if (_threads.Any(thread => thread == null || (thread.ThreadState & ThreadState.Unstarted) == 0))
+            if (_threads.Any(static thread => thread == null || (thread.ThreadState & ThreadState.Unstarted) == 0))
             {
                 throw new ArgumentException("All the threads should be non-null and in the ThreadState.Unstarted state.", nameof(threadFactory));
             }
@@ -151,7 +150,7 @@ namespace Hangfire.Processing
             }
 #endif
 
-            _ourThreadIds = new HashSet<int>(_threads.Select(x => x.ManagedThreadId));
+            _ourThreadIds = new HashSet<int>(_threads.Select(static x => x.ManagedThreadId));
         }
 
         /// <inheritdoc />
@@ -211,7 +210,7 @@ namespace Hangfire.Processing
             // we allow to inline only requests from the current scheduler, i.e. just to save
             // some time, since no queueing will be involved.
 
-            if (!_ourThreadIds.Contains(Thread.CurrentThread.ManagedThreadId)) return false;
+            if (!_ourThreadIds.Contains(Environment.CurrentManagedThreadId)) return false;
 
             return TryExecuteTask(task);
         }
@@ -331,7 +330,7 @@ namespace Hangfire.Processing
                 }
             }
 #endif
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 InvokeUnhandledExceptionHandler(ex);
             }
@@ -345,7 +344,7 @@ namespace Hangfire.Processing
                 handler?.Invoke(exception);
             }
 #if !NETSTANDARD1_3
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 Trace.WriteLine("Unexpected exception caught in exception handler itself." + Environment.NewLine + ex);
             }

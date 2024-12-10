@@ -15,7 +15,7 @@
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    var pager = new Pager(from, perPage, monitor.EnqueuedCount(Queue));
+    var pager = new Pager(from, perPage, DashboardOptions.DefaultRecordsPerPage, monitor.EnqueuedCount(Queue));
     var enqueuedJobs = monitor.EnqueuedJobs(Queue, pager.FromRecord, pager.RecordsPerPage);
 }
 
@@ -29,7 +29,7 @@
             { "Queues", Url.LinkToQueues() }
         })
 
-        <h1 class="page-header">@Queue <small>@Strings.EnqueuedJobsPage_Title</small></h1>
+        <h1 id="page-title" class="page-header">@Queue <small>@Strings.EnqueuedJobsPage_Title</small></h1>
 
         @if (pager.TotalPageCount == 0)
         {
@@ -56,7 +56,7 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="table" aria-describedby="page-title">
                         <thead>
                         <tr>
                             @if (!IsReadOnly)
@@ -78,7 +78,7 @@
                                 @if (!IsReadOnly)
                                 {
                                     <td>
-                                        @if (job.Value != null)
+                                        @if (job.Value != null && job.Value.InEnqueuedState)
                                         {
                                             <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
                                         }

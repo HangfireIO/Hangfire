@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2015 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2015 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -16,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Dashboard.Resources;
@@ -64,7 +64,7 @@ namespace Hangfire.Dashboard
         public static readonly DashboardMetric ServerCount = new DashboardMetric(
             "servers:count", 
             "Metrics_Servers",
-            page => new Metric(page.Statistics.Servers)
+            static page => new Metric(page.Statistics.Servers)
             {
                 Style = page.Statistics.Servers == 0 ? MetricStyle.Warning : MetricStyle.Default,
                 Highlighted = page.Statistics.Servers == 0,
@@ -76,23 +76,30 @@ namespace Hangfire.Dashboard
         public static readonly DashboardMetric RecurringJobCount = new DashboardMetric(
             "recurring:count",
             "Metrics_RecurringJobs",
-            page => new Metric(page.Statistics.Recurring));
+            static page => new Metric(page.Statistics.Recurring));
 
         public static readonly DashboardMetric RetriesCount = new DashboardMetric(
             "retries:count",
             "Metrics_Retries",
-            page =>
+            static page =>
             {
                 long retryCount;
-                using (var connection = page.Storage.GetConnection())
-                {
-                    var storageConnection = connection as JobStorageConnection;
-                    if (storageConnection == null)
-                    {
-                        return null;
-                    }
 
-                    retryCount = storageConnection.GetSetCount("retries");
+                if (page.Statistics.Retries.HasValue)
+                {
+                    retryCount = page.Statistics.Retries.Value;
+                }
+                else
+                {
+                    using (var connection = page.Storage.GetReadOnlyConnection())
+                    {
+                        if (!(connection is JobStorageConnection storageConnection))
+                        {
+                            return null;
+                        }
+
+                        retryCount = storageConnection.GetSetCount("retries");
+                    }
                 }
 
                 return new Metric(retryCount)
@@ -104,10 +111,10 @@ namespace Hangfire.Dashboard
         public static readonly DashboardMetric EnqueuedCountOrNull = new DashboardMetric(
             "enqueued:count-or-null",
             "Metrics_EnqueuedCountOrNull",
-            page => page.Statistics.Enqueued > 0 || page.Statistics.Failed == 0
-                ? new Metric(page.Statistics.Enqueued)
+            static page => page.Statistics.Enqueued > 0 || page.Statistics.Failed == 0
+                ? new Metric(page.Statistics.Enqueued > 0 ? page.Statistics.Enqueued : page.Statistics.Scheduled)
                 {
-                    Style = page.Statistics.Enqueued > 0 ? MetricStyle.Info : MetricStyle.Default,
+                    Style = page.Statistics.Enqueued + page.Statistics.Scheduled > 0 ? MetricStyle.Info : MetricStyle.Default,
                     Highlighted = page.Statistics.Enqueued > 0 && page.Statistics.Failed == 0
                 }
                 : null);
@@ -115,19 +122,19 @@ namespace Hangfire.Dashboard
         public static readonly DashboardMetric FailedCountOrNull = new DashboardMetric(
             "failed:count-or-null",
             "Metrics_FailedJobs",
-            page => page.Statistics.Failed > 0
+            static page => page.Statistics.Failed > 0
                 ? new Metric(page.Statistics.Failed)
                 {
                     Style = MetricStyle.Danger,
                     Highlighted = true,
-                    Title = string.Format(Strings.Metrics_FailedCountOrNull, page.Statistics.Failed)
+                    Title = string.Format(CultureInfo.CurrentCulture, Strings.Metrics_FailedCountOrNull, page.Statistics.Failed)
                 }
                 : null);
 
         public static readonly DashboardMetric EnqueuedAndQueueCount = new DashboardMetric(
             "enqueued-queues:count",
             "Metrics_EnqueuedQueuesCount",
-            page => new Metric($"{page.Statistics.Enqueued:N0} / {page.Statistics.Queues:N0}")
+            static page => new Metric($"{page.Statistics.Enqueued:N0} / {page.Statistics.Queues:N0}")
             {
                 IntValue = page.Statistics.Enqueued,
                 Style = page.Statistics.Enqueued > 0 ? MetricStyle.Info : MetricStyle.Default,
@@ -137,7 +144,7 @@ namespace Hangfire.Dashboard
         public static readonly DashboardMetric ScheduledCount = new DashboardMetric(
             "scheduled:count",
             "Metrics_ScheduledJobs",
-            page => new Metric(page.Statistics.Scheduled)
+            static page => new Metric(page.Statistics.Scheduled)
             {
                 Style = page.Statistics.Scheduled > 0 ? MetricStyle.Info : MetricStyle.Default
             });
@@ -145,7 +152,7 @@ namespace Hangfire.Dashboard
         public static readonly DashboardMetric ProcessingCount = new DashboardMetric(
             "processing:count",
             "Metrics_ProcessingJobs",
-            page => new Metric(page.Statistics.Processing)
+            static page => new Metric(page.Statistics.Processing)
             {
                 Style = page.Statistics.Processing > 0 ? MetricStyle.Warning : MetricStyle.Default
             });
@@ -153,12 +160,12 @@ namespace Hangfire.Dashboard
         public static readonly DashboardMetric SucceededCount = new DashboardMetric(
             "succeeded:count",
             "Metrics_SucceededJobs",
-            page => new Metric(page.Statistics.Succeeded));
+            static page => new Metric(page.Statistics.Succeeded));
 
         public static readonly DashboardMetric FailedCount = new DashboardMetric(
             "failed:count",
             "Metrics_FailedJobs",
-            page => new Metric(page.Statistics.Failed)
+            static page => new Metric(page.Statistics.Failed)
             {
                 Style = page.Statistics.Failed > 0 ? MetricStyle.Danger : MetricStyle.Default,
                 Highlighted = page.Statistics.Failed > 0
@@ -167,21 +174,27 @@ namespace Hangfire.Dashboard
         public static readonly DashboardMetric DeletedCount = new DashboardMetric(
             "deleted:count",
             "Metrics_DeletedJobs",
-            page => new Metric(page.Statistics.Deleted));
+            static page => new Metric(page.Statistics.Deleted));
 
         public static readonly DashboardMetric AwaitingCount = new DashboardMetric(
             "awaiting:count",
             "Metrics_AwaitingCount",
-            page =>
+            static page =>
             {
                 long awaitingCount = -1;
 
-                using (var connection = page.Storage.GetConnection())
+                if (page.Statistics.Awaiting.HasValue)
                 {
-                    var storageConnection = connection as JobStorageConnection;
-                    if (storageConnection != null)
+                    awaitingCount = page.Statistics.Awaiting.Value;
+                }
+                else
+                {
+                    using (var connection = page.Storage.GetReadOnlyConnection())
                     {
-                        awaitingCount = storageConnection.GetSetCount("awaiting");
+                        if (connection is JobStorageConnection storageConnection)
+                        {
+                            awaitingCount = storageConnection.GetSetCount("awaiting");
+                        }
                     }
                 }
 

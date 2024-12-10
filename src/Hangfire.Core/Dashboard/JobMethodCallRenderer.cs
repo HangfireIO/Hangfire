@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -17,6 +16,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -41,9 +41,9 @@ namespace Hangfire.Dashboard
             var builder = new StringBuilder();
 
             builder.Append(WrapKeyword("using"));
-            builder.Append(" ");
+            builder.Append(' ');
             builder.Append(Encode(job.Type.Namespace));
-            builder.Append(";");
+            builder.Append(';');
             builder.AppendLine();
             builder.AppendLine();
 
@@ -58,7 +58,11 @@ namespace Hangfire.Dashboard
                     serviceName = serviceName.Substring(1);
                 }
 
-                serviceName = Char.ToLower(serviceName[0]) + serviceName.Substring(1);
+                serviceName = Char.ToLower(serviceName[0]
+#if !NETSTANDARD1_3
+                    , CultureInfo.InvariantCulture
+#endif
+                    ) + serviceName.Substring(1);
 
                 builder.Append(WrapKeyword("var"));
                 builder.Append(
@@ -75,19 +79,19 @@ namespace Hangfire.Dashboard
 
             builder.Append(!job.Method.IsStatic ? Encode(serviceName) : WrapType(Encode(job.Type.ToGenericTypeString())));
 
-            builder.Append(".");
+            builder.Append('.');
             builder.Append(Encode(job.Method.Name));
 
             if (job.Method.IsGenericMethod)
             {
                 var genericArgumentTypes = job.Method.GetGenericArguments()
-                    .Select(x => WrapType(x.Name))
+                    .Select(static x => WrapType(x.Name))
                     .ToArray();
 
                 builder.Append($"&lt;{String.Join(", ", genericArgumentTypes)}&gt;");
             }
 
-            builder.Append("(");
+            builder.Append('(');
 
             var parameters = job.Method.GetParameters();
             var renderedArguments = new List<string>(parameters.Length);
@@ -123,7 +127,7 @@ namespace Hangfire.Dashboard
                     {
                         argumentValue = SerializationHelper.Deserialize(argument, parameter.ParameterType, SerializationOption.User);
                     }
-                    catch (Exception)
+                    catch (Exception ex) when (ex.IsCatchableExceptionType())
                     {
                         // If argument value is not encoded as JSON (an old
                         // way using TypeConverter), we should display it as is.
@@ -141,7 +145,7 @@ namespace Hangfire.Dashboard
                         var renderedItems = new List<string>();
 
                         // ReSharper disable once LoopCanBeConvertedToQuery
-                        foreach (var item in (IEnumerable)argumentValue)
+                        foreach (var item in argumentValue as IEnumerable)
                         {
                             var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
                             renderedItems.Add(argumentRenderer.Render(isJson, item?.ToString(),
@@ -150,6 +154,7 @@ namespace Hangfire.Dashboard
 
                         // ReSharper disable once UseStringInterpolation
                         renderedArgument = String.Format(
+                            CultureInfo.CurrentCulture,
                             "{0}{1} {{ {2} }}",
                             WrapKeyword("new"),
                             parameter.ParameterType.IsArray ? " []" : "",
@@ -181,7 +186,7 @@ namespace Hangfire.Dashboard
                 }
                 else if (i > 0)
                 {
-                    builder.Append(" ");
+                    builder.Append(' ');
                 }
 
                 builder.Append($"<span title=\"{parameter.Name}\" data-placement=\"{tooltipPosition}\">");
@@ -190,7 +195,7 @@ namespace Hangfire.Dashboard
 
                 if (i < renderedArguments.Count - 1)
                 {
-                    builder.Append(",");
+                    builder.Append(',');
                 }
             }
 
@@ -234,9 +239,9 @@ namespace Hangfire.Dashboard
             if (type == typeof(string)) return null;
 
             return type.GetTypeInfo().ImplementedInterfaces
-                .Where(x => x.GetTypeInfo().IsGenericType
+                .Where(static x => x.GetTypeInfo().IsGenericType
                             && x.GetTypeInfo().GetGenericTypeDefinition() == typeof(IEnumerable<>))
-                .Select(x => x.GetTypeInfo().GetAllGenericArguments()[0])
+                .Select(static x => x.GetTypeInfo().GetAllGenericArguments()[0])
                 .FirstOrDefault();
         }
 
@@ -247,7 +252,7 @@ namespace Hangfire.Dashboard
             return index == -1 ? name : name.Substring(0, index);
         }
 
-        private class ArgumentRenderer
+        private sealed class ArgumentRenderer
         {
             private string _enclosingString;
             private Type _deserializationType;
@@ -256,7 +261,7 @@ namespace Hangfire.Dashboard
             private ArgumentRenderer()
             {
                 _enclosingString = "\"";
-                _valueRenderer = value => value == null ? WrapKeyword("null") : WrapString(value);
+                _valueRenderer = static value => value == null ? WrapKeyword("null") : WrapString(value);
             }
 
             public string Render(bool isJson, string deserializedValue, string rawValue)
@@ -274,9 +279,9 @@ namespace Hangfire.Dashboard
                         isJson ? "FromJson" : "Deserialize"));
 
                     builder.Append("&lt;")
-                        .Append(WrapType(Encode(_deserializationType.Name)))
+                        .Append(WrapType(Encode(_deserializationType.ToGenericTypeString())))
                         .Append(WrapIdentifier("&gt;"))
-                        .Append("(");
+                        .Append('(');
 
                     builder.Append(WrapString(Encode("\"" + rawValue.Replace("\"", "\\\"") + "\"")));
                 }
@@ -297,7 +302,7 @@ namespace Hangfire.Dashboard
 
                 if (_deserializationType != null)
                 {
-                    builder.Append(")");
+                    builder.Append(')');
                 }
 
                 return builder.ToString();
@@ -327,7 +332,7 @@ namespace Hangfire.Dashboard
                 {
                     return new ArgumentRenderer
                     {
-                        _valueRenderer = value => WrapKeyword(value.ToLowerInvariant()),
+                        _valueRenderer = static value => WrapKeyword(value.ToLowerInvariant()),
                         _enclosingString = String.Empty,
                     };
                 }
@@ -362,7 +367,7 @@ namespace Hangfire.Dashboard
                     return new ArgumentRenderer
                     {
                         _enclosingString = String.Empty,
-                        _valueRenderer = value => $"{WrapType(nameof(CancellationToken))}.None"
+                        _valueRenderer = static _ => $"{WrapType(nameof(CancellationToken))}.None"
                     };
                 }
 

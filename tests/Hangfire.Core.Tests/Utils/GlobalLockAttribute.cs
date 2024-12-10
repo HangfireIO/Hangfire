@@ -4,7 +4,7 @@ using Xunit.Sdk;
 
 namespace Hangfire.Core.Tests
 {
-    internal class GlobalLockAttribute : BeforeAfterTestAttribute
+    internal sealed class GlobalLockAttribute : BeforeAfterTestAttribute
     {
         private readonly object _globalLock = new object();
 

@@ -24,7 +24,7 @@ values ('key', 1, @expireAt)";
                 // Arrange
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddHours(1) });
 
-                var aggregator = CreateAggregator(connection);
+                var aggregator = CreateAggregator(useMicrosoftDataSqlClient);
                 var cts = new CancellationTokenSource();
                 cts.Cancel();
 
@@ -41,9 +41,9 @@ values ('key', 1, @expireAt)";
             return ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient);
         }
 
-        private static CountersAggregator CreateAggregator(DbConnection connection)
+        private static CountersAggregator CreateAggregator(bool useMicrosoftDataSqlClient)
         {
-            var storage = new SqlServerStorage(connection);
+            var storage = new SqlServerStorage(() => ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient));
             return new CountersAggregator(storage, TimeSpan.Zero);
         }
     }

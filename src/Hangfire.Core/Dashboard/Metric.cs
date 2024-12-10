@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2015 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2015 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -14,6 +13,8 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using System.Globalization;
+
 namespace Hangfire.Dashboard
 {
     public class Metric
@@ -25,7 +26,7 @@ namespace Hangfire.Dashboard
 
         public Metric(long value)
         {
-            Value = value.ToString("N0");
+            Value = value.ToString("N0", CultureInfo.CurrentCulture);
             IntValue = value;
         }
 

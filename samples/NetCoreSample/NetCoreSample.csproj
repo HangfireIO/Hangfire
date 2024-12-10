@@ -2,20 +2,20 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <LangVersion>latest</LangVersion>
+    <NoWarn>NU1701;NU1702</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Hangfire.Core\Hangfire.Core.csproj" />
     <ProjectReference Include="..\..\src\Hangfire.AspNetCore\Hangfire.AspNetCore.csproj" />
     <ProjectReference Include="..\..\src\Hangfire.SqlServer\Hangfire.SqlServer.csproj" />
-    <ProjectReference Include="..\ConsoleSample\ConsoleSample.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.8" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.8" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.1" />
   </ItemGroup>
 
 </Project>

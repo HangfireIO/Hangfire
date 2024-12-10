@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -26,6 +25,8 @@ namespace Hangfire.Server
 {
     public class BackgroundJobPerformer : IBackgroundJobPerformer
     {
+        internal static readonly string ContextCanceledKey = "X_HF_Canceled";
+
         private readonly IJobFilterProvider _filterProvider;
         private readonly IBackgroundJobPerformer _innerPerformer;
 
@@ -73,13 +74,14 @@ namespace Hangfire.Server
 
             try
             {
+                context.Performer = this;
                 return PerformJobWithFilters(context, filterInfo.ServerFilters);
             }
             catch (JobAbortedException)
             {
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 // TODO: Catch only JobPerformanceException, and pass InnerException to filters in 2.0.0.
 
@@ -89,12 +91,16 @@ namespace Hangfire.Server
                 }
 
                 var exceptionContext = new ServerExceptionContext(context, ex);
-                InvokeServerExceptionFilters(exceptionContext, filterInfo.ServerExceptionFilters);
+                InvokeServerExceptionFilters(exceptionContext, filterInfo.ServerExceptionFiltersReversed);
 
                 if (!exceptionContext.ExceptionHandled)
                 {
                     throw;
                 }
+            }
+            finally
+            {
+                context.Performer = null;
             }
 
             return null;
@@ -105,78 +111,68 @@ namespace Hangfire.Server
             return new JobFilterInfo(_filterProvider.GetFilters(job));
         }
 
-        private object PerformJobWithFilters(PerformContext context, IEnumerable<IServerFilter> filters)
+        private object PerformJobWithFilters(PerformContext context, JobFilterInfo.FilterCollection<IServerFilter> filters)
         {
-            object result = null;
-
             var preContext = new PerformingContext(context);
-            Func<PerformedContext> continuation = () =>
-            {
-                result = _innerPerformer.Perform(context);
-                return new PerformedContext(context, result, false, null);
-            };
+            var enumerator = filters.GetEnumerator();
 
-            var thunk = filters.Reverse().Aggregate(continuation,
-                (next, filter) => () => InvokePerformFilter(filter, preContext, next));
-            
-            thunk();
-
-            return result;
+            return InvokeNextServerFilter(ref enumerator, _innerPerformer, context, preContext).Result;
         }
 
-        private static PerformedContext InvokePerformFilter(
-            IServerFilter filter, 
-            PerformingContext preContext,
-            Func<PerformedContext> continuation)
+        private static PerformedContext InvokeNextServerFilter(
+            ref JobFilterInfo.FilterCollection<IServerFilter>.Enumerator enumerator,
+            IBackgroundJobPerformer innerPerformer,
+            PerformContext context,
+            PerformingContext preContext)
         {
-            try
+            if (enumerator.MoveNext())
             {
-                preContext.Profiler.InvokeMeasured(
-                    Tuple.Create(filter, preContext),
-                    InvokeOnPerforming,
-                    $"OnPerforming for {preContext.BackgroundJob.Id}");
+                return InvokeServerFilter(ref enumerator, innerPerformer, context, preContext);
             }
-            catch (Exception filterException)
-            {
-                CoreBackgroundJobPerformer.HandleJobPerformanceException(
-                    filterException,
-                    preContext.CancellationToken);
-                throw;
-            }
+
+            var result = innerPerformer.Perform(context);
+            return new PerformedContext(context, result, false, null);
+        }
+
+        private static PerformedContext InvokeServerFilter(
+            ref JobFilterInfo.FilterCollection<IServerFilter>.Enumerator enumerator,
+            IBackgroundJobPerformer innerPerformer,
+            PerformContext context,
+            PerformingContext preContext)
+        {
+            var filter = enumerator.Current!;
+
+            preContext.Profiler.InvokeMeasured(
+                new KeyValuePair<IServerFilter, PerformingContext>(filter, preContext),
+                InvokeOnPerforming,
+                static ctx => $"OnPerforming for {ctx.Value.BackgroundJob.Id}" );
             
             if (preContext.Canceled)
             {
-                return new PerformedContext(
-                    preContext, null, true, null);
+                if (!preContext.Items.ContainsKey(ContextCanceledKey))
+                {
+                    preContext.Items.Add(ContextCanceledKey, filter.GetType().Name);
+                }
+                
+                return new PerformedContext(preContext, null, true, null);
             }
 
             var wasError = false;
             PerformedContext postContext;
             try
             {
-                postContext = continuation();
+                postContext = InvokeNextServerFilter(ref enumerator, innerPerformer, context, preContext);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 wasError = true;
                 postContext = new PerformedContext(
                     preContext, null, false, ex);
 
-                try
-                {
-                    postContext.Profiler.InvokeMeasured(
-                        Tuple.Create(filter, postContext),
-                        InvokeOnPerformed,
-                        $"OnPerformed for {postContext.BackgroundJob.Id}");
-                }
-                catch (Exception filterException)
-                {
-                    CoreBackgroundJobPerformer.HandleJobPerformanceException(
-                        filterException,
-                        postContext.CancellationToken);
-
-                    throw;
-                }
+                postContext.Profiler.InvokeMeasured(
+                    new KeyValuePair<IServerFilter, PerformedContext>(filter, postContext),
+                    InvokeOnPerformed,
+                    static ctx => $"OnPerformed for {ctx.Value.BackgroundJob.Id}");
 
                 if (!postContext.ExceptionHandled)
                 {
@@ -186,52 +182,68 @@ namespace Hangfire.Server
 
             if (!wasError)
             {
-                try
-                {
-                    postContext.Profiler.InvokeMeasured(
-                        Tuple.Create(filter, postContext),
-                        InvokeOnPerformed,
-                        $"OnPerformed for {postContext.BackgroundJob.Id}");
-                }
-                catch (Exception filterException)
-                {
-                    CoreBackgroundJobPerformer.HandleJobPerformanceException(
-                        filterException,
-                        postContext.CancellationToken);
-
-                    throw;
-                }
+                postContext.Profiler.InvokeMeasured(
+                    new KeyValuePair<IServerFilter, PerformedContext>(filter, postContext),
+                    InvokeOnPerformed,
+                    static ctx => $"OnPerformed for {ctx.Value.BackgroundJob.Id}");
             }
 
             return postContext;
         }
 
-        private static void InvokeOnPerforming(Tuple<IServerFilter, PerformingContext> x)
+        private static void InvokeOnPerforming(KeyValuePair<IServerFilter, PerformingContext> ctx)
         {
-            x.Item1.OnPerforming(x.Item2);
+            try
+            {
+                ctx.Key.OnPerforming(ctx.Value);
+            }
+            catch (Exception filterException) when (filterException.IsCatchableExceptionType())
+            {
+                CoreBackgroundJobPerformer.HandleJobPerformanceException(
+                    filterException,
+                    ctx.Value.CancellationToken, ctx.Value.BackgroundJob);
+            }
         }
 
-        private static void InvokeOnPerformed(Tuple<IServerFilter, PerformedContext> x)
+        private static void InvokeOnPerformed(KeyValuePair<IServerFilter, PerformedContext> ctx)
         {
-            x.Item1.OnPerformed(x.Item2);
+            try
+            {
+                ctx.Key.OnPerformed(ctx.Value);
+            }
+            catch (Exception filterException) when (filterException.IsCatchableExceptionType())
+            {
+                CoreBackgroundJobPerformer.HandleJobPerformanceException(
+                    filterException,
+                    ctx.Value.CancellationToken, ctx.Value.BackgroundJob);
+            }
         }
 
         private static void InvokeServerExceptionFilters(
             ServerExceptionContext context,
-            IEnumerable<IServerExceptionFilter> filters)
+            JobFilterInfo.ReversedFilterCollection<IServerExceptionFilter> filters)
         {
-            foreach (var filter in filters.Reverse())
+            foreach (var filter in filters)
             {
                 context.Profiler.InvokeMeasured(
-                    Tuple.Create(filter, context),
+                    new KeyValuePair<IServerExceptionFilter, ServerExceptionContext>(filter, context),
                     InvokeOnServerException,
-                    $"OnServerException for {context.BackgroundJob.Id}");
+                    static ctx => $"OnServerException for {ctx.Value.BackgroundJob.Id}");
             }
         }
 
-        private static void InvokeOnServerException(Tuple<IServerExceptionFilter, ServerExceptionContext> x)
+        private static void InvokeOnServerException(KeyValuePair<IServerExceptionFilter, ServerExceptionContext> ctx)
         {
-            x.Item1.OnServerException(x.Item2);
+            try
+            {
+                ctx.Key.OnServerException(ctx.Value);
+            }
+            catch (Exception filterException) when (filterException.IsCatchableExceptionType())
+            {
+                CoreBackgroundJobPerformer.HandleJobPerformanceException(
+                    filterException,
+                    ctx.Value.CancellationToken, ctx.Value.BackgroundJob);
+            }
         }
     }
 }

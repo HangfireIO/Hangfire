@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -15,6 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Profiling;
@@ -43,21 +43,26 @@ namespace Hangfire.States
             _innerStateMachine = innerStateMachine;
         }
 
+        public IStateMachine InnerStateMachine => _innerStateMachine;
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1725:Parameter names should match base declaration", Justification = "Parameter name changed to avoid ambiguity and errors in the method's implementation.")]
         public IState ApplyState(ApplyStateContext initialContext)
         {
+            if (initialContext == null) throw new ArgumentNullException(nameof(initialContext));
+
             var filterInfo = GetFilters(initialContext.BackgroundJob.Job);
             var electFilters = filterInfo.ElectStateFilters;
             var applyFilters = filterInfo.ApplyStateFilters;
 
             // Electing a a state
-            var electContext = new ElectStateContext(initialContext);
+            var electContext = new ElectStateContext(initialContext, this);
 
             foreach (var filter in electFilters)
             {
                 electContext.Profiler.InvokeMeasured(
-                    Tuple.Create(filter, electContext),
+                    new KeyValuePair<IElectStateFilter, ElectStateContext>(filter, electContext),
                     InvokeOnStateElection,
-                    $"OnStateElection for {electContext.BackgroundJob.Id}");
+                    static ctx => $"OnStateElection for {ctx.Value.BackgroundJob.Id}");
             }
 
             foreach (var state in electContext.TraversedStates)
@@ -74,55 +79,55 @@ namespace Hangfire.States
             foreach (var filter in applyFilters)
             {
                 context.Profiler.InvokeMeasured(
-                    Tuple.Create(filter, context),
+                    new KeyValuePair<IApplyStateFilter, ApplyStateContext>(filter, context),
                     InvokeOnStateUnapplied,
-                    $"OnStateUnapplied for {context.BackgroundJob.Id}");
+                    static ctx => $"OnStateUnapplied for {ctx.Value.BackgroundJob.Id}");
             }
 
             foreach (var filter in applyFilters)
             {
                 context.Profiler.InvokeMeasured(
-                    Tuple.Create(filter, context),
+                    new KeyValuePair<IApplyStateFilter, ApplyStateContext>(filter, context),
                     InvokeOnStateApplied,
-                    $"OnStateApplied for {context.BackgroundJob.Id}");
+                    static ctx => $"OnStateApplied for {ctx.Value.BackgroundJob.Id}");
             }
 
             return _innerStateMachine.ApplyState(context);
         }
 
-        private static void InvokeOnStateElection(Tuple<IElectStateFilter, ElectStateContext> x)
+        private static void InvokeOnStateElection(KeyValuePair<IElectStateFilter, ElectStateContext> x)
         {
             try
             {
-                x.Item1.OnStateElection(x.Item2);
+                x.Key.OnStateElection(x.Value);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 ex.PreserveOriginalStackTrace();
                 throw;
             }
         }
 
-        private static void InvokeOnStateApplied(Tuple<IApplyStateFilter, ApplyStateContext> x)
+        private static void InvokeOnStateApplied(KeyValuePair<IApplyStateFilter, ApplyStateContext> x)
         {
             try
             {
-                x.Item1.OnStateApplied(x.Item2, x.Item2.Transaction);
+                x.Key.OnStateApplied(x.Value, x.Value.Transaction);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 ex.PreserveOriginalStackTrace();
                 throw;
             }
         }
 
-        private static void InvokeOnStateUnapplied(Tuple<IApplyStateFilter, ApplyStateContext> x)
+        private static void InvokeOnStateUnapplied(KeyValuePair<IApplyStateFilter, ApplyStateContext> x)
         {
             try
             {
-                x.Item1.OnStateUnapplied(x.Item2, x.Item2.Transaction);
+                x.Key.OnStateUnapplied(x.Value, x.Value.Transaction);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 ex.PreserveOriginalStackTrace();
                 throw;

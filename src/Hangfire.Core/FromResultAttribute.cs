@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright © 2019 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2019 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -22,6 +21,14 @@ namespace Hangfire
     public sealed class FromResultAttribute : FromParameterAttribute
     {
         public FromResultAttribute() : base("AntecedentResult")
+        {
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Parameter)]
+    public sealed class FromExceptionAttribute : FromParameterAttribute
+    {
+        public FromExceptionAttribute() : base("AntecedentException")
         {
         }
     }

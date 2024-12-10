@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2017 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -25,7 +24,7 @@ namespace Hangfire.Common
         {
             // Method names containing '.' are considered explicitly implemented interface methods
             // https://stackoverflow.com/a/17854048/1398672
-            return methodInfo.Name.Contains(".") && methodInfo.IsFinal && methodInfo.IsPrivate
+            return methodInfo.Name.Contains('.') && methodInfo.IsFinal && methodInfo.IsPrivate
                 ? methodInfo.Name.Split('.').Last()
                 : methodInfo.Name;
         }

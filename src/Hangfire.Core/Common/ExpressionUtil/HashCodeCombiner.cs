@@ -7,7 +7,7 @@ namespace Hangfire.Common.ExpressionUtil
 {
     // based on System.Web.Util.HashCodeCombiner
     [ExcludeFromCodeCoverage]
-    internal class HashCodeCombiner
+    internal sealed class HashCodeCombiner
     {
         private long _combinedHash64 = 0x1505L;
 

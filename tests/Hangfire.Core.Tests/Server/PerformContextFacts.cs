@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Hangfire.Server;
 using Hangfire.Storage;
 using Moq;
@@ -134,7 +135,5 @@ namespace Hangfire.Core.Tests.Server
             return new PerformContext(
                 _storage.Object, _connection.Object, _backgroundJob.Object, _cancellationToken.Object);
         }
-
-        public static void Method() { }
     }
 }

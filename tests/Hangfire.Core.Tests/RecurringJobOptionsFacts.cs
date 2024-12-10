@@ -14,6 +14,7 @@ namespace Hangfire.Core.Tests
 
             Assert.Equal(TimeZoneInfo.Utc, options.TimeZone);
             Assert.Equal("default", options.QueueName);
+            Assert.Equal(MisfireHandlingMode.Relaxed, options.MisfireHandling);
         }
 
         [Fact]

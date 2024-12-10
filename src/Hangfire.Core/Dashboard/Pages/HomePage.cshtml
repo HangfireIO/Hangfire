@@ -4,12 +4,14 @@
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @using Hangfire.Dashboard.Resources
+@using Hangfire.Storage
 @using Newtonsoft.Json
 @inherits RazorPage
 @{
     Layout = new LayoutPage(Strings.HomePage_Title);
     IDictionary<DateTime, long> succeeded = null;
     IDictionary<DateTime, long> failed = null;
+    IDictionary<DateTime, long> deleted = null;
 
     var period = Query("period") ?? "day";
 
@@ -18,11 +20,21 @@
     {
         succeeded = monitor.SucceededByDatesCount();
         failed = monitor.FailedByDatesCount();
+        if (Storage.HasFeature(JobStorageFeatures.Monitoring.DeletedStateGraphs) &&
+            monitor is JobStorageMonitor jobStorageMonitor)
+        {
+            deleted = jobStorageMonitor.DeletedByDatesCount();
+        }
     }
     else if ("day".Equals(period, StringComparison.OrdinalIgnoreCase))
     {
         succeeded = monitor.HourlySucceededJobs();
         failed = monitor.HourlyFailedJobs();
+        if (Storage.HasFeature(JobStorageFeatures.Monitoring.DeletedStateGraphs) &&
+            monitor is JobStorageMonitor jobStorageMonitor)
+        {
+            deleted = jobStorageMonitor.HourlyDeletedJobs();
+        }
     }
 }
 
@@ -41,16 +53,18 @@
             </div>
         }
         <h3>@Strings.HomePage_RealtimeGraph</h3>
-        <canvas width="1140" height="250" id="realtimeGraph" data-succeeded="@Statistics.Succeeded" data-failed="@Statistics.Failed"
+        <canvas width="1140" height="210" id="realtimeGraph" data-succeeded="@Statistics.Succeeded" data-failed="@Statistics.Failed" data-deleted="@Statistics.Deleted"
              data-succeeded-string="@Strings.HomePage_GraphHover_Succeeded"
-             data-failed-string="@Strings.HomePage_GraphHover_Failed"></canvas>
-        <div style="display: none;">
+             data-failed-string="@Strings.HomePage_GraphHover_Failed"
+             data-deleted-string="@Strings.JobsSidebarMenu_Deleted"></canvas>
+        <div class="display-none">
             <span data-metric="succeeded:count"></span>
             <span data-metric="failed:count"></span>
+            <span data-metric="deleted:count"></span>
         </div>
 
         <h3>
-            <div class="btn-group pull-right" style="margin-top: 2px;">
+            <div class="btn-group pull-right margin-top-2p">
                 <a href="?period=day" class="btn btn-sm btn-default @("day".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null)">@Strings.Common_PeriodDay</a>
                 <a href="?period=week" class="btn btn-sm btn-default @("week".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null)">@Strings.Common_PeriodWeek</a>
             </div>
@@ -59,11 +73,13 @@
 
         @if (succeeded != null && failed != null)
         {
-            <canvas width="1140" height="250" id="historyGraph"
+            <canvas width="1140" height="210" id="historyGraph"
                  data-succeeded="@JsonConvert.SerializeObject(succeeded)"
                  data-failed="@JsonConvert.SerializeObject(failed)"
+                 data-deleted="@(deleted != null ? JsonConvert.SerializeObject(deleted) : String.Empty)"
                  data-succeeded-string="@Strings.HomePage_GraphHover_Succeeded"
                  data-failed-string="@Strings.HomePage_GraphHover_Failed"
+                 data-deleted-string="@Strings.JobsSidebarMenu_Deleted"
                  data-period="@period">
             </canvas>
         }

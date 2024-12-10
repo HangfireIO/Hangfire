@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Hangfire.Common;
 using Hangfire.States;
 using Moq;
@@ -137,6 +138,62 @@ namespace Hangfire.Core.Tests
                 FailedState.StateName));
         }
 
+        [Fact, GlobalLock]
+        public void Reschedule_WithTimeSpan_ChangesStateOfAJobToScheduled()
+        {
+            Initialize();
+
+            BackgroundJob.Reschedule("job-id", TimeSpan.FromDays(1));
+
+            _client.Verify(x => x.ChangeState(
+              "job-id",
+              It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow),
+              null));
+        }
+
+        [Fact, GlobalLock]
+        public void Reschedule_WithTimeSpan_WithFromState_ChangesStateOfAJobToScheduled_WithFromState()
+        {
+            Initialize();
+
+            BackgroundJob.Reschedule("job-id", TimeSpan.FromDays(1), FailedState.StateName);
+
+            _client.Verify(x => x.ChangeState(
+              "job-id",
+              It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow),
+              FailedState.StateName));
+        }
+
+        [Fact, GlobalLock]
+        public void Reschedule_WithDateTimeOffset_ChangesStateOfAJobToScheduled()
+        {
+            var now = DateTimeOffset.Now;
+
+            Initialize();
+
+            BackgroundJob.Reschedule("job-id", now);
+
+            _client.Verify(x => x.ChangeState(
+              "job-id",
+              It.Is<ScheduledState>(state => state.EnqueueAt == now.UtcDateTime),
+              null));
+        }
+
+        [Fact, GlobalLock]
+        public void Reschedule_WithDateTimeOffset_WithFromState_ChangesStateOfAJobToScheduled_WithFromState()
+        {
+            var now = DateTimeOffset.Now;
+
+            Initialize();
+
+            BackgroundJob.Reschedule("job-id", now, FailedState.StateName);
+
+            _client.Verify(x => x.ChangeState(
+              "job-id",
+              It.Is<ScheduledState>(state => state.EnqueueAt == now.UtcDateTime),
+              FailedState.StateName));
+        }
+
         [Fact, GlobalLock(Reason = "Accesses to BJ.ClientFactory, JS.Current")]
         public void ClientFactory_HasDefaultValue_ThatReturns()
         {
@@ -152,6 +209,10 @@ namespace Hangfire.Core.Tests
             BackgroundJob.ClientFactory = () => _client.Object;
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static")]
+        [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public void Method() { }
     }
 }

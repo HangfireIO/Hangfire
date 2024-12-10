@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2017 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -92,7 +91,7 @@ namespace Hangfire.Server
             return UseBackgroundPool(
                 process,
                 maxConcurrency,
-                (threadName, threadStart) => DefaultThreadFactory(threadCount, threadName, threadStart));
+                (threadName, threadStart) => DefaultThreadFactory(threadCount, threadName, threadStart, null));
         }
 
         public static IBackgroundProcessDispatcherBuilder UseBackgroundPool(
@@ -106,7 +105,7 @@ namespace Hangfire.Server
 
             Func<TaskScheduler> createScheduler = () => new BackgroundTaskScheduler(
                 threadStart => threadFactory(process.GetType().Name, threadStart),
-                exception =>
+                static exception =>
                 {
                     LogProvider.GetLogger(typeof(BackgroundTaskScheduler)).FatalException(
                         "Unhandled exception occurred in scheduler. Please report it to Hangfire developers",
@@ -129,7 +128,7 @@ namespace Hangfire.Server
             if (process == null) throw new ArgumentNullException(nameof(process));
             if (maxConcurrency <= 0) throw new ArgumentOutOfRangeException(nameof(maxConcurrency));
 
-            return new BackgroundProcessDispatcherBuilderAsync(process, () => TaskScheduler.Default, maxConcurrency, false);
+            return new BackgroundProcessDispatcherBuilderAsync(process, static () => TaskScheduler.Default, maxConcurrency, false);
         }
 
         internal static IEnumerable<Thread> DefaultThreadFactory(

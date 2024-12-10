@@ -146,8 +146,9 @@ namespace Hangfire.SqlServer.Tests
                 var id = CreateJobQueueRecord(sql, "1", "default", FetchedAt);
                 using (var processingJob = new SqlServerTimeoutJob(storage, id, "1", "default", FetchedAt))
                 {
-                    Thread.Sleep(TimeSpan.FromSeconds(10));
                     processingJob.DisposeTimer();
+                    Thread.Sleep(TimeSpan.FromSeconds(2));
+                    processingJob.ExecuteKeepAliveQueryIfRequired();
 
                     var record = sql.Query($"select * from [{Constants.DefaultSchema}].JobQueue").Single();
 
@@ -169,7 +170,7 @@ namespace Hangfire.SqlServer.Tests
                 var id = CreateJobQueueRecord(sql, "1", "default", FetchedAt);
                 using (var processingJob = new SqlServerTimeoutJob(storage, id, "1", "default", FetchedAt))
                 {
-                    Thread.Sleep(TimeSpan.FromSeconds(10));
+                    Thread.Sleep(TimeSpan.FromSeconds(1));
                     processingJob.DisposeTimer();
 
                     // Act
@@ -192,7 +193,7 @@ namespace Hangfire.SqlServer.Tests
                 var id = CreateJobQueueRecord(sql, "1", "default", FetchedAt);
                 using (var processingJob = new SqlServerTimeoutJob(storage, id, "1", "default", FetchedAt))
                 {
-                    Thread.Sleep(TimeSpan.FromSeconds(10));
+                    Thread.Sleep(TimeSpan.FromSeconds(1));
                     processingJob.DisposeTimer();
 
                     // Act
@@ -237,12 +238,12 @@ select scope_identity() as Id";
 
         private static void UseConnection(Action<IDbConnection, SqlServerStorage> action, bool useMicrosoftDataSqlClient)
         {
+            var storage = new SqlServerStorage(
+                () => ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient),
+                new SqlServerStorageOptions { SlidingInvisibilityTimeout = TimeSpan.FromSeconds(5) });
+
             using (var connection = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient))
             {
-                var storage = new SqlServerStorage(
-                    connection,
-                    new SqlServerStorageOptions { SlidingInvisibilityTimeout = TimeSpan.FromSeconds(10) });
-
                 action(connection, storage);
             }
         }

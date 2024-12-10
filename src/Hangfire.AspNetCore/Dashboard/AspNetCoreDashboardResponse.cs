@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2016 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2016 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -36,13 +35,25 @@ namespace Hangfire.Dashboard
         public override string ContentType
         {
             get { return _context.Response.ContentType; }
-            set { _context.Response.ContentType = value; }
+            set
+            {
+                if (!_context.Response.HasStarted)
+                {
+                    _context.Response.ContentType = value;
+                }
+            }
         }
 
         public override int StatusCode
         {
             get { return _context.Response.StatusCode; }
-            set { _context.Response.StatusCode = value; }
+            set
+            {
+                if (!_context.Response.HasStarted)
+                {
+                    _context.Response.StatusCode = value;
+                }
+            }
         }
 
         public override Stream Body => _context.Response.Body;
@@ -54,7 +65,10 @@ namespace Hangfire.Dashboard
 
         public override void SetExpire(DateTimeOffset? value)
         {
-            _context.Response.Headers["Expires"] = value?.ToString("r", CultureInfo.InvariantCulture);
+            if (!_context.Response.HasStarted)
+            {
+                _context.Response.Headers["Expires"] = value?.ToString("r", CultureInfo.InvariantCulture);
+            }
         }
     }
 }

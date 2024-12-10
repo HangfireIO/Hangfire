@@ -69,7 +69,11 @@ namespace Hangfire.Core.Tests.States
                 Connection = _connection,
                 CancellationToken = _cts.Token,
                 NewState = _state,
-                ExpectedStates = FromOldState
+                ExpectedStates = FromOldState,
+                CustomData = new Dictionary<string, object>
+                {
+                    { "Key", "Value" }
+                }
             };
 
             _stateMachine.Setup(x => x.ApplyState(It.IsNotNull<ApplyStateContext>()))
@@ -80,7 +84,7 @@ namespace Hangfire.Core.Tests.States
         public void Ctor_ThrowsAnException_WhenFilterProviderIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundJobStateChanger(null));
+                () => new BackgroundJobStateChanger((IJobFilterProvider)null));
 
             Assert.Equal("filterProvider", exception.ParamName);
         }
@@ -120,6 +124,17 @@ namespace Hangfire.Core.Tests.States
 
             Assert.NotNull(result);
             Assert.Equal(_state.Object.Name, result.Name);
+        }
+
+        [Fact]
+        public void ChangeState_PassesCustomData_ToApplyStateContext()
+        {
+            var stateChanger = CreateStateChanger();
+
+            stateChanger.ChangeState(_context.Object);
+
+            _stateMachine.Verify(x => x.ApplyState(It.Is<ApplyStateContext>(
+                sc => sc.CustomData["Key"].Equals("Value"))));
         }
 
         [Fact]
@@ -200,7 +215,7 @@ namespace Hangfire.Core.Tests.States
             var result = stateChanger.ChangeState(_context.Object);
 
             // Assert
-            Assert.Equal(0, results.Count);
+            Assert.Empty(results);
             Assert.NotNull(result);
             Assert.Equal(_state.Object.Name, result.Name);
         }
@@ -478,6 +493,45 @@ namespace Hangfire.Core.Tests.States
 
             _stateMachine.Verify(x => x.ApplyState(It.IsNotNull<ApplyStateContext>()));
             _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void ChangeState_WithTransaction_PassesTheGivenTransaction_AndDoesNotCommitTheImplicitOne()
+        {
+            _context.Transaction = new Mock<JobStorageTransaction>();
+            var stateChanger = CreateStateChanger();
+
+            stateChanger.ChangeState(_context.Object);
+
+            _stateMachine.Verify(x => x.ApplyState(It.Is<ApplyStateContext>(
+                ctx => ctx.Transaction == _context.Transaction.Object)));
+
+            _connection.Verify(x => x.CreateWriteTransaction(), Times.Never);
+            _transaction.Verify(x => x.Commit(), Times.Never);
+        }
+
+        [Fact]
+        public void ChangeState_WithTransaction_DoesNotCommitAndDoesNotDisposeTheExplicitTransaction()
+        {
+            _context.Transaction = new Mock<JobStorageTransaction>();
+            var stateChanger = CreateStateChanger();
+
+            stateChanger.ChangeState(_context.Object);
+
+            _context.Transaction.Verify(x => x.Commit(), Times.Never);
+            _context.Transaction.Verify(x => x.Dispose(), Times.Never);
+        }
+
+        [Fact]
+        public void ChangeState_WithTransaction_AcquiresATransactionLevelLockInstead()
+        {
+            _context.Transaction = new Mock<JobStorageTransaction>();
+            var stateChanger = CreateStateChanger();
+
+            stateChanger.ChangeState(_context.Object);
+
+            _context.Transaction.Verify(x => x.AcquireDistributedLock($"job:{JobId}:state-lock", It.IsAny<TimeSpan>()));
+            _connection.Verify(x => x.AcquireDistributedLock(It.IsAny<string>(), It.IsAny<TimeSpan>()), Times.Never);
         }
 
         private BackgroundJobStateChanger CreateStateChanger()

@@ -421,7 +421,7 @@
     <value>Aufträge</value>
   </data>
   <data name="NavigationMenu_RecurringJobs" xml:space="preserve">
-    <value>Wiederholte Auftrage</value>
+    <value>Wiederholte Aufträge</value>
   </data>
   <data name="NavigationMenu_Retries" xml:space="preserve">
     <value>Erneute Versuche</value>
@@ -454,7 +454,7 @@
     <value>Warehouseverarbeitungsaufträge werden aktualisiert.</value>
   </data>
   <data name="Metrics_RecurringJobs" xml:space="preserve">
-    <value>Wiederholte Auftrage</value>
+    <value>Wiederholte Aufträge</value>
   </data>
   <data name="Metrics_Retries" xml:space="preserve">
     <value>Erneute Versuche</value>

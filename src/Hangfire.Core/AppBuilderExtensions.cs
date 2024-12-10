@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -132,9 +131,9 @@ namespace Hangfire
     public static class AppBuilderExtensions
     {
         // Prevent GC to collect background processing servers in hosts that do
-        // not support shutdown notifications.
-        private static readonly ConcurrentBag<BackgroundJobServer> Servers
-            = new ConcurrentBag<BackgroundJobServer>();
+        // not support shutdown notifications. Dictionary is used as a Set.
+        private static readonly ConcurrentDictionary<IBackgroundProcessingServer, object> Servers
+            = new ConcurrentDictionary<IBackgroundProcessingServer, object>();
 
         /// <summary>
         /// Creates a new instance of the <see cref="BackgroundJobServer"/> class
@@ -292,8 +291,34 @@ namespace Hangfire
             if (options == null) throw new ArgumentNullException(nameof(options));
             if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
 
-            var server = new BackgroundJobServer(options, storage, additionalProcesses);
-            Servers.Add(server);
+            return UseHangfireServer(builder, new BackgroundJobServer(options, storage, additionalProcesses));
+        }
+
+        /// <summary>
+        /// Registers the given custom instance of the <see cref="IBackgroundProcessingServer"/>
+        /// interface for disposal on application shutdown.
+        /// </summary>
+        /// 
+        /// <param name="builder">OWIN application builder.</param>
+        /// <param name="server">Custom background processing server instance.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="server"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">
+        /// OWIN environment does not contain the application shutdown cancellation token.
+        /// </exception>
+        /// 
+        /// <remarks>
+        /// Please see <see cref="AppBuilderExtensions"/> for details and examples.
+        /// </remarks>
+        public static IAppBuilder UseHangfireServer(
+            [NotNull] this IAppBuilder builder,
+            [NotNull] IBackgroundProcessingServer server)
+        {
+            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            if (server == null) throw new ArgumentNullException(nameof(server));
+
+            Servers.TryAdd(server, null);
 
             var context = new OwinContext(builder.Properties);
             var token = context.Get<CancellationToken>("host.OnAppDisposing");
@@ -319,6 +344,9 @@ namespace Hangfire
             var logger = LogProvider.GetLogger(typeof(AppBuilderExtensions));
             logger.Info("Web application is shutting down via OWIN's host.OnAppDisposing callback.");
             ((IDisposable) state).Dispose();
+            var server = state as BackgroundJobServer;
+            if (server != null)
+                Servers.TryRemove(server, out _);
         }
 
         /// <summary>

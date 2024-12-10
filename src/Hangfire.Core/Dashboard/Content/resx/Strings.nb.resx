@@ -210,6 +210,9 @@
   <data name="DeletedJobsPage_Table_Deleted" xml:space="preserve">
     <value>Slettet</value>
   </data>
+  <data name="DeletedJobsPage_Table_Exception" xml:space="preserve">
+    <value>Feil</value>
+  </data>
   <data name="DeletedJobsPage_Title" xml:space="preserve">
     <value>Slettede Jobber</value>
   </data>
@@ -288,6 +291,12 @@
   </data>
   <data name="LayoutPage_Footer_Generatedms" xml:space="preserve">
     <value>Generert på {0}ms</value>
+  </data>
+  <data name="LayoutPage_Footer_StorageTime" xml:space="preserve">
+    <value>Lagringstid:</value>
+  </data>
+  <data name="LayoutPage_Footer_TimeIsOutOfSync" xml:space="preserve">
+    <value>Applikasjonstiden er ikke synkronisert med lagringstiden</value>
   </data>
   <data name="LayoutPage_Footer_Time" xml:space="preserve">
     <value>Tidspunkt:</value>
@@ -424,6 +433,12 @@
   <data name="SucceededJobsPage_Table_TotalDuration" xml:space="preserve">
     <value>Total Varighet</value>
   </data>
+  <data name="SucceededJobsPage_Table_Latency" xml:space="preserve">
+    <value>Ventetid</value>
+  </data>
+  <data name="SucceededJobsPage_Table_Duration" xml:space="preserve">
+    <value>Varighet</value>
+  </data>
   <data name="SucceededJobsPage_Title" xml:space="preserve">
     <value>Vellykkede Jobber</value>
   </data>
@@ -547,5 +562,20 @@
   </data>
   <data name="JobDetailsPage_Parameters" xml:space="preserve">
     <value>Parametere</value>
+  </data>
+  <data name="Metrics_SQLServer_SchemaVersion" xml:space="preserve">
+    <value>Skjemaversjon</value>
+  </data>
+  <data name="AwaitingJobsPage_Table_Since" xml:space="preserve">
+    <value>Siden</value>
+  </data>
+  <data name="Metrics_SQLServer_ActiveTransactions" xml:space="preserve">
+    <value>Aktive transaksjoner</value>
+  </data>
+  <data name="Metrics_SQLServer_DataFilesSize" xml:space="preserve">
+    <value>Datafil(er) brukt (MB)</value>
+  </data>
+  <data name="Metrics_SQLServer_LogFilesSize" xml:space="preserve">
+    <value>Loggfil(er) brukt (MB)</value>
   </data>
 </root>

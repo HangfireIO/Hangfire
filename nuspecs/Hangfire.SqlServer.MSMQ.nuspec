@@ -2,18 +2,30 @@
 <package>
   <metadata>
     <id>Hangfire.SqlServer.MSMQ</id>
-    <version>0.0.0</version>
+    <version>%version%</version>
     <title>Hangfire MSMQ Queues for SQL Server Storage</title>
     <authors>Sergey Odinokov</authors>
-    <owners>odinserj</owners>
+    <owners>HangfireIO, odinserj</owners>
     <projectUrl>https://www.hangfire.io/</projectUrl>
-    <repository type="git" url="https://github.com/HangfireIO/Hangfire.git" />
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
-    <description>MSMQ queues support for SQL Server job storage implementation for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2014 Sergey Odinokov</copyright>
+    <repository type="git" url="https://github.com/HangfireIO/Hangfire.git" commit="%commit%" />
+    <license type="file">LICENSE.md</license>
+    <icon>icon.png</icon>
+    <description>MSMQ queues support for SQL Server job storage implementation for Hangfire, a background job framework for .NET applications.</description>
+    <copyright>Copyright © 2014-2024 Hangfire OÜ</copyright>
     <tags>Hangfire SqlServer MSMQ</tags>
-    <releaseNotes>https://www.hangfire.io/blog/
+    <releaseNotes><![CDATA[https://www.hangfire.io/blog/
+
+1.8.10
+• Project – Enable NuGet package and DLL signing with a company certificate.
+• Project – Require NuGet package signature validation on restore for dependencies.
+• Project – Add `HangfireIO` as a package owner.
+  
+1.8.9
+• Project – Enable full source link support with embedded symbols and repository-based sources.
+• Project – Enable repeatable package restore using a lock file.
+
+1.8.0
+• Breaking – Dropped the `NET45` platform target in favor of the `NET451` target to support Visual Studio 2022.
     
 1.6.3
 • Fixed – Prevent MSMQ transactions from timing out after 1 minute of processing.
@@ -33,21 +45,25 @@
 1.4.0
 • Changed – Speed up `GetCount` method with native implementation.
 • Fixed – Incorrect order of fetching when multiple queues used.
+]]>
     </releaseNotes>
     <dependencies>
-      <dependency id="Hangfire.Core" version="[0.0.0]" />
-      <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
+      <group targetFramework="net451">
+        <dependency id="Hangfire.Core" version="[%version%]" />
+        <dependency id="Hangfire.SqlServer" version="[%version%]" />
+      </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="net45\Hangfire.SqlServer.Msmq.dll" target="lib\net45" />
-    <file src="net45\Hangfire.SqlServer.Msmq.xml" target="lib\net45" />
-    <file src="net45\Hangfire.SqlServer.Msmq.pdb" target="lib\net45" />
-    <file src="..\src\Hangfire.SqlServer.Msmq\**\*.cs" target="src" exclude="**\obj*\**\*.cs" />
+    <file src="net451\Hangfire.SqlServer.Msmq.dll" target="lib\net451" />
+    <file src="net451\Hangfire.SqlServer.Msmq.xml" target="lib\net451" />
+
+    <file src="..\nuspecs\icon.png" />
+
     <file src="LICENSE.md" />
-    <file src="NOTICES" />
     <file src="COPYING" />
     <file src="COPYING.LESSER" />
+    <file src="NOTICES" />
     <file src="LICENSE_STANDARD" />
     <file src="LICENSE_ROYALTYFREE" />
   </files>

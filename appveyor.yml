@@ -6,10 +6,12 @@
 #   - All section names are case-sensitive.
 #   - Section names should be unique on each level.
 
-# Don't edit manually! Use `build.bat version` command instead!
-version: 1.7.19-build-0{build}
+# Please don't edit it manually, use the `build.bat version` command instead.
+version: 1.8.17-build-0{build}
 
-os: Visual Studio 2019
+image:
+  - Visual Studio 2022
+  - Ubuntu2004
 
 #---------------------------------#
 #    environment configuration    #
@@ -17,10 +19,9 @@ os: Visual Studio 2019
 
 # environment variables
 environment:
-  BuildEnvironment: appveyor
-  Hangfire_SqlServer_ConnectionStringTemplate: Server=.\SQL2017;Database={0};User Id=sa;Password=Password12!
-  COVERALLS_REPO_TOKEN: 
-    secure: oE4uB475V9hPzKmm+ZRP+1BacnMFOE98a/2tVeFieYJi5BbYG6X3VM+p6vKIQZdd
+  Hangfire_SqlServer_ConnectionStringTemplate: Server=.\SQL2017;Database={0};User Id=sa;Password=Password12!;TrustServerCertificate=True;PoolBlockingPeriod=NeverBlock
+  SIGNPATH_API_TOKEN:
+    secure: nvG+jv/K3utFvpHGx/N6Glpv0Wdj0wfBSl8c/tkHbn2AIwGcNe2e4VSOkod7xVpC
   COVERITY_TOKEN:
     secure: r3yBqxgALySnCK9W6uiStqoadsqYtrWQolzxGDVKF74=
   COVERITY_EMAIL:
@@ -29,20 +30,21 @@ environment:
 # enable service required for tests
 services:
   - mssql2017
-  - msmq
-
-pull_requests:
-  do_not_increment_build_number: true
-
-shallow_clone: true
 
 #---------------------------------#
 #       build configuration       #
 #---------------------------------#
 
-# to run your custom scripts instead of automatic MSBuild
-build_script:
-  - build.bat ci
+# Installing MSMQ manually to avoid "Cannot initialize 'msmq' service handler" error
+before_build:
+  - cmd: powershell Import-Module ServerManager; Add-WindowsFeature MSMQ; net start msmq
+  - pwsh: Install-PSResource -Name SignPath -TrustRepository
+  - sh: nuget locals all -clear
+
+build_script:  
+  - pwsh: IF ($IsWindows -and ($env:APPVEYOR_SCHEDULED_BUILD -or $env:APPVEYOR_REPO_COMMIT_MESSAGE -like "*covscan*")) { .\coverity-scan.ps1 }
+  - cmd: IF NOT DEFINED APPVEYOR_SCHEDULED_BUILD build.bat sign
+  - sh: chmod +x build.sh; ./build.sh
 
 #---------------------------------#
 #       tests configuration       #
@@ -63,25 +65,8 @@ artifacts:
 #---------------------------------#
 
 deploy:
-  - provider: GitHub
-    auth_token:
-      secure: Kx+tJBMfq/OK7sMpvQDdigFOIIfzYkVmIHxNQetanQdIA5Mb8zm/VhAkrId4x5zW
-    artifact: /.*\.zip/
-    draft: true
-    on:
-      appveyor_repo_tag: true
-
   - provider: NuGet
-    skip_symbols: true
     api_key: 
-      secure: uvwcHGQKqfNR+XJ5RzSA9yTrtMCH5HWbWLeIYVnq+9kQPYmOniTiNINd9zGBhqqi
+      secure: KGuXrQTSOoHY00BOLI9NcvRf/HaajVj6nN4/ac0Qqk1z58zwiRXzdtJE7k+1psp/
     on:
       appveyor_repo_tag: true
-
-notifications:
-  - provider: Slack
-    incoming_webhook:
-      secure: bqJhjmwwsSMJ/8imZJBOOtwbsNF51p24M8HZlIx1+asIHHUhXWHrP9vkuOPK3OnqNopmloLOOBoaEpYAkClkDuEC61a5Go5NY9KSSB9UMjk=
-    on_build_success: false
-    on_build_failure: true
-    on_build_status_changed: true

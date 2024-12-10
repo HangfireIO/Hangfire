@@ -7,7 +7,7 @@ namespace Hangfire.Core.Tests
 {
     [XunitTestCaseDiscoverer("Hangfire.Core.Tests.DataCompatibilityRangeFactDiscoverer", "Hangfire.Core.Tests")]
     [AttributeUsage(AttributeTargets.Method)]
-    internal class DataCompatibilityRangeFactAttribute : FactAttribute
+    internal sealed class DataCompatibilityRangeFactAttribute : FactAttribute
     {
         internal static readonly CompatibilityLevel PossibleMinLevel;
         internal static readonly CompatibilityLevel PossibleMaxExcludingLevel;

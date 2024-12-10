@@ -3,7 +3,7 @@ using Hangfire.States;
 
 namespace Hangfire.Core.Tests
 {
-    class ElectStateContextMock
+    public class ElectStateContextMock
     {
         private readonly Lazy<ElectStateContext> _context;
 

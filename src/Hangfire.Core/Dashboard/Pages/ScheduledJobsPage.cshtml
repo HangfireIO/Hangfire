@@ -13,7 +13,7 @@
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    var pager = new Pager(from, perPage, monitor.ScheduledCount());
+    var pager = new Pager(from, perPage, DashboardOptions.DefaultRecordsPerPage, monitor.ScheduledCount());
     var scheduledJobs = monitor.ScheduledJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 
@@ -22,7 +22,7 @@
         @Html.JobsSidebar()
     </div>
     <div class="col-md-9">
-        <h1 class="page-header">@Strings.ScheduledJobsPage_Title</h1>
+        <h1 id="page-title" class="page-header">@Strings.ScheduledJobsPage_Title</h1>
 
         @if (pager.TotalPageCount == 0)
         {
@@ -59,7 +59,7 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="table" aria-describedby="page-title">
                         <thead>
                             <tr>
                                 @if (!IsReadOnly)
@@ -76,11 +76,11 @@
                         </thead>
                         @foreach (var job in scheduledJobs)
                         {
-                            <tr class="js-jobs-list-row @(!job.Value.InScheduledState ? "obsolete-data" : null) @(job.Value.InScheduledState ? "hover" : null)">
+                            <tr class="js-jobs-list-row @(job.Value == null || !job.Value.InScheduledState ? "obsolete-data" : null) @(job.Value != null && job.Value.InScheduledState ? "hover" : null)">
                                 @if (!IsReadOnly)
                                 {
                                     <td>
-                                        @if (job.Value.InScheduledState)
+                                        @if (job.Value != null && job.Value.InScheduledState)
                                         {
                                             <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
                                         }
@@ -88,23 +88,30 @@
                                 }
                                 <td class="min-width">
                                     @Html.JobIdLink(job.Key)
-                                    @if (!job.Value.InScheduledState)
+                                    @if (job.Value != null && !job.Value.InScheduledState)
                                     {
                                         <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
                                     }
                                 </td>
-                                <td class="min-width">
-                                    @Html.RelativeTime(job.Value.EnqueueAt)
-                                </td>
-                                <td class="word-break">
-                                    @Html.JobNameLink(job.Key, job.Value.Job)
-                                </td>
-                                <td class="align-right">
-                                    @if (job.Value.ScheduledAt.HasValue)
-                                    {
-                                        @Html.RelativeTime(job.Value.ScheduledAt.Value)
-                                    }
-                                </td>
+                                @if (job.Value == null)
+                                {
+                                    <td colspan="3"><em>@Strings.Common_JobExpired</em></td>
+                                }
+                                else
+                                {
+                                    <td class="min-width">
+                                        @Html.RelativeTime(job.Value.EnqueueAt)
+                                    </td>
+                                    <td class="word-break">
+                                        @Html.JobNameLink(job.Key, job.Value.Job)
+                                    </td>
+                                    <td class="align-right">
+                                        @if (job.Value.ScheduledAt.HasValue)
+                                        {
+                                            @Html.RelativeTime(job.Value.ScheduledAt.Value)
+                                        }
+                                    </td>
+                                }
                             </tr>
                         }
                     </table>

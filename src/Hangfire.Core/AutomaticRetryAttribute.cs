@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -15,11 +14,14 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
+using Newtonsoft.Json;
 
 namespace Hangfire
 {
@@ -98,6 +100,8 @@ namespace Hangfire
         private Func<long, int> _delayInSecondsByAttemptFunc;
         private AttemptsExceededAction _onAttemptsExceeded;
         private bool _logEvents;
+        private Type[] _onlyOn;
+        private Type[] _exceptOn;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AutomaticRetryAttribute"/>
@@ -140,13 +144,20 @@ namespace Hangfire
         /// <value>An array of non-negative numbers.</value>
         /// <exception cref="ArgumentNullException">The value in a set operation is null.</exception>
         /// <exception cref="ArgumentException">The value contain one or more negative numbers.</exception>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public int[] DelaysInSeconds
         {
             get { lock (_lockObject) { return _delaysInSeconds; } }
             set
             {
-                if (value == null || value.Length == 0) throw new ArgumentNullException(nameof(value));
-                if (value.Any(delay => delay < 0)) throw new ArgumentException($@"{nameof(DelaysInSeconds)} value must be an array of non-negative numbers.", nameof(value));
+                if (value != null)
+                {
+                    if (value.Length == 0) throw new ArgumentNullException(nameof(value));
+                    if (value.Any(static delay => delay < 0))
+                        throw new ArgumentException(
+                            $@"{nameof(DelaysInSeconds)} value must be an array of non-negative numbers.",
+                            nameof(value));
+                }
 
                 lock (_lockObject) { _delaysInSeconds = value; }
             }
@@ -156,6 +167,7 @@ namespace Hangfire
         /// Gets or sets a function using to get a delay by an attempt number.
         /// </summary>
         /// <exception cref="ArgumentNullException">The value in a set operation is null.</exception>
+        [JsonIgnore]
         public Func<long, int> DelayInSecondsByAttemptFunc
         {
             get { lock (_lockObject) { return _delayInSecondsByAttemptFunc;} }
@@ -170,6 +182,7 @@ namespace Hangfire
         /// Gets or sets a candidate state for a background job that 
         /// will be chosen when number of retry attempts exceeded.
         /// </summary>
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public AttemptsExceededAction OnAttemptsExceeded
         {
             get { lock (_lockObject) { return _onAttemptsExceeded; } }
@@ -179,10 +192,40 @@ namespace Hangfire
         /// <summary>
         /// Gets or sets whether to produce log messages on retry attempts.
         /// </summary>
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [DefaultValue(true)]
         public bool LogEvents
         {
             get { lock (_lockObject) { return _logEvents; } }
             set { lock (_lockObject) { _logEvents = value; } }
+        }
+
+        /// <summary>
+        /// Gets a sets an array of exception types that will be used to determine whether
+        /// automatic retry logic should be attempted to run. By default it will be run on
+        /// any exception, but this property allow to reduce it only to some specific
+        /// exception types and their subtypes.
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public Type[] OnlyOn
+        {
+            get { lock (_lockObject) { return _onlyOn; } }
+            set { lock (_lockObject) { _onlyOn = value; } }
+        }
+
+        /// <summary>
+        /// Gets or sets the array of exception types on which the automatic retry mechanism
+        /// should not be applied.
+        /// </summary>
+        /// <value>
+        /// An array of <see cref="System.Type"/> objects representing the exception types to
+        /// be excluded from automatic retries.
+        /// </value>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public Type[] ExceptOn
+        {
+            get { lock (_lockObject) { return _exceptOn; } }
+            set { lock (_lockObject) { _exceptOn = value; } }
         }
 
         /// <inheritdoc />
@@ -195,7 +238,41 @@ namespace Hangfire
                 return;
             }
 
-            var retryAttempt = context.GetJobParameter<int>("RetryCount") + 1;
+            if (_onlyOn != null && _onlyOn.Length > 0)
+            {
+                var exceptionType = failedState.Exception.GetType();
+                var satisfied = false;
+
+                foreach (var onlyOn in _onlyOn)
+                {
+                    if (onlyOn.GetTypeInfo().IsAssignableFrom(exceptionType.GetTypeInfo()))
+                    {
+                        satisfied = true;
+                        break;
+                    }
+                }
+
+                if (!satisfied) return;
+            }
+
+            if (_exceptOn != null && _exceptOn.Length > 0)
+            {
+                var exceptionType = failedState.Exception.GetType();
+                var satisfied = true;
+
+                foreach (var exceptOn in _exceptOn)
+                {
+                    if (exceptOn.GetTypeInfo().IsAssignableFrom(exceptionType.GetTypeInfo()))
+                    {
+                        satisfied = false;
+                        break;
+                    }
+                }
+
+                if (!satisfied) return;
+            }
+
+            var retryAttempt = context.GetJobParameter<int>("RetryCount", allowStale: true) + 1;
 
             if (retryAttempt <= Attempts)
             {
@@ -221,7 +298,7 @@ namespace Hangfire
         {
             if (context.NewState is ScheduledState &&
                 context.NewState.Reason != null &&
-                context.NewState.Reason.StartsWith("Retry attempt"))
+                context.NewState.Reason.StartsWith("Retry attempt", StringComparison.OrdinalIgnoreCase))
             {
                 transaction.AddToSet("retries", context.BackgroundJob.Id);
             }
@@ -230,7 +307,7 @@ namespace Hangfire
         /// <inheritdoc />
         public void OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
-            if (context.OldStateName == ScheduledState.StateName)
+            if (ScheduledState.StateName.Equals(context.OldStateName, StringComparison.OrdinalIgnoreCase))
             {
                 transaction.RemoveFromSet("retries", context.BackgroundJob.Id);
             }
@@ -256,7 +333,7 @@ namespace Hangfire
             }
             else
             {
-                delayInSeconds = _delayInSecondsByAttemptFunc(retryAttempt);                
+                delayInSeconds = DelayInSecondsByAttemptFunc(retryAttempt);                
             }
 
             var delay = TimeSpan.FromSeconds(delayInSeconds);          
@@ -290,7 +367,7 @@ namespace Hangfire
         /// <param name="failedState">Object which contains details about the current failed state.</param>
         private void TransitionToDeleted(ElectStateContext context, FailedState failedState)
         {
-            context.CandidateState = new DeletedState
+            context.CandidateState = new DeletedState(new ExceptionInfo(failedState.Exception))
             {
                 Reason = Attempts > 0
                     ? "Exceeded the maximum number of retry attempts."

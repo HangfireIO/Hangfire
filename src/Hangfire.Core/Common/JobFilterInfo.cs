@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -25,31 +24,21 @@ namespace Hangfire.Common
     /// <summary>
     /// Encapsulates information about the available job filters.
     /// </summary>
-    internal class JobFilterInfo
+    internal readonly struct JobFilterInfo
     {
-        private readonly List<IClientFilter> _clientFilters = new List<IClientFilter>();
-        private readonly List<IServerFilter> _serverFilters = new List<IServerFilter>();
-        private readonly List<IElectStateFilter> _electStateFilters = new List<IElectStateFilter>();
-        private readonly List<IApplyStateFilter> _applyStateFilters = new List<IApplyStateFilter>();
-        private readonly List<IClientExceptionFilter> _clientExceptionFilters = new List<IClientExceptionFilter>(); 
-        private readonly List<IServerExceptionFilter> _serverExceptionFilters = new List<IServerExceptionFilter>();
-
         /// <summary>
         /// Initializes a new instance of the <see cref="JobFilterInfo"/> class using the specified filters collection.
         /// </summary>
         /// <param name="filters">The filters collection.</param>
         public JobFilterInfo(IEnumerable<JobFilter> filters)
         {
-            var list = filters.Select(f => f.Instance).ToList();
-
-            _clientFilters.AddRange(list.OfType<IClientFilter>());
-            _serverFilters.AddRange(list.OfType<IServerFilter>());
-
-            _electStateFilters.AddRange(list.OfType<IElectStateFilter>());
-            _applyStateFilters.AddRange(list.OfType<IApplyStateFilter>());
-
-            _clientExceptionFilters.AddRange(list.OfType<IClientExceptionFilter>());
-            _serverExceptionFilters.AddRange(list.OfType<IServerExceptionFilter>());
+            var filtersList = filters as List<JobFilter> ?? filters.ToList();
+            ClientFilters = new FilterCollection<IClientFilter>(filtersList);
+            ServerFilters = new FilterCollection<IServerFilter>(filtersList);
+            ElectStateFilters = new FilterCollection<IElectStateFilter>(filtersList);
+            ApplyStateFilters = new FilterCollection<IApplyStateFilter>(filtersList);
+            ClientExceptionFiltersReversed = new ReversedFilterCollection<IClientExceptionFilter>(filtersList);
+            ServerExceptionFiltersReversed = new ReversedFilterCollection<IServerExceptionFilter>(filtersList);
         }
 
         /// <summary>
@@ -59,7 +48,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The client filters.
         /// </returns>
-        public IList<IClientFilter> ClientFilters => _clientFilters;
+        public FilterCollection<IClientFilter> ClientFilters { get; }
 
         /// <summary>
         /// Gets all the server filters in the application.
@@ -68,7 +57,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The server filters.
         /// </returns>
-        public IList<IServerFilter> ServerFilters => _serverFilters;
+        public FilterCollection<IServerFilter> ServerFilters { get; }
 
         /// <summary>
         /// Gets all the stat changing filters in the application.
@@ -77,7 +66,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The state changing filters.
         /// </returns>
-        public IList<IElectStateFilter> ElectStateFilters => _electStateFilters;
+        public FilterCollection<IElectStateFilter> ElectStateFilters { get; }
 
         /// <summary>
         /// Gets all the state changed filters in the application.
@@ -86,7 +75,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The state changed filters.
         /// </returns>
-        public IList<IApplyStateFilter> ApplyStateFilters => _applyStateFilters;
+        public FilterCollection<IApplyStateFilter> ApplyStateFilters { get; }
 
         /// <summary>
         /// Gets all the client exception filters in the application.
@@ -95,7 +84,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The client exception filters.
         /// </returns>
-        public IList<IClientExceptionFilter> ClientExceptionFilters => _clientExceptionFilters;
+        public ReversedFilterCollection<IClientExceptionFilter> ClientExceptionFiltersReversed { get; }
 
         /// <summary>
         /// Gets all the server exception filters in the application.
@@ -104,6 +93,80 @@ namespace Hangfire.Common
         /// <returns>
         /// The server exception filters.
         /// </returns>
-        public IList<IServerExceptionFilter> ServerExceptionFilters => _serverExceptionFilters;
+        public ReversedFilterCollection<IServerExceptionFilter> ServerExceptionFiltersReversed { get; }
+
+        public readonly struct FilterCollection<T>(List<JobFilter> filters)
+        {
+            public Enumerator GetEnumerator() => new Enumerator(filters);
+
+            public ref struct Enumerator(List<JobFilter> filters)
+            {
+                private readonly List<JobFilter> _filters = filters;
+                private int _index = 0;
+                private T _current = default;
+
+                public bool MoveNext()
+                {
+                    List<JobFilter> localFilters = _filters;
+
+                    while (_index < localFilters.Count)
+                    {
+                        if (localFilters[_index++].Instance is T instance)
+                        {
+                            _current = instance;
+                            return true;
+                        }
+                    }
+
+                    return MoveNextRare();
+                }
+
+                public T Current => _current;
+
+                private bool MoveNextRare()
+                {
+                    _index = _filters.Count + 1;
+                    _current = default;
+                    return false;
+                }
+            }
+        }
+
+        public readonly struct ReversedFilterCollection<T>(List<JobFilter> filters)
+        {
+            public ReversedEnumerator GetEnumerator() => new ReversedEnumerator(filters);
+
+            public ref struct ReversedEnumerator(List<JobFilter> filters)
+            {
+                private readonly List<JobFilter> _filters = filters;
+                private int _index = filters.Count - 1;
+                private T _current = default;
+
+                public bool MoveNext()
+                {
+                    List<JobFilter> localFilters = _filters;
+
+                    while (_index >= 0)
+                    {
+                        if (localFilters[_index--].Instance is T instance)
+                        {
+                            _current = instance;
+                            return true;
+                        }
+                    }
+
+                    return MoveNextRare();
+                }
+
+                public T Current => _current;
+
+                private bool MoveNextRare()
+                {
+                    _index = -1;
+                    _current = default;
+                    return false;
+                }
+            }
+        }
     }
 }

@@ -32,7 +32,7 @@ namespace Hangfire.Core.Tests.Server
             _connection.Setup(x => x.RemoveTimedOutServers(It.IsAny<TimeSpan>())).Returns(1);
             var watchdog = new ServerWatchdog(_checkInterval, _serverTimeout);
 
-			watchdog.Execute(_context.Object);
+            Assert.Throws<OperationCanceledException>(() => watchdog.Execute(_context.Object));
 
             _connection.Verify(x => x.RemoveTimedOutServers(_serverTimeout));
             _connection.Verify(x => x.Dispose(), Times.Once);

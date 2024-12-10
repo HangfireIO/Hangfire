@@ -77,7 +77,7 @@ namespace Hangfire.SqlServer.Tests
             Assert.Equal(Queue, fetchedJob.Queue);
         }
 
-        [Fact, CleanDatabase]
+        [Fact]
         public void RemoveFromQueue_CommitsTheTransaction()
         {
             // Arrange
@@ -90,7 +90,7 @@ namespace Hangfire.SqlServer.Tests
             _transaction.Verify(x => x.Commit());
         }
 
-        [Fact, CleanDatabase]
+        [Fact]
         public void Requeue_RollsbackTheTransaction()
         {
             // Arrange
@@ -103,7 +103,7 @@ namespace Hangfire.SqlServer.Tests
             _transaction.Verify(x => x.Rollback());
         }
 
-        [Fact, CleanDatabase]
+        [Fact]
         public void Dispose_DisposesTheTransactionAndConnection()
         {
             var processingJob = CreateFetchedJob("1", "queue");

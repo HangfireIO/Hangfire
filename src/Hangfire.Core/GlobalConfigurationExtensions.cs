@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2015 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2015 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -16,6 +15,8 @@
 
 using System;
 using System.ComponentModel;
+using System.Globalization;
+using System.Reflection;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Dashboard;
@@ -37,18 +38,17 @@ namespace Hangfire
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (storage == null) throw new ArgumentNullException(nameof(storage));
 
-            return configuration.Use(storage, x => JobStorage.Current = x);
+            return configuration.Use(storage, static x => JobStorage.Current = x);
         }
 
         public static IGlobalConfiguration<TStorage> WithJobExpirationTimeout<TStorage>(
             [NotNull] this IGlobalConfiguration<TStorage> configuration,
-            [NotNull] TimeSpan timeout)
+            TimeSpan timeout)
             where TStorage : JobStorage
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
-            JobStorage.Current.JobExpirationTimeout = timeout;
-
+            configuration.Entry.JobExpirationTimeout = timeout;
             return configuration;
         }
 
@@ -60,7 +60,7 @@ namespace Hangfire
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (activator == null) throw new ArgumentNullException(nameof(activator));
 
-            return configuration.Use(activator, x => JobActivator.Current = x);
+            return configuration.Use(activator, static x => JobActivator.Current = x);
         }
 
         public static IGlobalConfiguration<JobActivator> UseDefaultActivator(
@@ -79,7 +79,7 @@ namespace Hangfire
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (provider == null) throw new ArgumentNullException(nameof(provider));
             
-            return configuration.Use(provider, x => LogProvider.SetCurrentLogProvider(x));
+            return configuration.Use(provider, static x => LogProvider.SetCurrentLogProvider(x));
         }
 
         public static IGlobalConfiguration<NLogLogProvider> UseNLogLogProvider(
@@ -169,7 +169,18 @@ namespace Hangfire
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (filter == null) throw new ArgumentNullException(nameof(filter));
 
-            return configuration.Use(filter, x => GlobalJobFilters.Filters.Add(x));
+            return configuration.Use(filter, static x => GlobalJobFilters.Filters.Add(x));
+        }
+
+        public static IGlobalConfiguration<TFilterProvider> UseFilterProvider<TFilterProvider>(
+            [NotNull] this IGlobalConfiguration configuration, 
+            [NotNull] TFilterProvider filterProvider)
+            where TFilterProvider : IJobFilterProvider
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (filterProvider == null) throw new ArgumentNullException(nameof(filterProvider));
+
+            return configuration.Use(filterProvider, static x => JobFilterProviders.Providers.Add(x));
         }
 
         public static IGlobalConfiguration UseDashboardMetric(
@@ -181,6 +192,35 @@ namespace Hangfire
 
             DashboardMetrics.AddMetric(metric);
             HomePage.Metrics.Add(metric);
+
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseDashboardMetrics(
+            [NotNull] this IGlobalConfiguration configuration,
+            [NotNull] params DashboardMetric[] metrics)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (metrics == null) throw new ArgumentNullException(nameof(metrics));
+
+            foreach (var metric in metrics)
+            {
+                DashboardMetrics.AddMetric(metric);
+                HomePage.Metrics.Add(metric);
+            }
+
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseJobDetailsRenderer(
+            [NotNull] this IGlobalConfiguration configuration,
+            int order,
+            [NotNull] Func<JobDetailsRendererDto, NonEscapedString> renderer)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (renderer == null) throw new ArgumentNullException(nameof(renderer));
+
+            JobDetailsRenderer.AddRenderer(order, renderer);
 
             return configuration;
         }
@@ -296,6 +336,81 @@ namespace Hangfire
             return configuration;
         }
 
+        public static IGlobalConfiguration UseDefaultCulture(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] CultureInfo culture)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseFilter(new CaptureCultureAttribute(culture?.Name));
+        }
+
+        public static IGlobalConfiguration UseDefaultCulture(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] CultureInfo culture,
+            bool captureDefault)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseFilter(new CaptureCultureAttribute(culture?.Name, captureDefault));
+        }
+
+        public static IGlobalConfiguration UseDefaultCulture(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] CultureInfo culture,
+            [CanBeNull] CultureInfo uiCulture)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseFilter(new CaptureCultureAttribute(culture?.Name, uiCulture?.Name));
+        }
+
+        public static IGlobalConfiguration UseDefaultCulture(
+            [NotNull] this IGlobalConfiguration configuration,
+            [CanBeNull] CultureInfo culture,
+            [CanBeNull] CultureInfo uiCulture,
+            bool captureDefault)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            return configuration.UseFilter(new CaptureCultureAttribute(culture?.Name, uiCulture?.Name, captureDefault));
+        }
+
+        public static IGlobalConfiguration UseDashboardStylesheet(
+            [NotNull] this IGlobalConfiguration configuration,
+            [NotNull] Assembly assembly,
+            [NotNull] string resource)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
+            if (resource == null) throw new ArgumentNullException(nameof(resource));
+
+            DashboardRoutes.AddStylesheet(assembly, resource);
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseDashboardStylesheetDarkMode(
+            [NotNull] this IGlobalConfiguration configuration,
+            [NotNull] Assembly assembly,
+            [NotNull] string resource)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
+            if (resource == null) throw new ArgumentNullException(nameof(resource));
+
+            DashboardRoutes.AddStylesheetDarkMode(assembly, resource);
+            return configuration;
+        }
+
+        public static IGlobalConfiguration UseDashboardJavaScript(
+            [NotNull] this IGlobalConfiguration configuration,
+            [NotNull] Assembly assembly,
+            [NotNull] string resource)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
+            if (resource == null) throw new ArgumentNullException(nameof(resource));
+
+            DashboardRoutes.AddJavaScript(assembly, resource);
+            return configuration;
+        }
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static IGlobalConfiguration<T> Use<T>(
             [NotNull] this IGlobalConfiguration configuration, T entry,
@@ -308,7 +423,7 @@ namespace Hangfire
             return new ConfigurationEntry<T>(entry);
         }
 
-        private class ConfigurationEntry<T> : IGlobalConfiguration<T>
+        private sealed class ConfigurationEntry<T> : IGlobalConfiguration<T>
         {
             public ConfigurationEntry(T entry)
             {

@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -21,6 +20,7 @@ using Hangfire.Annotations;
 
 namespace Hangfire.Dashboard
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "Public API, can not change in minor versions.")]
     public class RouteCollection
     {
         private readonly List<Tuple<string, IDashboardDispatcher>> _dispatchers
@@ -62,7 +62,8 @@ namespace Hangfire.Dashboard
                 var match = Regex.Match(
                     path,
                     pattern,
-                    RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                    RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Singleline,
+                    TimeSpan.FromSeconds(1));
 
                 if (match.Success)
                 {

@@ -5,7 +5,6 @@ using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using System.Transactions;
 using ReferencedDapper::Dapper;
 using Hangfire.Storage;
 using Xunit;
@@ -71,7 +70,7 @@ namespace Hangfire.SqlServer.Tests
                 () => UseConnection(connection1 =>
                 {
                     var storage = CreateStorage(connection1);
-                    using (new SqlServerDistributedLock(storage, "exclusive", _timeout))
+                    using (new SqlServerDistributedLock(storage, "exclusive", TimeSpan.Zero))
                     {
                         lockAcquired.Set();
                         releaseLock.Wait();
@@ -87,7 +86,7 @@ namespace Hangfire.SqlServer.Tests
                 Assert.Throws<DistributedLockTimeoutException>(
                     () =>
                     {
-                        using (new SqlServerDistributedLock(storage, "exclusive", _timeout))
+                        using (new SqlServerDistributedLock(storage, "exclusive", TimeSpan.FromSeconds(1)))
                         {
                         }
                     });
@@ -114,7 +113,7 @@ namespace Hangfire.SqlServer.Tests
             }, useMicrosoftDataSqlClient);
         }
 
-        [Fact, CleanDatabase(IsolationLevel.Unspecified)]
+        [Fact, CleanDatabase]
         public void DistributedLocks_AreReEntrant_FromTheSameThread_OnTheSameResource()
         {
             var storage = new SqlServerStorage(ConnectionUtils.GetConnectionString());
@@ -126,7 +125,7 @@ namespace Hangfire.SqlServer.Tests
             }
         }
 
-        [Fact, CleanDatabase(IsolationLevel.Unspecified)]
+        [Fact, CleanDatabase]
         public void InnerDistributedLock_DoesNotConsumeADatabaseConnection()
         {
             // Arrange

@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -31,6 +30,7 @@ using Hangfire.Dashboard.Resources;
 
 namespace Hangfire.Dashboard
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "We use instance methods in this class for better observability.")]
     public class HtmlHelper
     {
         private static readonly Type DisplayNameType;
@@ -54,7 +54,7 @@ namespace Hangfire.Dashboard
 
                 GetDisplayName = Expression.Lambda<Func<object, string>>(Expression.Call(converted, "get_DisplayName", null), p).Compile();
             }
-            catch
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 // Ignoring
             }
@@ -65,6 +65,8 @@ namespace Hangfire.Dashboard
             if (page == null) throw new ArgumentNullException(nameof(page));
             _page = page;
         }
+
+        public RazorPage Page => _page;
 
         public NonEscapedString Breadcrumbs(string title, [NotNull] IDictionary<string, string> items)
         {
@@ -128,6 +130,11 @@ namespace Hangfire.Dashboard
 
         public string JobName(Job job)
         {
+            return JobName(job, includeQueue: true);
+        }
+
+        public string JobName(Job job, bool includeQueue)
+        {
             if (job == null)
             {
                 return Strings.Common_CannotFindTargetMethod;
@@ -140,7 +147,7 @@ namespace Hangfire.Dashboard
                 {
                     return jobDisplayNameAttribute.Format(_page.Context, job);
                 }
-                catch (Exception)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     return jobDisplayNameAttribute.DisplayName;
                 }
@@ -153,7 +160,10 @@ namespace Hangfire.Dashboard
                 {
                     try
                     {
-                        return String.Format(GetDisplayName(attribute), job.Args.ToArray());
+                        return String.Format(
+                            CultureInfo.CurrentCulture,
+                            GetDisplayName(attribute),
+                            job.Args.ToArray());
                     }
                     catch (FormatException)
                     {
@@ -169,16 +179,21 @@ namespace Hangfire.Dashboard
                 {
                     return displayNameProvider(_page.Context, job);
                 }
-                catch
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     // Ignoring exceptions
                 }
             }
 
-            return job.ToString();
+            return job.ToString(includeQueue);
         }
 
         public NonEscapedString StateLabel(string stateName)
+        {
+            return StateLabel(stateName, stateName);
+        }
+
+        public NonEscapedString StateLabel(string stateName, string text, bool hover = false)
         {
             if (String.IsNullOrWhiteSpace(stateName))
             {
@@ -186,7 +201,15 @@ namespace Hangfire.Dashboard
             }
 
             var style = $"background-color: {JobHistoryRenderer.GetForegroundStateColor(stateName)};";
-            return Raw($"<span class=\"label label-default\" style=\"{HtmlEncode(style)}\">{HtmlEncode(stateName)}</span>");
+            var cssSuffix = JobHistoryRenderer.GetStateCssSuffix(stateName);
+            var cssHover = hover ? "label-hover" : null;
+
+            if (cssSuffix != null)
+            {
+                return Raw($"<span class=\"label label-default {cssHover} label-state-{HtmlEncode(cssSuffix)}\">{HtmlEncode(text)}</span>");
+            }
+
+            return Raw($"<span class=\"label label-default {cssHover}\" style=\"{HtmlEncode(style)}\">{HtmlEncode(text)}</span>");
         }
 
         public NonEscapedString JobIdLink(string jobId)
@@ -196,12 +219,17 @@ namespace Hangfire.Dashboard
 
         public NonEscapedString JobNameLink(string jobId, Job job)
         {
-            return Raw($"<a class=\"job-method\" href=\"{HtmlEncode(_page.Url.JobDetails(jobId))}\">{HtmlEncode(JobName(job))}</a>");
+            return JobNameLink(jobId, job, includeQueue: true);
+        }
+
+        public NonEscapedString JobNameLink(string jobId, Job job, bool includeQueue)
+        {
+            return Raw($"<a class=\"job-method\" href=\"{HtmlEncode(_page.Url.JobDetails(jobId))}\">{HtmlEncode(JobName(job, includeQueue))}</a>");
         }
 
         public NonEscapedString RelativeTime(DateTime value)
         {
-            return Raw($"<span data-moment=\"{HtmlEncode(JobHelper.ToTimestamp(value).ToString(CultureInfo.InvariantCulture))}\">{HtmlEncode(value.ToString(CultureInfo.CurrentUICulture))}</span>");
+            return Raw($"<span data-moment=\"{HtmlEncode(JobHelper.ToTimestamp(value).ToString(CultureInfo.InvariantCulture))}\">{HtmlEncode(value.ToString(CultureInfo.CurrentCulture))}</span>");
         }
 
         public NonEscapedString MomentTitle(DateTime time, string value)
@@ -211,7 +239,7 @@ namespace Hangfire.Dashboard
 
         public NonEscapedString LocalTime(DateTime value)
         {
-            return Raw($"<span data-moment-local=\"{HtmlEncode(JobHelper.ToTimestamp(value).ToString(CultureInfo.InvariantCulture))}\">{HtmlEncode(value.ToString(CultureInfo.CurrentUICulture))}</span>");
+            return Raw($"<span data-moment-local=\"{HtmlEncode(JobHelper.ToTimestamp(value).ToString(CultureInfo.InvariantCulture))}\">{HtmlEncode(value.ToString(CultureInfo.CurrentCulture))}</span>");
         }
 
         public string ToHumanDuration(TimeSpan? duration, bool displaySign = true)
@@ -248,7 +276,7 @@ namespace Hangfire.Dashboard
                     builder.Append(duration.Value.Seconds);
                     if (duration.Value.Milliseconds > 0)
                     {
-                        builder.Append($".{duration.Value.Milliseconds.ToString().PadLeft(3, '0')}");
+                        builder.Append($".{duration.Value.Milliseconds.ToString(CultureInfo.InvariantCulture).PadLeft(3, '0')}");
                     }
 
                     builder.Append("s ");
@@ -275,7 +303,7 @@ namespace Hangfire.Dashboard
         [Obsolete("This method is unused and will be removed in 2.0.0.")]
         public string FormatProperties(IDictionary<string, string> properties)
         {
-            return String.Join(", ", properties.Select(x => $"{x.Key}: \"{x.Value}\""));
+            return String.Join(", ", properties.Select(static x => $"{x.Key}: \"{x.Value}\""));
         }
 
         public NonEscapedString QueueLabel(string queue)

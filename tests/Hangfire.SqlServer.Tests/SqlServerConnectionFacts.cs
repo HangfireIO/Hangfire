@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using ReferencedDapper::Dapper;
@@ -89,8 +91,10 @@ namespace Hangfire.SqlServer.Tests
         {
             UseConnection(connection =>
             {
-                var @lock = connection.AcquireDistributedLock("1", TimeSpan.FromSeconds(1));
-                Assert.NotNull(@lock);
+                using (var @lock = connection.AcquireDistributedLock("1", TimeSpan.FromSeconds(1)))
+                {
+                    Assert.NotNull(@lock);
+                }
             }, useMicrosoftDataSqlClient);
         }
 
@@ -111,8 +115,11 @@ namespace Hangfire.SqlServer.Tests
         [InlineData(false), InlineData(true)]
         public void AcquireDistributedLock_AcquiresExclusiveApplicationLock_OnSession(bool useMicrosoftDataSqlClient)
         {
-            UseConnections((sql, connection) =>
+            using (var sql = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient))
             {
+                var storage = new SqlServerStorage(sql);
+
+                using (var connection = new SqlServerConnection(storage))
                 using (connection.AcquireDistributedLock("hello", TimeSpan.FromMinutes(5)))
                 {
                     var lockMode = sql.Query<string>(
@@ -120,7 +127,7 @@ namespace Hangfire.SqlServer.Tests
 
                     Assert.Equal("Exclusive", lockMode);
                 }
-            }, useBatching: false, useMicrosoftDataSqlClient);
+            }
         }
 
         [Theory, CleanDatabase]
@@ -133,7 +140,7 @@ namespace Hangfire.SqlServer.Tests
             var thread = new Thread(
                 () => UseConnection(connection1 =>
                 {
-                    using (connection1.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(5)))
+                    using (connection1.AcquireDistributedLock("exclusive", TimeSpan.Zero))
                     {
                         lockAcquired.Set();
                         releaseLock.Wait();
@@ -148,7 +155,7 @@ namespace Hangfire.SqlServer.Tests
                 Assert.Throws<DistributedLockTimeoutException>(
                     () =>
                     {
-                        using (connection2.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(5)))
+                        using (connection2.AcquireDistributedLock("exclusive", TimeSpan.FromSeconds(1)))
                         {
                         }
                     });
@@ -168,7 +175,7 @@ namespace Hangfire.SqlServer.Tests
                 distributedLock.Dispose();
 
                 var lockMode = sql.Query<string>(
-                    "select applock_mode('public', 'hello', 'session')").Single();
+                    $"select applock_mode('public', '{Constants.DefaultSchema}:hello', 'session')").Single();
 
                 Assert.Equal("NoLock", lockMode);
             }, useBatching: false, useMicrosoftDataSqlClient);
@@ -242,8 +249,8 @@ namespace Hangfire.SqlServer.Tests
                 var sqlJob = sql.Query($"select * from [{Constants.DefaultSchema}].Job").Single();
                 Assert.Equal(jobId, sqlJob.Id.ToString());
                 Assert.Equal(createdAt, sqlJob.CreatedAt);
-                Assert.Equal(null, (int?) sqlJob.StateId);
-                Assert.Equal(null, (string) sqlJob.StateName);
+                Assert.Null((int?) sqlJob.StateId);
+                Assert.Null((string) sqlJob.StateName);
 
                 var invocationData = InvocationData.DeserializePayload((string)sqlJob.InvocationData);
                 invocationData.Arguments = sqlJob.Arguments;
@@ -405,7 +412,7 @@ namespace Hangfire.SqlServer.Tests
                     .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
                     .ToDictionary(x => (string)x.Name, x => (string)x.Value);
 
-                Assert.Equal(null, parameters["Key1"]);
+                Assert.Null(parameters["Key1"]);
             }, useBatching, useMicrosoftDataSqlClient);
         }
 
@@ -427,8 +434,8 @@ namespace Hangfire.SqlServer.Tests
                     .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
                     .ToDictionary(x => (string)x.Name, x => (string)x.Value);
 
-                Assert.Equal(null, parameters["Key1"]);
-                Assert.Equal(null, parameters["Key2"]);
+                Assert.Null(parameters["Key1"]);
+                Assert.Null(parameters["Key2"]);
             }, useBatching, useMicrosoftDataSqlClient);
         }
 
@@ -450,9 +457,9 @@ namespace Hangfire.SqlServer.Tests
                     .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
                     .ToDictionary(x => (string)x.Name, x => (string)x.Value);
 
-                Assert.Equal(null, parameters["Key1"]);
-                Assert.Equal(null, parameters["Key2"]);
-                Assert.Equal(null, parameters["Key3"]);
+                Assert.Null(parameters["Key1"]);
+                Assert.Null(parameters["Key2"]);
+                Assert.Null(parameters["Key3"]);
             }, useBatching, useMicrosoftDataSqlClient);
         }
 
@@ -474,10 +481,10 @@ namespace Hangfire.SqlServer.Tests
                     .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
                     .ToDictionary(x => (string)x.Name, x => (string)x.Value);
 
-                Assert.Equal(null, parameters["Key1"]);
-                Assert.Equal(null, parameters["Key2"]);
-                Assert.Equal(null, parameters["Key3"]);
-                Assert.Equal(null, parameters["Key4"]);
+                Assert.Null(parameters["Key1"]);
+                Assert.Null(parameters["Key2"]);
+                Assert.Null(parameters["Key3"]);
+                Assert.Null(parameters["Key4"]);
             }, useBatching, useMicrosoftDataSqlClient);
         }
 
@@ -499,11 +506,11 @@ namespace Hangfire.SqlServer.Tests
                     .Query($"select * from [{Constants.DefaultSchema}].JobParameter where JobId = @id", new { id = jobId })
                     .ToDictionary(x => (string)x.Name, x => (string)x.Value);
 
-                Assert.Equal(null, parameters["Key1"]);
-                Assert.Equal(null, parameters["Key2"]);
-                Assert.Equal(null, parameters["Key3"]);
-                Assert.Equal(null, parameters["Key4"]);
-                Assert.Equal(null, parameters["Key5"]);
+                Assert.Null(parameters["Key1"]);
+                Assert.Null(parameters["Key2"]);
+                Assert.Null(parameters["Key3"]);
+                Assert.Null(parameters["Key4"]);
+                Assert.Null(parameters["Key5"]);
             }, useBatching, useMicrosoftDataSqlClient);
         }
 
@@ -591,6 +598,42 @@ select scope_identity() as Id";
                 Assert.Null(result.LoadException);
                 Assert.True(DateTime.UtcNow.AddMinutes(-1) < result.CreatedAt);
                 Assert.True(result.CreatedAt < DateTime.UtcNow.AddMinutes(1));
+                Assert.Empty(result.ParametersSnapshot);
+            }, useBatching: false, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetJobData_ReturnsResultWithParameters_WhenJobAndParametersExist(bool useMicrosoftDataSqlClient)
+        {
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Job (InvocationData, Arguments, StateName, CreatedAt)
+values (@invocationData, @arguments, @stateName, getutcdate())
+declare @id bigint = scope_identity();
+insert into [{Constants.DefaultSchema}].JobParameter ([JobId], [Name], [Value])
+values (@id, N'Param1', N'Value1'), (@id, N'Param2', 'Value2')
+select @id as Id";
+
+            UseConnections((sql, connection) =>
+            {
+                var job = Job.FromExpression(() => SampleMethod("wrong"));
+
+                var jobId = sql.Query(
+                    arrangeSql,
+                    new
+                    {
+                        invocationData = JobHelper.ToJson(InvocationData.Serialize(job)),
+                        stateName = "Succeeded",
+                        arguments = "['Arguments']"
+                    }).Single();
+
+                var result = connection.GetJobData(((long)jobId.Id).ToString());
+
+                Assert.NotNull(result);
+                Assert.Equal("SampleMethod", result.Job.Method.Name);
+                Assert.Equal(2, result.ParametersSnapshot.Count);
+                Assert.Equal("Value1", result.ParametersSnapshot["Param1"]);
+                Assert.Equal("Value2", result.ParametersSnapshot["Param2"]);
             }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
@@ -851,7 +894,7 @@ select scope_identity() as Id").Single().Id.ToString();
             }
             finally
             {
-                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[JobParameter] REBUILD WITH (IGNORE_DUP_KEY = OFF)"), useBatching, useMicrosoftDataSqlClient);
+                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[JobParameter] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useBatching, useMicrosoftDataSqlClient);
             }
         }
 
@@ -900,7 +943,7 @@ select scope_identity() as Id").Single().Id.ToString();
             }
             finally
             {
-                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[JobParameter] REBUILD WITH (IGNORE_DUP_KEY = OFF)"), useBatching: false, useMicrosoftDataSqlClient);
+                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[JobParameter] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useBatching: false, useMicrosoftDataSqlClient);
             }
         }
 
@@ -1082,7 +1125,7 @@ values
                 
                 var result = connection.GetFirstByLowestScoreFromSet("another-key", -10.0, 10.0, 5);
                 
-                Assert.Equal(1, result.Count);
+                Assert.Single(result);
                 Assert.Equal("abcd", result.First());
             }, useBatching: false, useMicrosoftDataSqlClient);
         }
@@ -1154,6 +1197,8 @@ values
                     "{\"WorkerCount\":4,\"Queues\":[\"critical\",\"default\"],\"StartedAt\":"),
                     server.Data);
                 Assert.NotNull(server.LastHeartbeat);
+                Assert.True(DateTime.UtcNow.AddHours(-1) < server.LastHeartbeat &&
+                            server.LastHeartbeat < DateTime.UtcNow.AddHours(1));
 
                 var context2 = new ServerContext
                 {
@@ -1227,6 +1272,9 @@ values
 
                 Assert.NotEqual(2012, servers["server1"].Year);
                 Assert.Equal(2012, servers["server2"].Year);
+
+                Assert.True(DateTime.UtcNow.AddHours(-1) < servers["server1"] &&
+                            servers["server1"] < DateTime.UtcNow.AddHours(1));
             }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
@@ -1282,7 +1330,7 @@ values (@id, '', @heartbeat)";
                 var result = connection.GetAllItemsFromSet("some-set");
 
                 Assert.NotNull(result);
-                Assert.Equal(0, result.Count);
+                Assert.Empty(result);
             }, useMicrosoftDataSqlClient);
         }
 
@@ -1395,7 +1443,7 @@ values (@key, 0.0, @value)";
                         new { key = "some-hash" })
                     .ToDictionary(x => (string)x.Field, x => (string)x.Value);
 
-                Assert.Equal(null, result["Key1"]);
+                Assert.Null(result["Key1"]);
             }, useBatching, useMicrosoftDataSqlClient);
         }
 
@@ -1441,7 +1489,7 @@ values (@key, 0.0, @value)";
             }
             finally
             {
-                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = OFF)"), useBatching, useMicrosoftDataSqlClient);
+                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useBatching, useMicrosoftDataSqlClient);
             }
         }
 
@@ -1484,7 +1532,7 @@ values (@key, 0.0, @value)";
             }
             finally
             {
-                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = OFF)"), useBatching, useMicrosoftDataSqlClient);
+                UseConnections((sql, _) => sql.Execute($"ALTER TABLE [{Constants.DefaultSchema}].[Hash] REBUILD WITH (IGNORE_DUP_KEY = ON)"), useBatching, useMicrosoftDataSqlClient);
             }
         }
 
@@ -1584,17 +1632,55 @@ values (@key, @value, 0.0)";
 
         [Theory, CleanDatabase]
         [InlineData(false), InlineData(true)]
-        public void GetRangeFromSet_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
+        public void GetSetCount_Limited_ThrowsAnException_WhenKeysArgumentIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>
             {
-                Assert.Throws<ArgumentNullException>(() => connection.GetRangeFromSet(null, 0, 1));
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => connection.GetSetCount((IEnumerable<string>) null, 10));
+
+                Assert.Equal("keys", exception.ParamName);
             }, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
         [InlineData(false), InlineData(true)]
-        public void GetRangeFromSet_ReturnsPagedElements(bool useMicrosoftDataSqlClient)
+        public void GetSetCount_Limited_ThrowsAnException_WhenLimitIsNegative(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentOutOfRangeException>(
+                    () => connection.GetSetCount(Enumerable.Empty<string>(), -10));
+
+                Assert.Equal("limit", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetCount_Limited_ReturnsZero_WhenSetsArgumentIsEmpty(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetSetCount(Enumerable.Empty<string>(), 10);
+                Assert.Equal(0, result);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetCount_Limited_ReturnsZero_WhenGivenSetsDoNotExist(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetSetCount(new [] { "set-1", "set-2" }.AsEnumerable(), 10);
+                Assert.Equal(0, result);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetCount_Limited_ReturnsTheSum_OfGivenSetCardinalities(bool useMicrosoftDataSqlClient)
         {
             var arrangeSql = $@"
 insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
@@ -1606,15 +1692,74 @@ values (@Key, @Value, 0.0)";
                 {
                     new { Key = "set-1", Value = "1" },
                     new { Key = "set-1", Value = "2" },
-                    new { Key = "set-1", Value = "3" },
-                    new { Key = "set-1", Value = "4" },
-                    new { Key = "set-2", Value = "4" },
-                    new { Key = "set-1", Value = "5" }
+                    new { Key = "set-2", Value = "2" },
+                    new { Key = "set-2", Value = "3" },
+                    new { Key = "set-3", Value = "1" }
                 });
 
-                var result = connection.GetRangeFromSet("set-1", 2, 3);
+                var result = connection.GetSetCount(new [] { "set-1", "set-2" }.AsEnumerable(), 10);
+                Assert.Equal(4, result);
+            }, useBatching: false, useMicrosoftDataSqlClient);
+        }
 
-                Assert.Equal(new [] { "3", "4" }, result);
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetCount_Limited_LimitValue_IsConsidered(bool useMicrosoftDataSqlClient)
+        {
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
+values (@Key, @Value, 0.0)";
+
+            UseConnections((sql, connection) =>
+            {
+                sql.Execute(arrangeSql, new List<dynamic>
+                {
+                    new { Key = "set-1", Value = "1" },
+                    new { Key = "set-1", Value = "2" },
+                    new { Key = "set-2", Value = "2" },
+                    new { Key = "set-2", Value = "3" },
+                    new { Key = "set-3", Value = "1" }
+                });
+
+                var result = connection.GetSetCount(new [] { "set-1", "set-2", "set-4" }.AsEnumerable(), 2);
+                Assert.Equal(2, result);
+            }, useBatching: false, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetRangeFromSet_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                Assert.Throws<ArgumentNullException>(() => connection.GetRangeFromSet(null, 0, 1));
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetRangeFromSet_ReturnsPagedElements_SortedByScore(bool useMicrosoftDataSqlClient)
+        {
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
+values (@Key, @Value, @Score)";
+
+            UseConnections((sql, connection) =>
+            {
+                sql.Execute(arrangeSql, new List<dynamic>
+                {
+                    new { Key = "set-1", Value = "4", Score = 4.0D },
+                    new { Key = "set-2", Value = "4", Score = 4.0D },
+                    new { Key = "set-1", Value = "6", Score = 6.0D },
+                    new { Key = "set-1", Value = "2", Score = 2.0D },
+                    new { Key = "set-1", Value = "3", Score = 3.0D },
+                    new { Key = "set-1", Value = "5", Score = 5.0D },
+                    new { Key = "set-1", Value = "1", Score = 1.0D },
+                });
+
+                var result = connection.GetRangeFromSet("set-1", 2, 4);
+
+                Assert.Equal(new [] { "3", "4", "5" }, result);
             }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
@@ -1627,6 +1772,118 @@ values (@Key, @Value, 0.0)";
                 Assert.Throws<ArgumentNullException>(
                     () => connection.GetCounter(null));
             }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetContains_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => connection.GetSetContains(null, "value"));
+                
+                Assert.Equal("key", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetContains_ThrowsAnException_WhenValueIsNull(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => connection.GetSetContains("key", null));
+
+                Assert.Equal("value", exception.ParamName);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetContains_ReturnsFalse_WhenGivenSetDoesNotExist(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetSetContains("non-existing-set", "some-value");
+                Assert.False(result);
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetContains_ReturnsTrue_WhenGivenSetExists_AndContainsTheValue(bool useMicrosoftDataSqlClient)
+        {
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
+values (@Key, @Value, 0.0)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new List<dynamic>
+                {
+                    new { Key = "my-set", Value = "1" },
+                    new { Key = "my-set", Value = "2" },
+                });
+
+                // Act
+                var result = connection.GetSetContains("my-set", "2");
+
+                // Assert
+                Assert.True(result);
+            }, useBatching: false, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetContains_ReturnsFalse_WhenGivenSetExists_ButContainsOtherValues(bool useMicrosoftDataSqlClient)
+        {
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
+values (@Key, @Value, 0.0)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new List<dynamic>
+                {
+                    new { Key = "my-set", Value = "1" },
+                    new { Key = "my-set", Value = "2" },
+                });
+
+                // Act
+                var result = connection.GetSetContains("my-set", "3");
+
+                // Assert
+                Assert.False(result);
+            }, useBatching: false, useMicrosoftDataSqlClient);
+        }
+        
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetSetContains_ReturnsFalse_WhenAnotherSetContainsTheValue(bool useMicrosoftDataSqlClient)
+        {
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].[Set] ([Key], [Value], [Score])
+values (@Key, @Value, 0.0)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new List<dynamic>
+                {
+                    new { Key = "my-set", Value = "1" },
+                    new { Key = "another-set", Value = "2" },
+                });
+
+                // Act
+                var result = connection.GetSetContains("my-set", "2");
+
+                // Assert
+                Assert.False(result);
+            }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
         [Theory, CleanDatabase]
@@ -2232,6 +2489,21 @@ values (@jobId, @name, @value)";
             }, useBatching: false, useMicrosoftDataSqlClient);
         }
 
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
+        public void GetUtcDateTime_ReturnsCurrentUtcDateTime(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection(connection =>
+            {
+                var dateTime = connection.GetUtcDateTime();
+                var currentDateTime = DateTime.UtcNow;
+
+                Assert.Equal(DateTimeKind.Utc, dateTime.Kind);
+                Assert.True(currentDateTime.AddMinutes(-1) < dateTime, dateTime.ToString(CultureInfo.CurrentCulture));
+                Assert.True(dateTime < currentDateTime.AddMinutes(1), dateTime.ToString(CultureInfo.CurrentCulture));
+            }, useMicrosoftDataSqlClient);
+        }
+
         [Fact, CleanSerializerSettings]
         public void HandlesChangingProcessOfStateDataSerialization()
         {
@@ -2249,7 +2521,7 @@ values (@jobId, @name, @value)";
             Assert.Equal(2, deserializedStateData.Count);
 
             Assert.Equal("value1", deserializedStateData["key1"]);
-            Assert.Equal(null, deserializedStateData["key2"]);
+            Assert.Null(deserializedStateData["key2"]);
         }
 
         [Fact, CleanSerializerSettings]
@@ -2274,7 +2546,10 @@ values (@jobId, @name, @value)";
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient))
             {
-                var storage = new SqlServerStorage(sqlConnection, new SqlServerStorageOptions { CommandBatchMaxTimeout = useBatching ? TimeSpan.FromMinutes(1) : (TimeSpan?)null });
+                var storage = new SqlServerStorage(
+                    () => ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient),
+                    new SqlServerStorageOptions { CommandBatchMaxTimeout = useBatching ? TimeSpan.FromMinutes(1) : (TimeSpan?)null });
+
                 using (var connection = new SqlServerConnection(storage))
                 {
                     action(sqlConnection, connection);
@@ -2284,18 +2559,17 @@ values (@jobId, @name, @value)";
 
         private void UseConnection(Action<SqlServerConnection> action, bool useMicrosoftDataSqlClient)
         {
-            using (var sql = ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient))
-            {
-                var storage = new Mock<SqlServerStorage>(sql);
-                storage.Setup(x => x.QueueProviders).Returns(_providers);
+            var storage = new Mock<SqlServerStorage>((Func<DbConnection>)(() => ConnectionUtils.CreateConnection(useMicrosoftDataSqlClient)));
+            storage.Setup(x => x.QueueProviders).Returns(_providers);
 
-                using (var connection = new SqlServerConnection(storage.Object))
-                {
-                    action(connection);
-                }
+            using (var connection = new SqlServerConnection(storage.Object))
+            {
+                action(connection);
             }
         }
 
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void SampleMethod(string arg){ }
     }
 }

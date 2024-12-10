@@ -24,6 +24,7 @@
 // SOFTWARE.
 //===============================================================================
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading;
 using Hangfire.Logging.LogProviders;
@@ -388,13 +389,13 @@ namespace Hangfire.Logging
         internal static readonly List<Tuple<IsLoggerAvailable, CreateLogProvider>> LogProviderResolvers =
             new List<Tuple<IsLoggerAvailable, CreateLogProvider>>
         {
-            new Tuple<IsLoggerAvailable, CreateLogProvider>(SerilogLogProvider.IsLoggerAvailable, () => new SerilogLogProvider()),
-            new Tuple<IsLoggerAvailable, CreateLogProvider>(NLogLogProvider.IsLoggerAvailable, () => new NLogLogProvider()),
-            new Tuple<IsLoggerAvailable, CreateLogProvider>(Log4NetLogProvider.IsLoggerAvailable, () => new Log4NetLogProvider()),
+            new Tuple<IsLoggerAvailable, CreateLogProvider>(SerilogLogProvider.IsLoggerAvailable, static () => new SerilogLogProvider()),
+            new Tuple<IsLoggerAvailable, CreateLogProvider>(NLogLogProvider.IsLoggerAvailable, static () => new NLogLogProvider()),
+            new Tuple<IsLoggerAvailable, CreateLogProvider>(Log4NetLogProvider.IsLoggerAvailable, static () => new Log4NetLogProvider()),
 #if !NETSTANDARD1_3
-            new Tuple<IsLoggerAvailable, CreateLogProvider>(EntLibLogProvider.IsLoggerAvailable, () => new EntLibLogProvider()),
-            new Tuple<IsLoggerAvailable, CreateLogProvider>(LoupeLogProvider.IsLoggerAvailable, () => new LoupeLogProvider()),
-            new Tuple<IsLoggerAvailable, CreateLogProvider>(ElmahLogProvider.IsLoggerAvailable, () => new ElmahLogProvider()),
+            new Tuple<IsLoggerAvailable, CreateLogProvider>(EntLibLogProvider.IsLoggerAvailable, static () => new EntLibLogProvider()),
+            new Tuple<IsLoggerAvailable, CreateLogProvider>(LoupeLogProvider.IsLoggerAvailable, static () => new LoupeLogProvider()),
+            new Tuple<IsLoggerAvailable, CreateLogProvider>(ElmahLogProvider.IsLoggerAvailable, static () => new ElmahLogProvider()),
 #endif
         };
 
@@ -410,7 +411,7 @@ namespace Hangfire.Logging
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 Console.WriteLine(
                     "Exception occured resolving a log provider. Logging for this assembly {0} is disabled. {1}",
@@ -420,7 +421,7 @@ namespace Hangfire.Logging
             return null;
         }
 
-        internal class NoOpLogger : ILog
+        internal sealed class NoOpLogger : ILog
         {
             public bool Log(LogLevel logLevel, Func<string> messageFunc, Exception exception)
             {
@@ -429,7 +430,7 @@ namespace Hangfire.Logging
         }
     }
 
-    internal class LoggerExecutionWrapper : ILog
+    internal sealed class LoggerExecutionWrapper : ILog
     {
         private readonly ILog _logger;
         public const string FailedToGenerateLogMessage = "Failed to generate log message";
@@ -457,9 +458,9 @@ namespace Hangfire.Logging
                 {
                     return messageFunc();
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
-                    Log(LogLevel.Error, () => FailedToGenerateLogMessage, ex);
+                    Log(LogLevel.Error, static () => FailedToGenerateLogMessage, ex);
                 }
                 return null;
             };
@@ -522,7 +523,7 @@ namespace Hangfire.Logging.LogProviders
             return Expression.Lambda<Func<string, object>>(methodCall, new[] { nameParam }).Compile();
         }
 
-        internal class NLogLogger : ILog
+        internal sealed class NLogLogger : ILog
         {
             private readonly dynamic _logger;
 
@@ -704,7 +705,7 @@ namespace Hangfire.Logging.LogProviders
             return Expression.Lambda<Func<string, object>>(methodCall, new[] { nameParam }).Compile();
         }
 
-        internal class Log4NetLogger : ILog
+        internal sealed class Log4NetLogger : ILog
         {
             private readonly dynamic _logger;
 
@@ -840,8 +841,8 @@ namespace Hangfire.Logging.LogProviders
 
         static EntLibLogProvider()
         {
-            LogEntryType = Type.GetType(string.Format(TypeTemplate, "LogEntry"));
-            LoggerType = Type.GetType(string.Format(TypeTemplate, "Logger"));
+            LogEntryType = Type.GetType(string.Format(CultureInfo.InvariantCulture, TypeTemplate, "LogEntry"));
+            LoggerType = Type.GetType(string.Format(CultureInfo.InvariantCulture, TypeTemplate, "Logger"));
         }
 
         public EntLibLogProvider()
@@ -928,7 +929,7 @@ namespace Hangfire.Logging.LogProviders
             return memberInit;
         }
 
-        internal class EntLibLogger : ILog
+        internal sealed class EntLibLogger : ILog
         {
             private readonly string _loggerName;
             private readonly Action<string, string, TraceEventType> _writeLog;
@@ -1043,8 +1044,9 @@ namespace Hangfire.Logging.LogProviders
             return name => func("SourceContext", name, false);
         }
 
-        internal class SerilogCallbacks
+        internal sealed class SerilogCallbacks
         {
+            private static object[] EmptyArray = [];
             public readonly object DebugLevel;
             public readonly object ErrorLevel;
             public readonly object FatalLevel;
@@ -1083,7 +1085,7 @@ namespace Hangfire.Logging.LogProviders
                 // (logger, level, message) => { ((SeriLog.ILoggerILogger)logger).Write(level, message, new object[]); }
                 MethodInfo writeMethodInfo = loggerType.GetRuntimeMethod("Write", new[] { logEventTypeType, typeof(string), typeof(object[]) });
                 ParameterExpression messageParam = Expression.Parameter(typeof(string));
-                ConstantExpression propertyValuesParam = Expression.Constant(new object[0]);
+                ConstantExpression propertyValuesParam = Expression.Constant(EmptyArray);
                 MethodCallExpression writeMethodExp = Expression.Call(instanceCast, writeMethodInfo, levelCast, messageParam, propertyValuesParam);
                 Write = Expression.Lambda<Action<object, object, string>>(writeMethodExp, new[]
                 {
@@ -1119,7 +1121,7 @@ namespace Hangfire.Logging.LogProviders
             }
         }
 
-        internal class SerilogLogger : ILog
+        internal sealed class SerilogLogger : ILog
         {
             private readonly SerilogCallbacks _callbacks;
             private readonly object _logger;
@@ -1299,7 +1301,7 @@ namespace Hangfire.Logging.LogProviders
             return (WriteDelegate) method.CreateDelegate(typeof (WriteDelegate));
         }
 
-        internal class LoupeLogger : ILog
+        internal sealed class LoupeLogger : ILog
         {
             private const string LogSystem = "LibLog";
 
@@ -1322,13 +1324,13 @@ namespace Hangfire.Logging.LogProviders
                     return true;
                 }
 
-                _logWriteDelegate((int)ToLogMessageSeverity(logLevel), LogSystem, _skipLevel, exception, true, 0, null,
+                _logWriteDelegate((int)LoupeLogger.ToLogMessageSeverity(logLevel), LogSystem, _skipLevel, exception, true, 0, null,
                     _category, null, messageFunc.Invoke());
 
                 return true;
             }
 
-            public TraceEventType ToLogMessageSeverity(LogLevel logLevel)
+            private static TraceEventType ToLogMessageSeverity(LogLevel logLevel)
             {
                 switch (logLevel)
                 {
@@ -1409,6 +1411,7 @@ namespace Hangfire.Logging.LogProviders
         /// <param name="message">The Log Message</param>
         /// <param name="e">The Exception, if there is one</param>
         /// <returns>A formatted Log Message string.</returns>
+        [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "Public API, can not change in minor versions.")]
         public delegate string MessageFormatterDelegate(
             string loggerName,
             LogLevel level,
@@ -1425,10 +1428,16 @@ namespace Hangfire.Logging.LogProviders
 
             stringBuilder.Append(DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss", CultureInfo.InvariantCulture));
 
-            stringBuilder.Append(" ");
+            stringBuilder.Append(' ');
 
             // Append a readable representation of the log level
-            stringBuilder.Append(("[" + level.ToString().ToUpper() + "]").PadRight(8));
+#pragma warning disable CA1311
+            stringBuilder.Append(("[" + level.ToString().ToUpper(
+#if !NETSTANDARD1_3
+                CultureInfo.InvariantCulture
+#endif
+                ) + "]").PadRight(8));
+#pragma warning restore CA1311
 
             stringBuilder.Append("(" + loggerName + ") ");
 
@@ -1438,15 +1447,13 @@ namespace Hangfire.Logging.LogProviders
             // Append stack trace if there is an exception
             if (e != null)
             {
-                stringBuilder.Append(Environment.NewLine).Append(e.GetType());
-                stringBuilder.Append(Environment.NewLine).Append(e.Message);
-                stringBuilder.Append(Environment.NewLine).Append(e.StackTrace);
+                stringBuilder.Append(Environment.NewLine).Append(e);
             }
 
             return stringBuilder.ToString();
         }
 
-        internal class ColouredConsoleLogger : ILog
+        internal sealed class ColouredConsoleLogger : ILog
         {
             private static readonly object Lock = new object();
             private readonly string _name;
@@ -1474,7 +1481,7 @@ namespace Hangfire.Logging.LogProviders
                 return true;
             }
 
-            protected void Write(LogLevel logLevel, string message, Exception e = null)
+            private void Write(LogLevel logLevel, string message, Exception e = null)
             {
                 var formattedMessage = MessageFormatter(_name, logLevel, message, e);
                 ConsoleColor color;
@@ -1574,7 +1581,7 @@ namespace Hangfire.Logging.LogProviders
             return Expression.Lambda<Func<object>>(methodCall).Compile();
         }
 
-        internal class ElmahLog : ILog
+        internal sealed class ElmahLog : ILog
         {
             private readonly LogLevel _minLevel;
             private readonly Type _errorType;
@@ -1606,7 +1613,7 @@ namespace Hangfire.Logging.LogProviders
                 {
                     _errorLog.Log(error);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
                     Debug.Print("Error: {0}\n{1}", ex.Message, ex.StackTrace);
                 }

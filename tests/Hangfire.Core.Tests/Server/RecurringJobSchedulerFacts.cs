@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using ReferencedCronos::Cronos;
@@ -22,7 +23,7 @@ namespace Hangfire.Core.Tests.Server
         private readonly Mock<JobStorageConnection> _connection;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
         private readonly Dictionary<string, string> _recurringJob;
-        private readonly Func<DateTime> _nowInstantFactory;
+        private Func<DateTime> _nowInstantFactory;
         private readonly Mock<ITimeZoneResolver> _timeZoneResolver;
         private readonly BackgroundProcessContextMock _context;
         private readonly Mock<IBackgroundJobFactory> _factory;
@@ -30,7 +31,7 @@ namespace Hangfire.Core.Tests.Server
         private readonly BackgroundJobMock _backgroundJobMock;
 
         private static readonly string _expressionString = "* * * * *";
-        private static readonly TimeSpan _delay = TimeSpan.FromTicks(1);
+        private static readonly TimeSpan _delay = TimeSpan.FromMilliseconds(1);
         private readonly CronExpression _cronExpression = CronExpression.Parse(_expressionString);
         private readonly DateTime _nowInstant = new DateTime(2017, 03, 30, 15, 30, 0, DateTimeKind.Utc);
         private readonly DateTime _nextInstant;
@@ -49,6 +50,7 @@ namespace Hangfire.Core.Tests.Server
             _timeZoneResolver = new Mock<ITimeZoneResolver>();
             _timeZoneResolver.Setup(x => x.GetTimeZoneById(It.IsAny<string>())).Throws<InvalidTimeZoneException>();
             _timeZoneResolver.Setup(x => x.GetTimeZoneById(timeZone.Id)).Returns(timeZone);
+            _timeZoneResolver.Setup(x => x.GetTimeZoneById("UTC")).Returns(TimeZoneInfo.Utc);
 
             // ReSharper disable once PossibleInvalidOperationException
             _nextInstant = _cronExpression.GetNextOccurrence(_nowInstant, timeZone).Value;
@@ -649,7 +651,7 @@ namespace Hangfire.Core.Tests.Server
 
             // Assert
             _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{RecurringJobId}", It.Is<Dictionary<string, string>>(dict =>
-                dict.ContainsKey("TimeZoneId") && !dict.ContainsKey("NextExecution"))));
+                !dict.ContainsKey("NextExecution"))));
             _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, JobHelper.ToTimestamp(_nowInstant.AddHours(18).AddMinutes(30))));
             _transaction.Verify(x => x.Commit());
         }
@@ -673,6 +675,194 @@ namespace Hangfire.Core.Tests.Server
                 dict["NextExecution"] == JobHelper.SerializeDateTime(_nowInstant.AddMinutes(1)))));
             _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, JobHelper.ToTimestamp(_nowInstant.AddMinutes(1))));
             _transaction.Verify(x => x.Commit(), Times.Once);
+        }
+
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_CanHandleRecurringJob_WithCronThatNeverFires(bool batching)
+        {
+            // Arrange
+            SetupConnection(batching);
+
+            _recurringJob["Cron"] = "0 0 31 2 *";
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant);
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _stateMachine.Verify(
+                x => x.ApplyState(It.IsAny<ApplyStateContext>()),
+                Times.Never);
+            
+            _transaction.Verify(x => x.SetRangeInHash(
+                $"recurring-job:{RecurringJobId}", 
+                It.Is<Dictionary<string, string>>(dict =>
+                    dict.ContainsKey("NextExecution") && dict["NextExecution"] == String.Empty)));
+
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, -1.0D));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_TriggersRecurringJobOnce_WithMissedScheduleByDefault(bool batching)
+        {
+            // Arrange
+            SetupConnection(batching);
+
+            _recurringJob["Cron"] = "0 * * * *";
+            _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
+
+            var scheduler = CreateScheduler(delay: TimeSpan.FromMilliseconds(100));
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _factory.Verify(x => x.Create(It.Is<CreateContext>(ctx =>
+                (long)ctx.Parameters["Time"] == JobHelper.ToTimestamp(_nowInstant))), Times.Once);
+
+            _stateMachine.Verify(x => x.ApplyState(It.IsNotNull<ApplyStateContext>()), Times.Once);
+
+            _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{RecurringJobId}", It.Is<Dictionary<string, string>>(dict =>
+                dict["NextExecution"] == JobHelper.SerializeDateTime(_nowInstant.AddMinutes(30)) &&
+                dict["LastExecution"] == JobHelper.SerializeDateTime(_nowInstant))));
+
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, JobHelper.ToTimestamp(_nowInstant.AddMinutes(30))));
+
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_TriggersRecurringJobMultipleTimes_WithMissedScheduleWhenStrictModeIsUsed(bool batching)
+        {
+            // Arrange
+            SetupConnection(batching);
+
+            _recurringJob["Cron"] = "0 * * * *";
+            _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddHours(-3));
+            _recurringJob["Misfire"] = MisfireHandlingMode.Strict.ToString("D");
+
+            var scheduler = CreateScheduler(delay: TimeSpan.FromMilliseconds(100));
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _factory.Verify(x => x.Create(It.Is<CreateContext>(ctx =>
+                (long)ctx.Parameters["Time"] == JobHelper.ToTimestamp(_nowInstant.AddMinutes(-30)))), Times.Once);
+
+            _factory.Verify(x => x.Create(It.Is<CreateContext>(ctx =>
+                (long)ctx.Parameters["Time"] == JobHelper.ToTimestamp(_nowInstant.AddMinutes(-30).AddHours(-1)))), Times.Once);
+
+            _factory.Verify(x => x.Create(It.Is<CreateContext>(ctx =>
+                (long)ctx.Parameters["Time"] == JobHelper.ToTimestamp(_nowInstant.AddMinutes(-30).AddHours(-2)))), Times.Once);
+
+            _stateMachine.Verify(
+                x => x.ApplyState(It.IsNotNull<ApplyStateContext>()),
+                Times.Exactly(3));
+
+            _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{RecurringJobId}", It.Is<Dictionary<string, string>>(dict =>
+                dict["NextExecution"] == JobHelper.SerializeDateTime(_nowInstant.AddMinutes(30)) &&
+                dict["LastExecution"] == JobHelper.SerializeDateTime(_nowInstant.AddMinutes(-30)))));
+
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, JobHelper.ToTimestamp(_nowInstant.AddMinutes(30))));
+
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_DoesNotTriggerRecurringJob_WithMissedScheduleWhenIgnorableModeIsUsed(bool batching)
+        {
+            // Arrange
+            SetupConnection(batching);
+
+            _recurringJob["Cron"] = "0 * * * *";
+            _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddHours(-3));
+            _recurringJob["Misfire"] = MisfireHandlingMode.Ignorable.ToString("D");
+
+            var scheduler = CreateScheduler(delay: TimeSpan.FromMilliseconds(100));
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
+            _stateMachine.Verify(x => x.ApplyState(It.IsAny<ApplyStateContext>()), Times.Never);
+
+            _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{RecurringJobId}", It.Is<Dictionary<string, string>>(dict =>
+                dict["NextExecution"] == JobHelper.SerializeDateTime(_nowInstant.AddMinutes(30)) &&
+                !dict.ContainsKey("LastExecution"))));
+
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, JobHelper.ToTimestamp(_nowInstant.AddMinutes(30))));
+
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Theory]
+        [InlineData(false), InlineData(true)]
+        public void Execute_TriggersRecurringJob_WhenIgnorableModeIsUsed_AndErrorIsSlight(bool batching)
+        {
+            // Arrange
+            SetupConnection(batching);
+
+            _nowInstantFactory = () => _nowInstant.AddMilliseconds(123);
+            _recurringJob["Cron"] = "30 * * * *";
+            _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddHours(-3));
+            _recurringJob["Misfire"] = MisfireHandlingMode.Ignorable.ToString("D");
+
+            var scheduler = CreateScheduler(delay: TimeSpan.FromMilliseconds(100));
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Once);
+
+            _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{RecurringJobId}",
+                It.Is<Dictionary<string, string>>(dict =>
+                    dict["NextExecution"] == JobHelper.SerializeDateTime(_nowInstant.AddHours(1)) &&
+                    dict["LastExecution"] == JobHelper.SerializeDateTime(_nowInstant))));
+
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, JobHelper.ToTimestamp(_nowInstant.AddHours(1))));
+
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Theory]
+        [InlineData(false, MisfireHandlingMode.Relaxed), InlineData(true, MisfireHandlingMode.Relaxed)]
+        [InlineData(false, MisfireHandlingMode.Strict), InlineData(true, MisfireHandlingMode.Strict)]
+        [InlineData(false, MisfireHandlingMode.Ignorable), InlineData(true, MisfireHandlingMode.Ignorable)]
+        public void Execute_DoesNotMissCurrentExecution_ForAnyMisfireHandlingMode(bool batching, MisfireHandlingMode mode)
+        {
+            // Arrange
+            SetupConnection(batching);
+
+            _recurringJob["Cron"] = "30 * * * *";
+            _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(_nowInstant.AddHours(-3));
+            _recurringJob["Misfire"] = mode.ToString("D");
+
+            var scheduler = CreateScheduler(delay: TimeSpan.FromMilliseconds(100));
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _factory.Verify(x => x.Create(It.Is<CreateContext>(ctx =>
+                (long)ctx.Parameters["Time"] == JobHelper.ToTimestamp(_nowInstant))), Times.Once);
+
+            _transaction.Verify(x => x.SetRangeInHash($"recurring-job:{RecurringJobId}", It.Is<Dictionary<string, string>>(dict =>
+                dict["NextExecution"] == JobHelper.SerializeDateTime(_nowInstant.AddHours(1)) &&
+                dict["LastExecution"] == JobHelper.SerializeDateTime(_nowInstant))));
+
+            _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, JobHelper.ToTimestamp(_nowInstant.AddHours(1))));
+
+            _transaction.Verify(x => x.Commit());
         }
 
         [Fact]
@@ -745,6 +935,7 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             SetupConnection(batching);
 
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
             _recurringJob["Cron"] = "some garbage";
             _recurringJob["V"] = "2";
 
@@ -757,7 +948,10 @@ namespace Hangfire.Core.Tests.Server
             Assert.True(_delay > TimeSpan.Zero);
             _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
             _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict =>
-                dict.Count == 2 && dict["RetryAttempt"] == "1" && dict.ContainsKey("Error"))));
+                dict.Count == 3 &&
+                dict["NextExecution"] == JobHelper.SerializeDateTime(_nowInstant.Add(_delay)) &&
+                dict["RetryAttempt"] == "1" &&
+                dict.ContainsKey("Error"))));
             _transaction.Verify(x => x.AddToSet("recurring-jobs", RecurringJobId, JobHelper.ToTimestamp(_nowInstant.Add(_delay))));
             _transaction.Verify(x => x.Commit());
         }
@@ -812,6 +1006,7 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             SetupConnection(batching);
 
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
             _recurringJob["Job"] = null;
             _recurringJob["V"] = "2";
 
@@ -826,7 +1021,10 @@ namespace Hangfire.Core.Tests.Server
             _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
             
             _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict =>
-                dict.Count == 2 && dict["RetryAttempt"] == "1" && dict.ContainsKey("Error"))));
+                dict.Count == 3 &&
+                dict["NextExecution"] == JobHelper.SerializeDateTime(_nowInstant.Add(_delay)) &&
+                dict["RetryAttempt"] == "1" &&
+                dict.ContainsKey("Error"))));
             
             _transaction.Verify(x => x.AddToSet(
                 "recurring-jobs",
@@ -866,6 +1064,8 @@ namespace Hangfire.Core.Tests.Server
             SetupConnection(batching);
 
             _recurringJob["RetryAttempt"] = "10";
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant);
             _recurringJob["Job"] = InvocationData.SerializeJob(
                 Job.FromExpression(() => Console.WriteLine())).SerializePayload().Replace("Console", "SomeNonExistingClass");
 
@@ -893,6 +1093,8 @@ namespace Hangfire.Core.Tests.Server
 
             _recurringJob["RetryAttempt"] = "10";
             _recurringJob["Job"] = "Some garbage";
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant);
 
             var scheduler = CreateScheduler();
 
@@ -918,6 +1120,8 @@ namespace Hangfire.Core.Tests.Server
 
             _recurringJob["RetryAttempt"] = "10";
             _recurringJob["Job"] = null;
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant);
 
             var scheduler = CreateScheduler();
 
@@ -943,6 +1147,8 @@ namespace Hangfire.Core.Tests.Server
 
             _recurringJob["RetryAttempt"] = "10";
             _recurringJob["TimeZoneId"] = "Non-existing time zone";
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant);
 
             var scheduler = CreateScheduler();
 
@@ -965,6 +1171,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             SetupConnection(batching);
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
             _recurringJob["V"] = "2";
             _factory.Setup(x => x.Create(It.IsAny<CreateContext>())).Throws<InvalidOperationException>();
 
@@ -979,7 +1186,10 @@ namespace Hangfire.Core.Tests.Server
             _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Once);
             
             _transaction.Verify(x => x.SetRangeInHash(It.IsAny<string>(), It.Is<Dictionary<string, string>>(dict =>
-                dict.Count == 2 && dict["RetryAttempt"] == "1" && dict.ContainsKey("Error"))));
+                dict.Count == 3 &&
+                dict["NextExecution"] == JobHelper.SerializeDateTime(_nowInstant.Add(_delay)) &&
+                dict["RetryAttempt"] == "1" &&
+                dict.ContainsKey("Error"))));
             
             _transaction.Verify(x => x.AddToSet(
                 "recurring-jobs",
@@ -997,6 +1207,8 @@ namespace Hangfire.Core.Tests.Server
             SetupConnection(batching);
             _factory.Setup(x => x.Create(It.IsAny<CreateContext>())).Throws(new InvalidOperationException("Invalid operation"));
             _recurringJob["RetryAttempt"] = "10";
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant);
 
             var scheduler = CreateScheduler();
 
@@ -1098,11 +1310,11 @@ namespace Hangfire.Core.Tests.Server
                 .Throws(new ArgumentNullException("key"));
         }
 
-        private RecurringJobScheduler CreateScheduler(DateTime? lastExecution = null)
+        private RecurringJobScheduler CreateScheduler(DateTime? lastExecution = null, TimeSpan? delay = null)
         {
             var scheduler = new RecurringJobScheduler(
                 _factory.Object,
-                _delay,
+                delay ?? _delay,
                 _timeZoneResolver.Object,
                 _nowInstantFactory);
 

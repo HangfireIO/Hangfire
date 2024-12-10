@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -19,7 +18,7 @@ using Hangfire.Annotations;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlServerJobQueueProvider : IPersistentJobQueueProvider
+    internal sealed class SqlServerJobQueueProvider : IPersistentJobQueueProvider
     {
         private readonly IPersistentJobQueue _jobQueue;
         private readonly IPersistentJobQueueMonitoringApi _monitoringApi;

@@ -107,7 +107,7 @@ namespace Hangfire.Core.Tests.Profiling
         internal void SlowLog_GeneratesLogMessage_WhenThresholdReached_WithNonNullMessage()
         {
             var profiler = CreateSlowLogProfiler(_logger, TimeSpan.FromSeconds(-1));
-            profiler.InvokeMeasured(_instance, x => x.ToString(), "message");
+            profiler.InvokeMeasured(_instance, x => x.ToString(), _ => "message");
 
             _logger.Verify(x => x.Log(LogLevel.Warn, It.IsNotNull<Func<string>>(), null), Times.Once);
         }
@@ -116,7 +116,7 @@ namespace Hangfire.Core.Tests.Profiling
         internal void SlowLog_DoesNotGenerateLogMessage_WhenThresholdIsNotReached()
         {
             var profiler = CreateSlowLogProfiler(_logger, TimeSpan.FromSeconds(600));
-            profiler.InvokeMeasured(_instance, x => x.ToString(), "message");
+            profiler.InvokeMeasured(_instance, x => x.ToString(), _ => "message");
 
             _logger.Verify(x => x.Log(LogLevel.Warn, It.IsNotNull<Func<string>>(), null), Times.Never);
         }

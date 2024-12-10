@@ -45,6 +45,12 @@ namespace Hangfire.Dashboard.Pages
     #line hidden
     
     #line 7 "..\..\Dashboard\Pages\HomePage.cshtml"
+    using Hangfire.Storage;
+    
+    #line default
+    #line hidden
+    
+    #line 8 "..\..\Dashboard\Pages\HomePage.cshtml"
     using Newtonsoft.Json;
     
     #line default
@@ -69,12 +75,14 @@ WriteLiteral("\r\n");
 
 
 
+
             
-            #line 9 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 10 "..\..\Dashboard\Pages\HomePage.cshtml"
   
     Layout = new LayoutPage(Strings.HomePage_Title);
     IDictionary<DateTime, long> succeeded = null;
     IDictionary<DateTime, long> failed = null;
+    IDictionary<DateTime, long> deleted = null;
 
     var period = Query("period") ?? "day";
 
@@ -83,11 +91,21 @@ WriteLiteral("\r\n");
     {
         succeeded = monitor.SucceededByDatesCount();
         failed = monitor.FailedByDatesCount();
+        if (Storage.HasFeature(JobStorageFeatures.Monitoring.DeletedStateGraphs) &&
+            monitor is JobStorageMonitor jobStorageMonitor)
+        {
+            deleted = jobStorageMonitor.DeletedByDatesCount();
+        }
     }
     else if ("day".Equals(period, StringComparison.OrdinalIgnoreCase))
     {
         succeeded = monitor.HourlySucceededJobs();
         failed = monitor.HourlyFailedJobs();
+        if (Storage.HasFeature(JobStorageFeatures.Monitoring.DeletedStateGraphs) &&
+            monitor is JobStorageMonitor jobStorageMonitor)
+        {
+            deleted = jobStorageMonitor.HourlyDeletedJobs();
+        }
     }
 
 
@@ -99,7 +117,7 @@ WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-12\">\r\n      
 
 
             
-            #line 31 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 43 "..\..\Dashboard\Pages\HomePage.cshtml"
                            Write(Strings.HomePage_Title);
 
             
@@ -109,7 +127,7 @@ WriteLiteral("</h1>\r\n");
 
 
             
-            #line 32 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 44 "..\..\Dashboard\Pages\HomePage.cshtml"
          if (Metrics.Count > 0)
         {
 
@@ -120,7 +138,7 @@ WriteLiteral("            <div class=\"row\">\r\n");
 
 
             
-            #line 35 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 47 "..\..\Dashboard\Pages\HomePage.cshtml"
                  foreach (var metric in Metrics)
                 {
 
@@ -131,7 +149,7 @@ WriteLiteral("                    <div class=\"col-md-2\">\r\n                  
 
 
             
-            #line 38 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 50 "..\..\Dashboard\Pages\HomePage.cshtml"
                    Write(Html.BlockMetric(metric));
 
             
@@ -141,7 +159,7 @@ WriteLiteral("\r\n                    </div>\r\n");
 
 
             
-            #line 40 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 52 "..\..\Dashboard\Pages\HomePage.cshtml"
                 }
 
             
@@ -151,7 +169,7 @@ WriteLiteral("            </div>\r\n");
 
 
             
-            #line 42 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 54 "..\..\Dashboard\Pages\HomePage.cshtml"
         }
 
             
@@ -161,18 +179,18 @@ WriteLiteral("        <h3>");
 
 
             
-            #line 43 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 55 "..\..\Dashboard\Pages\HomePage.cshtml"
        Write(Strings.HomePage_RealtimeGraph);
 
             
             #line default
             #line hidden
-WriteLiteral("</h3>\r\n        <canvas width=\"1140\" height=\"250\" id=\"realtimeGraph\" data-succeede" +
+WriteLiteral("</h3>\r\n        <canvas width=\"1140\" height=\"210\" id=\"realtimeGraph\" data-succeede" +
 "d=\"");
 
 
             
-            #line 44 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 56 "..\..\Dashboard\Pages\HomePage.cshtml"
                                                                         Write(Statistics.Succeeded);
 
             
@@ -182,8 +200,18 @@ WriteLiteral("\" data-failed=\"");
 
 
             
-            #line 44 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 56 "..\..\Dashboard\Pages\HomePage.cshtml"
                                                                                                             Write(Statistics.Failed);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\" data-deleted=\"");
+
+
+            
+            #line 56 "..\..\Dashboard\Pages\HomePage.cshtml"
+                                                                                                                                              Write(Statistics.Deleted);
 
             
             #line default
@@ -192,7 +220,7 @@ WriteLiteral("\"\r\n             data-succeeded-string=\"");
 
 
             
-            #line 45 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 57 "..\..\Dashboard\Pages\HomePage.cshtml"
                                Write(Strings.HomePage_GraphHover_Succeeded);
 
             
@@ -202,25 +230,36 @@ WriteLiteral("\"\r\n             data-failed-string=\"");
 
 
             
-            #line 46 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 58 "..\..\Dashboard\Pages\HomePage.cshtml"
                             Write(Strings.HomePage_GraphHover_Failed);
 
             
             #line default
             #line hidden
+WriteLiteral("\"\r\n             data-deleted-string=\"");
+
+
+            
+            #line 59 "..\..\Dashboard\Pages\HomePage.cshtml"
+                             Write(Strings.JobsSidebarMenu_Deleted);
+
+            
+            #line default
+            #line hidden
 WriteLiteral(@"""></canvas>
-        <div style=""display: none;"">
+        <div class=""display-none"">
             <span data-metric=""succeeded:count""></span>
             <span data-metric=""failed:count""></span>
+            <span data-metric=""deleted:count""></span>
         </div>
 
         <h3>
-            <div class=""btn-group pull-right"" style=""margin-top: 2px;"">
+            <div class=""btn-group pull-right margin-top-2p"">
                 <a href=""?period=day"" class=""btn btn-sm btn-default ");
 
 
             
-            #line 54 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 68 "..\..\Dashboard\Pages\HomePage.cshtml"
                                                                 Write("day".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null);
 
             
@@ -230,7 +269,7 @@ WriteLiteral("\">");
 
 
             
-            #line 54 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 68 "..\..\Dashboard\Pages\HomePage.cshtml"
                                                                                                                                               Write(Strings.Common_PeriodDay);
 
             
@@ -240,7 +279,7 @@ WriteLiteral("</a>\r\n                <a href=\"?period=week\" class=\"btn btn-s
 
 
             
-            #line 55 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 69 "..\..\Dashboard\Pages\HomePage.cshtml"
                                                                  Write("week".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null);
 
             
@@ -250,7 +289,7 @@ WriteLiteral("\">");
 
 
             
-            #line 55 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 69 "..\..\Dashboard\Pages\HomePage.cshtml"
                                                                                                                                                 Write(Strings.Common_PeriodWeek);
 
             
@@ -260,7 +299,7 @@ WriteLiteral("</a>\r\n            </div>\r\n            ");
 
 
             
-            #line 57 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 71 "..\..\Dashboard\Pages\HomePage.cshtml"
        Write(Strings.HomePage_HistoryGraph);
 
             
@@ -270,19 +309,19 @@ WriteLiteral("\r\n        </h3>\r\n\r\n");
 
 
             
-            #line 60 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 74 "..\..\Dashboard\Pages\HomePage.cshtml"
          if (succeeded != null && failed != null)
         {
 
             
             #line default
             #line hidden
-WriteLiteral("            <canvas width=\"1140\" height=\"250\" id=\"historyGraph\"\r\n                " +
+WriteLiteral("            <canvas width=\"1140\" height=\"210\" id=\"historyGraph\"\r\n                " +
 " data-succeeded=\"");
 
 
             
-            #line 63 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 77 "..\..\Dashboard\Pages\HomePage.cshtml"
                             Write(JsonConvert.SerializeObject(succeeded));
 
             
@@ -292,8 +331,18 @@ WriteLiteral("\"\r\n                 data-failed=\"");
 
 
             
-            #line 64 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 78 "..\..\Dashboard\Pages\HomePage.cshtml"
                          Write(JsonConvert.SerializeObject(failed));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\"\r\n                 data-deleted=\"");
+
+
+            
+            #line 79 "..\..\Dashboard\Pages\HomePage.cshtml"
+                           Write(deleted != null ? JsonConvert.SerializeObject(deleted) : String.Empty);
 
             
             #line default
@@ -302,7 +351,7 @@ WriteLiteral("\"\r\n                 data-succeeded-string=\"");
 
 
             
-            #line 65 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 80 "..\..\Dashboard\Pages\HomePage.cshtml"
                                    Write(Strings.HomePage_GraphHover_Succeeded);
 
             
@@ -312,8 +361,18 @@ WriteLiteral("\"\r\n                 data-failed-string=\"");
 
 
             
-            #line 66 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 81 "..\..\Dashboard\Pages\HomePage.cshtml"
                                 Write(Strings.HomePage_GraphHover_Failed);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\"\r\n                 data-deleted-string=\"");
+
+
+            
+            #line 82 "..\..\Dashboard\Pages\HomePage.cshtml"
+                                 Write(Strings.JobsSidebarMenu_Deleted);
 
             
             #line default
@@ -322,7 +381,7 @@ WriteLiteral("\"\r\n                 data-period=\"");
 
 
             
-            #line 67 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 83 "..\..\Dashboard\Pages\HomePage.cshtml"
                          Write(period);
 
             
@@ -332,7 +391,7 @@ WriteLiteral("\">\r\n            </canvas>\r\n");
 
 
             
-            #line 69 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 85 "..\..\Dashboard\Pages\HomePage.cshtml"
         }
 
             

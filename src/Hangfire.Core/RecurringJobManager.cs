@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -20,6 +19,7 @@ using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Profiling;
+using Hangfire.Storage;
 
 namespace Hangfire
 {
@@ -27,7 +27,7 @@ namespace Hangfire
     /// Represents a recurring job manager that allows to create, update
     /// or delete recurring jobs.
     /// </summary>
-    public class RecurringJobManager : IRecurringJobManager
+    public class RecurringJobManager : IRecurringJobManager, IRecurringJobManagerV2
     {
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
@@ -57,7 +57,7 @@ namespace Hangfire
             [NotNull] JobStorage storage, 
             [NotNull] IJobFilterProvider filterProvider,
             [NotNull] ITimeZoneResolver timeZoneResolver)
-            : this(storage, filterProvider, timeZoneResolver, () => DateTime.UtcNow)
+            : this(storage, filterProvider, timeZoneResolver, static () => DateTime.UtcNow)
         {
         }
 
@@ -76,7 +76,7 @@ namespace Hangfire
         }
 
         public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobFactory factory, [NotNull] ITimeZoneResolver timeZoneResolver)
-            : this(storage, factory, timeZoneResolver, () => DateTime.UtcNow)
+            : this(storage, factory, timeZoneResolver, static () => DateTime.UtcNow)
         {
         }
 
@@ -92,6 +92,8 @@ namespace Hangfire
             _nowFactory = nowFactory ?? throw new ArgumentNullException(nameof(nowFactory));
         }
 
+        public JobStorage Storage => _storage;
+
         public void AddOrUpdate(string recurringJobId, Job job, string cronExpression, RecurringJobOptions options)
         {
             if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
@@ -101,21 +103,48 @@ namespace Hangfire
 
             ValidateCronExpression(cronExpression);
 
+            if (job.Queue != null && !Storage.HasFeature(JobStorageFeatures.JobQueueProperty))
+            {
+                throw new NotSupportedException("Current storage doesn't support specifying queues directly for a specific job. Please use the QueueAttribute instead.");
+            }
+
             using (var connection = _storage.GetConnection())
             using (connection.AcquireDistributedRecurringJobLock(recurringJobId, DefaultTimeout))
             {
-                var recurringJob = connection.GetOrCreateRecurringJob(recurringJobId, _timeZoneResolver, _nowFactory());
+                var now = _nowFactory();
+                var recurringJob = connection.GetOrCreateRecurringJob(recurringJobId);
+                var scheduleChanged = false;
 
-                recurringJob.Job = job;
-                recurringJob.Cron = cronExpression;
-                recurringJob.TimeZone = options.TimeZone;
+                recurringJob.Job = InvocationData.SerializeJob(job).SerializePayload();
+
+                if (!cronExpression.Equals(recurringJob.Cron, StringComparison.OrdinalIgnoreCase))
+                {
+                    recurringJob.Cron = cronExpression;
+                    scheduleChanged = true;
+                }
+
+                if (!options.TimeZone.Id.Equals(recurringJob.TimeZoneId, StringComparison.OrdinalIgnoreCase))
+                {
+                    recurringJob.TimeZoneId = options.TimeZone.Id;
+                    scheduleChanged = true;
+                }
+
+#pragma warning disable 618
                 recurringJob.Queue = options.QueueName;
+#pragma warning restore 618
+                recurringJob.MisfireHandling = options.MisfireHandling;
+                recurringJob.RetryAttempt = 0;
 
-                if (recurringJob.IsChanged(out var changedFields, out var nextExecution))
+                if (scheduleChanged || recurringJob.Error != null)
+                {
+                    recurringJob.ScheduleNext(_timeZoneResolver, now.AddSeconds(-1));
+                }
+
+                if (recurringJob.IsChanged(now, out var changedFields))
                 {
                     using (var transaction = connection.CreateWriteTransaction())
                     {
-                        transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
+                        transaction.UpdateRecurringJob(recurringJob, changedFields, _logger);
                         transaction.Commit();
                     }
                 }
@@ -128,7 +157,7 @@ namespace Hangfire
             {
                 RecurringJobEntity.ParseCronExpression(cronExpression);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
                 throw new ArgumentException(
                     "CRON expression is invalid. Please see the inner exception for details.",
@@ -137,7 +166,12 @@ namespace Hangfire
             }
         }
 
-        public void Trigger(string recurringJobId)
+        public void Trigger(string recurringJobId) => TriggerJob(recurringJobId);
+
+        [Obsolete("Please use the `TriggerJob` method instead. Will be removed in 2.0.0.")]
+        public string TriggerExecution(string recurringJobId) => TriggerJob(recurringJobId);
+
+        public string TriggerJob(string recurringJobId)
         {
             if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
 
@@ -146,17 +180,23 @@ namespace Hangfire
             {
                 var now = _nowFactory();
 
-                var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
-                if (recurringJob == null) return;
+                var recurringJob = connection.GetRecurringJob(recurringJobId);
+                if (recurringJob == null) return null;
 
-                if (recurringJob.Errors.Length > 0)
+                BackgroundJob backgroundJob;
+
+                try
                 {
-                    throw new AggregateException($"Can't trigger recurring job '{recurringJobId}' due to errors", recurringJob.Errors);
+                    backgroundJob = _factory.TriggerRecurringJob(_storage, connection, EmptyProfiler.Instance, recurringJob, now);
+                    recurringJob.ScheduleNext(_timeZoneResolver, now);
+                }
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
+                {
+                    // TODO: Preserving backward compatibility, should be removed in 2.0.0.
+                    throw new AggregateException(ex);
                 }
 
-                var backgroundJob = _factory.TriggerRecurringJob(_storage, connection, EmptyProfiler.Instance, recurringJob, now);
-
-                if (recurringJob.IsChanged(out var changedFields, out var nextExecution))
+                if (recurringJob.IsChanged(now, out var changedFields))
                 {
                     using (var transaction = connection.CreateWriteTransaction())
                     {
@@ -172,10 +212,14 @@ namespace Hangfire
                                 EmptyProfiler.Instance);
                         }
 
-                        transaction.UpdateRecurringJob(recurringJob, changedFields, nextExecution, _logger);
+                        transaction.UpdateRecurringJob(recurringJob, changedFields, _logger);
                         transaction.Commit();
                     }
+
+                    return backgroundJob?.Id;
                 }
+
+                return null;
             }
         }
 

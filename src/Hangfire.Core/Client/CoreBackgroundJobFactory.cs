@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -23,10 +22,11 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
+using Hangfire.Storage;
 
 namespace Hangfire.Client
 {
-    internal class CoreBackgroundJobFactory : IBackgroundJobFactory
+    internal sealed class CoreBackgroundJobFactory : IBackgroundJobFactory
     {
         private readonly ILog _logger = LogProvider.GetLogger(typeof(CoreBackgroundJobFactory));
         private readonly object _syncRoot = new object();
@@ -56,12 +56,26 @@ namespace Hangfire.Client
 
         public BackgroundJob Create(CreateContext context)
         {
-            var attemptsLeft = Math.Max(RetryAttempts, 0);
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
+            if (context.Job.Queue != null && !context.Storage.HasFeature(JobStorageFeatures.JobQueueProperty))
+            {
+                throw new NotSupportedException("Current storage doesn't support specifying queues directly for a specific job. Please use the QueueAttribute instead.");
+            }
+
             var parameters = context.Parameters.ToDictionary(
-                x => x.Key,
-                x => SerializationHelper.Serialize(x.Value, SerializationOption.User));
+                static x => x.Key,
+                static x => SerializationHelper.Serialize(x.Value, SerializationOption.User));
 
             var createdAt = DateTime.UtcNow;
+            var expireIn = TimeSpan.FromDays(30);
+
+            return CreateBackgroundJobTwoSteps(context, parameters, createdAt, expireIn);
+        }
+
+        private BackgroundJob CreateBackgroundJobTwoSteps(CreateContext context, Dictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn)
+        {
+            var attemptsLeft = Math.Max(RetryAttempts, 0);
 
             // Retry may cause multiple background jobs to be created, especially when there's
             // a timeout-related exception. But initialization attempt will be performed only
@@ -70,70 +84,74 @@ namespace Hangfire.Client
             // identifiers. Since they also will be eventually expired leaving no trace, we can
             // consider that only one background job is created, regardless of retry attempts
             // number.
-            var jobId = RetryOnException(ref attemptsLeft, _ => context.Connection.CreateExpiredJob(
-                context.Job,
-                parameters,
-                createdAt,
-                TimeSpan.FromDays(30)));
+            var jobId = RetryOnException(
+                ref attemptsLeft,
+                static (_, ctx) => ctx.Context.Connection.CreateExpiredJob(
+                    ctx.Context.Job,
+                    ctx.Parameters,
+                    ctx.CreatedAt,
+                    ctx.ExpireIn),
+                new JobCreateContext { Context = context, Parameters = parameters, CreatedAt = createdAt, ExpireIn = expireIn });
 
             if (String.IsNullOrEmpty(jobId))
             {
                 return null;
             }
 
-            var backgroundJob = new BackgroundJob(jobId, context.Job, createdAt);
+            var backgroundJob = new BackgroundJob(jobId, context.Job, createdAt, parameters);
 
             if (context.InitialState != null)
             {
-                RetryOnException(ref attemptsLeft, attempt =>
+                RetryOnException(ref attemptsLeft, static (attempt, ctx) =>
                 {
                     if (attempt > 0)
                     {
                         // Normally, a distributed lock should be applied when making a retry, since
                         // it's possible to get a timeout exception, when transaction was actually
                         // committed. But since background job can't be returned to a position where
-                        // it's state is null, and since only the current thread knows the job's identifier
+                        // its state is null, and since only the current thread knows the job's identifier
                         // when its state is null, and since we shouldn't do anything when it's non-null,
                         // there will be no any race conditions.
-                        var data = context.Connection.GetJobData(jobId);
-                        if (data == null) throw new InvalidOperationException($"Was unable to initialize a background job '{jobId}', because it doesn't exists.");
+                        var data = ctx.Context.Connection.GetJobData(ctx.BackgroundJob.Id);
+                        if (data == null) throw new InvalidOperationException($"Was unable to initialize a background job '{ctx.BackgroundJob.Id}', because it doesn't exists.");
 
                         if (!String.IsNullOrEmpty(data.State)) return;
                     }
 
-                    using (var transaction = context.Connection.CreateWriteTransaction())
+                    using (var transaction = ctx.Context.Connection.CreateWriteTransaction())
                     {
                         var applyContext = new ApplyStateContext(
-                            context.Storage,
-                            context.Connection,
+                            ctx.Context.Storage,
+                            ctx.Context.Connection,
                             transaction,
-                            backgroundJob,
-                            context.InitialState,
+                            ctx.BackgroundJob,
+                            ctx.Context.InitialState!,
                             oldStateName: null,
-                            profiler: context.Profiler);
+                            ctx.Context.Profiler,
+                            ctx.StateMachine);
 
-                        StateMachine.ApplyState(applyContext);
+                        ctx.StateMachine.ApplyState(applyContext);
 
                         transaction.Commit();
                     }
-                });
+                }, new JobInitializeContext { Context = context, StateMachine = StateMachine, BackgroundJob = backgroundJob });
             }
 
             return backgroundJob;
         }
 
-        private void RetryOnException(ref int attemptsLeft, Action<int> action)
+        private void RetryOnException<TContext>(ref int attemptsLeft, Action<int, TContext> action, TContext context)
         {
-            RetryOnException(ref attemptsLeft, attempt =>
+            RetryOnException(ref attemptsLeft, static (attempt, ctx) =>
             {
-                action(attempt);
+                ctx.Key(attempt, ctx.Value);
                 return true;
-            });
+            }, new KeyValuePair<Action<int, TContext>, TContext>(action, context));
         }
 
-        private T RetryOnException<T>(ref int attemptsLeft, Func<int, T> action)
+        private TResult RetryOnException<TContext, TResult>(ref int attemptsLeft, Func<int, TContext, TResult> action, TContext context)
         {
-            var exceptions = new List<Exception>();
+            List<Exception> exceptions = null;
             var attempt = 0;
             var delay = TimeSpan.Zero;
 
@@ -146,11 +164,11 @@ namespace Hangfire.Client
                         Thread.Sleep(delay);
                     }
 
-                    return action(attempt++);
+                    return action(attempt++, context);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
-                    exceptions.Add(ex);
+                    (exceptions ??= new List<Exception>()).Add(ex);
                     _logger.DebugException("An exception occurred while creating a background job, see inner exception for details.", ex);
                     delay = RetryDelayFunc(attempt);
                 }
@@ -173,6 +191,21 @@ namespace Hangfire.Client
                 case 3: return TimeSpan.FromMilliseconds(100);
                 default: return TimeSpan.FromMilliseconds(500);
             }
+        }
+
+        private readonly record struct JobCreateContext
+        {
+            public required CreateContext Context { get; init; }
+            public required Dictionary<string, string> Parameters { get; init; }
+            public required DateTime CreatedAt { get; init; }
+            public required TimeSpan ExpireIn { get; init; }
+        }
+
+        private readonly record struct JobInitializeContext
+        {
+            public required CreateContext Context { get; init; }
+            public required IStateMachine StateMachine { get; init; }
+            public required BackgroundJob BackgroundJob { get; init; }
         }
     }
 }

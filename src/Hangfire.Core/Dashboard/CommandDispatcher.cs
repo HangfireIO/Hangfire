@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -20,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace Hangfire.Dashboard
 {
-    internal class CommandDispatcher : IDashboardDispatcher
+    internal sealed class CommandDispatcher : IDashboardDispatcher
     {
         private readonly Func<DashboardContext, bool> _command;
 

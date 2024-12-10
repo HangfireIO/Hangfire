@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright © 2019 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2019 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -26,6 +25,6 @@ namespace Hangfire.Profiling
         TResult InvokeMeasured<TInstance, TResult>(
             [CanBeNull] TInstance instance, 
             [NotNull, InstantHandle] Func<TInstance, TResult> action,
-            [CanBeNull] string message = null);
+            [CanBeNull] Func<TInstance, string> messageFunc = null);
     }
 }

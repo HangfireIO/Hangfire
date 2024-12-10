@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -16,10 +15,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Hangfire.States
 {
+    [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "Public API, can not change in minor versions.")]
+    [Obsolete("This was a helper class, and it's not used anymore. Will be removed in 2.0.0.")]
     public class StateHandlerCollection
     {
         private readonly Dictionary<string, List<IStateHandler>> _handlers = 
@@ -40,22 +42,22 @@ namespace Hangfire.States
             if (handler == null) throw new ArgumentNullException(nameof(handler));
             if (handler.StateName == null) throw new ArgumentException("The StateName property of the given state handler must be non null.", nameof(handler));
 
-            if (!_handlers.ContainsKey(handler.StateName))
+            if (!_handlers.TryGetValue(handler.StateName, out var handlers))
             {
-                _handlers.Add(handler.StateName, new List<IStateHandler>());    
+                _handlers.Add(handler.StateName, handlers = new List<IStateHandler>());    
             }
 
-            _handlers[handler.StateName].Add(handler);
+            handlers.Add(handler);
         }
 
         public IEnumerable<IStateHandler> GetHandlers(string stateName)
         {
-            if (stateName == null || !_handlers.ContainsKey(stateName))
+            if (stateName == null || !_handlers.TryGetValue(stateName, out var handlers))
             {
                 return Enumerable.Empty<IStateHandler>();
             }
 
-            return _handlers[stateName].ToArray();
+            return handlers.ToArray();
         }
     }
 }

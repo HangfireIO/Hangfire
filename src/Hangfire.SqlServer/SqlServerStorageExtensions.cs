@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2015 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2015 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -16,6 +15,7 @@
 
 using System;
 using System.Data.Common;
+using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.SqlServer;
 
@@ -24,6 +24,8 @@ namespace Hangfire
 {
     public static class SqlServerStorageExtensions
     {
+        private static int _metricsInitialized;
+
         public static IGlobalConfiguration<SqlServerStorage> UseSqlServerStorage(
             [NotNull] this IGlobalConfiguration configuration,
             [NotNull] string nameOrConnectionString)
@@ -32,7 +34,7 @@ namespace Hangfire
             if (nameOrConnectionString == null) throw new ArgumentNullException(nameof(nameOrConnectionString));
 
             var storage = new SqlServerStorage(nameOrConnectionString);
-            return configuration.UseStorage(storage);
+            return configuration.UseStorage(storage).UseSqlServerStorageCommonMetrics();
         }
 
         public static IGlobalConfiguration<SqlServerStorage> UseSqlServerStorage(
@@ -45,7 +47,7 @@ namespace Hangfire
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             var storage = new SqlServerStorage(nameOrConnectionString, options);
-            return configuration.UseStorage(storage);
+            return configuration.UseStorage(storage).UseSqlServerStorageCommonMetrics();
         }
 
         public static IGlobalConfiguration<SqlServerStorage> UseSqlServerStorage(
@@ -56,7 +58,7 @@ namespace Hangfire
             if (connectionFactory == null) throw new ArgumentNullException(nameof(connectionFactory));
 
             var storage = new SqlServerStorage(connectionFactory);
-            return configuration.UseStorage(storage);
+            return configuration.UseStorage(storage).UseSqlServerStorageCommonMetrics();
         }
 
         public static IGlobalConfiguration<SqlServerStorage> UseSqlServerStorage(
@@ -69,7 +71,25 @@ namespace Hangfire
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             var storage = new SqlServerStorage(connectionFactory, options);
-            return configuration.UseStorage(storage);
+            return configuration.UseStorage(storage).UseSqlServerStorageCommonMetrics();
+        }
+
+        private static IGlobalConfiguration<SqlServerStorage> UseSqlServerStorageCommonMetrics(
+            [NotNull] this IGlobalConfiguration<SqlServerStorage> configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+            if (Interlocked.Exchange(ref _metricsInitialized, 1) == 0)
+            {
+                configuration.UseDashboardMetric(SqlServerStorage.SchemaVersion);
+                configuration.UseDashboardMetric(SqlServerStorage.ActiveConnections);
+                configuration.UseDashboardMetric(SqlServerStorage.TotalConnections);
+                configuration.UseDashboardMetric(SqlServerStorage.ActiveTransactions);
+                configuration.UseDashboardMetric(SqlServerStorage.DataFilesSize);
+                configuration.UseDashboardMetric(SqlServerStorage.LogFilesSize);
+            }
+
+            return configuration;
         }
     }
 }

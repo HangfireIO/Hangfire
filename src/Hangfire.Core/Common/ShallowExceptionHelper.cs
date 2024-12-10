@@ -1,17 +1,16 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2017 Sergey Odinokov.
-//
+﻿// This file is part of Hangfire. Copyright © 2017 Hangfire OÜ.
+// 
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as
-// published by the Free Software Foundation, either version 3
+// it under the terms of the GNU Lesser General Public License as 
+// published by the Free Software Foundation, either version 3 
 // of the License, or any later version.
-//
+// 
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
+// 
+// You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
@@ -29,18 +28,13 @@ namespace Hangfire.Common
         {
             if (exception != null && !exception.Data.Contains(DataKey))
             {
-                exception.Data.Add(DataKey, exception.StackTrace);
+                exception.Data.Add(DataKey, GetStackTraceNoFileInfo(exception));
             }
         }
 
         public static string ToStringWithOriginalStackTrace([NotNull] this Exception exception, int? numLines)
         {
             if (exception == null) throw new ArgumentNullException(nameof(exception));
-
-            if (!exception.Data.Contains(DataKey))
-            {
-                return GetFirstLines(exception.ToString(), numLines);
-            }
 
             return GetFirstLines(ToStringHelper(exception, false), numLines);
         }
@@ -57,13 +51,13 @@ namespace Hangfire.Common
                 sb.Append(" ---> ");
                 sb.Append(ToStringHelper(exception.InnerException, true));
             }
-            else sb.Append("\n");
+            else sb.Append('\n');
 
-            var stackTrace = exception.Data.Contains(DataKey) ? (string)exception.Data[DataKey] : exception.StackTrace;
+            var stackTrace = exception.Data.Contains(DataKey) ? (string)exception.Data[DataKey] : GetStackTraceNoFileInfo(exception);
             if (!String.IsNullOrWhiteSpace(stackTrace))
             {
                 sb.Append(stackTrace);
-                sb.Append("\n");
+                sb.Append('\n');
             }
 
             if (isInner) sb.Append("   --- End of inner exception stack trace ---\n");
@@ -74,7 +68,7 @@ namespace Hangfire.Common
         private static string GetFirstLines(string text, int? numLines)
         {
             if (text == null) return null;
-            if (!numLines.HasValue || numLines.Value <= 0) return text;
+            if (!numLines.HasValue || numLines.Value < 0) return text;
 
             using (var reader = new StringReader(text))
             {
@@ -91,6 +85,15 @@ namespace Hangfire.Common
 
                 return builder.ToString();
             }
+        }
+
+        private static string GetStackTraceNoFileInfo(Exception ex)
+        {
+#if NETSTANDARD1_3
+            return ex.StackTrace;
+#else
+            return new System.Diagnostics.StackTrace(ex, fNeedFileInfo: false).ToString();
+#endif
         }
     }
 }

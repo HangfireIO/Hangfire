@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2016 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2016 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -16,28 +15,24 @@
 
 using System;
 using Hangfire.Annotations;
-using Microsoft.Extensions.DependencyInjection;
+using Hangfire.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Hangfire.AspNetCore
 {
-    internal class AspNetCoreJobActivatorScope : JobActivatorScope
+    public class AspNetCoreLogProvider : ILogProvider
     {
-        private readonly IServiceScope _serviceScope;
+        private readonly ILoggerFactory _loggerFactory;
 
-        public AspNetCoreJobActivatorScope([NotNull] IServiceScope serviceScope)
+        public AspNetCoreLogProvider([NotNull] ILoggerFactory loggerFactory)
         {
-            if (serviceScope == null) throw new ArgumentNullException(nameof(serviceScope));
-            _serviceScope = serviceScope;
+            if (loggerFactory == null) throw new ArgumentNullException(nameof(loggerFactory));
+            _loggerFactory = loggerFactory;
         }
 
-        public override object Resolve(Type type)
+        public ILog GetLogger(string name)
         {
-            return ActivatorUtilities.GetServiceOrCreateInstance(_serviceScope.ServiceProvider, type);
-        }
-
-        public override void DisposeScope()
-        {
-            _serviceScope.Dispose();
+            return new AspNetCoreLog(_loggerFactory.CreateLogger(name));
         }
     }
 }

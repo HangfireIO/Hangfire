@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -19,6 +18,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 
 namespace Hangfire.Common
@@ -50,7 +50,7 @@ namespace Hangfire.Common
             Debug.Assert(memberInfo != null);
             Debug.Assert(lookup != null);
 
-            return lookup.GetOrAdd(memberInfo, mi => new ReadOnlyCollection<TAttribute>((TAttribute[])memberInfo.GetCustomAttributes(typeof(TAttribute), inherit: true)));
+            return lookup.GetOrAdd(memberInfo, static mi => new ReadOnlyCollection<TAttribute>(mi.GetCustomAttributes<TAttribute>(inherit: true).ToArray()));
         }
     }
 }

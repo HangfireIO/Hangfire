@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -36,10 +35,30 @@ namespace Hangfire.Storage
                 timeout);
         }
 
+        public static void AcquireDistributedJobLock(
+            [NotNull] this JobStorageTransaction transaction, 
+            [NotNull] string jobId, 
+            TimeSpan timeout)
+        {
+            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
+
+            transaction.AcquireDistributedLock($"job:{jobId}:state-lock", timeout);
+        }
+
         public static long GetRecurringJobCount([NotNull] this JobStorageConnection connection)
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
             return connection.GetSetCount("recurring-jobs");
+        }
+
+        public static List<string> GetRecurringJobIds(
+            [NotNull] this JobStorageConnection connection,
+            int startingFrom,
+            int endingAt)
+        {
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            return connection.GetRangeFromSet("recurring-jobs", startingFrom, endingAt);
         }
 
         public static List<RecurringJobDto> GetRecurringJobs(
@@ -49,7 +68,7 @@ namespace Hangfire.Storage
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection));
 
-            var ids = connection.GetRangeFromSet("recurring-jobs", startingFrom, endingAt);
+            var ids = connection.GetRecurringJobIds(startingFrom, endingAt);
             return GetRecurringJobDtos(connection, ids);
         }
 
@@ -81,11 +100,12 @@ namespace Hangfire.Storage
                     continue;
                 }
 
-                var dto = new RecurringJobDto
+                var dto = new RecurringJobDto { Id = id };
+
+                if (hash.TryGetValue("Cron", out var cron) && !String.IsNullOrWhiteSpace(cron))
                 {
-                    Id = id,
-                    Cron = hash["Cron"]
-                };
+                    dto.Cron = cron;
+                }
 
                 try
                 {
@@ -100,14 +120,14 @@ namespace Hangfire.Storage
                     dto.LoadException = ex;
                 }
 
-                if (hash.ContainsKey("NextExecution"))
+                if (hash.TryGetValue("NextExecution", out var nextExecution))
                 {
-                    dto.NextExecution = JobHelper.DeserializeNullableDateTime(hash["NextExecution"]);
+                    dto.NextExecution = JobHelper.DeserializeNullableDateTime(nextExecution);
                 }
 
-                if (hash.ContainsKey("LastJobId") && !string.IsNullOrWhiteSpace(hash["LastJobId"]))
+                if (hash.TryGetValue("LastJobId", out var lastJobId) && !string.IsNullOrWhiteSpace(lastJobId))
                 {
-                    dto.LastJobId = hash["LastJobId"];
+                    dto.LastJobId = lastJobId;
 
                     var stateData = connection.GetStateData(dto.LastJobId);
                     if (stateData != null)
@@ -116,24 +136,24 @@ namespace Hangfire.Storage
                     }
                 }
                 
-                if (hash.ContainsKey("Queue"))
+                if (hash.TryGetValue("Queue", out var queue))
                 {
-                    dto.Queue = hash["Queue"];
+                    dto.Queue = queue;
                 }
 
-                if (hash.ContainsKey("LastExecution"))
+                if (hash.TryGetValue("LastExecution", out var lastExecution))
                 {
-                    dto.LastExecution = JobHelper.DeserializeNullableDateTime(hash["LastExecution"]);
+                    dto.LastExecution = JobHelper.DeserializeNullableDateTime(lastExecution);
                 }
 
-                if (hash.ContainsKey("TimeZoneId"))
+                if (hash.TryGetValue("TimeZoneId", out var timeZoneId))
                 {
-                    dto.TimeZoneId = hash["TimeZoneId"];
+                    dto.TimeZoneId = timeZoneId;
                 }
 
-                if (hash.ContainsKey("CreatedAt"))
+                if (hash.TryGetValue("CreatedAt", out var createdAt))
                 {
-                    dto.CreatedAt = JobHelper.DeserializeNullableDateTime(hash["CreatedAt"]);
+                    dto.CreatedAt = JobHelper.DeserializeNullableDateTime(createdAt);
                 }
 
                 if (hash.TryGetValue("Error", out var error) && !String.IsNullOrEmpty(error))

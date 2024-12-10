@@ -1,26 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net452</TargetFrameworks>
+    <TargetFramework>net452</TargetFramework>
     <NoWarn>0618</NoWarn>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
-    <PackageReference Include="xunit" Version="2.2.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
-    <PackageReference Include="Moq" Version="4.10.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" NoWarn="NU1903" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Hangfire.Core\Hangfire.Core.csproj" />
     <ProjectReference Include="..\..\src\Hangfire.SqlServer\Hangfire.SqlServer.csproj" />
     <ProjectReference Include="..\..\src\Hangfire.SqlServer.Msmq\Hangfire.SqlServer.Msmq.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
 
   <ItemGroup>

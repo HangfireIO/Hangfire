@@ -1,5 +1,4 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2014 Sergey Odinokov.
+﻿// This file is part of Hangfire. Copyright © 2014 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -16,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -25,6 +25,8 @@ namespace Hangfire.Common
 {
     internal static class TypeExtensions
     {
+        private static readonly Regex GenericArgumentsRegex = new Regex(@"`[1-9]\d*", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
+
         public static string ToGenericTypeString(this Type type)
         {
             if (!type.GetTypeInfo().IsGenericType)
@@ -47,14 +49,14 @@ namespace Hangfire.Common
             if (type == null) throw new ArgumentNullException(nameof(type));
             if (name == null) throw new ArgumentNullException(nameof(name));
 
-            parameterTypes = parameterTypes ?? new Type[0];
+            parameterTypes = parameterTypes ?? Type.EmptyTypes;
 
             var methodCandidates = new List<MethodInfo>(type.GetRuntimeMethods());
 
             if (type.GetTypeInfo().IsInterface)
             {
                 methodCandidates.AddRange(type.GetTypeInfo()
-                    .ImplementedInterfaces.SelectMany(x => x.GetRuntimeMethods()));
+                    .ImplementedInterfaces.SelectMany(static x => x.GetRuntimeMethods()));
             }
 
             foreach (var methodCandidate in methodCandidates)
@@ -173,7 +175,9 @@ namespace Hangfire.Common
                 return true;
             }
 
-            return parameterType == actualType;
+            return parameterType != typeof(object).GetTypeInfo() 
+                ? parameterType.IsAssignableFrom(actualType)
+                : parameterType == actualType;
         }
 
         private static string GetFullNameWithoutNamespace(this Type type)
@@ -199,13 +203,9 @@ namespace Hangfire.Common
         {
             var genericArguments = type .GetTypeInfo().GetAllGenericArguments();
 
-            const string regexForGenericArguments = @"`[1-9]\d*";
-
-            var rgx = new Regex(regexForGenericArguments);
-
-            typeName = rgx.Replace(typeName, match =>
+            typeName = GenericArgumentsRegex.Replace(typeName, match =>
             {
-                var currentGenericArgumentNumbers = int.Parse(match.Value.Substring(1));
+                var currentGenericArgumentNumbers = int.Parse(match.Value.Substring(1), CultureInfo.InvariantCulture);
                 var currentArguments = string.Join(",", genericArguments.Take(currentGenericArgumentNumbers).Select(ToGenericTypeString));
                 genericArguments = genericArguments.Skip(currentGenericArgumentNumbers).ToArray();
                 return string.Concat("<", currentArguments, ">");

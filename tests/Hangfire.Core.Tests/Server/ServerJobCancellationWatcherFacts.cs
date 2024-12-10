@@ -41,7 +41,7 @@ namespace Hangfire.Core.Tests.Server
             _connection.Setup(x => x.GetStateData(It.IsAny<string>())).Returns((StateData)null);
             var watchdog = new ServerJobCancellationWatcher(_checkInterval);
 
-            watchdog.Execute(_context.Object);
+            Assert.Throws<OperationCanceledException>(() => watchdog.Execute(_context.Object));
 
             _connection.Verify(x => x.GetStateData("job-id"));
             _connection.Verify(x => x.Dispose(), Times.Once);

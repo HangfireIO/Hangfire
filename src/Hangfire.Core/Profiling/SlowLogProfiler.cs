@@ -1,5 +1,4 @@
-// This file is part of Hangfire.
-// Copyright © 2019 Sergey Odinokov.
+// This file is part of Hangfire. Copyright © 2019 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -20,11 +19,11 @@ using Hangfire.Logging;
 
 namespace Hangfire.Profiling
 {
-    internal class SlowLogProfiler : IProfiler
+    internal sealed class SlowLogProfiler : IProfiler
     {
         private static readonly TimeSpan DefaultThreshold = TimeSpan.FromMinutes(1);
 
-        private readonly TimeSpan _threshold;
+        private readonly int _thresholdMs;
         private readonly ILog _logger;
 
         public SlowLogProfiler(ILog logger)
@@ -34,18 +33,18 @@ namespace Hangfire.Profiling
 
         public SlowLogProfiler(ILog logger, TimeSpan threshold)
         {
-            _threshold = threshold;
+            _thresholdMs = (int)threshold.TotalMilliseconds;
             _logger = logger;
         }
 
         public TResult InvokeMeasured<TInstance, TResult>(
             TInstance instance,
             Func<TInstance, TResult> action,
-            string message = null)
+            Func<TInstance, string> messageFunc = null)
         {
             if (action == null) throw new ArgumentNullException(nameof(action));
 
-            var stopwatch = Stopwatch.StartNew();
+            var started = Environment.TickCount;
 
             try
             {
@@ -53,11 +52,10 @@ namespace Hangfire.Profiling
             }
             finally
             {
-                stopwatch.Stop();
-
-                if (stopwatch.Elapsed >= _threshold)
+                var elapsed = unchecked(Environment.TickCount - started); 
+                if (elapsed >= _thresholdMs)
                 {
-                    _logger.Warn($"Slow log: {instance?.ToString() ?? typeof(TInstance).ToString()} performed \"{message}\" in {(int)stopwatch.Elapsed.TotalSeconds} sec");
+                    _logger.Warn($"Slow log: {instance?.ToString() ?? typeof(TInstance).ToString()} performed \"{messageFunc?.Invoke(instance)}\" in {elapsed / 1000} sec");
                 }
             }
         }
