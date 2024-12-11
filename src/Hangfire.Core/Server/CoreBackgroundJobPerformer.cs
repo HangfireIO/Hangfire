@@ -114,20 +114,20 @@ namespace Hangfire.Server
             try
             {
                 var methodInfo = context.BackgroundJob.Job.Method;
-                var tuple = Tuple.Create(methodInfo, instance, arguments);
+                var method = new BackgroundJobMethod(methodInfo, instance, arguments);
                 var returnType = methodInfo.ReturnType;
 
                 if (returnType.IsTaskLike(out var getTaskFunc))
                 {
                     if (_taskScheduler != null)
                     {
-                        return InvokeOnTaskScheduler(context, tuple, getTaskFunc);
+                        return InvokeOnTaskScheduler(context, method, getTaskFunc);
                     }
 
-                    return InvokeOnTaskPump(context, tuple, getTaskFunc);
+                    return InvokeOnTaskPump(context, method, getTaskFunc);
                 }
 
-                return InvokeSynchronously(tuple);
+                return InvokeSynchronously(method);
             }
             catch (ArgumentException ex)
             {
@@ -151,11 +151,11 @@ namespace Hangfire.Server
             }
         }
 
-        private object InvokeOnTaskScheduler(PerformContext context, Tuple<MethodInfo, object, object[]> tuple, Func<object, Task> getTaskFunc)
+        private object InvokeOnTaskScheduler(PerformContext context, BackgroundJobMethod method, Func<object, Task> getTaskFunc)
         {
             var scheduledTask = Task.Factory.StartNew(
                 InvokeSynchronously,
-                tuple,
+                method,
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _taskScheduler);
@@ -163,10 +163,10 @@ namespace Hangfire.Server
             var result = scheduledTask.GetAwaiter().GetResult();
             if (result == null) return null;
 
-            return getTaskFunc(result).GetTaskLikeResult(result, tuple.Item1.ReturnType);
+            return getTaskFunc(result).GetTaskLikeResult(result, method.ReturnType);
         }
 
-        private static object InvokeOnTaskPump(PerformContext context, Tuple<MethodInfo, object, object[]> tuple, Func<object, Task> getTaskFunc)
+        private static object InvokeOnTaskPump(PerformContext context, BackgroundJobMethod method, Func<object, Task> getTaskFunc)
         {
             // Using SynchronizationContext here is the best default option, where workers
             // are still running on synchronous dispatchers, and where a single job performer
@@ -186,7 +186,7 @@ namespace Hangfire.Server
                 {
                     SynchronizationContext.SetSynchronizationContext(syncContext);
 
-                    var result = InvokeSynchronously(tuple);
+                    var result = InvokeSynchronously(method);
                     if (result == null) return null;
 
                     var task = getTaskFunc(result);
@@ -200,7 +200,7 @@ namespace Hangfire.Server
                         workItem.Item1(workItem.Item2);
                     }
 
-                    return task.GetTaskLikeResult(result, tuple.Item1.ReturnType);
+                    return task.GetTaskLikeResult(result, method.ReturnType);
                 }
             }
             finally
@@ -211,8 +211,8 @@ namespace Hangfire.Server
 
         private static object InvokeSynchronously(object state)
         {
-            var data = (Tuple<MethodInfo, object, object[]>) state;
-            return data.Item1.Invoke(data.Item2, data.Item3);
+            var method = (BackgroundJobMethod) state;
+            return method.Invoke();
         }
 
         private static object[] SubstituteArguments(PerformContext context)
@@ -238,6 +238,27 @@ namespace Hangfire.Server
             }
 
             return result.ToArray();
+        }
+
+        private sealed class BackgroundJobMethod
+        {
+            private readonly MethodInfo _methodInfo;
+            private readonly object _instance;
+            private readonly object[] _parameters;
+
+            public BackgroundJobMethod(MethodInfo methodInfo, object instance, object[] parameters)
+            {
+                _methodInfo = methodInfo;
+                _instance = instance;
+                _parameters = parameters;
+            }
+
+            public Type ReturnType => _methodInfo.ReturnType;
+
+            public object Invoke()
+            {
+                return _methodInfo.Invoke(_instance, _parameters);
+            }
         }
     }
 }
