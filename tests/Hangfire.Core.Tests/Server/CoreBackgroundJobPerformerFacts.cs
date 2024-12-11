@@ -441,6 +441,220 @@ namespace Hangfire.Core.Tests.Server
             Assert.True(scheduler.TasksPerformed > 1);
         }
 
+#if !NET452
+        private static readonly AsyncLocal<string> AsyncLocal = new AsyncLocal<string>();
+        
+        [Fact]
+        public void Perform_FlowsExistingAsyncLocal_WhenInvokingSynchronousMethod()
+        {
+            InvokeJobMethodWithFlowOfAsyncLocal(Job.FromExpression(() => CheckSynchronousAsyncLocal()));
+        }
+
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+        public static void CheckSynchronousAsyncLocal()
+        {
+            Assert.Equal("world", AsyncLocal.Value);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetSchedulers))]
+        public void Perform_FlowsExistingAsyncLocal_WhenInvokingSimpleAsyncMethod(TaskScheduler scheduler)
+        {
+            InvokeJobMethodWithFlowOfAsyncLocal(Job.FromExpression(() => CheckSimpleAsyncLocal()), scheduler);
+        }
+
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+        public static Task CheckSimpleAsyncLocal()
+        {
+            Assert.Equal("world", AsyncLocal.Value);
+            return Task.CompletedTask;
+        }
+
+        [Theory]
+        [MemberData(nameof(GetSchedulers))]
+        public void Perform_FlowsExistingAsyncLocal_WhenInvokingAsyncMethodWithAwait(TaskScheduler scheduler)
+        {
+            InvokeJobMethodWithFlowOfAsyncLocal(Job.FromExpression(() => CheckAsyncAwaitAsyncLocal()), scheduler);
+        }
+
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public static async Task CheckAsyncAwaitAsyncLocal()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+        {
+            Assert.Equal("world", AsyncLocal.Value);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetSchedulers))]
+        public void Perform_FlowsExistingAsyncLocal_WhenInvokingAsyncMethodAndSettingAsyncLocalAfterAwait(TaskScheduler scheduler)
+        {
+            InvokeJobMethodWithFlowOfAsyncLocal(Job.FromExpression(() => CheckAsyncLocalAfterAwait()), scheduler);
+        }
+
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+        public static async Task CheckAsyncLocalAfterAwait()
+        {
+            await Task.Yield();
+
+            Assert.Equal("world", AsyncLocal.Value);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetSchedulers))]
+        public void Perform_FlowsExistingAsyncLocal_WhenInvokingAsyncMethodAndSettingAsyncLocalInTaskContinuation(TaskScheduler scheduler)
+        {
+            InvokeJobMethodWithFlowOfAsyncLocal(Job.FromExpression(() => CheckAsyncLocalInExplicitTaskContinuation()), scheduler);
+        }
+
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+        public static Task CheckAsyncLocalInExplicitTaskContinuation()
+        {
+            return Task.FromResult(true).ContinueWith(_ =>
+            {
+                Assert.Equal("world", AsyncLocal.Value);
+            });
+        }
+
+        private void InvokeJobMethodWithFlowOfAsyncLocal(Job job, TaskScheduler scheduler = null)
+        {
+            AsyncLocal.Value = "world";
+
+            var parallelism = Math.Max(10, Environment.ProcessorCount);
+            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, _ =>
+            {
+                _context.BackgroundJob.Job = job;
+                var performer = CreatePerformer(scheduler);
+
+                performer.Perform(_context.Object);
+
+                Assert.Equal("world", AsyncLocal.Value);
+            });
+
+            Assert.Equal("world", AsyncLocal.Value);
+        }
+
+        [Fact]
+        public void Perform_DoesNotLeakAsyncLocal_WhenInvokingSynchronousMethod()
+        {
+            InvokeJobMethodAndAssertAsyncLocalIsNull(Job.FromExpression(() => SynchronousAsyncLocal()));
+        }
+
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+        public static void SynchronousAsyncLocal()
+        {
+            Assert.Null(AsyncLocal.Value);
+            AsyncLocal.Value = "hello";
+        }
+
+        [Theory]
+        [MemberData(nameof(GetSchedulers))]
+        public void Perform_DoesNotLeakAsyncLocal_WhenInvokingSimpleAsyncMethod(TaskScheduler scheduler)
+        {
+            InvokeJobMethodAndAssertAsyncLocalIsNull(Job.FromExpression(() => SimpleAsyncLocal()), scheduler);
+        }
+
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+        public static Task SimpleAsyncLocal()
+        {
+            Assert.Null(AsyncLocal.Value);
+            AsyncLocal.Value = "hello";
+            return Task.CompletedTask;
+        }
+
+        [Theory]
+        [MemberData(nameof(GetSchedulers))]
+        public void Perform_DoesNotLeakAsyncLocal_WhenInvokingAsyncMethodWithAwait(TaskScheduler scheduler)
+        {
+            InvokeJobMethodAndAssertAsyncLocalIsNull(Job.FromExpression(() => AsyncAwaitAsyncLocal()), scheduler);
+        }
+
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public static async Task AsyncAwaitAsyncLocal()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+        {
+            Assert.Null(AsyncLocal.Value);
+            AsyncLocal.Value = "hello";
+        }
+
+        [Theory]
+        [MemberData(nameof(GetSchedulers))]
+        public void Perform_DoesNotLeakAsyncLocal_WhenInvokingAsyncMethodAndSettingAsyncLocalAfterAwait(TaskScheduler scheduler)
+        {
+            InvokeJobMethodAndAssertAsyncLocalIsNull(Job.FromExpression(() => AsyncLocalSetAfterAwait()), scheduler);
+        }
+
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+        public static async Task AsyncLocalSetAfterAwait()
+        {
+            await Task.Yield();
+
+            Assert.Null(AsyncLocal.Value);
+            AsyncLocal.Value = "hello";
+        }
+
+        [Theory]
+        [MemberData(nameof(GetSchedulers))]
+        public void Perform_DoesNotLeakAsyncLocal_WhenInvokingAsyncMethodAndSettingAsyncLocalInTaskContinuation(TaskScheduler scheduler)
+        {
+            InvokeJobMethodAndAssertAsyncLocalIsNull(Job.FromExpression(() => AsyncLocalSetInExplicitTaskContinuation()), scheduler);
+        }
+
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+        public static Task AsyncLocalSetInExplicitTaskContinuation()
+        {
+            return Task.FromResult(true).ContinueWith(_ =>
+            {
+                Assert.Null(AsyncLocal.Value);
+                AsyncLocal.Value = "hello";
+            });
+        }
+
+        private void InvokeJobMethodAndAssertAsyncLocalIsNull(Job job, TaskScheduler scheduler = null)
+        {
+            var parallelism = Math.Max(10, Environment.ProcessorCount);
+            Parallel.For(0, parallelism, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, _ =>
+            {
+                _context.BackgroundJob.Job = job;
+                var performer = CreatePerformer(scheduler);
+
+                performer.Perform(_context.Object);
+
+                Assert.Null(AsyncLocal.Value);
+            });
+
+            Assert.Null(AsyncLocal.Value);
+        }
+
+        public static IEnumerable<object[]> GetSchedulers()
+        {
+            yield return new object[] { null };
+            yield return new object[] { TaskScheduler.Default };
+            yield return new object[] { new Hangfire.Processing.BackgroundTaskScheduler(threadCount: 1) };
+        }
+#endif
+
         [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
         [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         [SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]

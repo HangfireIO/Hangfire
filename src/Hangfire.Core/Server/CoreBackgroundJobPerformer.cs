@@ -154,7 +154,7 @@ namespace Hangfire.Server
         private object InvokeOnTaskScheduler(PerformContext context, BackgroundJobMethod method, Func<object, Task> getTaskFunc)
         {
             var scheduledTask = Task.Factory.StartNew(
-                InvokeSynchronously,
+                InvokeOnTaskSchedulerInternal,
                 method,
                 CancellationToken.None,
                 TaskCreationOptions.None,
@@ -164,6 +164,14 @@ namespace Hangfire.Server
             if (result == null) return null;
 
             return getTaskFunc(result).GetTaskLikeResult(result, method.ReturnType);
+        }
+
+        private static object InvokeOnTaskSchedulerInternal(object state)
+        {
+            // ExecutionContext is captured automatically when calling the Task.Factory.StartNew
+            // method, so we don't need to capture it manually. Please see the comment for
+            // synchronous method execution below for details.
+            return ((BackgroundJobMethod)state).Invoke();
         }
 
         private static object InvokeOnTaskPump(PerformContext context, BackgroundJobMethod method, Func<object, Task> getTaskFunc)
@@ -212,7 +220,38 @@ namespace Hangfire.Server
         private static object InvokeSynchronously(object state)
         {
             var method = (BackgroundJobMethod) state;
+            var executionContext = ExecutionContext.Capture();
+
+            if (executionContext != null)
+            {
+                // Asynchronous methods started with the TaskScheduler.StartNew method, capture the
+                // current execution context by default and call the ExecutionContext.Run method on
+                // a thread pool thread to pass the current AsyncLocal values there.
+                //
+                // As a side effect of this call, any updates to AsyncLocal values which happen inside
+                // the background job method itself values aren't passed back to the calling thread
+                // and end their lifetime as soon as method execution is finished.
+                //
+                // Synchronous methods don't need to capture the current execution context because the
+                // thread is not changed. However, any updates to AsyncLocal values that happen inside
+                // the background job method are passed back to the calling thread, expanding their
+                // lifetime to the lifetime of the thread itself. This can result in memory leaks and
+                // possibly affect future background job method executions in unexpected ways.
+                //
+                // To avoid this and to have the same behavior of AsyncLocal between synchronous and
+                // asynchronous methods, we run synchronous ones in a captured execution context. The
+                // ExecutionContext.Run method ensures that AsyncLocal values will be modified only in
+                // the captured context and will not flow back to the parent context.
+                ExecutionContext.Run(executionContext, InvokeSynchronouslyInternal, method);
+                return method.Result;
+            }
+
             return method.Invoke();
+        }
+
+        private static void InvokeSynchronouslyInternal(object state)
+        {
+            ((BackgroundJobMethod)state).Invoke();
         }
 
         private static object[] SubstituteArguments(PerformContext context)
@@ -240,24 +279,15 @@ namespace Hangfire.Server
             return result.ToArray();
         }
 
-        private sealed class BackgroundJobMethod
+        private sealed class BackgroundJobMethod(MethodInfo methodInfo, object instance, object[] parameters)
         {
-            private readonly MethodInfo _methodInfo;
-            private readonly object _instance;
-            private readonly object[] _parameters;
-
-            public BackgroundJobMethod(MethodInfo methodInfo, object instance, object[] parameters)
-            {
-                _methodInfo = methodInfo;
-                _instance = instance;
-                _parameters = parameters;
-            }
-
-            public Type ReturnType => _methodInfo.ReturnType;
+            public Type ReturnType => methodInfo.ReturnType;
+            public object Result { get; private set; }
 
             public object Invoke()
             {
-                return _methodInfo.Invoke(_instance, _parameters);
+                Result = methodInfo.Invoke(instance, parameters);
+                return Result;
             }
         }
     }
