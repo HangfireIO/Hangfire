@@ -112,6 +112,21 @@ namespace Hangfire.SqlServer
             return command;
         }
 
+        public static T GetParameterValue<T>([NotNull] this DbParameter parameter)
+        {
+            if (parameter == null) throw new ArgumentNullException(nameof(parameter));
+
+            switch (parameter.Value)
+            {
+                case null or DBNull: return default;
+                case T typed: return typed;
+                default:
+                    var type = typeof(T);
+                    type = Nullable.GetUnderlyingType(type) ?? type;
+                    return (T)Convert.ChangeType(parameter.Value, type, CultureInfo.InvariantCulture);                    
+            }
+        }
+
         private static DbParameter AddParameterInternal(
             DbCommand command,
             string parameterName,
