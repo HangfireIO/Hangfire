@@ -60,14 +60,9 @@ namespace Hangfire.SqlServer
             if (command == null) throw new ArgumentNullException(nameof(command));
             if (parameterName == null) throw new ArgumentNullException(nameof(parameterName));
 
-            var parameter = command.CreateParameter();
-            parameter.ParameterName = parameterName;
-            parameter.DbType = dbType;
+            var parameter = AddParameterInternal(command, parameterName, dbType, size);
             parameter.Value = value ?? DBNull.Value;
 
-            if (size.HasValue) parameter.Size = size.Value;
-
-            command.Parameters.Add(parameter);
             return command;
         }
 
@@ -79,15 +74,12 @@ namespace Hangfire.SqlServer
             int? size = null)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
+            if (parameterName == null) throw new ArgumentNullException(nameof(parameterName));
 
-            parameter = command.CreateParameter();
-            parameter.ParameterName = parameterName;
-            parameter.DbType = dbType;
+            parameter = AddParameterInternal(command, parameterName, dbType, size);
             parameter.Direction = ParameterDirection.ReturnValue;
+            parameter.Value = DBNull.Value;
 
-            if (size.HasValue) parameter.Size = size.Value;
-
-            command.Parameters.Add(parameter);
             return command;
         }
 
@@ -113,10 +105,27 @@ namespace Hangfire.SqlServer
 
             for (var i = 0; i < parameterValues.Length; i++)
             {
-                command.AddParameter(parameterName + i.ToString(CultureInfo.InvariantCulture), parameterValues[i], parameterType, parameterSize);
+                var parameter = AddParameterInternal(command, parameterName + i.ToString(CultureInfo.InvariantCulture), parameterType, parameterSize);
+                parameter.Value = (object)parameterValues[i] ?? DBNull.Value;
             }
 
             return command;
+        }
+
+        private static DbParameter AddParameterInternal(
+            DbCommand command,
+            string parameterName,
+            DbType dbType,
+            int? size)
+        {
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = parameterName;
+            parameter.DbType = dbType;
+
+            if (size.HasValue) parameter.Size = size.Value;
+
+            command.Parameters.Add(parameter);
+            return parameter;
         }
     }
 }
