@@ -220,7 +220,7 @@ namespace Hangfire.Common
 #if NETSTANDARD2_0
             serializerSettings.SerializationBinder = new TypeHelperSerializationBinder();
 #else
-            serializerSettings.Binder = new TypeHelperSerializationBinder();
+            serializerSettings.SerializationBinder = new TypeHelperSerializationBinder();
 #endif
 
             return serializerSettings;

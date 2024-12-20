@@ -7,7 +7,7 @@
   
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" />
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" NoWarn="NU1903" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" NoWarn="NU1903" />
   </ItemGroup>
 
   <ItemGroup>
