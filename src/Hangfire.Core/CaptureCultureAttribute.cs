@@ -44,6 +44,13 @@ namespace Hangfire
             DefaultCultureName = defaultCultureName;
             DefaultUICultureName = defaultUICultureName;
             CaptureDefault = captureDefault;
+
+#if !NETSTANDARD1_3
+            // For backward compatibility, the cached method does not respect user-overridden values.
+            // https://blog.codeinside.eu/2018/05/28/cultureinfo-getculture-vs-new-cultureinfo/
+            // https://learn.microsoft.com/en-us/dotnet/api/system.globalization.cultureinfo.-ctor#system-globalization-cultureinfo-ctor(system-string)
+            CachedCulture = false;
+#endif
         }
 
         [CanBeNull]
@@ -53,6 +60,16 @@ namespace Hangfire
         public string DefaultUICultureName { get; }
 
         public bool CaptureDefault { get; }
+
+#if !NETSTANDARD1_3
+        /// <summary>
+        /// Gets or sets whether to use the <see cref="GetCultureInfo"/> method when getting
+        /// a culture by its name, or create a <see cref="CultureInfo"/> instance using its
+        /// constructor instead. Cached method does not respect user-overridden values associated
+        /// with the current culture specified on the OS level.
+        /// </summary>
+        public bool CachedCulture { get; set; }
+#endif
 
         public void OnCreating(CreatingContext context)
         {
@@ -103,13 +120,7 @@ namespace Hangfire
                 if (cultureName != null)
                 {
                     context.Items["PreviousCulture"] = CultureInfo.CurrentCulture;
-                    SetCurrentCulture(
-#if !NETSTANDARD1_3
-                        CultureInfo.GetCultureInfo(cultureName)
-#else
-                        new CultureInfo(cultureName)
-#endif
-                        );
+                    SetCurrentCulture(GetCultureInfo(cultureName));
                 }
             }
             catch (CultureNotFoundException ex)
@@ -123,13 +134,7 @@ namespace Hangfire
                 if (uiCultureName != null)
                 {
                     context.Items["PreviousUICulture"] = CultureInfo.CurrentUICulture;
-                    SetCurrentUICulture(
-#if !NETSTANDARD1_3
-                        CultureInfo.GetCultureInfo(uiCultureName)
-#else
-                        new CultureInfo(uiCultureName)
-#endif
-                        );
+                    SetCurrentUICulture(GetCultureInfo(uiCultureName));
                 }
             }
             catch (CultureNotFoundException ex)
@@ -170,6 +175,19 @@ namespace Hangfire
 #else
             CultureInfo.CurrentUICulture = value;
 #endif
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static")]
+        private CultureInfo GetCultureInfo(string cultureName)
+        {
+#if !NETSTANDARD1_3
+            if (CachedCulture)
+            {
+                return CultureInfo.GetCultureInfo(cultureName);
+            }
+#endif
+
+            return new CultureInfo(cultureName);
         }
     }
 }

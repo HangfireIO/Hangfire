@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.Server;
 using Moq;
@@ -548,9 +550,95 @@ namespace Hangfire.Core.Tests.Server
             Assert.IsType<OperationCanceledException>(exception.InnerException);
         }
 
-        private BackgroundJobPerformer CreatePerformer()
+#if !NET452
+        [Theory]
+        [MemberData(nameof(GetSchedulers))]
+        public void Run_FlowsAsyncLocal_ThroughFilters_AndSynchronousBackgroundJobMethod(TaskScheduler scheduler)
         {
-            return new BackgroundJobPerformer(_filterProvider.Object, _innerPerformer.Object);
+            // Arrange
+            var id = Guid.NewGuid();
+            _filters.Add(new AsyncLocalFilter(id));
+            _context.BackgroundJob.Job = Job.FromExpression(() => AsyncLocalSync());
+
+            var performer = CreatePerformer(CreateInnerPerformer(scheduler));
+
+            // Act
+            var result = performer.Perform(_context.Object);
+
+            // Assert
+            Assert.Equal(id, result);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetSchedulers))]
+        public void Run_FlowsAsyncLocal_ThroughFilters_AndSimpleAsynchronousBackgroundJobMethod(TaskScheduler scheduler)
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _filters.Add(new AsyncLocalFilter(id));
+            _context.BackgroundJob.Job = Job.FromExpression(() => AsyncLocalSimpleAsync());
+
+            var performer = CreatePerformer(CreateInnerPerformer(scheduler));
+
+            // Act
+            var result = performer.Perform(_context.Object);
+
+            // Assert
+            Assert.Equal(id, result);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetSchedulers))]
+        public void Run_FlowsAsyncLocal_ThroughFilters_AndAsyncAwaitAsynchronousBackgroundJobMethod(TaskScheduler scheduler)
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _filters.Add(new AsyncLocalFilter(id));
+            _context.BackgroundJob.Job = Job.FromExpression(() => AsyncLocalAsyncAwait());
+
+            var performer = CreatePerformer(CreateInnerPerformer(scheduler));
+
+            // Act
+            var result = performer.Perform(_context.Object);
+
+            // Assert
+            Assert.Equal(id, result);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetSchedulers))]
+        public void Run_FlowsAsyncLocal_ThroughFilters_AndAsyncAwaitContinuationAsynchronousBackgroundJobMethod(TaskScheduler scheduler)
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _filters.Add(new AsyncLocalFilter(id));
+            _context.BackgroundJob.Job = Job.FromExpression(() => AsyncLocalAsyncAwaitContinuation());
+
+            var performer = CreatePerformer(CreateInnerPerformer(scheduler));
+
+            // Act
+            var result = performer.Perform(_context.Object);
+
+            // Assert
+            Assert.Equal(id, result);
+        }
+
+        private static CoreBackgroundJobPerformer CreateInnerPerformer(TaskScheduler taskScheduler)
+        {
+            return new CoreBackgroundJobPerformer(new JobActivator(), taskScheduler);
+        }
+
+        public static IEnumerable<object[]> GetSchedulers()
+        {
+            yield return new object[] { null };
+            yield return new object[] { TaskScheduler.Default };
+            yield return new object[] { new Hangfire.Processing.BackgroundTaskScheduler(threadCount: 1) };
+        }
+#endif
+
+        private BackgroundJobPerformer CreatePerformer(IBackgroundJobPerformer inner = null)
+        {
+            return new BackgroundJobPerformer(_filterProvider.Object, inner ?? _innerPerformer.Object);
         }
 
         private Mock<T> CreateFilter<T>()
@@ -561,5 +649,57 @@ namespace Hangfire.Core.Tests.Server
 
             return filter;
         }
+
+#if !NET452
+        private static readonly AsyncLocal<Guid> Identifier = new AsyncLocal<Guid>();
+
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+        [SuppressMessage("ReSharper", "UnusedMethodReturnValue.Global")]
+        public static Guid AsyncLocalSync()
+        {
+            return Identifier.Value;
+        }
+
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+        public static Task<Guid> AsyncLocalSimpleAsync()
+        {
+            return Task.FromResult(Identifier.Value);
+        }
+
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public static async Task<Guid> AsyncLocalAsyncAwait()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+        {
+            return Identifier.Value;
+        }
+
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+        public static async Task<Guid> AsyncLocalAsyncAwaitContinuation()
+        {
+            await Task.Yield();
+            return Identifier.Value;
+        }
+
+        private sealed class AsyncLocalFilter : IServerFilter
+        {
+            private readonly Guid _identifier;
+
+            public AsyncLocalFilter(Guid identifier)
+            {
+                _identifier = identifier;
+            }
+
+            public void OnPerforming(PerformingContext context)
+            {
+                Identifier.Value = _identifier;
+            }
+
+            public void OnPerformed(PerformedContext context)
+            {
+                Assert.Equal(_identifier, Identifier.Value);
+            }
+        }
+#endif
     }
 }

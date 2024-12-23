@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -145,6 +146,20 @@ namespace Hangfire.Core.Tests.Common
 
             Assert.Throws<NotSupportedException>(
                 () => new Job(_type, method, new[] { "hello!" }));
+        }
+
+        [Fact]
+        public void Ctor_CanUsePropertyValues_OfAnotherJob_AsItsArguments()
+        {
+            var method = _type.GetMethod("MethodWithArguments");
+            var job = new Job(_type, method, "hello", 456);
+
+            var anotherJob = new Job(job.Type, job.Method, job.Args);
+
+            Assert.Equal(_type, anotherJob.Type);
+            Assert.Equal(method, anotherJob.Method);
+            Assert.Equal("hello", anotherJob.Args[0]);
+            Assert.Equal(456, anotherJob.Args[1]);
         }
 
         [Fact]
