@@ -32,6 +32,11 @@ Hangfire.Core
 • Fixed – Don't throw an exception when passing the `Job.Args` property to the `Job` class' constructor.
 • Project – Make the lock file usable for both .NET 8.0 and .NET 9.0 builds.
 
+Hangfire.AspNetCore
+
+• Fixed – Swallow possible `ObjectDisposedException` in the `StopAsync` method.
+• Fixed – Avoid `NullReferenceException` when `LocalIpAddress` or `RemoteIpAddress` is null.
+
 1.8.17
 
 Hangfire.SqlServer
