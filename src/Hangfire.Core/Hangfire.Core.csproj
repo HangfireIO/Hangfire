@@ -53,10 +53,9 @@
     <MSBuild14FullPath>$(MSBuildProgramFiles32)\..\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe</MSBuild14FullPath>
     <MSBuildCurrentFullPath>$(MSBuildBinPath)\MSBuild.exe</MSBuildCurrentFullPath>
     <RazorProjectFile>Razor.build</RazorProjectFile>
-    <InnerTargets>GenerateRazorClasses;Build</InnerTargets>
   </PropertyGroup>
 
-  <Target Name="GenerateRazorClasses">
+  <Target Name="GenerateRazorClasses" BeforeTargets="Build">
     <Exec Command="&quot;$(MSBuildCurrentFullPath)&quot; $(RazorProjectFile) /v:quiet /nologo" Condition="Exists('$(MSBuildCurrentFullPath)')" />
     <Exec Command="&quot;$(MSBuild14FullPath)&quot; $(RazorProjectFile) /v:quiet /nologo" Condition="Exists('$(MSBuild14FullPath)') and !Exists('$(MSBuildCurrentFullPath)')" />
     <Warning Text="Classes for Razor files (*.cshtml) weren't re-generated: couldn't find the '$(MSBuild14FullPath)' or '$(MSBuildCurrentFullPath)' file" Condition="!Exists('$(MSBuild14FullPath)') and !Exists('$(MSBuildCurrentFullPath)')" />
