@@ -112,5 +112,16 @@ namespace Hangfire
         /// Optional favicon path
         /// </summary>
         public string FaviconPath { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the time threshold after which a warning icon will be shown near a job or a
+        /// server, depending on its last reported heartbeat.
+        /// </summary>
+        /// <remarks>
+        /// It should be larger than a configured <see cref="BackgroundJobServerOptions.HeartbeatInterval"/>
+        /// value, to give servers a chance to report it, but is expected to be lower than a configured
+        /// <see cref="BackgroundJobServerOptions.ServerTimeout"/> value, since this is a heuristic anyway.
+        /// </remarks>
+        public TimeSpan ServerPossiblyAbortedThreshold { get; set; } = TimeSpan.FromMinutes(1);
     }
 }

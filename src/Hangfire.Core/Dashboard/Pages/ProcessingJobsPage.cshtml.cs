@@ -536,7 +536,7 @@ WriteLiteral("                                        <td class=\"word-break\">\
 
             
             #line 114 "..\..\Dashboard\Pages\ProcessingJobsPage.cshtml"
-                                             if (servers.All(x => x.Name != job.Value.ServerId || x.Heartbeat < (StorageUtcNow ?? ApplicationUtcNow).AddMinutes(-1)))
+                                             if (servers.All(x => x.Name != job.Value.ServerId || x.Heartbeat < (StorageUtcNow ?? ApplicationUtcNow).Add(DashboardOptions.ServerPossiblyAbortedThreshold.Negate())))
                                             {
 
             

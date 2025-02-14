@@ -27,6 +27,7 @@ Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfi
 
 Hangfire.Core
 
+• Added – `DashboardOptions.ServerPossiblyAbortedThreshold` to configure a custom threshold for "possibly aborted" warnings.
 • Fixed – Expired jobs are still shown on the "Retries" page in some cases.
 • Fixed – Issues with `CultureInfo`-related differences after upgrading to 1.8.15–1.8.17.
 • Fixed – Don't leak `AsyncLocal` values from synchronous background job methods.
