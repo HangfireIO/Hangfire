@@ -33,6 +33,7 @@ Hangfire.Core
 • Fixed – Don't leak `AsyncLocal` values from synchronous background job methods.
 • Fixed – Don't throw an exception when passing the `Job.Args` property to the `Job` class' constructor.
 • Project – Make the lock file usable for both .NET 8.0 and .NET 9.0 builds.
+• Project – Make code generation for `cshtml` files working on newer platforms.
 
 Hangfire.AspNetCore
 
