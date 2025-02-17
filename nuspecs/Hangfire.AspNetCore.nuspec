@@ -11,11 +11,15 @@
     <license type="file">LICENSE.md</license>
     <icon>icon.png</icon>
     <description>ASP.NET Core support for Hangfire, a background job framework for .NET applications.</description>
-    <copyright>Copyright © 2017-2024 Hangfire OÜ</copyright>
+    <copyright>Copyright © 2017-2025 Hangfire OÜ</copyright>
     <tags>hangfire aspnetcore</tags>
     <releaseNotes><![CDATA[
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
+
+1.8.18
+• Fixed – Swallow possible `ObjectDisposedException` in the `StopAsync` method.
+• Fixed – Avoid `NullReferenceException` when `LocalIpAddress` or `RemoteIpAddress` is null.
 
 1.8.10
 • Fixed – Don't check `HasStarted` in `Response.WriteAsync` to avoid breaking dispatchers.

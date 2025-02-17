@@ -204,7 +204,7 @@ WriteLiteral("\r\n                    </div>\r\n");
             
             #line 59 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                 }
-                else if (server.Heartbeat.HasValue && server.Heartbeat < (StorageUtcNow ?? ApplicationUtcNow).AddMinutes(-1))
+                else if (server.Heartbeat.HasValue && server.Heartbeat < (StorageUtcNow ?? ApplicationUtcNow).Add(DashboardOptions.ServerPossiblyAbortedThreshold.Negate()))
                 {
 
             

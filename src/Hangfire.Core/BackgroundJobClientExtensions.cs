@@ -557,7 +557,7 @@ namespace Hangfire
             [NotNull] IState state)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
-            if (queue == null) throw new ArgumentNullException(nameof(client));
+            if (queue == null) throw new ArgumentNullException(nameof(queue));
 
             return client.Create(Job.FromExpression(methodCall, queue), state);
         }

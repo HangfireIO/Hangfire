@@ -17,11 +17,34 @@ An easy and reliable way to perform fire-and-forget, delayed and recurring, long
 Backed by Redis, SQL Server, SQL Azure or MSMQ. This is a .NET alternative to Sidekiq, Resque and Celery.
 https://www.hangfire.io/
     </description>
-    <copyright>Copyright © 2013-2024 Hangfire OÜ</copyright>
+    <copyright>Copyright © 2013-2025 Hangfire OÜ</copyright>
     <tags>Hangfire AspNet MVC AspNetCore NetCore SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes><![CDATA[
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
+
+1.8.18
+
+Hangfire.Core
+
+• Added – `DashboardOptions.ServerPossiblyAbortedThreshold` to configure a custom threshold for "possibly aborted" warnings.
+• Fixed – Expired jobs are still shown on the "Retries" page in some cases.
+• Fixed – Issues with `CultureInfo`-related differences after upgrading to 1.8.15–1.8.17.
+• Fixed – Don't leak `AsyncLocal` values from synchronous background job methods.
+• Fixed – Don't throw an exception when passing the `Job.Args` property to the `Job` class' constructor.
+• Project – Make the lock file usable for both .NET 8.0 and .NET 9.0 builds.
+• Project – Make code generation for `cshtml` files working on newer platforms.
+
+Hangfire.AspNetCore
+
+• Fixed – Swallow possible `ObjectDisposedException` in the `StopAsync` method.
+• Fixed – Avoid `NullReferenceException` when `LocalIpAddress` or `RemoteIpAddress` is null.
+
+1.8.17
+
+Hangfire.SqlServer
+
+• Fixed – `InvalidCastException` while fetching a job with older schemas regression from 1.8.16.
 
 1.8.16
 

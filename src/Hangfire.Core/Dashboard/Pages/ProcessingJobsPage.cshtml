@@ -111,7 +111,7 @@
                                             @Html.ServerId(job.Value.ServerId)
                                         </td>
                                         <td class="word-break">
-                                            @if (servers.All(x => x.Name != job.Value.ServerId || x.Heartbeat < (StorageUtcNow ?? ApplicationUtcNow).AddMinutes(-1)))
+                                            @if (servers.All(x => x.Name != job.Value.ServerId || x.Heartbeat < (StorageUtcNow ?? ApplicationUtcNow).Add(DashboardOptions.ServerPossiblyAbortedThreshold.Negate())))
                                             {
                                                 <span title="@Strings.ProcessingJobsPage_Aborted" class="glyphicon glyphicon-warning-sign glyphicon-sm text-warning"></span>
                                             }
