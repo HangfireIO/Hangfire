@@ -34,7 +34,7 @@
   <ItemGroup Condition="'$(TargetFramework)'=='net45' or '$(TargetFramework)'=='net46'">
     <PackageReference Include="Owin" Version="1.0" />
     <PackageReference Include="CronExpressionDescriptor" Version="1.21.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="5.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Microsoft.Owin" Version="3.0.1" />
   </ItemGroup>
   
