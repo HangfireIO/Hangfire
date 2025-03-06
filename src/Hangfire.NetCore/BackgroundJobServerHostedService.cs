@@ -117,16 +117,34 @@ namespace Hangfire
             else
 #endif
             {
-                InitializeProcessingServer();                
+                InitializeProcessingServer();
             }
 
             return Task.CompletedTask;
         }
 
-        public Task StopAsync(CancellationToken cancellationToken)
+        public async Task StopAsync(CancellationToken cancellationToken)
         {
-            _processingServer?.SendStop();
-            return _processingServer?.WaitForShutdownAsync(cancellationToken) ?? Task.CompletedTask;
+            var server = _processingServer;
+            if (server == null) return;
+
+            try
+            {
+                server.SendStop();
+                await server.WaitForShutdownAsync(cancellationToken);
+            }
+            catch (ObjectDisposedException)
+            {
+                // Due to a bug in ASP.NET Core's Testing package, the StopAsync method
+                // can be called twice and from different threads, please see
+                // https://github.com/dotnet/aspnetcore/issues/40271 for details.
+                // This is not a case for regular applications but can fail integration tests
+                // when the second call to the StopAsync method attempts to be performed on
+                // an already disposed object.
+                // This is not a big deal, however, it's still a workaround that should be
+                // removed one day.
+                // TODO: Remove this workaround and don't rely on this behavior for simplicity.
+            }
         }
 
         public void Dispose()
@@ -149,7 +167,14 @@ namespace Hangfire
 #if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
         private void SendStopSignal()
         {
-            _processingServer?.SendStop();
+            try
+            {
+                _processingServer?.SendStop();
+            }
+            catch (ObjectDisposedException)
+            {
+                // Please see the comment regarding this exception above.
+            }
         }
 #endif
     }

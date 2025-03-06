@@ -307,7 +307,8 @@ namespace Hangfire
         /// <inheritdoc />
         public void OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
-            if (ScheduledState.StateName.Equals(context.OldStateName, StringComparison.OrdinalIgnoreCase))
+            if (ScheduledState.StateName.Equals(context.OldStateName, StringComparison.OrdinalIgnoreCase) ||
+                FailedState.StateName.Equals(context.OldStateName, StringComparison.OrdinalIgnoreCase))
             {
                 transaction.RemoveFromSet("retries", context.BackgroundJob.Id);
             }

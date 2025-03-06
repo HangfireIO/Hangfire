@@ -77,8 +77,8 @@ WriteLiteral("\r\n");
     var monitor = Storage.GetMonitoringApi();
     var servers = monitor.Servers();
     var now = StorageUtcNow ?? ApplicationUtcNow;
-    var inconclusiveThreshold = TimeSpan.FromMinutes(1);
-    var possiblyAbortedThreshold = TimeSpan.FromMinutes(5);
+    var inconclusiveThreshold = DashboardOptions.ServerPossiblyAbortedThreshold;
+    var possiblyAbortedThreshold = TimeSpan.FromSeconds(inconclusiveThreshold.TotalSeconds * 2);
 
 
             
