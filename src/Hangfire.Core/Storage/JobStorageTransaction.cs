@@ -102,6 +102,7 @@ namespace Hangfire.Storage
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Transaction.SetJobParameter);
         }
 
+        [CanBeNull]
         public virtual string CreateJob([NotNull] Job job, [NotNull] IDictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn)
         {
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Transaction.CreateJob);

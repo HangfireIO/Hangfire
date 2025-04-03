@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using Hangfire.Annotations;
 using Hangfire.Storage.Monitoring;
 
 namespace Hangfire.Storage
@@ -34,6 +35,7 @@ namespace Hangfire.Storage
         public abstract JobList<FailedJobDto> FailedJobs(int from, int count);
         public abstract JobList<DeletedJobDto> DeletedJobs(int from, int count);
 
+        [NotNull]
         public virtual JobList<AwaitingJobDto> AwaitingJobs(int from, int count)
         {
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Monitoring.AwaitingJobs);
@@ -55,6 +57,7 @@ namespace Hangfire.Storage
         public abstract IDictionary<DateTime, long> SucceededByDatesCount();
         public abstract IDictionary<DateTime, long> FailedByDatesCount();
 
+        [NotNull]
         public virtual IDictionary<DateTime, long> DeletedByDatesCount()
         {
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Monitoring.DeletedStateGraphs);
@@ -63,6 +66,7 @@ namespace Hangfire.Storage
         public abstract IDictionary<DateTime, long> HourlySucceededJobs();
         public abstract IDictionary<DateTime, long> HourlyFailedJobs();
 
+        [NotNull]
         public virtual IDictionary<DateTime, long> HourlyDeletedJobs()
         {
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Monitoring.DeletedStateGraphs);

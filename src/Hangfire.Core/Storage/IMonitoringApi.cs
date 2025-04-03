@@ -15,38 +15,43 @@
 
 using System;
 using System.Collections.Generic;
+using Hangfire.Annotations;
 using Hangfire.Storage.Monitoring;
 
 namespace Hangfire.Storage
 {
     public interface IMonitoringApi
     {
-        IList<QueueWithTopEnqueuedJobsDto> Queues();
-        IList<ServerDto> Servers();
-        JobDetailsDto JobDetails(string jobId);
+        [NotNull] IList<QueueWithTopEnqueuedJobsDto> Queues();
+        [NotNull] IList<ServerDto> Servers();
+
+        [CanBeNull]
+        JobDetailsDto JobDetails([NotNull] string jobId);
+
+        [NotNull]
         StatisticsDto GetStatistics();
 
-        JobList<EnqueuedJobDto> EnqueuedJobs(string queue, int from, int perPage);
-        JobList<FetchedJobDto> FetchedJobs(string queue, int from, int perPage);
+        [NotNull] JobList<EnqueuedJobDto> EnqueuedJobs([NotNull] string queue, int from, int perPage);
+        [NotNull] JobList<FetchedJobDto> FetchedJobs([NotNull] string queue, int from, int perPage);
 
-        JobList<ProcessingJobDto> ProcessingJobs(int from, int count);
-        JobList<ScheduledJobDto> ScheduledJobs(int from, int count);
-        JobList<SucceededJobDto> SucceededJobs(int from, int count);
-        JobList<FailedJobDto> FailedJobs(int from, int count);
-        JobList<DeletedJobDto> DeletedJobs(int from, int count);
+        [NotNull] JobList<ProcessingJobDto> ProcessingJobs(int from, int count);
+        [NotNull] JobList<ScheduledJobDto> ScheduledJobs(int from, int count);
+        [NotNull] JobList<SucceededJobDto> SucceededJobs(int from, int count);
+        [NotNull] JobList<FailedJobDto> FailedJobs(int from, int count);
+        [NotNull] JobList<DeletedJobDto> DeletedJobs(int from, int count);
 
         long ScheduledCount();
-        long EnqueuedCount(string queue);
-        long FetchedCount(string queue);
+        long EnqueuedCount([NotNull] string queue);
+        long FetchedCount([NotNull] string queue);
         long FailedCount();
         long ProcessingCount();
 
         long SucceededListCount();
         long DeletedListCount();
-        
-        IDictionary<DateTime, long> SucceededByDatesCount();
-        IDictionary<DateTime, long> FailedByDatesCount();
-        IDictionary<DateTime, long> HourlySucceededJobs();
-        IDictionary<DateTime, long> HourlyFailedJobs();
+
+        [NotNull] IDictionary<DateTime, long> SucceededByDatesCount();
+        [NotNull] IDictionary<DateTime, long> FailedByDatesCount();
+        [NotNull] IDictionary<DateTime, long> HourlySucceededJobs();
+        [NotNull] IDictionary<DateTime, long> HourlyFailedJobs();
     }
 }

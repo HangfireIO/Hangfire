@@ -9,12 +9,7 @@ namespace Hangfire.Core.Tests.Storage
 {
     public class StorageConnectionExtensionsFacts
     {
-        private readonly Mock<IStorageConnection> _connection;
-
-        public StorageConnectionExtensionsFacts()
-        {
-            _connection = new Mock<IStorageConnection>();
-        }
+        private readonly Mock<IStorageConnection> _connection = new Mock<IStorageConnection>();
 
         [Fact]
         public void GivenRecurringJobIsCancelledWhenGetRecurringJobsThenNotGetStateData()
@@ -46,6 +41,36 @@ namespace Hangfire.Core.Tests.Storage
         }
 
         [Fact]
+        public void GetRecurringJobs_ThrowsAnException_WhenConnectionIsNull()
+        {
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => StorageConnectionExtensions.GetRecurringJobs(null));
+
+            Assert.Equal("connection", exception.ParamName);
+        }
+
+        [Fact]
+        public void GetRecurringJobs_WithIds_ThrowsAnException_WhenConnectionIsNull()
+        {
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => StorageConnectionExtensions.GetRecurringJobs(null, new string[0]));
+
+            Assert.Equal("connection", exception.ParamName);
+        }
+
+        [Fact]
+        public void GetRecurringJobs_WithIds_ThrowsAnException_WhenIdsCollectionIsNull()
+        {
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => _connection.Object.GetRecurringJobs(null));
+
+            Assert.Equal("ids", exception.ParamName);
+        }
+
+        [Fact]
         public void GetRecurringJobs_WithGivenIdentifiers_QueriesForCorrespondingJobs()
         {
             // Act
@@ -60,25 +85,25 @@ namespace Hangfire.Core.Tests.Storage
             _connection.Verify(x => x.GetAllEntriesFromHash("recurring-job:b"), Times.Once);
         }
 
-	    [Fact]
-	    public void GetRecurringJobsWithNullDateTimeHashValues() 
-		{
-			_connection.Setup(o => o.GetAllItemsFromSet(It.IsAny<string>())).Returns(new HashSet<string> { "1" });
-		    _connection.Setup(o => o.GetAllEntriesFromHash("recurring-job:1")).Returns(new Dictionary<string, string>
-		    {
-			    { "Cron", "A"},
-			    { "Job", @"{""Type"":""ConsoleApplication1.CommandHandler, ConsoleApplication1"",""Method"":""Handle"",""ParameterTypes"":""[\""string\""]"",""Arguments"":""[\""Text\""]""}"},
-				{ "NextExecution", null },
-			    { "LastExecution", null },
-			    { "CreatedAt", null }
-		    }).Verifiable();
+        [Fact]
+        public void GetRecurringJobsWithNullDateTimeHashValues() 
+        {
+            _connection.Setup(o => o.GetAllItemsFromSet(It.IsAny<string>())).Returns(new HashSet<string> { "1" });
+            _connection.Setup(o => o.GetAllEntriesFromHash("recurring-job:1")).Returns(new Dictionary<string, string>
+            {
+                { "Cron", "A"},
+                { "Job", @"{""Type"":""ConsoleApplication1.CommandHandler, ConsoleApplication1"",""Method"":""Handle"",""ParameterTypes"":""[\""string\""]"",""Arguments"":""[\""Text\""]""}"},
+                { "NextExecution", null },
+                { "LastExecution", null },
+                { "CreatedAt", null }
+            }).Verifiable();
 
-			var result = _connection.Object.GetRecurringJobs();
-			Assert.Null(result[0].LastExecution);
-			Assert.Null(result[0].NextExecution);
-			Assert.Null(result[0].CreatedAt);
-			_connection.VerifyAll();
-		}
+            var result = _connection.Object.GetRecurringJobs();
+            Assert.Null(result[0].LastExecution);
+            Assert.Null(result[0].NextExecution);
+            Assert.Null(result[0].CreatedAt);
+            _connection.VerifyAll();
+        }
 
-	}
+    }
 }

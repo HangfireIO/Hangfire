@@ -15,19 +15,20 @@
 
 using System;
 using System.Collections.Generic;
+using Hangfire.Annotations;
 using Hangfire.Common;
 
 namespace Hangfire.Storage
 {
     public class JobData
     {
-        public string State { get; set; }
-        public Job Job { get; set; }
-        public InvocationData InvocationData { get; set; }
+        [CanBeNull] public string State { get; set; }
+        [CanBeNull] public Job Job { get; set; }
+        [CanBeNull] public InvocationData InvocationData { get; set; }
         public DateTime CreatedAt { get; set; }
-        public IReadOnlyDictionary<string, string> ParametersSnapshot { get; set; }
+        [CanBeNull] public IReadOnlyDictionary<string, string> ParametersSnapshot { get; set; }
 
-        public JobLoadException LoadException { get; set; }
+        [CanBeNull] public JobLoadException LoadException { get; set; }
 
         public void EnsureLoaded()
         {

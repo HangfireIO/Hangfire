@@ -24,19 +24,23 @@ namespace Hangfire.Storage
 {
     public interface IStorageConnection : IDisposable
     {
-        IWriteOnlyTransaction CreateWriteTransaction();
-        IDisposable AcquireDistributedLock(string resource, TimeSpan timeout);
+        [NotNull] IWriteOnlyTransaction CreateWriteTransaction();
+        [NotNull] IDisposable AcquireDistributedLock([NotNull] string resource, TimeSpan timeout);
 
+        [CanBeNull]
         string CreateExpiredJob(
-            Job job, 
-            IDictionary<string, string> parameters, 
+            [NotNull] Job job, 
+            [NotNull] IDictionary<string, string> parameters, 
             DateTime createdAt,
             TimeSpan expireIn);
 
-        IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken);
+        [NotNull]
+        IFetchedJob FetchNextJob([NotNull] string[] queues, CancellationToken cancellationToken);
 
-        void SetJobParameter(string id, string name, string value);
-        string GetJobParameter(string id, string name);
+        void SetJobParameter([NotNull] string id, [NotNull] string name, [CanBeNull] string value);
+
+        [CanBeNull]
+        string GetJobParameter([NotNull] string id, [NotNull] string name);
 
         [CanBeNull]
         JobData GetJobData([NotNull] string jobId);
@@ -44,9 +48,9 @@ namespace Hangfire.Storage
         [CanBeNull]
         StateData GetStateData([NotNull] string jobId);
 
-        void AnnounceServer(string serverId, ServerContext context);
-        void RemoveServer(string serverId);
-        void Heartbeat(string serverId);
+        void AnnounceServer([NotNull] string serverId, [NotNull] ServerContext context);
+        void RemoveServer([NotNull] string serverId);
+        void Heartbeat([NotNull] string serverId);
         int RemoveTimedOutServers(TimeSpan timeOut);
 
         // Set operations
@@ -54,7 +58,8 @@ namespace Hangfire.Storage
         [NotNull]
         HashSet<string> GetAllItemsFromSet([NotNull] string key);
 
-        string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);
+        [CanBeNull]
+        string GetFirstByLowestScoreFromSet([NotNull] string key, double fromScore, double toScore);
 
         // Hash operations
 

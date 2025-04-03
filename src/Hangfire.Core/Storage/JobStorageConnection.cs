@@ -15,7 +15,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
@@ -52,7 +51,8 @@ namespace Hangfire.Storage
         public abstract HashSet<string> GetAllItemsFromSet(string key);
         public abstract string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);
 
-        public virtual List<string> GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore, int count)
+        [NotNull]
+        public virtual List<string> GetFirstByLowestScoreFromSet([NotNull] string key, double fromScore, double toScore, int count)
         {
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Connection.BatchedGetFirstByLowest);
         }
@@ -72,6 +72,7 @@ namespace Hangfire.Storage
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Connection.GetSetContains);
         }
 
+        [NotNull]
         public virtual List<string> GetRangeFromSet([NotNull] string key, int startingFrom, int endingAt)
         {
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
@@ -86,6 +87,7 @@ namespace Hangfire.Storage
         public abstract void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs);
         public abstract Dictionary<string, string> GetAllEntriesFromHash(string key);
 
+        [CanBeNull]
         public virtual string GetValueFromHash([NotNull] string key, [NotNull] string name)
         {
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
@@ -107,11 +109,13 @@ namespace Hangfire.Storage
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
+        [NotNull]
         public virtual List<string> GetAllItemsFromList([NotNull] string key)
         {
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
+        [NotNull]
         public virtual List<string> GetRangeFromList([NotNull] string key, int startingFrom, int endingAt)
         {
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
