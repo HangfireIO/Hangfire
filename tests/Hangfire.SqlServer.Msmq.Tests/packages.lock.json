@@ -30,9 +30,9 @@
       },
       "Newtonsoft.Json": {
         "type": "Direct",
-        "requested": "[9.0.1, )",
-        "resolved": "9.0.1",
-        "contentHash": "U82mHQSKaIk+lpSVCbWYKNavmNH1i5xrExDEquU1i6I5pV6UMOqRnJRSlKO3cMPfcpp0RgDY+8jUXHdQ4IfXvw=="
+        "requested": "[13.0.3, )",
+        "resolved": "13.0.3",
+        "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
       },
       "xunit": {
         "type": "Direct",
@@ -198,7 +198,7 @@
           "Microsoft.Owin": "[4.2.2, )",
           "Microsoft.SourceLink.GitHub": "[8.0.0, )",
           "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
-          "Newtonsoft.Json": "[5.0.1, )",
+          "Newtonsoft.Json": "[13.0.3, )",
           "Owin": "[1.0.0, )",
           "StackTraceFormatter.Source": "[1.1.0, )",
           "StackTraceParser.Source": "[1.3.0, )"
