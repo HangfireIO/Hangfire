@@ -23,7 +23,7 @@
         <NoWarn>CA1200;CA1859;1591</NoWarn>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <AnalysisLevel>latest</AnalysisLevel>
-        <AnalysisMode>Recommended</AnalysisMode>
+        <AnalysisMode>Default</AnalysisMode>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 

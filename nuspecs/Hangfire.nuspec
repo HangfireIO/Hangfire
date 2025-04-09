@@ -470,6 +470,11 @@ Hangfire.SqlServer.Msmq
         <dependency id="Hangfire.SqlServer" version="[%version%]" />
         <dependency id="Hangfire.AspNetCore" version="[%version%]" />
       </group>
+      <group targetFramework="net6.0">
+        <dependency id="Hangfire.Core" version="[%version%]" />
+        <dependency id="Hangfire.SqlServer" version="[%version%]" />
+        <dependency id="Hangfire.AspNetCore" version="[%version%]" />
+      </group>
     </dependencies>
   </metadata>
   <files>

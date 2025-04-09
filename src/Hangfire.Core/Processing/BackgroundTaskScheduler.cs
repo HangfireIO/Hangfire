@@ -273,7 +273,7 @@ namespace Hangfire.Processing
                         // of this type. Since this is an ordinal shutdown, we can skip
                         // the reporting logic.
                     }
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_3 && !NET6_0_OR_GREATER
                     catch (Exception ex) when (ex is ThreadAbortException || ex is ThreadInterruptedException)
                     {
                         // We don't have methods like IThreadPoolWorkItem.MarkAborted in public

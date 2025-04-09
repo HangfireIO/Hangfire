@@ -356,7 +356,7 @@ namespace Hangfire.Processing
 
         private void HandleException(Guid executionId, Exception exception, out TimeSpan delay)
         {
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_3 && !NET6_0_OR_GREATER
             // Normally, there should be no checks for AppDomain unload condition, because we can't
             // get here on appdomain unloads. But Mono < 5.4 has an issue with Thread.ResetAbort, and
             // it can prevent appdomain to be unloaded: https://bugzilla.xamarin.com/show_bug.cgi?id=5804.

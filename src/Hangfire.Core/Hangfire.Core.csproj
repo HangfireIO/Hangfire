@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net451;net46;netstandard1.3;netstandard2.0;</TargetFrameworks>
+    <TargetFrameworks>net451;net46;netstandard1.3;netstandard2.0;net6.0</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <RootNamespace>Hangfire</RootNamespace>
   </PropertyGroup>
@@ -35,8 +35,12 @@
     <PackageReference Include="Microsoft.CSharp" Version="4.4.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" NoWarn="NU1903" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net6.0'">
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
   
-  <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3' or '$(TargetFramework)'=='netstandard2.0'">
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3' or '$(TargetFramework)'=='netstandard2.0' or '$(TargetFramework)'=='net6.0'">
     <Compile Remove="AppBuilderExtensions.cs" />
     <Compile Remove="Dashboard/Owin/**" />
     <Compile Remove="Obsolete/**" />

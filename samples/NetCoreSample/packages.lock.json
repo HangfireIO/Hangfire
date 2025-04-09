@@ -72,11 +72,6 @@
         "resolved": "9.0.0",
         "contentHash": "JajbvkrBgtdRghavIjcJuNHMOja4lqBmEezbhZyqWPYh2cpLhT5mPpfC7NQVDO4IehWQum9t/nwF4v+qQGtYWg=="
       },
-      "Microsoft.CSharp": {
-        "type": "Transitive",
-        "resolved": "4.4.0",
-        "contentHash": "vvVR/B08YVghQ4jHEloxqw2ZWzEGE1AOA5E0DioUM3ujbXz6FD3AfB/0Jl2ohJPd0nXYGwmPe1En6HTsSriq1A=="
-      },
       "Microsoft.Extensions.Configuration": {
         "type": "Transitive",
         "resolved": "8.0.0",
@@ -343,8 +338,8 @@
       },
       "Newtonsoft.Json": {
         "type": "Transitive",
-        "resolved": "11.0.1",
-        "contentHash": "pNN4l+J6LlpIvHOeNdXlwxv39NPJ2B5klz+Rd2UQZIx30Squ5oND1Yy3wEAUoKn0GPUj6Yxt9lxlYWQqfZcvKg=="
+        "resolved": "13.0.1",
+        "contentHash": "ppPFpBcvxdsfUonNcvITKqLl3bqxWbDCZIzDWHzjpdAHRFfZe0Dw9HmA0+za13IdyrgJwpkDTDA9fHaxOrt20A=="
       },
       "StackTraceFormatter.Source": {
         "type": "Transitive",
@@ -408,11 +403,10 @@
         "dependencies": {
           "Cronos": "[0.8.3, )",
           "LibLog": "[1.5.0, )",
-          "Microsoft.CSharp": "[4.4.0, )",
           "Microsoft.CodeAnalysis.NetAnalyzers": "[9.0.0, )",
           "Microsoft.SourceLink.GitHub": "[8.0.0, )",
           "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
-          "Newtonsoft.Json": "[11.0.1, )",
+          "Newtonsoft.Json": "[13.0.1, )",
           "StackTraceFormatter.Source": "[1.1.0, )",
           "StackTraceParser.Source": "[1.3.0, )"
         }

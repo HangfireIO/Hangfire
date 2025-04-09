@@ -9,6 +9,7 @@ Task Merge -Depends Compile -Description "Run ILRepack /internalize to merge req
 
     Repack-Assembly @("Hangfire.Core", "netstandard1.3") @("Cronos")
     Repack-Assembly @("Hangfire.Core", "netstandard2.0") @("Cronos")
+    Repack-Assembly @("Hangfire.Core", "net6.0") @("Cronos")
     Repack-Assembly @("Hangfire.SqlServer", "netstandard1.3") @("Dapper")
     Repack-Assembly @("Hangfire.SqlServer", "netstandard2.0") @("Dapper")
 }
@@ -51,13 +52,16 @@ Task Collect -Depends Test -Description "Copy all artifacts to the build folder.
 
     Collect-Assembly "Hangfire.AspNetCore" "netcoreapp3.0"
     Collect-Assembly "Hangfire.NetCore" "netstandard2.1"
-    
+
+    Collect-Assembly "Hangfire.Core" "net6.0"
+
     Collect-Tool "src\Hangfire.SqlServer\DefaultInstall.sql"
 
     Collect-Localizations "Hangfire.Core" "net451"
     Collect-Localizations "Hangfire.Core" "net46"
     Collect-Localizations "Hangfire.Core" "netstandard1.3"
     Collect-Localizations "Hangfire.Core" "netstandard2.0"
+    Collect-Localizations "Hangfire.Core" "net6.0"
 
     Collect-File "README.md"
     Collect-File "LICENSE.md"

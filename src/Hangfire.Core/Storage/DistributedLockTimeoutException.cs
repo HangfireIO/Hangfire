@@ -31,7 +31,7 @@ namespace Hangfire.Storage
             Resource = resource;
         }
 
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_3 && !NET6_0_OR_GREATER
         /// <summary>
         /// Initializes a new instance of the <see cref="DistributedLockTimeoutException"/> class
         /// with serialized data.

@@ -20,7 +20,7 @@ using Newtonsoft.Json;
 namespace Hangfire.Common
 {
     public sealed class TypeHelperSerializationBinder : SerializationBinder
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET6_0_OR_GREATER
             , Newtonsoft.Json.Serialization.ISerializationBinder
 #endif
     {

@@ -267,6 +267,9 @@ Internals
       <group targetFramework="netstandard2.0">
         <dependency id="Newtonsoft.Json" version="11.0.1" />
       </group>
+      <group targetFramework="net6.0">
+        <dependency id="Newtonsoft.Json" version="13.0.1" />
+      </group>
     </dependencies>
   </metadata>
   <files>
@@ -289,6 +292,11 @@ Internals
     <file src="netstandard2.0\Hangfire.Core.xml" target="lib\netstandard2.0" />
 
     <file src="netstandard2.0\**\Hangfire.Core.resources.dll" target="lib\netstandard2.0" />
+
+    <file src="net6.0\Hangfire.Core.dll" target="lib\net6.0" />
+    <file src="net6.0\Hangfire.Core.xml" target="lib\net6.0" />
+
+    <file src="net6.0\**\Hangfire.Core.resources.dll" target="lib\net6.0" />
 
     <file src="..\nuspecs\icon.png" />
 
