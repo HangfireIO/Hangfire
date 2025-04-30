@@ -17,7 +17,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Transactions" />
 
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
     <PackageReference Include="Dapper" Version="1.60.6" />
   </ItemGroup>
 

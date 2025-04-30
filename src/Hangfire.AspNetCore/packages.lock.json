@@ -23,11 +23,6 @@
         "resolved": "0.8.3",
         "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw=="
       },
-      "LibLog": {
-        "type": "Transitive",
-        "resolved": "1.5.0",
-        "contentHash": "0bNoz50GPHYnS3fv/qTS2dFBeYgoppM1t//gWULGxY/TM5TNxxknUWqOqzE8eZgLIa2ENfIwzumvbeWFnx14rg=="
-      },
       "Microsoft.Build.Tasks.Git": {
         "type": "Transitive",
         "resolved": "8.0.0",
@@ -85,53 +80,26 @@
         "resolved": "8.0.0",
         "contentHash": "dk9JPxTCIevS75HyEQ0E4OVAFhB2N+V9ShCXf8Q6FkUQZDkgLI12y679Nym1YqsiSysuQskT7Z+6nUf3yab6Vw=="
       },
-      "MoreLinq.Source.MoreEnumerable.Pairwise": {
-        "type": "Transitive",
-        "resolved": "1.0.1",
-        "contentHash": "N1bmYqxItSwixZ72KJ/V4e3mEnIO5AtMcmjtilqe+Ulp4GpSje9DP+1Cv4j01s3uG4h7P4G1axUEODL1yWB5Og=="
-      },
       "Newtonsoft.Json": {
         "type": "Transitive",
         "resolved": "11.0.1",
         "contentHash": "pNN4l+J6LlpIvHOeNdXlwxv39NPJ2B5klz+Rd2UQZIx30Squ5oND1Yy3wEAUoKn0GPUj6Yxt9lxlYWQqfZcvKg=="
       },
-      "StackTraceFormatter.Source": {
-        "type": "Transitive",
-        "resolved": "1.1.0",
-        "contentHash": "69Zxg50Sm1kq9hvxPgEo0w9li8oiD2qVT87GGsqXJP2vfYs33LVKGHRMSP2Z4iTP3UC0PJTeurCeWY2t7X/76Q==",
-        "dependencies": {
-          "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, 2.0.0)",
-          "StackTraceParser.Source": "[1.2.0, 2.0.0)"
-        }
-      },
-      "StackTraceParser.Source": {
-        "type": "Transitive",
-        "resolved": "1.3.0",
-        "contentHash": "tOdf1XpHE2YQJpBERplZA2kMTJQtJnKzSc7GMO/yeNNGuXNueVqySfIr/gfU1vx9k2FO8u0zD4mtnZGwKQM+Zg=="
-      },
       "hangfire.core": {
         "type": "Project",
         "dependencies": {
           "Cronos": "[0.8.3, )",
-          "LibLog": "[1.5.0, )",
           "Microsoft.CSharp": "[4.4.0, )",
-          "Microsoft.CodeAnalysis.NetAnalyzers": "[9.0.0, )",
-          "Microsoft.SourceLink.GitHub": "[8.0.0, )",
-          "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
-          "Newtonsoft.Json": "[11.0.1, )",
-          "StackTraceFormatter.Source": "[1.1.0, )",
-          "StackTraceParser.Source": "[1.3.0, )"
+          "Newtonsoft.Json": "[11.0.1, )"
         }
       },
       "hangfire.netcore": {
         "type": "Project",
         "dependencies": {
           "Hangfire.Core": "[1.0.0, )",
-          "Microsoft.CodeAnalysis.NetAnalyzers": "[9.0.0, )",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[3.0.0, )",
           "Microsoft.Extensions.Hosting.Abstractions": "[3.0.0, )",
-          "Microsoft.Extensions.Logging.Abstractions": "[3.0.0, )",
-          "Microsoft.SourceLink.GitHub": "[8.0.0, )"
+          "Microsoft.Extensions.Logging.Abstractions": "[3.0.0, )"
         }
       }
     },
@@ -192,11 +160,6 @@
         "type": "Transitive",
         "resolved": "0.8.3",
         "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw=="
-      },
-      "LibLog": {
-        "type": "Transitive",
-        "resolved": "1.5.0",
-        "contentHash": "0bNoz50GPHYnS3fv/qTS2dFBeYgoppM1t//gWULGxY/TM5TNxxknUWqOqzE8eZgLIa2ENfIwzumvbeWFnx14rg=="
       },
       "Microsoft.AspNetCore.Cryptography.Internal": {
         "type": "Transitive",
@@ -365,11 +328,6 @@
         "resolved": "8.0.0",
         "contentHash": "dk9JPxTCIevS75HyEQ0E4OVAFhB2N+V9ShCXf8Q6FkUQZDkgLI12y679Nym1YqsiSysuQskT7Z+6nUf3yab6Vw=="
       },
-      "MoreLinq.Source.MoreEnumerable.Pairwise": {
-        "type": "Transitive",
-        "resolved": "1.0.1",
-        "contentHash": "N1bmYqxItSwixZ72KJ/V4e3mEnIO5AtMcmjtilqe+Ulp4GpSje9DP+1Cv4j01s3uG4h7P4G1axUEODL1yWB5Og=="
-      },
       "Newtonsoft.Json": {
         "type": "Transitive",
         "resolved": "5.0.1",
@@ -379,20 +337,6 @@
         "type": "Transitive",
         "resolved": "1.0.0",
         "contentHash": "OseTFniKmyp76mEzOBwIKGBRS5eMoYNkMKaMXOpxx9jv88+b6mh1rSaw43vjBOItNhaLFG3d0a20PfHyibH5sw=="
-      },
-      "StackTraceFormatter.Source": {
-        "type": "Transitive",
-        "resolved": "1.1.0",
-        "contentHash": "69Zxg50Sm1kq9hvxPgEo0w9li8oiD2qVT87GGsqXJP2vfYs33LVKGHRMSP2Z4iTP3UC0PJTeurCeWY2t7X/76Q==",
-        "dependencies": {
-          "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, 2.0.0)",
-          "StackTraceParser.Source": "[1.2.0, 2.0.0)"
-        }
-      },
-      "StackTraceParser.Source": {
-        "type": "Transitive",
-        "resolved": "1.3.0",
-        "contentHash": "tOdf1XpHE2YQJpBERplZA2kMTJQtJnKzSc7GMO/yeNNGuXNueVqySfIr/gfU1vx9k2FO8u0zD4mtnZGwKQM+Zg=="
       },
       "System.Buffers": {
         "type": "Transitive",
@@ -479,27 +423,17 @@
         "dependencies": {
           "CronExpressionDescriptor": "[1.21.0, )",
           "Cronos": "[0.8.3, )",
-          "LibLog": "[1.5.0, )",
-          "Microsoft.CodeAnalysis.NetAnalyzers": "[9.0.0, )",
-          "Microsoft.NETFramework.ReferenceAssemblies": "[1.0.3, )",
           "Microsoft.Owin": "[4.2.2, )",
-          "Microsoft.SourceLink.GitHub": "[8.0.0, )",
-          "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
           "Newtonsoft.Json": "[5.0.1, )",
-          "Owin": "[1.0.0, )",
-          "StackTraceFormatter.Source": "[1.1.0, )",
-          "StackTraceParser.Source": "[1.3.0, )"
+          "Owin": "[1.0.0, )"
         }
       },
       "hangfire.netcore": {
         "type": "Project",
         "dependencies": {
           "Hangfire.Core": "[1.0.0, )",
-          "Microsoft.CodeAnalysis.NetAnalyzers": "[9.0.0, )",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[1.0.0, )",
-          "Microsoft.Extensions.Logging.Abstractions": "[1.0.0, )",
-          "Microsoft.NETFramework.ReferenceAssemblies": "[1.0.3, )",
-          "Microsoft.SourceLink.GitHub": "[8.0.0, )"
+          "Microsoft.Extensions.Logging.Abstractions": "[1.0.0, )"
         }
       }
     },
@@ -561,11 +495,6 @@
         "type": "Transitive",
         "resolved": "0.8.3",
         "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw=="
-      },
-      "LibLog": {
-        "type": "Transitive",
-        "resolved": "1.5.0",
-        "contentHash": "0bNoz50GPHYnS3fv/qTS2dFBeYgoppM1t//gWULGxY/TM5TNxxknUWqOqzE8eZgLIa2ENfIwzumvbeWFnx14rg=="
       },
       "Microsoft.AspNetCore.Cryptography.Internal": {
         "type": "Transitive",
@@ -737,11 +666,6 @@
           "System.Security.Principal.Windows": "4.4.0"
         }
       },
-      "MoreLinq.Source.MoreEnumerable.Pairwise": {
-        "type": "Transitive",
-        "resolved": "1.0.1",
-        "contentHash": "N1bmYqxItSwixZ72KJ/V4e3mEnIO5AtMcmjtilqe+Ulp4GpSje9DP+1Cv4j01s3uG4h7P4G1axUEODL1yWB5Og=="
-      },
       "Newtonsoft.Json": {
         "type": "Transitive",
         "resolved": "5.0.1",
@@ -751,20 +675,6 @@
         "type": "Transitive",
         "resolved": "1.0.0",
         "contentHash": "OseTFniKmyp76mEzOBwIKGBRS5eMoYNkMKaMXOpxx9jv88+b6mh1rSaw43vjBOItNhaLFG3d0a20PfHyibH5sw=="
-      },
-      "StackTraceFormatter.Source": {
-        "type": "Transitive",
-        "resolved": "1.1.0",
-        "contentHash": "69Zxg50Sm1kq9hvxPgEo0w9li8oiD2qVT87GGsqXJP2vfYs33LVKGHRMSP2Z4iTP3UC0PJTeurCeWY2t7X/76Q==",
-        "dependencies": {
-          "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, 2.0.0)",
-          "StackTraceParser.Source": "[1.2.0, 2.0.0)"
-        }
-      },
-      "StackTraceParser.Source": {
-        "type": "Transitive",
-        "resolved": "1.3.0",
-        "contentHash": "tOdf1XpHE2YQJpBERplZA2kMTJQtJnKzSc7GMO/yeNNGuXNueVqySfIr/gfU1vx9k2FO8u0zD4mtnZGwKQM+Zg=="
       },
       "System.Buffers": {
         "type": "Transitive",
@@ -804,28 +714,18 @@
         "dependencies": {
           "CronExpressionDescriptor": "[1.21.0, )",
           "Cronos": "[0.8.3, )",
-          "LibLog": "[1.5.0, )",
-          "Microsoft.CodeAnalysis.NetAnalyzers": "[9.0.0, )",
-          "Microsoft.NETFramework.ReferenceAssemblies": "[1.0.3, )",
           "Microsoft.Owin": "[4.2.2, )",
-          "Microsoft.SourceLink.GitHub": "[8.0.0, )",
-          "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
           "Newtonsoft.Json": "[5.0.1, )",
-          "Owin": "[1.0.0, )",
-          "StackTraceFormatter.Source": "[1.1.0, )",
-          "StackTraceParser.Source": "[1.3.0, )"
+          "Owin": "[1.0.0, )"
         }
       },
       "hangfire.netcore": {
         "type": "Project",
         "dependencies": {
           "Hangfire.Core": "[1.0.0, )",
-          "Microsoft.CodeAnalysis.NetAnalyzers": "[9.0.0, )",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[2.0.0, )",
           "Microsoft.Extensions.Hosting.Abstractions": "[2.0.0, )",
-          "Microsoft.Extensions.Logging.Abstractions": "[2.0.0, )",
-          "Microsoft.NETFramework.ReferenceAssemblies": "[1.0.3, )",
-          "Microsoft.SourceLink.GitHub": "[8.0.0, )"
+          "Microsoft.Extensions.Logging.Abstractions": "[2.0.0, )"
         }
       }
     },
@@ -931,11 +831,6 @@
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         }
-      },
-      "LibLog": {
-        "type": "Transitive",
-        "resolved": "1.5.0",
-        "contentHash": "0bNoz50GPHYnS3fv/qTS2dFBeYgoppM1t//gWULGxY/TM5TNxxknUWqOqzE8eZgLIa2ENfIwzumvbeWFnx14rg=="
       },
       "Microsoft.AspNetCore.Cryptography.Internal": {
         "type": "Transitive",
@@ -1188,11 +1083,6 @@
           "System.Runtime.InteropServices": "4.1.0"
         }
       },
-      "MoreLinq.Source.MoreEnumerable.Pairwise": {
-        "type": "Transitive",
-        "resolved": "1.0.1",
-        "contentHash": "N1bmYqxItSwixZ72KJ/V4e3mEnIO5AtMcmjtilqe+Ulp4GpSje9DP+1Cv4j01s3uG4h7P4G1axUEODL1yWB5Og=="
-      },
       "Newtonsoft.Json": {
         "type": "Transitive",
         "resolved": "9.0.1",
@@ -1306,20 +1196,6 @@
         "type": "Transitive",
         "resolved": "4.3.0",
         "contentHash": "VB5cn/7OzUfzdnC8tqAIMQciVLiq2epm2NrAm1E9OjNRyG4lVhfR61SMcLizejzQP8R8Uf/0l5qOIbUEi+RdEg=="
-      },
-      "StackTraceFormatter.Source": {
-        "type": "Transitive",
-        "resolved": "1.1.0",
-        "contentHash": "69Zxg50Sm1kq9hvxPgEo0w9li8oiD2qVT87GGsqXJP2vfYs33LVKGHRMSP2Z4iTP3UC0PJTeurCeWY2t7X/76Q==",
-        "dependencies": {
-          "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, 2.0.0)",
-          "StackTraceParser.Source": "[1.2.0, 2.0.0)"
-        }
-      },
-      "StackTraceParser.Source": {
-        "type": "Transitive",
-        "resolved": "1.3.0",
-        "contentHash": "tOdf1XpHE2YQJpBERplZA2kMTJQtJnKzSc7GMO/yeNNGuXNueVqySfIr/gfU1vx9k2FO8u0zD4mtnZGwKQM+Zg=="
       },
       "System.AppContext": {
         "type": "Transitive",
@@ -2043,14 +1919,8 @@
         "type": "Project",
         "dependencies": {
           "Cronos": "[0.8.3, )",
-          "LibLog": "[1.5.0, )",
-          "Microsoft.CodeAnalysis.NetAnalyzers": "[9.0.0, )",
-          "Microsoft.SourceLink.GitHub": "[8.0.0, )",
-          "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
           "NETStandard.Library": "[1.6.1, )",
           "Newtonsoft.Json": "[9.0.1, )",
-          "StackTraceFormatter.Source": "[1.1.0, )",
-          "StackTraceParser.Source": "[1.3.0, )",
           "System.Threading.Thread": "[4.0.0, )",
           "System.Threading.ThreadPool": "[4.0.10, )"
         }
@@ -2059,10 +1929,8 @@
         "type": "Project",
         "dependencies": {
           "Hangfire.Core": "[1.0.0, )",
-          "Microsoft.CodeAnalysis.NetAnalyzers": "[9.0.0, )",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[1.0.0, )",
           "Microsoft.Extensions.Logging.Abstractions": "[1.0.0, )",
-          "Microsoft.SourceLink.GitHub": "[8.0.0, )",
           "NETStandard.Library": "[1.6.1, )"
         }
       }
@@ -2120,11 +1988,6 @@
         "type": "Transitive",
         "resolved": "0.8.3",
         "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw=="
-      },
-      "LibLog": {
-        "type": "Transitive",
-        "resolved": "1.5.0",
-        "contentHash": "0bNoz50GPHYnS3fv/qTS2dFBeYgoppM1t//gWULGxY/TM5TNxxknUWqOqzE8eZgLIa2ENfIwzumvbeWFnx14rg=="
       },
       "Microsoft.AspNetCore.Cryptography.Internal": {
         "type": "Transitive",
@@ -2293,29 +2156,10 @@
           "System.Security.Principal.Windows": "4.4.0"
         }
       },
-      "MoreLinq.Source.MoreEnumerable.Pairwise": {
-        "type": "Transitive",
-        "resolved": "1.0.1",
-        "contentHash": "N1bmYqxItSwixZ72KJ/V4e3mEnIO5AtMcmjtilqe+Ulp4GpSje9DP+1Cv4j01s3uG4h7P4G1axUEODL1yWB5Og=="
-      },
       "Newtonsoft.Json": {
         "type": "Transitive",
         "resolved": "11.0.1",
         "contentHash": "pNN4l+J6LlpIvHOeNdXlwxv39NPJ2B5klz+Rd2UQZIx30Squ5oND1Yy3wEAUoKn0GPUj6Yxt9lxlYWQqfZcvKg=="
-      },
-      "StackTraceFormatter.Source": {
-        "type": "Transitive",
-        "resolved": "1.1.0",
-        "contentHash": "69Zxg50Sm1kq9hvxPgEo0w9li8oiD2qVT87GGsqXJP2vfYs33LVKGHRMSP2Z4iTP3UC0PJTeurCeWY2t7X/76Q==",
-        "dependencies": {
-          "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, 2.0.0)",
-          "StackTraceParser.Source": "[1.2.0, 2.0.0)"
-        }
-      },
-      "StackTraceParser.Source": {
-        "type": "Transitive",
-        "resolved": "1.3.0",
-        "contentHash": "tOdf1XpHE2YQJpBERplZA2kMTJQtJnKzSc7GMO/yeNNGuXNueVqySfIr/gfU1vx9k2FO8u0zD4mtnZGwKQM+Zg=="
       },
       "System.Buffers": {
         "type": "Transitive",
@@ -2354,25 +2198,17 @@
         "type": "Project",
         "dependencies": {
           "Cronos": "[0.8.3, )",
-          "LibLog": "[1.5.0, )",
           "Microsoft.CSharp": "[4.4.0, )",
-          "Microsoft.CodeAnalysis.NetAnalyzers": "[9.0.0, )",
-          "Microsoft.SourceLink.GitHub": "[8.0.0, )",
-          "MoreLinq.Source.MoreEnumerable.Pairwise": "[1.0.1, )",
-          "Newtonsoft.Json": "[11.0.1, )",
-          "StackTraceFormatter.Source": "[1.1.0, )",
-          "StackTraceParser.Source": "[1.3.0, )"
+          "Newtonsoft.Json": "[11.0.1, )"
         }
       },
       "hangfire.netcore": {
         "type": "Project",
         "dependencies": {
           "Hangfire.Core": "[1.0.0, )",
-          "Microsoft.CodeAnalysis.NetAnalyzers": "[9.0.0, )",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[2.0.0, )",
           "Microsoft.Extensions.Hosting.Abstractions": "[2.0.0, )",
-          "Microsoft.Extensions.Logging.Abstractions": "[2.0.0, )",
-          "Microsoft.SourceLink.GitHub": "[8.0.0, )"
+          "Microsoft.Extensions.Logging.Abstractions": "[2.0.0, )"
         }
       }
     }
