@@ -26,6 +26,7 @@ namespace Hangfire.Storage
 
         public static readonly string JobQueueProperty = "Job.Queue";
         public static readonly string ExtendedApi = "Storage.ExtendedApi";
+        public static readonly string ProcessesInsteadOfComponents = "Storage.ProcessesInsteadOfComponents";
 
         public static class Connection
         {

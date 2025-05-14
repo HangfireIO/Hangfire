@@ -90,11 +90,22 @@ namespace Hangfire
         }
 
 #pragma warning disable 618
+        [Obsolete($"Please use the `{nameof(GetStorageWideProcesses)}` and/or `{nameof(GetServerRequiredProcesses)}` methods instead, and enable `{nameof(JobStorageFeatures)}.{nameof(JobStorageFeatures.ProcessesInsteadOfComponents)}`. Will be removed in 2.0.0.")]
         public virtual IEnumerable<IServerComponent> GetComponents()
         {
             return Enumerable.Empty<IServerComponent>();
         }
 #pragma warning restore 618
+
+        public virtual IEnumerable<IBackgroundProcess> GetServerRequiredProcesses()
+        {
+            return Enumerable.Empty<IBackgroundProcess>();
+        }
+
+        public virtual IEnumerable<IBackgroundProcess> GetStorageWideProcesses()
+        {
+            return Enumerable.Empty<IBackgroundProcess>();
+        }
 
         public virtual IEnumerable<IStateHandler> GetStateHandlers()
         {
