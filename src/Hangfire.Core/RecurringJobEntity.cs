@@ -243,7 +243,7 @@ namespace Hangfire
                 result.Add("NextExecution", serializedNextExecution ?? String.Empty);
             }
 
-            if ((_recurringJob.TryGetValue("LastJobId", out var last) ? last : null) != LastJobId)
+            if ((_recurringJob.TryGetValue("LastJobId", out var last) && !String.IsNullOrWhiteSpace(last) ? last : null) != LastJobId)
             {
                 result.Add("LastJobId", LastJobId ?? String.Empty);
             }
@@ -260,7 +260,7 @@ namespace Hangfire
                 result.Add("V", "2");
             }
 
-            if ((_recurringJob.TryGetValue("Error", out var error) ? error : null) != Error)
+            if ((_recurringJob.TryGetValue("Error", out var error) && !String.IsNullOrWhiteSpace(error) ? error : null) != Error)
             {
                 result.Add("Error", Error ?? String.Empty);
             }

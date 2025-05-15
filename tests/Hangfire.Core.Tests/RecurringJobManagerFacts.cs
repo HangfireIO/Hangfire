@@ -604,6 +604,86 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void AddOrUpdate_DoesNotUpdate_UnchangedRecurringJob()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
+            {
+                { "Queue", "default" },
+                { "Cron", "* * * * *" },
+                { "Job", InvocationData.SerializeJob(_job).SerializePayload() },
+                { "TimeZoneId", "UTC" },
+                { "CreatedAt", JobHelper.SerializeDateTime(_now.AddDays(-1)) },
+                { "V", "2" }
+            });
+
+            var manager = CreateManager();
+
+            // Act
+            manager.AddOrUpdate(_id, _job, "* * * * *");
+
+            // Assert
+            _transaction.Verify(
+                x => x.SetRangeInHash(It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>()),
+                Times.Never);
+            _transaction.Verify(x => x.Commit(), Times.Never);
+        }
+
+        [Fact]
+        public void AddOrUpdate_DoesNotUpdateRecurringJob_WhenErrorFieldIsSetToEmptyString()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
+            {
+                { "Queue", "default" },
+                { "Cron", "* * * * *" },
+                { "Job", InvocationData.SerializeJob(_job).SerializePayload() },
+                { "TimeZoneId", "UTC" },
+                { "CreatedAt", JobHelper.SerializeDateTime(_now.AddDays(-1)) },
+                { "V", "2" },
+                { "Error", "" }
+            });
+
+            var manager = CreateManager();
+
+            // Act
+            manager.AddOrUpdate(_id, _job, "* * * * *");
+
+            // Assert
+            _transaction.Verify(
+                x => x.SetRangeInHash(It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>()),
+                Times.Never);
+            _transaction.Verify(x => x.Commit(), Times.Never);
+        }
+
+        [Fact]
+        public void AddOrUpdate_DoesNotUpdateRecurringJob_WhenLastJobIdFieldIsSetToEmptyString()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
+            {
+                { "Queue", "default" },
+                { "Cron", "* * * * *" },
+                { "Job", InvocationData.SerializeJob(_job).SerializePayload() },
+                { "TimeZoneId", "UTC" },
+                { "CreatedAt", JobHelper.SerializeDateTime(_now.AddDays(-1)) },
+                { "V", "2" },
+                { "LastJobId", "" }
+            });
+
+            var manager = CreateManager();
+
+            // Act
+            manager.AddOrUpdate(_id, _job, "* * * * *");
+
+            // Assert
+            _transaction.Verify(
+                x => x.SetRangeInHash(It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>()),
+                Times.Never);
+            _transaction.Verify(x => x.Commit(), Times.Never);
+        }
+
+        [Fact]
         public void Trigger_ThrowsAnException_WhenIdIsNull()
         {
             var manager = CreateManager();
