@@ -23,7 +23,7 @@ Task Test -Depends Merge -Description "Run unit and integration tests against me
     # support halting the whole execution pipeline when "dotnet test" command fails due to a failed test,
     # silently allowing build process to continue its execution even with failed tests.
     Exec { dotnet test -c Release --no-build "tests\Hangfire.Core.Tests" }
-    Exec { dotnet test -c Release --no-build -p:TestTfmsInParallel=false "tests\Hangfire.SqlServer.Tests" }
+    Exec { dotnet test -c Release --no-build "tests\Hangfire.SqlServer.Tests" }
     Exec { dotnet test -c Release --no-build -p:TestTfmsInParallel=false "tests\Hangfire.SqlServer.Msmq.Tests" }
 }
 
