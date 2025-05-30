@@ -14,8 +14,8 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Data;
 using System.Threading;
-using Dapper;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Server;
@@ -67,10 +67,14 @@ namespace Hangfire.SqlServer
 
             do
             {
-                removedCount = storage.UseConnection(null, static (storage, connection) => connection.Execute(
-                    GetAggregationQuery(storage),
-                    new { now = DateTime.UtcNow, count = NumberOfRecordsInSinglePass },
-                    commandTimeout: 0));
+                removedCount = storage.UseConnection(null, static (storage, connection) =>
+                {
+                    using var command = connection.Create(GetAggregationQuery(storage), timeout: 0)
+                        .AddParameter("@now", DateTime.UtcNow, DbType.DateTime)
+                        .AddParameter("@count", NumberOfRecordsInSinglePass, DbType.Int32);
+
+                    return command.ExecuteNonQuery();
+                });
 
                 if (removedCount >= NumberOfRecordsInSinglePass)
                 {
