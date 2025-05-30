@@ -17,8 +17,6 @@ using System;
 using System.Data.Common;
 using System.IO;
 using System.Reflection;
-using Dapper;
-using Hangfire.Logging;
 
 namespace Hangfire.SqlServer
 {
@@ -45,7 +43,8 @@ namespace Hangfire.SqlServer
 
             var script = GetInstallScript(schema, enableHeavyMigrations);
 
-            connection.Execute(script, commandTimeout: 0);
+            using var command = connection.Create(script, timeout: 0);
+            command.ExecuteNonQuery();
         }
 
         public static string GetInstallScript(string schema, bool enableHeavyMigrations)
