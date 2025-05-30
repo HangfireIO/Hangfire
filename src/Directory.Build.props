@@ -7,7 +7,6 @@
         <DebugType>embedded</DebugType>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <LangVersion>Latest</LangVersion>
-        <NuGetAuditMode>direct</NuGetAuditMode>
         <CheckNotRecommendedTargetFramework>false</CheckNotRecommendedTargetFramework>
     </PropertyGroup>
     <ItemGroup>
@@ -16,7 +15,7 @@
 
     <!-- Plugging in Roslyn Analysers -->
     <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" PrivateAssets="all" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -28,7 +27,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" />
     </ItemGroup>
 
     <PropertyGroup Condition="'$(APPVEYOR)' == 'True'">

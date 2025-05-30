@@ -7,7 +7,7 @@
 #   - Section names should be unique on each level.
 
 # Please don't edit it manually, use the `build.bat version` command instead.
-version: 1.8.18-build-0{build}
+version: 1.8.20-build-0{build}
 
 image:
   - Visual Studio 2022
@@ -67,6 +67,6 @@ artifacts:
 deploy:
   - provider: NuGet
     api_key: 
-      secure: TDeA+W/HMIp2tQnqK/VcYbnPmwPnhsqTfZZcC0tedot7GAHqzEFl2MHJpV8Ecodm
+      secure: 0Auu0LXBT5EITMokvZ49QA8KqRXrLPSvmLUoMEc5vdCpVQdCUQv6jOzzPHLxoVVU
     on:
       appveyor_repo_tag: true

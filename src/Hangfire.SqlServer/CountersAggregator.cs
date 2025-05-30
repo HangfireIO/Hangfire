@@ -23,7 +23,7 @@ using Hangfire.Server;
 namespace Hangfire.SqlServer
 {
 #pragma warning disable 618
-    internal sealed class CountersAggregator : IServerComponent
+    internal sealed class CountersAggregator : IServerComponent, IBackgroundProcess
 #pragma warning restore 618
     {
         // This number should be high enough to aggregate counters efficiently,
@@ -44,7 +44,22 @@ namespace Hangfire.SqlServer
             _interval = interval;
         }
 
+        public void Execute(BackgroundProcessContext context)
+        {
+            if (context.Storage is not SqlServerStorage storage)
+            {
+                return;
+            }
+
+            ExecuteCore(storage, context.StoppingToken);
+        }
+
         public void Execute(CancellationToken cancellationToken)
+        {
+            ExecuteCore(_storage, cancellationToken);
+        }
+
+        private void ExecuteCore(SqlServerStorage storage, CancellationToken cancellationToken)
         {
             _logger.Debug("Aggregating records in 'Counter' table...");
 
@@ -52,7 +67,7 @@ namespace Hangfire.SqlServer
 
             do
             {
-                removedCount = _storage.UseConnection(null, static (storage, connection) => connection.Execute(
+                removedCount = storage.UseConnection(null, static (storage, connection) => connection.Execute(
                     GetAggregationQuery(storage),
                     new { now = DateTime.UtcNow, count = NumberOfRecordsInSinglePass },
                     commandTimeout: 0));

@@ -26,7 +26,7 @@ using Hangfire.Storage;
 namespace Hangfire.SqlServer
 {
 #pragma warning disable 618
-    internal sealed class ExpirationManager : IServerComponent
+    internal sealed class ExpirationManager : IServerComponent, IBackgroundProcess
 #pragma warning restore 618
     {
         private const string DistributedLockKey = "locks:expirationmanager";
@@ -66,7 +66,22 @@ namespace Hangfire.SqlServer
 
         public void Execute(CancellationToken cancellationToken)
         {
-            var numberOfRecordsInSinglePass = _storage.Options.DeleteExpiredBatchSize;
+            ExecuteCore(_storage, cancellationToken);
+        }
+
+        public void Execute(BackgroundProcessContext context)
+        {
+            if (context.Storage is not SqlServerStorage storage)
+            {
+                return;
+            }
+
+            ExecuteCore(storage, context.StoppingToken);
+        }
+        
+        private void ExecuteCore(SqlServerStorage storage, CancellationToken cancellationToken)
+        {
+            var numberOfRecordsInSinglePass = storage.Options.DeleteExpiredBatchSize;
             if (numberOfRecordsInSinglePass <= 0 || numberOfRecordsInSinglePass > 100_000)
             {
                 numberOfRecordsInSinglePass = DefaultNumberOfRecordsInSinglePass;
@@ -76,7 +91,7 @@ namespace Hangfire.SqlServer
             {
                 try
                 {
-                    CleanupTable(GetExpireQuery(_storage, table), table, numberOfRecordsInSinglePass, cancellationToken);
+                    CleanupTable(storage, GetExpireQuery(storage, table), table, numberOfRecordsInSinglePass, cancellationToken);
                 }
                 catch (DbException ex)
                 {
@@ -88,7 +103,7 @@ namespace Hangfire.SqlServer
             {
                 try
                 {
-                    CleanupTable(GetStateCleanupQuery(_storage), "State", numberOfRecordsInSinglePass,
+                    CleanupTable(storage, GetStateCleanupQuery(storage), "State", numberOfRecordsInSinglePass,
                         cancellationToken,
                         command => command.AddParameter("@expireMin", (long)_stateExpirationTimeout.Negate().TotalMinutes, DbType.Int64));
                 }
@@ -106,11 +121,11 @@ namespace Hangfire.SqlServer
             return GetType().ToString();
         }
 
-        private void CleanupTable(string query, string table, int numberOfRecordsInSinglePass, CancellationToken cancellationToken, Action<DbCommand> additionalActions = null)
+        private void CleanupTable(SqlServerStorage storage, string query, string table, int numberOfRecordsInSinglePass, CancellationToken cancellationToken, Action<DbCommand> additionalActions = null)
         {
             _logger.Debug($"Removing outdated records from the '{table}' table...");
 
-            UseConnectionDistributedLock(_storage, connection =>
+            UseConnectionDistributedLock(storage, connection =>
             {
                 int affected;
 

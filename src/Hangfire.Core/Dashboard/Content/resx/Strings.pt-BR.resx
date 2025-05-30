@@ -302,10 +302,10 @@
     <value>Anterior</value>
   </data>
   <data name="Paginator_TotalItems" xml:space="preserve">
-    <value>Total registos</value>
+    <value>Total registros</value>
   </data>
   <data name="PerPageSelector_ItemsPerPage" xml:space="preserve">
-    <value>Registos por página</value>
+    <value>Registros por página</value>
   </data>
   <data name="ProcessingJobsPage_Aborted" xml:space="preserve">
     <value>A tarefa foi aparentamente cancelada</value>
@@ -542,7 +542,7 @@
     <value>{0} tarefa(s) com erro encontradas. Reagendar ou remover manualmente.</value>
   </data>
   <data name="Common_Disabled" xml:space="preserve">
-    <value>Inactivo</value>
+    <value>Inativo</value>
   </data>
   <data name="JobDetailsPage_Parameters" xml:space="preserve">
     <value>Parâmetros</value>

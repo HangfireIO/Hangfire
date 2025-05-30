@@ -23,6 +23,24 @@ https://www.hangfire.io/
 Release notes are available in our blog https://www.hangfire.io/blog/
 Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfire-1.8.html to learn how to upgrade.
 
+1.8.20
+
+Hangfire.Core
+
+• Fixed – Glyphicons from Bootstrap are not displaying after upgrading to version 1.8.19.
+
+1.8.19
+
+Hangfire.Core
+
+• Changed – Update Bootstrap to the custom version of 3.4.2 to avoid false alerts on unused features.
+• Fixed – Typos in Portuguese translation (by @VianaArthur).
+• Fixed – Unnecessary recurring job update transaction when nothing is changed after an error.
+
+Hangfire.SqlServer
+
+• Fixed – Sliding invisibility timeout isn't prolonged in lightweight servers, causing jobs to be restarted.
+
 1.8.18
 
 Hangfire.Core

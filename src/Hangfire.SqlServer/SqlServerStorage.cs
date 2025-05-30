@@ -56,6 +56,7 @@ namespace Hangfire.SqlServer
             {
                 { JobStorageFeatures.ExtendedApi, true },
                 { JobStorageFeatures.JobQueueProperty, true },
+                { JobStorageFeatures.ProcessesInsteadOfComponents, true },
                 { JobStorageFeatures.Connection.BatchedGetFirstByLowest, true },
                 { JobStorageFeatures.Connection.GetUtcDateTime, true },
                 { JobStorageFeatures.Connection.GetSetContains, true },
@@ -170,12 +171,24 @@ namespace Hangfire.SqlServer
         }
 
 #pragma warning disable 618
+        [Obsolete($"Please use the `{nameof(GetStorageWideProcesses)}` and/or `{nameof(GetServerRequiredProcesses)}` methods instead, and enable `{nameof(JobStorageFeatures)}.{nameof(JobStorageFeatures.ProcessesInsteadOfComponents)}`. Will be removed in 2.0.0.")]
         public override IEnumerable<IServerComponent> GetComponents()
 #pragma warning restore 618
         {
             yield return new ExpirationManager(this, _options.InactiveStateExpirationTimeout, _options.JobExpirationCheckInterval);
             yield return new CountersAggregator(this, _options.CountersAggregateInterval);
             yield return _heartbeatProcess;
+        }
+
+        public override IEnumerable<IBackgroundProcess> GetServerRequiredProcesses()
+        {
+            yield return _heartbeatProcess;
+        }
+
+        public override IEnumerable<IBackgroundProcess> GetStorageWideProcesses()
+        {
+            yield return new ExpirationManager(this, _options.InactiveStateExpirationTimeout, _options.JobExpirationCheckInterval);
+            yield return new CountersAggregator(this, _options.CountersAggregateInterval);
         }
 
         public override void WriteOptionsToLog(ILog logger)
