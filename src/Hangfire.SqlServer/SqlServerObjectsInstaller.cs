@@ -14,6 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Data;
 using System.Data.Common;
 using System.IO;
 using System.Reflection;
@@ -42,9 +43,25 @@ namespace Hangfire.SqlServer
             if (connection == null) throw new ArgumentNullException(nameof(connection));
 
             var script = GetInstallScript(schema, enableHeavyMigrations);
+            var connectionWasClosed = connection.State == ConnectionState.Closed;
 
-            using var command = connection.Create(script, timeout: 0);
-            command.ExecuteNonQuery();
+            if (connectionWasClosed)
+            {
+                connection.Open();
+            }
+
+            try
+            {
+                using var command = connection.Create(script, timeout: 0);
+                command.ExecuteNonQuery();
+            }
+            finally
+            {
+                if (connectionWasClosed)
+                {
+                    connection.Close();
+                }
+            }
         }
 
         public static string GetInstallScript(string schema, bool enableHeavyMigrations)
