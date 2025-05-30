@@ -14,8 +14,8 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Data;
 using System.Threading;
-using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Logging;
 using Hangfire.Storage;
@@ -78,11 +78,18 @@ namespace Hangfire.SqlServer
 
                 _storage.UseConnection(
                     null,
-                    static (storage, connection, ctx) => connection.Execute(
-                        storage.GetQueryFromTemplate(static schemaName =>
-                            $@"delete JQ from [{schemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt"),
-                        new { queue = ctx.Queue, id = ctx.Id, fetchedAt = ctx.FetchedAt },
-                        commandTimeout: storage.CommandTimeout),
+                    static (storage, connection, ctx) =>
+                    {
+                        var query = storage.GetQueryFromTemplate(static schemaName =>
+                            $@"delete JQ from [{schemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt");
+
+                        using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                            .AddParameter("@queue", ctx.Queue, DbType.String)
+                            .AddParameter("@id", ctx.Id, DbType.Int64)
+                            .AddParameter("@fetchedAt", ctx.FetchedAt, DbType.DateTime);
+
+                        return command.ExecuteNonQuery();
+                    },
                     this);
 
                 _removedFromQueue = true;
@@ -99,11 +106,18 @@ namespace Hangfire.SqlServer
 
                 _storage.UseConnection(
                     null,
-                    static (storage, connection, ctx) => connection.Execute(
-                        storage.GetQueryFromTemplate(static schemaName =>
-                            $@"update JQ set FetchedAt = null from [{schemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt"),
-                         new { queue = ctx.Queue, id = ctx.Id, fetchedAt = ctx.FetchedAt },
-                         commandTimeout: storage.CommandTimeout),
+                    static (storage, connection, ctx) =>
+                    {
+                        var query = storage.GetQueryFromTemplate(static schemaName =>
+                            $@"update JQ set FetchedAt = null from [{schemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt");
+
+                        using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                            .AddParameter("@queue", ctx.Queue, DbType.String)
+                            .AddParameter("@id", ctx.Id, DbType.Int64)
+                            .AddParameter("@fetchedAt", ctx.FetchedAt, DbType.DateTime);
+
+                        return command.ExecuteNonQuery();
+                    },
                     this);
 
                 FetchedAt = null;
@@ -157,11 +171,19 @@ namespace Hangfire.SqlServer
                     {
                         FetchedAt = _storage.UseConnection(
                             null,
-                            static (storage, connection, ctx) => connection.ExecuteScalar<DateTime?>(
-                                storage.GetQueryFromTemplate(static schemaName =>
-                                    $@"update JQ set FetchedAt = getutcdate() output INSERTED.FetchedAt from [{schemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt"),
-                                new { queue = ctx.Queue, id = ctx.Id, fetchedAt = ctx.FetchedAt },
-                                commandTimeout: storage.CommandTimeout),
+                            static (storage, connection, ctx) =>
+                            {
+                                var query = storage.GetQueryFromTemplate(static schemaName =>
+                                    $@"update JQ set FetchedAt = getutcdate() output INSERTED.FetchedAt from [{schemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt");
+
+                                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                                    .AddParameter("@queue", ctx.Queue, DbType.String)
+                                    .AddParameter("@id", ctx.Id, DbType.Int64)
+                                    .AddParameter("@fetchedAt", ctx.FetchedAt, DbType.DateTime);
+
+                                var result = command.ExecuteScalar();
+                                return (DateTime?)result;
+                            },
                             this);
 
                         if (!FetchedAt.HasValue)

@@ -162,6 +162,24 @@ namespace Hangfire.SqlServer.Tests
 
         [Theory, CleanDatabase]
         [InlineData(false), InlineData(true)]
+        public void Timer_DoesNotThrowAnException_WhenDesiredRowDoesNotExists(bool useMicrosoftDataSqlClient)
+        {
+            UseConnection((sql, storage) =>
+            {
+                // Arrange
+                using (var processingJob = new SqlServerTimeoutJob(storage, 1243, "1", "default", FetchedAt))
+                {
+                    processingJob.DisposeTimer();
+                    Thread.Sleep(TimeSpan.FromSeconds(2));
+                    processingJob.ExecuteKeepAliveQueryIfRequired();
+                    
+                    Assert.Null(processingJob.FetchedAt);
+                }
+            }, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
         public void RemoveFromQueue_AfterTimer_RemovesJobFromTheQueue(bool useMicrosoftDataSqlClient)
         {
             UseConnection((sql, storage) =>
