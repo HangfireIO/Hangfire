@@ -20,7 +20,6 @@ using System.Data.Common;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
-using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Storage;
 
@@ -143,9 +142,12 @@ namespace Hangfire.SqlServer
         {
             lock (_lockObject)
             {
+                if (_connection == null) return;
+
                 try
                 {
-                    _connection?.Execute("SELECT 1;");
+                    using var command = _connection.Create("SELECT 1;");
+                    command.ExecuteNonQuery();
                 }
                 catch
                 {
