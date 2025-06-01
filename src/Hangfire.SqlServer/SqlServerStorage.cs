@@ -28,7 +28,6 @@ using System.Configuration;
 using System.Transactions;
 using IsolationLevel = System.Transactions.IsolationLevel;
 #endif
-using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
 using Hangfire.Logging;
@@ -493,7 +492,12 @@ namespace Hangfire.SqlServer
                 try
                 {
                     int? schema = UseConnection(null, static (storage, connection) =>
-                        connection.ExecuteScalar<int>($"select top (1) [Version] from [{storage.SchemaName}].[Schema]"));
+                    {
+                        using var command = connection.Create(storage.GetQueryFromTemplate(static schemaName =>
+                            $"select top (1) [Version] from [{schemaName}].[Schema]"));
+
+                        return command.ExecuteScalar<int?>();
+                    });
 
                     _options.UseRecommendedIsolationLevel = true;
                     _options.UseIgnoreDupKeyOption = schema >= 8;
@@ -577,15 +581,16 @@ namespace Hangfire.SqlServer
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(null, static (_, connection) =>
+                return sqlStorage.UseConnection(null, static (storage, connection) =>
                 {
-                    var sqlQuery = @"
+                    const string sqlQuery = @"
 select count(*) from sys.sysprocesses
 where dbid = db_id(@name) and status != 'background' and status != 'sleeping'";
 
-                    var value = connection
-                        .QuerySingle<int>(sqlQuery, new { name = connection.Database });
+                    using var command = connection.Create(sqlQuery, timeout: storage.CommandTimeout)
+                        .AddParameter("@name", connection.Database, DbType.String);
 
+                    var value = command.ExecuteScalar<int>();
                     return new Metric(value);
                 });
             });
@@ -598,15 +603,16 @@ where dbid = db_id(@name) and status != 'background' and status != 'sleeping'";
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(null, static (_, connection) =>
+                return sqlStorage.UseConnection(null, static (storage, connection) =>
                 {
-                    var sqlQuery = @"
+                    const string sqlQuery = @"
 select count(*) from sys.sysprocesses
 where dbid = db_id(@name) and status != 'background'";
 
-                    var value = connection
-                        .QuerySingle<int>(sqlQuery, new { name = connection.Database });
+                    using var command = connection.Create(sqlQuery, timeout: storage.CommandTimeout)
+                        .AddParameter("@name", connection.Database, DbType.String);
 
+                    var value = command.ExecuteScalar<int>();
                     return new Metric(value);
                 });
             });
@@ -619,15 +625,16 @@ where dbid = db_id(@name) and status != 'background'";
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(null, static (_, connection) =>
+                return sqlStorage.UseConnection(null, static (storage, connection) =>
                 {
-                    var sqlQuery = @"
+                    const string sqlQuery = @"
 select count(*) from sys.sysprocesses
 where dbid = db_id(@name) and status != 'background' and open_tran = 1";
 
-                    var value = connection
-                        .QuerySingle<int>(sqlQuery, new { name = connection.Database });
+                    using var command = connection.Create(sqlQuery, timeout: storage.CommandTimeout)
+                        .AddParameter("@name", connection.Database, DbType.String);
 
+                    var value = command.ExecuteScalar<int>();
                     return new Metric(value);
                 });
             });
@@ -640,13 +647,14 @@ where dbid = db_id(@name) and status != 'background' and open_tran = 1";
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(null, static (_, connection) =>
+                return sqlStorage.UseConnection(null, static (storage, connection) =>
                 {
-                    var sqlQuery = @"
+                    const string sqlQuery = @"
 select SUM(CAST(FILEPROPERTY(name, 'SpaceUsed') AS INT)/128.0) as RowsSizeMB from sys.database_files
 where type = 0;";
 
-                    var value = connection.QuerySingle<double>(sqlQuery);
+                    using var command = connection.Create(sqlQuery, timeout: storage.CommandTimeout);
+                    var value = command.ExecuteScalar<double>();
 
                     return new Metric(value.ToString("F", CultureInfo.CurrentCulture));
                 });
@@ -660,13 +668,14 @@ where type = 0;";
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(null, static (_, connection) =>
+                return sqlStorage.UseConnection(null, static (storage, connection) =>
                 {
-                    var sqlQuery = @"
+                    const string sqlQuery = @"
 select SUM(CAST(FILEPROPERTY(name, 'SpaceUsed') AS INT)/128.0) as LogSizeMB from sys.database_files
 where type = 1;";
 
-                    var value = connection.QuerySingle<double>(sqlQuery);
+                    using var command = connection.Create(sqlQuery, timeout: storage.CommandTimeout);
+                    var value = command.ExecuteScalar<double>();
 
                     return new Metric(value.ToString("F", CultureInfo.CurrentCulture));
                 });
@@ -682,8 +691,12 @@ where type = 1;";
 
                 return sqlStorage.UseConnection(null, static (storage, connection) =>
                 {
-                    var sqlQuery = $@"select top(1) [Version] from [{storage.SchemaName}].[Schema]";
-                    var version = connection.QuerySingleOrDefault<int?>(sqlQuery);
+                    var sqlQuery = storage.GetQueryFromTemplate(static schemaName =>
+                        $@"select top(1) [Version] from [{schemaName}].[Schema]");
+
+                    using var command = connection.Create(sqlQuery, timeout: storage.CommandTimeout);
+
+                    var version = command.ExecuteScalar<int?>();
 
                     if (!version.HasValue)
                     {
@@ -716,19 +729,19 @@ where type = 1;";
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(null, static (_, connection, ctx) =>
+                return sqlStorage.UseConnection(null, static (storage, connection, ctx) =>
                 {
-                    var sqlQuery = $@"SELECT cntr_value FROM sys.dm_os_performance_counters where object_name = @objectName and instance_name = @instanceName and counter_name = @counterName";
+                    const string sqlQuery = @"SELECT top(1) cntr_value FROM sys.dm_os_performance_counters where object_name = @objectName and instance_name = @instanceName and counter_name = @counterName";
                     long? value;
+
+                    using var command = connection.Create(sqlQuery, timeout: storage.CommandTimeout)
+                        .AddParameter("@objectName", ctx.Item1, DbType.String)
+                        .AddParameter("@instanceName", ctx.Item2 ?? connection.Database, DbType.String)
+                        .AddParameter("@counterName", ctx.Item3, DbType.String);
 
                     try
                     {
-                        value = connection.QuerySingle<long>(sqlQuery, new
-                        {
-                            objectName = ctx.Item1,
-                            instanceName = ctx.Item2 ?? connection.Database,
-                            counterName = ctx.Item3
-                        });
+                        value = command.ExecuteScalar<long?>();
                     }
                     catch
                     {
