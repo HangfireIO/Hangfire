@@ -1,5 +1,6 @@
 ﻿using System;
 using Hangfire;
+using Microsoft.Owin.Diagnostics;
 using Owin;
 
 namespace ConsoleSample
@@ -8,7 +9,7 @@ namespace ConsoleSample
     {
         public void Configuration(IAppBuilder app)
         {
-            app.UseErrorPage();
+            app.UseErrorPage(ErrorPageOptions.ShowAll);
             app.UseHangfireDashboard(String.Empty);
 
             app.UseHangfireServer(new BackgroundJobServerOptions
