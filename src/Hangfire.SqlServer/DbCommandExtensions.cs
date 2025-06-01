@@ -115,16 +115,13 @@ namespace Hangfire.SqlServer
         public static T GetParameterValue<T>([NotNull] this DbParameter parameter)
         {
             if (parameter == null) throw new ArgumentNullException(nameof(parameter));
+            return ConvertValue<T>(parameter.Value);
+        }
 
-            switch (parameter.Value)
-            {
-                case null or DBNull: return default;
-                case T typed: return typed;
-                default:
-                    var type = typeof(T);
-                    type = Nullable.GetUnderlyingType(type) ?? type;
-                    return (T)Convert.ChangeType(parameter.Value, type, CultureInfo.InvariantCulture);                    
-            }
+        public static T ExecuteScalar<T>([NotNull] this DbCommand command)
+        {
+            if (command == null) throw new ArgumentNullException(nameof(command));
+            return ConvertValue<T>(command.ExecuteScalar());
         }
 
         private static DbParameter AddParameterInternal(
@@ -141,6 +138,19 @@ namespace Hangfire.SqlServer
 
             command.Parameters.Add(parameter);
             return parameter;
+        }
+
+        private static T ConvertValue<T>(object value)
+        {
+            switch (value)
+            {
+                case null or DBNull: return default;
+                case T typed: return typed;
+                default:
+                    var type = typeof(T);
+                    type = Nullable.GetUnderlyingType(type) ?? type;
+                    return (T)Convert.ChangeType(value, type, CultureInfo.InvariantCulture);                    
+            }
         }
     }
 }
