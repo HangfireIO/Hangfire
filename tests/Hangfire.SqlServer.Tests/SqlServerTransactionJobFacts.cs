@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Data;
+using System.Data.Common;
 using Moq;
 using Xunit;
 
@@ -12,14 +12,14 @@ namespace Hangfire.SqlServer.Tests
         private const string JobId = "id";
         private const string Queue = "queue";
 
-        private readonly Mock<IDbConnection> _connection;
-        private readonly Mock<IDbTransaction> _transaction;
+        private readonly Mock<MyDbConnection> _connection;
+        private readonly Mock<MyDbTransaction> _transaction;
         private readonly Mock<SqlServerStorage> _storage;
 
         public SqlServerTransactionJobFacts()
         {
-            _connection = new Mock<IDbConnection>();
-            _transaction = new Mock<IDbTransaction>();
+            _connection = new Mock<MyDbConnection> { CallBase = true };
+            _transaction = new Mock<MyDbTransaction> { CallBase = true };
             _storage = new Mock<SqlServerStorage>(ConnectionUtils.GetConnectionString());
         }
 
@@ -112,13 +112,35 @@ namespace Hangfire.SqlServer.Tests
             processingJob.Dispose();
 
             // Assert
-            _transaction.Verify(x => x.Dispose());
-            _connection.Verify(x => x.Dispose());
+            Assert.True(_transaction.Object.Disposed);
+            Assert.True(_connection.Object.Disposed);
         }
 
         private SqlServerTransactionJob CreateFetchedJob(string jobId, string queue)
         {
             return new SqlServerTransactionJob(_storage.Object, _connection.Object, _transaction.Object, jobId, queue);
+        }
+
+        public abstract class MyDbConnection : DbConnection
+        {
+            public bool Disposed { get; private set; }
+
+            protected override void Dispose(bool disposing)
+            {
+                Disposed = true;
+                base.Dispose(disposing);
+            }
+        }
+
+        public abstract class MyDbTransaction : DbTransaction
+        {
+            public bool Disposed { get; private set; }
+
+            protected override void Dispose(bool disposing)
+            {
+                Disposed = true;
+                base.Dispose(disposing);
+            }
         }
     }
 }

@@ -14,7 +14,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Data;
+using System.Data.Common;
 using System.Threading;
 using Dapper;
 using Hangfire.Annotations;
@@ -32,15 +32,15 @@ namespace Hangfire.SqlServer
         private static readonly TimeSpan KeepAliveInterval = TimeSpan.FromMinutes(1);
 
         private readonly SqlServerStorage _storage;
-        private IDbConnection _connection;
-        private readonly IDbTransaction _transaction;
+        private DbConnection _connection;
+        private readonly DbTransaction _transaction;
         private readonly Timer _timer;
         private readonly object _lockObject = new object();
 
         public SqlServerTransactionJob(
             [NotNull] SqlServerStorage storage,
-            [NotNull] IDbConnection connection, 
-            [NotNull] IDbTransaction transaction, 
+            [NotNull] DbConnection connection, 
+            [NotNull] DbTransaction transaction, 
             string jobId, 
             string queue)
         {
