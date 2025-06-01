@@ -16,7 +16,6 @@
 using System;
 using System.Data.Common;
 using System.Threading;
-using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Storage;
 
@@ -99,9 +98,14 @@ namespace Hangfire.SqlServer
         {
             lock (_lockObject)
             {
+                if (_connection == null) return;
+
                 try
                 {
-                    _connection?.Execute("SELECT 1;", transaction: _transaction);
+                    using var command = _connection.Create("SELECT 1;", timeout: _storage.CommandTimeout);
+                    command.Transaction = _transaction;
+
+                    command.ExecuteNonQuery();
                 }
                 catch (Exception ex) when (ex.IsCatchableExceptionType())
                 {
