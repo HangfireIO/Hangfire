@@ -181,8 +181,7 @@ namespace Hangfire.SqlServer
                                     .AddParameter("@id", ctx.Id, DbType.Int64)
                                     .AddParameter("@fetchedAt", ctx.FetchedAt, DbType.DateTime);
 
-                                var result = command.ExecuteScalar();
-                                return (DateTime?)result;
+                                return command.ExecuteScalar<DateTime?>();
                             },
                             this);
 
