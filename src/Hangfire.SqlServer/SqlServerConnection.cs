@@ -353,10 +353,12 @@ begin catch
   update [{schemaName}].JobParameter set Value = @value where JobId = @jobId and Name = @name;
 end catch");
 
-                return connection.Execute(
-                    query,
-                    new { jobId = triple.Item1, name = triple.Item2, value = triple.Item3 },
-                    commandTimeout: storage.CommandTimeout);
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@jobId", triple.Item1, DbType.Int64)
+                    .AddParameter("@name", triple.Item2, DbType.String)
+                    .AddParameter("@value", triple.Item3, DbType.String, size: -1);
+
+                return command.ExecuteNonQuery();
             }, CreateTriple(long.Parse(id, CultureInfo.InvariantCulture), name, value));
         }
 
@@ -370,11 +372,17 @@ end catch");
                 return null;
             }
 
-            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) => connection.ExecuteScalar<string>(
-                storage.GetQueryFromTemplate(static schemaName =>
-                    $@"select top (1) Value from [{schemaName}].JobParameter with (forceseek) where JobId = @id and Name = @name"),
-                new { id = pair.Key, name = pair.Value },
-                commandTimeout: storage.CommandTimeout),
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) =>
+                {
+                    var query = storage.GetQueryFromTemplate(static schemaName =>
+                        $@"select top (1) Value from [{schemaName}].JobParameter with (forceseek) where JobId = @id and Name = @name");
+
+                    using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                        .AddParameter("@id", pair.Key, DbType.Int64)
+                        .AddParameter("@name", pair.Value, DbType.String);
+
+                    return command.ExecuteScalar<string>();
+                },
                 new KeyValuePair<long, string>(parsedId, name));
         }
 
@@ -518,10 +526,11 @@ on Target.Id = Source.Id
 when matched then update set Data = Source.Data, LastHeartbeat = Source.Heartbeat
 when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat);");
 
-                return connection.Execute(
-                    query,
-                    new { id = pair.Key, data = pair.Value },
-                    commandTimeout: storage.CommandTimeout);
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@id", pair.Key, DbType.String)
+                    .AddParameter("@data", pair.Value, DbType.String, size: -1);
+
+                return command.ExecuteNonQuery();
             }, new KeyValuePair<string, string>(serverId, SerializationHelper.Serialize(data)));
         }
 
@@ -534,10 +543,10 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
                 var query = storage.GetQueryFromTemplate(static schemaName =>
 $@"delete S from [{schemaName}].Server S with (forceseek) where Id = @id");
 
-                return connection.Execute(
-                    query,
-                    new { id = serverId },
-                    commandTimeout: storage.CommandTimeout);
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@id", serverId, DbType.String);
+
+                return command.ExecuteNonQuery();
             }, serverId);
         }
 
@@ -550,11 +559,10 @@ $@"delete S from [{schemaName}].Server S with (forceseek) where Id = @id");
                 var query = storage.GetQueryFromTemplate(static schemaName =>
 $@"update [{schemaName}].Server set LastHeartbeat = sysutcdatetime() where Id = @id");
 
-                var affected = connection.Execute(
-                    query,
-                    new { id = serverId },
-                    commandTimeout: storage.CommandTimeout);
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@id", serverId, DbType.String);
 
+                var affected = command.ExecuteNonQuery();
                 if (affected == 0)
                 {
                     throw new BackgroundServerGoneException();
@@ -571,22 +579,32 @@ $@"update [{schemaName}].Server set LastHeartbeat = sysutcdatetime() where Id = 
                 throw new ArgumentException("The `timeOut` value must be positive.", nameof(timeOut));
             }
 
-            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, timeout) => connection.Execute(
-                storage.GetQueryFromTemplate(static schemaName =>
-                    $@"delete s from [{schemaName}].Server s with (readpast, readcommitted) where LastHeartbeat < dateadd(ms, @timeoutMsNeg, sysutcdatetime())"),
-                new { timeoutMsNeg = timeout.Negate().TotalMilliseconds },
-                commandTimeout: storage.CommandTimeout), timeOut);
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, timeout) =>
+            {
+                var query = storage.GetQueryFromTemplate(static schemaName =>
+                    $@"delete s from [{schemaName}].Server s with (readpast, readcommitted) where LastHeartbeat < dateadd(ms, @timeoutMsNeg, sysutcdatetime())");
+
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@timeoutMsNeg", (int)timeout.Negate().TotalMilliseconds, DbType.Int32);
+
+                return command.ExecuteNonQuery();
+            }, timeOut);
         }
 
         public override long GetSetCount(string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) => connection.ExecuteScalar<long>(
-                storage.GetQueryFromTemplate(static schemaName =>
-                    $@"select count(*) from [{schemaName}].[Set] with (forceseek) where [Key] = @key"),
-                new { key = key },
-                commandTimeout: storage.CommandTimeout), key);
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, key) =>
+            {
+                var query = storage.GetQueryFromTemplate(static schemaName =>
+                    $@"select count(*) from [{schemaName}].[Set] with (forceseek) where [Key] = @key");
+
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@key", key, DbType.String);
+
+                return command.ExecuteScalar<long>();
+            }, key);
         }
 
         public override long GetSetCount(IEnumerable<string> keys, int limit)
@@ -594,14 +612,23 @@ $@"update [{schemaName}].Server set LastHeartbeat = sysutcdatetime() where Id = 
             if (keys == null) throw new ArgumentNullException(nameof(keys));
             if (limit < 0) throw new ArgumentOutOfRangeException(nameof(limit), "Value must be greater or equal to 0.");
 
-            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) => connection.ExecuteScalar<long>(
-                storage.GetQueryFromTemplate(static schemaName =>
-$@"select count(*) from (
+            var keysArray = keys.ToArray();
+            if (keysArray.Length == 0) return 0;
+
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) =>
+                {
+                    var query = storage.GetQueryFromTemplate(static schemaName =>
+                        $@"select count(*) from (
   select top(@limit) 1 as N from [{schemaName}].[Set] with (forceseek) where [Key] in @keys
-) a"),
-                new { keys = pair.Key, limit = pair.Value },
-                commandTimeout: storage.CommandTimeout),
-                new KeyValuePair<IEnumerable<string>, int>(keys, limit));
+) a");
+
+                    using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                        .AddExpandedParameter("@keys", pair.Key, DbType.String)
+                        .AddParameter("@limit", pair.Value, DbType.Int32);
+
+                    return command.ExecuteScalar<long>();
+                },
+                new KeyValuePair<string[], int>(keysArray, limit));
         }
 
         public override bool GetSetContains(string key, string value)
@@ -609,11 +636,17 @@ $@"select count(*) from (
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (value == null) throw new ArgumentNullException(nameof(value));
 
-            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) => connection.ExecuteScalar<int>(
-                storage.GetQueryFromTemplate(static schemaName =>
-                    $@"select count(1) from [{schemaName}].[Set] with (forceseek) where [Key] = @key and [Value] = @value"),
-                new { key = pair.Key, value = pair.Value },
-                commandTimeout: storage.CommandTimeout) == 1, new KeyValuePair<string, string>(key, value)); 
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection, pair) =>
+            {
+                var query = storage.GetQueryFromTemplate(static schemaName =>
+                    $@"select count(1) from [{schemaName}].[Set] with (forceseek) where [Key] = @key and [Value] = @value");
+
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@key", pair.Key, DbType.String)
+                    .AddParameter("@value", pair.Value, DbType.String);
+
+                return command.ExecuteScalar<int>() == 1;
+            }, new KeyValuePair<string, string>(key, value)); 
         }
 
         public override List<string> GetRangeFromSet(string key, int startingFrom, int endingAt)
@@ -645,7 +678,10 @@ $@"select [Value] from (
                 var query = storage.GetQueryFromTemplate(static schemaName =>
 $@"select min([ExpireAt]) from [{schemaName}].[Set] with (forceseek) where [Key] = @key");
 
-                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: storage.CommandTimeout);
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@key", key, DbType.String);
+
+                var result = command.ExecuteScalar<DateTime?>();
                 if (!result.HasValue) return TimeSpan.FromSeconds(-1);
 
                 return result.Value - DateTime.UtcNow;
@@ -665,8 +701,10 @@ union all
 select [Value] from [{schemaName}].AggregatedCounter with (forceseek)
 where [Key] = @key) as s");
 
-                return connection.ExecuteScalar<long?>(query, new { key = key },
-                    commandTimeout: storage.CommandTimeout) ?? 0;
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@key", key, DbType.String);
+
+                return command.ExecuteScalar<long?>() ?? 0;
             }, key);
         }
 
@@ -679,8 +717,10 @@ where [Key] = @key) as s");
                 var query = storage.GetQueryFromTemplate(static schemaName =>
 $@"select count(*) from [{schemaName}].Hash with (forceseek) where [Key] = @key");
 
-                return connection.ExecuteScalar<long>(query, new { key = key },
-                    commandTimeout: storage.CommandTimeout);
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@key", key, DbType.String);
+
+                return command.ExecuteScalar<long>();
             }, key);
         }
 
@@ -693,7 +733,10 @@ $@"select count(*) from [{schemaName}].Hash with (forceseek) where [Key] = @key"
                 var query = storage.GetQueryFromTemplate(static schemaName =>
 $@"select min([ExpireAt]) from [{schemaName}].Hash with (forceseek) where [Key] = @key");
 
-                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: storage.CommandTimeout);
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@key", key, DbType.String);
+
+                var result = command.ExecuteScalar<DateTime?>();
                 if (!result.HasValue) return TimeSpan.FromSeconds(-1);
 
                 return result.Value - DateTime.UtcNow;
@@ -711,8 +754,11 @@ $@"select min([ExpireAt]) from [{schemaName}].Hash with (forceseek) where [Key] 
 $@"select [Value] from [{schemaName}].Hash with (forceseek)
 where [Key] = @key and [Field] = @field");
 
-                return connection.ExecuteScalar<string>(query, new { key = pair.Key, field = pair.Value },
-                    commandTimeout: storage.CommandTimeout);
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@key", pair.Key, DbType.String)
+                    .AddParameter("@field", pair.Value, DbType.String);
+
+                return command.ExecuteScalar<string>();
             }, new KeyValuePair<string, string>(key, name));
         }
 
@@ -726,8 +772,10 @@ where [Key] = @key and [Field] = @field");
 $@"select count(*) from [{schemaName}].List with (forceseek)
 where [Key] = @key");
 
-                return connection.ExecuteScalar<long>(query, new { key = key },
-                    commandTimeout: storage.CommandTimeout);
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@key", key, DbType.String);
+
+                return command.ExecuteScalar<long>();
             }, key);
         }
 
@@ -741,7 +789,10 @@ where [Key] = @key");
 $@"select min([ExpireAt]) from [{schemaName}].List with (forceseek)
 where [Key] = @key");
 
-                var result = connection.ExecuteScalar<DateTime?>(query, new { key = key }, commandTimeout: storage.CommandTimeout);
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@key", key, DbType.String);
+
+                var result = command.ExecuteScalar<DateTime?>();
                 if (!result.HasValue) return TimeSpan.FromSeconds(-1);
 
                 return result.Value - DateTime.UtcNow;
@@ -787,8 +838,11 @@ order by [Id] desc");
 
         public override DateTime GetUtcDateTime()
         {
-            return _storage.UseConnection(_dedicatedConnection, static (_, connection) =>
-                DateTime.SpecifyKind(connection.ExecuteScalar<DateTime>("SELECT SYSUTCDATETIME()"), DateTimeKind.Utc));
+            return _storage.UseConnection(_dedicatedConnection, static (storage, connection) =>
+            {
+                using var command = connection.Create("SELECT SYSUTCDATETIME()", timeout: storage.CommandTimeout);
+                return DateTime.SpecifyKind(command.ExecuteScalar<DateTime>(), DateTimeKind.Utc);
+            });
         }
 
         private DbConnection _dedicatedConnection;

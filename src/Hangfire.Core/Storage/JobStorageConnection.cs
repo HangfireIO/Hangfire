@@ -93,6 +93,7 @@ namespace Hangfire.Storage
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }
 
+        // TODO: Possible unnecessary method, need to check
         public virtual long GetHashCount([NotNull] string key)
         {
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);

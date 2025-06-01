@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.Linq;
@@ -600,12 +601,11 @@ where j.Id in @jobIds");
                 ? static schemaName => $@"select count(j.Id) from (select top (@limit) Id from [{schemaName}].Job with (nolock, forceseek) where StateName = @state) as j"
                 : static schemaName => $@"select count(Id) from [{schemaName}].Job with (nolock, forceseek) where StateName = @state");
 
-            var count = connection.ExecuteScalar<int>(
-                 query,
-                 new { state = stateName, limit = _jobListLimit },
-                 commandTimeout: _storage.CommandTimeout);
+            using var command = connection.Create(query, timeout: _storage.CommandTimeout)
+                .AddParameter("@state", stateName, DbType.String)
+                .AddParameter("@limit", _jobListLimit ?? -1, DbType.Int32);
 
-            return count;
+            return command.ExecuteScalar<int>();
         }
 
         private static Job DeserializeJob(string invocationData, string arguments, out InvocationData data, out JobLoadException exception)
