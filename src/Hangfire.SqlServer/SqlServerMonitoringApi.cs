@@ -52,6 +52,8 @@ namespace Hangfire.SqlServer
 
         public override long EnqueuedCount(string queue)
         {
+            if (queue == null) throw new ArgumentNullException(nameof(queue));
+
             var queueApi = GetQueueApi(queue);
             var counters = queueApi.GetEnqueuedAndFetchedCount(queue);
 
@@ -60,6 +62,8 @@ namespace Hangfire.SqlServer
 
         public override long FetchedCount(string queue)
         {
+            if (queue == null) throw new ArgumentNullException(nameof(queue));
+
             var queueApi = GetQueueApi(queue);
             var counters = queueApi.GetEnqueuedAndFetchedCount(queue);
 
@@ -322,6 +326,8 @@ namespace Hangfire.SqlServer
 
         public override JobList<EnqueuedJobDto> EnqueuedJobs(string queue, int from, int perPage)
         {
+            if (queue == null) throw new ArgumentNullException(nameof(queue));
+
             var queueApi = GetQueueApi(queue);
             var enqueuedJobIds = queueApi.GetEnqueuedJobIds(queue, from, perPage);
 
@@ -330,6 +336,8 @@ namespace Hangfire.SqlServer
 
         public override JobList<FetchedJobDto> FetchedJobs(string queue, int @from, int perPage)
         {
+            if (queue == null) throw new ArgumentNullException(nameof(queue));
+
             var queueApi = GetQueueApi(queue);
             var fetchedJobIds = queueApi.GetFetchedJobIds(queue, from, perPage);
 
@@ -356,6 +364,8 @@ namespace Hangfire.SqlServer
 
         public override JobDetailsDto JobDetails(string jobId)
         {
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
+
             return UseConnection(connection =>
             {
                 var query = _storage.GetQueryFromTemplate(static schemaName => $@"
