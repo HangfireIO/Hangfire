@@ -942,7 +942,7 @@ namespace Hangfire.SqlServer.Tests
             Assert.Equal(jobId3, result[1].Key);
         }
 
-        [Fact]
+        [Fact, CleanDatabase]
         public void SucceededJobs_IsAbleToHandle_ExpiredJobEntry()
         {
             // Arrange
@@ -1113,7 +1113,7 @@ namespace Hangfire.SqlServer.Tests
             Assert.Equal(jobId3, result[1].Key);
         }
         
-        [Fact]
+        [Fact, CleanDatabase]
         public void DeletedJobs_IsAbleToHandle_ExpiredJobEntry()
         {
             // Arrange
