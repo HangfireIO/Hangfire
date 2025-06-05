@@ -94,11 +94,11 @@ namespace Hangfire.SqlServer.Tests
             Assert.Equal("Empty", queuedJob.Value.Job.Method.Name);
         }
 
-        /*[Fact, CleanDatabase]
+        [Fact, CleanDatabase]
         public void Queues_IsAbleToHandle_JobIdWithoutCorrespondingBackgroundJobEntry()
         {
             // Arrange
-            SimpleEnqueueJob("default", jobId: "41423");
+            SimpleEnqueueJob("default", jobId: "41423", noState: true);
             var monitoring = CreateMonitoringApi();
 
             // Act
@@ -108,17 +108,14 @@ namespace Hangfire.SqlServer.Tests
             var someJob = result.Single().FirstJobs.Single();
 
             Assert.Equal("41423", someJob.Key);
-            Assert.Null(someJob.Value.Job);
-            Assert.False(someJob.Value.InEnqueuedState);
-            Assert.Null(someJob.Value.State);
-            Assert.Null(someJob.Value.EnqueuedAt);
-        }*/
+            Assert.Null(someJob.Value);
+        }
 
         [Fact, CleanDatabase]
         public void Queues_IsAbleToHandle_BackgroundJobEntry_WithNullState()
         {
             // Arrange
-            var jobId = SimpleEnqueueJob("test", state: null);
+            var jobId = SimpleEnqueueJob("test", noState: true);
             var monitoring = CreateMonitoringApi();
 
             // Act
@@ -535,11 +532,11 @@ namespace Hangfire.SqlServer.Tests
             Assert.Equal(jobId3, result[2].Key);
         }
 
-        /*[Fact, CleanDatabase]
+        [Fact, CleanDatabase]
         public void EnqueuedJobs_IsAbleToHandle_JobIdWithoutCorrespondingBackgroundJobEntry()
         {
             // Arrange
-            SimpleEnqueueJob("default", jobId: "12345");
+            SimpleEnqueueJob("default", jobId: "12345", noState: true);
             var monitoring = CreateMonitoringApi();
 
             // Act
@@ -549,17 +546,14 @@ namespace Hangfire.SqlServer.Tests
             var someJob = result.Single();
 
             Assert.Equal("12345", someJob.Key);
-            Assert.Null(someJob.Value.Job);
-            Assert.False(someJob.Value.InEnqueuedState);
-            Assert.Null(someJob.Value.State);
-            Assert.Null(someJob.Value.EnqueuedAt);
-        }*/
+            Assert.Null(someJob.Value);
+        }
 
         [Fact, CleanDatabase]
         public void EnqueuedJobs_IsAbleToHandle_BackgroundJobEntry_WithNullState()
         {
             // Arrange
-            var jobId = SimpleEnqueueJob("test", state: null);
+            var jobId = SimpleEnqueueJob("test", noState: true);
             var monitoring = CreateMonitoringApi();
 
             // Act
@@ -572,6 +566,23 @@ namespace Hangfire.SqlServer.Tests
             Assert.False(someJob.Value.InEnqueuedState);
             Assert.Null(someJob.Value.State);
             Assert.Null(someJob.Value.EnqueuedAt);
+        }
+
+        [Fact, CleanDatabase]
+        public void EnqueuedJobs_IsAbleToHandle_MultipleEntriesWithTheSameJobId()
+        {
+            // Arrange
+            var jobId = SimpleEnqueueJob("default");
+            var sameId = SimpleEnqueueJob("default", jobId: jobId);
+            var monitoring = CreateMonitoringApi();
+
+            // Act
+            var enqueued = monitoring.EnqueuedJobs("default", 0, 10).ToArray();
+
+            // Assert
+            Assert.Equal(2, enqueued.Length);
+            Assert.All(enqueued, x => Assert.Equal(jobId, x.Key));
+            Assert.All(enqueued, x => Assert.Equal("Enqueued", x.Value.State));
         }
 
         [Fact, CleanDatabase]
@@ -931,6 +942,24 @@ namespace Hangfire.SqlServer.Tests
             Assert.Equal(jobId3, result[1].Key);
         }
 
+        [Fact]
+        public void SucceededJobs_IsAbleToHandle_ExpiredJobEntry()
+        {
+            // Arrange
+            var jobId1 = SimpleSucceededJob(expireIn: TimeSpan.FromHours(-1));
+            UseSqlConnection(connection => connection.Execute(
+                $"delete from[{Constants.DefaultSchema}].Job where ExpireAt is not null"));
+
+            var monitoring = CreateMonitoringApi();
+
+            // Act
+            var someJob = monitoring.SucceededJobs(0, 10).SingleOrDefault();
+
+            // Assert
+            Assert.True(someJob.Key == null || someJob.Key == jobId1, someJob.Key);
+            Assert.Null(someJob.Value);
+        }
+
         [Fact, CleanDatabase]
         public void FailedJobs_ReturnsEmptyCollection_WhenThereAreNoFailedJobs()
         {
@@ -1083,6 +1112,24 @@ namespace Hangfire.SqlServer.Tests
             Assert.Equal(jobId4, result[0].Key);
             Assert.Equal(jobId3, result[1].Key);
         }
+        
+        [Fact]
+        public void DeletedJobs_IsAbleToHandle_ExpiredJobEntry()
+        {
+            // Arrange
+            var jobId1 = SimpleDeletedJob(expireIn: TimeSpan.FromHours(-1));
+            UseSqlConnection(connection => connection.Execute(
+                $"delete from[{Constants.DefaultSchema}].Job where ExpireAt is not null"));
+
+            var monitoring = CreateMonitoringApi();
+
+            // Act
+            var someJob = monitoring.DeletedJobs(0, 10).SingleOrDefault();
+
+            // Assert
+            Assert.True(someJob.Key == null || someJob.Key == jobId1, someJob.Key);
+            Assert.Null(someJob.Value);
+        }
 
         [Fact, CleanDatabase]
         public void AwaitingJobs_ReturnsEmptyCollection_WhenThereAreNoAwaitingJobs()
@@ -1137,10 +1184,10 @@ namespace Hangfire.SqlServer.Tests
             // Assert
             var awaiting = result.ToArray();
 
-            Assert.Equal(jobId1, awaiting[0].Key);
-            Assert.Equal(jobId2, awaiting[1].Key);
-            Assert.Equal("Processing", awaiting[0].Value.ParentStateName);
-            Assert.Equal("Processing", awaiting[1].Value.ParentStateName);
+            Assert.Equal(2, awaiting.Length);
+            Assert.Contains(jobId1, awaiting.Select(x => x.Key));
+            Assert.Contains(jobId2, awaiting.Select(x => x.Key));
+            Assert.All(awaiting, x => Assert.Equal("Processing", x.Value.ParentStateName));
         }
 
         [Fact, CleanDatabase]
@@ -1537,19 +1584,20 @@ namespace Hangfire.SqlServer.Tests
             });
         }
 
-        private string SimpleEnqueueJob(string queue, string jobId = null, IState state = null, Job job = null)
+        private string SimpleEnqueueJob(string queue, string jobId = null, IState state = null, Job job = null, bool noState = false)
         {
-            return SimpleJob(jobId, job, state, (transaction, assignedJobId, _) =>
+            return SimpleJob(jobId, job, !noState ? state ?? new EnqueuedState() : null, transactionAction: (transaction, assignedJobId, _) =>
             {
                 transaction.AddToQueue(queue, assignedJobId);
             });
         }
 
-        private string SimpleSucceededJob(object result = null, long latency = 0, long duration = 0, Job job = null)
+        private string SimpleSucceededJob(object result = null, long latency = 0, long duration = 0, Job job = null, TimeSpan? expireIn = null)
         {
             return SimpleJob(
                 job: job,
-                state: new SucceededState(result, latency, duration));
+                state: new SucceededState(result, latency, duration),
+                expireIn: expireIn);
         }
 
         private string SimpleFailedJob(Exception exception = null, Job job = null)
@@ -1559,13 +1607,14 @@ namespace Hangfire.SqlServer.Tests
                 state: new FailedState(exception ?? new InvalidOperationException()));
         }
 
-        private string SimpleDeletedJob(Exception exception = null, Job job = null)
+        private string SimpleDeletedJob(Exception exception = null, Job job = null, TimeSpan? expireIn = null)
         {
             return SimpleJob(
                 job: job,
                 state: new DeletedState(
                     new ExceptionInfo(exception ?? new InvalidOperationException())
-                ));
+                ),
+                expireIn: expireIn);
         }
 
         private string SimpleAwaitingJob(string parentId, Job job = null)
@@ -1575,7 +1624,7 @@ namespace Hangfire.SqlServer.Tests
                 state: new AwaitingState(parentId));
         }
 
-        private string SimpleJob(string jobId = null, Job job = null, IState state = null, Action<IWriteOnlyTransaction, string, Job> transactionAction = null)
+        private string SimpleJob(string jobId = null, Job job = null, IState state = null, TimeSpan? expireIn = null, Action<IWriteOnlyTransaction, string, Job> transactionAction = null)
         {
             var createdId = UseConnection(connection =>
             {
@@ -1590,6 +1639,7 @@ namespace Hangfire.SqlServer.Tests
                 {
                     if (state != null) transaction.SetJobState(jobId, state);
                     transactionAction?.Invoke(transaction, jobId, job);
+                    if (expireIn != null) transaction.ExpireJob(jobId, expireIn.Value);
                     transaction.Commit();
                 }
 
