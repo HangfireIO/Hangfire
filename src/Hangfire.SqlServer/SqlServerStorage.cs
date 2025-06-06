@@ -272,10 +272,23 @@ namespace Hangfire.SqlServer
         }
 
         internal TResult UseConnection<TResult>(
+            [InstantHandle] Func<SqlServerStorage, DbConnection, TResult> action)
+        {
+            return UseConnection(null, action);
+        }
+
+        internal TResult UseConnection<TResult>(
             DbConnection dedicatedConnection,
             [InstantHandle] Func<SqlServerStorage, DbConnection, TResult> action)
         {
             return UseConnection(dedicatedConnection, static (storage, connection, ctx) => ctx(storage, connection), action);
+        }
+
+        internal TResult UseConnection<TContext, TResult>(
+            [InstantHandle] Func<SqlServerStorage, DbConnection, TContext, TResult> action,
+            TContext context)
+        {
+            return UseConnection(null, action, context);
         }
 
         internal TResult UseConnection<TContext, TResult>(
