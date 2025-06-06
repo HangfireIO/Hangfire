@@ -5,13 +5,10 @@ Task Default -Depends Pack
 Task Merge -Depends Compile -Description "Run ILRepack /internalize to merge required assemblies." {
     Repack-Assembly @("Hangfire.Core", "net451") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
     Repack-Assembly @("Hangfire.Core", "net46") @("Cronos", "CronExpressionDescriptor", "Microsoft.Owin")
-    Repack-Assembly @("Hangfire.SqlServer", "net451") @("Dapper")
 
     Repack-Assembly @("Hangfire.Core", "netstandard1.3") @("Cronos")
     Repack-Assembly @("Hangfire.Core", "netstandard2.0") @("Cronos")
     Repack-Assembly @("Hangfire.Core", "net6.0") @("Cronos")
-    Repack-Assembly @("Hangfire.SqlServer", "netstandard1.3") @("Dapper")
-    Repack-Assembly @("Hangfire.SqlServer", "netstandard2.0") @("Dapper")
 }
 
 Task Test -Depends Merge -Description "Run unit and integration tests against merged assemblies." {

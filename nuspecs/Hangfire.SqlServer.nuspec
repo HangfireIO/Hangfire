@@ -119,7 +119,8 @@ Please see https://docs.hangfire.io/en/latest/upgrade-guides/upgrading-to-hangfi
       
       <group targetFramework="netstandard1.3">
         <dependency id="NETStandard.Library" version="1.6.0" />
-        <dependency id="System.Data.Common" version="4.1.0" />
+        <dependency id="System.Data.Common" version="4.3.0" />
+        <dependency id="System.Reflection.TypeExtensions" version="4.3.0" />
         <dependency id="Hangfire.Core" version="[%version%]" />
       </group>
 

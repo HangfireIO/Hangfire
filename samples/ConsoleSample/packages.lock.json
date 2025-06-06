@@ -40,11 +40,6 @@
         "resolved": "0.8.3",
         "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw=="
       },
-      "Dapper": {
-        "type": "Transitive",
-        "resolved": "1.60.6",
-        "contentHash": "mmnJNhKMeF2KhvVXDoVQlFxre8aJAo71YBJrKqFlvuqzYC2QiXUq94/GCDBJzU7paq4GqpkV2glw3308TcGibw=="
-      },
       "Microsoft.NETFramework.ReferenceAssemblies.net451": {
         "type": "Transitive",
         "resolved": "1.0.3",
@@ -99,7 +94,6 @@
       "hangfire.sqlserver": {
         "type": "Project",
         "dependencies": {
-          "Dapper": "[1.60.6, )",
           "Hangfire.Core": "[1.0.0, )"
         }
       },

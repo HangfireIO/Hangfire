@@ -52,11 +52,6 @@
         "resolved": "0.8.3",
         "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw=="
       },
-      "Dapper": {
-        "type": "Transitive",
-        "resolved": "2.1.28",
-        "contentHash": "ha49pzOEDmCPkMxwfPSR/wxa/6RD3r42TESIgpzpi7FXq/gNVUuJVEO+wtUzntNRhtmq3BKCl0s0aAlSZLkBUA=="
-      },
       "Microsoft.Extensions.Configuration": {
         "type": "Transitive",
         "resolved": "8.0.0",
@@ -367,7 +362,6 @@
       "hangfire.sqlserver": {
         "type": "Project",
         "dependencies": {
-          "Dapper": "[2.1.28, )",
           "Hangfire.Core": "[1.0.0, )"
         }
       }
