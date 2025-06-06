@@ -20,7 +20,6 @@ using System.Data.Common;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
@@ -242,18 +241,28 @@ $@"insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, 
 $@"select InvocationData, StateName, Arguments, CreatedAt from [{schemaName}].Job with (readcommittedlock, forceseek) where Id = @id
 select Name, Value from [{schemaName}].JobParameter with (forceseek) where JobId = @id");
 
-                using (var multi = connection.QueryMultiple(query, new { id = parsedId }, commandTimeout: storage.CommandTimeout))
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@id", parsedId, DbType.Int64);
+
+                using (var reader = command.ExecuteMultiple())
                 {
-                    var jobData = multi.ReadSingleOrDefault();
+                    var jobData = reader.ReadSingleOrDefaultAndProceed(static reader => new SqlJob
+                    {
+                        InvocationData = reader.GetRequiredString("InvocationData"),
+                        StateName = reader.GetOptionalString("StateName"),
+                        Arguments = reader.GetOptionalString("Arguments"),
+                        CreatedAt = reader.GetRequiredDateTime("CreatedAt")
+                    });
                     if (jobData == null) return null;
+
+                    var jobParameters = reader.ReadListAndFinish(static reader => new KeyValuePair<string, string>(
+                        reader.GetRequiredString("Name"), reader.GetOptionalString("Value")));
 
                     var parameters = new Dictionary<string, string>();
 
-                    var jobParameters = multi.Read<JobParameter>().ToArray();
-                    for (var i = 0; i < jobParameters.Length; i++)
+                    foreach (var jobParameter in jobParameters)
                     {
-                        var jobParameter = jobParameters[i];
-                        parameters[jobParameter.Name] = jobParameter.Value;
+                        parameters[jobParameter.Key] = jobParameter.Value;
                     }
 
                     // TODO: conversion exception could be thrown.
@@ -306,7 +315,16 @@ from [{schemaName}].State s with (readcommittedlock, forceseek)
 inner join [{schemaName}].Job j with (readcommittedlock, forceseek) on j.StateId = s.Id and j.Id = s.JobId
 where j.Id = @jobId");
 
-                var sqlState = connection.QuerySingleOrDefault<SqlState>(query, new { jobId = parsedId }, commandTimeout: storage.CommandTimeout);
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@jobId", parsedId, DbType.Int64);
+
+                var sqlState = command.ExecuteSingleOrDefault(static reader => new SqlState
+                {
+                    Name = reader.GetRequiredString("Name"),
+                    Reason = reader.GetOptionalString("Reason"),
+                    Data = reader.GetOptionalString("Data")
+                });
+
                 if (sqlState == null)
                 {
                     return null;
@@ -395,10 +413,11 @@ end catch");
                 var query = storage.GetQueryFromTemplate(static schemaName =>
 $@"select Value from [{schemaName}].[Set] with (forceseek) where [Key] = @key");
 
-                var result = connection.Query<string>(
-                    query,
-                    new { key = key },
-                    commandTimeout: storage.CommandTimeout);
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@key", key, DbType.String);
+
+                var result = command.ExecuteList(
+                    static reader => reader.GetRequiredString("Value"));
 
                 return new HashSet<string>(result);
             }, key);
@@ -420,12 +439,13 @@ $@"select Value from [{schemaName}].[Set] with (forceseek) where [Key] = @key");
                 var query = storage.GetQueryFromTemplate(static schemaName =>
 $@"select top (@count) Value from [{schemaName}].[Set] with (forceseek) where [Key] = @key and Score between @from and @to order by Score");
 
-                var result = connection.Query<string>(
-                    query,
-                    new { count = pair.Value.Item3, key = pair.Key, from = pair.Value.Item1, to = pair.Value.Item2 },
-                    commandTimeout: storage.CommandTimeout);
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@count", pair.Value.Item3, DbType.Int32)
+                    .AddParameter("@key", pair.Key, DbType.String)
+                    .AddParameter("@from", pair.Value.Item1, DbType.Double)
+                    .AddParameter("@to", pair.Value.Item2, DbType.Double);
 
-                return result.ToList();
+                return command.ExecuteList(static reader => reader.GetRequiredString("Value"));
             }, new KeyValuePair<string, ValueTriple<double, double, int>>(key, CreateTriple(fromScore, toScore, count)));
         }
 
@@ -495,13 +515,16 @@ end catch");
                 var query = storage.GetQueryFromTemplate(static schemaName =>
 $@"select Field, Value from [{schemaName}].Hash with (forceseek) where [Key] = @key");
 
-                var result = connection.Query<SqlHash>(
-                    query,
-                    new { key = key },
-                    commandTimeout: storage.CommandTimeout)
-                    .ToDictionary(static x => x.Field, static x => x.Value);
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@key", key, DbType.String);
 
-                return result.Count != 0 ? result : null;
+                var result = command.ExecuteList(static reader => new KeyValuePair<string, string>(
+                    reader.GetRequiredString("Field"),
+                    reader.GetOptionalString("Value")));
+
+                return result.Count != 0 
+                    ? result.ToDictionary(static x => x.Key, static x => x.Value)
+                    : null;
             }, key);
         }
 
@@ -662,10 +685,12 @@ $@"select [Value] from (
 	where [Key] = @key 
 ) as s where s.row_num between @startingFrom and @endingAt");
 
-                return connection
-                    .Query<string>(query, new { key = triple.Item1, startingFrom = triple.Item2 + 1, endingAt = triple.Item3 + 1 },
-                        commandTimeout: storage.CommandTimeout)
-                    .ToList();
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@key", triple.Item1, DbType.String)
+                    .AddParameter("@startingFrom", triple.Item2 + 1, DbType.Int32)
+                    .AddParameter("@endingAt", triple.Item3 + 1, DbType.Int32);
+
+                return command.ExecuteList(static reader => reader.GetRequiredString("Value"));
             }, CreateTriple(key, startingFrom, endingAt));
         }
 
@@ -812,10 +837,12 @@ $@"select [Value] from (
 	where [Key] = @key 
 ) as s where s.row_num between @startingFrom and @endingAt");
 
-                return connection
-                    .Query<string>(query, new { key = triple.Item1, startingFrom = triple.Item2 + 1, endingAt = triple.Item3 + 1 },
-                        commandTimeout: storage.CommandTimeout)
-                    .ToList();
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@key", triple.Item1, DbType.String)
+                    .AddParameter("@startingFrom", triple.Item2 + 1, DbType.Int32)
+                    .AddParameter("@endingAt", triple.Item3 + 1, DbType.Int32);
+
+                return command.ExecuteList(static reader => reader.GetOptionalString("Value"));
             }, CreateTriple(key, startingFrom, endingAt));
         }
 
@@ -830,9 +857,10 @@ $@"select [Value] from [{schemaName}].List with (forceseek)
 where [Key] = @key
 order by [Id] desc");
 
-                return connection
-                    .Query<string>(query, new { key = key }, commandTimeout: storage.CommandTimeout)
-                    .ToList();
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@key", key, DbType.String);
+
+                return command.ExecuteList(static reader => reader.GetOptionalString("Value"));
             }, key);
         }
 

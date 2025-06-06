@@ -176,21 +176,18 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
                 var invisibilityTimeout = (int)storage.Options.SlidingInvisibilityTimeout.Value.Negate().TotalSeconds;
 
                 using var command = CreateNonBlockingFetchCommand(storage, connection, queues, invisibilityTimeout);
-                using var reader = command.ExecuteReader();
 
-                if (!reader.Read()) return null;
-
-                var id = Convert.ToInt64(reader.GetValue(reader.GetOrdinal("Id")), CultureInfo.InvariantCulture); // Can be Int32 in older schemas
-                var jobId = Convert.ToInt64(reader.GetValue(reader.GetOrdinal("JobId")), CultureInfo.InvariantCulture); // Can be Int32 in older schemas
-                var queue = reader.GetString(reader.GetOrdinal("Queue"));
-                var fetchedAt = reader.GetDateTime(reader.GetOrdinal("FetchedAt"));
-
-                if (reader.Read())
+                var fetchedJob = command.ExecuteSingleOrDefault(static reader => new FetchedJob
                 {
-                    throw new InvalidOperationException("Multiple rows returned from SQL Server, while expecting single or none.");
-                }
+                    Id = reader.GetRequiredValue<long>("Id"), // Can be Int32 in older schemas
+                    JobId = reader.GetRequiredValue<long>("JobId"), // Can be Int32 in older schemas
+                    Queue = reader.GetRequiredString("Queue"),
+                    FetchedAt = reader.GetRequiredDateTime("FetchedAt")
+                });
 
-                return new SqlServerTimeoutJob(storage, id, jobId.ToString(CultureInfo.InvariantCulture), queue, fetchedAt);
+                return fetchedJob != null
+                    ? new SqlServerTimeoutJob(storage, fetchedJob.Id, fetchedJob.JobId.ToString(CultureInfo.InvariantCulture), fetchedJob.Queue, fetchedJob.FetchedAt)  
+                    : null;
             }, queues);
         }
 
@@ -239,28 +236,23 @@ where Queue in @queues and
 #pragma warning restore 618
                     command.Transaction = transaction;
 
-                    using (var reader = command.ExecuteReader())
+                    var fetchedJob = command.ExecuteSingleOrDefault(static reader => new FetchedJob
                     {
-                        if (reader.Read())
-                        {
-                            var jobId = Convert.ToInt64(reader.GetValue(reader.GetOrdinal("JobId")), CultureInfo.InvariantCulture); // Can be Int32 in older schemas
-                            var queue = reader.GetString(reader.GetOrdinal("Queue"));
+                        Id = reader.GetRequiredValue<long>("Id"), // Can be Int32 in older schemas
+                        JobId = reader.GetRequiredValue<long>("JobId"), // Can be Int32 in older schemas
+                        Queue = reader.GetRequiredString("Queue")
+                    });
 
-                            if (reader.Read())
-                            {
-                                throw new InvalidOperationException(
-                                    "Multiple rows returned from SQL Server, while expecting single or none.");
-                            }
+                    if (fetchedJob != null)
+                    {
+                        var result = new SqlServerTransactionJob(_storage, connection, transaction,
+                            fetchedJob.JobId.ToString(CultureInfo.InvariantCulture), fetchedJob.Queue);
 
-                            var result = new SqlServerTransactionJob(_storage, connection, transaction,
-                                jobId.ToString(CultureInfo.InvariantCulture), queue);
-
-                            // We shouldn't dispose them, because their ownership is now related
-                            // to the SqlServerTransactionJob instance.
-                            connection = null;
-                            transaction = null;
-                            return result;
-                        }
+                        // We shouldn't dispose them, because their ownership is now related
+                        // to the SqlServerTransactionJob instance.
+                        connection = null;
+                        transaction = null;
+                        return result;
                     }
 
                     // Nothing updated, just commit the empty transaction.
@@ -323,13 +315,12 @@ where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @ti
             return waitList.ToArray();
         }
 
-        [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
         private sealed class FetchedJob
         {
             public long Id { get; set; }
             public long JobId { get; set; }
             public string Queue { get; set; }
-            public DateTime? FetchedAt { get; set; }
+            public DateTime FetchedAt { get; set; }
         }
     }
 }

@@ -1,4 +1,4 @@
-// This file is part of Hangfire. Copyright © 2013-2014 Hangfire OÜ.
+// This file is part of Hangfire. Copyright © 2025 Hangfire OÜ.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -13,19 +13,18 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
+using System;
+using System.Data.Common;
+using Hangfire.Annotations;
 
-namespace Hangfire.Storage.Monitoring
+namespace Hangfire.SqlServer
 {
-    public class JobList<TDto> : List<KeyValuePair<string, TDto>>
+    internal static class DbParameterExtensions
     {
-        public JobList()
+        public static T GetParameterValue<T>([NotNull] this DbParameter parameter)
         {
-        }
-
-        public JobList(IEnumerable<KeyValuePair<string, TDto>> source)
-            : base(source)
-        {
+            if (parameter == null) throw new ArgumentNullException(nameof(parameter));
+            return DbCommandExtensions.ConvertValue<T>(parameter.Value);
         }
     }
 }

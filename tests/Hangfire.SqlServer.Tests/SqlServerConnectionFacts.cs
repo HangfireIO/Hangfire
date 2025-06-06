@@ -1587,6 +1587,35 @@ values (@key, @field, @value)";
 
         [Theory, CleanDatabase]
         [InlineData(false), InlineData(true)]
+        public void GetAllEntriesFromHash_CanReturnFieldsWithNullValues(bool useMicrosoftDataSqlClient)
+        {
+            var arrangeSql = $@"
+insert into [{Constants.DefaultSchema}].Hash ([Key], [Field], [Value])
+values (@key, @field, @value)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "some-hash", field = "Key1", value = "Value1" },
+                    new { key = "some-hash", field = "Key2", value = (string)null },
+                    new { key = "another-hash", field = "Key3", value = (string)null }
+                });
+
+                // Act
+                var result = connection.GetAllEntriesFromHash("some-hash");
+
+                // Assert
+                Assert.NotNull(result);
+                Assert.Equal(2, result.Count);
+                Assert.Equal("Value1", result["Key1"]);
+                Assert.Null(result["Key2"]);
+            }, useBatching: false, useMicrosoftDataSqlClient);
+        }
+
+        [Theory, CleanDatabase]
+        [InlineData(false), InlineData(true)]
         public void GetSetCount_ThrowsAnException_WhenKeyIsNull(bool useMicrosoftDataSqlClient)
         {
             UseConnection(connection =>

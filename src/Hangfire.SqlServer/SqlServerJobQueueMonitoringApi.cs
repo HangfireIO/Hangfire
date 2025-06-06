@@ -15,15 +15,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
-#if FEATURE_TRANSACTIONSCOPE
-using System.Transactions;
-#else
-using System.Data;
-#endif
-using Dapper;
 using Hangfire.Annotations;
 
 // ReSharper disable RedundantAnonymousTypePropertyName
@@ -42,8 +36,7 @@ namespace Hangfire.SqlServer
 
         public SqlServerJobQueueMonitoringApi([NotNull] SqlServerStorage storage)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
-            _storage = storage;
+            _storage = storage ?? throw new ArgumentNullException(nameof(storage));
         }
 
         public IEnumerable<string> GetQueues()
@@ -57,7 +50,8 @@ namespace Hangfire.SqlServer
                         var query = storage.GetQueryFromTemplate(static schemaName =>
 $@"select distinct(Queue) from [{schemaName}].JobQueue with (nolock)");
 
-                        return connection.Query(query, commandTimeout: storage.CommandTimeout).Select(static x => (string) x.Queue).ToList();
+                        using var command = connection.Create(query, timeout: storage.CommandTimeout);
+                        return command.ExecuteList(static reader => reader.GetRequiredString("Queue"));
                     });
 
                     _queuesCache = result;
@@ -80,13 +74,12 @@ $@"select r.JobId from (
 ) as r
 where r.row_num between @start and @end");
 
-                return connection.Query<JobIdDto>(
-                    query,
-                    new { queue = ctx.Queue, start = ctx.From + 1, end = ctx.From + ctx.PerPage },
-                    commandTimeout: storage.CommandTimeout)
-                    .ToList()
-                    .Select(static x => x.JobId)
-                    .ToList();
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@queue", ctx.Queue, DbType.String)
+                    .AddParameter("@start", ctx.From + 1, DbType.Int32)
+                    .AddParameter("@end", ctx.From + ctx.PerPage, DbType.Int32);
+
+                return command.ExecuteList(static reader => reader.GetRequiredValue<long>("JobId"));
             }, new QueuePageQueryContext(queue, from, perPage));
         }
 
@@ -102,12 +95,12 @@ select r.JobId from (
 ) as r
 where r.row_num between @start and @end");
 
-                return connection.Query<JobIdDto>(
-                        query,
-                        new { queue = ctx.Queue, start = ctx.From + 1, end = ctx.From + ctx.PerPage })
-                    .ToList()
-                    .Select(static x => x.JobId)
-                    .ToList();
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@queue", ctx.Queue, DbType.String)
+                    .AddParameter("@start", ctx.From + 1, DbType.Int32)
+                    .AddParameter("@end", ctx.From + ctx.PerPage, DbType.Int32);
+
+                return command.ExecuteList(static reader => reader.GetRequiredValue<long>("JobId"));
             }, new QueuePageQueryContext(queue, from, perPage));
         }
 
@@ -132,13 +125,14 @@ from (
     where Queue = @queue
 ) q");
 
-                var result = connection.QuerySingle(query, new { queue = q });
+                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    .AddParameter("@queue", q, DbType.String);
 
-                return new EnqueuedAndFetchedCountDto
+                return command.ExecuteSingle(static reader => new EnqueuedAndFetchedCountDto
                 {
-                    EnqueuedCount = result.EnqueuedCount,
-                    FetchedCount = result.FetchedCount
-                };
+                    EnqueuedCount = reader.GetOptionalValue<int?>("EnqueuedCount"),
+                    FetchedCount = reader.GetOptionalValue<int?>("FetchedCount")
+                });
             }, queue);
         }
 

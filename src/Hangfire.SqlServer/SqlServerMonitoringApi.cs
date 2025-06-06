@@ -19,7 +19,6 @@ using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.Linq;
-using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.SqlServer.Entities;
@@ -142,11 +141,17 @@ namespace Hangfire.SqlServer
         {
             return UseConnection<IList<ServerDto>>(connection =>
             {
-                var servers = connection.Query<Entities.Server>(
-                    _storage.GetQueryFromTemplate(static schemaName =>
-                        $@"select * from [{schemaName}].Server with (nolock)"),
-                    commandTimeout: _storage.CommandTimeout)
-                    .ToList();
+                var query = _storage.GetQueryFromTemplate(static schemaName =>
+                    $@"select [Id], [Data], [LastHeartbeat] from [{schemaName}].Server with (nolock)");
+
+                using var command = connection.Create(query, timeout: _storage.CommandTimeout);
+
+                var servers = command.ExecuteList(static reader => new Entities.Server
+                {
+                    Id = reader.GetRequiredString("Id"),
+                    Data = reader.GetOptionalString("Data"),
+                    LastHeartbeat = reader.GetRequiredDateTime("LastHeartbeat")
+                });
 
                 var result = new List<ServerDto>();
 
@@ -262,15 +267,22 @@ namespace Hangfire.SqlServer
                 .Select(static x => long.Parse(x.Value.StateData["ParentId"], CultureInfo.InvariantCulture))
                 .ToArray();
 
-            var parentStates = UseConnection(connection =>
-            {
-                return connection.Query<ParentStateDto>(
-                    _storage.GetQueryFromTemplate(static schemaName =>
-                        $@"select Id, StateName from [{schemaName}].Job with (nolock, forceseek) where Id in @ids"),
-                    new { ids = parentIds },
-                    commandTimeout: _storage.CommandTimeout)
-                .ToDictionary(static x => x.Id, static x => x.StateName);
-            });
+            var parentStates = parentIds.Length > 0 
+                ? UseConnection(connection =>
+                {
+                    var query = _storage.GetQueryFromTemplate(static schemaName =>
+                        $@"select Id, StateName from [{schemaName}].Job with (nolock, forceseek) where Id in @ids");
+
+                    using var command = connection.Create(query, timeout: _storage.CommandTimeout)
+                        .AddExpandedParameter("@ids", parentIds, DbType.Int64);
+
+                    return command.ExecuteList(static reader => new ParentStateDto
+                    {
+                        Id = reader.GetRequiredValue<long>("Id"),
+                        StateName = reader.GetOptionalString("StateName")
+                    }).ToDictionary(static x => x.Id, static x => x.StateName);
+                })
+                : new Dictionary<long, string>();
 
             foreach (var awaitingJob in awaitingJobs)
             {
@@ -306,11 +318,12 @@ namespace Hangfire.SqlServer
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var tuple in tuples)
             {
-                var enqueuedJobIds = tuple.Monitoring.GetEnqueuedJobIds(tuple.Queue, 0, 5);
+                var enqueuedJobIds = tuple.Monitoring.GetEnqueuedJobIds(tuple.Queue, 0, 5).ToArray();
                 var counters = tuple.Monitoring.GetEnqueuedAndFetchedCount(tuple.Queue);
 
-                var firstJobs = UseConnection(connection => 
-                    EnqueuedJobs(connection, enqueuedJobIds.ToArray()));
+                var firstJobs = enqueuedJobIds.Length > 0 
+                    ? UseConnection(connection => EnqueuedJobs(connection, enqueuedJobIds))
+                    : new JobList<EnqueuedJobDto>();
 
                 result.Add(new QueueWithTopEnqueuedJobsDto
                 {
@@ -329,9 +342,11 @@ namespace Hangfire.SqlServer
             if (queue == null) throw new ArgumentNullException(nameof(queue));
 
             var queueApi = GetQueueApi(queue);
-            var enqueuedJobIds = queueApi.GetEnqueuedJobIds(queue, from, perPage);
+            var enqueuedJobIds = queueApi.GetEnqueuedJobIds(queue, from, perPage).ToArray();
 
-            return UseConnection(connection => EnqueuedJobs(connection, enqueuedJobIds.ToArray()));
+            return enqueuedJobIds.Length > 0
+                ? UseConnection(connection => EnqueuedJobs(connection, enqueuedJobIds))
+                : new JobList<EnqueuedJobDto>();
         }
 
         public override JobList<FetchedJobDto> FetchedJobs(string queue, int @from, int perPage)
@@ -339,9 +354,11 @@ namespace Hangfire.SqlServer
             if (queue == null) throw new ArgumentNullException(nameof(queue));
 
             var queueApi = GetQueueApi(queue);
-            var fetchedJobIds = queueApi.GetFetchedJobIds(queue, from, perPage);
+            var fetchedJobIds = queueApi.GetFetchedJobIds(queue, from, perPage).ToArray();
 
-            return UseConnection(connection => FetchedJobs(connection, fetchedJobIds.ToArray()));
+            return fetchedJobIds.Length > 0
+                ? UseConnection(connection => FetchedJobs(connection, fetchedJobIds))
+                : new JobList<FetchedJobDto>();
         }
 
         public override IDictionary<DateTime, long> HourlySucceededJobs()
@@ -366,22 +383,37 @@ namespace Hangfire.SqlServer
         {
             if (jobId == null) throw new ArgumentNullException(nameof(jobId));
 
+            if (!long.TryParse(jobId, out var parsedId))
+            {
+                return null;
+            }
+
             return UseConnection(connection =>
             {
                 var query = _storage.GetQueryFromTemplate(static schemaName => $@"
-select * from [{schemaName}].Job with (nolock, forceseek) where Id = @id
-select * from [{schemaName}].JobParameter with (nolock, forceseek) where JobId = @id
-select * from [{schemaName}].State with (nolock, forceseek) where JobId = @id order by Id desc");
+select InvocationData, Arguments, CreatedAt, ExpireAt from [{schemaName}].Job with (nolock, forceseek) where Id = @id
+select Name, Value from [{schemaName}].JobParameter with (nolock, forceseek) where JobId = @id
+select Name, Reason, Data, CreatedAt from [{schemaName}].State with (nolock, forceseek) where JobId = @id order by Id desc");
 
-                using (var multi = connection.QueryMultiple(query, new { id = jobId }, commandTimeout: _storage.CommandTimeout))
+                using var command = connection.Create(query, timeout: _storage.CommandTimeout)
+                    .AddParameter("@id", parsedId, DbType.Int64);
+
+                using (var multi = command.ExecuteMultiple())
                 {
-                    var job = multi.ReadSingleOrDefault<SqlJob>();
+                    var job = multi.ReadSingleOrDefaultAndProceed<SqlJob>(static reader => new SqlJob
+                    {
+                        InvocationData = reader.GetRequiredString("InvocationData"),
+                        Arguments = reader.GetOptionalString("Arguments"),
+                        CreatedAt = reader.GetRequiredDateTime("CreatedAt"),
+                        ExpireAt = reader.GetOptionalDateTime("ExpireAt")
+                    });
                     if (job == null) return null;
 
-                    var parameters = multi.Read<JobParameter>()
-                        .GroupBy(static x => x.Name)
+                    var parameters = multi.ReadListAndProceed(static reader => new KeyValuePair<string, string>(
+                            reader.GetRequiredString("Name"), reader.GetOptionalString("Value")))
+                        .GroupBy(static x => x.Key)
                         .Select(static grp => grp.First())
-                        .ToDictionary(static x => x.Name, static x => x.Value);
+                        .ToDictionary(static x => x.Key, static x => x.Value);
 
                     var deserializedJob = DeserializeJob(job.InvocationData, job.Arguments, out var payload, out var exception);
 
@@ -406,8 +438,13 @@ select * from [{schemaName}].State with (nolock, forceseek) where JobId = @id or
                     }
 
                     var history =
-                        multi.Read<SqlState>()
-                            .ToList()
+                        multi.ReadListAndFinish(static reader => new SqlState
+                            {
+                                Name = reader.GetRequiredString("Name"),
+                                Reason = reader.GetOptionalString("Reason"),
+                                Data = reader.GetOptionalString("Data"),
+                                CreatedAt = reader.GetRequiredDateTime("CreatedAt")
+                            })
                             .Select(static x => new StateHistoryDto
                             {
                                 StateName = x.Name,
@@ -472,22 +509,24 @@ select count(*) from [{schemaName}].[Set] with (nolock, forceseek) where [Key] =
 
             var statistics = UseConnection(connection =>
             {
+                using var command = connection.Create(query, timeout: _storage.CommandTimeout);
+
                 var stats = new StatisticsDto();
-                using (var multi = connection.QueryMultiple(query, commandTimeout: _storage.CommandTimeout))
+                using (var multi = command.ExecuteMultiple())
                 {
-                    stats.Enqueued = multi.ReadSingle<int>();
-                    stats.Failed = multi.ReadSingle<int>();
-                    stats.Processing = multi.ReadSingle<int>();
-                    stats.Scheduled = multi.ReadSingle<int>();
-                    stats.Awaiting = multi.ReadSingle<int>();
+                    stats.Enqueued = multi.ReadSingleAndProceed(r => r.GetRequiredValue<int>());
+                    stats.Failed = multi.ReadSingleAndProceed(r => r.GetRequiredValue<int>());
+                    stats.Processing = multi.ReadSingleAndProceed(r => r.GetRequiredValue<int>());
+                    stats.Scheduled = multi.ReadSingleAndProceed(r => r.GetRequiredValue<int>());
+                    stats.Awaiting = multi.ReadSingleAndProceed(r => r.GetRequiredValue<int>());
 
-                    stats.Servers = multi.ReadSingle<int>();
+                    stats.Servers = multi.ReadSingleAndProceed(r => r.GetRequiredValue<int>());
 
-                    stats.Succeeded = multi.ReadSingleOrDefault<long?>() ?? 0;
-                    stats.Deleted = multi.ReadSingleOrDefault<long?>() ?? 0;
+                    stats.Succeeded = multi.ReadSingleAndProceed(r => r.GetOptionalValue<long?>()) ?? 0;
+                    stats.Deleted = multi.ReadSingleAndProceed(r => r.GetOptionalValue<long?>()) ?? 0;
 
-                    stats.Recurring = multi.ReadSingle<int>();
-                    stats.Retries = multi.ReadSingle<int>();
+                    stats.Recurring = multi.ReadSingleAndProceed(r => r.GetRequiredValue<int>());
+                    stats.Retries = multi.ReadSingleAndFinish(r => r.GetRequiredValue<int>());
                 }
                 return stats;
             });
@@ -533,15 +572,19 @@ select count(*) from [{schemaName}].[Set] with (nolock, forceseek) where [Key] =
             DbConnection connection,
             IDictionary<string, DateTime> keyMaps)
         {
+            if (keyMaps.Count == 0) return new Dictionary<DateTime, long>();
+
             var query = _storage.GetQueryFromTemplate(static schemaName =>
 $@"select [Key], [Value] as [Count] from [{schemaName}].AggregatedCounter with (nolock, forceseek)
 where [Key] in @keys");
 
-            var valuesMap = connection.Query(
-                query,
-                new { keys = keyMaps.Keys },
-                commandTimeout: _storage.CommandTimeout)
-                .ToDictionary(static x => (string)x.Key, static x => (long)x.Count);
+            using var command = connection.Create(query, timeout: _storage.CommandTimeout)
+                .AddExpandedParameter("@keys", keyMaps.Keys.ToArray(), DbType.String);
+
+            var valuesMap = command.ExecuteList(static reader => new KeyValuePair<string, long>(
+                reader.GetRequiredString("Key"),
+                reader.GetRequiredValue<long>("Count"))) // TODO: By mistake was Value, not ended with test failure
+                .ToDictionary(static x => x.Key, static x => x.Value);
 
             foreach (var key in keyMaps.Keys)
             {
@@ -574,16 +617,27 @@ where [Key] in @keys");
         private JobList<EnqueuedJobDto> EnqueuedJobs(DbConnection connection, long[] jobIds)
         {
             var query = _storage.GetQueryFromTemplate(static schemaName =>
-$@"select j.*, s.Reason as StateReason, s.Data as StateData, s.CreatedAt as StateChanged
+$@"select j.Id, j.StateName, j.InvocationData, j.Arguments, j.CreatedAt, j.ExpireAt,
+  s.Reason as StateReason, s.Data as StateData, s.CreatedAt as StateChanged
 from [{schemaName}].Job j with (nolock, forceseek)
 left join [{schemaName}].State s with (nolock, forceseek) on s.Id = j.StateId and s.JobId = j.Id
 where j.Id in @jobIds");
 
-            var jobs = connection.Query<SqlJob>(
-                query,
-                new { jobIds = jobIds },
-                commandTimeout: _storage.CommandTimeout)
-                .ToDictionary(static x => x.Id, static x => x);
+            using var command = connection.Create(query, timeout: _storage.CommandTimeout)
+                .AddExpandedParameter("@jobIds", jobIds, DbType.Int64);
+
+            var jobs = command.ExecuteList(static reader => new SqlJob
+            {
+                Id = reader.GetRequiredValue<long>("Id"),
+                StateName = reader.GetOptionalString("StateName"),
+                InvocationData = reader.GetRequiredString("InvocationData"),
+                Arguments = reader.GetOptionalString("Arguments"),
+                CreatedAt = reader.GetRequiredDateTime("CreatedAt"),
+                ExpireAt = reader.GetOptionalDateTime("ExpireAt"),
+                StateReason = reader.GetOptionalString("StateReason"),
+                StateData = reader.GetOptionalString("StateData"),
+                StateChanged = reader.GetOptionalDateTime("StateChanged")
+            }).ToDictionary(static x => x.Id, static x => x); // TODO: Should remove duplicates first to avoid exception?
 
             var sortedSqlJobs = jobIds
                 .Select(jobId => jobs.TryGetValue(jobId, out var job) ? job : new SqlJob { Id = jobId })
@@ -648,6 +702,8 @@ where j.Id in @jobIds");
             Func<SqlJob, Job, InvocationData, JobLoadException, SafeDictionary<string, string>, TDto> selector)
         {
             var order = descending ? "desc" : "asc";
+
+            // TODO: Better to split into two queries to avoid allocating strings on each query
             var query = String.Format(CultureInfo.InvariantCulture, _storage.GetQueryFromTemplate(static schemaName =>
 $@";with cte as 
 (
@@ -655,17 +711,30 @@ $@";with cte as
   from [{schemaName}].Job j with (nolock, forceseek)
   where j.StateName = @stateName
 )
-select j.*, s.Reason as StateReason, s.Data as StateData, s.CreatedAt as StateChanged
+select j.Id, j.StateName, j.InvocationData, j.Arguments, j.CreatedAt, j.ExpireAt,
+  s.Reason as StateReason, s.Data as StateData, s.CreatedAt as StateChanged
 from [{schemaName}].Job j with (nolock, forceseek)
 inner join cte on cte.Id = j.Id
 left join [{schemaName}].State s with (nolock, forceseek) on j.StateId = s.Id and j.Id = s.JobId
 where cte.row_num between @start and @end"), order);
 
-            var jobs = connection.Query<SqlJob>(
-                        query,
-                        new { stateName = stateName, start = @from + 1, end = @from + count },
-                        commandTimeout: _storage.CommandTimeout)
-                        .ToList();
+            using var command = connection.Create(query, timeout: _storage.CommandTimeout)
+                .AddParameter("@stateName", stateName, DbType.String)
+                .AddParameter("@start", from + 1, DbType.Int32)
+                .AddParameter("@end", from + count, DbType.Int32);
+
+            var jobs = command.ExecuteList(static reader => new SqlJob
+            {
+                Id = reader.GetRequiredValue<long>("Id"),
+                StateName = reader.GetOptionalString("StateName"),
+                InvocationData = reader.GetRequiredString("InvocationData"),
+                Arguments = reader.GetOptionalString("Arguments"),
+                CreatedAt = reader.GetRequiredDateTime("CreatedAt"),
+                ExpireAt = reader.GetOptionalDateTime("ExpireAt"),
+                StateReason = reader.GetOptionalString("StateReason"),
+                StateData = reader.GetOptionalString("StateData"),
+                StateChanged = reader.GetOptionalDateTime("StateChanged")
+            });
 
             return DeserializeJobs(jobs, selector);
         }
@@ -698,19 +767,31 @@ where cte.row_num between @start and @end"), order);
             return new JobList<TDto>(result);
         }
 
-        private JobList<FetchedJobDto> FetchedJobs(DbConnection connection, IEnumerable<long> jobIds)
+        private JobList<FetchedJobDto> FetchedJobs(DbConnection connection, long[] jobIds)
         { 
+            if (jobIds.Length == 0) return new JobList<FetchedJobDto>();
+
             var query = _storage.GetQueryFromTemplate(static schemaName =>
-$@"select j.*, s.Reason as StateReason, s.Data as StateData 
+$@"select j.Id, j.StateName, j.InvocationData, j.Arguments, j.CreatedAt, j.ExpireAt, s.Reason as StateReason, s.Data as StateData 
 from [{schemaName}].Job j with (nolock, forceseek)
 left join [{schemaName}].State s with (nolock, forceseek) on s.Id = j.StateId and s.JobId = j.Id
 where j.Id in @jobIds");
 
-            var jobs = connection.Query<SqlJob>(
-                query,
-                new { jobIds = jobIds },
-                commandTimeout: _storage.CommandTimeout)
-                .ToList();
+            using var command = connection.Create(query, timeout: _storage.CommandTimeout)
+                .AddExpandedParameter("@jobIds", jobIds, DbType.Int64);
+
+            var jobs = command.ExecuteList(static reader => new SqlJob
+            {
+                Id = reader.GetRequiredValue<long>("Id"),
+                StateName = reader.GetOptionalString("StateName"),
+                InvocationData = reader.GetRequiredString("InvocationData"),
+                Arguments = reader.GetOptionalString("Arguments"),
+                CreatedAt = reader.GetRequiredDateTime("CreatedAt"),
+                ExpireAt = reader.GetOptionalDateTime("ExpireAt"),
+                StateReason = reader.GetOptionalString("StateReason"),
+                StateData = reader.GetOptionalString("StateData"),
+                StateChanged = reader.GetOptionalDateTime("StateChanged")
+            });
 
             var result = new List<KeyValuePair<string, FetchedJobDto>>(jobs.Count);
 
