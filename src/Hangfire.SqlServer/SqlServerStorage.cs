@@ -479,7 +479,7 @@ namespace Hangfire.SqlServer
                             // TODO: Escape schema here???
                             SqlServerObjectsInstaller.Install(connection, schema, storage.Options.EnableHeavyMigrations);
                             return true;
-                        }, Options.SchemaName);
+                        }, _escapedSchemaName);
 
                         lastException = null;
                         break;
