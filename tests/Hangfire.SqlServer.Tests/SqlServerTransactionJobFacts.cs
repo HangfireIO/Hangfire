@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using Moq;
 using Xunit;
 
@@ -112,8 +113,8 @@ namespace Hangfire.SqlServer.Tests
             processingJob.Dispose();
 
             // Assert
-            Assert.True(_transaction.Object.Disposed);
-            Assert.True(_connection.Object.Disposed);
+            Assert.True(_transaction.Object.WasDisposed);
+            Assert.True(_connection.Object.WasDisposed);
         }
 
         private SqlServerTransactionJob CreateFetchedJob(string jobId, string queue)
@@ -121,24 +122,26 @@ namespace Hangfire.SqlServer.Tests
             return new SqlServerTransactionJob(_storage.Object, _connection.Object, _transaction.Object, jobId, queue);
         }
 
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global", Justification = "Required to be public by Moq")]
         public abstract class MyDbConnection : DbConnection
         {
-            public bool Disposed { get; private set; }
+            public bool WasDisposed { get; private set; }
 
             protected override void Dispose(bool disposing)
             {
-                Disposed = true;
+                WasDisposed = true;
                 base.Dispose(disposing);
             }
         }
 
+        [SuppressMessage("ReSharper", "MemberCanBePrivate.Global", Justification = "Required to be public by Moq")]
         public abstract class MyDbTransaction : DbTransaction
         {
-            public bool Disposed { get; private set; }
+            public bool WasDisposed { get; private set; }
 
             protected override void Dispose(bool disposing)
             {
-                Disposed = true;
+                WasDisposed = true;
                 base.Dispose(disposing);
             }
         }
