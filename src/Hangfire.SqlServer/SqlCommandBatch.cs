@@ -64,7 +64,11 @@ namespace Hangfire.SqlServer
         {
             if (_commandSet != null)
             {
-                _commandSet.Append(command);
+                // SqlCommandSet clones the command internally, so we need to dispose of it manually
+                using (command)
+                {
+                    _commandSet.Append(command);
+                }
             }
             else
             {

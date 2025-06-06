@@ -211,12 +211,10 @@ $@"insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, 
 
                     foreach (var parameter in triple.Item3)
                     {
-                        var command = connection.Create(query)
+                        commandBatch.Append(connection.Create(query)
                             .AddParameter("@jobId", long.Parse(jobId, CultureInfo.InvariantCulture), DbType.Int64)
                             .AddParameter("@name", parameter.Key, DbType.String, size: 40)
-                            .AddParameter("@value", (object)parameter.Value ?? DBNull.Value, DbType.String, size: -1);
-
-                        commandBatch.Append(command);
+                            .AddParameter("@value", (object)parameter.Value ?? DBNull.Value, DbType.String, size: -1));
                     }
 
                     commandBatch.ExecuteNonQuery();
@@ -475,27 +473,24 @@ end catch");
                 {
                     if (!storage.Options.DisableGlobalLocks)
                     {
-                        var command = connection
+                        commandBatch.Append(connection
                             .Create("SET XACT_ABORT ON;exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive', @LockOwner=N'Transaction', @LockTimeout=-1;")
-                            .AddParameter("@resource", lockResourceKey, DbType.String, size: 255);
-                        commandBatch.Append(command);
+                            .AddParameter("@resource", lockResourceKey, DbType.String, size: 255));
                     }
 
                     foreach (var keyValuePair in pair.Value)
                     {
-                        var command = connection.Create(query)
+                        commandBatch.Append(connection.Create(query)
                             .AddParameter("@key", pair.Key, DbType.String)
                             .AddParameter("@field", keyValuePair.Key, DbType.String, size: 100)
-                            .AddParameter("@value", (object)keyValuePair.Value ?? DBNull.Value, DbType.String, size: -1);
-                        commandBatch.Append(command);
+                            .AddParameter("@value", (object)keyValuePair.Value ?? DBNull.Value, DbType.String, size: -1));
                     }
 
                     if (!storage.Options.DisableGlobalLocks)
                     {
-                        var command = connection
+                        commandBatch.Append(connection
                             .Create("exec sp_releaseapplock @Resource=@resource, @LockOwner=N'Transaction';")
-                            .AddParameter("@resource", lockResourceKey, DbType.String, size: 255);
-                        commandBatch.Append(command);
+                            .AddParameter("@resource", lockResourceKey, DbType.String, size: 255));
                     }
 
                     commandBatch.CommandTimeout = storage.CommandTimeout;

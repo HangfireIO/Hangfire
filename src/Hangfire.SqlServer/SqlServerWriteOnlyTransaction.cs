@@ -18,9 +18,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
-#if FEATURE_TRANSACTIONSCOPE
-using System.Transactions;
-#endif
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.States;
@@ -133,6 +130,11 @@ namespace Hangfire.SqlServer
             foreach (var acquiredLock in _acquiredLocks)
             {
                 acquiredLock.Dispose();
+            }
+
+            foreach (var tuple in _lockCommands)
+            {
+                tuple.Item1.Dispose();
             }
 
             base.Dispose();
@@ -563,8 +565,7 @@ $@"delete JQ from [{schemaName}].JobQueue JQ with (forceseek, rowlock) where Que
             {
                 foreach (var command in pair.Value)
                 {
-                    var dbCommand = command(batch.Connection);
-                    batch.Append(dbCommand);
+                    batch.Append(command(batch.Connection));
                 }
             }
         }
