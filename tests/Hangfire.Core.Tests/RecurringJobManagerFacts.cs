@@ -31,7 +31,7 @@ namespace Hangfire.Core.Tests
         public RecurringJobManagerFacts()
         {
             _id = "recurring-job-id";
-            _job = Job.FromExpression(() => Method());
+            _job = Job.Create(() => Method());
             _backgroundJob = new BackgroundJob("my-id", _job, _now);
             _cronExpression = Cron.Minutely();
             _storage = new Mock<JobStorage>();
@@ -197,7 +197,7 @@ namespace Hangfire.Core.Tests
         {
             // Arrange
             _storage.Setup(x => x.HasFeature(JobStorageFeatures.JobQueueProperty)).Returns(false);
-            _job = Job.FromExpression(() => Method(), "some-queue");
+            _job = Job.Create(() => Method(), "some-queue");
 
             var manager = CreateManager();
 
@@ -698,7 +698,7 @@ namespace Hangfire.Core.Tests
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}"))
                 .Returns(new Dictionary<string, string>
                 {
-                    { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) },
+                    { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.Create(() => Console.WriteLine()))) },
                     { "Cron", Cron.Minutely() }
                 });
 
@@ -804,7 +804,7 @@ namespace Hangfire.Core.Tests
             _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}"))
                 .Returns(new Dictionary<string, string>
                 {
-                    { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) },
+                    { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.Create(() => Console.WriteLine()))) },
                     { "Cron", Cron.Minutely() },
                     { "TimeZoneId", "UnexistingID" }
                 });
@@ -844,7 +844,7 @@ namespace Hangfire.Core.Tests
         {
             SerializationHelper.SetUserSerializerSettings(SerializerSettingsHelper.DangerousSettings);
 
-            var initialJob = Job.FromExpression(() => Console.WriteLine());
+            var initialJob = Job.Create(() => Console.WriteLine());
             var invocationData = InvocationData.Serialize(initialJob);
 
             var serializedInvocationData = SerializationHelper.Serialize(invocationData, SerializationOption.User);

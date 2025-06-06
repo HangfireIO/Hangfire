@@ -57,7 +57,7 @@ namespace Hangfire.Core.Tests.States
         [Fact]
         public void Apply_WithJobAndQueueSpecified_ThrowsAnException_WhenRequiredFeatureNotSupported()
         {
-            _context.BackgroundJob.Job = Job.FromExpression(() => BackgroundJobMock.SomeMethod(), "critical");
+            _context.BackgroundJob.Job = Job.Create(() => BackgroundJobMock.SomeMethod(), "critical");
             var handler = new EnqueuedState.Handler();
 
             Assert.Throws<NotSupportedException>(
@@ -68,7 +68,7 @@ namespace Hangfire.Core.Tests.States
         public void Apply_AddsJob_ToTheJobTargetQueue_WhenEnqueuedState_HasTheDefaultQueue()
         {
             _context.Storage.Setup(x => x.HasFeature("Job.Queue")).Returns(true);
-            _context.BackgroundJob.Job = Job.FromExpression(() => BackgroundJobMock.SomeMethod(), "myqueue");
+            _context.BackgroundJob.Job = Job.Create(() => BackgroundJobMock.SomeMethod(), "myqueue");
             _enqueuedState.Queue = "default";
             var handler = new EnqueuedState.Handler();
 
@@ -81,7 +81,7 @@ namespace Hangfire.Core.Tests.States
         public void Apply_AddsJobToTheOverridenQueue_WhenTheJobTargetQueuePresent_ButEnqueuedStateQueueIsNotDefault()
         {
             _context.Storage.Setup(x => x.HasFeature("Job.Queue")).Returns(true);
-            _context.BackgroundJob.Job = Job.FromExpression(() => BackgroundJobMock.SomeMethod(), "myqueue");
+            _context.BackgroundJob.Job = Job.Create(() => BackgroundJobMock.SomeMethod(), "myqueue");
             _enqueuedState.Queue = "otherqueue";
             var handler = new EnqueuedState.Handler();
 

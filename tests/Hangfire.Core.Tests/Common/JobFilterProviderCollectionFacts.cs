@@ -14,7 +14,7 @@ namespace Hangfire.Core.Tests.Common
 
         public JobFilterProviderCollectionFacts()
         {
-            _job = Job.FromExpression(() => Sample());
+            _job = Job.Create(() => Sample());
         }
 
         [Fact]

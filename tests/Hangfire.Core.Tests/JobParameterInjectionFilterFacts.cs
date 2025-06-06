@@ -30,7 +30,7 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void OnPerforming_HandlesParameterlessMethods_WithoutDoingAnything()
         {
-            _context.BackgroundJob.Job = Job.FromExpression(() => Parameterless());
+            _context.BackgroundJob.Job = Job.Create(() => Parameterless());
             var filter = CreateFilter();
 
             filter.OnPerforming(_context.GetPerformingContext());
@@ -41,7 +41,7 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void OnPerforming_DoesNotModifyNonDecoratedParameters()
         {
-            _context.BackgroundJob.Job = Job.FromExpression(() => NonDecorated("hello", 1));
+            _context.BackgroundJob.Job = Job.Create(() => NonDecorated("hello", 1));
             var filter = CreateFilter();
 
             filter.OnPerforming(_context.GetPerformingContext());
@@ -54,7 +54,7 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void OnPerforming_ModifiesParameters_DecoratedWithASpecialAttribute_ThatHaveNullValue()
         {
-            _context.BackgroundJob.Job = Job.FromExpression(() => Decorated(null));
+            _context.BackgroundJob.Job = Job.Create(() => Decorated(null));
             _context.Connection.Setup(x => x.GetJobParameter(_context.BackgroundJob.Id, "Result123")).Returns("\"Hello!\"");
             var filter = CreateFilter();
 
@@ -66,7 +66,7 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void OnPerforming_RewritesValueTypeParameters_DecoratedWithASpecialAttribute_ThatHaveDefaultValue()
         {
-            _context.BackgroundJob.Job = Job.FromExpression(() => Decorated(default(int)));
+            _context.BackgroundJob.Job = Job.Create(() => Decorated(default(int)));
             _context.Connection.Setup(x => x.GetJobParameter(_context.BackgroundJob.Id, "Result123")).Returns("12345");
             var filter = CreateFilter();
 
@@ -78,7 +78,7 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void OnPerforming_RewritesParameters_ThatDoNotHaveNullValue()
         {
-            _context.BackgroundJob.Job = Job.FromExpression(() => Decorated("NonNull"));
+            _context.BackgroundJob.Job = Job.Create(() => Decorated("NonNull"));
             _context.Connection.Setup(x => x.GetJobParameter(_context.BackgroundJob.Id, "Result123")).Returns("\"Hello!\"");
             var filter = CreateFilter();
 
@@ -90,7 +90,7 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void OnPerforming_RewritesValueTypeParameters_DecoratedWithASpecialAttribute_ThatHaveNonDefaultValue()
         {
-            _context.BackgroundJob.Job = Job.FromExpression(() => Decorated(123456));
+            _context.BackgroundJob.Job = Job.Create(() => Decorated(123456));
             _context.Connection.Setup(x => x.GetJobParameter(_context.BackgroundJob.Id, "Result123")).Returns("54321");
             var filter = CreateFilter();
 
@@ -102,7 +102,7 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void OnPerforming_DoesNotRewriteDefaultValueWithNull_WhenJobParameterIsNull()
         {
-            _context.BackgroundJob.Job = Job.FromExpression(() => Decorated(0));
+            _context.BackgroundJob.Job = Job.Create(() => Decorated(0));
             _context.Connection.Setup(x => x.GetJobParameter(_context.BackgroundJob.Id, "Result123")).Returns<string>(null);
             var filter = CreateFilter();
 
@@ -114,7 +114,7 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void OnPerforming_DoesNotRewriteNonDefaultValueWithNull_WhenJobParameterIsNull()
         {
-            _context.BackgroundJob.Job = Job.FromExpression(() => Decorated(123456));
+            _context.BackgroundJob.Job = Job.Create(() => Decorated(123456));
             _context.Connection.Setup(x => x.GetJobParameter(_context.BackgroundJob.Id, "Result123")).Returns<string>(null);
             var filter = CreateFilter();
 
@@ -126,7 +126,7 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void OnPerforming_ThrowsDeserializationException_WhenParameterCanNotBeDeserialized()
         {
-            _context.BackgroundJob.Job = Job.FromExpression(() => Decorated(null));
+            _context.BackgroundJob.Job = Job.Create(() => Decorated(null));
             _context.Connection.Setup(x => x.GetJobParameter(_context.BackgroundJob.Id, "Result123")).Returns("adk;hg");
             var filter = CreateFilter();
 
@@ -136,7 +136,7 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void OnPerforming_ModifiesParameters_BasedOnFromResultAttribute()
         {
-            _context.BackgroundJob.Job = Job.FromExpression(() => DecoratedWithFromResult(null));
+            _context.BackgroundJob.Job = Job.Create(() => DecoratedWithFromResult(null));
             _context.Connection.Setup(x => x.GetJobParameter(_context.BackgroundJob.Id, "AntecedentResult")).Returns("\"Result\"");
             var filter = CreateFilter();
 
@@ -148,7 +148,7 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void OnPerforming_CanModifyMultipleParameters()
         {
-            _context.BackgroundJob.Job = Job.FromExpression(() => Decorated(null, null));
+            _context.BackgroundJob.Job = Job.Create(() => Decorated(null, null));
             _context.Connection.Setup(x => x.GetJobParameter(_context.BackgroundJob.Id, "Param1")).Returns("\"Value1\"");
             _context.Connection.Setup(x => x.GetJobParameter(_context.BackgroundJob.Id, "Param2")).Returns("2");
             var filter = CreateFilter();

@@ -31,7 +31,7 @@ namespace Hangfire.Core.Tests
             
             _state = new Mock<IState>();
             _state.Setup(x => x.Name).Returns("Mock");
-            _job = Job.FromExpression(() => Method());
+            _job = Job.Create(() => Method());
 
             _factory = new Mock<IBackgroundJobFactory>();
             _factory.Setup(x => x.Create(It.IsAny<CreateContext>()))

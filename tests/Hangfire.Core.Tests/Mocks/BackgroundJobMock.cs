@@ -10,7 +10,7 @@ namespace Hangfire.Core.Tests
         public BackgroundJobMock()
         {
             Id = "JobId";
-            Job = Job.FromExpression(() => SomeMethod());
+            Job = Job.Create(() => SomeMethod());
             CreatedAt = DateTime.UtcNow;
 
             _object = new Lazy<BackgroundJob>(

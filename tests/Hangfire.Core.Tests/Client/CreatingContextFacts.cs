@@ -122,7 +122,7 @@ namespace Hangfire.Core.Tests.Client
         {
             var storage = new Mock<JobStorage>();
             var connection = new Mock<IStorageConnection>();
-            var job = Job.FromExpression(() => TestMethod());
+            var job = Job.Create(() => TestMethod());
             var state = new Mock<IState>();
 
             var createContext = new CreateContext(storage.Object, connection.Object, job, state.Object);

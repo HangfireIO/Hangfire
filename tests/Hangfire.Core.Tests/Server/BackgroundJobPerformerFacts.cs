@@ -558,7 +558,7 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             var id = Guid.NewGuid();
             _filters.Add(new AsyncLocalFilter(id));
-            _context.BackgroundJob.Job = Job.FromExpression(() => AsyncLocalSync());
+            _context.BackgroundJob.Job = Job.Create(() => AsyncLocalSync());
 
             var performer = CreatePerformer(CreateInnerPerformer(scheduler));
 
@@ -576,7 +576,7 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             var id = Guid.NewGuid();
             _filters.Add(new AsyncLocalFilter(id));
-            _context.BackgroundJob.Job = Job.FromExpression(() => AsyncLocalSimpleAsync());
+            _context.BackgroundJob.Job = Job.Create(() => AsyncLocalSimpleAsync());
 
             var performer = CreatePerformer(CreateInnerPerformer(scheduler));
 
@@ -594,7 +594,7 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             var id = Guid.NewGuid();
             _filters.Add(new AsyncLocalFilter(id));
-            _context.BackgroundJob.Job = Job.FromExpression(() => AsyncLocalAsyncAwait());
+            _context.BackgroundJob.Job = Job.Create(() => AsyncLocalAsyncAwait());
 
             var performer = CreatePerformer(CreateInnerPerformer(scheduler));
 
@@ -612,7 +612,7 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             var id = Guid.NewGuid();
             _filters.Add(new AsyncLocalFilter(id));
-            _context.BackgroundJob.Job = Job.FromExpression(() => AsyncLocalAsyncAwaitContinuation());
+            _context.BackgroundJob.Job = Job.Create(() => AsyncLocalAsyncAwaitContinuation());
 
             var performer = CreatePerformer(CreateInnerPerformer(scheduler));
 

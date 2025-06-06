@@ -24,7 +24,7 @@ namespace Hangfire.Core.Tests
             _recurringJob = new Dictionary<string, string>
             {
                 { "Cron", "* * * * *" },
-                { "Job", InvocationData.SerializeJob(Job.FromExpression(() => Console.WriteLine())).SerializePayload() },
+                { "Job", InvocationData.SerializeJob(Job.Create(() => Console.WriteLine())).SerializePayload() },
                 { "TimeZoneId", timeZone.Id }
             };
 

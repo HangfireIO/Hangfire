@@ -21,7 +21,7 @@ namespace Hangfire.Core.Tests.Client
 
         public CreateContextFacts()
         {
-            _job = Job.FromExpression(() => Method());
+            _job = Job.Create(() => Method());
             _state = new Mock<IState>();
             _connection = new Mock<IStorageConnection>();
             _storage = new Mock<JobStorage>();

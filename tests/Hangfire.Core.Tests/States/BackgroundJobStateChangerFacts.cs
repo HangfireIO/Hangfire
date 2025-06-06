@@ -35,7 +35,7 @@ namespace Hangfire.Core.Tests.States
             _filterProvider = new Mock<IJobFilterProvider>();
             _filterProvider.Setup(x => x.GetFilters(It.IsAny<Job>())).Returns(Enumerable.Empty<JobFilter>());
 
-            _job = Job.FromExpression(() => Console.WriteLine());
+            _job = Job.Create(() => Console.WriteLine());
             _state = new Mock<IState>();
             _state.Setup(x => x.Name).Returns(StateName);
             

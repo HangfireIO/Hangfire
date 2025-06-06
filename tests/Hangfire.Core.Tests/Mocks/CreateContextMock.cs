@@ -15,7 +15,7 @@ namespace Hangfire.Core.Tests
         {
             Storage = new Mock<JobStorage>();
             Connection = new Mock<IStorageConnection>();
-            Job = Job.FromExpression(() => Method());
+            Job = Job.Create(() => Method());
             InitialState = new Mock<IState>();
 
             _context = new Lazy<CreateContext>(

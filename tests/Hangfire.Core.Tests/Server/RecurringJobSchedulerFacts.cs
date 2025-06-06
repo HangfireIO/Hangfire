@@ -58,7 +58,7 @@ namespace Hangfire.Core.Tests.Server
             _recurringJob = new Dictionary<string, string>
             {
                 { "Cron", _expressionString },
-                { "Job", InvocationData.SerializeJob(Job.FromExpression(() => Console.WriteLine())).SerializePayload() },
+                { "Job", InvocationData.SerializeJob(Job.Create(() => Console.WriteLine())).SerializePayload() },
                 { "TimeZoneId", timeZone.Id }
             };
 
@@ -1067,7 +1067,7 @@ namespace Hangfire.Core.Tests.Server
             _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(_nowInstant.AddDays(-1));
             _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_nowInstant);
             _recurringJob["Job"] = InvocationData.SerializeJob(
-                Job.FromExpression(() => Console.WriteLine())).SerializePayload().Replace("Console", "SomeNonExistingClass");
+                Job.Create(() => Console.WriteLine())).SerializePayload().Replace("Console", "SomeNonExistingClass");
 
             var scheduler = CreateScheduler();
 

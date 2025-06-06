@@ -30,7 +30,7 @@ namespace Hangfire.Core.Tests.Common
         public void GetFilters_IncludesAttributesOnClassType()
         {
             // Arrange
-            var job = Job.FromExpression(() => ClassWithTypeAttribute.Method());
+            var job = Job.Create(() => ClassWithTypeAttribute.Method());
             var provider = new JobFilterAttributeFilterProvider();
 
             // Act
@@ -56,7 +56,7 @@ namespace Hangfire.Core.Tests.Common
         public void GetFilters_IncludesAttributesOMethod()
         {
             // Arrange
-            var job = Job.FromExpression(() => ClassWithActionAttribute.Method());
+            var job = Job.Create(() => ClassWithActionAttribute.Method());
             var provider = new JobFilterAttributeFilterProvider();
 
             // Act
@@ -86,7 +86,7 @@ namespace Hangfire.Core.Tests.Common
         public void GetFilters_IncludesTypeAttributesFromDerivedTypeWhenMethodIsOnBaseClass()
         { 
             // Arrange
-            var job = Job.FromExpression<DerivedClass>(x => x.MyMethod());
+            var job = Job.Create<DerivedClass>(x => x.MyMethod());
             var provider = new JobFilterAttributeFilterProvider();
 
             // Act
@@ -104,7 +104,7 @@ namespace Hangfire.Core.Tests.Common
         public void GetFilters_RetrievesNonCachedAttributesWhenConfiguredNotTo()
         {
             // Arrange
-            var job = Job.FromExpression<DerivedClass>(x => x.MyMethod());
+            var job = Job.Create<DerivedClass>(x => x.MyMethod());
             var provider = new JobFilterAttributeFilterProvider(false);
 
             // Act

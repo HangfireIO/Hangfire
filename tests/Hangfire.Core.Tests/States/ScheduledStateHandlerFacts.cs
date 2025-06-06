@@ -46,7 +46,7 @@ namespace Hangfire.Core.Tests.States
         [Fact]
         public void Apply_WithJobAndQueueSpecified_ThrowsAnException_WhenRequiredFeatureNotSupported()
         {
-            _context.BackgroundJob.Job = Job.FromExpression(() => BackgroundJobMock.SomeMethod(), "critical");
+            _context.BackgroundJob.Job = Job.Create(() => BackgroundJobMock.SomeMethod(), "critical");
             var handler = new ScheduledState.Handler();
 
             Assert.Throws<NotSupportedException>(
@@ -57,7 +57,7 @@ namespace Hangfire.Core.Tests.States
         public void Apply_ShouldAddJob_WithQueueSpecified_ToTheScheduleSet_WithQueuePrepended()
         {
             _context.Storage.Setup(x => x.HasFeature("Job.Queue")).Returns(true);
-            _context.BackgroundJob.Job = Job.FromExpression(() => BackgroundJobMock.SomeMethod(), "critical");
+            _context.BackgroundJob.Job = Job.Create(() => BackgroundJobMock.SomeMethod(), "critical");
             var handler = new ScheduledState.Handler();
 
             handler.Apply(_context.Object, _transaction.Object);
@@ -80,7 +80,7 @@ namespace Hangfire.Core.Tests.States
         [Fact]
         public void Unapply_WithJobAndQueueSpecified_ThrowsAnException_WhenRequiredFeatureNotSupported()
         {
-            _context.BackgroundJob.Job = Job.FromExpression(() => BackgroundJobMock.SomeMethod(), "critical");
+            _context.BackgroundJob.Job = Job.Create(() => BackgroundJobMock.SomeMethod(), "critical");
             var handler = new ScheduledState.Handler();
 
             Assert.Throws<NotSupportedException>(
@@ -91,7 +91,7 @@ namespace Hangfire.Core.Tests.States
         public void Unapply_WithJob_WithQueueSpecified_ShouldRemoveTheJobId_FromTheScheduleSet_PrependedWithQueueName()
         {
             _context.Storage.Setup(x => x.HasFeature("Job.Queue")).Returns(true);
-            _context.BackgroundJob.Job = Job.FromExpression(() => BackgroundJobMock.SomeMethod(), "critical");
+            _context.BackgroundJob.Job = Job.Create(() => BackgroundJobMock.SomeMethod(), "critical");
             var handler = new ScheduledState.Handler();
 
             handler.Unapply(_context.Object, _transaction.Object);

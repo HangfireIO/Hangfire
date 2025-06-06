@@ -500,7 +500,7 @@ namespace Hangfire
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            return client.Create(Job.FromExpression(methodCall), state);
+            return client.Create(Job.Create(methodCall), state);
         }
 
         /// <summary>
@@ -521,7 +521,7 @@ namespace Hangfire
             if (client == null) throw new ArgumentNullException(nameof(client));
             if (queue == null) throw new ArgumentNullException(nameof(queue));
 
-            return client.Create(Job.FromExpression(methodCall, queue), state);
+            return client.Create(Job.Create(methodCall, queue), state);
         }
 
         /// <summary>
@@ -538,7 +538,7 @@ namespace Hangfire
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            return client.Create(Job.FromExpression(methodCall), state);
+            return client.Create(Job.Create(methodCall), state);
         }
 
         /// <summary>
@@ -559,7 +559,7 @@ namespace Hangfire
             if (client == null) throw new ArgumentNullException(nameof(client));
             if (queue == null) throw new ArgumentNullException(nameof(queue));
 
-            return client.Create(Job.FromExpression(methodCall, queue), state);
+            return client.Create(Job.Create(methodCall, queue), state);
         }
 
         /// <summary>
@@ -577,7 +577,7 @@ namespace Hangfire
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            return client.Create(Job.FromExpression(methodCall), state);
+            return client.Create(Job.Create(methodCall), state);
         }
 
         /// <summary>
@@ -599,7 +599,7 @@ namespace Hangfire
             if (client == null) throw new ArgumentNullException(nameof(client));
             if (queue == null) throw new ArgumentNullException(nameof(queue));
 
-            return client.Create(Job.FromExpression(methodCall, queue), state);
+            return client.Create(Job.Create(methodCall, queue), state);
         }
 
         /// <summary>
@@ -618,7 +618,7 @@ namespace Hangfire
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            return client.Create(Job.FromExpression(methodCall), state);
+            return client.Create(Job.Create(methodCall), state);
         }
 
         /// <summary>
@@ -641,7 +641,7 @@ namespace Hangfire
             if (client == null) throw new ArgumentNullException(nameof(client));
             if (queue == null) throw new ArgumentNullException(nameof(queue));
 
-            return client.Create(Job.FromExpression(methodCall, queue), state);
+            return client.Create(Job.Create(methodCall, queue), state);
         }
 
         /// <summary>

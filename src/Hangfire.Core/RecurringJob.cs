@@ -77,7 +77,7 @@ namespace Hangfire
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
-            var job = Job.FromExpression(methodCall);
+            var job = Job.Create(methodCall);
             var id = GetRecurringJobId(job);
 
             Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
@@ -89,7 +89,7 @@ namespace Hangfire
             [NotNull] string cronExpression,
             [NotNull] RecurringJobOptions options)
         {
-            var job = Job.FromExpression(methodCall);
+            var job = Job.Create(methodCall);
             var id = GetRecurringJobId(job);
 
             Instance.Value.AddOrUpdate(id, job, cronExpression, options);
@@ -102,7 +102,7 @@ namespace Hangfire
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
-            var job = Job.FromExpression(methodCall);
+            var job = Job.Create(methodCall);
             var id = GetRecurringJobId(job);
 
             Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
@@ -114,7 +114,7 @@ namespace Hangfire
             [NotNull] string cronExpression,
             [NotNull] RecurringJobOptions options)
         {
-            var job = Job.FromExpression(methodCall);
+            var job = Job.Create(methodCall);
             var id = GetRecurringJobId(job);
 
             Instance.Value.AddOrUpdate(id, job, cronExpression, options);
@@ -228,7 +228,7 @@ namespace Hangfire
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
-            var job = Job.FromExpression(methodCall);
+            var job = Job.Create(methodCall);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
@@ -246,7 +246,7 @@ namespace Hangfire
             [NotNull] string cronExpression,
             [NotNull] RecurringJobOptions options)
         {
-            var job = Job.FromExpression(methodCall);
+            var job = Job.Create(methodCall);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
         }
 
@@ -268,7 +268,7 @@ namespace Hangfire
         {
             if (queue == null) throw new ArgumentNullException(nameof(queue));
 
-            var job = Job.FromExpression(methodCall, queue);
+            var job = Job.Create(methodCall, queue);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
         }
 
@@ -280,7 +280,7 @@ namespace Hangfire
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
-            var job = Job.FromExpression(methodCall);
+            var job = Job.Create(methodCall);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
@@ -298,7 +298,7 @@ namespace Hangfire
             [NotNull] string cronExpression,
             [NotNull] RecurringJobOptions options)
         {
-            var job = Job.FromExpression(methodCall);
+            var job = Job.Create(methodCall);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
         }
 
@@ -320,7 +320,7 @@ namespace Hangfire
         {
             if (queue == null) throw new ArgumentNullException(nameof(queue));
 
-            var job = Job.FromExpression(methodCall, queue);
+            var job = Job.Create(methodCall, queue);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
         }
 
@@ -373,7 +373,7 @@ namespace Hangfire
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
-            var job = Job.FromExpression(methodCall);
+            var job = Job.Create(methodCall);
             var id = GetRecurringJobId(job);
 
             Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
@@ -385,7 +385,7 @@ namespace Hangfire
             [NotNull] string cronExpression,
             [NotNull] RecurringJobOptions options)
         {
-            var job = Job.FromExpression(methodCall);
+            var job = Job.Create(methodCall);
             var id = GetRecurringJobId(job);
 
             Instance.Value.AddOrUpdate(id, job, cronExpression, options);
@@ -524,7 +524,7 @@ namespace Hangfire
             [CanBeNull] TimeZoneInfo timeZone = null,
             [NotNull] string queue = EnqueuedState.DefaultQueue)
         {
-            var job = Job.FromExpression(methodCall);
+            var job = Job.Create(methodCall);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone ?? TimeZoneInfo.Utc, queue);
         }
 
@@ -542,7 +542,7 @@ namespace Hangfire
             [NotNull] string cronExpression,
             [NotNull] RecurringJobOptions options)
         {
-            var job = Job.FromExpression(methodCall);
+            var job = Job.Create(methodCall);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
         }
 
@@ -564,7 +564,7 @@ namespace Hangfire
         {
             if (queue == null) throw new ArgumentNullException(nameof(queue));
 
-            var job = Job.FromExpression(methodCall, queue);
+            var job = Job.Create(methodCall, queue);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
         }
 
@@ -594,7 +594,7 @@ namespace Hangfire
             [NotNull] string cronExpression,
             [NotNull] RecurringJobOptions options)
         {
-            var job = Job.FromExpression(methodCall);
+            var job = Job.Create(methodCall);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
         }
 
@@ -616,7 +616,7 @@ namespace Hangfire
         {
             if (queue == null) throw new ArgumentNullException(nameof(queue));
 
-            var job = Job.FromExpression(methodCall, queue);
+            var job = Job.Create(methodCall, queue);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, options);
         }
 

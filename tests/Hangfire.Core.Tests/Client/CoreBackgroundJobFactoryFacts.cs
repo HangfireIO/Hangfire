@@ -66,7 +66,7 @@ namespace Hangfire.Core.Tests.Client
         {
             // Arrange
             _context.Storage.Setup(x => x.HasFeature(JobStorageFeatures.JobQueueProperty)).Returns(false);
-            _context.Job = Job.FromExpression(() => Method(), "some-queue");
+            _context.Job = Job.Create(() => Method(), "some-queue");
 
             var factory = CreateFactory();
 

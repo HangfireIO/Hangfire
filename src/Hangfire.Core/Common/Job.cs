@@ -309,14 +309,65 @@ namespace Hangfire.Common
         /// <b>only used to obtain the type</b> for a job. It is not
         /// serialized and not passed across the process boundaries.</note>
         /// </remarks>
+        [Obsolete("Please use the `Create` method instead with the same arguments. Will be removed in 2.0.")]
         public static Job FromExpression([NotNull, InstantHandle] Expression<Action> methodCall)
         {
-            return FromExpression(methodCall, null);
+            return Create(methodCall, null);
         }
 
+        [Obsolete("Please use the `Create` method instead with the same arguments. Will be removed in 2.0.")]
         public static Job FromExpression([NotNull, InstantHandle] Expression<Action> methodCall, [CanBeNull] string queue)
         {
-            return FromExpression(methodCall, null, queue);
+            return Create(methodCall, null, queue);
+        }
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="Job"/> class based on the given static
+        /// method call expression, evaluates its arguments, and captures type, method,
+        /// and arguments information to be serialized and stored in a persistent storage.
+        /// </summary>
+        /// <param name="methodCall">Static method call expression. Must not be <c>null</c>.</param>
+        /// <returns>Instance of the <see cref="Job"/> class.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> argument is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="methodCall"/> expression body is not of type <see cref="MethodCallExpression"/>.
+        /// </exception>
+        /// <exception cref="NotSupportedException">
+        /// <paramref name="methodCall"/> expression contains a method that is not supported.
+        /// </exception>
+        /// <remarks>
+        /// Please note that <paramref name="methodCall"/> is not a delegate, and the specified method itself will not
+        /// be called while constructing a <see cref="Job"/> instance. Only specified arguments are evaluated to
+        /// collect enough metadata for serialization.
+        /// </remarks>
+        public static Job Create([NotNull, InstantHandle] Expression<Action> methodCall)
+        {
+            return Create(methodCall, null);
+        }
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="Job"/> class based on the given static
+        /// method call expression, evaluates its arguments, and captures queue, type, method,
+        /// and arguments information to be serialized and stored in a persistent storage.
+        /// </summary>
+        /// <param name="methodCall">Static method call expression. Must not be <c>null</c>.</param>
+        /// <param name="queue">Explicit queue name for the job. Can be <c>null</c>.</param>
+        /// <returns>Instance of the <see cref="Job"/> class.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> argument is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="methodCall"/> expression body is not of type <see cref="MethodCallExpression"/>.
+        /// </exception>
+        /// <exception cref="NotSupportedException">
+        /// <paramref name="methodCall"/> expression contains a method that is not supported.
+        /// </exception>
+        /// <remarks>
+        /// Please note that <paramref name="methodCall"/> is not a delegate, and the specified method itself will not
+        /// be called while constructing a <see cref="Job"/> instance. Only specified arguments are evaluated to
+        /// collect enough metadata for serialization.
+        /// </remarks>
+        public static Job Create([NotNull, InstantHandle] Expression<Action> methodCall, [CanBeNull] string queue)
+        {
+            return Create(methodCall, null, queue);
         }
 
         /// <summary>
@@ -347,14 +398,67 @@ namespace Hangfire.Common
         /// <b>only used to obtain the type</b> for a job. It is not
         /// serialized and not passed across the process boundaries.</note>
         /// </remarks>
+        [Obsolete("Please use the `Create` method instead with the same arguments. Will be removed in 2.0.")]
         public static Job FromExpression([NotNull, InstantHandle] Expression<Func<Task>> methodCall)
         {
-            return FromExpression(methodCall, null);
+            return Create(methodCall, null);
         }
 
+        [Obsolete("Please use the `Create` method instead with the same arguments. Will be removed in 2.0.")]
         public static Job FromExpression([NotNull, InstantHandle] Expression<Func<Task>> methodCall, [CanBeNull] string queue)
         {
-            return FromExpression(methodCall, null, queue);
+            return Create(methodCall, null, queue);
+        }
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="Job"/> class based on the given static
+        /// asynchronous method call expression, evaluates its arguments, and captures type,
+        /// method, and arguments information to be serialized and stored in a persistent
+        /// storage.
+        /// </summary>
+        /// <param name="methodCall">Static asynchronous method call expression. Must not be <c>null</c>.</param>
+        /// <returns>Instance of the <see cref="Job"/> class.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> argument is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="methodCall"/> expression body is not of type <see cref="MethodCallExpression"/>.
+        /// </exception>
+        /// <exception cref="NotSupportedException">
+        /// <paramref name="methodCall"/> expression contains a method that is not supported.
+        /// </exception>
+        /// <remarks>
+        /// Please note that <paramref name="methodCall"/> is not a delegate, and the specified method itself will not
+        /// be called while constructing a <see cref="Job"/> instance. Only specified arguments are evaluated to
+        /// collect enough metadata for serialization.
+        /// </remarks>
+        public static Job Create([NotNull, InstantHandle] Expression<Func<Task>> methodCall)
+        {
+            return Create(methodCall, null);
+        }
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="Job"/> class based on the given static
+        /// asynchronous method call expression, evaluates its arguments, and captures queue,
+        /// type, method, and arguments information to be serialized and stored in a persistent
+        /// storage.
+        /// </summary>
+        /// <param name="methodCall">Static asynchronous method call expression. Must not be <c>null</c>.</param>
+        /// <param name="queue">Explicit queue name for the job. Can be <c>null</c>.</param>
+        /// <returns>Instance of the <see cref="Job"/> class.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> argument is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="methodCall"/> expression body is not of type <see cref="MethodCallExpression"/>.
+        /// </exception>
+        /// <exception cref="NotSupportedException">
+        /// <paramref name="methodCall"/> expression contains a method that is not supported.
+        /// </exception>
+        /// <remarks>
+        /// Please note that <paramref name="methodCall"/> is not a delegate, and the specified method itself will not
+        /// be called while constructing a <see cref="Job"/> instance. Only specified arguments are evaluated to
+        /// collect enough metadata for serialization.
+        /// </remarks>
+        public static Job Create([NotNull, InstantHandle] Expression<Func<Task>> methodCall, [CanBeNull] string queue)
+        {
+            return Create(methodCall, null, queue);
         }
 
         /// <summary>
@@ -377,14 +481,69 @@ namespace Hangfire.Common
         /// that uses caching where possible to decrease the performance 
         /// penalty.</para>
         /// </remarks>
+        [Obsolete("Please use the `Create` method instead with the same arguments. Will be removed in 2.0.")]
         public static Job FromExpression<TType>([NotNull, InstantHandle] Expression<Action<TType>> methodCall)
         {
-            return FromExpression(methodCall, null);
+            return Create(methodCall, null);
         }
 
+        [Obsolete("Please use the `Create` method instead with the same arguments. Will be removed in 2.0.")]
         public static Job FromExpression<TType>([NotNull, InstantHandle] Expression<Action<TType>> methodCall, [CanBeNull] string queue)
         {
-            return FromExpression(methodCall, typeof(TType), queue);
+            return Create(methodCall, typeof(TType), queue);
+        }
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="Job"/> class based on the given instance
+        /// method call expression of the specified <typeparamref name="TType"/>, evaluates its
+        /// arguments, and captures type, method, and arguments information to be serialized
+        /// and stored in a persistent storage.
+        /// </summary>
+        /// <typeparam name="TType">Type that should be activated for calling the given method.</typeparam>
+        /// <param name="methodCall">Instance method call expression. Must not be <c>null</c>.</param>
+        /// <returns>Instance of the <see cref="Job"/> class.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> argument is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="methodCall"/> expression body is not of type <see cref="MethodCallExpression"/>.
+        /// </exception>
+        /// <exception cref="NotSupportedException">
+        /// <paramref name="methodCall"/> expression contains a method that is not supported.
+        /// </exception>
+        /// <remarks>
+        /// Please note that <paramref name="methodCall"/> is not a delegate, and the specified method itself will not
+        /// be called while constructing a <see cref="Job"/> instance. Only specified arguments are evaluated to
+        /// collect enough metadata for serialization.
+        /// </remarks>
+        public static Job Create<TType>([NotNull, InstantHandle] Expression<Action<TType>> methodCall)
+        {
+            return Create(methodCall, null);
+        }
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="Job"/> class based on the given instance
+        /// method call expression of the specified <typeparamref name="TType"/>, evaluates its
+        /// arguments, and captures queue, type, method, and arguments information to be serialized
+        /// and stored in a persistent storage.
+        /// </summary>
+        /// <typeparam name="TType">Type that should be activated for calling the given method.</typeparam>
+        /// <param name="methodCall">Instance method call expression. Must not be <c>null</c>.</param>
+        /// <param name="queue">Explicit queue name for the job. Can be <c>null</c>.</param>
+        /// <returns>Instance of the <see cref="Job"/> class.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> argument is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="methodCall"/> expression body is not of type <see cref="MethodCallExpression"/>.
+        /// </exception>
+        /// <exception cref="NotSupportedException">
+        /// <paramref name="methodCall"/> expression contains a method that is not supported.
+        /// </exception>
+        /// <remarks>
+        /// Please note that <paramref name="methodCall"/> is not a delegate, and the specified method itself will not
+        /// be called while constructing a <see cref="Job"/> instance. Only specified arguments are evaluated to
+        /// collect enough metadata for serialization.
+        /// </remarks>
+        public static Job Create<TType>([NotNull, InstantHandle] Expression<Action<TType>> methodCall, [CanBeNull] string queue)
+        {
+            return Create(methodCall, typeof(TType), queue);
         }
 
         /// <summary>
@@ -407,17 +566,72 @@ namespace Hangfire.Common
         /// that uses caching where possible to decrease the performance 
         /// penalty.</para>
         /// </remarks>
+        [Obsolete("Please use the `Create` method instead with the same arguments. Will be removed in 2.0.")]
         public static Job FromExpression<TType>([NotNull, InstantHandle] Expression<Func<TType, Task>> methodCall)
         {
-            return FromExpression(methodCall, null);
+            return Create(methodCall, null);
         }
 
+        [Obsolete("Please use the `Create` method instead with the same arguments. Will be removed in 2.0.")]
         public static Job FromExpression<TType>([NotNull, InstantHandle] Expression<Func<TType, Task>> methodCall, [CanBeNull] string queue)
         {
-            return FromExpression(methodCall, typeof(TType), queue);
+            return Create(methodCall, typeof(TType), queue);
         }
 
-        private static Job FromExpression([NotNull] LambdaExpression methodCall, [CanBeNull] Type explicitType, [CanBeNull] string queue)
+        /// <summary>
+        /// Creates a new instance of the <see cref="Job"/> class based on the given asynchronous instance
+        /// method call expression of the specified <typeparamref name="TType"/>, evaluates its
+        /// arguments, and captures queue, type, method, and arguments information to be serialized
+        /// and stored in a persistent storage.
+        /// </summary>
+        /// <typeparam name="TType">Type that should be activated for calling the given method.</typeparam>
+        /// <param name="methodCall">Asynchronous instance method call expression. Must not be <c>null</c>.</param>
+        /// <returns>Instance of the <see cref="Job"/> class.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> argument is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="methodCall"/> expression body is not of type <see cref="MethodCallExpression"/>.
+        /// </exception>
+        /// <exception cref="NotSupportedException">
+        /// <paramref name="methodCall"/> expression contains a method that is not supported.
+        /// </exception>
+        /// <remarks>
+        /// Please note that <paramref name="methodCall"/> is not a delegate, and the specified method itself will not
+        /// be called while constructing a <see cref="Job"/> instance. Only specified arguments are evaluated to
+        /// collect enough metadata for serialization.
+        /// </remarks>
+        public static Job Create<TType>([NotNull, InstantHandle] Expression<Func<TType, Task>> methodCall)
+        {
+            return Create(methodCall, null);
+        }
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="Job"/> class based on the given asynchronous instance
+        /// method call expression of the specified <typeparamref name="TType"/>, evaluates its
+        /// arguments, and captures queue, type, method, and arguments information to be serialized
+        /// and stored in a persistent storage.
+        /// </summary>
+        /// <typeparam name="TType">Type that should be activated for calling the given method.</typeparam>
+        /// <param name="methodCall">Asynchronous instance method call expression. Must not be <c>null</c>.</param>
+        /// <param name="queue">Explicit queue name for the job. Can be <c>null</c>.</param>
+        /// <returns>Instance of the <see cref="Job"/> class.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> argument is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="methodCall"/> expression body is not of type <see cref="MethodCallExpression"/>.
+        /// </exception>
+        /// <exception cref="NotSupportedException">
+        /// <paramref name="methodCall"/> expression contains a method that is not supported.
+        /// </exception>
+        /// <remarks>
+        /// Please note that <paramref name="methodCall"/> is not a delegate, and the specified method itself will not
+        /// be called while constructing a <see cref="Job"/> instance. Only specified arguments are evaluated to
+        /// collect enough metadata for serialization.
+        /// </remarks>
+        public static Job Create<TType>([NotNull, InstantHandle] Expression<Func<TType, Task>> methodCall, [CanBeNull] string queue)
+        {
+            return Create(methodCall, typeof(TType), queue);
+        }
+
+        private static Job Create([NotNull] LambdaExpression methodCall, [CanBeNull] Type explicitType, [CanBeNull] string queue)
         {
             if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
 

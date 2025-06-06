@@ -44,7 +44,7 @@ namespace Hangfire.Core.Tests.Server
         public void Perform_CanInvokeStaticMethods()
         {
             _methodInvoked = false;
-            _context.BackgroundJob.Job = Job.FromExpression(() => StaticMethod());
+            _context.BackgroundJob.Job = Job.Create(() => StaticMethod());
             var performer = CreatePerformer();
 
             performer.Perform(_context.Object);
@@ -56,7 +56,7 @@ namespace Hangfire.Core.Tests.Server
         public void Perform_CanInvokeInstanceMethods()
         {
             _methodInvoked = false;
-            _context.BackgroundJob.Job = Job.FromExpression<CoreBackgroundJobPerformerFacts>(x => x.InstanceMethod());
+            _context.BackgroundJob.Job = Job.Create<CoreBackgroundJobPerformerFacts>(x => x.InstanceMethod());
             var performer = CreatePerformer();
 
             performer.Perform(_context.Object);
@@ -68,7 +68,7 @@ namespace Hangfire.Core.Tests.Server
         public void Perform_ActivatesJob_WithinAScope()
         {
             var performer = CreatePerformer();
-            _context.BackgroundJob.Job = Job.FromExpression<CoreBackgroundJobPerformerFacts>(x => x.InstanceMethod());
+            _context.BackgroundJob.Job = Job.Create<CoreBackgroundJobPerformerFacts>(x => x.InstanceMethod());
 
             performer.Perform(_context.Object);
 
@@ -79,7 +79,7 @@ namespace Hangfire.Core.Tests.Server
         public void Perform_DisposesDisposableInstance_AfterPerformance()
         {
             _disposed = false;
-            _context.BackgroundJob.Job = Job.FromExpression<Disposable>(x => x.Method());
+            _context.BackgroundJob.Job = Job.Create<Disposable>(x => x.Method());
             var performer = CreatePerformer();
 
             performer.Perform(_context.Object);
@@ -92,7 +92,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             _methodInvoked = false;
-            _context.BackgroundJob.Job = Job.FromExpression(() => MethodWithArguments("hello", 5));
+            _context.BackgroundJob.Job = Job.Create(() => MethodWithArguments("hello", 5));
             var performer = CreatePerformer();
 
             // Act
@@ -154,7 +154,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             _methodInvoked = false;
-            _context.BackgroundJob.Job = Job.FromExpression(() => MethodWithDateTimeArgument(SomeDateTime));
+            _context.BackgroundJob.Job = Job.Create(() => MethodWithDateTimeArgument(SomeDateTime));
             var performer = CreatePerformer();
 
             // Act
@@ -169,7 +169,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             _methodInvoked = false;
-            _context.BackgroundJob.Job = Job.FromExpression(() => NullArgumentMethod(null));
+            _context.BackgroundJob.Job = Job.Create(() => NullArgumentMethod(null));
 
             var performer = CreatePerformer();
             // Act
@@ -186,7 +186,7 @@ namespace Hangfire.Core.Tests.Server
             var exception = new InvalidOperationException();
             _activator.Setup(x => x.ActivateJob(It.IsAny<Type>())).Throws(exception);
 
-            _context.BackgroundJob.Job = Job.FromExpression(() => InstanceMethod());
+            _context.BackgroundJob.Job = Job.Create(() => InstanceMethod());
             var performer = CreatePerformer();
 
             // Act
@@ -198,7 +198,7 @@ namespace Hangfire.Core.Tests.Server
         public void Perform_ThrowsPerformanceException_WhenActivatorReturnsNull()
         {
             _activator.Setup(x => x.ActivateJob(It.IsNotNull<Type>())).Returns(null);
-            _context.BackgroundJob.Job = Job.FromExpression(() => InstanceMethod());
+            _context.BackgroundJob.Job = Job.Create(() => InstanceMethod());
             var performer = CreatePerformer();
 
             Assert.Throws<InvalidOperationException>(
@@ -223,7 +223,7 @@ namespace Hangfire.Core.Tests.Server
         public void Perform_ThrowsPerformanceException_OnDisposalFailure()
         {
             _methodInvoked = false;
-            _context.BackgroundJob.Job = Job.FromExpression<BrokenDispose>(x => x.Method());
+            _context.BackgroundJob.Job = Job.Create<BrokenDispose>(x => x.Method());
             var performer = CreatePerformer();
             
             Assert.Throws<InvalidOperationException>(
@@ -235,7 +235,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Perform_ThrowsPerformanceException_WithUnwrappedInnerException()
         {
-            _context.BackgroundJob.Job = Job.FromExpression(() => ExceptionMethod());
+            _context.BackgroundJob.Job = Job.Create(() => ExceptionMethod());
             var performer = CreatePerformer();
 
             var thrownException = Assert.Throws<JobPerformanceException>(
@@ -248,7 +248,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Run_ThrowsPerformanceException_WithUnwrappedInnerException_ForTasks()
         {
-            _context.BackgroundJob.Job = Job.FromExpression(() => TaskExceptionMethod());
+            _context.BackgroundJob.Job = Job.Create(() => TaskExceptionMethod());
             var performer = CreatePerformer();
 
             var thrownException = Assert.Throws<JobPerformanceException>(
@@ -261,7 +261,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Perform_ThrowsPerformanceException_WhenMethodThrownTaskCanceledException()
         {
-            _context.BackgroundJob.Job = Job.FromExpression(() => TaskCanceledExceptionMethod());
+            _context.BackgroundJob.Job = Job.Create(() => TaskCanceledExceptionMethod());
             var performer = CreatePerformer();
 
             var thrownException = Assert.Throws<JobPerformanceException>(
@@ -274,7 +274,7 @@ namespace Hangfire.Core.Tests.Server
         public void Perform_RethrowsOperationCanceledException_WhenShutdownTokenIsCanceled()
         {
             // Arrange
-            _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _context.BackgroundJob.Job = Job.Create(() => CancelableJob(JobCancellationToken.Null));
             _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(new CancellationToken(true));
             _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<OperationCanceledException>();
 
@@ -288,7 +288,7 @@ namespace Hangfire.Core.Tests.Server
         public void Run_RethrowsTaskCanceledException_WhenShutdownTokenIsCanceled()
         {
             // Arrange
-            _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _context.BackgroundJob.Job = Job.Create(() => CancelableJob(JobCancellationToken.Null));
             _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(new CancellationToken(true));
             _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<TaskCanceledException>();
 
@@ -302,7 +302,7 @@ namespace Hangfire.Core.Tests.Server
         public void Run_RethrowsJobAbortedException()
         {
             // Arrange
-            _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _context.BackgroundJob.Job = Job.Create(() => CancelableJob(JobCancellationToken.Null));
             _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(new CancellationToken(true));
             _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<JobAbortedException>();
 
@@ -316,7 +316,7 @@ namespace Hangfire.Core.Tests.Server
         public void ThrowsJobPerformanceException_DoesInclude_JobId()
         {
 	        // Arrange
-	        _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+	        _context.BackgroundJob.Job = Job.Create(() => CancelableJob(JobCancellationToken.Null));
 	        _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(CancellationToken.None);
 	        _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<OperationCanceledException>();
 
@@ -331,7 +331,7 @@ namespace Hangfire.Core.Tests.Server
         public void Run_ThrowsJobPerformanceException_InsteadOfOperationCanceled_WhenShutdownWasNOTInitiated()
         {
             // Arrange
-            _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _context.BackgroundJob.Job = Job.Create(() => CancelableJob(JobCancellationToken.Null));
             _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(CancellationToken.None);
             _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<OperationCanceledException>();
 
@@ -345,7 +345,7 @@ namespace Hangfire.Core.Tests.Server
         public void Run_PassesStandardCancellationToken_IfThereIsCancellationTokenParameter()
         {
             // Arrange
-            _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(default(CancellationToken)));
+            _context.BackgroundJob.Job = Job.Create(() => CancelableJob(default(CancellationToken)));
             var source = new CancellationTokenSource();
             _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(source.Token);
             var performer = CreatePerformer();
@@ -359,7 +359,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Perform_ReturnsValue_WhenCallingFunctionReturningValue()
         {
-            _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningValue());
+            _context.BackgroundJob.Job = Job.Create<JobFacts.Instance>(x => x.FunctionReturningValue());
             var performer = CreatePerformer();
 
             var result = performer.Perform(_context.Object);
@@ -370,7 +370,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Run_DoesNotReturnValue_WhenCallingFunctionReturningPlainTask()
         {
-            _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningTask());
+            _context.BackgroundJob.Job = Job.Create<JobFacts.Instance>(x => x.FunctionReturningTask());
             var performer = CreatePerformer();
 
             var result = performer.Perform(_context.Object);
@@ -381,7 +381,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Run_DoesNotReturnValue_WhenCallingFunctionReturningValueTask()
         {
-            _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningValueTask());
+            _context.BackgroundJob.Job = Job.Create<JobFacts.Instance>(x => x.FunctionReturningValueTask());
             var performer = CreatePerformer();
 
             var result = performer.Perform(_context.Object);
@@ -394,7 +394,7 @@ namespace Hangfire.Core.Tests.Server
         [InlineData(false)]
         public void Run_ReturnsTaskResult_WhenCallingFunctionReturningGenericTask(bool continueOnCapturedContext)
         {
-            _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningTaskResultingInString(continueOnCapturedContext));
+            _context.BackgroundJob.Job = Job.Create<JobFacts.Instance>(x => x.FunctionReturningTaskResultingInString(continueOnCapturedContext));
             var performer = CreatePerformer();
 
             var result = performer.Perform(_context.Object);
@@ -407,7 +407,7 @@ namespace Hangfire.Core.Tests.Server
         [InlineData(false)]
         public void Run_ReturnsTaskResult_WhenCallingFunctionReturningValueTask(bool continueOnCapturedContext)
         {
-            _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningValueTaskResultingInString(continueOnCapturedContext));
+            _context.BackgroundJob.Job = Job.Create<JobFacts.Instance>(x => x.FunctionReturningValueTaskResultingInString(continueOnCapturedContext));
             var performer = CreatePerformer();
 
             var result = performer.Perform(_context.Object);
@@ -419,7 +419,7 @@ namespace Hangfire.Core.Tests.Server
         public void Perform_ExecutesAsyncMethod_AlwaysWithinTheSameThread()
         {
             SynchronizationContext.SetSynchronizationContext(null);
-            _context.BackgroundJob.Job = Job.FromExpression(() => AsyncMethod(Thread.CurrentThread.ManagedThreadId));
+            _context.BackgroundJob.Job = Job.Create(() => AsyncMethod(Thread.CurrentThread.ManagedThreadId));
             var performer = CreatePerformer();
 
             var result = performer.Perform(_context.Object);
@@ -433,7 +433,7 @@ namespace Hangfire.Core.Tests.Server
             SynchronizationContext.SetSynchronizationContext(null);
             var scheduler = new MyCustomTaskScheduler();
 
-            _context.BackgroundJob.Job = Job.FromExpression(() => TaskExceptionMethod());
+            _context.BackgroundJob.Job = Job.Create(() => TaskExceptionMethod());
             var performer = CreatePerformer(scheduler);
 
             Assert.Throws<JobPerformanceException>(() => performer.Perform(_context.Object));
@@ -447,7 +447,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Perform_FlowsExistingAsyncLocal_WhenInvokingSynchronousMethod()
         {
-            InvokeJobMethodWithFlowOfAsyncLocal(Job.FromExpression(() => CheckSynchronousAsyncLocal()));
+            InvokeJobMethodWithFlowOfAsyncLocal(Job.Create(() => CheckSynchronousAsyncLocal()));
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Global")]
@@ -462,7 +462,7 @@ namespace Hangfire.Core.Tests.Server
         [MemberData(nameof(GetSchedulers))]
         public void Perform_FlowsExistingAsyncLocal_WhenInvokingSimpleAsyncMethod(TaskScheduler scheduler)
         {
-            InvokeJobMethodWithFlowOfAsyncLocal(Job.FromExpression(() => CheckSimpleAsyncLocal()), scheduler);
+            InvokeJobMethodWithFlowOfAsyncLocal(Job.Create(() => CheckSimpleAsyncLocal()), scheduler);
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Global")]
@@ -478,7 +478,7 @@ namespace Hangfire.Core.Tests.Server
         [MemberData(nameof(GetSchedulers))]
         public void Perform_FlowsExistingAsyncLocal_WhenInvokingAsyncMethodWithAwait(TaskScheduler scheduler)
         {
-            InvokeJobMethodWithFlowOfAsyncLocal(Job.FromExpression(() => CheckAsyncAwaitAsyncLocal()), scheduler);
+            InvokeJobMethodWithFlowOfAsyncLocal(Job.Create(() => CheckAsyncAwaitAsyncLocal()), scheduler);
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Global")]
@@ -495,7 +495,7 @@ namespace Hangfire.Core.Tests.Server
         [MemberData(nameof(GetSchedulers))]
         public void Perform_FlowsExistingAsyncLocal_WhenInvokingAsyncMethodAndSettingAsyncLocalAfterAwait(TaskScheduler scheduler)
         {
-            InvokeJobMethodWithFlowOfAsyncLocal(Job.FromExpression(() => CheckAsyncLocalAfterAwait()), scheduler);
+            InvokeJobMethodWithFlowOfAsyncLocal(Job.Create(() => CheckAsyncLocalAfterAwait()), scheduler);
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Global")]
@@ -512,7 +512,7 @@ namespace Hangfire.Core.Tests.Server
         [MemberData(nameof(GetSchedulers))]
         public void Perform_FlowsExistingAsyncLocal_WhenInvokingAsyncMethodAndSettingAsyncLocalInTaskContinuation(TaskScheduler scheduler)
         {
-            InvokeJobMethodWithFlowOfAsyncLocal(Job.FromExpression(() => CheckAsyncLocalInExplicitTaskContinuation()), scheduler);
+            InvokeJobMethodWithFlowOfAsyncLocal(Job.Create(() => CheckAsyncLocalInExplicitTaskContinuation()), scheduler);
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Global")]
@@ -547,7 +547,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Perform_DoesNotLeakAsyncLocal_WhenInvokingSynchronousMethod()
         {
-            InvokeJobMethodAndAssertAsyncLocalIsNull(Job.FromExpression(() => SynchronousAsyncLocal()));
+            InvokeJobMethodAndAssertAsyncLocalIsNull(Job.Create(() => SynchronousAsyncLocal()));
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Global")]
@@ -563,7 +563,7 @@ namespace Hangfire.Core.Tests.Server
         [MemberData(nameof(GetSchedulers))]
         public void Perform_DoesNotLeakAsyncLocal_WhenInvokingSimpleAsyncMethod(TaskScheduler scheduler)
         {
-            InvokeJobMethodAndAssertAsyncLocalIsNull(Job.FromExpression(() => SimpleAsyncLocal()), scheduler);
+            InvokeJobMethodAndAssertAsyncLocalIsNull(Job.Create(() => SimpleAsyncLocal()), scheduler);
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Global")]
@@ -580,7 +580,7 @@ namespace Hangfire.Core.Tests.Server
         [MemberData(nameof(GetSchedulers))]
         public void Perform_DoesNotLeakAsyncLocal_WhenInvokingAsyncMethodWithAwait(TaskScheduler scheduler)
         {
-            InvokeJobMethodAndAssertAsyncLocalIsNull(Job.FromExpression(() => AsyncAwaitAsyncLocal()), scheduler);
+            InvokeJobMethodAndAssertAsyncLocalIsNull(Job.Create(() => AsyncAwaitAsyncLocal()), scheduler);
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Global")]
@@ -598,7 +598,7 @@ namespace Hangfire.Core.Tests.Server
         [MemberData(nameof(GetSchedulers))]
         public void Perform_DoesNotLeakAsyncLocal_WhenInvokingAsyncMethodAndSettingAsyncLocalAfterAwait(TaskScheduler scheduler)
         {
-            InvokeJobMethodAndAssertAsyncLocalIsNull(Job.FromExpression(() => AsyncLocalSetAfterAwait()), scheduler);
+            InvokeJobMethodAndAssertAsyncLocalIsNull(Job.Create(() => AsyncLocalSetAfterAwait()), scheduler);
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Global")]
@@ -616,7 +616,7 @@ namespace Hangfire.Core.Tests.Server
         [MemberData(nameof(GetSchedulers))]
         public void Perform_DoesNotLeakAsyncLocal_WhenInvokingAsyncMethodAndSettingAsyncLocalInTaskContinuation(TaskScheduler scheduler)
         {
-            InvokeJobMethodAndAssertAsyncLocalIsNull(Job.FromExpression(() => AsyncLocalSetInExplicitTaskContinuation()), scheduler);
+            InvokeJobMethodAndAssertAsyncLocalIsNull(Job.Create(() => AsyncLocalSetInExplicitTaskContinuation()), scheduler);
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Global")]

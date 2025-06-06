@@ -44,7 +44,7 @@ namespace Hangfire.Core.Tests.Server
             _connection.Setup(x => x.GetJobData(JobId))
                 .Returns(new JobData
                 {
-                    Job = Job.FromExpression(() => Method()),
+                    Job = Job.Create(() => Method()),
                 });
 
             _stateChanger = new Mock<IBackgroundJobStateChanger>();
