@@ -51,6 +51,7 @@ namespace Hangfire.Server
             builders.AddRange(GetRequiredProcesses());
             if (!options.ExcludeStorageProcesses)
             {
+                builders.Add(new ServerWatchdog(_options.ServerCheckInterval, _options.ServerTimeout).UseBackgroundPool(threadCount: 1));
                 builders.AddRange(GetStorageComponents());
             }
             builders.AddRange(dispatcherBuilders);
@@ -150,7 +151,6 @@ namespace Hangfire.Server
 
         private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses()
         {
-            yield return new ServerWatchdog(_options.ServerCheckInterval, _options.ServerTimeout).UseBackgroundPool(threadCount: 1);
             yield return new ServerJobCancellationWatcher(_options.CancellationCheckInterval).UseBackgroundPool(threadCount: 1);
 
             if (_storage.HasFeature(Storage.JobStorageFeatures.ProcessesInsteadOfComponents))
