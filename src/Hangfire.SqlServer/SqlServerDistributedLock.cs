@@ -146,7 +146,7 @@ namespace Hangfire.SqlServer
 
                 try
                 {
-                    using var command = _connection.Create("SELECT 1;");
+                    using var command = _connection.CreateCommand("SELECT 1;");
                     command.ExecuteNonQuery();
                 }
                 catch
@@ -194,7 +194,7 @@ namespace Hangfire.SqlServer
             do
             {
                 using var command = connection
-                    .Create("sp_getapplock", CommandType.StoredProcedure, timeout: (int)(lockTimeout / 1000) + 5)
+                    .CreateCommand("sp_getapplock", CommandType.StoredProcedure, timeout: (int)(lockTimeout / 1000) + 5)
                     .AddParameter("@Resource", resource, DbType.String, size: 255)
                     .AddParameter("@DbPrincipal", "public", DbType.String, size: 32)
                     .AddParameter("@LockMode", LockMode, DbType.String, size: 32)
@@ -243,7 +243,7 @@ namespace Hangfire.SqlServer
             string resource,
             out DbParameter resultParameter)
         {
-            return connection.Create("sp_releaseapplock", CommandType.StoredProcedure)
+            return connection.CreateCommand("sp_releaseapplock", CommandType.StoredProcedure)
                 .AddParameter("@Resource", resource, DbType.String, size: 255)
                 .AddParameter("@LockOwner", LockOwner, DbType.String, size: 32)
                 .AddReturnParameter("@Result", out resultParameter, DbType.Int32);

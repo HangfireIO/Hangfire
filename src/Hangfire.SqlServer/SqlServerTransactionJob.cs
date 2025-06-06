@@ -102,7 +102,7 @@ namespace Hangfire.SqlServer
 
                 try
                 {
-                    using var command = _connection.Create("SELECT 1;", timeout: _storage.CommandTimeout);
+                    using var command = _connection.CreateCommand("SELECT 1;", timeout: _storage.CommandTimeout);
                     command.Transaction = _transaction;
 
                     command.ExecuteNonQuery();

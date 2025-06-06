@@ -69,7 +69,7 @@ namespace Hangfire.SqlServer
             {
                 removedCount = storage.UseConnection(null, static (storage, connection) =>
                 {
-                    using var command = connection.Create(GetAggregationQuery(storage), timeout: 0)
+                    using var command = connection.CreateCommand(GetAggregationQuery(storage), timeout: 0)
                         .AddParameter("@now", DateTime.UtcNow, DbType.DateTime)
                         .AddParameter("@count", NumberOfRecordsInSinglePass, DbType.Int32);
 

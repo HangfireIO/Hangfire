@@ -22,7 +22,7 @@ namespace Hangfire.SqlServer
 {
     internal static class DbConnectionExtensions
     {
-        public static DbCommand Create(
+        public static DbCommand CreateCommand(
             [NotNull] this DbConnection connection,
             [NotNull] string text,
             CommandType type = CommandType.Text,

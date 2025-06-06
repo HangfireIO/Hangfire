@@ -52,7 +52,7 @@ namespace Hangfire.SqlServer
 
             try
             {
-                using var command = connection.Create(script, timeout: 0);
+                using var command = connection.CreateCommand(script, timeout: 0);
                 command.ExecuteNonQuery();
             }
             finally

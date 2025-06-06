@@ -228,7 +228,7 @@ delete top(@count) from cte option (maxdop 1);");
             Action<DbCommand> additionalActions,
             CancellationToken cancellationToken)
         {
-            using var command = connection.Create(commandText, timeout: 0)
+            using var command = connection.CreateCommand(commandText, timeout: 0)
                 .AddParameter("@count", numberOfRecordsInSinglePass, DbType.Int32)
                 .AddParameter("@now", DateTime.UtcNow, DbType.DateTime);
 

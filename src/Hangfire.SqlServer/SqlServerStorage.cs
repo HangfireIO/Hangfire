@@ -506,7 +506,7 @@ namespace Hangfire.SqlServer
                 {
                     int? schema = UseConnection(null, static (storage, connection) =>
                     {
-                        using var command = connection.Create(storage.GetQueryFromTemplate(static schemaName =>
+                        using var command = connection.CreateCommand(storage.GetQueryFromTemplate(static schemaName =>
                             $"select top (1) [Version] from [{schemaName}].[Schema]"));
 
                         return command.ExecuteScalar<int?>();
@@ -600,7 +600,7 @@ namespace Hangfire.SqlServer
 select count(*) from sys.sysprocesses
 where dbid = db_id(@name) and status != 'background' and status != 'sleeping'";
 
-                    using var command = connection.Create(sqlQuery, timeout: storage.CommandTimeout)
+                    using var command = connection.CreateCommand(sqlQuery, timeout: storage.CommandTimeout)
                         .AddParameter("@name", connection.Database, DbType.String);
 
                     var value = command.ExecuteScalar<int>();
@@ -622,7 +622,7 @@ where dbid = db_id(@name) and status != 'background' and status != 'sleeping'";
 select count(*) from sys.sysprocesses
 where dbid = db_id(@name) and status != 'background'";
 
-                    using var command = connection.Create(sqlQuery, timeout: storage.CommandTimeout)
+                    using var command = connection.CreateCommand(sqlQuery, timeout: storage.CommandTimeout)
                         .AddParameter("@name", connection.Database, DbType.String);
 
                     var value = command.ExecuteScalar<int>();
@@ -644,7 +644,7 @@ where dbid = db_id(@name) and status != 'background'";
 select count(*) from sys.sysprocesses
 where dbid = db_id(@name) and status != 'background' and open_tran = 1";
 
-                    using var command = connection.Create(sqlQuery, timeout: storage.CommandTimeout)
+                    using var command = connection.CreateCommand(sqlQuery, timeout: storage.CommandTimeout)
                         .AddParameter("@name", connection.Database, DbType.String);
 
                     var value = command.ExecuteScalar<int>();
@@ -666,7 +666,7 @@ where dbid = db_id(@name) and status != 'background' and open_tran = 1";
 select SUM(CAST(FILEPROPERTY(name, 'SpaceUsed') AS INT)/128.0) as RowsSizeMB from sys.database_files
 where type = 0;";
 
-                    using var command = connection.Create(sqlQuery, timeout: storage.CommandTimeout);
+                    using var command = connection.CreateCommand(sqlQuery, timeout: storage.CommandTimeout);
                     var value = command.ExecuteScalar<double>();
 
                     return new Metric(value.ToString("F", CultureInfo.CurrentCulture));
@@ -687,7 +687,7 @@ where type = 0;";
 select SUM(CAST(FILEPROPERTY(name, 'SpaceUsed') AS INT)/128.0) as LogSizeMB from sys.database_files
 where type = 1;";
 
-                    using var command = connection.Create(sqlQuery, timeout: storage.CommandTimeout);
+                    using var command = connection.CreateCommand(sqlQuery, timeout: storage.CommandTimeout);
                     var value = command.ExecuteScalar<double>();
 
                     return new Metric(value.ToString("F", CultureInfo.CurrentCulture));
@@ -707,7 +707,7 @@ where type = 1;";
                     var sqlQuery = storage.GetQueryFromTemplate(static schemaName =>
                         $@"select top(1) [Version] from [{schemaName}].[Schema]");
 
-                    using var command = connection.Create(sqlQuery, timeout: storage.CommandTimeout);
+                    using var command = connection.CreateCommand(sqlQuery, timeout: storage.CommandTimeout);
 
                     var version = command.ExecuteScalar<int?>();
 
@@ -747,7 +747,7 @@ where type = 1;";
                     const string sqlQuery = @"SELECT top(1) cntr_value FROM sys.dm_os_performance_counters where object_name = @objectName and instance_name = @instanceName and counter_name = @counterName";
                     long? value;
 
-                    using var command = connection.Create(sqlQuery, timeout: storage.CommandTimeout)
+                    using var command = connection.CreateCommand(sqlQuery, timeout: storage.CommandTimeout)
                         .AddParameter("@objectName", ctx.Item1, DbType.String)
                         .AddParameter("@instanceName", ctx.Item2 ?? connection.Database, DbType.String)
                         .AddParameter("@counterName", ctx.Item3, DbType.String);

@@ -147,7 +147,7 @@ namespace Hangfire.SqlServer
                 var query = storage.GetQueryFromTemplate(static schemaName =>
                     $@"select [Id], [Data], [LastHeartbeat] from [{schemaName}].Server with (nolock)");
 
-                using var command = connection.Create(query, timeout: storage.CommandTimeout);
+                using var command = connection.CreateCommand(query, timeout: storage.CommandTimeout);
 
                 var servers = command.ExecuteList(static reader => new Entities.Server
                 {
@@ -280,7 +280,7 @@ namespace Hangfire.SqlServer
                     var query = storage.GetQueryFromTemplate(static schemaName =>
                         $@"select Id, StateName from [{schemaName}].Job with (nolock, forceseek) where Id in @ids");
 
-                    using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                    using var command = connection.CreateCommand(query, timeout: storage.CommandTimeout)
                         .AddExpandedParameter("@ids", parentIds, DbType.Int64);
 
                     return command.ExecuteList(static reader => new ParentStateDto
@@ -403,7 +403,7 @@ select InvocationData, Arguments, CreatedAt, ExpireAt from [{schemaName}].Job wi
 select Name, Value from [{schemaName}].JobParameter with (nolock, forceseek) where JobId = @id
 select Name, Reason, Data, CreatedAt from [{schemaName}].State with (nolock, forceseek) where JobId = @id order by Id desc");
 
-                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                using var command = connection.CreateCommand(query, timeout: storage.CommandTimeout)
                     .AddParameter("@id", parsedId, DbType.Int64);
 
                 using var multi = command.ExecuteMultiple();
@@ -507,7 +507,7 @@ select sum(s.[Value]) from (
 select count(*) from [{schemaName}].[Set] with (nolock, forceseek) where [Key] = N'recurring-jobs';
 select count(*) from [{schemaName}].[Set] with (nolock, forceseek) where [Key] = N'retries';");
 
-                using var command = connection.Create(query, timeout: storage.CommandTimeout);
+                using var command = connection.CreateCommand(query, timeout: storage.CommandTimeout);
                 using var multi = command.ExecuteMultiple();
 
                 return new StatisticsDto
@@ -573,7 +573,7 @@ select count(*) from [{schemaName}].[Set] with (nolock, forceseek) where [Key] =
 $@"select [Key], [Value] as [Count] from [{schemaName}].AggregatedCounter with (nolock, forceseek)
 where [Key] in @keys");
 
-            using var command = connection.Create(query, timeout: storage.CommandTimeout)
+            using var command = connection.CreateCommand(query, timeout: storage.CommandTimeout)
                 .AddExpandedParameter("@keys", keyMaps.Keys.ToArray(), DbType.String);
 
             var valuesMap = command.ExecuteList(static reader => new KeyValuePair<string, long>(
@@ -613,7 +613,7 @@ from [{schemaName}].Job j with (nolock, forceseek)
 left join [{schemaName}].State s with (nolock, forceseek) on s.Id = j.StateId and s.JobId = j.Id
 where j.Id in @jobIds");
 
-            using var command = connection.Create(query, timeout: storage.CommandTimeout)
+            using var command = connection.CreateCommand(query, timeout: storage.CommandTimeout)
                 .AddExpandedParameter("@jobIds", jobIds, DbType.Int64);
 
             var jobs = command.ExecuteList(static reader => new SqlJob
@@ -655,7 +655,7 @@ where j.Id in @jobIds");
                 ? static schemaName => $@"select count(j.Id) from (select top (@limit) Id from [{schemaName}].Job with (nolock, forceseek) where StateName = @state) as j"
                 : static schemaName => $@"select count(Id) from [{schemaName}].Job with (nolock, forceseek) where StateName = @state");
 
-            using var command = connection.Create(query, timeout: storage.CommandTimeout)
+            using var command = connection.CreateCommand(query, timeout: storage.CommandTimeout)
                 .AddParameter("@state", stateName, DbType.String)
                 .AddParameter("@limit", jobListLimit ?? -1, DbType.Int32);
 
@@ -697,7 +697,7 @@ where j.Id in @jobIds");
             // TODO: Better to split into two queries to avoid allocating strings on each query
             var query = storage.GetQueryFromTemplate(schemaName => GetJobsQuery(schemaName, order));
 
-            using var command = connection.Create(query, timeout: storage.CommandTimeout)
+            using var command = connection.CreateCommand(query, timeout: storage.CommandTimeout)
                 .AddParameter("@stateName", stateName, DbType.String)
                 .AddParameter("@start", from + 1, DbType.Int32)
                 .AddParameter("@end", from + count, DbType.Int32);
@@ -773,7 +773,7 @@ from [{schemaName}].Job j with (nolock, forceseek)
 left join [{schemaName}].State s with (nolock, forceseek) on s.Id = j.StateId and s.JobId = j.Id
 where j.Id in @jobIds");
 
-            using var command = connection.Create(query, timeout: storage.CommandTimeout)
+            using var command = connection.CreateCommand(query, timeout: storage.CommandTimeout)
                 .AddExpandedParameter("@jobIds", jobIds, DbType.Int64);
 
             var jobs = command.ExecuteList(static reader => new SqlJob

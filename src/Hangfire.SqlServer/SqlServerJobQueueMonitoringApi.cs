@@ -50,7 +50,7 @@ namespace Hangfire.SqlServer
                         var query = storage.GetQueryFromTemplate(static schemaName =>
 $@"select distinct(Queue) from [{schemaName}].JobQueue with (nolock)");
 
-                        using var command = connection.Create(query, timeout: storage.CommandTimeout);
+                        using var command = connection.CreateCommand(query, timeout: storage.CommandTimeout);
                         return command.ExecuteList(static reader => reader.GetRequiredString("Queue"));
                     });
 
@@ -74,7 +74,7 @@ $@"select r.JobId from (
 ) as r
 where r.row_num between @start and @end");
 
-                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                using var command = connection.CreateCommand(query, timeout: storage.CommandTimeout)
                     .AddParameter("@queue", ctx.Queue, DbType.String)
                     .AddParameter("@start", ctx.From + 1, DbType.Int32)
                     .AddParameter("@end", ctx.From + ctx.PerPage, DbType.Int32);
@@ -95,7 +95,7 @@ select r.JobId from (
 ) as r
 where r.row_num between @start and @end");
 
-                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                using var command = connection.CreateCommand(query, timeout: storage.CommandTimeout)
                     .AddParameter("@queue", ctx.Queue, DbType.String)
                     .AddParameter("@start", ctx.From + 1, DbType.Int32)
                     .AddParameter("@end", ctx.From + ctx.PerPage, DbType.Int32);
@@ -125,7 +125,7 @@ from (
     where Queue = @queue
 ) q");
 
-                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                using var command = connection.CreateCommand(query, timeout: storage.CommandTimeout)
                     .AddParameter("@queue", q, DbType.String);
 
                 return command.ExecuteSingle(static reader => new EnqueuedAndFetchedCountDto

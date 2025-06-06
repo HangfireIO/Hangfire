@@ -79,7 +79,7 @@ namespace Hangfire.SqlServer
             var query = _storage.GetQueryFromTemplate(static schemaName =>
 $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
 
-            using var command = ((DbConnection)connection).Create(query, timeout: _storage.CommandTimeout);
+            using var command = ((DbConnection)connection).CreateCommand(query, timeout: _storage.CommandTimeout);
             command.AddParameter("@jobId", long.Parse(jobId, CultureInfo.InvariantCulture), DbType.Int64);
             command.AddParameter("@queue", queue, DbType.String);
 
@@ -207,7 +207,7 @@ from [{schemaName}].JobQueue JQ with (forceseek, readpast, updlock, rowlock)
 where Queue in @queues and
 (FetchedAt is null or FetchedAt < DATEADD(second, @timeoutSs, GETUTCDATE()));");
 
-            return connection.Create(template, timeout: storage.CommandTimeout)
+            return connection.CreateCommand(template, timeout: storage.CommandTimeout)
                 .AddParameter("@timeoutSs", invisibilityTimeout, DbType.Int32)
                 .AddExpandedParameter("@queues", queues, DbType.String);
         }
@@ -295,7 +295,7 @@ from [{schemaName}].JobQueue JQ with (readpast, updlock, rowlock, forceseek)
 where Queue in @queues and (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))");
             
             return connection
-                .Create(template, timeout: storage.CommandTimeout)
+                .CreateCommand(template, timeout: storage.CommandTimeout)
                 .AddParameter("@timeout", invisibilityTimeout, DbType.Int32)
                 .AddExpandedParameter("@queues", queues, DbType.String);
         }

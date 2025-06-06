@@ -83,7 +83,7 @@ namespace Hangfire.SqlServer
                         var query = storage.GetQueryFromTemplate(static schemaName =>
                             $@"delete JQ from [{schemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt");
 
-                        using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                        using var command = connection.CreateCommand(query, timeout: storage.CommandTimeout)
                             .AddParameter("@queue", ctx.Queue, DbType.String)
                             .AddParameter("@id", ctx.Id, DbType.Int64)
                             .AddParameter("@fetchedAt", ctx.FetchedAt, DbType.DateTime);
@@ -111,7 +111,7 @@ namespace Hangfire.SqlServer
                         var query = storage.GetQueryFromTemplate(static schemaName =>
                             $@"update JQ set FetchedAt = null from [{schemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt");
 
-                        using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                        using var command = connection.CreateCommand(query, timeout: storage.CommandTimeout)
                             .AddParameter("@queue", ctx.Queue, DbType.String)
                             .AddParameter("@id", ctx.Id, DbType.Int64)
                             .AddParameter("@fetchedAt", ctx.FetchedAt, DbType.DateTime);
@@ -176,7 +176,7 @@ namespace Hangfire.SqlServer
                                 var query = storage.GetQueryFromTemplate(static schemaName =>
                                     $@"update JQ set FetchedAt = getutcdate() output INSERTED.FetchedAt from [{schemaName}].JobQueue JQ with (forceseek, rowlock) where Queue = @queue and Id = @id and FetchedAt = @fetchedAt");
 
-                                using var command = connection.Create(query, timeout: storage.CommandTimeout)
+                                using var command = connection.CreateCommand(query, timeout: storage.CommandTimeout)
                                     .AddParameter("@queue", ctx.Queue, DbType.String)
                                     .AddParameter("@id", ctx.Id, DbType.Int64)
                                     .AddParameter("@fetchedAt", ctx.FetchedAt, DbType.DateTime);
