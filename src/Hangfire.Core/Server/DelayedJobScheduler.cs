@@ -369,7 +369,6 @@ namespace Hangfire.Server
                 context.ServerId));
         }
 
-        // TODO Use new HasFeature method if available to avoid exceptions
         private bool IsBatchingAvailable(JobStorage storage, IStorageConnection connection)
         {
             if (storage.HasFeature(JobStorageFeatures.Connection.BatchedGetFirstByLowest) ||
