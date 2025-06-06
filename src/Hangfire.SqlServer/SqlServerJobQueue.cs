@@ -166,7 +166,7 @@ $@"insert into [{schemaName}].JobQueue (JobId, Queue) values (@jobId, @queue)");
 
         private SqlServerTimeoutJob FetchJob(string[] queues)
         {
-            return _storage.UseConnection(null, static (storage, connection, queues) =>
+            return _storage.UseConnection(static (storage, connection, queues) =>
             {
                 if (!storage.Options.SlidingInvisibilityTimeout.HasValue)
                 {

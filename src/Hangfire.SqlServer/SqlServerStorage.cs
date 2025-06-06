@@ -474,11 +474,12 @@ namespace Hangfire.SqlServer
                 {
                     try
                     {
-                        UseConnection(null, static (storage, connection) =>
+                        UseConnection(static (storage, connection, schema) =>
                         {
                             // TODO: Escape schema here???
-                            SqlServerObjectsInstaller.Install(connection, storage.Options.SchemaName, storage.Options.EnableHeavyMigrations);
-                        });
+                            SqlServerObjectsInstaller.Install(connection, schema, storage.Options.EnableHeavyMigrations);
+                            return true;
+                        }, Options.SchemaName);
 
                         lastException = null;
                         break;
@@ -504,7 +505,7 @@ namespace Hangfire.SqlServer
             {
                 try
                 {
-                    int? schema = UseConnection(null, static (storage, connection) =>
+                    int? schema = UseConnection(static (storage, connection) =>
                     {
                         using var command = connection.CreateCommand(storage.GetQueryFromTemplate(static schemaName =>
                             $"select top (1) [Version] from [{schemaName}].[Schema]"));
@@ -594,7 +595,7 @@ namespace Hangfire.SqlServer
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(null, static (storage, connection) =>
+                return sqlStorage.UseConnection(static (storage, connection) =>
                 {
                     const string sqlQuery = @"
 select count(*) from sys.sysprocesses
@@ -616,7 +617,7 @@ where dbid = db_id(@name) and status != 'background' and status != 'sleeping'";
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(null, static (storage, connection) =>
+                return sqlStorage.UseConnection(static (storage, connection) =>
                 {
                     const string sqlQuery = @"
 select count(*) from sys.sysprocesses
@@ -638,7 +639,7 @@ where dbid = db_id(@name) and status != 'background'";
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(null, static (storage, connection) =>
+                return sqlStorage.UseConnection(static (storage, connection) =>
                 {
                     const string sqlQuery = @"
 select count(*) from sys.sysprocesses
@@ -660,7 +661,7 @@ where dbid = db_id(@name) and status != 'background' and open_tran = 1";
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(null, static (storage, connection) =>
+                return sqlStorage.UseConnection(static (storage, connection) =>
                 {
                     const string sqlQuery = @"
 select SUM(CAST(FILEPROPERTY(name, 'SpaceUsed') AS INT)/128.0) as RowsSizeMB from sys.database_files
@@ -681,7 +682,7 @@ where type = 0;";
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(null, static (storage, connection) =>
+                return sqlStorage.UseConnection(static (storage, connection) =>
                 {
                     const string sqlQuery = @"
 select SUM(CAST(FILEPROPERTY(name, 'SpaceUsed') AS INT)/128.0) as LogSizeMB from sys.database_files
@@ -702,7 +703,7 @@ where type = 1;";
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(null, static (storage, connection) =>
+                return sqlStorage.UseConnection(static (storage, connection) =>
                 {
                     var sqlQuery = storage.GetQueryFromTemplate(static schemaName =>
                         $@"select top(1) [Version] from [{schemaName}].[Schema]");
@@ -742,7 +743,7 @@ where type = 1;";
                 var sqlStorage = page.Storage as SqlServerStorage;
                 if (sqlStorage == null) return new Metric("???");
 
-                return sqlStorage.UseConnection(null, static (storage, connection, ctx) =>
+                return sqlStorage.UseConnection(static (storage, connection, ctx) =>
                 {
                     const string sqlQuery = @"SELECT top(1) cntr_value FROM sys.dm_os_performance_counters where object_name = @objectName and instance_name = @instanceName and counter_name = @counterName";
                     long? value;

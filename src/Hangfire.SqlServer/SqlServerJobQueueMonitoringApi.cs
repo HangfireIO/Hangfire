@@ -45,7 +45,7 @@ namespace Hangfire.SqlServer
             {
                 if (_queuesCache.Count == 0 || _cacheUpdated.Elapsed > QueuesCacheTimeout)
                 {
-                    var result = _storage.UseConnection(null, static (storage, connection) =>
+                    var result = _storage.UseConnection(static (storage, connection) =>
                     {
                         var query = storage.GetQueryFromTemplate(static schemaName =>
 $@"select distinct(Queue) from [{schemaName}].JobQueue with (nolock)");
@@ -64,7 +64,7 @@ $@"select distinct(Queue) from [{schemaName}].JobQueue with (nolock)");
 
         public IEnumerable<long> GetEnqueuedJobIds(string queue, int from, int perPage)
         {
-            return _storage.UseConnection(null, static (storage, connection, ctx) =>
+            return _storage.UseConnection(static (storage, connection, ctx) =>
             {
                 var query = storage.GetQueryFromTemplate(static schemaName =>
 $@"select r.JobId from (
@@ -85,7 +85,7 @@ where r.row_num between @start and @end");
 
         public IEnumerable<long> GetFetchedJobIds(string queue, int from, int perPage)
         {
-            return _storage.UseConnection(null, static (storage, connection, ctx) =>
+            return _storage.UseConnection(static (storage, connection, ctx) =>
             {
                 var query = storage.GetQueryFromTemplate(static schemaName => $@"
 select r.JobId from (
@@ -113,7 +113,7 @@ where r.row_num between @start and @end");
 
         public EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue)
         {
-            return _storage.UseConnection(null, static (storage, connection, q) =>
+            return _storage.UseConnection(static (storage, connection, q) =>
             {
                 var query = storage.GetQueryFromTemplate(static schemaName => $@"
 select sum(Enqueued) as EnqueuedCount, sum(Fetched) as FetchedCount 

@@ -149,7 +149,7 @@ namespace Hangfire.SqlServer
         {
             try
             {
-                return storage.UseConnection(null, static (_, connection, ctx) =>
+                return storage.UseConnection(static (_, connection, ctx) =>
                 {
                     SqlServerDistributedLock.Acquire(connection, DistributedLockKey, DefaultLockTimeout);
 

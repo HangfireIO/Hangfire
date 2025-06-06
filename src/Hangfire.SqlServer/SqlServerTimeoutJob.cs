@@ -77,7 +77,6 @@ namespace Hangfire.SqlServer
                 if (!FetchedAt.HasValue) return;
 
                 _storage.UseConnection(
-                    null,
                     static (storage, connection, ctx) =>
                     {
                         var query = storage.GetQueryFromTemplate(static schemaName =>
@@ -105,7 +104,6 @@ namespace Hangfire.SqlServer
                 if (!FetchedAt.HasValue) return;
 
                 _storage.UseConnection(
-                    null,
                     static (storage, connection, ctx) =>
                     {
                         var query = storage.GetQueryFromTemplate(static schemaName =>
@@ -170,7 +168,6 @@ namespace Hangfire.SqlServer
                     try
                     {
                         FetchedAt = _storage.UseConnection(
-                            null,
                             static (storage, connection, ctx) =>
                             {
                                 var query = storage.GetQueryFromTemplate(static schemaName =>
