@@ -38,6 +38,14 @@ namespace Hangfire.States
     public class AwaitingState : IState
     {
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromDays(365);
+
+        /// <summary>
+        /// Gets the default value for <see cref="Options"/> property when not serialized
+        /// in the compatibility level <see cref="CompatibilityLevel.Version_190"/>.
+        /// </summary>
+        /// <remarks>
+        /// The value is <see cref="JobContinuationOptions.OnlyOnSucceededState"/>.
+        /// </remarks>
         public static readonly JobContinuationOptions DefaultOptions = JobContinuationOptions.OnlyOnSucceededState;
 
         /// <summary>
@@ -162,6 +170,13 @@ namespace Hangfire.States
         [JsonIgnore]
         public bool IgnoreJobLoadException => false;
 
+        /// <summary>
+        /// Gets the default value for <see cref="NextState"/> property when not serialized
+        /// in the compatibility level <see cref="CompatibilityLevel.Version_190"/>.
+        /// </summary>
+        /// <remarks>
+        /// The value is of type <see cref="EnqueuedState"/>.
+        /// </remarks>
         public static IState GetDefaultNextState() => new EnqueuedState();
 
         /// <inheritdoc />
@@ -189,7 +204,11 @@ namespace Hangfire.States
         ///             <see cref="SerializationHelper.Deserialize{T}(string, SerializationOption)"/> with 
         ///             <see cref="SerializationOption.TypedInternal"/>
         ///         </term>
-        ///         <description>Please see the <see cref="NextState"/> property.</description>
+        ///         <description>
+        ///             Please see the <see cref="NextState"/> property.
+        ///             Optional in the <see cref="CompatibilityLevel.Version_190"/> compatibility level,
+        ///             defaults to <see cref="GetDefaultNextState"/>.
+        ///         </description>
         ///     </item>
         ///     <item>
         ///         <term><c>Options</c></term>
@@ -197,7 +216,11 @@ namespace Hangfire.States
         ///         <term>
         ///             <see cref="Enum.Parse(Type, string)"/> with <see cref="JobContinuationOptions"/>
         ///         </term>
-        ///         <description>Please see the <see cref="Options"/> property.</description>
+        ///         <description>
+        ///             Please see the <see cref="Options"/> property.
+        ///             Optional in the <see cref="CompatibilityLevel.Version_190"/> compatibility level,
+        ///             defaults to <see cref="DefaultOptions"/>.
+        ///         </description>
         ///     </item>
         /// </list>
         /// </remarks>
@@ -205,13 +228,23 @@ namespace Hangfire.States
         {
             var result = new Dictionary<string, string>
             {
-                { "ParentId", ParentId },
-                { "NextState", SerializationHelper.Serialize(NextState, SerializationOption.TypedInternal) }
+                { "ParentId", ParentId }
             };
+
+            if (!GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_190) ||
+                NextState is not EnqueuedState enqueuedState ||
+                !EnqueuedState.DefaultQueue.Equals(enqueuedState.Queue, StringComparison.Ordinal))
+            {
+                result.Add("NextState", SerializationHelper.Serialize(NextState, SerializationOption.TypedInternal));
+            }
 
             if (GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_170))
             {
-                result.Add("Options", Options.ToString("D"));
+                if (!GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_190) ||
+                    Options != DefaultOptions)
+                {
+                    result.Add("Options", Options.ToString("D"));
+                }
             }
             else
             {
