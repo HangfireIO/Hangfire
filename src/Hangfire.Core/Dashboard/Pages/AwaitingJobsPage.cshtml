@@ -177,12 +177,18 @@
                                             @Html.JobNameLink(jobId, job)
                                         </td>
                                         <td class="min-width">
-                                            @if (stateData != null && stateData.ContainsKey("Options") && !String.IsNullOrWhiteSpace(stateData["Options"]))
+                                            @if (stateData != null)
                                             {
-                                                var optionsDescription = stateData["Options"];
-                                                if (Enum.TryParse(optionsDescription, out JobContinuationOptions options))
+                                                if (stateData.TryGetValue("Options", out var optionsDescription) && !String.IsNullOrWhiteSpace(optionsDescription))
                                                 {
-                                                    optionsDescription = options.ToString("G");
+                                                    if (Enum.TryParse(optionsDescription, out JobContinuationOptions options))
+                                                    {
+                                                        optionsDescription = options.ToString("G");
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    optionsDescription = AwaitingState.DefaultOptions.ToString("G"); 
                                                 }
                                                 <code>@optionsDescription</code>
                                             }

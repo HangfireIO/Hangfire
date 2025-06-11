@@ -38,6 +38,7 @@ namespace Hangfire.States
     public class AwaitingState : IState
     {
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromDays(365);
+        public static readonly JobContinuationOptions DefaultOptions = JobContinuationOptions.OnlyOnSucceededState;
 
         /// <summary>
         /// Represents the name of the <i>Awaiting</i> state. This field is read-only.
@@ -160,6 +161,8 @@ namespace Hangfire.States
         /// </remarks>
         [JsonIgnore]
         public bool IgnoreJobLoadException => false;
+
+        public static IState GetDefaultNextState() => new EnqueuedState();
 
         /// <inheritdoc />
         /// <remarks>

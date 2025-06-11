@@ -133,6 +133,36 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void OnStateElection_ExecuteContinuations_InEnqueuedState_WhenNextStateDataDoesNotPresent()
+        {
+            // Arrange
+            _context.ApplyContext.BackgroundJob = new BackgroundJobMock { Id = _parentId };
+            _context.ApplyContext.NewStateObject = new SucceededState(null, 0, 0);
+
+            _context.ApplyContext.Connection.Setup(x => x.GetJobData(_continuationId)).Returns(new JobData());
+            _context.ApplyContext.Connection.Setup(x => x.GetStateData(_continuationId)).Returns(new StateData
+            {
+                Name = AwaitingState.StateName,
+                Data = new Dictionary<string, string>()
+            });
+
+            _context.ApplyContext.Connection.Setup(x => x.GetJobParameter(_parentId, "Continuations"))
+                .Returns(SerializationHelper.Serialize(new List<Continuation> { new Continuation { JobId = _continuationId } }));
+
+            var filter = CreateFilter();
+
+            // Act
+            filter.OnStateElection(_context.Object);
+
+            // Assert
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(
+                ctx => 
+                    ctx.BackgroundJobId == _continuationId &&
+                    ctx.ExpectedStates.SingleOrDefault(s => s == AwaitingState.StateName) != null &&
+                    ctx.NewState.Name == "Enqueued")));
+        }
+
+        [Fact]
         public void OnStateElection_ExecuteContinuations_InFailedState_OnNextStateDeserializationError()
         {
             // Arrange

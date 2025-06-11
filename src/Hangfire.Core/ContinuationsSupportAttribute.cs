@@ -207,7 +207,7 @@ namespace Hangfire
                 // the state of a continuation, we should simply skip it.
                 if (currentState.Name != AwaitingState.StateName) continue;
 
-                IState nextState;
+                IState nextState = null;
 
                 if (!ShouldStartContinuation(context.CandidateState.Name, continuation.Options))
                 {
@@ -217,7 +217,12 @@ namespace Hangfire
                 {
                     try
                     {
-                        nextState = SerializationHelper.Deserialize<IState>(currentState.Data["NextState"], SerializationOption.TypedInternal);
+                        if (currentState.Data.TryGetValue("NextState", out var next))
+                        {
+                            nextState = SerializationHelper.Deserialize<IState>(next, SerializationOption.TypedInternal);
+                        }
+
+                        nextState ??= AwaitingState.GetDefaultNextState();
                     }
                     catch (Exception ex) when (ex.IsCatchableExceptionType())
                     {

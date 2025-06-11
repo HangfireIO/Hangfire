@@ -259,7 +259,8 @@ namespace Hangfire.Dashboard
 
         private static NonEscapedString EnqueuedRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
         {
-            if (!EnqueuedState.DefaultQueue.Equals(stateData["Queue"], StringComparison.OrdinalIgnoreCase))
+            if (stateData.TryGetValue("Queue", out var queue) &&
+                !EnqueuedState.DefaultQueue.Equals(queue, StringComparison.OrdinalIgnoreCase))
             {
                 return new NonEscapedString(
                     $"<dl class=\"dl-horizontal\"><dt>Queue:</dt><dd>{helper.QueueLabel(stateData["Queue"])}</dd></dl>");
@@ -298,12 +299,16 @@ namespace Hangfire.Dashboard
                 builder.Append($"<dt>Parent</dt><dd>{helper.JobIdLink(parentId)}</dd>");
             }
 
+            IState nextState = null;
+
             if (stateData.TryGetValue("NextState", out var nextStateString))
             {
-                var nextState = SerializationHelper.Deserialize<IState>(nextStateString, SerializationOption.TypedInternal);
-
-                builder.Append($"<dt>Next State</dt><dd>{helper.StateLabel(nextState?.Name ?? "(no state)")}</dd>");
+                nextState = SerializationHelper.Deserialize<IState>(nextStateString, SerializationOption.TypedInternal);
             }
+
+            nextState ??= AwaitingState.GetDefaultNextState();
+
+            builder.Append($"<dt>Next State</dt><dd>{helper.StateLabel(nextState.Name)}</dd>");
 
             if (stateData.TryGetValue("Options", out var optionsDescription))
             {
@@ -311,10 +316,13 @@ namespace Hangfire.Dashboard
                 {
                     optionsDescription = options.ToString("G");
                 }
-
-                builder.Append($"<dt>Options</dt><dd><code>{helper.HtmlEncode(optionsDescription)}</code></dd>");
             }
-
+            else
+            {
+                optionsDescription = AwaitingState.DefaultOptions.ToString("G");
+            }
+            
+            builder.Append($"<dt>Options</dt><dd><code>{helper.HtmlEncode(optionsDescription)}</code></dd>");
             builder.Append("</dl>");
 
             return new NonEscapedString(builder.ToString());
