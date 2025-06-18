@@ -233,7 +233,7 @@ namespace Hangfire.States
 
             if (!GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_190) ||
                 NextState is not EnqueuedState enqueuedState ||
-                !EnqueuedState.DefaultQueue.Equals(enqueuedState.Queue, StringComparison.Ordinal))
+                !EnqueuedState.IsDefault(enqueuedState.Queue))
             {
                 result.Add("NextState", SerializationHelper.Serialize(NextState, SerializationOption.TypedInternal));
             }

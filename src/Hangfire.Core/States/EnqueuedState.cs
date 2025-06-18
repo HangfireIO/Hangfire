@@ -82,6 +82,15 @@ namespace Hangfire.States
         private string _queue;
 
         /// <summary>
+        /// Determines whether the specified queue name is the default queue.
+        /// </summary>
+        /// <param name="queue">The name of the queue to check.</param>
+        public static bool IsDefault(string queue)
+        {
+            return DefaultQueue.Equals(queue, StringComparison.Ordinal);
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="EnqueuedState"/> class 
         /// with the <see cref="DefaultQueue">default</see> queue name.
         /// </summary>
