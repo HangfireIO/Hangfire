@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp3.1'">
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.6" NoWarn="NU1902" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.6.1" NoWarn="NU1902;NU1903" /> <!-- Need to check `SqlCommandSet` in pre-4.7.0 on .NET Core -->
     <PackageReference Include="Microsoft.Data.SqlClient" Version="3.1.5" NoWarn="NU1902" />
     <PackageReference Include="Dapper" Version="2.1.28" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
