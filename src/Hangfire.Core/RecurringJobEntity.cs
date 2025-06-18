@@ -20,6 +20,7 @@ using System.Linq;
 using Cronos;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.States;
 
 namespace Hangfire
 {
@@ -203,9 +204,16 @@ namespace Hangfire
         {
             var result = new Dictionary<string, string>();
 
-            if ((_recurringJob.TryGetValue("Queue", out var queue) ? queue : null) != Queue)
+            var queueToStore = Queue;
+            if (GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_190) &&
+                EnqueuedState.IsDefault(queueToStore))
             {
-                result.Add("Queue", Queue);
+                queueToStore = null;
+            }
+
+            if ((_recurringJob.TryGetValue("Queue", out var queue) && !String.IsNullOrWhiteSpace(queue) ? queue : null) != queueToStore)
+            {
+                result.Add("Queue", queueToStore ?? String.Empty);
             }
 
             if ((_recurringJob.TryGetValue("Cron", out var cron) ? cron : null) != Cron)

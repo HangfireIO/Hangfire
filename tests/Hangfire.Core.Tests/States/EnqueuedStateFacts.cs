@@ -49,15 +49,44 @@ namespace Hangfire.Core.Tests.States
             state.Queue = "1234567890_allowed";
         }
 
-        [Fact]
-        public void SerializeData_ReturnsCorrectData()
+        [DataCompatibilityRangeFact]
+        public void SerializeData_SerializesEnqueuedAt_WithAnyCompatibilityLevel()
         {
             var state = new EnqueuedState();
 
             var serializedData = state.SerializeData();
 
-            Assert.Equal(state.Queue, serializedData["Queue"]);
             Assert.Equal(JobHelper.SerializeDateTime(state.EnqueuedAt), serializedData["EnqueuedAt"]);
+        }
+
+        [DataCompatibilityRangeFact]
+        public void SerializeData_SerializesNonDefaultQueue_WithAnyCompatibilityLevel()
+        {
+            var state = new EnqueuedState { Queue = "critical" };
+
+            var serializedData = state.SerializeData();
+
+            Assert.Equal("critical", serializedData["Queue"]);
+        }
+
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_190)]
+        public void SerializeData_SerializesDefaultQueue_ForCompatibilityLevel180AndBelow()
+        {
+            var state = new EnqueuedState { Queue = "default" };
+
+            var serializedData = state.SerializeData();
+
+            Assert.Equal(state.Queue, serializedData["Queue"]);
+        }
+
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_190)]
+        public void SerializeData_DoesNotSerializeDefaultQueue_ForCompatibilityLevel190AndAbove()
+        {
+            var state = new EnqueuedState { Queue = "default" };
+
+            var serializedData = state.SerializeData();
+
+            Assert.False(serializedData.ContainsKey("Queue"));
         }
 
         [Fact]

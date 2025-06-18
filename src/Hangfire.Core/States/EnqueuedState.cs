@@ -219,17 +219,28 @@ namespace Hangfire.States
         ///         <term><c>Queue</c></term>
         ///         <term><see cref="string"/></term>
         ///         <term><i>Not required</i></term>
-        ///         <description>Please see the <see cref="Queue"/> property.</description>
+        ///         <description>
+        ///             Please see the <see cref="Queue"/> property.
+        ///             Optional in the <see cref="CompatibilityLevel.Version_190"/> compatibility level,
+        ///             defaults to <see cref="DefaultQueue"/>.
+        ///         </description>
         ///     </item>
         /// </list>
         /// </remarks>
         public Dictionary<string, string> SerializeData()
         {
-            return new Dictionary<string, string>
+            var result = new Dictionary<string, string>
             {
-                { "EnqueuedAt", JobHelper.SerializeDateTime(EnqueuedAt) },
-                { "Queue", Queue }
+                { "EnqueuedAt", JobHelper.SerializeDateTime(EnqueuedAt) }
             };
+
+            if (!GlobalConfiguration.HasCompatibilityLevel(CompatibilityLevel.Version_190) ||
+                !DefaultQueue.Equals(Queue, StringComparison.Ordinal))
+            {
+                result.Add("Queue", Queue);
+            }
+
+            return result;
         }
 
         internal static bool TryValidateQueueName([NotNull] string value)

@@ -682,6 +682,169 @@ namespace Hangfire.Core.Tests
                 Times.Never);
             _transaction.Verify(x => x.Commit(), Times.Never);
         }
+        
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_190)]
+        public void AddOrUpdate_SetsQueueFieldToDefaultValue_WhenItIsNotSet_BeforeVersion190()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
+            {
+                { "Cron", _cronExpression },
+                { "Job", InvocationData.Serialize(_job).SerializePayload() },
+                { "CreatedAt", JobHelper.SerializeDateTime(_now) },
+                { "NextExecution", JobHelper.SerializeDateTime(_now) },
+                { "TimeZoneId", "UTC" },
+                { "LastJobId", "1384" }
+            });
+
+            var manager = CreateManager();
+
+            // Act
+            manager.AddOrUpdate(_id, _job, _cronExpression);
+
+            // Assert
+            _transaction.Verify(
+                x => x.SetRangeInHash($"recurring-job:{_id}", It.Is<Dictionary<string, string>>(dict =>
+                    dict["Queue"] == "default")));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [DataCompatibilityRangeFact(MaxExcludingLevel = CompatibilityLevel.Version_190)]
+        public void AddOrUpdate_DoesNotUpdatesDefaultQueue_ToANullValue_BeforeVersion190()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
+            {
+                { "Queue", "default" },
+                { "Cron", _cronExpression },
+                { "Job", InvocationData.Serialize(_job).SerializePayload() },
+                { "CreatedAt", JobHelper.SerializeDateTime(_now) },
+                { "NextExecution", JobHelper.SerializeDateTime(_now) },
+                { "TimeZoneId", "UTC" },
+                { "LastJobId", "1384" }
+            });
+
+            var manager = CreateManager();
+
+            // Act
+            manager.AddOrUpdate(_id, _job,"0 * * * *");
+
+            // Assert
+            _transaction.Verify(
+                x => x.SetRangeInHash($"recurring-job:{_id}", It.Is<Dictionary<string, string>>(dict =>
+                    !dict.ContainsKey("queue"))));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [DataCompatibilityRangeFact]
+        public void AddOrUpdate_DoesNotTouchNonDefaultQueue_WithAnyCompatibilityLevel()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
+            {
+                { "Queue", "critical" },
+                { "Cron", _cronExpression },
+                { "Job", InvocationData.Serialize(_job).SerializePayload() },
+                { "CreatedAt", JobHelper.SerializeDateTime(_now) },
+                { "NextExecution", JobHelper.SerializeDateTime(_now) },
+                { "TimeZoneId", "UTC" },
+                { "LastJobId", "1384" }
+            });
+
+            var manager = CreateManager();
+
+            // Act
+            manager.AddOrUpdate(_id, _job, _cronExpression, new RecurringJobOptions
+            {
+                QueueName = "critical"
+            });
+
+            // Assert
+            _transaction.Verify(
+                x => x.SetRangeInHash($"recurring-job:{_id}", It.Is<Dictionary<string, string>>(dict =>
+                    !dict.ContainsKey("Queue"))));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_190)]
+        public void AddOrUpdate_DoesNotUpdateQueueField_WhenItIsNotSet_InVersion190_AndAbove()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
+            {
+                { "Cron", _cronExpression },
+                { "Job", InvocationData.Serialize(_job).SerializePayload() },
+                { "CreatedAt", JobHelper.SerializeDateTime(_now) },
+                { "NextExecution", JobHelper.SerializeDateTime(_now) },
+                { "TimeZoneId", "UTC" },
+                { "LastJobId", "1384" }
+            });
+
+            var manager = CreateManager();
+
+            // Act
+            manager.AddOrUpdate(_id, _job, _cronExpression);
+
+            // Assert
+            _transaction.Verify(
+                x => x.SetRangeInHash($"recurring-job:{_id}", It.Is<Dictionary<string, string>>(dict =>
+                    !dict.ContainsKey("Queue"))));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_190)]
+        public void AddOrUpdate_UpdatesDefaultQueue_ToANullValue_InVersion190_AndAbove()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
+            {
+                { "Queue", "default" },
+                { "Cron", _cronExpression },
+                { "Job", InvocationData.Serialize(_job).SerializePayload() },
+                { "CreatedAt", JobHelper.SerializeDateTime(_now) },
+                { "NextExecution", JobHelper.SerializeDateTime(_now) },
+                { "TimeZoneId", "UTC" },
+                { "LastJobId", "1384" }
+            });
+
+            var manager = CreateManager();
+
+            // Act
+            manager.AddOrUpdate(_id, _job, _cronExpression);
+
+            // Assert
+            _transaction.Verify(
+                x => x.SetRangeInHash($"recurring-job:{_id}", It.Is<Dictionary<string, string>>(dict =>
+                    dict["Queue"] == String.Empty)));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [DataCompatibilityRangeFact(MinLevel = CompatibilityLevel.Version_190)]
+        public void AddOrUpdate_DoesNotUpdateEmptyValueWithTheDefaultOne_InVersion190_AndAbove()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}")).Returns(new Dictionary<string, string>
+            {
+                { "Queue", "" },
+                { "Cron", _cronExpression },
+                { "Job", InvocationData.Serialize(_job).SerializePayload() },
+                { "CreatedAt", JobHelper.SerializeDateTime(_now) },
+                { "NextExecution", JobHelper.SerializeDateTime(_now) },
+                { "TimeZoneId", "UTC" },
+                { "LastJobId", "1384" },
+            });
+
+            var manager = CreateManager();
+
+            // Act
+            manager.AddOrUpdate(_id, _job, "0 * * * *");
+
+            // Assert
+            _transaction.Verify(
+                x => x.SetRangeInHash($"recurring-job:{_id}", It.Is<Dictionary<string, string>>(dict =>
+                    !dict.ContainsKey("Queue"))));
+            _transaction.Verify(x => x.Commit());
+        }
 
         [Fact]
         public void Trigger_ThrowsAnException_WhenIdIsNull()
