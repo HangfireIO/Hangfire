@@ -49,8 +49,8 @@
       },
       "Cronos": {
         "type": "Transitive",
-        "resolved": "0.8.3",
-        "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw=="
+        "resolved": "0.11.0",
+        "contentHash": "ovNrFIuKTbeNYx+1Tne8DkY/nJ+bRoS0/bTrCBzeAuMvLbX2nJprwcdRqZIwwLRsaghqBU932QvJ6mryTycc/A=="
       },
       "Microsoft.Extensions.Configuration": {
         "type": "Transitive",
@@ -346,7 +346,7 @@
       "hangfire.core": {
         "type": "Project",
         "dependencies": {
-          "Cronos": "[0.8.3, )",
+          "Cronos": "[0.11.0, )",
           "Newtonsoft.Json": "[13.0.1, )"
         }
       },

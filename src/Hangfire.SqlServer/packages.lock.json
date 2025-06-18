@@ -34,8 +34,8 @@
       },
       "Cronos": {
         "type": "Transitive",
-        "resolved": "0.8.3",
-        "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw=="
+        "resolved": "0.11.0",
+        "contentHash": "ovNrFIuKTbeNYx+1Tne8DkY/nJ+bRoS0/bTrCBzeAuMvLbX2nJprwcdRqZIwwLRsaghqBU932QvJ6mryTycc/A=="
       },
       "Microsoft.Build.Tasks.Git": {
         "type": "Transitive",
@@ -74,7 +74,7 @@
         "type": "Project",
         "dependencies": {
           "CronExpressionDescriptor": "[1.21.0, )",
-          "Cronos": "[0.8.3, )",
+          "Cronos": "[0.11.0, )",
           "Microsoft.Owin": "[4.2.2, )",
           "Newtonsoft.Json": "[5.0.1, )",
           "Owin": "[1.0.0, )"
@@ -178,8 +178,8 @@
       },
       "Cronos": {
         "type": "Transitive",
-        "resolved": "0.8.3",
-        "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw==",
+        "resolved": "0.11.0",
+        "contentHash": "ovNrFIuKTbeNYx+1Tne8DkY/nJ+bRoS0/bTrCBzeAuMvLbX2nJprwcdRqZIwwLRsaghqBU932QvJ6mryTycc/A==",
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         }
@@ -974,8 +974,7 @@
       "hangfire.core": {
         "type": "Project",
         "dependencies": {
-          "Cronos": "[0.8.3, )",
-          "NETStandard.Library": "[1.6.1, )",
+          "Cronos": "[0.11.0, )",
           "Newtonsoft.Json": "[9.0.1, )",
           "System.Threading.Thread": "[4.0.0, )",
           "System.Threading.ThreadPool": "[4.0.10, )"
@@ -1010,8 +1009,8 @@
       },
       "Cronos": {
         "type": "Transitive",
-        "resolved": "0.8.3",
-        "contentHash": "lep1gKd68dBEt7isLnnHadJHwUlhctMd+gYGMk3p8eOT9dIfw6fXJFkreYBQ8dIXm23S01ilHgpk2ttou5Wvtw=="
+        "resolved": "0.11.0",
+        "contentHash": "ovNrFIuKTbeNYx+1Tne8DkY/nJ+bRoS0/bTrCBzeAuMvLbX2nJprwcdRqZIwwLRsaghqBU932QvJ6mryTycc/A=="
       },
       "Microsoft.Build.Tasks.Git": {
         "type": "Transitive",
@@ -1041,7 +1040,7 @@
       "hangfire.core": {
         "type": "Project",
         "dependencies": {
-          "Cronos": "[0.8.3, )",
+          "Cronos": "[0.11.0, )",
           "Microsoft.CSharp": "[4.4.0, )",
           "Newtonsoft.Json": "[11.0.1, )"
         }
