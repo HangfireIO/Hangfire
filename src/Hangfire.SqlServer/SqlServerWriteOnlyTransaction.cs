@@ -200,9 +200,9 @@ update [{schemaName}].Job set StateId = SCOPE_IDENTITY(), StateName = @name wher
             AddCommand(_jobCommands, longId, batch => batch.CreateCommand(query)
                 .AddParameter("@jobId", longId, DbType.Int64)
                 .AddParameter("@name", state.Name, DbType.String, size: 20)
-                .AddParameter("@reason", (object)state.Reason?.Substring(0, Math.Min(99, state.Reason.Length)) ?? DBNull.Value, DbType.String, size: 100)
+                .AddParameter("@reason", state.Reason?.Substring(0, Math.Min(99, state.Reason.Length)), DbType.String, size: 100)
                 .AddParameter("@createdAt", DateTime.UtcNow, DbType.DateTime)
-                .AddParameter("@data", (object)SerializationHelper.Serialize(state.SerializeData()) ?? DBNull.Value, DbType.String, size: -1));
+                .AddParameter("@data", SerializationHelper.Serialize(state.SerializeData()), DbType.String, size: -1));
         }
 
         public override void AddJobState(string jobId, IState state)
@@ -219,9 +219,9 @@ values (@jobId, @name, @reason, @createdAt, @data)");
             AddCommand(_jobCommands, longId, batch => batch.CreateCommand(query)
                 .AddParameter("@jobId", longId, DbType.Int64)
                 .AddParameter("@name", state.Name, DbType.String, size: 20)
-                .AddParameter("@reason", (object)state.Reason?.Substring(0, Math.Min(99, state.Reason.Length)) ?? DBNull.Value, DbType.String, size: 100)
+                .AddParameter("@reason", state.Reason?.Substring(0, Math.Min(99, state.Reason.Length)), DbType.String, size: 100)
                 .AddParameter("@createdAt", DateTime.UtcNow, DbType.DateTime)
-                .AddParameter("@data", (object)SerializationHelper.Serialize(state.SerializeData()) ?? DBNull.Value, DbType.String, size: -1));
+                .AddParameter("@data", SerializationHelper.Serialize(state.SerializeData()), DbType.String, size: -1));
         }
 
         public override void AddToQueue(string queue, string jobId)
@@ -417,7 +417,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
                 AddCommand(_hashCommands, key, batch => batch.CreateCommand(query)
                     .AddParameter("@key", key, DbType.String)
                     .AddParameter("@field", pair.Key, DbType.String, size: 100)
-                    .AddParameter("@value", (object)pair.Value ?? DBNull.Value, DbType.String, size: -1));
+                    .AddParameter("@value", pair.Value, DbType.String, size: -1));
             }
         }
 

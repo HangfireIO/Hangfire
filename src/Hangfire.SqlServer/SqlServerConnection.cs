@@ -214,7 +214,7 @@ $@"insert into [{schemaName}].JobParameter (JobId, Name, Value) values (@jobId, 
                         commandBatch.Append(connection.CreateCommand(query)
                             .AddParameter("@jobId", long.Parse(jobId, CultureInfo.InvariantCulture), DbType.Int64)
                             .AddParameter("@name", parameter.Key, DbType.String, size: 40)
-                            .AddParameter("@value", (object)parameter.Value ?? DBNull.Value, DbType.String, size: -1));
+                            .AddParameter("@value", parameter.Value, DbType.String, size: -1));
                     }
 
                     commandBatch.ExecuteNonQuery();
@@ -483,7 +483,7 @@ end catch");
                         commandBatch.Append(connection.CreateCommand(query)
                             .AddParameter("@key", pair.Key, DbType.String)
                             .AddParameter("@field", keyValuePair.Key, DbType.String, size: 100)
-                            .AddParameter("@value", (object)keyValuePair.Value ?? DBNull.Value, DbType.String, size: -1));
+                            .AddParameter("@value", keyValuePair.Value, DbType.String, size: -1));
                     }
 
                     if (!storage.Options.DisableGlobalLocks)
