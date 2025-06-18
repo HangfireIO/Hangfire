@@ -25,10 +25,10 @@ namespace Hangfire.SqlServer
     internal sealed class SqlCommandSet : IDisposable
     {
         private static readonly ConcurrentDictionary<Assembly, Type> SqlCommandSetType = new ConcurrentDictionary<Assembly, Type>();
+        private static readonly ConcurrentDictionary<Type, Func<object>> CreateInstance = new ConcurrentDictionary<Type, Func<object>>();
         private static readonly ConcurrentDictionary<Type, Action<object, DbConnection>> SetConnection = new ConcurrentDictionary<Type, Action<object, DbConnection>>();
         private static readonly ConcurrentDictionary<Type, Action<object, DbTransaction>> SetTransaction = new ConcurrentDictionary<Type, Action<object, DbTransaction>>();
         private static readonly ConcurrentDictionary<Type, Func<object, DbCommand>> GetBatchCommand = new ConcurrentDictionary<Type, Func<object, DbCommand>>();
-        private static readonly ConcurrentDictionary<Type, PropertyInfo> BatchCommandProperty = new ConcurrentDictionary<Type, PropertyInfo>();
         private static readonly ConcurrentDictionary<Type, Action<object, DbCommand>> AppendMethod = new ConcurrentDictionary<Type, Action<object, DbCommand>>();
         private static readonly ConcurrentDictionary<Type, Func<object, int>> ExecuteNonQueryMethod = new ConcurrentDictionary<Type, Func<object, int>>();
         private static readonly ConcurrentDictionary<Type, Action<object>> DisposeMethod = new ConcurrentDictionary<Type, Action<object>>();
@@ -44,10 +44,9 @@ namespace Hangfire.SqlServer
 
         public SqlCommandSet(DbConnection connection)
         {
-            Type sqlCommandSetType;
             try
             {
-                sqlCommandSetType = SqlCommandSetType.GetOrAdd(connection.GetType().GetTypeInfo().Assembly, static sqlClientAssembly =>
+                var sqlCommandSetType = SqlCommandSetType.GetOrAdd(connection.GetType().GetTypeInfo().Assembly, static sqlClientAssembly =>
                 {
                     var assemblyName = sqlClientAssembly.GetName();
                     var version = assemblyName.Version;
@@ -87,21 +86,19 @@ namespace Hangfire.SqlServer
                     var transactionProperty = type.GetProperty("Transaction", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) ?? throw new MissingMemberException($"Property '{type.FullName}.Transaction' not found.");
                     return Expression.Lambda<Action<object, DbTransaction>>(Expression.Assign(Expression.Property(converted, transactionProperty), Expression.Convert(transactionParameter, transactionProperty.PropertyType)), p, transactionParameter).Compile();
                 });
-                var batchCommandProperty = BatchCommandProperty.GetOrAdd(sqlCommandSetType, static type =>
-                {
-                    return type.GetProperty("BatchCommand", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) ?? throw new MissingMemberException($"Property '{type.FullName}.BatchCommand' not found.");
-                });
-                _getBatchCommand = GetBatchCommand.GetOrAdd(sqlCommandSetType, type =>
+                _getBatchCommand = GetBatchCommand.GetOrAdd(sqlCommandSetType, static type =>
                 {
                     var p = Expression.Parameter(typeof(object));
                     var converted = Expression.Convert(p, type);
+                    var batchCommandProperty = type.GetProperty("BatchCommand", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) ?? throw new MissingMemberException($"Property '{type.FullName}.BatchCommand' not found.");
                     return Expression.Lambda<Func<object, DbCommand>>(Expression.Property(converted, batchCommandProperty), p).Compile();
                 });
-                _appendMethod = AppendMethod.GetOrAdd(sqlCommandSetType, type =>
+                _appendMethod = AppendMethod.GetOrAdd(sqlCommandSetType, static type =>
                 {
                     var p = Expression.Parameter(typeof(object));
                     var converted = Expression.Convert(p, type);
                     var batchCommandParameter = Expression.Parameter(typeof(DbCommand));
+                    var batchCommandProperty = type.GetProperty("BatchCommand", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) ?? throw new MissingMemberException($"Property '{type.FullName}.BatchCommand' not found.");
                     return Expression.Lambda<Action<object, DbCommand>>(Expression.Call(converted, "Append", null, Expression.Convert(batchCommandParameter, batchCommandProperty.PropertyType)), p, batchCommandParameter).Compile();
                 });
                 _executeNonQueryMethod = ExecuteNonQueryMethod.GetOrAdd(sqlCommandSetType, static type =>
@@ -116,13 +113,27 @@ namespace Hangfire.SqlServer
                     var converted = Expression.Convert(p, type);
                     return Expression.Lambda<Action<object>>(Expression.Call(converted, "Dispose", null), p).Compile();
                 });
+
+                var createInstance = CreateInstance.GetOrAdd(sqlCommandSetType, static type =>
+                {
+                    var parameterlessCtor = type
+                        .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                        .SingleOrDefault(static x => x.GetParameters().Length == 0);
+
+                    if (parameterlessCtor == null)
+                    {
+                        throw new MissingMemberException($"Parameterless constructor for '{type.FullName}' not found.");
+                    }
+
+                    return Expression.Lambda<Func<object>>(Expression.New(parameterlessCtor)).Compile();
+                });
+
+                _instance = createInstance();
             }
             catch (Exception exception) when (exception.IsCatchableExceptionType())
             {
                 throw new NotSupportedException($"SqlCommandSet for {connection.GetType().FullName} is not supported, use regular commands instead", exception);
             }
-
-            _instance = Activator.CreateInstance(sqlCommandSetType, true);
         }
 
         public DbConnection Connection
