@@ -2,37 +2,35 @@
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
     <!-- Custom AssemblyInfo.cs file -->
     <PropertyGroup>
-        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <DebugType>embedded</DebugType>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <LangVersion>Latest</LangVersion>
         <CheckNotRecommendedTargetFramework>false</CheckNotRecommendedTargetFramework>
-    </PropertyGroup>
-    <ItemGroup>
-        <Compile Include="..\SharedAssemblyInfo.cs" Link="Properties\SharedAssemblyInfo.cs" />
-    </ItemGroup>
-
-    <!-- Plugging in Roslyn Analysers -->
-    <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" PrivateAssets="all" />
-    </ItemGroup>
-
-    <PropertyGroup>
         <NoWarn>CA1200;CA1859;1591</NoWarn>
-        <EnableNETAnalyzers>true</EnableNETAnalyzers>
-        <AnalysisLevel>latest</AnalysisLevel>
-        <AnalysisMode>Default</AnalysisMode>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 
+    <!-- Plugging in Roslyn Analysers -->
     <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" PrivateAssets="All" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     </ItemGroup>
 
-    <PropertyGroup Condition="'$(APPVEYOR)' == 'True'">
-        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-        <!-- Deterministic paths work bad when using ILRepack, because it combines everything with a wrong repository -->
-        <DeterministicSourcePaths>false</DeterministicSourcePaths>
+    <PropertyGroup>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <AnalysisLevel>latest</AnalysisLevel>
+        <AnalysisMode>Default</AnalysisMode>
     </PropertyGroup>
+
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Reflection.AssemblyCultureAttribute">
+            <_Parameter1></_Parameter1>
+        </AssemblyAttribute>
+        <AssemblyAttribute Include="System.Runtime.InteropServices.ComVisibleAttribute">
+            <_Parameter1>false</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
 </Project>

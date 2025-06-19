@@ -70,7 +70,7 @@ Task Collect -Depends Test -Description "Copy all artifacts to the build folder.
 }
 
 Task Pack -Depends Collect -Description "Create NuGet packages and archive files." {
-    $version = Get-PackageVersion
+    $version = Get-SemanticVersion
 
     Create-Package "Hangfire" $version
     Create-Package "Hangfire.Core" $version
@@ -83,6 +83,6 @@ Task Pack -Depends Collect -Description "Create NuGet packages and archive files
 }
 
 Task Sign -Depends Pack -Description "Sign artifacts." {
-    $version = Get-PackageVersion
+    $version = Get-SemanticVersion
     Sign-ArchiveContents "Hangfire-$version" "hangfire"
 }

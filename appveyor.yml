@@ -1,4 +1,4 @@
-# AppVeyor CI build file, https://ci.appveyor.com/project/odinserj/hangfire
+# AppVeyor CI build file, https://ci.appveyor.com/project/HangfireIO/hangfire-525
 
 # Notes:
 #   - Minimal appveyor.yml file is an empty file. All sections are optional.
@@ -6,8 +6,7 @@
 #   - All section names are case-sensitive.
 #   - Section names should be unique on each level.
 
-# Please don't edit it manually, use the `build.bat version` command instead.
-version: 1.9.0-build-0{build}
+version: build.{build}
 
 image:
   - Visual Studio 2022

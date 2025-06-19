@@ -1,10 +1,27 @@
 <Project>
     <PropertyGroup>
-        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-        <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+        <Product>Hangfire</Product>
+        <Company>Hangfire OÜ</Company>
+        <Copyright>Copyright © 2013-2025 Hangfire OÜ</Copyright>
+        <NeutralLanguage>en-US</NeutralLanguage>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(APPVEYOR)' == 'True'">
         <RestoreLockedMode>true</RestoreLockedMode>
+        <BuildNumber>$(APPVEYOR_BUILD_NUMBER)</BuildNumber>
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+        <!-- Deterministic paths work bad when using ILRepack, because it combines everything with a wrong repository -->
+        <DeterministicSourcePaths>false</DeterministicSourcePaths>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <VersionPrefix>1.9.0</VersionPrefix>
+        <BuildNumber Condition="'$(BuildNumber)' == ''">0</BuildNumber>
+        <FileVersion>$([System.Version]::Parse("$(VersionPrefix)").ToString(3)).$(BuildNumber)</FileVersion>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     </PropertyGroup>
 </Project>
