@@ -4,6 +4,8 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
+#nullable enable
+
 namespace Hangfire.Common
 {
     /// <summary>
@@ -23,20 +25,20 @@ namespace Hangfire.Common
         /// </summary>
         /// <param name="arg"></param>
         /// <returns>Expression result.</returns>
-        public static object Evaluate(Expression arg)
+        public static object? Evaluate(Expression arg)
         {
             if (arg == null)
             {
                 throw new ArgumentNullException(nameof(arg));
             }
 
-            Func<object, object> func = Wrap(arg);
+            Func<object?, object?> func = Wrap(arg);
             return func(null);
         }
 
-        private static Func<object, object> Wrap(Expression arg)
+        private static Func<object?, object?> Wrap(Expression arg)
         {
-            var lambdaExpr = Expression.Lambda<Func<object, object>>(Expression.Convert(arg, typeof(object)), UnusedParameterExpr);
+            var lambdaExpr = Expression.Lambda<Func<object?, object>>(Expression.Convert(arg, typeof(object)), UnusedParameterExpr);
             return ExpressionUtil.CachedExpressionCompiler.Process(lambdaExpr);
         }
     }

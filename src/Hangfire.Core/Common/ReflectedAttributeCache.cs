@@ -21,6 +21,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
+#nullable enable
+
 namespace Hangfire.Common
 {
     internal static class ReflectedAttributeCache
@@ -47,9 +49,6 @@ namespace Hangfire.Common
             where TAttribute : Attribute
             where TMemberInfo : MemberInfo
         {
-            Debug.Assert(memberInfo != null);
-            Debug.Assert(lookup != null);
-
             return lookup.GetOrAdd(memberInfo, static mi => new ReadOnlyCollection<TAttribute>(mi.GetCustomAttributes<TAttribute>(inherit: true).ToArray()));
         }
     }

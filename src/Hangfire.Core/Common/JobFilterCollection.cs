@@ -21,6 +21,8 @@ using Hangfire.Client;
 using Hangfire.Server;
 using Hangfire.States;
 
+#nullable enable
+
 namespace Hangfire.Common
 {
     /// <summary>

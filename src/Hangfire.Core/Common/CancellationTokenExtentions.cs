@@ -18,6 +18,8 @@ using System.Diagnostics;
 using System.Threading;
 using Hangfire.Logging;
 
+#nullable enable
+
 namespace Hangfire.Common
 {
     public static class CancellationTokenExtentions
@@ -89,10 +91,10 @@ namespace Hangfire.Common
 
         public sealed class CancellationEvent : IDisposable
         {
-            private static readonly Action<object> SetEventCallback = SetEvent;
+            private static readonly Action<object?> SetEventCallback = SetEvent;
 
             private readonly ManualResetEvent _mre;
-            private CancellationTokenRegistration _registration;
+            private CancellationTokenRegistration _registration; // Do not make read-only as this type is not read-only in .NET Framework and some other platforms
 
             public CancellationEvent(CancellationToken cancellationToken)
             {
@@ -108,11 +110,15 @@ namespace Hangfire.Common
                 _mre.Dispose();
             }
 
-            private static void SetEvent(object state)
+            private static void SetEvent(object? state)
             {
                 try
                 {
-                    ((ManualResetEvent)state).Set();
+                    if (state is not ManualResetEvent ev)
+                    {
+                        throw new InvalidOperationException("Invalid state object type: " + state?.GetType().FullName);
+                    }
+                    ev.Set();
                 }
                 catch (ObjectDisposedException)
                 {

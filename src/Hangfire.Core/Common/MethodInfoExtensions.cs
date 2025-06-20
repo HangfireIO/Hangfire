@@ -16,6 +16,8 @@
 using System.Linq;
 using System.Reflection;
 
+#nullable enable
+
 namespace Hangfire.Common
 {
     internal static class MethodInfoExtensions

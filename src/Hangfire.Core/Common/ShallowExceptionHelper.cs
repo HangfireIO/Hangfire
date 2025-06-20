@@ -14,9 +14,11 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
-using Hangfire.Annotations;
+
+#nullable enable
 
 namespace Hangfire.Common
 {
@@ -32,7 +34,7 @@ namespace Hangfire.Common
             }
         }
 
-        public static string ToStringWithOriginalStackTrace([NotNull] this Exception exception, int? numLines)
+        public static string ToStringWithOriginalStackTrace(this Exception exception, int? numLines)
         {
             if (exception == null) throw new ArgumentNullException(nameof(exception));
 
@@ -53,7 +55,7 @@ namespace Hangfire.Common
             }
             else sb.Append('\n');
 
-            var stackTrace = exception.Data.Contains(DataKey) ? (string)exception.Data[DataKey] : GetStackTraceNoFileInfo(exception);
+            var stackTrace = exception.Data.Contains(DataKey) ? (string?)exception.Data[DataKey] : GetStackTraceNoFileInfo(exception);
             if (!String.IsNullOrWhiteSpace(stackTrace))
             {
                 sb.Append(stackTrace);
@@ -65,7 +67,8 @@ namespace Hangfire.Common
             return sb.ToString();
         }
 
-        private static string GetFirstLines(string text, int? numLines)
+        [return: NotNullIfNotNull(nameof(text))]
+        private static string? GetFirstLines(string text, int? numLines)
         {
             if (text == null) return null;
             if (!numLines.HasValue || numLines.Value < 0) return text;

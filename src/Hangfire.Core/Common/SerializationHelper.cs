@@ -23,6 +23,9 @@ using System.Threading;
 using Hangfire.Annotations;
 using Newtonsoft.Json;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Common
 {
     public enum SerializationOption
@@ -53,13 +56,14 @@ namespace Hangfire.Common
         private static readonly Lazy<JsonSerializerSettings> InternalSerializerSettings =
             new Lazy<JsonSerializerSettings>(GetInternalSettings, LazyThreadSafetyMode.PublicationOnly);
 
-        private static JsonSerializerSettings _userSerializerSettings;
+        private static JsonSerializerSettings? _userSerializerSettings;
 
         /// <summary>
         /// Serializes data with <see cref="SerializationOption.Internal"/> option.
         /// Use this method to serialize internal data. Using isolated settings that can't be changed from user code.
         /// </summary>
-        public static string Serialize<T>([CanBeNull] T value)
+        [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(value))]
+        public static string? Serialize<T>([CanBeNull] T? value)
         {
             return Serialize(value, SerializationOption.Internal);
         }
@@ -71,7 +75,8 @@ namespace Hangfire.Common
         /// Use <see cref="SerializationOption.User"/> option to serialize user data like arguments and parameters,
         /// configurable via <see cref="SetUserSerializerSettings"/>.
         /// </summary>
-        public static string Serialize<T>([CanBeNull] T value, SerializationOption option)
+        [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(value))]
+        public static string? Serialize<T>([CanBeNull] T? value, SerializationOption option)
         {
             return Serialize(value, typeof(T), option);
         }
@@ -83,7 +88,8 @@ namespace Hangfire.Common
         /// Use <see cref="SerializationOption.User"/> option to serialize user data like arguments and parameters,
         /// configurable via <see cref="SetUserSerializerSettings"/>.
         /// </summary>
-        public static string Serialize([CanBeNull] object value, [CanBeNull] Type type, SerializationOption option)
+        [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(value))]
+        public static string? Serialize([CanBeNull] object? value, [CanBeNull] Type? type, SerializationOption option)
         {
             if (value == null) return null;
 
@@ -128,7 +134,8 @@ namespace Hangfire.Common
         /// Deserializes data with <see cref="SerializationOption.Internal"/> option.
         /// Use this method to deserialize internal data. Using isolated settings that can't be changed from user code.
         /// </summary>
-        public static object Deserialize([CanBeNull] string value, [NotNull] Type type)
+        [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(value))]
+        public static object? Deserialize([CanBeNull] string? value, [NotNull] Type type)
         {
             return Deserialize(value, type, SerializationOption.Internal);
         }
@@ -140,12 +147,13 @@ namespace Hangfire.Common
         /// Use <see cref="SerializationOption.User"/> to deserialize user data like arguments and parameters, 
         /// configurable via <see cref="SetUserSerializerSettings"/>.
         /// </summary>
-        public static object Deserialize([CanBeNull] string value, [NotNull] Type type, SerializationOption option)
+        [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(value))]
+        public static object? Deserialize([CanBeNull] string? value, [NotNull] Type type, SerializationOption option)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
             if (value == null) return null;
 
-            Exception exception = null;
+            Exception? exception = null;
 
             if (option != SerializationOption.User)
             {
@@ -159,7 +167,7 @@ namespace Hangfire.Common
                     using (var jsonReader = new JsonTextReader(stringReader))
                     {
                         var serializer = JsonSerializer.Create(serializerSettings);
-                        return serializer.Deserialize(jsonReader, type);
+                        return serializer.Deserialize(jsonReader, type)!;
                     }
                 }
                 catch (Exception ex) when (ex.IsCatchableExceptionType())
@@ -174,7 +182,7 @@ namespace Hangfire.Common
 
             try
             {
-                return JsonConvert.DeserializeObject(value, type, GetSerializerSettings(SerializationOption.User));
+                return JsonConvert.DeserializeObject(value, type, GetSerializerSettings(SerializationOption.User))!;
             }
             catch (Exception ex) when (exception != null && ex.IsCatchableExceptionType())
             {
@@ -187,7 +195,8 @@ namespace Hangfire.Common
         /// Deserializes data with <see cref="SerializationOption.Internal"/> option.
         /// Use this method to deserialize internal data. Using isolated settings that can't be changed from user code.
         /// </summary>
-        public static T Deserialize<T>([CanBeNull] string value)
+        [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(value))]
+        public static T? Deserialize<T>([CanBeNull] string? value)
         {
             if (value == null) return default(T);
             return Deserialize<T>(value, SerializationOption.Internal);
@@ -200,7 +209,8 @@ namespace Hangfire.Common
         /// Use <see cref="SerializationOption.User"/> to deserialize user data like arguments and parameters, 
         /// configurable via <see cref="SetUserSerializerSettings"/>.
         /// </summary>
-        public static T Deserialize<T>([CanBeNull] string value, SerializationOption option)
+        [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(value))]
+        public static T? Deserialize<T>([CanBeNull] string? value, SerializationOption option)
         {
             if (value == null) return default(T);
             return (T) Deserialize(value, typeof(T), option);
@@ -251,10 +261,15 @@ namespace Hangfire.Common
             var typeNameAssemblyFormat = typeof(JsonSerializerSettings).GetRuntimeProperty("TypeNameAssemblyFormat");
 
             var property = typeNameAssemblyFormatHandling ?? typeNameAssemblyFormat;
+            if (property == null)
+            {
+                throw new InvalidOperationException($"Neither TypeNameAssemblyFormatHandling nor TypeNameAssemblyFormat properties found in type '{typeof(JsonSerializerSettings).FullName}'.");
+            }
+
             property.SetValue(serializerSettings, Enum.Parse(property.PropertyType, "Simple"));
         }
 
-        private static JsonSerializerSettings GetSerializerSettings(SerializationOption serializationOption)
+        private static JsonSerializerSettings? GetSerializerSettings(SerializationOption serializationOption)
         {
             switch (serializationOption)
             {
@@ -265,7 +280,7 @@ namespace Hangfire.Common
             }
         }
 
-        private static JsonSerializerSettings GetUserSerializerSettings()
+        private static JsonSerializerSettings? GetUserSerializerSettings()
         {
             return Volatile.Read(ref _userSerializerSettings);
         }

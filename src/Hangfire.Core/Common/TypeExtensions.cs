@@ -19,7 +19,9 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Hangfire.Annotations;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Common
 {
@@ -41,10 +43,10 @@ namespace Hangfire.Common
                     .ReplaceGenericParametersInGenericTypeName(type);
         }
 
-        public static MethodInfo GetNonOpenMatchingMethod(
-            [NotNull] this Type type,
-            [NotNull] string name,
-            [CanBeNull] Type[] parameterTypes)
+        public static MethodInfo? GetNonOpenMatchingMethod(
+            this Type type,
+            string name,
+            Type[]? parameterTypes)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
             if (name == null) throw new ArgumentNullException(nameof(name));
@@ -127,14 +129,20 @@ namespace Hangfire.Common
             return type.GenericTypeArguments.Length > 0 ? type.GenericTypeArguments : type.GenericTypeParameters;
         }
 
-        private static bool TypesMatchRecursive(TypeInfo parameterType, TypeInfo actualType, IList<Type> genericArguments)
+        private static bool TypesMatchRecursive(TypeInfo parameterType, TypeInfo actualType, IList<Type?>? genericArguments)
         {
             if (parameterType.IsGenericParameter)
             {
+                if (genericArguments == null)
+                {
+                    throw new ArgumentException($"Type '{parameterType.FullName}' is generic parameter, but no generic arguments list was provided.'", nameof(genericArguments));
+                }
+
                 var position = parameterType.GenericParameterPosition;
+                var genericArgument = genericArguments[position];
                 
                 // Return false if this generic parameter has been identified and it's not the same as actual type
-                if (genericArguments[position] != null && genericArguments[position].GetTypeInfo() != actualType)
+                if (genericArgument != null && genericArgument.GetTypeInfo() != actualType)
                 {
                     return false;
                 }
@@ -150,8 +158,8 @@ namespace Hangfire.Common
                     // Return false if parameterType is array whereas actualType isn't
                     if (!actualType.IsArray) return false;
 
-                    var parameterElementType = parameterType.GetElementType();
-                    var actualElementType = actualType.GetElementType();
+                    var parameterElementType = parameterType.GetElementType()!;
+                    var actualElementType = actualType.GetElementType()!;
 
                     return TypesMatchRecursive(parameterElementType.GetTypeInfo(), actualElementType.GetTypeInfo(), genericArguments);
                 }
@@ -187,11 +195,17 @@ namespace Hangfire.Common
                 return type.Name;
             }
 
+            var fullName = type.FullName;
+            if (fullName == null)
+            {
+                throw new NotSupportedException($"Type '{type.Name}' does not have a full name.");
+            }
+
             const int dotLength = 1;
             // ReSharper disable once PossibleNullReferenceException
             return !String.IsNullOrEmpty(type.Namespace)
-                ? type.FullName.Substring(type.Namespace.Length + dotLength)
-                : type.FullName;
+                ? fullName.Substring(type.Namespace.Length + dotLength)
+                : fullName;
         }
 
         private static string ReplacePlusWithDotInNestedTypeName(this string typeName)

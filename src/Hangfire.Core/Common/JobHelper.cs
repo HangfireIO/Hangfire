@@ -18,6 +18,8 @@ using System.Globalization;
 using Hangfire.Annotations;
 using Newtonsoft.Json;
 
+#nullable enable
+
 namespace Hangfire.Common
 {
     public static class JobHelper

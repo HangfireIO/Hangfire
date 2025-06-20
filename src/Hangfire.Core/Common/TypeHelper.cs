@@ -21,6 +21,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 
+#nullable enable
+
 namespace Hangfire.Common
 {
     public class TypeHelper
@@ -39,8 +41,8 @@ namespace Hangfire.Common
         private static readonly Regex CultureRegex = new Regex(@", Culture=\w+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
         private static readonly Regex PublicKeyTokenRegex = new Regex(@", PublicKeyToken=\w+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
 
-        private static Func<string, Type> _currentTypeResolver;
-        private static Func<Type, string> _currentTypeSerializer;
+        private static Func<string, Type>? _currentTypeResolver;
+        private static Func<Type, string>? _currentTypeSerializer;
 
         public static Func<string, Type> CurrentTypeResolver
         {
@@ -56,7 +58,7 @@ namespace Hangfire.Common
 
         public static string DefaultTypeSerializer(Type type)
         {
-            return DefaultTypeSerializerCache.GetOrAdd(type, static t => t.AssemblyQualifiedName);
+            return DefaultTypeSerializerCache.GetOrAdd(type, static t => t.AssemblyQualifiedName!);
         }
 
         public static string SimpleAssemblyTypeSerializer(Type type)
@@ -84,7 +86,7 @@ namespace Hangfire.Common
                     name,
                     typeResolver: TypeResolver,
                     assemblyResolver: CachedAssemblyResolver,
-                    throwOnError: true);
+                    throwOnError: true)!;
 #endif
             });
         }
@@ -151,7 +153,7 @@ namespace Hangfire.Common
                 }
                 else
                 {
-                    assemblyName = typeInfo.Assembly.GetName().Name;
+                    assemblyName = typeInfo.Assembly.GetName().Name!;
                 }
 
                 if (assemblyName.Equals("System.Private.CoreLib", StringComparison.OrdinalIgnoreCase))
@@ -190,7 +192,7 @@ namespace Hangfire.Common
         {
             var assemblyName = new AssemblyName(assemblyString);
 
-            if (assemblyName.Name.Equals("System.Console", StringComparison.OrdinalIgnoreCase) ||
+            if (assemblyName.Name!.Equals("System.Console", StringComparison.OrdinalIgnoreCase) ||
                 assemblyName.Name.Equals("System.Private.CoreLib", StringComparison.OrdinalIgnoreCase) ||
                 assemblyName.Name.Equals("mscorlib", StringComparison.OrdinalIgnoreCase))
             {
@@ -207,7 +209,7 @@ namespace Hangfire.Common
             if (assemblyName.Version == null && assemblyName.CultureInfo == null && publicKeyToken == null)
             {
 #pragma warning disable 618
-                return Assembly.LoadWithPartialName(assemblyName.Name);
+                return Assembly.LoadWithPartialName(assemblyName.Name!)!;
 #pragma warning restore 618
             }
 #endif
@@ -218,7 +220,7 @@ namespace Hangfire.Common
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
             {
-                var shortName = new AssemblyName(assemblyName.Name);
+                var shortName = new AssemblyName(assemblyName.Name!);
                 if (publicKeyToken != null)
                 {
                     shortName.SetPublicKeyToken(publicKeyToken);
@@ -228,7 +230,7 @@ namespace Hangfire.Common
             }
         }
 
-        private static Type TypeResolver(Assembly assembly, string typeName, bool ignoreCase)
+        private static Type TypeResolver(Assembly? assembly, string typeName, bool ignoreCase)
         {
             if (typeName.Equals("System.Diagnostics.Debug", StringComparison.Ordinal))
             {
@@ -238,7 +240,7 @@ namespace Hangfire.Common
             assembly = assembly ?? CoreLibrary;
 
             if (assembly != CoreLibrary &&
-                assembly.GetName().Name.Equals("mscorlib", StringComparison.OrdinalIgnoreCase))
+                assembly.GetName().Name!.Equals("mscorlib", StringComparison.OrdinalIgnoreCase))
             {
                 // Everything defaults to `mscorlib` for interoperability reasons between
                 // .NET Framework and .NET Core. Most of the types have the proper forwarding,
@@ -248,7 +250,7 @@ namespace Hangfire.Common
                 if (type != null) return type;
             }
 
-            return assembly.GetType(typeName, true, ignoreCase);
+            return assembly.GetType(typeName, throwOnError: true, ignoreCase)!;
         }
     }
 }

@@ -19,6 +19,8 @@ using Hangfire.Client;
 using Hangfire.Server;
 using Hangfire.States;
 
+#nullable enable
+
 namespace Hangfire.Common
 {
     /// <summary>
@@ -103,7 +105,7 @@ namespace Hangfire.Common
             {
                 private readonly List<JobFilter> _filters = filters;
                 private int _index = 0;
-                private T _current = default;
+                private T? _current = default;
 
                 public bool MoveNext()
                 {
@@ -121,7 +123,7 @@ namespace Hangfire.Common
                     return MoveNextRare();
                 }
 
-                public T Current => _current;
+                public T? Current => _current;
 
                 private bool MoveNextRare()
                 {
@@ -140,7 +142,7 @@ namespace Hangfire.Common
             {
                 private readonly List<JobFilter> _filters = filters;
                 private int _index = filters.Count - 1;
-                private T _current = default;
+                private T? _current = default;
 
                 public bool MoveNext()
                 {
@@ -158,7 +160,7 @@ namespace Hangfire.Common
                     return MoveNextRare();
                 }
 
-                public T Current => _current;
+                public T? Current => _current;
 
                 private bool MoveNextRare()
                 {

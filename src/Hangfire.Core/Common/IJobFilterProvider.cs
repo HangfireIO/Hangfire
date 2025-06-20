@@ -15,6 +15,8 @@
 
 using System.Collections.Generic;
 
+#nullable enable
+
 namespace Hangfire.Common
 {
     /// <summary>

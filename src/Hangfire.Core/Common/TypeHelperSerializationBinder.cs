@@ -17,6 +17,8 @@ using System;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
+#nullable enable
+
 namespace Hangfire.Common
 {
     public sealed class TypeHelperSerializationBinder : SerializationBinder
@@ -24,12 +26,12 @@ namespace Hangfire.Common
             , Newtonsoft.Json.Serialization.ISerializationBinder
 #endif
     {
-        public override Type BindToType(string assemblyName, string typeName)
+        public override Type BindToType(string? assemblyName, string typeName)
         {
             return TypeHelper.CurrentTypeResolver($"{typeName}, {assemblyName}");
         }
 
-        public override void BindToName(Type serializedType, out string assemblyName, out string typeName)
+        public override void BindToName(Type serializedType, out string? assemblyName, out string typeName)
         {
             assemblyName = null;
             typeName = TypeHelper.CurrentTypeSerializer(serializedType);

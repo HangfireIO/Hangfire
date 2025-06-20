@@ -26,6 +26,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Hangfire.States;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Common
 {
     /// <summary>
@@ -79,7 +82,7 @@ namespace Hangfire.Common
     public partial class Job
     {
         private static readonly object[] EmptyObjectArray = [];
-        private static readonly ConcurrentDictionary<MethodInfo, AsyncStateMachineAttribute>
+        private static readonly ConcurrentDictionary<MethodInfo, AsyncStateMachineAttribute?>
             AsyncStateMachineAttributeCache = new();
 
         /// <summary>
@@ -109,7 +112,7 @@ namespace Hangfire.Common
         /// <exception cref="NotSupportedException"><paramref name="method"/> is not supported.</exception>
         public Job([NotNull] MethodInfo method, [NotNull] params object[] args)
             // ReSharper disable once AssignNullToNotNullAttribute
-            : this(method.DeclaringType, method, args)
+            : this(method.DeclaringType!, method, args)
         {
         }
 
@@ -195,7 +198,7 @@ namespace Hangfire.Common
         /// </exception>
         /// <exception cref="ArgumentException">Parameter/argument count mismatch.</exception>
         /// <exception cref="NotSupportedException"><paramref name="method"/> is not supported.</exception>
-        public Job([NotNull] Type type, [NotNull] MethodInfo method, [NotNull] IReadOnlyList<object> args, [CanBeNull] string queue)
+        public Job([NotNull] Type type, [NotNull] MethodInfo method, [NotNull] IReadOnlyList<object?> args, [CanBeNull] string? queue)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
             if (method == null) throw new ArgumentNullException(nameof(method));
@@ -233,14 +236,14 @@ namespace Hangfire.Common
         /// method invocation during the performance.
         /// </summary>
         [NotNull]
-        public IReadOnlyList<object> Args { get; }
+        public IReadOnlyList<object?> Args { get; }
 
         /// <summary>
         /// Gets a default target queue for a job to which it will be enqueued unless
         /// overriden by a job filter.
         /// </summary>
         [CanBeNull]
-        public string Queue { get; }
+        public string? Queue { get; }
 
         public override string ToString()
         {
@@ -316,7 +319,7 @@ namespace Hangfire.Common
         }
 
         [Obsolete("Please use the `Create` method instead with the same arguments. Will be removed in 2.0.")]
-        public static Job FromExpression([NotNull, InstantHandle] Expression<Action> methodCall, [CanBeNull] string queue)
+        public static Job FromExpression([NotNull, InstantHandle] Expression<Action> methodCall, [CanBeNull] string? queue)
         {
             return Create(methodCall, null, queue);
         }
@@ -365,7 +368,7 @@ namespace Hangfire.Common
         /// be called while constructing a <see cref="Job"/> instance. Only specified arguments are evaluated to
         /// collect enough metadata for serialization.
         /// </remarks>
-        public static Job Create([NotNull, InstantHandle] Expression<Action> methodCall, [CanBeNull] string queue)
+        public static Job Create([NotNull, InstantHandle] Expression<Action> methodCall, [CanBeNull] string? queue)
         {
             return Create(methodCall, null, queue);
         }
@@ -405,7 +408,7 @@ namespace Hangfire.Common
         }
 
         [Obsolete("Please use the `Create` method instead with the same arguments. Will be removed in 2.0.")]
-        public static Job FromExpression([NotNull, InstantHandle] Expression<Func<Task>> methodCall, [CanBeNull] string queue)
+        public static Job FromExpression([NotNull, InstantHandle] Expression<Func<Task>> methodCall, [CanBeNull] string? queue)
         {
             return Create(methodCall, null, queue);
         }
@@ -456,7 +459,7 @@ namespace Hangfire.Common
         /// be called while constructing a <see cref="Job"/> instance. Only specified arguments are evaluated to
         /// collect enough metadata for serialization.
         /// </remarks>
-        public static Job Create([NotNull, InstantHandle] Expression<Func<Task>> methodCall, [CanBeNull] string queue)
+        public static Job Create([NotNull, InstantHandle] Expression<Func<Task>> methodCall, [CanBeNull] string? queue)
         {
             return Create(methodCall, null, queue);
         }
@@ -488,7 +491,7 @@ namespace Hangfire.Common
         }
 
         [Obsolete("Please use the `Create` method instead with the same arguments. Will be removed in 2.0.")]
-        public static Job FromExpression<TType>([NotNull, InstantHandle] Expression<Action<TType>> methodCall, [CanBeNull] string queue)
+        public static Job FromExpression<TType>([NotNull, InstantHandle] Expression<Action<TType>> methodCall, [CanBeNull] string? queue)
         {
             return Create(methodCall, typeof(TType), queue);
         }
@@ -541,7 +544,7 @@ namespace Hangfire.Common
         /// be called while constructing a <see cref="Job"/> instance. Only specified arguments are evaluated to
         /// collect enough metadata for serialization.
         /// </remarks>
-        public static Job Create<TType>([NotNull, InstantHandle] Expression<Action<TType>> methodCall, [CanBeNull] string queue)
+        public static Job Create<TType>([NotNull, InstantHandle] Expression<Action<TType>> methodCall, [CanBeNull] string? queue)
         {
             return Create(methodCall, typeof(TType), queue);
         }
@@ -573,7 +576,7 @@ namespace Hangfire.Common
         }
 
         [Obsolete("Please use the `Create` method instead with the same arguments. Will be removed in 2.0.")]
-        public static Job FromExpression<TType>([NotNull, InstantHandle] Expression<Func<TType, Task>> methodCall, [CanBeNull] string queue)
+        public static Job FromExpression<TType>([NotNull, InstantHandle] Expression<Func<TType, Task>> methodCall, [CanBeNull] string? queue)
         {
             return Create(methodCall, typeof(TType), queue);
         }
@@ -626,12 +629,12 @@ namespace Hangfire.Common
         /// be called while constructing a <see cref="Job"/> instance. Only specified arguments are evaluated to
         /// collect enough metadata for serialization.
         /// </remarks>
-        public static Job Create<TType>([NotNull, InstantHandle] Expression<Func<TType, Task>> methodCall, [CanBeNull] string queue)
+        public static Job Create<TType>([NotNull, InstantHandle] Expression<Func<TType, Task>> methodCall, [CanBeNull] string? queue)
         {
             return Create(methodCall, typeof(TType), queue);
         }
 
-        private static Job Create([NotNull] LambdaExpression methodCall, [CanBeNull] Type explicitType, [CanBeNull] string queue)
+        private static Job Create([NotNull] LambdaExpression methodCall, [CanBeNull] Type? explicitType, [CanBeNull] string? queue)
         {
             if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
 
@@ -641,7 +644,7 @@ namespace Hangfire.Common
                 throw new ArgumentException("Expression body should be of type `MethodCallExpression`", nameof(methodCall));
             }
 
-            var type = explicitType ?? callExpression.Method.DeclaringType;
+            var type = explicitType ?? callExpression.Method.DeclaringType!;
             var method = callExpression.Method;
 
             if (explicitType == null && callExpression.Object != null)
@@ -666,6 +669,11 @@ namespace Hangfire.Common
                 method = type.GetNonOpenMatchingMethod(
                     callExpression.Method.Name,
                     callExpression.Method.GetParameters().Select(static x => x.ParameterType).ToArray());
+
+                if (method == null)
+                {
+                    throw new InvalidOperationException("No matched method found for the expression object.");
+                }
             }
 
             return new Job(
@@ -751,9 +759,9 @@ namespace Hangfire.Common
             }
         }
 
-        private static object[] GetExpressionValues(ReadOnlyCollection<Expression> expressions)
+        private static object?[] GetExpressionValues(ReadOnlyCollection<Expression> expressions)
         {
-            var result = expressions.Count > 0 ? new object[expressions.Count] : [];
+            var result = expressions.Count > 0 ? new object?[expressions.Count] : [];
             var index = 0;
 
             foreach (var expression in expressions)
@@ -764,7 +772,7 @@ namespace Hangfire.Common
             return result;
         }
 
-        private static object GetExpressionValue(Expression expression)
+        private static object? GetExpressionValue(Expression expression)
         {
             var constantExpression = expression as ConstantExpression;
 

@@ -16,6 +16,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+#nullable enable
+
 namespace Hangfire.Common
 {
     /// <summary>
@@ -61,7 +63,7 @@ namespace Hangfire.Common
             var typeAttributes = GetTypeAttributes(job);
             var methodAttributes = GetMethodAttributes(job);
 
-            List<JobFilter> combined = null;
+            List<JobFilter>? combined = null;
 
             foreach (var typeAttribute in typeAttributes)
             {
