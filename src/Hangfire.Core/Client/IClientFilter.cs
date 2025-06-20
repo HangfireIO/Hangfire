@@ -13,6 +13,11 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using Hangfire.Annotations;
+
+#nullable enable
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+
 namespace Hangfire.Client
 {
     /// <summary>
@@ -24,12 +29,12 @@ namespace Hangfire.Client
         /// Called before the creation of the job. 
         /// </summary>
         /// <param name="context">The filter context.</param>
-        void OnCreating(CreatingContext context);
+        void OnCreating([NotNull] CreatingContext context);
 
         /// <summary>
         /// Called after the creation of the job.
         /// </summary>
         /// <param name="context">The filter context.</param>
-        void OnCreated(CreatedContext context);
+        void OnCreated([NotNull] CreatedContext context);
     }
 }

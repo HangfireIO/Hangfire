@@ -14,6 +14,10 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Hangfire.Annotations;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Client
 {
@@ -23,17 +27,16 @@ namespace Hangfire.Client
     /// </summary>
     public class ClientExceptionContext : CreateContext
     {
-        public ClientExceptionContext(CreateContext createContext, Exception exception)
+        public ClientExceptionContext([NotNull] CreateContext createContext, [NotNull] Exception exception)
             : base(createContext)
         {
-            if (exception == null) throw new ArgumentNullException(nameof(exception));
-
-            Exception = exception;
+            Exception = exception ?? throw new ArgumentNullException(nameof(exception));
         }
 
         /// <summary>
         /// Gets an exception that occurred during the creation of the job.
         /// </summary>
+        [NotNull]
         public Exception Exception { get; }
 
         /// <summary>

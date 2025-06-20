@@ -15,11 +15,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Profiling;
 using Hangfire.States;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Client
 {
@@ -59,19 +61,16 @@ namespace Hangfire.Client
         }
 
         internal BackgroundJobFactory(
-            [NotNull] IJobFilterProvider filterProvider, 
-            [NotNull] IBackgroundJobFactory innerFactory)
+            IJobFilterProvider filterProvider, 
+            IBackgroundJobFactory innerFactory)
         {
-            if (filterProvider == null) throw new ArgumentNullException(nameof(filterProvider));
-            if (innerFactory == null) throw new ArgumentNullException(nameof(innerFactory));
-
-            _filterProvider = filterProvider;
-            _innerFactory = innerFactory;
+            _filterProvider = filterProvider ?? throw new ArgumentNullException(nameof(filterProvider));
+            _innerFactory = innerFactory ?? throw new ArgumentNullException(nameof(innerFactory));
         }
 
         public IStateMachine StateMachine => _innerFactory.StateMachine;
 
-        public BackgroundJob Create(CreateContext context)
+        public BackgroundJob? Create(CreateContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
 
@@ -138,7 +137,7 @@ namespace Hangfire.Client
             CreateContext context,
             CreatingContext preContext)
         {
-            var filter = enumerator.Current!;
+            var filter = enumerator.Current;
 
             preContext.Profiler.InvokeMeasured(
                 new KeyValuePair<IClientFilter, CreatingContext>(filter, preContext),

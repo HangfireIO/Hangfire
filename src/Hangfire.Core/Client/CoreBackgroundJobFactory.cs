@@ -24,6 +24,9 @@ using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Client
 {
     internal sealed class CoreBackgroundJobFactory : IBackgroundJobFactory
@@ -36,8 +39,8 @@ namespace Hangfire.Client
         public CoreBackgroundJobFactory([NotNull] IStateMachine stateMachine)
         {
             StateMachine = stateMachine ?? throw new ArgumentNullException(nameof(stateMachine));
-            RetryAttempts = 0;
-            RetryDelayFunc = GetRetryDelay;
+            _retryAttempts = 0;
+            _retryDelayFunc = GetRetryDelay;
         }
 
         public IStateMachine StateMachine { get; }
@@ -54,7 +57,7 @@ namespace Hangfire.Client
             set { lock (_syncRoot) { _retryDelayFunc = value; } }
         }
 
-        public BackgroundJob Create(CreateContext context)
+        public BackgroundJob? Create(CreateContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
 
@@ -73,7 +76,7 @@ namespace Hangfire.Client
             return CreateBackgroundJobTwoSteps(context, parameters, createdAt, expireIn);
         }
 
-        private BackgroundJob CreateBackgroundJobTwoSteps(CreateContext context, Dictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn)
+        private BackgroundJob? CreateBackgroundJobTwoSteps(CreateContext context, Dictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn)
         {
             var attemptsLeft = Math.Max(RetryAttempts, 0);
 
@@ -151,7 +154,7 @@ namespace Hangfire.Client
 
         private TResult RetryOnException<TContext, TResult>(ref int attemptsLeft, Func<int, TContext, TResult> action, TContext context)
         {
-            List<Exception> exceptions = null;
+            List<Exception>? exceptions = null;
             var attempt = 0;
             var delay = TimeSpan.Zero;
 

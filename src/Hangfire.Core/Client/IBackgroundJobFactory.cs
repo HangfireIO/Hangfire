@@ -16,6 +16,9 @@
 using Hangfire.Annotations;
 using Hangfire.States;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Client
 {
     /// <summary>
@@ -35,6 +38,6 @@ namespace Hangfire.Client
         /// Runs the process of job creation with the specified context.
         /// </summary>
         [CanBeNull]
-        BackgroundJob Create([NotNull] CreateContext context);
+        BackgroundJob? Create([NotNull] CreateContext context);
     }
 }

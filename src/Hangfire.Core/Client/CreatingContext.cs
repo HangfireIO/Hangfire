@@ -14,6 +14,10 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Hangfire.Annotations;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Client
 {
@@ -23,7 +27,7 @@ namespace Hangfire.Client
     /// </summary>
     public class CreatingContext : CreateContext
     {
-        public CreatingContext(CreateContext context)
+        public CreatingContext([NotNull] CreateContext context)
             : base(context)
         {
         }
@@ -44,7 +48,7 @@ namespace Hangfire.Client
         /// <param name="value">The value of the parameter.</param>
         /// 
         /// <exception cref="ArgumentNullException">The <paramref name="name"/> is null or empty.</exception>
-        public void SetJobParameter(string name, object value)
+        public void SetJobParameter([NotNull] string name, object value)
         {
             if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException(nameof(name));
             Parameters[name] = value;
@@ -62,7 +66,7 @@ namespace Hangfire.Client
         /// 
         /// <exception cref="ArgumentNullException">The <paramref name="name"/> is null or empty.</exception>
         /// <exception cref="InvalidOperationException">Could not deserialize the parameter value to the type <typeparamref name="T"/>.</exception>
-        public T GetJobParameter<T>(string name)
+        public T? GetJobParameter<T>([NotNull] string name)
         {
             if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException(nameof(name));
 

@@ -18,6 +18,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Hangfire.Annotations;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Client
 {
     /// <summary>
@@ -28,9 +31,9 @@ namespace Hangfire.Client
     {
         public CreatedContext(
             [NotNull] CreateContext context, 
-            [CanBeNull] BackgroundJob backgroundJob,
+            [CanBeNull] BackgroundJob? backgroundJob,
             bool canceled, 
-            [CanBeNull] Exception exception)
+            [CanBeNull] Exception? exception)
             : base(context)
         {
             BackgroundJob = backgroundJob;
@@ -40,18 +43,18 @@ namespace Hangfire.Client
 
         [CanBeNull]
         [Obsolete("Please use `BackgroundJob` property instead. Will be removed in 2.0.0.")]
-        public string JobId => BackgroundJob?.Id;
+        public string? JobId => BackgroundJob?.Id;
 
         [CanBeNull]
-        public BackgroundJob BackgroundJob { get; }
-        
+        public BackgroundJob? BackgroundJob { get; }
+
         public override IDictionary<string, object> Parameters => new ReadOnlyDictionary<string, object>(base.Parameters);
 
         /// <summary>
         /// Gets an exception that occurred during the creation of the job.
         /// </summary>
         [CanBeNull]
-        public Exception Exception { get; }
+        public Exception? Exception { get; }
 
         /// <summary>
         /// Gets a value that indicates that this <see cref="CreatedContext"/>

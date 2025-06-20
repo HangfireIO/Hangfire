@@ -21,6 +21,9 @@ using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Client
 {
     /// <summary>
@@ -38,7 +41,7 @@ namespace Hangfire.Client
             [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
             [NotNull] Job job,
-            [CanBeNull] IState initialState)
+            [CanBeNull] IState? initialState)
             : this(storage, connection, job, initialState, null)
         {
         }
@@ -47,8 +50,8 @@ namespace Hangfire.Client
             [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
             [NotNull] Job job,
-            [CanBeNull] IState initialState,
-            [CanBeNull] IDictionary<string, object> parameters)
+            [CanBeNull] IState? initialState,
+            [CanBeNull] IDictionary<string, object>? parameters)
             : this(storage, connection, job, initialState, parameters, EmptyProfiler.Instance, null)
         {
         }
@@ -57,18 +60,14 @@ namespace Hangfire.Client
             [NotNull] JobStorage storage, 
             [NotNull] IStorageConnection connection, 
             [NotNull] Job job, 
-            [CanBeNull] IState initialState,
-            [CanBeNull] IDictionary<string, object> parameters,
+            [CanBeNull] IState? initialState,
+            [CanBeNull] IDictionary<string, object>? parameters,
             [NotNull] IProfiler profiler,
-            [CanBeNull] IDictionary<string, object> items)
+            [CanBeNull] IDictionary<string, object>? items)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
-            if (connection == null) throw new ArgumentNullException(nameof(connection));
-            if (job == null) throw new ArgumentNullException(nameof(job));
-
-            Storage = storage;
-            Connection = connection;
-            Job = job;
+            Storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            Job = job ?? throw new ArgumentNullException(nameof(job));
             InitialState = initialState;
             Profiler = profiler;
 
@@ -103,12 +102,12 @@ namespace Hangfire.Client
         /// class are doing their job.
         /// </summary>
         [CanBeNull]
-        public IState InitialState { get; }
+        public IState? InitialState { get; }
 
         [NotNull]
         internal IProfiler Profiler { get; }
-        
+
         [CanBeNull]
-        public IBackgroundJobFactory Factory { get; internal set; }
+        public IBackgroundJobFactory? Factory { get; internal set; }
     }
 }

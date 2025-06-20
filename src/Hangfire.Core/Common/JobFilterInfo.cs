@@ -123,7 +123,7 @@ namespace Hangfire.Common
                     return MoveNextRare();
                 }
 
-                public T? Current => _current;
+                public T Current => _current!;
 
                 private bool MoveNextRare()
                 {
@@ -160,7 +160,7 @@ namespace Hangfire.Common
                     return MoveNextRare();
                 }
 
-                public T? Current => _current;
+                public T Current => _current!;
 
                 private bool MoveNextRare()
                 {
