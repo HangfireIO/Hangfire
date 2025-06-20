@@ -17,6 +17,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
+#nullable enable
+
 namespace Hangfire.Processing
 {
     // TODO Replace these methods with WaitHandle property in 2.0.

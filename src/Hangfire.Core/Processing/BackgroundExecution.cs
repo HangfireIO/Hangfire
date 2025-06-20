@@ -17,9 +17,12 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Hangfire.Annotations;
 using Hangfire.Logging;
+#if !NETSTANDARD1_3
 using ThreadState = System.Threading.ThreadState;
+#endif
+
+#nullable enable
 
 namespace Hangfire.Processing
 {
@@ -35,9 +38,9 @@ namespace Hangfire.Processing
         // to not to make stress on logging subsystem with thousands of messages in
         // case of transient faults.
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
-        private Stopwatch _faultedSince;
-        private Stopwatch _failedSince;
-        private Stopwatch _lastException;
+        private Stopwatch? _faultedSince;
+        private Stopwatch? _failedSince;
+        private Stopwatch? _lastException;
         private int _exceptionsCount;
 
         private CancellationToken _stopToken;
@@ -45,12 +48,12 @@ namespace Hangfire.Processing
         private readonly ILog _logger;
 
         private readonly Stopwatch _createdAt;
-        private Stopwatch _stoppedAt;
+        private Stopwatch? _stoppedAt;
         private CancellationTokenRegistration _stopRegistration;
 
         private volatile bool _disposed;
 
-        public BackgroundExecution([NotNull] BackgroundExecutionOptions options, CancellationToken stopToken)
+        public BackgroundExecution(BackgroundExecutionOptions options, CancellationToken stopToken)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
 
@@ -68,7 +71,7 @@ namespace Hangfire.Processing
 
         public bool StopRequested => _disposed || _stopToken.IsCancellationRequested;
 
-        public void Run(Action<Guid, object> callback, object state)
+        public void Run(Action<Guid, object?> callback, object? state)
         {
             if (callback == null) throw new ArgumentNullException(nameof(callback));
 
@@ -155,7 +158,7 @@ namespace Hangfire.Processing
             }
         }
 
-        public async Task RunAsync(Func<Guid, object, Task> callback, object state)
+        public async Task RunAsync(Func<Guid, object?, Task> callback, object? state)
         {
             if (callback == null) throw new ArgumentNullException(nameof(callback));
 

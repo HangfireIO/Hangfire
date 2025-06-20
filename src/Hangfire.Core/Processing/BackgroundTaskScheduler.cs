@@ -23,6 +23,9 @@ using System.Threading.Tasks;
 using Hangfire.Annotations;
 using ThreadState = System.Threading.ThreadState;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Processing
 {
     /// <summary>Represents a custom implementation of the <see cref="TaskScheduler"/> that uses
@@ -68,7 +71,7 @@ namespace Hangfire.Processing
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
 
         private readonly WaitHandle[] _waitHandles;
-        private readonly Action<Exception> _exceptionHandler;
+        private readonly Action<Exception>? _exceptionHandler;
 
         private int _disposed;
 
@@ -104,7 +107,7 @@ namespace Hangfire.Processing
         /// <exception cref="ArgumentException"><paramref name="threadFactory"/> returned at least one thread not in the <see cref="ThreadState.Unstarted"/> state.</exception>
         public BackgroundTaskScheduler(
             [NotNull] Func<ThreadStart, IEnumerable<Thread>> threadFactory,
-            [CanBeNull] Action<Exception> exceptionHandler)
+            [CanBeNull] Action<Exception>? exceptionHandler)
         {
             if (threadFactory == null) throw new ArgumentNullException(nameof(threadFactory));
 
@@ -118,7 +121,13 @@ namespace Hangfire.Processing
             AppDomainUnloadMonitor.EnsureInitialized();
 #endif
 
-            _threads = threadFactory(DispatchLoop)?.ToArray();
+            var threadEnumerable = threadFactory(DispatchLoop);
+            if (threadEnumerable == null)
+            {
+                throw new ArgumentException("Thread factory returned null.", nameof(threadFactory));
+            }
+
+            _threads = threadEnumerable.ToArray();
 
             if (_threads == null || _threads.Length == 0)
             {
@@ -248,7 +257,7 @@ namespace Hangfire.Processing
 
                 while (Volatile.Read(ref _disposed) == 0)
                 {
-                    Task task = null;
+                    Task? task = null;
 
                     try
                     {

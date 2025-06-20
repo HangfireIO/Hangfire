@@ -17,11 +17,14 @@ using System;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Processing
 {
     public interface IBackgroundExecution : IDisposable
     {
-        void Run([NotNull] Action<Guid, object> callback, [CanBeNull] object state);
-        Task RunAsync([NotNull] Func<Guid, object, Task> callback, [CanBeNull] object state);
+        void Run([NotNull] Action<Guid, object?> callback, [CanBeNull] object? state);
+        Task RunAsync([NotNull] Func<Guid, object?, Task> callback, [CanBeNull] object? state);
     }
 }

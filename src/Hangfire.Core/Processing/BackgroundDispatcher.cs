@@ -21,9 +21,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Hangfire.Annotations;
 using Hangfire.Logging;
 using ThreadState = System.Threading.ThreadState;
+
+#nullable enable
 
 namespace Hangfire.Processing
 {
@@ -33,14 +34,14 @@ namespace Hangfire.Processing
         private readonly CountdownEvent _stopped;
 
         private readonly IBackgroundExecution _execution;
-        private readonly Action<Guid, object> _action;
-        private readonly object _state;
+        private readonly Action<Guid, object?> _action;
+        private readonly object? _state;
 
         public BackgroundDispatcher(
-            [NotNull] IBackgroundExecution execution,
-            [NotNull] Action<Guid, object> action,
-            [CanBeNull] object state,
-            [NotNull] Func<ThreadStart, IEnumerable<Thread>> threadFactory)
+            IBackgroundExecution execution,
+            Action<Guid, object?> action,
+            object? state,
+            Func<ThreadStart, IEnumerable<Thread>> threadFactory)
         {
             if (threadFactory == null) throw new ArgumentNullException(nameof(threadFactory));
 
@@ -88,7 +89,7 @@ namespace Hangfire.Processing
             _stopped.Dispose();
         }
 
-        public override string ToString()
+        public override string? ToString()
         {
             return _execution.ToString();
         }

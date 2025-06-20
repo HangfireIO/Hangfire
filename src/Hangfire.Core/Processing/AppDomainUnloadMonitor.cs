@@ -17,6 +17,8 @@
 using System;
 using System.Threading;
 
+#nullable enable
+
 namespace Hangfire.Processing
 {
     internal static class AppDomainUnloadMonitor
@@ -35,7 +37,7 @@ namespace Hangfire.Processing
 
         public static bool IsUnloading => Volatile.Read(ref _isUnloading) || Server.AspNetShutdownDetector.DisposingHttpRuntime;
 
-        private static void OnDomainUnload(object sender, EventArgs args)
+        private static void OnDomainUnload(object? sender, EventArgs args)
         {
             Volatile.Write(ref _isUnloading, true);
         }

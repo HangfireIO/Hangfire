@@ -205,7 +205,7 @@ namespace Hangfire.Server
                     while (!asyncResult.IsCompleted && WaitHandle.WaitAny(waitHandles) == 0)
                     {
                         var workItem = syncContext.Dequeue();
-                        workItem.Item1(workItem.Item2);
+                        workItem?.Item1(workItem.Item2);
                     }
 
                     return task.GetTaskLikeResult(result, method.ReturnType);

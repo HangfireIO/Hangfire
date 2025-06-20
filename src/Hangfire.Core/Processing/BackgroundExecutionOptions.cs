@@ -15,6 +15,8 @@
 
 using System;
 
+#nullable enable
+
 namespace Hangfire.Processing
 {
     internal sealed class BackgroundExecutionOptions
@@ -23,7 +25,7 @@ namespace Hangfire.Processing
         private TimeSpan _warningThreshold;
         private TimeSpan _errorThreshold;
         private TimeSpan _stillErrorThreshold;
-        private Func<int, TimeSpan> _retryDelay;
+        private Func<int, TimeSpan>? _retryDelay;
 
         public BackgroundExecutionOptions()
         {
@@ -33,7 +35,7 @@ namespace Hangfire.Processing
             RetryDelay = GetBackOffMultiplier;
         }
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         public TimeSpan WarningThreshold
         {
@@ -65,7 +67,7 @@ namespace Hangfire.Processing
             }
         }
 
-        public Func<int, TimeSpan> RetryDelay
+        public Func<int, TimeSpan>? RetryDelay
         {
             get { return _retryDelay; }
             set

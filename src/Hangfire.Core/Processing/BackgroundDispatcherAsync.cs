@@ -19,8 +19,9 @@ using System.Diagnostics;
 #endif
 using System.Threading;
 using System.Threading.Tasks;
-using Hangfire.Annotations;
 using Hangfire.Logging;
+
+#nullable enable
 
 namespace Hangfire.Processing
 {
@@ -30,17 +31,17 @@ namespace Hangfire.Processing
         private readonly CountdownEvent _stopped;
 
         private readonly IBackgroundExecution _execution;
-        private readonly Func<Guid, object, Task> _action;
-        private readonly object _state;
+        private readonly Func<Guid, object?, Task> _action;
+        private readonly object? _state;
 
         private readonly TaskScheduler _taskScheduler;
         private readonly bool _ownsScheduler;
 
         public BackgroundDispatcherAsync(
-            [NotNull] IBackgroundExecution execution,
-            [NotNull] Func<Guid, object, Task> action,
-            [CanBeNull] object state,
-            [NotNull] TaskScheduler taskScheduler,
+            IBackgroundExecution execution,
+            Func<Guid, object?, Task> action,
+            object? state,
+            TaskScheduler taskScheduler,
             int maxConcurrency,
             bool ownsScheduler)
         {
@@ -89,7 +90,7 @@ namespace Hangfire.Processing
             }
         }
 
-        public override string ToString()
+        public override string? ToString()
         {
             return _execution.ToString();
         }

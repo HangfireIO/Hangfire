@@ -17,16 +17,18 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 
+#nullable enable
+
 namespace Hangfire.Processing
 {
     internal sealed class InlineSynchronizationContext : SynchronizationContext, IDisposable
     {
-        private readonly ConcurrentQueue<Tuple<SendOrPostCallback, object>> _queue = new ConcurrentQueue<Tuple<SendOrPostCallback, object>>();
+        private readonly ConcurrentQueue<Tuple<SendOrPostCallback, object?>> _queue = new ConcurrentQueue<Tuple<SendOrPostCallback, object?>>();
         private readonly Semaphore _semaphore = new Semaphore(0, Int32.MaxValue);
 
         public WaitHandle WaitHandle => _semaphore;
 
-        public Tuple<SendOrPostCallback, object> Dequeue()
+        public Tuple<SendOrPostCallback, object?>? Dequeue()
         {
             _queue.TryDequeue(out var tuple);
             return tuple;
@@ -37,7 +39,7 @@ namespace Hangfire.Processing
             _semaphore.Dispose();
         }
 
-        public override void Post(SendOrPostCallback callback, object state)
+        public override void Post(SendOrPostCallback callback, object? state)
         {
             try
             {

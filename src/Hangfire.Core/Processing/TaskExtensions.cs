@@ -15,12 +15,14 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Logging;
+
+#nullable enable
 
 namespace Hangfire.Processing
 {
@@ -29,7 +31,7 @@ namespace Hangfire.Processing
         private static readonly Type[] EmptyTypes = Type.EmptyTypes;
         private static readonly WaitHandle InvalidWaitHandleInstance = new InvalidWaitHandle();
 
-        public static bool WaitOne([NotNull] this WaitHandle waitHandle, TimeSpan timeout, CancellationToken token)
+        public static bool WaitOne(this WaitHandle waitHandle, TimeSpan timeout, CancellationToken token)
         {
             if (waitHandle == null) throw new ArgumentNullException(nameof(waitHandle));
             if (timeout < Timeout.InfiniteTimeSpan) throw new ArgumentOutOfRangeException(nameof(timeout));
@@ -72,7 +74,7 @@ namespace Hangfire.Processing
             return false;
         }
 
-        public static async Task<bool> WaitOneAsync([NotNull] this WaitHandle waitHandle, TimeSpan timeout, CancellationToken token)
+        public static async Task<bool> WaitOneAsync(this WaitHandle waitHandle, TimeSpan timeout, CancellationToken token)
         {
             if (waitHandle == null) throw new ArgumentNullException(nameof(waitHandle));
             if (timeout < Timeout.InfiniteTimeSpan) throw new ArgumentOutOfRangeException(nameof(timeout));
@@ -95,7 +97,7 @@ namespace Hangfire.Processing
             return await tcs.Task.ConfigureAwait(false);
         }
 
-        public static bool IsTaskLike(this Type type, out Func<object, Task> getTaskFunc)
+        public static bool IsTaskLike(this Type type, [MaybeNullWhen(returnValue: false)] out Func<object, Task?> getTaskFunc)
         {
             var typeInfo = type.GetTypeInfo();
 
@@ -124,7 +126,7 @@ namespace Hangfire.Processing
                     if (asTask != null && asTask.IsPublic && !asTask.IsStatic &&
                         typeof(Task).GetTypeInfo().IsAssignableFrom(asTask.ReturnType.GetTypeInfo()))
                     {
-                        getTaskFunc = obj => (Task) asTask.Invoke(obj, null);
+                        getTaskFunc = obj => (Task?) asTask.Invoke(obj, null);
                         return true;
                     }
                 }
@@ -134,7 +136,7 @@ namespace Hangfire.Processing
             return false;
         }
 
-        public static object GetTaskLikeResult([NotNull] this Task task, object obj, Type returnType)
+        public static object? GetTaskLikeResult(this Task task, object obj, Type returnType)
         {
             if (task == null) throw new ArgumentNullException(nameof(task));
 
@@ -168,21 +170,29 @@ namespace Hangfire.Processing
             return getResult.Invoke(awaiter, null);
         }
 
-        private static void CallBack(object state, bool timedOut)
+        private static void CallBack(object? state, bool timedOut)
         {
+            if (state is not TaskCompletionSource<bool> source)
+            {
+                throw new InvalidOperationException("Unexpected state type: " + state?.GetType().Name);
+            }
+
             // We do call the Unregister method to prevent race condition between
             // registered wait and cancellation token registration, so can use the
             // SetResult safely.
-            ((TaskCompletionSource<bool>)state).SetResult(!timedOut);
+            source.SetResult(!timedOut);
         }
 
-        private static void Callback(object state)
+        private static void Callback(object? state)
         {
+            if (state is not Tuple<RegisteredWaitHandle, TaskCompletionSource<bool>, CancellationToken> ctx)
+            {
+                throw new InvalidOperationException("Unexpected state type: " + state?.GetType().Name);
+            }
+
             // We need to ensure there's no race condition, where wait handle was
             // set, but callback wasn't fully completed. In this case handle is
             // acquired, but task is cancelled.
-            var ctx = (Tuple<RegisteredWaitHandle, TaskCompletionSource<bool>, CancellationToken>)state;
-
             ctx.Item1.Unregister(InvalidWaitHandleInstance);
             TrySetCanceled(ctx.Item2, ctx.Item3);
         }
