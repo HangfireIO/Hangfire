@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 
 #pragma warning disable 659 // overrides AddToHashCodeCombiner instead
+#nullable enable
 
 namespace Hangfire.Common.ExpressionUtil
 {
@@ -17,7 +18,7 @@ namespace Hangfire.Common.ExpressionUtil
     [ExcludeFromCodeCoverage]
     internal sealed class BinaryExpressionFingerprint : ExpressionFingerprint
     {
-        public BinaryExpressionFingerprint(ExpressionType nodeType, Type type, MethodInfo method)
+        public BinaryExpressionFingerprint(ExpressionType nodeType, Type type, MethodInfo? method)
             : base(nodeType, type)
         {
             // Other properties on BinaryExpression (like IsLifted / IsLiftedToNull) are simply derived
@@ -27,11 +28,11 @@ namespace Hangfire.Common.ExpressionUtil
         }
 
         // http://msdn.microsoft.com/en-us/library/system.linq.expressions.binaryexpression.method.aspx
-        public MethodInfo Method { get; }
+        public MethodInfo? Method { get; }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            BinaryExpressionFingerprint other = obj as BinaryExpressionFingerprint;
+            BinaryExpressionFingerprint? other = obj as BinaryExpressionFingerprint;
             return (other != null)
                    && Equals(Method, other.Method)
                    && Equals(other);

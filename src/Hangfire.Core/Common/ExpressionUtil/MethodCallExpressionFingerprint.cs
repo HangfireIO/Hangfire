@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 
 #pragma warning disable 659 // overrides AddToHashCodeCombiner instead
+#nullable enable
 
 namespace Hangfire.Common.ExpressionUtil
 {
@@ -29,9 +30,9 @@ namespace Hangfire.Common.ExpressionUtil
         // http://msdn.microsoft.com/en-us/library/system.linq.expressions.methodcallexpression.method.aspx
         public MethodInfo Method { get; }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            MethodCallExpressionFingerprint other = obj as MethodCallExpressionFingerprint;
+            MethodCallExpressionFingerprint? other = obj as MethodCallExpressionFingerprint;
             return (other != null)
                    && Equals(Method, other.Method)
                    && Equals(other);

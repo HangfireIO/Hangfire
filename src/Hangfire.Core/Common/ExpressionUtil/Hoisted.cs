@@ -2,7 +2,9 @@
 
 using System.Collections.Generic;
 
+#nullable enable
+
 namespace Hangfire.Common.ExpressionUtil
 {
-    internal delegate TValue Hoisted<in TModel, out TValue>(TModel model, List<object> capturedConstants);
+    internal delegate TValue Hoisted<in TModel, out TValue>(TModel model, List<object?>? capturedConstants);
 }

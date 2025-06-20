@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 // ReSharper disable All
+#nullable enable
 
 namespace Hangfire.Common.ExpressionUtil
 {
@@ -49,9 +50,9 @@ namespace Hangfire.Common.ExpressionUtil
     [ExcludeFromCodeCoverage]
     internal sealed class ExpressionFingerprintChain : IEquatable<ExpressionFingerprintChain>
     {
-        public readonly List<ExpressionFingerprint> Elements = new List<ExpressionFingerprint>();
+        public readonly List<ExpressionFingerprint?> Elements = new List<ExpressionFingerprint?>();
 
-        public bool Equals(ExpressionFingerprintChain other)
+        public bool Equals(ExpressionFingerprintChain? other)
         {
             // Two chains are considered equal if two elements appearing in the same index in
             // each chain are equal (value equality, not referential equality).
@@ -72,7 +73,7 @@ namespace Hangfire.Common.ExpressionUtil
             return true;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as ExpressionFingerprintChain);
         }

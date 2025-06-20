@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
+#nullable enable
+
 namespace Hangfire.Common.ExpressionUtil
 {
     // This is a visitor which produces a fingerprint of an expression. It doesn't
@@ -12,7 +14,7 @@ namespace Hangfire.Common.ExpressionUtil
     [ExcludeFromCodeCoverage]
     internal sealed class FingerprintingExpressionVisitor : ExpressionVisitor
     {
-        private readonly List<object> _seenConstants = new List<object>();
+        private readonly List<object?> _seenConstants = new List<object?>();
         private readonly List<ParameterExpression> _seenParameters = new List<ParameterExpression>();
         private readonly ExpressionFingerprintChain _currentChain = new ExpressionFingerprintChain();
         private bool _gaveUp;
@@ -21,7 +23,8 @@ namespace Hangfire.Common.ExpressionUtil
         {
         }
 
-        private T GiveUp<T>(T node)
+        [return: NotNullIfNotNull(nameof(node))]
+        private T? GiveUp<T>(T? node)
         {
             // We don't understand this node, so just quit.
 
@@ -31,7 +34,7 @@ namespace Hangfire.Common.ExpressionUtil
 
         // Returns the fingerprint chain + captured constants list for this expression, or null
         // if the expression couldn't be fingerprinted.
-        public static ExpressionFingerprintChain GetFingerprintChain(Expression expr, out List<object> capturedConstants)
+        public static ExpressionFingerprintChain? GetFingerprintChain(Expression expr, out List<object?>? capturedConstants)
         {
             FingerprintingExpressionVisitor visitor = new FingerprintingExpressionVisitor();
             visitor.Visit(expr);
@@ -48,7 +51,7 @@ namespace Hangfire.Common.ExpressionUtil
             }
         }
 
-        public override Expression Visit(Expression node)
+        public override Expression? Visit(Expression? node)
         {
             if (node == null)
             {
@@ -160,7 +163,7 @@ namespace Hangfire.Common.ExpressionUtil
             return GiveUp(node);
         }
 
-        protected override LabelTarget VisitLabelTarget(LabelTarget node)
+        protected override LabelTarget? VisitLabelTarget(LabelTarget? node)
         {
             return GiveUp(node);
         }

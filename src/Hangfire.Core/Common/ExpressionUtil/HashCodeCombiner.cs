@@ -3,6 +3,8 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 
+#nullable enable
+
 namespace Hangfire.Common.ExpressionUtil
 {
     // based on System.Web.Util.HashCodeCombiner
@@ -13,7 +15,7 @@ namespace Hangfire.Common.ExpressionUtil
 
         public int CombinedHash => _combinedHash64.GetHashCode();
 
-        public void AddFingerprint(ExpressionFingerprint fingerprint)
+        public void AddFingerprint(ExpressionFingerprint? fingerprint)
         {
             if (fingerprint != null)
             {
@@ -48,7 +50,7 @@ namespace Hangfire.Common.ExpressionUtil
             _combinedHash64 = ((_combinedHash64 << 5) + _combinedHash64) ^ i;
         }
 
-        public void AddObject(object o)
+        public void AddObject(object? o)
         {
             int hashCode = o?.GetHashCode() ?? 0;
             AddInt32(hashCode);

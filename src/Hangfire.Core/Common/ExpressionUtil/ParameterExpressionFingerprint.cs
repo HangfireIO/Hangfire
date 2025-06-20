@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 #pragma warning disable 659 // overrides AddToHashCodeCombiner instead
+#nullable enable
 
 namespace Hangfire.Common.ExpressionUtil
 {
@@ -25,9 +26,9 @@ namespace Hangfire.Common.ExpressionUtil
         // Parameter position within the overall expression, used to maintain alpha equivalence.
         public int ParameterIndex { get; }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            ParameterExpressionFingerprint other = obj as ParameterExpressionFingerprint;
+            ParameterExpressionFingerprint? other = obj as ParameterExpressionFingerprint;
             return (other != null)
                    && (ParameterIndex == other.ParameterIndex)
                    && Equals(other);

@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 #pragma warning disable 659 // overrides AddToHashCodeCombiner instead
+#nullable enable
 
 namespace Hangfire.Common.ExpressionUtil
 {
@@ -23,9 +24,9 @@ namespace Hangfire.Common.ExpressionUtil
             // the fingerprint.
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            DefaultExpressionFingerprint other = obj as DefaultExpressionFingerprint;
+            DefaultExpressionFingerprint? other = obj as DefaultExpressionFingerprint;
             return (other != null)
                    && Equals(other);
         }

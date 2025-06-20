@@ -8,6 +8,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 
 // ReSharper disable All
+#nullable enable
 
 namespace Hangfire.Common.ExpressionUtil
 {
@@ -19,25 +20,25 @@ namespace Hangfire.Common.ExpressionUtil
         // relying on cache lookups and other techniques to save time if appropriate.
         // If the provided expression is particularly obscure and the system doesn't know
         // how to handle it, we'll just compile the expression as normal.
-        public static Func<TModel, TValue> Process<TModel, TValue>(Expression<Func<TModel, TValue>> lambdaExpression)
+        public static Func<TModel, TValue?> Process<TModel, TValue>(Expression<Func<TModel, TValue>> lambdaExpression)
         {
             return Compiler<TModel, TValue>.Compile(lambdaExpression);
         }
 
         private static class Compiler<TIn, TOut>
         {
-            private static Func<TIn, TOut> _identityFunc;
+            private static Func<TIn, TOut>? _identityFunc;
 
             private static readonly ConcurrentDictionary<MemberInfo, Func<TIn, TOut>> _simpleMemberAccessDict =
                 new ConcurrentDictionary<MemberInfo, Func<TIn, TOut>>();
 
-            private static readonly ConcurrentDictionary<MemberInfo, Func<object, TOut>> _constMemberAccessDict =
-                new ConcurrentDictionary<MemberInfo, Func<object, TOut>>();
+            private static readonly ConcurrentDictionary<MemberInfo, Func<object?, TOut>> _constMemberAccessDict =
+                new ConcurrentDictionary<MemberInfo, Func<object?, TOut>>();
 
             private static readonly ConcurrentDictionary<ExpressionFingerprintChain, Hoisted<TIn, TOut>> _fingerprintedCache =
                 new ConcurrentDictionary<ExpressionFingerprintChain, Hoisted<TIn, TOut>>();
 
-            public static Func<TIn, TOut> Compile(Expression<Func<TIn, TOut>> expr)
+            public static Func<TIn, TOut?> Compile(Expression<Func<TIn, TOut>> expr)
             {
                 return CompileFromIdentityFunc(expr)
                        ?? CompileFromConstLookup(expr)
@@ -46,21 +47,21 @@ namespace Hangfire.Common.ExpressionUtil
                        ?? CompileSlow(expr);
             }
 
-            private static Func<TIn, TOut> CompileFromConstLookup(Expression<Func<TIn, TOut>> expr)
+            private static Func<TIn, TOut?>? CompileFromConstLookup(Expression<Func<TIn, TOut>> expr)
             {
-                ConstantExpression constExpr = expr.Body as ConstantExpression;
+                ConstantExpression? constExpr = expr.Body as ConstantExpression;
                 if (constExpr != null)
                 {
                     // model => {const}
 
-                    TOut constantValue = (TOut)constExpr.Value;
+                    TOut? constantValue = (TOut?)constExpr.Value;
                     return _ => constantValue;
                 }
 
                 return null;
             }
 
-            private static Func<TIn, TOut> CompileFromIdentityFunc(Expression<Func<TIn, TOut>> expr)
+            private static Func<TIn, TOut>? CompileFromIdentityFunc(Expression<Func<TIn, TOut>> expr)
             {
                 if (expr.Body == expr.Parameters[0])
                 {
@@ -73,10 +74,10 @@ namespace Hangfire.Common.ExpressionUtil
                 return null;
             }
 
-            private static Func<TIn, TOut> CompileFromFingerprint(Expression<Func<TIn, TOut>> expr)
+            private static Func<TIn, TOut>? CompileFromFingerprint(Expression<Func<TIn, TOut>> expr)
             {
-                List<object> capturedConstants;
-                ExpressionFingerprintChain fingerprint = FingerprintingExpressionVisitor.GetFingerprintChain(expr, out capturedConstants);
+                List<object?>? capturedConstants;
+                ExpressionFingerprintChain? fingerprint = FingerprintingExpressionVisitor.GetFingerprintChain(expr, out capturedConstants);
 
                 if (fingerprint != null)
                 {
@@ -95,7 +96,7 @@ namespace Hangfire.Common.ExpressionUtil
                 return null;
             }
 
-            private static Func<TIn, TOut> CompileFromMemberAccess(Expression<Func<TIn, TOut>> expr)
+            private static Func<TIn, TOut>? CompileFromMemberAccess(Expression<Func<TIn, TOut>> expr)
             {
                 // Performance tests show that on the x64 platform, special-casing static member and
                 // captured local variable accesses is faster than letting the fingerprinting system
@@ -103,7 +104,7 @@ namespace Hangfire.Common.ExpressionUtil
                 // by around one microsecond, so it's not worth it to complicate the logic here with
                 // an architecture check.
 
-                MemberExpression memberExpr = expr.Body as MemberExpression;
+                MemberExpression? memberExpr = expr.Body as MemberExpression;
                 if (memberExpr != null)
                 {
                     if (memberExpr.Expression == expr.Parameters[0] || memberExpr.Expression == null)
@@ -112,7 +113,7 @@ namespace Hangfire.Common.ExpressionUtil
                         return _simpleMemberAccessDict.GetOrAdd(memberExpr.Member, _ => expr.Compile());
                     }
 
-                    ConstantExpression constExpr = memberExpr.Expression as ConstantExpression;
+                    ConstantExpression? constExpr = memberExpr.Expression as ConstantExpression;
                     if (constExpr != null)
                     {
                         // model => {const}.Member (captured local variable)
@@ -120,13 +121,13 @@ namespace Hangfire.Common.ExpressionUtil
                         {
                             // rewrite as capturedLocal => ((TDeclaringType)capturedLocal).Member
                             var constParamExpr = Expression.Parameter(typeof(object), "capturedLocal");
-                            var constCastExpr = Expression.Convert(constParamExpr, memberExpr.Member.DeclaringType);
+                            var constCastExpr = Expression.Convert(constParamExpr, memberExpr.Member.DeclaringType!);
                             var newMemberAccessExpr = memberExpr.Update(constCastExpr);
-                            var newLambdaExpr = Expression.Lambda<Func<object, TOut>>(newMemberAccessExpr, constParamExpr);
+                            var newLambdaExpr = Expression.Lambda<Func<object?, TOut>>(newMemberAccessExpr, constParamExpr);
                             return newLambdaExpr.Compile();
                         });
 
-                        object capturedLocal = constExpr.Value;
+                        object? capturedLocal = constExpr.Value;
                         return _ => del(capturedLocal);
                     }
                 }

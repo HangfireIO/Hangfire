@@ -4,6 +4,8 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
+#nullable enable
+
 namespace Hangfire.Common.ExpressionUtil
 {
     // Serves as the base class for all expression fingerprints. Provides a default implementation
@@ -30,14 +32,14 @@ namespace Hangfire.Common.ExpressionUtil
             combiner.AddObject(Type);
         }
 
-        protected bool Equals(ExpressionFingerprint other)
+        protected bool Equals(ExpressionFingerprint? other)
         {
             return (other != null)
                    && (NodeType == other.NodeType)
                    && Type == other.Type;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as ExpressionFingerprint);
         }

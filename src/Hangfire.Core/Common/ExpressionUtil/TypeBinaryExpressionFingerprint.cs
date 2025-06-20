@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 #pragma warning disable 659 // overrides AddToHashCodeCombiner instead
+#nullable enable
 
 namespace Hangfire.Common.ExpressionUtil
 {
@@ -25,9 +26,9 @@ namespace Hangfire.Common.ExpressionUtil
         // http://msdn.microsoft.com/en-us/library/system.linq.expressions.typebinaryexpression.typeoperand.aspx
         public Type TypeOperand { get; }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            TypeBinaryExpressionFingerprint other = obj as TypeBinaryExpressionFingerprint;
+            TypeBinaryExpressionFingerprint? other = obj as TypeBinaryExpressionFingerprint;
             return (other != null)
                    && TypeOperand == other.TypeOperand
                    && Equals(other);

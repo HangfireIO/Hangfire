@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 
 #pragma warning disable 659 // overrides AddToHashCodeCombiner instead
+#nullable enable
 
 namespace Hangfire.Common.ExpressionUtil
 {
@@ -17,7 +18,7 @@ namespace Hangfire.Common.ExpressionUtil
     [ExcludeFromCodeCoverage]
     internal sealed class IndexExpressionFingerprint : ExpressionFingerprint
     {
-        public IndexExpressionFingerprint(ExpressionType nodeType, Type type, PropertyInfo indexer)
+        public IndexExpressionFingerprint(ExpressionType nodeType, Type type, PropertyInfo? indexer)
             : base(nodeType, type)
         {
             // Other properties on IndexExpression (like the argument count) are simply derived
@@ -27,11 +28,11 @@ namespace Hangfire.Common.ExpressionUtil
         }
 
         // http://msdn.microsoft.com/en-us/library/system.linq.expressions.indexexpression.indexer.aspx
-        public PropertyInfo Indexer { get; }
+        public PropertyInfo? Indexer { get; }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            IndexExpressionFingerprint other = obj as IndexExpressionFingerprint;
+            IndexExpressionFingerprint? other = obj as IndexExpressionFingerprint;
             return (other != null)
                    && Equals(Indexer, other.Indexer)
                    && Equals(other);
