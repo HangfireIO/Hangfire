@@ -16,6 +16,8 @@
 using System;
 using Hangfire.Annotations;
 
+#nullable enable
+
 namespace Hangfire.Profiling
 {
     // TODO: Merge this with logging
@@ -23,8 +25,8 @@ namespace Hangfire.Profiling
     {
         // TODO: Replace method with some eventId
         TResult InvokeMeasured<TInstance, TResult>(
-            [CanBeNull] TInstance instance, 
-            [NotNull, InstantHandle] Func<TInstance, TResult> action,
-            [CanBeNull] Func<TInstance, string> messageFunc = null);
+            TInstance? instance, 
+            [InstantHandle] Func<TInstance?, TResult> action,
+            [InstantHandle] Func<TInstance?, string>? messageFunc = null);
     }
 }

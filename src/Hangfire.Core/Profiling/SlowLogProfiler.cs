@@ -14,8 +14,10 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Diagnostics;
+using Hangfire.Annotations;
 using Hangfire.Logging;
+
+#nullable enable
 
 namespace Hangfire.Profiling
 {
@@ -38,9 +40,9 @@ namespace Hangfire.Profiling
         }
 
         public TResult InvokeMeasured<TInstance, TResult>(
-            TInstance instance,
-            Func<TInstance, TResult> action,
-            Func<TInstance, string> messageFunc = null)
+            TInstance? instance,
+            [InstantHandle] Func<TInstance?, TResult> action,
+            [InstantHandle] Func<TInstance?, string>? messageFunc = null)
         {
             if (action == null) throw new ArgumentNullException(nameof(action));
 

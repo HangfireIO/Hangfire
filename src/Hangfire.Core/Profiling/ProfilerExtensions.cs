@@ -16,52 +16,48 @@
 using System;
 using Hangfire.Annotations;
 
+#nullable enable
+
 namespace Hangfire.Profiling
 {
     internal static class ProfilerExtensions
     {
         public static void InvokeMeasured<TInstance>(
-            [NotNull] this IProfiler profiler,
-            [CanBeNull] TInstance instance, 
-            [NotNull] Action<TInstance> action,
-            [CanBeNull] Func<TInstance, string> messageFunc = null)
+            this IProfiler profiler,
+            TInstance? instance, 
+            [InstantHandle] Action<TInstance?> action,
+            [InstantHandle] Func<TInstance?, string>? messageFunc = null)
         {
             if (profiler == null) throw new ArgumentNullException(nameof(profiler));
             if (action == null) throw new ArgumentNullException(nameof(action));
 
-            profiler.InvokeMeasured(new InstanceAction<TInstance>(instance, action, messageFunc), InvokeAction, MessageCallback);
+            var instanceAction = new InstanceAction<TInstance?>(instance, action, messageFunc);
+            profiler.InvokeMeasured(instanceAction, InvokeAction, instanceAction.MessageFunc != null ? MessageCallback : null);
         }
 
-        private static bool InvokeAction<TInstance>(InstanceAction<TInstance> tuple)
+        private static bool InvokeAction<TInstance>(InstanceAction<TInstance?> tuple)
         {
             tuple.Action(tuple.Instance);
             return true;
         }
 
-        private static string MessageCallback<TInstance>(InstanceAction<TInstance> action)
+        private static string MessageCallback<TInstance>(InstanceAction<TInstance?> action)
         {
-            return action.MessageFunc?.Invoke(action.Instance);
+            return action.MessageFunc!.Invoke(action.Instance);
         }
 
-        internal struct InstanceAction<TInstance>
+        private readonly struct InstanceAction<TInstance>
         {
-            public InstanceAction([CanBeNull] TInstance instance, [NotNull] Action<TInstance> action, [CanBeNull] Func<TInstance, string> messageFunc)
+            public InstanceAction(TInstance? instance, Action<TInstance?> action, Func<TInstance?, string>? messageFunc)
             {
-                if (action == null) throw new ArgumentNullException(nameof(action));
-
                 Instance = instance;
-                Action = action;
+                Action = action ?? throw new ArgumentNullException(nameof(action));
                 MessageFunc = messageFunc;
             }
 
-            [CanBeNull]
-            public TInstance Instance { get; }
-
-            [NotNull]
+            public TInstance? Instance { get; }
             public Action<TInstance> Action { get; }
-            
-            [CanBeNull]
-            public Func<TInstance, string> MessageFunc { get; }
+            public Func<TInstance, string>? MessageFunc { get; }
 
             public override string ToString()
             {
