@@ -262,7 +262,7 @@ namespace Hangfire.Server
             }
 
             var parameters = context.BackgroundJob.Job.Method.GetParameters();
-            var result = new List<object>(context.BackgroundJob.Job.Args.Count);
+            var result = new object[context.BackgroundJob.Job.Args.Count];
 
             for (var i = 0; i < parameters.Length; i++)
             {
@@ -273,10 +273,10 @@ namespace Hangfire.Server
                     ? substitution(context) 
                     : argument;
 
-                result.Add(value);
+                result[i] = value;
             }
 
-            return result.ToArray();
+            return result;
         }
 
         private sealed class BackgroundJobMethod(MethodInfo methodInfo, object instance, object[] parameters)
