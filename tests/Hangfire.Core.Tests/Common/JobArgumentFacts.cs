@@ -355,6 +355,37 @@ namespace Hangfire.Core.Tests.Common
 			CreateAndPerform_WithCompatibilityLevel(ObjectValue);
 		}
 
+		private static readonly DateTime DateTimeValue = DateTime.UtcNow;
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
+		public void Method(DateTime value) {  Assert.Equal(DateTimeValue, value); }
+
+		[Fact]
+		public void DateTimeValues_AreBeingDeserializedCorrectly_Legacy()
+		{
+			// TypeConverter doesn't convert milliseconds by default. No problem, since
+			// it is a legacy converter, and newer ones fully support this case.
+			var overriddenValue = new DateTime(2014, 08, 24, 23, 12, 30);
+
+			// Don't run this test on Mono – https://bugzilla.xamarin.com/show_bug.cgi?id=25158
+			if (Type.GetType("Mono.Runtime") == null)
+			{
+				CreateAndPerform(overriddenValue);
+			}
+		}
+
+		[DataCompatibilityRangeFact]
+		public void DateTimeValues_AreBeingDeserializedCorrectly()
+		{
+			// Don't run this test on Mono – https://bugzilla.xamarin.com/show_bug.cgi?id=25158
+			if (Type.GetType("Mono.Runtime") == null)
+			{
+				CreateAndPerform_WithCompatibilityLevel(DateTimeValue);
+			}
+		}
+
 		private static readonly DateTimeOffset DateTimeOffsetValue = new DateTimeOffset(new DateTime(2012, 12, 12), TimeSpan.FromHours(1));
 
 		[UsedImplicitly]
@@ -506,7 +537,7 @@ namespace Hangfire.Core.Tests.Common
 		public void Method(string[] value) { Assert.Equal(ArrayValue, value); }
 
 		[Fact]
-		public void ArrayValues_AreBeingCorrectlyDeserialized_FromJson_Legacy()
+		public void ArrayValues_AreBeingCorrectlyDeserialized_FromJson_Legacy_WithDefaultSettings()
 		{
 			CreateAndPerform(ArrayValue, true);
 		}
@@ -536,6 +567,25 @@ namespace Hangfire.Core.Tests.Common
 			CreateAndPerform_WithCompatibilityLevel(ListValue);
 		}
 
+		private static readonly IList<DateTime> IListValue = new List<DateTime> { DateTime.UtcNow.AddDays(-1), DateTime.UtcNow.AddDays(1) };
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
+		public void Method(IList<DateTime> value) { Assert.Equal(IListValue, value); }
+
+		[Fact]
+		public void IListValues_AreBeingCorrectlyDeserialized_FromJson_Legacy()
+		{
+			CreateAndPerform(IListValue, true);
+		}
+
+		[DataCompatibilityRangeFact]
+		public void IListValues_AreBeingCorrectlyDeserialized()
+		{
+			CreateAndPerform_WithCompatibilityLevel(IListValue);
+		}
+
 		private static readonly Dictionary<TimeSpan, string> DictionaryValue = new Dictionary<TimeSpan, string>
 		{
 			{ TimeSpan.FromSeconds(1), "123" },
@@ -557,6 +607,29 @@ namespace Hangfire.Core.Tests.Common
 		public void DictionaryValues_AreBeingCorrectlyDeserialized()
 		{
 			CreateAndPerform_WithCompatibilityLevel(DictionaryValue);
+		}
+
+		private static readonly IDictionary<TimeSpan, string> IDictionaryValue = new Dictionary<TimeSpan, string>
+		{
+			{ TimeSpan.FromSeconds(1), "123" },
+			{ TimeSpan.FromDays(12), "376" }
+		};
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
+		public void Method(IDictionary<TimeSpan, string> value) { Assert.Equal(IDictionaryValue, value); }
+
+		[Fact]
+		public void IDictionaryValues_AreBeingCorrectlyDeserialized_FromJson_Legacy()
+		{
+			CreateAndPerform(IDictionaryValue, true);
+		}
+
+		[DataCompatibilityRangeFact]
+		public void IDictionaryValues_AreBeingCorrectlyDeserialized()
+		{
+			CreateAndPerform_WithCompatibilityLevel(IDictionaryValue);
 		}
 
 		public struct MyStruct
@@ -585,7 +658,7 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 #pragma warning disable 659
-        public class MyClass : IEquatable<MyClass>
+		public class MyClass : IEquatable<MyClass>
 		{
 			public DateTime CreatedAt { get; set; }
 
@@ -621,6 +694,78 @@ namespace Hangfire.Core.Tests.Common
 			CreateAndPerform_WithCompatibilityLevel(CustomClassValue);
 		}
 
+		private static readonly IEquatable<MyClass> CustomInterfaceValue = new MyClass { CreatedAt = DateTime.UtcNow };
+
+		[UsedImplicitly]
+		[SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+		[SuppressMessage("Performance", "CA1822:Mark members as static")]
+		public void Method(IEquatable<MyClass> value) { Assert.Equal(CustomInterfaceValue, value); }
+
+		[Theory, CleanSerializerSettings]
+		[InlineData(TypeNameHandling.Objects)]
+		[InlineData(TypeNameHandling.All)]
+		public void CustomInterfaceValues_AreBeingCorrectlyDeserialized_FromJson_Legacy_WithCustomSettings(TypeNameHandling typeNameHandling)
+		{
+			SerializationHelper.SetUserSerializerSettings(new JsonSerializerSettings
+			{
+				TypeNameHandling = typeNameHandling
+			});
+
+			CreateAndPerform(CustomInterfaceValue, true);
+		}
+
+#if !NET452 && !NET461
+		[Theory, CleanSerializerSettings]
+		[InlineData(TypeNameHandling.Objects)]
+		[InlineData(TypeNameHandling.All)]
+		public void CustomInterfaceValues_AreBeingCorrectlyDeserialized_FromJson_Legacy_WithCustomDefaultSettings(TypeNameHandling typeNameHandling)
+		{
+			JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+			{
+				TypeNameHandling = typeNameHandling
+			};
+
+			CreateAndPerform(CustomInterfaceValue, true);
+		}
+#endif
+
+		[DataCompatibilityRangeTheory, CleanSerializerSettings]
+		[InlineData(TypeNameHandling.Objects)]
+		[InlineData(TypeNameHandling.All)]
+		[InlineData(TypeNameHandling.Auto)]
+		public void CustomInterfaceValues_AreBeingCorrectlyDeserialized_WithCustomSettings(TypeNameHandling typeNameHandling)
+		{
+			GlobalConfiguration.Configuration.UseSerializerSettings(new JsonSerializerSettings
+			{
+				TypeNameHandling = typeNameHandling
+			});
+
+			CreateAndPerform_WithCompatibilityLevel(CustomInterfaceValue);
+		}
+
+#if !NET452 && !NET461
+		[DataCompatibilityRangeTheory, CleanSerializerSettings]
+		[InlineData(TypeNameHandling.Objects)]
+		[InlineData(TypeNameHandling.All)]
+		[InlineData(TypeNameHandling.Auto)]
+		public void CustomInterfaceValues_AreBeingCorrectlyDeserialized_WithCustomDefaultSettings(TypeNameHandling typeNameHandling)
+		{
+			JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+			{
+				TypeNameHandling = typeNameHandling
+			};
+
+			CreateAndPerform_WithCompatibilityLevel(CustomInterfaceValue);
+		}
+#endif
+
+		[DataCompatibilityRangeFact, CleanSerializerSettings]
+		public void CustomInterfaceValues_AreBeingCorrectlyDeserialized_WithRecommendedSettings()
+		{
+			GlobalConfiguration.Configuration.UseRecommendedSerializerSettings();
+			CreateAndPerform_WithCompatibilityLevel(CustomInterfaceValue);
+		}
+
 		private static void CreateAndPerform<T>(T argumentValue, bool checkJsonOnly = false)
 		{
 			var type = typeof(JobArgumentFacts);
@@ -640,7 +785,7 @@ namespace Hangfire.Core.Tests.Common
 
 			serializationMethods.Add(new Tuple<string, string>(
 				"JSON",
-				JsonConvert.SerializeObject(argumentValue)));
+				JobHelper.ToJson(argumentValue)));
 
 			foreach (var method in serializationMethods)
 			{
