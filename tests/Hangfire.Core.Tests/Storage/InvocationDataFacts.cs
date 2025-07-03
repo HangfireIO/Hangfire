@@ -322,7 +322,7 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal($"[\"\\\"2019-03-05T13:20:04.593215Z\\\"\"]", nullableData.Arguments);
         }
 
-        [DataCompatibilityRangeFact(), CleanSerializerSettings]
+        [DataCompatibilityRangeFact, CleanSerializerSettings]
         public void Serialize_WithTypeNameHandlingAuto_PreservesTypeInformation()
         {
             JobHelper.SetSerializerSettings(new JsonSerializerSettings
@@ -335,6 +335,13 @@ namespace Hangfire.Core.Tests.Storage
             var data = InvocationData.SerializeJob(job);
 
             Assert.Equal("[\"{\\\"$type\\\":\\\"Hangfire.Core.Tests.Storage.InvocationDataFacts+SomeClass, Hangfire.Core.Tests\\\"}\"]", data.Arguments);
+        }
+
+        [DataCompatibilityRangeFact]
+        public void Serialize_NullifiesAnyGivenCancellationTokenInstance_DespiteOfItsActualValue()
+        {
+            var serialized = InvocationData.SerializeJob(Job.Create(() => Cancellable(new CancellationToken(true))));
+            Assert.Contains("null", serialized.Arguments);
         }
 
         [DataCompatibilityRangeFact, CleanSerializerSettings]
@@ -595,6 +602,31 @@ namespace Hangfire.Core.Tests.Storage
 
             var exception = Assert.Throws<JobLoadException>(() => serializedData.Deserialize());
             Assert.IsType<JsonReaderException>(exception.InnerException);
+        }
+
+        [DataCompatibilityRangeFact]
+        public void Deserialize_CorrectlyHandlesNullifiedCancellationTokens_BySettingThemToTheDefaultValue()
+        {
+            var serializedData = InvocationData.SerializeJob(Job.Create(() => Cancellable(new CancellationToken(true))));
+            var job = serializedData.DeserializeJob();
+            
+            Assert.Equal(CancellationToken.None, job.Args[0]);
+        }
+
+        [DataCompatibilityRangeFact]
+        public void Deserialize_SubstitutesNullsWithDefaultValues_ForValueTypes()
+        {
+            // Works good for user types that changed from `class` to `struct`.
+            var serializedData = InvocationData.SerializeJob(Job.Create(() => GenericMethod<long>(0)));
+            var modified = new InvocationData(
+                serializedData.Type,
+                serializedData.Method,
+                serializedData.ParameterTypes,
+                serializedData.Arguments.Replace("\"0\"", "null").Replace("0", "null"));
+
+            var deserialized = modified.DeserializeJob();
+
+            Assert.Equal(0L, deserialized.Args[0]);
         }
 
         [DataCompatibilityRangeTheory]
@@ -919,9 +951,6 @@ namespace Hangfire.Core.Tests.Storage
             var settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All };
 
             JsonConvert.DefaultSettings = () => settings;
-#pragma warning disable 618
-            JobHelper.SetSerializerSettings(settings);
-#pragma warning restore 618
 
             var job = InvocationData
                 .DeserializePayload("{\"$type\":\"Hangfire.Storage.InvocationData, Hangfire.Core\",\"Type\":\"System.Console, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089\",\"Method\":\"WriteLine\",\"ParameterTypes\":\"{\\\"$type\\\":\\\"System.Type[], mscorlib\\\",\\\"$values\\\":[\\\"System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089\\\"]}\",\"Arguments\":\"{\\\"$type\\\":\\\"System.String[], mscorlib\\\",\\\"$values\\\":[\\\"\\\\\\\"Hello \\\\\\\"\\\"]}\"}")
@@ -1044,11 +1073,18 @@ namespace Hangfire.Core.Tests.Storage
 
         [UsedImplicitly]
         [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
+        public static void Cancellable(CancellationToken arg)
+        {
+        }
+
+        [UsedImplicitly]
+        [SuppressMessage("Usage", "xUnit1013:Public method should be marked as test")]
         [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
         public static void XmlLinqMethod(System.Xml.Linq.XElement value)
         {
         }
 
+        [UsedImplicitly]
         public class GenericType<T1>
         {
             public void Method()
@@ -1059,6 +1095,7 @@ namespace Hangfire.Core.Tests.Storage
             {
             }
 
+            [UsedImplicitly]
             public class NestedGenericType<T2>
             {
                 public void Method(T1 arg1, T2 arg2)
@@ -1101,7 +1138,6 @@ namespace Hangfire.Core.Tests.Storage
         {
         }
     }
-
 }
 
 [UsedImplicitly]

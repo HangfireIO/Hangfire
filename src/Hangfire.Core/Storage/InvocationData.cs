@@ -26,7 +26,6 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
-using Hangfire.Server;
 using Newtonsoft.Json;
 
 namespace Hangfire.Storage
@@ -287,20 +286,13 @@ namespace Hangfire.Storage
                 var parameterType = parameters[i].ParameterType;
                 var argument = arguments[i];
 
-                object value;
-
-                if (CoreBackgroundJobPerformer.Substitutions.ContainsKey(parameterType))
-                {
-                    value = parameterType.GetTypeInfo().IsValueType
-                        ? Activator.CreateInstance(parameterType)
-                        : null;
-                }
-                else
-                {
-                    value = DeserializeArgument(argument, parameterType);
-                }
-
-                result[i] = value;
+                // We explicitly allow deserializing `null` values to default ones for value types.
+                // This allows avoiding serialization of cancellation token instances, since their
+                // values are substituted when performing a job, and also allows changing user types
+                // from classes to structs without causing a run-time exception.
+                result[i] = argument == null && parameterType.GetTypeInfo().IsValueType
+                    ? Activator.CreateInstance(parameterType)
+                    : DeserializeArgument(argument, parameterType);
             }
 
             return result;
