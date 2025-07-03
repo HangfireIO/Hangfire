@@ -136,9 +136,34 @@ namespace Hangfire.Common
         /// Use this method to deserialize internal data. Using isolated settings that can't be changed from user code.
         /// </summary>
         [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(value))]
+        public static T? Deserialize<T>([CanBeNull] string? value)
+        {
+            if (value == null) return default(T);
+            return Deserialize<T>(value, SerializationOption.Internal);
+        }
+
+        /// <summary>
+        /// Deserializes data with <see cref="SerializationOption.Internal"/> option.
+        /// Use this method to deserialize internal data. Using isolated settings that can't be changed from user code.
+        /// </summary>
+        [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(value))]
         public static object? Deserialize([CanBeNull] string? value, [NotNull] Type type)
         {
             return Deserialize(value, type, SerializationOption.Internal);
+        }
+
+        /// <summary>
+        /// Deserializes data with specified option. 
+        /// Use <see cref="SerializationOption.Internal"/> to deserialize internal data.
+        /// Use <see cref="SerializationOption.TypedInternal"/> if deserializable internal data has type names information.
+        /// Use <see cref="SerializationOption.User"/> to deserialize user data like arguments and parameters, 
+        /// configurable via <see cref="SetUserSerializerSettings"/>.
+        /// </summary>
+        [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(value))]
+        public static T? Deserialize<T>([CanBeNull] string? value, SerializationOption option)
+        {
+            if (value == null) return default(T);
+            return (T) Deserialize(value, typeof(T), option);
         }
 
         /// <summary>
@@ -192,31 +217,6 @@ namespace Hangfire.Common
             }
         }
 
-        /// <summary>
-        /// Deserializes data with <see cref="SerializationOption.Internal"/> option.
-        /// Use this method to deserialize internal data. Using isolated settings that can't be changed from user code.
-        /// </summary>
-        [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(value))]
-        public static T? Deserialize<T>([CanBeNull] string? value)
-        {
-            if (value == null) return default(T);
-            return Deserialize<T>(value, SerializationOption.Internal);
-        }
-
-        /// <summary>
-        /// Deserializes data with specified option. 
-        /// Use <see cref="SerializationOption.Internal"/> to deserialize internal data.
-        /// Use <see cref="SerializationOption.TypedInternal"/> if deserializable internal data has type names information.
-        /// Use <see cref="SerializationOption.User"/> to deserialize user data like arguments and parameters, 
-        /// configurable via <see cref="SetUserSerializerSettings"/>.
-        /// </summary>
-        [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(value))]
-        public static T? Deserialize<T>([CanBeNull] string? value, SerializationOption option)
-        {
-            if (value == null) return default(T);
-            return (T) Deserialize(value, typeof(T), option);
-        }
-
         internal static JsonSerializerSettings GetInternalSettings()
         {
             var serializerSettings = new JsonSerializerSettings();
@@ -237,7 +237,7 @@ namespace Hangfire.Common
             return serializerSettings;
         }
 
-        internal static void SetUserSerializerSettings([CanBeNull] JsonSerializerSettings settings)
+        internal static void SetUserSerializerSettings(JsonSerializerSettings? settings)
         {
             Volatile.Write(ref _userSerializerSettings, settings);
         }
