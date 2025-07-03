@@ -136,7 +136,7 @@ namespace Hangfire.Storage
             return new InvocationData(typeName, methodName, parameterTypes, arguments, job.Queue);
         }
 
-        public static InvocationData DeserializePayload(string payload)
+        public static InvocationData DeserializePayload([NotNull] string payload)
         {
             if (payload == null) throw new ArgumentNullException(nameof(payload));
 
@@ -228,7 +228,7 @@ namespace Hangfire.Storage
 
         internal static string[] SerializeArguments(MethodInfo methodInfo, IReadOnlyList<object> arguments)
         {
-            var serializedArguments = new List<string>(arguments.Count);
+            var serializedArguments = new string[arguments.Count];
             var parameters = methodInfo.GetParameters();
 
             for (var i = 0; i < parameters.Length; i++)
@@ -269,10 +269,10 @@ namespace Hangfire.Storage
                 // can be skipped, because it is impossible to omit them in 
                 // lambda-expressions (leads to a compile-time error).
 
-                serializedArguments.Add(value);
+                serializedArguments[i] = value;
             }
 
-            return serializedArguments.ToArray();
+            return serializedArguments;
         }
 
         internal static object[] DeserializeArguments(MethodInfo methodInfo, string[] arguments)
@@ -280,30 +280,30 @@ namespace Hangfire.Storage
             if (arguments == null) return [];
 
             var parameters = methodInfo.GetParameters();
-            var result = new List<object>(arguments.Length);
+            var result = new object[arguments.Length];
 
             for (var i = 0; i < parameters.Length; i++)
             {
-                var parameter = parameters[i];
+                var parameterType = parameters[i].ParameterType;
                 var argument = arguments[i];
 
                 object value;
 
-                if (CoreBackgroundJobPerformer.Substitutions.ContainsKey(parameter.ParameterType))
+                if (CoreBackgroundJobPerformer.Substitutions.ContainsKey(parameterType))
                 {
-                    value = parameter.ParameterType.GetTypeInfo().IsValueType
-                        ? Activator.CreateInstance(parameter.ParameterType)
+                    value = parameterType.GetTypeInfo().IsValueType
+                        ? Activator.CreateInstance(parameterType)
                         : null;
                 }
                 else
                 {
-                    value = DeserializeArgument(argument, parameter.ParameterType);
+                    value = DeserializeArgument(argument, parameterType);
                 }
 
-                result.Add(value);
+                result[i] = value;
             }
 
-            return result.ToArray();
+            return result;
         }
 
         private static void CachedSerializeMethod(
@@ -408,7 +408,7 @@ namespace Hangfire.Storage
             return value;
         }
 
-        internal static bool ParseDateTimeArgument(string argument, out DateTime value)
+        private static bool ParseDateTimeArgument(string argument, out DateTime value)
         {
             var result = DateTime.TryParseExact(
                 argument,
