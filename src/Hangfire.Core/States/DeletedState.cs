@@ -73,6 +73,7 @@ namespace Hangfire.States
         {
         }
 
+        [JsonConstructor]
         public DeletedState([CanBeNull] ExceptionInfo? exceptionInfo)
         {
             ExceptionInfo = exceptionInfo;
