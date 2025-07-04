@@ -20,6 +20,9 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Storage;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.States
 {
     public class BackgroundJobStateChanger : IBackgroundJobStateChanger
@@ -50,7 +53,7 @@ namespace Hangfire.States
             _stateMachine = new StateMachine(filterProvider, stateMachine);
         }
         
-        public IState ChangeState(StateChangeContext context)
+        public IState? ChangeState(StateChangeContext context)
         {
             // To ensure that job state will be changed only from one of the
             // specified states, we need to ensure that other users/workers
@@ -58,7 +61,7 @@ namespace Hangfire.States
             // execution of this method. To guarantee this behavior, we are
             // using distributed application locks and rely on fact, that
             // any state transitions will be made only within a such lock.
-            IDisposable distributedLock = null;
+            IDisposable? distributedLock = null;
 
             if (context.Transaction != null)
             {
@@ -103,7 +106,7 @@ namespace Hangfire.States
                     // will not.
                     if (!stateToApply.IgnoreJobLoadException)
                     {
-                        stateToApply = new FailedState(ex.InnerException, context.ServerId)
+                        stateToApply = new FailedState(ex.InnerException!, context.ServerId)
                         {
                             Reason = $"Can not change the state to '{stateToApply.Name}': target method was not found."
                         };
@@ -111,7 +114,7 @@ namespace Hangfire.States
                 }
 
                 IWriteOnlyTransaction transaction;
-                IDisposable disposableTransaction;
+                IDisposable? disposableTransaction;
 
                 if (context.Transaction == null)
                 {
@@ -171,7 +174,7 @@ namespace Hangfire.States
             }
         }
 
-        private static JobData GetJobData(StateChangeContext context)
+        private static JobData? GetJobData(StateChangeContext context)
         {
             // This code was introduced as a fix for an issue, which appeared when an
             // external queue implementation was used together with a non-linearizable

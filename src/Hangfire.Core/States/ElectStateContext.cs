@@ -21,6 +21,9 @@ using Hangfire.Common;
 using Hangfire.Profiling;
 using Hangfire.Storage;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.States
 {
 #pragma warning disable 618
@@ -35,7 +38,7 @@ namespace Hangfire.States
         {
         }
 
-        public ElectStateContext([NotNull] ApplyStateContext applyContext, [CanBeNull] StateMachine stateMachine)
+        public ElectStateContext([NotNull] ApplyStateContext applyContext, [CanBeNull] StateMachine? stateMachine)
         {
             if (applyContext == null) throw new ArgumentNullException(nameof(applyContext));
             
@@ -82,7 +85,7 @@ namespace Hangfire.States
         }
 
         [CanBeNull]
-        public string CurrentState { get; }
+        public string? CurrentState { get; }
 
         [NotNull]
         public IState[] TraversedStates => _traversedStates.ToArray();
@@ -91,10 +94,10 @@ namespace Hangfire.States
         internal IProfiler Profiler { get; }
 
         [CanBeNull]
-        public IDictionary<string, object> CustomData { get; }
-        
+        public IDictionary<string, object>? CustomData { get; }
+
         [CanBeNull]
-        public StateMachine StateMachine { get; }
+        public StateMachine? StateMachine { get; }
 
         public void SetJobParameter<T>([NotNull] string name, T value)
         {
@@ -102,15 +105,17 @@ namespace Hangfire.States
             Connection.SetJobParameter(BackgroundJob.Id, name, SerializationHelper.Serialize(value, SerializationOption.User));
         }
 
-        public T GetJobParameter<T>([NotNull] string name) => GetJobParameter<T>(name, allowStale: false);
+        [CanBeNull]
+        public T? GetJobParameter<T>([NotNull] string name) => GetJobParameter<T>(name, allowStale: false);
 
-        public T GetJobParameter<T>([NotNull] string name, bool allowStale)
+        [CanBeNull]
+        public T? GetJobParameter<T>([NotNull] string name, bool allowStale)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
             try
             {
-                string value;
+                string? value;
 
                 if (allowStale && BackgroundJob.ParametersSnapshot != null)
                 {

@@ -14,7 +14,9 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Hangfire.Annotations;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
 #nullable enable
 
 namespace Hangfire.Common
@@ -37,7 +39,7 @@ namespace Hangfire.Common
         /// <param name="instance">Filter instance.</param>
         /// <param name="scope">Filter scope.</param>
         /// <param name="order">The run order.</param>
-        public JobFilter(object instance, JobFilterScope scope, int? order)
+        public JobFilter([NotNull] object instance, JobFilterScope scope, int? order)
         {
             if (instance == null)
             {
@@ -57,6 +59,7 @@ namespace Hangfire.Common
         /// <summary>
         /// Gets the instance of the filter.
         /// </summary>
+        [NotNull]
         public object Instance { get; protected set; }
 
         /// <summary>

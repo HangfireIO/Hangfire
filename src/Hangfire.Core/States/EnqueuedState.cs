@@ -15,11 +15,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Storage;
 using Newtonsoft.Json;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.States
 {
@@ -85,7 +87,7 @@ namespace Hangfire.States
         /// Determines whether the specified queue name is the default queue.
         /// </summary>
         /// <param name="queue">The name of the queue to check.</param>
-        public static bool IsDefault(string queue)
+        public static bool IsDefault([CanBeNull] string? queue)
         {
             return DefaultQueue.Equals(queue, StringComparison.Ordinal);
         }
@@ -115,7 +117,7 @@ namespace Hangfire.States
         /// The <paramref name="queue"/> argument is not a valid queue name.
         /// </exception>
         [JsonConstructor]
-        public EnqueuedState([CanBeNull] string queue)
+        public EnqueuedState([CanBeNull] string? queue)
         {
             queue = queue ?? DefaultQueue;
 
@@ -152,7 +154,7 @@ namespace Hangfire.States
         [NotNull]
         public string Queue
         {
-            get { return _queue; }
+            get => _queue;
             set
             {
                 ValidateQueueName(nameof(value), value);
@@ -176,7 +178,7 @@ namespace Hangfire.States
         public string Name => StateName;
 
         /// <inheritdoc />
-        public string Reason { get; set; }
+        public string? Reason { get; set; }
 
         /// <inheritdoc />
         /// <remarks>

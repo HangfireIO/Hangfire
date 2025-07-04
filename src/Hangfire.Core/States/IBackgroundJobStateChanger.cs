@@ -13,6 +13,11 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using Hangfire.Annotations;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.States
 {
     public interface IBackgroundJobStateChanger
@@ -22,6 +27,7 @@ namespace Hangfire.States
         /// </summary>
         /// <returns><c>Null</c> if a constraint has failed, otherwise the final applied state</returns>
         /// <remarks>Also ensures that the job data can be loaded for this job</remarks>
-        IState ChangeState(StateChangeContext context);
+        [CanBeNull]
+        IState? ChangeState([NotNull] StateChangeContext context);
     }
 }

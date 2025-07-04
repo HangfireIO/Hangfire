@@ -20,6 +20,9 @@ using Hangfire.Common;
 using Hangfire.Storage;
 using Newtonsoft.Json;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.States
 {
     /// <summary>
@@ -70,14 +73,15 @@ namespace Hangfire.States
         {
         }
 
-        public DeletedState([CanBeNull] ExceptionInfo exceptionInfo)
+        public DeletedState([CanBeNull] ExceptionInfo? exceptionInfo)
         {
             ExceptionInfo = exceptionInfo;
             DeletedAt = DateTime.UtcNow;
         }
 
         [JsonProperty("Ex", NullValueHandling = NullValueHandling.Ignore)]
-        public ExceptionInfo ExceptionInfo { get; }
+        [CanBeNull]
+        public ExceptionInfo? ExceptionInfo { get; }
 
         /// <inheritdoc />
         /// <remarks>
@@ -89,7 +93,7 @@ namespace Hangfire.States
         public string Name => StateName;
 
         /// <inheritdoc />
-        public string Reason { get; set; }
+        public string? Reason { get; set; }
 
         /// <inheritdoc />
         /// <remarks>

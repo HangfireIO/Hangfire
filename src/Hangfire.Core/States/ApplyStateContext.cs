@@ -20,6 +20,9 @@ using Hangfire.Common;
 using Hangfire.Profiling;
 using Hangfire.Storage;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.States
 {
 #pragma warning disable 618
@@ -40,7 +43,7 @@ namespace Hangfire.States
             [NotNull] IWriteOnlyTransaction transaction,
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IState newState,
-            [CanBeNull] string oldStateName)
+            [CanBeNull] string? oldStateName)
             : this(storage, connection, transaction, backgroundJob, newState, oldStateName, EmptyProfiler.Instance, null)
         {
         }
@@ -51,10 +54,10 @@ namespace Hangfire.States
             [NotNull] IWriteOnlyTransaction transaction,
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IState newState, 
-            [CanBeNull] string oldStateName,
+            [CanBeNull] string? oldStateName,
             [NotNull] IProfiler profiler,
-            [CanBeNull] IStateMachine stateMachine,
-            [CanBeNull] IReadOnlyDictionary<string, object> customData = null)
+            [CanBeNull] IStateMachine? stateMachine,
+            [CanBeNull] IReadOnlyDictionary<string, object>? customData = null)
         {
             BackgroundJob = backgroundJob ?? throw new ArgumentNullException(nameof(backgroundJob));
             Storage = storage ?? throw new ArgumentNullException(nameof(storage));
@@ -80,7 +83,7 @@ namespace Hangfire.States
         public override BackgroundJob BackgroundJob { get; }
 
         [CanBeNull]
-        public string OldStateName { get; }
+        public string? OldStateName { get; }
 
         [NotNull]
         public IState NewState { get; }
@@ -91,20 +94,22 @@ namespace Hangfire.States
         internal IProfiler Profiler { get; }
 
         [CanBeNull]
-        public IReadOnlyDictionary<string, object> CustomData { get; }
+        public IReadOnlyDictionary<string, object>? CustomData { get; }
 
         [CanBeNull]
-        public IStateMachine StateMachine { get; }
+        public IStateMachine? StateMachine { get; }
 
-        public T GetJobParameter<T>([NotNull] string name) => GetJobParameter<T>(name, allowStale: false);
+        [CanBeNull]
+        public T? GetJobParameter<T>([NotNull] string name) => GetJobParameter<T>(name, allowStale: false);
 
-        public T GetJobParameter<T>([NotNull] string name, bool allowStale)
+        [CanBeNull]
+        public T? GetJobParameter<T>([NotNull] string name, bool allowStale)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
             try
             {
-                string value;
+                string? value;
 
                 if (allowStale && BackgroundJob.ParametersSnapshot != null)
                 {
@@ -112,7 +117,7 @@ namespace Hangfire.States
                 }
                 else
                 {
-                    value = Connection.GetJobParameter(BackgroundJob.Id, name);                
+                    value = Connection.GetJobParameter(BackgroundJob.Id, name);
                 }
 
                 return SerializationHelper.Deserialize<T>(value, SerializationOption.User);

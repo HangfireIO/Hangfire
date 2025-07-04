@@ -19,6 +19,9 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Newtonsoft.Json;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.States
 {
     /// <summary>
@@ -90,12 +93,10 @@ namespace Hangfire.States
         ///
         /// <exception cref="ArgumentNullException">The <paramref name="exception"/>
         /// argument is <see langword="null" /></exception>
-        public FailedState([NotNull] Exception exception, [CanBeNull] string serverId)
+        public FailedState([NotNull] Exception exception, [CanBeNull] string? serverId)
         {
-            if (exception == null) throw new ArgumentNullException(nameof(exception));
-
+            Exception = exception ?? throw new ArgumentNullException(nameof(exception));
             FailedAt = DateTime.UtcNow;
-            Exception = exception;
             ServerId = serverId;
             MaxLinesInStackTrace = MaxLinesInExceptionDetails;
         }
@@ -115,7 +116,7 @@ namespace Hangfire.States
         /// Gets the server identifier on which the exception occurred.
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public string ServerId { get; }
+        public string? ServerId { get; }
 
         /// <inheritdoc />
         /// <remarks>
@@ -127,7 +128,7 @@ namespace Hangfire.States
         public string Name => StateName;
 
         /// <inheritdoc />
-        public string Reason { get; set; }
+        public string? Reason { get; set; }
 
         /// <inheritdoc />
         /// <remarks>
@@ -194,7 +195,7 @@ namespace Hangfire.States
             var result = new Dictionary<string, string>
             {
                 { "FailedAt", JobHelper.SerializeDateTime(FailedAt) },
-                { "ExceptionType", Exception.GetType().FullName },
+                { "ExceptionType", Exception.GetType().FullName! },
                 { "ExceptionMessage", Exception.Message },
                 { "ExceptionDetails", Exception.ToStringWithOriginalStackTrace(MaxLinesInStackTrace) }
             };

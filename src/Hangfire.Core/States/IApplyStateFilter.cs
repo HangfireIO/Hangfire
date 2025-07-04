@@ -13,7 +13,11 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using Hangfire.Annotations;
 using Hangfire.Storage;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.States
 {
@@ -27,13 +31,13 @@ namespace Hangfire.States
         /// to the job within the given transaction.
         /// </summary>
         void OnStateApplied(
-            ApplyStateContext context, IWriteOnlyTransaction transaction);
+            [NotNull] ApplyStateContext context, [NotNull] IWriteOnlyTransaction transaction);
 
         /// <summary>
         /// Called when the state with specified state was 
         /// unapplied from the job within the given transaction.
         /// </summary>
         void OnStateUnapplied(
-            ApplyStateContext context, IWriteOnlyTransaction transaction);
+            [NotNull] ApplyStateContext context, [NotNull] IWriteOnlyTransaction transaction);
     }
 }

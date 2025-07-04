@@ -14,7 +14,9 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using Hangfire.Annotations;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
 #nullable enable
 
 namespace Hangfire.Common
@@ -31,6 +33,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The enumerator that contains all the <see cref="IJobFilterProvider"/>.
         /// </returns>
-        IEnumerable<JobFilter> GetFilters(Job job);
+        [NotNull]
+        IEnumerable<JobFilter> GetFilters([CanBeNull] Job? job);
     }
 }

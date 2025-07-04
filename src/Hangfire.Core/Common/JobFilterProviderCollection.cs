@@ -44,7 +44,7 @@ namespace Hangfire.Common
         /// </summary>
         /// <param name="job">Job, can be null.</param>
         /// <returns>The collection of filter providers.</returns>
-        public IEnumerable<JobFilter> GetFilters(Job job)
+        public IEnumerable<JobFilter> GetFilters(Job? job)
         {
             var combinedFilters = new List<JobFilter>();
 

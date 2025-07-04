@@ -15,19 +15,22 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Hangfire.Annotations;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.States
 {
-    [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "Public API, can not change in minor versions.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "Public API, can not change in minor versions.")]
     [Obsolete("This was a helper class, and it's not used anymore. Will be removed in 2.0.0.")]
     public class StateHandlerCollection
     {
         private readonly Dictionary<string, List<IStateHandler>> _handlers = 
             new Dictionary<string, List<IStateHandler>>();
 
-        public void AddRange(IEnumerable<IStateHandler> handlers)
+        public void AddRange([NotNull] IEnumerable<IStateHandler> handlers)
         {
             if (handlers == null) throw new ArgumentNullException(nameof(handlers));
 
@@ -37,7 +40,7 @@ namespace Hangfire.States
             }
         }
 
-        public void AddHandler(IStateHandler handler)
+        public void AddHandler([NotNull] IStateHandler handler)
         {
             if (handler == null) throw new ArgumentNullException(nameof(handler));
             if (handler.StateName == null) throw new ArgumentException("The StateName property of the given state handler must be non null.", nameof(handler));
@@ -50,7 +53,7 @@ namespace Hangfire.States
             handlers.Add(handler);
         }
 
-        public IEnumerable<IStateHandler> GetHandlers(string stateName)
+        public IEnumerable<IStateHandler> GetHandlers([CanBeNull] string? stateName)
         {
             if (stateName == null || !_handlers.TryGetValue(stateName, out var handlers))
             {

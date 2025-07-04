@@ -19,6 +19,8 @@ using Hangfire.Common;
 using Hangfire.Server;
 using Newtonsoft.Json;
 
+#nullable enable
+
 namespace Hangfire.States
 {
     /// <summary>
@@ -76,7 +78,7 @@ namespace Hangfire.States
         public string Name => StateName;
 
         /// <inheritdoc />
-        public string Reason { get; set; }
+        public string? Reason { get; set; }
 
         /// <inheritdoc />
         /// <remarks>

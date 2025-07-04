@@ -13,6 +13,11 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using Hangfire.Annotations;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.States
 {
     /// <summary>
@@ -27,6 +32,6 @@ namespace Hangfire.States
         /// be changed through setting the different state in the context 
         /// in an implementation of this method.
         /// </summary>
-        void OnStateElection(ElectStateContext context);
+        void OnStateElection([NotNull] ElectStateContext context);
     }
 }

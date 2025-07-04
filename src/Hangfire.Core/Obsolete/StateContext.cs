@@ -17,6 +17,9 @@ using System;
 using Hangfire.Annotations;
 using Hangfire.Common;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 // ReSharper disable once CheckNamespace
 namespace Hangfire.States
 {
@@ -33,7 +36,7 @@ namespace Hangfire.States
 
         [CanBeNull]
         [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
-        public Job Job => BackgroundJob.Job;
+        public Job? Job => BackgroundJob.Job;
 
         [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
         public DateTime CreatedAt => BackgroundJob.CreatedAt;

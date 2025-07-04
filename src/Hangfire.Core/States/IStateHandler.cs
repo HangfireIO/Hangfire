@@ -13,7 +13,11 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using Hangfire.Annotations;
 using Hangfire.Storage;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.States
 {
@@ -27,6 +31,7 @@ namespace Hangfire.States
         /// Gets the name of a state, for which custom actions will be
         /// performed.
         /// </summary>
+        [NotNull]
         string StateName { get; }
 
         /// <summary>
@@ -35,7 +40,7 @@ namespace Hangfire.States
         /// </summary>
         /// <param name="context">The context of a state applying process.</param>
         /// <param name="transaction">The current transaction of a state applying process.</param>
-        void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction);
+        void Apply([NotNull] ApplyStateContext context, [NotNull] IWriteOnlyTransaction transaction);
 
         /// <summary>
         /// Performs additional actions when unapplying a state whose name
@@ -43,6 +48,6 @@ namespace Hangfire.States
         /// </summary>
         /// <param name="context">The context of a state applying process.</param>
         /// <param name="transaction">The current transaction of a state applying process.</param>
-        void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction);
+        void Unapply([NotNull] ApplyStateContext context, [NotNull] IWriteOnlyTransaction transaction);
     }
 }

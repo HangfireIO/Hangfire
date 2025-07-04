@@ -20,6 +20,9 @@ using Hangfire.Annotations;
 using Hangfire.Profiling;
 using Hangfire.Storage;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.States
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1068:CancellationToken parameters must come last", Justification = "Cancellation tokens in this class are used only as a part of a general context and don't have usual meaning.")]
@@ -39,7 +42,7 @@ namespace Hangfire.States
             [NotNull] IStorageConnection connection,
             [NotNull] string backgroundJobId, 
             [NotNull] IState newState, 
-            [CanBeNull] params string[] expectedStates)
+            [CanBeNull] params string[]? expectedStates)
             : this(storage, connection, backgroundJobId, newState, expectedStates, CancellationToken.None)
         {
         }
@@ -49,7 +52,7 @@ namespace Hangfire.States
             [NotNull] IStorageConnection connection,
             [NotNull] string backgroundJobId,
             [NotNull] IState newState,
-            [CanBeNull] IEnumerable<string> expectedStates,
+            [CanBeNull] IEnumerable<string>? expectedStates,
             CancellationToken cancellationToken)
         : this(storage, connection, null, backgroundJobId, newState, expectedStates, false, null, cancellationToken, EmptyProfiler.Instance, null)
         {
@@ -58,10 +61,10 @@ namespace Hangfire.States
         public StateChangeContext(
             [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
-            [CanBeNull] JobStorageTransaction transaction,
+            [CanBeNull] JobStorageTransaction? transaction,
             [NotNull] string backgroundJobId,
             [NotNull] IState newState,
-            [CanBeNull] IEnumerable<string> expectedStates,
+            [CanBeNull] IEnumerable<string>? expectedStates,
             CancellationToken cancellationToken)
             : this(storage, connection, transaction, backgroundJobId, newState, expectedStates, false, null, cancellationToken, EmptyProfiler.Instance, null)
         {
@@ -72,12 +75,12 @@ namespace Hangfire.States
             [NotNull] IStorageConnection connection,
             [NotNull] string backgroundJobId,
             [NotNull] IState newState,
-            [CanBeNull] IEnumerable<string> expectedStates,
+            [CanBeNull] IEnumerable<string>? expectedStates,
             bool disableFilters,
             CancellationToken cancellationToken,
             [NotNull] IProfiler profiler,
-            [CanBeNull] string serverId,
-            [CanBeNull] IReadOnlyDictionary<string, object> customData = null) 
+            [CanBeNull] string? serverId,
+            [CanBeNull] IReadOnlyDictionary<string, object>? customData = null) 
             : this(storage, connection, null, backgroundJobId, newState, expectedStates, disableFilters, null, cancellationToken, profiler, serverId, customData)
         {
         }
@@ -85,16 +88,16 @@ namespace Hangfire.States
         internal StateChangeContext(
             [NotNull] JobStorage storage, 
             [NotNull] IStorageConnection connection,
-            [CanBeNull] JobStorageTransaction transaction,
+            [CanBeNull] JobStorageTransaction? transaction,
             [NotNull] string backgroundJobId, 
             [NotNull] IState newState, 
-            [CanBeNull] IEnumerable<string> expectedStates,
+            [CanBeNull] IEnumerable<string>? expectedStates,
             bool disableFilters,
-            [CanBeNull] IFetchedJob completeJob,
+            [CanBeNull] IFetchedJob? completeJob,
             CancellationToken cancellationToken,
             [NotNull] IProfiler profiler,
-            [CanBeNull] string serverId,
-            [CanBeNull] IReadOnlyDictionary<string, object> customData = null)
+            [CanBeNull] string? serverId,
+            [CanBeNull] IReadOnlyDictionary<string, object>? customData = null)
         {
             Storage = storage ?? throw new ArgumentNullException(nameof(storage));
             Connection = connection ?? throw new ArgumentNullException(nameof(connection));
@@ -117,7 +120,7 @@ namespace Hangfire.States
         public IStorageConnection Connection { get; }
 
         [CanBeNull]
-        public JobStorageTransaction Transaction { get; }
+        public JobStorageTransaction? Transaction { get; }
 
         [NotNull]
         public string BackgroundJobId { get; }
@@ -126,8 +129,8 @@ namespace Hangfire.States
         public IState NewState { get; }
 
         [CanBeNull]
-        public IEnumerable<string> ExpectedStates { get; }
-        
+        public IEnumerable<string>? ExpectedStates { get; }
+
         public bool DisableFilters { get; }
         public CancellationToken CancellationToken { get; }
 
@@ -135,15 +138,15 @@ namespace Hangfire.States
         internal IProfiler Profiler { get; }
 
         [CanBeNull]
-        public IReadOnlyDictionary<string, object> CustomData { get; }
+        public IReadOnlyDictionary<string, object>? CustomData { get; }
 
         [CanBeNull]
-        public IFetchedJob CompleteJob { get; }
+        public IFetchedJob? CompleteJob { get; }
 
         [CanBeNull]
-        public BackgroundJob ProcessedJob { get; set; }
+        public BackgroundJob? ProcessedJob { get; set; }
 
         [CanBeNull]
-        public string ServerId { get; set; }
+        public string? ServerId { get; set; }
     }
 }

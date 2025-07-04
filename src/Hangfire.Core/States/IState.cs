@@ -16,6 +16,9 @@
 using System.Collections.Generic;
 using Hangfire.Annotations;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.States
 {
     /// <summary>
@@ -121,7 +124,7 @@ namespace Hangfire.States
         /// through the public setter.
         /// </note>
         /// </remarks>
-        [CanBeNull] string Reason { get; }
+        [CanBeNull] string? Reason { get; }
 
         /// <summary>
         /// Gets if the current state is a <i>final</i> one.

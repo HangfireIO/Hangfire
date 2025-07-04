@@ -56,7 +56,7 @@ namespace Hangfire.Common
             return job.GetMethodFilterAttributes(_cacheAttributeInstances);
         }
 
-        public virtual IEnumerable<JobFilter> GetFilters(Job job)
+        public virtual IEnumerable<JobFilter> GetFilters(Job? job)
         {
             if (job == null) return Enumerable.Empty<JobFilter>();
 

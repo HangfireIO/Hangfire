@@ -20,6 +20,9 @@ using Hangfire.Common;
 using Hangfire.Storage;
 using Newtonsoft.Json;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.States
 {
     /// <summary>
@@ -106,11 +109,8 @@ namespace Hangfire.States
             JobContinuationOptions options,
             TimeSpan expiration)
         {
-            if (parentId == null) throw new ArgumentNullException(nameof(parentId));
-            if (nextState == null) throw new ArgumentNullException(nameof(nextState));
-
-            ParentId = parentId;
-            NextState = nextState;
+            ParentId = parentId ?? throw new ArgumentNullException(nameof(parentId));
+            NextState = nextState ?? throw new ArgumentNullException(nameof(nextState));
 
             Options = options;
             Expiration = expiration;
@@ -149,7 +149,7 @@ namespace Hangfire.States
         public string Name => StateName;
 
         /// <inheritdoc />
-        public string Reason { get; set; }
+        public string? Reason { get; set; }
 
         /// <inheritdoc />
         /// <remarks>

@@ -19,6 +19,9 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Profiling;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.States
 {
     // TODO: Merge this class with BackgroundJobStateChanger in 2.0.0
@@ -36,17 +39,14 @@ namespace Hangfire.States
             [NotNull] IJobFilterProvider filterProvider,
             [NotNull] IStateMachine innerStateMachine)
         {
-            if (filterProvider == null) throw new ArgumentNullException(nameof(filterProvider));
-            if (innerStateMachine == null) throw new ArgumentNullException(nameof(innerStateMachine));
-
-            _filterProvider = filterProvider;
-            _innerStateMachine = innerStateMachine;
+            _filterProvider = filterProvider ?? throw new ArgumentNullException(nameof(filterProvider));
+            _innerStateMachine = innerStateMachine ?? throw new ArgumentNullException(nameof(innerStateMachine));
         }
 
         public IStateMachine InnerStateMachine => _innerStateMachine;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1725:Parameter names should match base declaration", Justification = "Parameter name changed to avoid ambiguity and errors in the method's implementation.")]
-        public IState ApplyState(ApplyStateContext initialContext)
+        public IState? ApplyState(ApplyStateContext initialContext)
         {
             if (initialContext == null) throw new ArgumentNullException(nameof(initialContext));
 
@@ -134,7 +134,7 @@ namespace Hangfire.States
             }
         }
 
-        private JobFilterInfo GetFilters(Job job)
+        private JobFilterInfo GetFilters(Job? job)
         {
             return new JobFilterInfo(_filterProvider.GetFilters(job));
         }

@@ -18,22 +18,23 @@ using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Common;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire
 {
     partial class BackgroundJob
     {
         /// <exclude />
-        public BackgroundJob([NotNull] string id, [CanBeNull] Job job, DateTime createdAt)
+        public BackgroundJob([NotNull] string id, [CanBeNull] Job? job, DateTime createdAt)
             : this(id, job, createdAt, null)
         {
         }
 
         /// <exclude />
-        public BackgroundJob([NotNull] string id, [CanBeNull] Job job, DateTime createdAt, [CanBeNull] IReadOnlyDictionary<string, string> parametersSnapshot)
+        public BackgroundJob([NotNull] string id, [CanBeNull] Job? job, DateTime createdAt, [CanBeNull] IReadOnlyDictionary<string, string>? parametersSnapshot)
         {
-            if (id == null) throw new ArgumentNullException(nameof(id));
-
-            Id = id;
+            Id = id ?? throw new ArgumentNullException(nameof(id));
             Job = job;
             CreatedAt = createdAt;
             ParametersSnapshot = parametersSnapshot;
@@ -45,13 +46,13 @@ namespace Hangfire
 
         /// <exclude />
         [CanBeNull]
-        public Job Job { get; }
+        public Job? Job { get; }
 
         /// <exclude />
         public DateTime CreatedAt { get; }
 
         /// <exclude />
         [CanBeNull]
-        public IReadOnlyDictionary<string, string> ParametersSnapshot { get; }
+        public IReadOnlyDictionary<string, string>? ParametersSnapshot { get; }
     }
 }

@@ -18,21 +18,23 @@ using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Annotations;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.States
 {
     internal sealed class CoreStateMachine : IStateMachine
     {
-        private readonly Func<JobStorage, string, StateHandlersCollection> _stateHandlersThunk;
+        private readonly Func<JobStorage, string?, StateHandlersCollection> _stateHandlersThunk;
 
         public CoreStateMachine()
             : this(GetStateHandlers)
         {
         }
 
-        internal CoreStateMachine([NotNull] Func<JobStorage, string, StateHandlersCollection> stateHandlersThunk)
+        internal CoreStateMachine([NotNull] Func<JobStorage, string?, StateHandlersCollection> stateHandlersThunk)
         {
-            if (stateHandlersThunk == null) throw new ArgumentNullException(nameof(stateHandlersThunk));
-            _stateHandlersThunk = stateHandlersThunk;
+            _stateHandlersThunk = stateHandlersThunk ?? throw new ArgumentNullException(nameof(stateHandlersThunk));
         }
 
         public IState ApplyState(ApplyStateContext context)
@@ -61,7 +63,7 @@ namespace Hangfire.States
             return context.NewState;
         }
 
-        private static StateHandlersCollection GetStateHandlers(JobStorage storage, string stateName)
+        private static StateHandlersCollection GetStateHandlers(JobStorage storage, string? stateName)
         {
             var globalHandlers = GlobalStateHandlers.Handlers;
 
@@ -74,7 +76,7 @@ namespace Hangfire.States
         internal readonly struct StateHandlersCollection(
             List<IStateHandler> globalHandlers,
             IEnumerable<IStateHandler> storageHandlers,
-            string stateName)
+            string? stateName)
         {
             public Enumerator GetEnumerator() => new Enumerator(globalHandlers, storageHandlers, stateName);
 
@@ -82,15 +84,15 @@ namespace Hangfire.States
             {
                 private List<IStateHandler>.Enumerator _globalEnumerator;
                 private readonly IEnumerator<IStateHandler> _storageEnumerator;
-                private readonly string _stateName;
-                private IStateHandler _current;
+                private readonly string? _stateName;
+                private IStateHandler? _current;
 
-                public Enumerator(List<IStateHandler> globalHandlers, IEnumerable<IStateHandler> storageHandlers, string stateName)
+                public Enumerator(List<IStateHandler> globalHandlers, IEnumerable<IStateHandler> storageHandlers, string? stateName)
                 {
                     _globalEnumerator = globalHandlers.GetEnumerator();
                     _storageEnumerator = storageHandlers.GetEnumerator();
                     _stateName = stateName;
-                    _current = default;
+                    _current = null;
                 }
 
                 public bool MoveNext()
@@ -115,11 +117,11 @@ namespace Hangfire.States
                         }
                     }
 
-                    _current = default;
+                    _current = null;
                     return false;
                 }
 
-                public IStateHandler Current => _current;
+                public IStateHandler Current => _current!;
             }
         }
     }

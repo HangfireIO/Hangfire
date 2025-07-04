@@ -16,9 +16,13 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Storage;
 using Newtonsoft.Json;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.States
 {
@@ -50,7 +54,7 @@ namespace Hangfire.States
         public static readonly string StateName = "Succeeded";
 
         [JsonConstructor]
-        public SucceededState(object result, long latency, long performanceDuration)
+        public SucceededState([CanBeNull] object? result, long latency, long performanceDuration)
         {
             SucceededAt = DateTime.UtcNow;
             Result = result;
@@ -67,7 +71,8 @@ namespace Hangfire.States
         /// <summary>
         /// Gets the value returned by a job method.
         /// </summary>
-        public object Result { get; }
+        [CanBeNull]
+        public object? Result { get; }
         
         /// <summary>
         /// Gets the total number of milliseconds passed from a job
@@ -90,7 +95,7 @@ namespace Hangfire.States
         public string Name => StateName;
 
         /// <inheritdoc />
-        public string Reason { get; set; }
+        public string? Reason { get; set; }
 
         /// <inheritdoc />
         /// <remarks>
