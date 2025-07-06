@@ -16,6 +16,8 @@
 using System;
 using System.Runtime.Serialization;
 
+#nullable enable
+
 namespace Hangfire.Storage
 {
 #if !NETSTANDARD1_3
@@ -41,6 +43,7 @@ namespace Hangfire.Storage
         protected DistributedLockTimeoutException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
+            Resource = info.GetString("Resource");
         }
 #endif
 

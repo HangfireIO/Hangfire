@@ -44,12 +44,14 @@ namespace Hangfire.Common
         private static Func<string, Type>? _currentTypeResolver;
         private static Func<Type, string>? _currentTypeSerializer;
 
+        [System.Diagnostics.CodeAnalysis.AllowNull]
         public static Func<string, Type> CurrentTypeResolver
         {
             get => Volatile.Read(ref _currentTypeResolver) ?? DefaultTypeResolver;
             set => Volatile.Write(ref _currentTypeResolver, value);
         }
 
+        [System.Diagnostics.CodeAnalysis.AllowNull]
         public static Func<Type, string> CurrentTypeSerializer
         {
             get => Volatile.Read(ref _currentTypeSerializer) ?? DefaultTypeSerializer;

@@ -135,7 +135,6 @@ namespace Hangfire.Common
         /// Deserializes data with <see cref="SerializationOption.Internal"/> option.
         /// Use this method to deserialize internal data. Using isolated settings that can't be changed from user code.
         /// </summary>
-        [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(value))]
         public static T? Deserialize<T>([CanBeNull] string? value)
         {
             if (value == null) return default(T);
@@ -146,7 +145,6 @@ namespace Hangfire.Common
         /// Deserializes data with <see cref="SerializationOption.Internal"/> option.
         /// Use this method to deserialize internal data. Using isolated settings that can't be changed from user code.
         /// </summary>
-        [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(value))]
         public static object? Deserialize([CanBeNull] string? value, [NotNull] Type type)
         {
             return Deserialize(value, type, SerializationOption.Internal);
@@ -159,11 +157,10 @@ namespace Hangfire.Common
         /// Use <see cref="SerializationOption.User"/> to deserialize user data like arguments and parameters, 
         /// configurable via <see cref="SetUserSerializerSettings"/>.
         /// </summary>
-        [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(value))]
         public static T? Deserialize<T>([CanBeNull] string? value, SerializationOption option)
         {
             if (value == null) return default(T);
-            return (T) Deserialize(value, typeof(T), option);
+            return (T?) Deserialize(value, typeof(T), option);
         }
 
         /// <summary>
@@ -173,7 +170,6 @@ namespace Hangfire.Common
         /// Use <see cref="SerializationOption.User"/> to deserialize user data like arguments and parameters, 
         /// configurable via <see cref="SetUserSerializerSettings"/>.
         /// </summary>
-        [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(value))]
         public static object? Deserialize([CanBeNull] string? value, [NotNull] Type type, SerializationOption option)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));

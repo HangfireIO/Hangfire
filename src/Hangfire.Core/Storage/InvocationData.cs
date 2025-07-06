@@ -28,6 +28,9 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Newtonsoft.Json;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Storage
 {
     public class InvocationData
@@ -40,28 +43,33 @@ namespace Hangfire.Storage
             ConcurrentDictionary<MethodSerializerCacheKey, MethodSerializerCacheValue>
             MethodSerializerCache = new();
 
-        private static readonly ConcurrentDictionary<Tuple<Func<Type, string>, string>, string[]>
+        private static readonly ConcurrentDictionary<Tuple<Func<Type, string>, string?>, string[]?>
             ParameterTypesDeserializerCache = new();
 
         [Obsolete("Please use IGlobalConfiguration.UseTypeResolver instead. Will be removed in 2.0.0.")]
-        public static void SetTypeResolver([CanBeNull] Func<string, Type> typeResolver)
+        public static void SetTypeResolver([CanBeNull] Func<string, Type>? typeResolver)
         {
             TypeHelper.CurrentTypeResolver = typeResolver;
         }
 
         [Obsolete("Please use IGlobalConfiguration.UseTypeSerializer instead. Will be removed in 2.0.0.")]
-        public static void SetTypeSerializer([CanBeNull] Func<Type, string> typeSerializer)
+        public static void SetTypeSerializer([CanBeNull] Func<Type, string>? typeSerializer)
         {
             TypeHelper.CurrentTypeSerializer = typeSerializer;
         }
 
-        public InvocationData(string type, string method, string parameterTypes, string arguments)
+        public InvocationData([CanBeNull] string? type, [CanBeNull] string? method, [CanBeNull] string? parameterTypes, [CanBeNull] string? arguments)
             : this(type, method, parameterTypes, arguments, null)
         {
         }
 
         [JsonConstructor]
-        public InvocationData(string type, string method, string parameterTypes, string arguments, string queue)
+        public InvocationData(
+            [CanBeNull] string? type,
+            [CanBeNull] string? method,
+            [CanBeNull] string? parameterTypes,
+            [CanBeNull] string? arguments,
+            [CanBeNull] string? queue)
         {
             Type = type;
             Method = method;
@@ -70,13 +78,21 @@ namespace Hangfire.Storage
             Queue = queue;
         }
 
-        public string Type { get; }
-        public string Method { get; }
-        public string ParameterTypes { get; }
-        public string Arguments { get; set; }
+        [CanBeNull]
+        public string? Type { get; }
+
+        [CanBeNull]
+        public string? Method { get; }
+
+        [CanBeNull]
+        public string? ParameterTypes { get; }
+
+        [CanBeNull]
+        public string? Arguments { get; set; }
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public string Queue { get; }
+        [CanBeNull]
+        public string? Queue { get; }
 
         [Obsolete("Please use DeserializeJob() method instead. Will be removed in 2.0.0 for clarity.")]
         public Job Deserialize()
@@ -98,11 +114,11 @@ namespace Hangfire.Storage
             {
                 CachedDeserializeMethod(typeResolver, Type, Method, ParameterTypes, out var type, out var method);
 
-                object[] arguments;
+                object?[] arguments;
 
                 if (Arguments != null && !Arguments.Equals("[]", StringComparison.Ordinal))
                 {
-                    var argumentsArray = SerializationHelper.Deserialize<string[]>(Arguments);
+                    var argumentsArray = SerializationHelper.Deserialize<string?[]>(Arguments);
                     arguments = DeserializeArguments(method, argumentsArray);
                 }
                 else
@@ -135,12 +151,12 @@ namespace Hangfire.Storage
             return new InvocationData(typeName, methodName, parameterTypes, arguments, job.Queue);
         }
 
-        public static InvocationData DeserializePayload([NotNull] string payload)
+        public static InvocationData? DeserializePayload([NotNull] string payload)
         {
             if (payload == null) throw new ArgumentNullException(nameof(payload));
 
-            JobPayload jobPayload = null;
-            Exception exception = null;
+            JobPayload? jobPayload = null;
+            Exception? exception = null;
 
             try
             {
@@ -155,7 +171,7 @@ namespace Hangfire.Storage
                 exception = ex;
             }
 
-            if (exception == null && jobPayload.TypeName != null && jobPayload.MethodName != null)
+            if (exception == null && jobPayload?.TypeName != null && jobPayload.MethodName != null)
             {
                 return new InvocationData(
                     jobPayload.TypeName,
@@ -201,7 +217,7 @@ namespace Hangfire.Storage
                 : this);
         }
 
-        private static string[] DeserializeParameterTypesArray(Func<Type, string> typeSerializer, string parameterTypes)
+        private static string[]? DeserializeParameterTypesArray(Func<Type, string> typeSerializer, string? parameterTypes)
         {
             return ParameterTypesDeserializerCache.GetOrAdd(Tuple.Create(typeSerializer, parameterTypes), static tuple =>
             {
@@ -214,7 +230,7 @@ namespace Hangfire.Storage
                     try
                     {
                         var types = SerializationHelper.Deserialize<Type[]>(tuple.Item2);
-                        return types.Select(tuple.Item1).ToArray();
+                        return types?.Select(tuple.Item1).ToArray();
                     }
                     catch (Exception ex) when (ex.IsCatchableExceptionType())
                     {
@@ -225,9 +241,9 @@ namespace Hangfire.Storage
             });
         }
 
-        internal static string[] SerializeArguments(MethodInfo methodInfo, IReadOnlyList<object> arguments)
+        internal static string?[] SerializeArguments(MethodInfo methodInfo, IReadOnlyList<object?> arguments)
         {
-            var serializedArguments = new string[arguments.Count];
+            var serializedArguments = new string?[arguments.Count];
             var parameters = methodInfo.GetParameters();
 
             for (var i = 0; i < parameters.Length; i++)
@@ -235,7 +251,7 @@ namespace Hangfire.Storage
                 var parameter = parameters[i];
                 var argument = arguments[i];
 
-                string value;
+                string? value;
 
                 if (argument != null)
                 {
@@ -274,12 +290,12 @@ namespace Hangfire.Storage
             return serializedArguments;
         }
 
-        internal static object[] DeserializeArguments(MethodInfo methodInfo, string[] arguments)
+        internal static object?[] DeserializeArguments(MethodInfo methodInfo, string?[]? arguments)
         {
             if (arguments == null) return [];
 
             var parameters = methodInfo.GetParameters();
-            var result = new object[arguments.Length];
+            var result = new object?[arguments.Length];
 
             for (var i = 0; i < parameters.Length; i++)
             {
@@ -321,9 +337,12 @@ namespace Hangfire.Storage
         }
 
         private static void CachedDeserializeMethod(
-            Func<string, Type> typeResolver, string typeName, string methodName, string parameterTypes,
+            Func<string, Type> typeResolver, string? typeName, string? methodName, string? parameterTypes,
             out Type type, out MethodInfo methodInfo)
         {
+            if (typeName == null) throw new ArgumentNullException(nameof(typeName));
+            if (methodName == null) throw new ArgumentNullException(nameof(methodName));
+
             var entry = MethodDeserializerCache.GetOrAdd(
                 new MethodDeserializerCacheKey { TypeResolver = typeResolver, TypeName = typeName, MethodName = methodName, ParameterTypes = parameterTypes },
                 static key =>
@@ -350,9 +369,11 @@ namespace Hangfire.Storage
             methodInfo = entry.Method;
         }
 
-        private static object DeserializeArgument(string argument, Type type)
+        private static object? DeserializeArgument(string? argument, Type type)
         {
-            object value;
+            if (argument == null) return null;
+
+            object? value;
             try
             {
                 value = SerializationHelper.Deserialize(argument, type, SerializationOption.User);
@@ -425,19 +446,19 @@ namespace Hangfire.Storage
         private sealed class JobPayload
         {
             [JsonProperty("t")]
-            public string TypeName { get; set; }
+            public string? TypeName { get; set; }
 
             [JsonProperty("m")]
-            public string MethodName { get; set; }
+            public string? MethodName { get; set; }
 
             [JsonProperty("p", NullValueHandling = NullValueHandling.Ignore)]
-            public string[] ParameterTypes { get; set; }
+            public string[]? ParameterTypes { get; set; }
 
             [JsonProperty("a", NullValueHandling = NullValueHandling.Ignore)]
-            public string[] Arguments { get; set; }
+            public string[]? Arguments { get; set; }
 
             [JsonProperty("q", NullValueHandling = NullValueHandling.Ignore)]
-            public string Queue { get; set; }
+            public string? Queue { get; set; }
         }
 
         private readonly record struct MethodDeserializerCacheKey
@@ -445,7 +466,7 @@ namespace Hangfire.Storage
             public Func<string, Type> TypeResolver { get; init; }
             public string TypeName { get; init; }
             public string MethodName { get; init; }
-            public string ParameterTypes { get; init; }
+            public string? ParameterTypes { get; init; }
         }
 
         private readonly record struct MethodDeserializerCacheValue

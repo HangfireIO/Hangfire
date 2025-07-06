@@ -16,6 +16,9 @@
 using System;
 using Hangfire.Annotations;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Storage
 {
     public interface IFetchedJob : IDisposable

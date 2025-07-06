@@ -79,14 +79,65 @@ namespace Hangfire.Core.Tests.Storage
             Assert.Equal("critical", job.Queue);
         }
 
-        [DataCompatibilityRangeFact]
-        public void Deserialize_HandlesNullOrEmpty_ParameterTypesAndArguments()
+        [DataCompatibilityRangeTheory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void Deserialize_ThrowsAnException_WhenTypeIs_NullOrEmpty(string type)
+        {
+            var serializedData = new InvocationData(
+                type,
+                "GetConnection",
+                "[]",
+                "[]");
+
+            var exception = Assert.Throws<JobLoadException>(() => serializedData.Deserialize());
+            Assert.NotNull(exception.InnerException);
+            Assert.Contains("Type", exception.InnerException.Message, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [DataCompatibilityRangeTheory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void Deserialize_ThrowsAnException_WhenMethodIs_NullOrEmpty(string method)
+        {
+            var serializedData = new InvocationData(
+                "Hangfire.JobStorage, Hangfire.Core",
+                method,
+                "[]",
+                "[]");
+
+            var exception = Assert.Throws<JobLoadException>(() => serializedData.Deserialize());
+            Assert.NotNull(exception.InnerException);
+            Assert.Contains("Method", exception.InnerException.Message, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [DataCompatibilityRangeTheory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void Deserialize_HandlesNullOrEmpty_ParameterTypes(string  parameterTypes)
         {
             var serializedData = new InvocationData(
                 "Hangfire.JobStorage, Hangfire.Core",
                 "GetConnection",
-                String.Empty,
-                null);
+                parameterTypes,
+                "[]");
+
+            var job = serializedData.Deserialize();
+
+            Assert.Equal(typeof(JobStorage), job.Type);
+            Assert.Equal("GetConnection", job.Method.Name);
+        }
+
+        [DataCompatibilityRangeTheory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void Deserialize_HandlesNullOrEmpty_Arguments(string arguments)
+        {
+            var serializedData = new InvocationData(
+                "Hangfire.JobStorage, Hangfire.Core",
+                "GetConnection",
+                "[]",
+                arguments);
 
             var job = serializedData.Deserialize();
 

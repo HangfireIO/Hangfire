@@ -18,6 +18,7 @@ using System.Globalization;
 using Hangfire.Annotations;
 using Newtonsoft.Json;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
 #nullable enable
 
 namespace Hangfire.Common
@@ -37,13 +38,13 @@ namespace Hangfire.Common
         }
 
         [Obsolete("Please use `SerializationHelper.Deserialize` with appropriate serialization option instead. Will be removed in 2.0.0")]
-        public static T FromJson<T>(string value)
+        public static T? FromJson<T>([CanBeNull] string? value)
         {
             return SerializationHelper.Deserialize<T>(value, SerializationOption.User);
         }
 
         [Obsolete("Please use `SerializationHelper.Deserialize` with appropriate serialization option instead. Will be removed in 2.0.0")]
-        public static object FromJson(string value, [NotNull] Type type)
+        public static object? FromJson([CanBeNull] string? value, [NotNull] Type type)
         {
             return SerializationHelper.Deserialize(value, type, SerializationOption.User);
         }
