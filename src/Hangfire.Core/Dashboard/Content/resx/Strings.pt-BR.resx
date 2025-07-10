@@ -250,7 +250,7 @@
     <value>Gráfico em tempo real</value>
   </data>
   <data name="HomePage_Title" xml:space="preserve">
-    <value>Painel de controlo</value>
+    <value>Painel de controle</value>
     <comment>Fuzzy</comment>
   </data>
   <data name="JobDetailsPage_Created" xml:space="preserve">
@@ -270,7 +270,7 @@
                         no entanto pode ser recolocá-la em fila ou removê-la manualmente.</value>
   </data>
   <data name="JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;A tarefa foi abortada&lt;/strong&gt; - foi processado pelo servidor &lt;code&gt;{0}&lt;/code&gt; que relatou uma pulsação mais de um minuto atrás. Ele será recuperado automaticamente após o período de invisibilidade, mas você poderá colocá-lo novamente na fila ou excluí-lo manualmente.</value>
+    <value>&lt;strong&gt;A tarefa foi abortada&lt;/strong&gt; - foi processada pelo servidor &lt;code&gt;{0}&lt;/code&gt; que relatou uma pulsação mais de um minuto atrás. Ela será recuperado automaticamente após o período de invisibilidade, mas você poderá colocá-lo novamente na fila ou excluí-lo manualmente.</value>
   </data>
   <data name="JobDetailsPage_JobExpired" xml:space="preserve">
     <value>A tarefa com o Id '{0}' expirou ou não foi encontrada no servidor.</value>
@@ -308,7 +308,7 @@
     <value>Registros por página</value>
   </data>
   <data name="ProcessingJobsPage_Aborted" xml:space="preserve">
-    <value>A tarefa foi aparentamente cancelada</value>
+    <value>A tarefa foi aparentemente cancelada</value>
   </data>
   <data name="ProcessingJobsPage_NoJobs" xml:space="preserve">
     <value>Nenhuma tarefa em processamento.</value>
@@ -376,7 +376,7 @@
             O reagendamento está a funcionar como esperado. O sistema de armazenamento atual não permite algumas consultas necessárias à apresentação da página.  Altere o sistema de armazenamento ou aguarde que as funcionalidades sejam implementadas.
         &lt;/p&gt;
         &lt;p&gt;
-            Aceda a &lt;a href="{0}"&gt;Tarefas agendadas&lt;/a&gt; para ver todas as tarefas agendadas e reagendadas.
+            Acesse &lt;a href="{0}"&gt;Tarefas agendadas&lt;/a&gt; para ver todas as tarefas agendadas e reagendadas.
         &lt;/p&gt;</value>
   </data>
   <data name="ScheduledJobsPage_EnqueueNow" xml:space="preserve">
@@ -557,9 +557,9 @@
     <value>Transações Ativas</value>
   </data>
   <data name="Metrics_SQLServer_DataFilesSize" xml:space="preserve">
-    <value>Ficheiro(s) Dados Usadas (MB)</value>
+    <value>Arquivo(s) Dados Usados (MB)</value>
   </data>
   <data name="Metrics_SQLServer_LogFilesSize" xml:space="preserve">
-    <value>Ficheiro(s) Log Usados (MB)</value>
+    <value>Arquivo(s) Log Usados (MB)</value>
   </data>
 </root>
