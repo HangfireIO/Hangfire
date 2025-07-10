@@ -601,8 +601,8 @@
       },
       "System.Diagnostics.DiagnosticSource": {
         "type": "Transitive",
-        "resolved": "4.7.0",
-        "contentHash": "oJjw3uFuVDJiJNbCD8HB4a2p3NYLdt1fiT5OGsPLw+WTOuG0KpP4OXelMmmVKpClueMsit6xOlzy4wNKQFiBLg=="
+        "resolved": "5.0.0",
+        "contentHash": "tCQTzPsGZh/A9LhhA6zrqCRV4hOHsK90/G7q3Khxmn6tnB1PuNU0cRaKANP2AWcF9bn0zsuOoZOSrHuJk6oNBA=="
       },
       "System.Diagnostics.Tools": {
         "type": "Transitive",
@@ -1433,7 +1433,8 @@
         "dependencies": {
           "Cronos": "[0.8.3, )",
           "Microsoft.CSharp": "[4.4.0, )",
-          "Newtonsoft.Json": "[11.0.1, )"
+          "Newtonsoft.Json": "[11.0.1, )",
+          "System.Diagnostics.DiagnosticSource": "[5.0.0, )"
         }
       },
       "hangfire.sqlserver": {
@@ -3233,7 +3234,8 @@
         "dependencies": {
           "Cronos": "[0.8.3, )",
           "Microsoft.CSharp": "[4.4.0, )",
-          "Newtonsoft.Json": "[11.0.1, )"
+          "Newtonsoft.Json": "[11.0.1, )",
+          "System.Diagnostics.DiagnosticSource": "[5.0.0, )"
         }
       },
       "hangfire.sqlserver": {
