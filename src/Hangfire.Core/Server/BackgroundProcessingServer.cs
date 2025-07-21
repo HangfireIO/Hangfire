@@ -22,6 +22,9 @@ using Hangfire.Annotations;
 using Hangfire.Logging;
 using Hangfire.Processing;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Server
 {
     /// <summary>
@@ -177,7 +180,7 @@ namespace Hangfire.Server
             _shutdownCts.Dispose();
         }
 
-        private void OnCurrentDomainUnload(object sender, EventArgs args)
+        private void OnCurrentDomainUnload(object? sender, EventArgs args)
         {
             if (Volatile.Read(ref _disposed) == 1) return;
 
@@ -233,7 +236,7 @@ namespace Hangfire.Server
                     Name = nameof(BackgroundServerProcess),
                     ErrorThreshold = TimeSpan.Zero,
                     StillErrorThreshold = TimeSpan.Zero,
-                    RetryDelay = retry => _options.RestartDelay
+                    RetryDelay = _ => _options.RestartDelay
                 },
                 _stoppingCts.Token);
 
@@ -244,9 +247,9 @@ namespace Hangfire.Server
                 ThreadFactory);
         }
 
-        private void RunServer(Guid executionId, object state)
+        private void RunServer(Guid executionId, object? state)
         {
-            _process.Execute(executionId, (BackgroundExecution)state, _stoppingCts.Token, _stoppedCts.Token, _shutdownCts.Token);
+            _process.Execute(executionId, (BackgroundExecution)state!, _stoppingCts.Token, _stoppedCts.Token, _shutdownCts.Token);
         }
 
         private static IEnumerable<Thread> ThreadFactory(ThreadStart threadStart)

@@ -23,6 +23,9 @@ using Hangfire.Annotations;
 using Hangfire.Logging;
 using Hangfire.Processing;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Server
 {
     internal sealed class BackgroundServerProcess : IBackgroundServerProcess
@@ -63,7 +66,7 @@ namespace Hangfire.Server
             CancellationToken stoppedToken, CancellationToken shutdownToken)
         {
             var serverId = GetServerId();
-            Stopwatch stoppedAt = null;
+            Stopwatch? stoppedAt = null;
 
             void HandleStopRestartSignal() => Interlocked.CompareExchange(ref stoppedAt, Stopwatch.StartNew(), null);
             void HandleStoppingSignal() => _logger.Info($"{GetServerTemplate(serverId)} caught stopping signal...");
@@ -215,7 +218,7 @@ namespace Hangfire.Server
             _logger.Info($"{GetServerTemplate(context.ServerId)} successfully announced in {stopwatch.Elapsed.TotalMilliseconds} ms");
         }
 
-        private void ServerDelete(BackgroundServerContext context, Stopwatch stoppedAt)
+        private void ServerDelete(BackgroundServerContext context, Stopwatch? stoppedAt)
         {
             try
             {

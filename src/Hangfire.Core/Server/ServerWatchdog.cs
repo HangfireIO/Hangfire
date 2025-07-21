@@ -16,6 +16,8 @@
 using System;
 using Hangfire.Logging;
 
+#nullable enable
+
 namespace Hangfire.Server
 {
     internal sealed class ServerWatchdog : IBackgroundProcess

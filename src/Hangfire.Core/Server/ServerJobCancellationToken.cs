@@ -22,12 +22,15 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Server
 {
     internal sealed class ServerJobCancellationToken : IJobCancellationToken, IDisposable
     {
-        private static readonly ConcurrentDictionary<string, ConcurrentDictionary<ServerJobCancellationToken, object>> WatchedServers
-            = new ConcurrentDictionary<string, ConcurrentDictionary<ServerJobCancellationToken, object>>();
+        private static readonly ConcurrentDictionary<string, ConcurrentDictionary<ServerJobCancellationToken, object?>> WatchedServers
+            = new ConcurrentDictionary<string, ConcurrentDictionary<ServerJobCancellationToken, object?>>();
 
         private readonly object _syncRoot = new object();
         private readonly string _jobId;
@@ -36,7 +39,7 @@ namespace Hangfire.Server
         private readonly IStorageConnection _connection;
         private readonly CancellationToken _shutdownToken;
         private readonly Lazy<CancellationTokenHolder> _cancellationTokenHolder;
-        private readonly ConcurrentDictionary<ServerJobCancellationToken, object> _watchedTokens;
+        private readonly ConcurrentDictionary<ServerJobCancellationToken, object?>? _watchedTokens;
         private bool _disposed;
 
         public ServerJobCancellationToken(
@@ -127,7 +130,7 @@ namespace Hangfire.Server
 
         public static void AddServer(string serverId)
         {
-            WatchedServers.TryAdd(serverId, new ConcurrentDictionary<ServerJobCancellationToken, object>());
+            WatchedServers.TryAdd(serverId, new ConcurrentDictionary<ServerJobCancellationToken, object?>());
         }
 
         public static void RemoveServer(string serverId)
@@ -157,7 +160,7 @@ namespace Hangfire.Server
                 return result;
             }
 
-            return Enumerable.Empty<Tuple<string, string>>();
+            return [];
         }
 
         public bool TryCheckJobIsAborted(IStorageConnection connection)

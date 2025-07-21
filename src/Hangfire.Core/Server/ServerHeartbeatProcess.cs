@@ -19,6 +19,8 @@ using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Storage;
 
+#nullable enable
+
 namespace Hangfire.Server
 {
     internal sealed class ServerHeartbeatProcess : IBackgroundProcess
@@ -28,7 +30,7 @@ namespace Hangfire.Server
         private readonly TimeSpan _interval;
         private readonly TimeSpan _serverTimeout;
         private readonly Action _requestRestart;
-        private Stopwatch _faultedSince;
+        private Stopwatch? _faultedSince;
 
         public ServerHeartbeatProcess(TimeSpan interval, TimeSpan serverTimeout, Action requestRestart)
         {

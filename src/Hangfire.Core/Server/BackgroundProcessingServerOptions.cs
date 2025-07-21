@@ -14,7 +14,11 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Hangfire.Annotations;
 using Hangfire.Processing;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Server
 {
@@ -24,7 +28,7 @@ namespace Hangfire.Server
         internal static TimeSpan DefaultLastChanceTimeout = TimeSpan.FromSeconds(1);
         internal static TimeSpan DefaultHeartbeatInterval = TimeSpan.FromSeconds(30);
 
-        private Func<int, TimeSpan> _retryDelay;
+        private Func<int, TimeSpan>? _retryDelay;
 
         public BackgroundProcessingServerOptions()
         {
@@ -46,10 +50,13 @@ namespace Hangfire.Server
         public TimeSpan ServerCheckInterval { get; set; }
         public TimeSpan ServerTimeout { get; set; }
         public TimeSpan CancellationCheckInterval { get; set; }
-        public string ServerName { get; set; }
+
+        [CanBeNull]
+        public string? ServerName { get; set; }
         public bool ExcludeStorageProcesses { get; set; }
 
-        public Func<int, TimeSpan> RetryDelay
+        [CanBeNull]
+        public Func<int, TimeSpan>? RetryDelay
         {
             get => _retryDelay;
             set => _retryDelay = value ?? throw new ArgumentNullException(nameof(value));

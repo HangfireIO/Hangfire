@@ -21,6 +21,9 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Profiling;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Server
 {
     public class BackgroundJobPerformer : IBackgroundJobPerformer
@@ -50,7 +53,7 @@ namespace Hangfire.Server
         public BackgroundJobPerformer(
             [NotNull] IJobFilterProvider filterProvider,
             [NotNull] JobActivator activator,
-            [CanBeNull] TaskScheduler taskScheduler)
+            [CanBeNull] TaskScheduler? taskScheduler)
             : this(filterProvider, new CoreBackgroundJobPerformer(activator, taskScheduler))
         {
         }
@@ -59,14 +62,11 @@ namespace Hangfire.Server
             [NotNull] IJobFilterProvider filterProvider, 
             [NotNull] IBackgroundJobPerformer innerPerformer)
         {
-            if (filterProvider == null) throw new ArgumentNullException(nameof(filterProvider));
-            if (innerPerformer == null) throw new ArgumentNullException(nameof(innerPerformer));
-
-            _filterProvider = filterProvider;
-            _innerPerformer = innerPerformer;
+            _filterProvider = filterProvider ?? throw new ArgumentNullException(nameof(filterProvider));
+            _innerPerformer = innerPerformer ?? throw new ArgumentNullException(nameof(innerPerformer));
         }
 
-        public object Perform(PerformContext context)
+        public object? Perform(PerformContext context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
 
@@ -106,12 +106,12 @@ namespace Hangfire.Server
             return null;
         }
 
-        private JobFilterInfo GetFilters(Job job)
+        private JobFilterInfo GetFilters(Job? job)
         {
             return new JobFilterInfo(_filterProvider.GetFilters(job));
         }
 
-        private object PerformJobWithFilters(PerformContext context, JobFilterInfo.FilterCollection<IServerFilter> filters)
+        private object? PerformJobWithFilters(PerformContext context, JobFilterInfo.FilterCollection<IServerFilter> filters)
         {
             var preContext = new PerformingContext(context);
             var enumerator = filters.GetEnumerator();
@@ -140,7 +140,7 @@ namespace Hangfire.Server
             PerformContext context,
             PerformingContext preContext)
         {
-            var filter = enumerator.Current!;
+            var filter = enumerator.Current;
 
             preContext.Profiler.InvokeMeasured(
                 new KeyValuePair<IServerFilter, PerformingContext>(filter, preContext),

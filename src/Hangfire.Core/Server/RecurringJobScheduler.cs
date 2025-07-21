@@ -25,6 +25,9 @@ using Hangfire.Logging;
 using Hangfire.Profiling;
 using Hangfire.Storage;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Server
 {
     /// <summary>
@@ -139,13 +142,9 @@ namespace Hangfire.Server
             [NotNull] ITimeZoneResolver timeZoneResolver,
             [NotNull] Func<DateTime> nowFactory)
         {
-            if (factory == null) throw new ArgumentNullException(nameof(factory));
-            if (nowFactory == null) throw new ArgumentNullException(nameof(nowFactory));
-            if (timeZoneResolver == null) throw new ArgumentNullException(nameof(timeZoneResolver));
-
-            _factory = factory;
-            _nowFactory = nowFactory;
-            _timeZoneResolver = timeZoneResolver;
+            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            _nowFactory = nowFactory ?? throw new ArgumentNullException(nameof(nowFactory));
+            _timeZoneResolver = timeZoneResolver ?? throw new ArgumentNullException(nameof(timeZoneResolver));
             _pollingDelay = pollingDelay;
             _profiler = new SlowLogProfiler(_logger);
         }
@@ -162,7 +161,7 @@ namespace Hangfire.Server
         /// Gets or sets a task scheduler that will be used when parallel scheduling
         /// is enabled via the <see cref="MaxDegreeOfParallelism"/> option.
         /// </summary>
-        public TaskScheduler TaskScheduler { get; set; }
+        public TaskScheduler? TaskScheduler { get; set; }
 
         /// <inheritdoc />
         public void Execute(BackgroundProcessContext context)
@@ -228,7 +227,7 @@ namespace Hangfire.Server
                                     CancellationToken = context.StoppingToken,
                                     TaskScheduler = TaskScheduler
                                 },
-                                (recurringJobId, state) =>
+                                (recurringJobId, _) =>
                                 {
                                     using (var dedicated = context.Storage.GetConnection())
                                     {
@@ -306,7 +305,7 @@ namespace Hangfire.Server
             // the recurring jobs set.
             using (var transaction = connection.CreateWriteTransaction())
             {
-                Exception exception = null;
+                Exception? exception = null;
                 
                 try
                 {
@@ -337,7 +336,7 @@ namespace Hangfire.Server
                             recurringJob,
                             execution);
 
-                        if (!String.IsNullOrEmpty(backgroundJob?.Id))
+                        if (backgroundJob != null && !String.IsNullOrEmpty(backgroundJob.Id))
                         {
                             backgroundJobs.Add(backgroundJob);
                         }
@@ -414,7 +413,7 @@ namespace Hangfire.Server
             }
         }
 
-        private T UseConnectionDistributedLock<T>(JobStorage storage, Func<IStorageConnection, T> action)
+        private T? UseConnectionDistributedLock<T>(JobStorage storage, Func<IStorageConnection, T> action)
         {
             var resource = "recurring-jobs:lock";
             try
@@ -448,13 +447,13 @@ namespace Hangfire.Server
 
             return _isBatchingAvailableCache.GetOrAdd(
                 connection.GetType(),
-                type =>
+                _ =>
                 {
                     if (connection is JobStorageConnection storageConnection)
                     {
                         try
                         {
-                            storageConnection.GetFirstByLowestScoreFromSet(null, 0, 0, 1);
+                            storageConnection.GetFirstByLowestScoreFromSet(null!, 0, 0, 1);
                         }
                         catch (ArgumentNullException ex) when (ex.ParamName == "key")
                         {
