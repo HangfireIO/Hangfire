@@ -25,13 +25,22 @@ namespace Hangfire.Storage
 {
     public class JobData
     {
-        [CanBeNull] public string? State { get; set; }
-        [CanBeNull] public Job? Job { get; set; }
-        [CanBeNull] public InvocationData? InvocationData { get; set; }
-        public DateTime CreatedAt { get; set; }
-        [CanBeNull] public IReadOnlyDictionary<string, string?>? ParametersSnapshot { get; set; }
+        [CanBeNull]
+        public string? State { get; set; }
 
-        [CanBeNull] public JobLoadException? LoadException { get; set; }
+        [CanBeNull]
+        public Job? Job { get; set; }
+
+        [NotNull]
+        public InvocationData InvocationData { get; set; } = null!;
+
+        public DateTime CreatedAt { get; set; }
+
+        [CanBeNull]
+        public IReadOnlyDictionary<string, string?>? ParametersSnapshot { get; set; }
+
+        [CanBeNull]
+        public JobLoadException? LoadException { get; set; }
 
         public void EnsureLoaded()
         {

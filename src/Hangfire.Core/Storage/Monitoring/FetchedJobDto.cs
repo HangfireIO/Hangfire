@@ -14,16 +14,28 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Hangfire.Annotations;
 using Hangfire.Common;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Storage.Monitoring
 {
     public class FetchedJobDto
     {
-        public Job Job { get; set; }
-        public JobLoadException LoadException { get; set; }
-        public InvocationData InvocationData { get; set; }
-        public string State { get; set; }
+        [CanBeNull]
+        public Job? Job { get; set; }
+
+        [CanBeNull]
+        public JobLoadException? LoadException { get; set; }
+
+        [CanBeNull]
+        public InvocationData? InvocationData { get; set; }
+
+        [CanBeNull]
+        public string? State { get; set; }
+
         public DateTime? FetchedAt { get; set; }
     }
 }

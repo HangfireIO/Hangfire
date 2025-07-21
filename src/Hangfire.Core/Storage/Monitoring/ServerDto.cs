@@ -15,15 +15,24 @@
 
 using System;
 using System.Collections.Generic;
+using Hangfire.Annotations;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Storage.Monitoring
 {
     public class ServerDto
     {
-        public string Name { get; set; }
+        [NotNull]
+        public string Name { get; set; } = null!;
+
         public int WorkersCount { get; set; }
         public DateTime StartedAt { get; set; }
-        public IList<string> Queues { get; set; }
+
+        [NotNull]
+        public IList<string> Queues { get; set; } = null!;
+
         public DateTime? Heartbeat { get; set; }
     }
 }

@@ -15,24 +15,33 @@
 
 using System;
 using System.Collections.Generic;
+using Hangfire.Annotations;
 using Hangfire.Common;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Storage.Monitoring
 {
     public class SucceededJobDto
     {
-        public SucceededJobDto()
-        {
-            InSucceededState = true;
-        }
+        [CanBeNull]
+        public Job? Job { get; set; }
 
-        public Job Job { get; set; }
-        public JobLoadException LoadException { get; set; }
-        public InvocationData InvocationData { get; set; }
-        public object Result { get; set; }
+        [CanBeNull]
+        public JobLoadException? LoadException { get; set; }
+
+        [CanBeNull]
+        public InvocationData? InvocationData { get; set; }
+
+        [CanBeNull]
+        public object? Result { get; set; }
+
         public long? TotalDuration { get; set; }
         public DateTime? SucceededAt { get; set; }
-        public bool InSucceededState { get; set; }
-        public IDictionary<string, string> StateData { get; set; }
+        public bool InSucceededState { get; set; } = true;
+
+        [CanBeNull]
+        public IDictionary<string, string>? StateData { get; set; }
     }
 }
