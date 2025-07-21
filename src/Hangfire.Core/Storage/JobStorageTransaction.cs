@@ -19,6 +19,9 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.States;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Storage
 {
     public abstract class JobStorageTransaction : IWriteOnlyTransaction
@@ -43,7 +46,7 @@ namespace Hangfire.Storage
         public abstract void InsertToList(string key, string value);
         public abstract void RemoveFromList(string key, string value);
         public abstract void TrimList(string key, int keepStartingFrom, int keepEndingAt);
-        public abstract void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs);
+        public abstract void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string?>> keyValuePairs);
         public abstract void RemoveHash(string key);
         public abstract void Commit();
 
@@ -97,13 +100,13 @@ namespace Hangfire.Storage
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Transaction.RemoveFromQueue(fetchedJob.GetType()));
         }
         
-        public virtual void SetJobParameter([NotNull] string jobId, [NotNull] string name, [CanBeNull] string value)
+        public virtual void SetJobParameter([NotNull] string jobId, [NotNull] string name, [CanBeNull] string? value)
         {
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Transaction.SetJobParameter);
         }
 
         [CanBeNull]
-        public virtual string CreateJob([NotNull] Job job, [NotNull] IDictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn)
+        public virtual string? CreateJob([NotNull] Job job, [NotNull] IDictionary<string, string?> parameters, DateTime createdAt, TimeSpan expireIn)
         {
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.Transaction.CreateJob);
         }

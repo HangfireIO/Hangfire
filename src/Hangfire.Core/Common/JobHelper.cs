@@ -99,9 +99,9 @@ namespace Hangfire.Common
             return DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
         }
 
-        public static DateTime? DeserializeNullableDateTime(string value)
+        public static DateTime? DeserializeNullableDateTime(string? value)
         {
-            if (String.IsNullOrEmpty(value))
+            if (value == null || String.IsNullOrEmpty(value))
             {
                 return null;
             }

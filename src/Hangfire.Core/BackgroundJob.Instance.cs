@@ -32,7 +32,7 @@ namespace Hangfire
         }
 
         /// <exclude />
-        public BackgroundJob([NotNull] string id, [CanBeNull] Job? job, DateTime createdAt, [CanBeNull] IReadOnlyDictionary<string, string>? parametersSnapshot)
+        public BackgroundJob([NotNull] string id, [CanBeNull] Job? job, DateTime createdAt, [CanBeNull] IReadOnlyDictionary<string, string?>? parametersSnapshot)
         {
             Id = id ?? throw new ArgumentNullException(nameof(id));
             Job = job;
@@ -53,6 +53,6 @@ namespace Hangfire
 
         /// <exclude />
         [CanBeNull]
-        public IReadOnlyDictionary<string, string>? ParametersSnapshot { get; }
+        public IReadOnlyDictionary<string, string?>? ParametersSnapshot { get; }
     }
 }

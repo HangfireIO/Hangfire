@@ -16,19 +16,21 @@
 using System.Collections.Generic;
 using Hangfire.Annotations;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
 // ReSharper disable NotNullMemberIsNotInitialized - Let's trust them!
+#nullable enable
 
 namespace Hangfire.Storage
 {
     public class StateData
     {
         [NotNull]
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
 
         [CanBeNull]
-        public string Reason { get; set; }
+        public string? Reason { get; set; }
 
         [NotNull]
-        public IDictionary<string, string> Data { get; set; } 
+        public IDictionary<string, string> Data { get; set; } = null!;
     }
 }

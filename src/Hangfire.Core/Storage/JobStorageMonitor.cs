@@ -19,13 +19,16 @@ using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Storage.Monitoring;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Storage
 {
     public abstract class JobStorageMonitor : IMonitoringApi
     {
         public abstract IList<QueueWithTopEnqueuedJobsDto> Queues();
         public abstract IList<ServerDto> Servers();
-        public abstract JobDetailsDto JobDetails(string jobId);
+        public abstract JobDetailsDto? JobDetails(string jobId);
         public abstract StatisticsDto GetStatistics();
         public abstract JobList<EnqueuedJobDto> EnqueuedJobs(string queue, int from, int perPage);
         public abstract JobList<FetchedJobDto> FetchedJobs(string queue, int from, int perPage);

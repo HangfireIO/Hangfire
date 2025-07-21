@@ -20,6 +20,9 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Storage
 {
     public interface IStorageConnection : IDisposable
@@ -28,25 +31,25 @@ namespace Hangfire.Storage
         [NotNull] IDisposable AcquireDistributedLock([NotNull] string resource, TimeSpan timeout);
 
         [CanBeNull]
-        string CreateExpiredJob(
+        string? CreateExpiredJob(
             [NotNull] Job job, 
-            [NotNull] IDictionary<string, string> parameters, 
+            [NotNull] IDictionary<string, string?> parameters, 
             DateTime createdAt,
             TimeSpan expireIn);
 
         [NotNull]
         IFetchedJob FetchNextJob([NotNull] string[] queues, CancellationToken cancellationToken);
 
-        void SetJobParameter([NotNull] string id, [NotNull] string name, [CanBeNull] string value);
+        void SetJobParameter([NotNull] string id, [NotNull] string name, [CanBeNull] string? value);
 
         [CanBeNull]
-        string GetJobParameter([NotNull] string id, [NotNull] string name);
+        string? GetJobParameter([NotNull] string id, [NotNull] string name);
 
         [CanBeNull]
-        JobData GetJobData([NotNull] string jobId);
+        JobData? GetJobData([NotNull] string jobId);
 
         [CanBeNull]
-        StateData GetStateData([NotNull] string jobId);
+        StateData? GetStateData([NotNull] string jobId);
 
         void AnnounceServer([NotNull] string serverId, [NotNull] ServerContext context);
         void RemoveServer([NotNull] string serverId);
@@ -59,13 +62,14 @@ namespace Hangfire.Storage
         HashSet<string> GetAllItemsFromSet([NotNull] string key);
 
         [CanBeNull]
-        string GetFirstByLowestScoreFromSet([NotNull] string key, double fromScore, double toScore);
+        string? GetFirstByLowestScoreFromSet([NotNull] string key, double fromScore, double toScore);
 
         // Hash operations
 
-        void SetRangeInHash([NotNull] string key, [NotNull] IEnumerable<KeyValuePair<string, string>> keyValuePairs);
+        // TODO: Replace IEnumerable with IReadOnlyDictionary to avoid possible key duplicates
+        void SetRangeInHash([NotNull] string key, [NotNull] IEnumerable<KeyValuePair<string, string?>> keyValuePairs);
 
         [CanBeNull]
-        Dictionary<string, string> GetAllEntriesFromHash([NotNull] string key);
+        Dictionary<string, string?>? GetAllEntriesFromHash([NotNull] string key);
     }
 }

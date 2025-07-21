@@ -68,7 +68,7 @@ namespace Hangfire.Client
 
             var parameters = context.Parameters.ToDictionary(
                 static x => x.Key,
-                static x => SerializationHelper.Serialize(x.Value, SerializationOption.User));
+                static string? (x) => SerializationHelper.Serialize(x.Value, SerializationOption.User));
 
             var createdAt = DateTime.UtcNow;
             var expireIn = TimeSpan.FromDays(30);
@@ -76,7 +76,7 @@ namespace Hangfire.Client
             return CreateBackgroundJobTwoSteps(context, parameters, createdAt, expireIn);
         }
 
-        private BackgroundJob? CreateBackgroundJobTwoSteps(CreateContext context, Dictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn)
+        private BackgroundJob? CreateBackgroundJobTwoSteps(CreateContext context, Dictionary<string, string?> parameters, DateTime createdAt, TimeSpan expireIn)
         {
             var attemptsLeft = Math.Max(RetryAttempts, 0);
 
@@ -96,7 +96,7 @@ namespace Hangfire.Client
                     ctx.ExpireIn),
                 new JobCreateContext { Context = context, Parameters = parameters, CreatedAt = createdAt, ExpireIn = expireIn });
 
-            if (String.IsNullOrEmpty(jobId))
+            if (jobId == null || String.IsNullOrEmpty(jobId))
             {
                 return null;
             }
@@ -199,7 +199,7 @@ namespace Hangfire.Client
         private readonly record struct JobCreateContext
         {
             public required CreateContext Context { get; init; }
-            public required Dictionary<string, string> Parameters { get; init; }
+            public required Dictionary<string, string?> Parameters { get; init; }
             public required DateTime CreatedAt { get; init; }
             public required TimeSpan ExpireIn { get; init; }
         }

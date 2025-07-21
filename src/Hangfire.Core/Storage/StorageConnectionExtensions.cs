@@ -18,6 +18,9 @@ using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Common;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Storage
 {
     public static class StorageConnectionExtensions
@@ -111,7 +114,7 @@ namespace Hangfire.Storage
 
                 try
                 {
-                    if (hash.TryGetValue("Job", out var payload) && !String.IsNullOrWhiteSpace(payload))
+                    if (hash.TryGetValue("Job", out var payload) && payload != null && !String.IsNullOrWhiteSpace(payload))
                     {
                         var invocationData = InvocationData.DeserializePayload(payload);
                         dto.Job = invocationData.DeserializeJob();
@@ -127,11 +130,11 @@ namespace Hangfire.Storage
                     dto.NextExecution = JobHelper.DeserializeNullableDateTime(nextExecution);
                 }
 
-                if (hash.TryGetValue("LastJobId", out var lastJobId) && !string.IsNullOrWhiteSpace(lastJobId))
+                if (hash.TryGetValue("LastJobId", out var lastJobId) && lastJobId != null && !string.IsNullOrWhiteSpace(lastJobId))
                 {
                     dto.LastJobId = lastJobId;
 
-                    var stateData = connection.GetStateData(dto.LastJobId);
+                    var stateData = connection.GetStateData(lastJobId);
                     if (stateData != null)
                     {
                         dto.LastJobState = stateData.Name;

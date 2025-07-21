@@ -18,6 +18,9 @@ using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.States;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Storage
 {
     public interface IWriteOnlyTransaction : IDisposable
@@ -48,7 +51,7 @@ namespace Hangfire.Storage
         void TrimList([NotNull] string key, int keepStartingFrom, int keepEndingAt);
 
         // Hash operations
-        void SetRangeInHash([NotNull] string key, [NotNull] IEnumerable<KeyValuePair<string, string>> keyValuePairs);
+        void SetRangeInHash([NotNull] string key, [NotNull] IEnumerable<KeyValuePair<string, string?>> keyValuePairs);
         void RemoveHash([NotNull] string key);
 
         void Commit();

@@ -14,25 +14,29 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Hangfire.Annotations;
 using Hangfire.Common;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Storage
 {
     public class RecurringJobDto
     {
-        public string Id { get; set; }
-        public string Cron { get; set; }
-        public string Queue { get; set; }
-        public Job Job { get; set; }
-        public JobLoadException LoadException { get; set; }
-        public DateTime? NextExecution { get; set; }
-        public string LastJobId { get; set; }
-        public string LastJobState { get; set; }
-        public DateTime? LastExecution { get; set; }
-        public DateTime? CreatedAt { get; set; }
+        [NotNull]   public string Id { get; set; } = null!;
+        [CanBeNull] public string? Cron { get; set; }
+        [CanBeNull] public string? Queue { get; set; }
+        [CanBeNull] public Job? Job { get; set; }
+        [CanBeNull] public JobLoadException? LoadException { get; set; }
+        [CanBeNull] public DateTime? NextExecution { get; set; }
+        [CanBeNull] public string? LastJobId { get; set; }
+        [CanBeNull] public string? LastJobState { get; set; }
+        [CanBeNull] public DateTime? LastExecution { get; set; }
+        [CanBeNull] public DateTime? CreatedAt { get; set; }
         public bool Removed { get; set; }
-        public string TimeZoneId { get; set; }
-        public string Error { get; set; }
+        [CanBeNull] public string? TimeZoneId { get; set; }
+        [CanBeNull] public string? Error { get; set; }
         public int RetryAttempt { get; set; }
     }
 }

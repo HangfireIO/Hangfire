@@ -20,6 +20,9 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Storage
 {
     public abstract class JobStorageConnection : IStorageConnection
@@ -34,12 +37,12 @@ namespace Hangfire.Storage
         public abstract IDisposable AcquireDistributedLock(string resource, TimeSpan timeout);
 
         // Background jobs
-        public abstract string CreateExpiredJob(Job job, IDictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn);
+        public abstract string? CreateExpiredJob(Job job, IDictionary<string, string?> parameters, DateTime createdAt, TimeSpan expireIn);
         public abstract IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken);
-        public abstract void SetJobParameter(string id, string name, string value);
-        public abstract string GetJobParameter(string id, string name);
-        public abstract JobData GetJobData(string jobId);
-        public abstract StateData GetStateData(string jobId);
+        public abstract void SetJobParameter(string id, string name, string? value);
+        public abstract string? GetJobParameter(string id, string name);
+        public abstract JobData? GetJobData(string jobId);
+        public abstract StateData? GetStateData(string jobId);
 
         // Servers
         public abstract void AnnounceServer(string serverId, ServerContext context);
@@ -49,7 +52,7 @@ namespace Hangfire.Storage
 
         // Sets
         public abstract HashSet<string> GetAllItemsFromSet(string key);
-        public abstract string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);
+        public abstract string? GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);
 
         [NotNull]
         public virtual List<string> GetFirstByLowestScoreFromSet([NotNull] string key, double fromScore, double toScore, int count)
@@ -84,11 +87,11 @@ namespace Hangfire.Storage
         }
 
         // Hashes
-        public abstract void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs);
-        public abstract Dictionary<string, string> GetAllEntriesFromHash(string key);
+        public abstract void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string?>> keyValuePairs);
+        public abstract Dictionary<string, string?>? GetAllEntriesFromHash(string key);
 
         [CanBeNull]
-        public virtual string GetValueFromHash([NotNull] string key, [NotNull] string name)
+        public virtual string? GetValueFromHash([NotNull] string key, [NotNull] string name)
         {
             throw JobStorageFeatures.GetNotSupportedException(JobStorageFeatures.ExtendedApi);
         }

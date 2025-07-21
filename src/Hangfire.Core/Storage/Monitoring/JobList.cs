@@ -14,16 +14,20 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using Hangfire.Annotations;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Storage.Monitoring
 {
-    public class JobList<TDto> : List<KeyValuePair<string, TDto>>
+    public class JobList<TDto> : List<KeyValuePair<string, TDto?>>
     {
         public JobList()
         {
         }
 
-        public JobList(IEnumerable<KeyValuePair<string, TDto>> source)
+        public JobList([NotNull] IEnumerable<KeyValuePair<string, TDto?>> source)
             : base(source)
         {
         }
