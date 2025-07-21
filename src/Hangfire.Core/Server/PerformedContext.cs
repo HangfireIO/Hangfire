@@ -16,6 +16,9 @@
 using System;
 using Hangfire.Annotations;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Server
 {
     /// <summary>
@@ -26,9 +29,9 @@ namespace Hangfire.Server
     {
         public PerformedContext(
             [NotNull] PerformContext context,
-            [CanBeNull]object result,
+            [CanBeNull] object? result,
             bool canceled,
-            [CanBeNull] Exception exception)
+            [CanBeNull] Exception? exception)
             : base(context)
         {
             Result = result;
@@ -40,7 +43,7 @@ namespace Hangfire.Server
         /// Gets a value that was returned by the job.
         /// </summary>
         [CanBeNull]
-        public object Result { get; }
+        public object? Result { get; }
 
         /// <summary>
         /// Gets a value that indicates that this <see cref="PerformedContext"/>
@@ -52,7 +55,7 @@ namespace Hangfire.Server
         /// Gets an exception that occurred during the performance of the job.
         /// </summary>
         [CanBeNull]
-        public Exception Exception { get; }
+        public Exception? Exception { get; }
 
         /// <summary>
         /// Gets or sets a value that indicates that this <see cref="PerformedContext"/>

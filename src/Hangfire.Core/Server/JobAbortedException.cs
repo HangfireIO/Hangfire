@@ -16,6 +16,8 @@
 using System;
 using System.Runtime.Serialization;
 
+#nullable enable
+
 namespace Hangfire.Server
 {
 #if !NETSTANDARD1_3

@@ -18,6 +18,9 @@ using System.Collections.Generic;
 using System.Threading;
 using Hangfire.Annotations;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Server
 {
     public class BackgroundServerContext
@@ -38,9 +41,15 @@ namespace Hangfire.Server
             ShutdownToken = shutdownToken;
         }
 
+        [NotNull]
         public string ServerId { get; }
+
+        [NotNull]
         public JobStorage Storage { get; }
+
+        [NotNull]
         public IDictionary<string, object> Properties { get; }
+
         public CancellationToken StoppingToken { get; }
         public CancellationToken StoppedToken { get; }
         public CancellationToken ShutdownToken { get; }

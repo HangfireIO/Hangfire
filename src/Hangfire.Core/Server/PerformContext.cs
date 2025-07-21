@@ -20,6 +20,9 @@ using Hangfire.Common;
 using Hangfire.Profiling;
 using Hangfire.Storage;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Server
 {
     /// <summary>
@@ -44,7 +47,7 @@ namespace Hangfire.Server
         }
 
         public PerformContext(
-            [CanBeNull] JobStorage storage,
+            [CanBeNull] JobStorage? storage,
             [NotNull] IStorageConnection connection, 
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IJobCancellationToken cancellationToken)
@@ -53,13 +56,13 @@ namespace Hangfire.Server
         }
 
         internal PerformContext(
-            [CanBeNull] JobStorage storage,
+            [CanBeNull] JobStorage? storage,
             [NotNull] IStorageConnection connection, 
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IJobCancellationToken cancellationToken,
             [NotNull] IProfiler profiler,
-            [CanBeNull] string serverId,
-            [CanBeNull] IDictionary<string, object> items)
+            [CanBeNull] string? serverId,
+            [CanBeNull] IDictionary<string, object>? items)
         {
             Storage = storage;
             Connection = connection ?? throw new ArgumentNullException(nameof(connection));
@@ -72,7 +75,7 @@ namespace Hangfire.Server
         }
 
         [CanBeNull]
-        public JobStorage Storage { get; }
+        public JobStorage? Storage { get; }
 
         /// <summary>
         /// Gets an instance of the key-value storage. You can use it
@@ -89,7 +92,8 @@ namespace Hangfire.Server
         public string JobId => BackgroundJob.Id;
 
         [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
-        public Job Job => BackgroundJob.Job;
+        [CanBeNull]
+        public Job? Job => BackgroundJob.Job;
 
         [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
         public DateTime CreatedAt => BackgroundJob.CreatedAt;
@@ -102,29 +106,29 @@ namespace Hangfire.Server
         
         [NotNull]
         internal IProfiler Profiler { get; }
-        
-        [CanBeNull]
-        public IBackgroundJobPerformer Performer { get; internal set; }
 
         [CanBeNull]
-        public string ServerId { get; }
+        public IBackgroundJobPerformer? Performer { get; internal set; }
 
-        public void SetJobParameter([NotNull] string name, object value)
+        [CanBeNull]
+        public string? ServerId { get; }
+
+        public void SetJobParameter([NotNull] string name, object? value)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
             Connection.SetJobParameter(BackgroundJob.Id, name, SerializationHelper.Serialize(value, SerializationOption.User));
         }
 
-        public T GetJobParameter<T>([NotNull] string name) => GetJobParameter<T>(name, allowStale: false);
+        public T? GetJobParameter<T>([NotNull] string name) => GetJobParameter<T>(name, allowStale: false);
 
-        public T GetJobParameter<T>([NotNull] string name, bool allowStale)
+        public T? GetJobParameter<T>([NotNull] string name, bool allowStale)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
             try
             {
-                string value;
+                string? value;
 
                 if (allowStale && BackgroundJob.ParametersSnapshot != null)
                 {

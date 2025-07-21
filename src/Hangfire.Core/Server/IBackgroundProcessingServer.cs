@@ -17,6 +17,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
+#nullable enable
+
 namespace Hangfire.Server
 {
     public interface IBackgroundProcessingServer : IDisposable

@@ -20,6 +20,8 @@ using System.Reflection;
 using System.Threading;
 using Hangfire.Logging;
 
+#nullable enable
+
 namespace Hangfire.Server
 {
     internal static class AspNetShutdownDetector
@@ -33,10 +35,10 @@ namespace Hangfire.Server
         private static int _isInitialized;
         private static bool _isSucceeded;
         // ReSharper disable once NotAccessedField.Local
-        private static Thread _checkForShutdownThread;
-        private static Func<string> _shutdownReasonFunc;
-        private static Func<bool> _checkConfigChangedFunc;
-        private static Func<bool> _disposingHttpRuntime;
+        private static Thread? _checkForShutdownThread;
+        private static Func<string?>? _shutdownReasonFunc;
+        private static Func<bool>? _checkConfigChangedFunc;
+        private static Func<bool>? _disposingHttpRuntime;
 #endif
 
         public static bool IsSucceeded =>
@@ -127,7 +129,7 @@ namespace Hangfire.Server
             }
         }
 
-        private static void CheckForAppDomainShutdown(object state)
+        private static void CheckForAppDomainShutdown(object? state)
         {
             try
             {
@@ -200,7 +202,7 @@ namespace Hangfire.Server
             }
         }
 
-        private static void StopListening(object sender, EventArgs e)
+        private static void StopListening(object? sender, EventArgs e)
         {
             Cancel("HostingEnvironment.StopListening");
         }
@@ -220,7 +222,7 @@ namespace Hangfire.Server
                 GetLogger().Debug("HostingEnvironment.ShutdownReason shutdown trigger initialized successfully.");
                 success = true;
 
-                string ShutdownReasonFunc()
+                string? ShutdownReasonFunc()
                 {
                     try
                     {

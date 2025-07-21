@@ -20,6 +20,9 @@ using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Processing;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Server
 {
     internal sealed class BackgroundProcessDispatcherBuilder : IBackgroundProcessDispatcherBuilder
@@ -31,11 +34,8 @@ namespace Hangfire.Server
             [NotNull] IBackgroundProcess process,
             [NotNull] Func<ThreadStart, IEnumerable<Thread>> threadFactory)
         {
-            if (process == null) throw new ArgumentNullException(nameof(process));
-            if (threadFactory == null) throw new ArgumentNullException(nameof(threadFactory));
-
-            _process = process;
-            _threadFactory = threadFactory;
+            _process = process ?? throw new ArgumentNullException(nameof(process));
+            _threadFactory = threadFactory ?? throw new ArgumentNullException(nameof(threadFactory));
         }
 
         public IBackgroundDispatcher Create(BackgroundServerContext context, BackgroundProcessingServerOptions options)
@@ -63,9 +63,9 @@ namespace Hangfire.Server
             return _process.GetType().Name;
         }
 
-        private static void ExecuteProcess(Guid executionId, object state)
+        private static void ExecuteProcess(Guid executionId, object? state)
         {
-            var tuple = (Tuple<IBackgroundProcess, BackgroundServerContext, BackgroundExecution>)state;
+            var tuple = (Tuple<IBackgroundProcess, BackgroundServerContext, BackgroundExecution>)state!;
             var serverContext = tuple.Item2;
 
             var context = new BackgroundProcessContext(

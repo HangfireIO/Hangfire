@@ -13,6 +13,11 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using Hangfire.Annotations;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Server
 {
     /// <summary>
@@ -24,6 +29,6 @@ namespace Hangfire.Server
         /// Called when an exception occurred during the performance of the job.
         /// </summary>
         /// <param name="filterContext">The filter context.</param>
-        void OnServerException(ServerExceptionContext filterContext);
+        void OnServerException([NotNull] ServerExceptionContext filterContext);
     }
 }

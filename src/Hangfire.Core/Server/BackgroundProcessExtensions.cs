@@ -21,6 +21,9 @@ using Hangfire.Annotations;
 using Hangfire.Logging;
 using Hangfire.Processing;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Server
 {
     public static class BackgroundProcessExtensions
@@ -41,7 +44,7 @@ namespace Hangfire.Server
         public static IBackgroundProcessDispatcherBuilder UseBackgroundPool(
             [NotNull] this IBackgroundProcess process,
             int threadCount,
-            [CanBeNull] Action<Thread> threadConfig)
+            [CanBeNull] Action<Thread>? threadConfig)
         {
             if (process == null) throw new ArgumentNullException(nameof(process));
             if (threadCount <= 0) throw new ArgumentOutOfRangeException(nameof(threadCount));
@@ -133,9 +136,9 @@ namespace Hangfire.Server
 
         internal static IEnumerable<Thread> DefaultThreadFactory(
             int threadCount,
-            [NotNull] string threadName,
-            [NotNull] ThreadStart threadStart,
-            [CanBeNull] Action<Thread> threadConfig = null)
+            string threadName,
+            ThreadStart threadStart,
+            Action<Thread>? threadConfig = null)
         {
             if (threadName == null) throw new ArgumentNullException(nameof(threadName));
             if (threadStart == null) throw new ArgumentNullException(nameof(threadStart));

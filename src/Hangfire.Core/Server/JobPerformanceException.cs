@@ -15,6 +15,10 @@
 
 using System;
 using System.Runtime.Serialization;
+using Hangfire.Annotations;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire.Server
 {
@@ -23,12 +27,12 @@ namespace Hangfire.Server
 #endif
     public class JobPerformanceException : Exception
     {
-        public JobPerformanceException(string message, Exception innerException)
+        public JobPerformanceException([CanBeNull] string? message, [CanBeNull] Exception? innerException)
             : this(message, innerException, null)
         {
         }
     
-        public JobPerformanceException(string message, Exception innerException, string jobId)
+        public JobPerformanceException([CanBeNull] string? message, [CanBeNull] Exception? innerException, [CanBeNull] string? jobId)
             : base(message, innerException)
         {
             JobId = jobId;
@@ -44,12 +48,14 @@ namespace Hangfire.Server
         protected JobPerformanceException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
+            JobId = info.GetString(nameof(JobId));
         }
 #endif
 
         /// <summary>
         /// The Background Job Id of the Job instance this exception has been raised for
         /// </summary>
-        public string JobId { get; private set; }
+        [CanBeNull]
+        public string? JobId { get; private set; }
     }
 }

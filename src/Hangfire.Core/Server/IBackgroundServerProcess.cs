@@ -17,6 +17,8 @@ using System;
 using System.Threading;
 using Hangfire.Processing;
 
+#nullable enable
+
 namespace Hangfire.Server
 {
     internal interface IBackgroundServerProcess

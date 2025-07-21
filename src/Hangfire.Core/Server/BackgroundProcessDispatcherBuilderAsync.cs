@@ -19,6 +19,9 @@ using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Processing;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Server
 {
     internal sealed class BackgroundProcessDispatcherBuilderAsync : IBackgroundProcessDispatcherBuilder
@@ -71,9 +74,9 @@ namespace Hangfire.Server
             return _process.GetType().Name;
         }
 
-        private static async Task ExecuteProcess(Guid executionId, object state)
+        private static async Task ExecuteProcess(Guid executionId, object? state)
         {
-            var tuple = (Tuple<IBackgroundProcessAsync, BackgroundServerContext, BackgroundExecution>)state;
+            var tuple = (Tuple<IBackgroundProcessAsync, BackgroundServerContext, BackgroundExecution>)state!;
             var serverContext = tuple.Item2;
 
             var context = new BackgroundProcessContext(

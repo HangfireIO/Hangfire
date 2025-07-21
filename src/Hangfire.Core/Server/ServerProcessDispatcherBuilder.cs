@@ -19,7 +19,9 @@ using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Processing;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
 #pragma warning disable 618
+#nullable enable
 
 namespace Hangfire.Server
 {
@@ -32,10 +34,8 @@ namespace Hangfire.Server
             [NotNull] IServerComponent component,
             [NotNull] Func<ThreadStart, IEnumerable<Thread>> threadFactory)
         {
-            if (component == null) throw new ArgumentNullException(nameof(component));
-            if (threadFactory == null) throw new ArgumentNullException(nameof(threadFactory));
-            _component = component;
-            _threadFactory = threadFactory;
+            _component = component ?? throw new ArgumentNullException(nameof(component));
+            _threadFactory = threadFactory ?? throw new ArgumentNullException(nameof(threadFactory));
         }
 
         public IBackgroundDispatcher Create(BackgroundServerContext context, BackgroundProcessingServerOptions options)
@@ -59,9 +59,9 @@ namespace Hangfire.Server
             return _component.GetType().Name;
         }
 
-        private static void ExecuteComponent(Guid executionId, object state)
+        private static void ExecuteComponent(Guid executionId, object? state)
         {
-            var tuple = (Tuple<IServerComponent, BackgroundServerContext>)state;
+            var tuple = (Tuple<IServerComponent, BackgroundServerContext>)state!;
             tuple.Item1.Execute(tuple.Item2.StoppingToken);
         }
     }
