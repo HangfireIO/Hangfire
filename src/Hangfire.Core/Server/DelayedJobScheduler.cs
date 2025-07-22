@@ -24,6 +24,9 @@ using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Server
 {
     /// <summary>
@@ -113,9 +116,7 @@ namespace Hangfire.Server
         /// <exception cref="ArgumentNullException"><paramref name="stateChanger"/> is null.</exception>
         public DelayedJobScheduler(TimeSpan pollingDelay, [NotNull] IBackgroundJobStateChanger stateChanger)
         {
-            if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
-
-            _stateChanger = stateChanger;
+            _stateChanger = stateChanger ?? throw new ArgumentNullException(nameof(stateChanger));
             _pollingDelay = pollingDelay;
             _profiler = new SlowLogProfiler(_logger);
         }
@@ -132,7 +133,7 @@ namespace Hangfire.Server
         /// Gets or sets a task scheduler that will be used when parallel scheduling
         /// is enabled via the <see cref="MaxDegreeOfParallelism"/> option.
         /// </summary>
-        public TaskScheduler TaskScheduler { get; set; }
+        public TaskScheduler? TaskScheduler { get; set; }
 
         internal Func<int, TimeSpan> RetryDelayFunc { get; set; } = attempt => TimeSpan.FromSeconds(attempt);
 
@@ -288,7 +289,7 @@ namespace Hangfire.Server
 
         private void EnqueueBackgroundJob(BackgroundProcessContext context, IStorageConnection connection, string jobId)
         {
-            Exception exception = null;
+            Exception? exception = null;
 
             // At least one retry attempt should always be performed.
             var maxRetryAttempts = MaxStateChangeAttempts > 0 ? MaxStateChangeAttempts : 1;
@@ -358,7 +359,7 @@ namespace Hangfire.Server
                 context.Storage,
                 connection,
                 jobId,
-                new FailedState(exception, context.ServerId)
+                new FailedState(exception!, context.ServerId)
                 {
                     Reason = $"Failed to change state to the '{EnqueuedState.StateName}' one due to an exception after {MaxStateChangeAttempts} retry attempts"
                 },
@@ -385,7 +386,7 @@ namespace Hangfire.Server
                     {
                         try
                         {
-                            storageConnection.GetFirstByLowestScoreFromSet(null, 0, 0, 1);
+                            storageConnection.GetFirstByLowestScoreFromSet(null!, 0, 0, 1);
                         }
                         catch (ArgumentNullException ex) when (ex.ParamName == "key")
                         {
@@ -401,9 +402,9 @@ namespace Hangfire.Server
                 });
         }
 
-        private T UseConnectionDistributedLock<T>(JobStorage storage, Func<IStorageConnection, T> action)
+        private T? UseConnectionDistributedLock<T>(JobStorage storage, Func<IStorageConnection, T> action)
         {
-            var resource = "locks:schedulepoller";
+            const string resource = "locks:schedulepoller";
             try
             {
                 using (var connection = storage.GetConnection())

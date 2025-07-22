@@ -23,6 +23,9 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Processing;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Server
 {
     internal sealed class CoreBackgroundJobPerformer : IBackgroundJobPerformer
@@ -36,19 +39,19 @@ namespace Hangfire.Server
             };
 
         private readonly JobActivator _activator;
-        private readonly TaskScheduler _taskScheduler;
+        private readonly TaskScheduler? _taskScheduler;
 
-        public CoreBackgroundJobPerformer([NotNull] JobActivator activator, [CanBeNull] TaskScheduler taskScheduler)
+        public CoreBackgroundJobPerformer([NotNull] JobActivator activator, [CanBeNull] TaskScheduler? taskScheduler)
         {
             _activator = activator ?? throw new ArgumentNullException(nameof(activator));
             _taskScheduler = taskScheduler;
         }
 
-        public object Perform(PerformContext context)
+        public object? Perform(PerformContext context)
         {
             using (var scope = _activator.BeginScope(context))
             {
-                object instance = null;
+                object? instance = null;
 
                 if (context.BackgroundJob.Job == null)
                 {
@@ -73,7 +76,7 @@ namespace Hangfire.Server
             }
         }
 
-        internal static void HandleJobPerformanceException(Exception exception, IJobCancellationToken cancellationToken, [CanBeNull] BackgroundJob job)
+        internal static void HandleJobPerformanceException(Exception exception, IJobCancellationToken cancellationToken, BackgroundJob? job)
         {
             if (exception is JobAbortedException)
             {
@@ -107,7 +110,7 @@ namespace Hangfire.Server
                 exception, job?.Id);
         }
 
-        private object InvokeMethod(PerformContext context, object instance, object[] arguments)
+        private object? InvokeMethod(PerformContext context, object? instance, object?[] arguments)
         {
             if (context.BackgroundJob.Job == null) return null;
 
@@ -121,7 +124,7 @@ namespace Hangfire.Server
                 {
                     if (_taskScheduler != null)
                     {
-                        return InvokeOnTaskScheduler(context, method, getTaskFunc);
+                        return InvokeOnTaskScheduler(method, getTaskFunc);
                     }
 
                     return InvokeOnTaskPump(context, method, getTaskFunc);
@@ -136,12 +139,12 @@ namespace Hangfire.Server
             }
             catch (AggregateException ex)
             {
-                HandleJobPerformanceException(ex.InnerException, context.CancellationToken, context.BackgroundJob);
+                HandleJobPerformanceException(ex.InnerException!, context.CancellationToken, context.BackgroundJob);
                 throw;
             }
             catch (TargetInvocationException ex)
             {
-                HandleJobPerformanceException(ex.InnerException, context.CancellationToken, context.BackgroundJob);
+                HandleJobPerformanceException(ex.InnerException!, context.CancellationToken, context.BackgroundJob);
                 throw;
             }
             catch (Exception ex) when (ex.IsCatchableExceptionType())
@@ -151,14 +154,14 @@ namespace Hangfire.Server
             }
         }
 
-        private object InvokeOnTaskScheduler(PerformContext context, BackgroundJobMethod method, Func<object, Task> getTaskFunc)
+        private object? InvokeOnTaskScheduler(BackgroundJobMethod method, Func<object, Task> getTaskFunc)
         {
             var scheduledTask = Task.Factory.StartNew(
                 InvokeOnTaskSchedulerInternal,
                 method,
                 CancellationToken.None,
                 TaskCreationOptions.None,
-                _taskScheduler);
+                _taskScheduler!);
 
             var result = scheduledTask.GetAwaiter().GetResult();
             if (result == null) return null;
@@ -166,15 +169,15 @@ namespace Hangfire.Server
             return getTaskFunc(result).GetTaskLikeResult(result, method.ReturnType);
         }
 
-        private static object InvokeOnTaskSchedulerInternal(object state)
+        private static object? InvokeOnTaskSchedulerInternal(object? state)
         {
             // ExecutionContext is captured automatically when calling the Task.Factory.StartNew
             // method, so we don't need to capture it manually. Please see the comment for
             // synchronous method execution below for details.
-            return ((BackgroundJobMethod)state).Invoke();
+            return ((BackgroundJobMethod)state!).Invoke();
         }
 
-        private static object InvokeOnTaskPump(PerformContext context, BackgroundJobMethod method, Func<object, Task> getTaskFunc)
+        private static object? InvokeOnTaskPump(PerformContext context, BackgroundJobMethod method, Func<object, Task> getTaskFunc)
         {
             // Using SynchronizationContext here is the best default option, where workers
             // are still running on synchronous dispatchers, and where a single job performer
@@ -217,7 +220,7 @@ namespace Hangfire.Server
             }
         }
 
-        private static object InvokeSynchronously(object state)
+        private static object? InvokeSynchronously(object state)
         {
             var method = (BackgroundJobMethod) state;
             var executionContext = ExecutionContext.Capture();
@@ -249,20 +252,20 @@ namespace Hangfire.Server
             return method.Invoke();
         }
 
-        private static void InvokeSynchronouslyInternal(object state)
+        private static void InvokeSynchronouslyInternal(object? state)
         {
-            ((BackgroundJobMethod)state).Invoke();
+            ((BackgroundJobMethod)state!).Invoke();
         }
 
-        private static object[] SubstituteArguments(PerformContext context)
+        private static object?[] SubstituteArguments(PerformContext context)
         {
             if (context.BackgroundJob.Job == null)
             {
-                return null;
+                throw new InvalidOperationException("Can't handle arguments of a background job with a null job.");
             }
 
             var parameters = context.BackgroundJob.Job.Method.GetParameters();
-            var result = new object[context.BackgroundJob.Job.Args.Count];
+            var result = new object?[context.BackgroundJob.Job.Args.Count];
 
             for (var i = 0; i < parameters.Length; i++)
             {
@@ -279,12 +282,12 @@ namespace Hangfire.Server
             return result;
         }
 
-        private sealed class BackgroundJobMethod(MethodInfo methodInfo, object instance, object[] parameters)
+        private sealed class BackgroundJobMethod(MethodInfo methodInfo, object? instance, object?[] parameters)
         {
             public Type ReturnType => methodInfo.ReturnType;
-            public object Result { get; private set; }
+            public object? Result { get; private set; }
 
-            public object Invoke()
+            public object? Invoke()
             {
                 Result = methodInfo.Invoke(instance, parameters);
                 return Result;

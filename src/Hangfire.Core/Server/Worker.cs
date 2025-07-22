@@ -26,6 +26,9 @@ using Hangfire.Profiling;
 using Hangfire.States;
 using Hangfire.Storage;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire.Server
 {
     /// <summary>
@@ -84,13 +87,9 @@ namespace Hangfire.Server
             TimeSpan jobInitializationTimeout,
             int maxStateChangeAttempts)
         {
-            if (queues == null) throw new ArgumentNullException(nameof(queues));
-            if (performer == null) throw new ArgumentNullException(nameof(performer));
-            if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
-            
-            _queues = queues;
-            _performer = performer;
-            _stateChanger = stateChanger;
+            _queues = queues ?? throw new ArgumentNullException(nameof(queues));
+            _performer = performer ?? throw new ArgumentNullException(nameof(performer));
+            _stateChanger = stateChanger ?? throw new ArgumentNullException(nameof(stateChanger));
 
             _jobInitializationWaitTimeout = jobInitializationTimeout;
             _maxStateChangeAttempts = maxStateChangeAttempts;
@@ -110,7 +109,7 @@ namespace Hangfire.Server
 
                 try
                 {
-                    BackgroundJob backgroundJob = null;
+                    BackgroundJob? backgroundJob;
 
                     using (var timeoutCts = new CancellationTokenSource(_jobInitializationWaitTimeout))
                     using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
@@ -195,19 +194,19 @@ namespace Hangfire.Server
             }
         }
 
-        private IState TryChangeState(
+        private IState? TryChangeState(
             BackgroundProcessContext context, 
             IStorageConnection connection, 
             string jobId,
             IState state,
-            IReadOnlyDictionary<string, object> customData,
+            IReadOnlyDictionary<string, object>? customData,
             string[] expectedStates,
-            IFetchedJob completeJob,
-            out BackgroundJob backgroundJob,
+            IFetchedJob? completeJob,
+            out BackgroundJob? backgroundJob,
             CancellationToken initializeToken,
             CancellationToken abortToken)
         {
-            Exception exception = null;
+            Exception? exception = null;
 
             abortToken.ThrowIfCancellationRequested();
 
@@ -258,7 +257,7 @@ namespace Hangfire.Server
                 connection,
                 null,
                 jobId,
-                new FailedState(exception, context.ServerId) { Reason = $"Failed to change state to a '{state.Name}' one due to an exception after {_maxStateChangeAttempts} retry attempts" },
+                new FailedState(exception!, context.ServerId) { Reason = $"Failed to change state to a '{state.Name}' one due to an exception after {_maxStateChangeAttempts} retry attempts" },
                 expectedStates,
                 disableFilters: true,
                 completeJob,
@@ -283,12 +282,12 @@ namespace Hangfire.Server
             }
         }
 
-        private IState PerformJob(
+        private IState? PerformJob(
             BackgroundProcessContext context,
             IStorageConnection connection,
             string jobId,
-            BackgroundJob backgroundJob,
-            out IReadOnlyDictionary<string, object> customData)
+            BackgroundJob? backgroundJob,
+            out IReadOnlyDictionary<string, object>? customData)
         {
             customData = null;
 
@@ -335,7 +334,7 @@ namespace Hangfire.Server
             }
             catch (JobPerformanceException ex)
             {
-                return new FailedState(ex.InnerException, context.ServerId)
+                return new FailedState(ex.InnerException!, context.ServerId)
                 {
                     Reason = ex.Message
                 };

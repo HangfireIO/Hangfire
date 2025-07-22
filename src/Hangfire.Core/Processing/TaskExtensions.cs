@@ -97,7 +97,7 @@ namespace Hangfire.Processing
             return await tcs.Task.ConfigureAwait(false);
         }
 
-        public static bool IsTaskLike(this Type type, [MaybeNullWhen(returnValue: false)] out Func<object, Task?> getTaskFunc)
+        public static bool IsTaskLike(this Type type, [MaybeNullWhen(returnValue: false)] out Func<object, Task> getTaskFunc)
         {
             var typeInfo = type.GetTypeInfo();
 
@@ -126,7 +126,7 @@ namespace Hangfire.Processing
                     if (asTask != null && asTask.IsPublic && !asTask.IsStatic &&
                         typeof(Task).GetTypeInfo().IsAssignableFrom(asTask.ReturnType.GetTypeInfo()))
                     {
-                        getTaskFunc = obj => (Task?) asTask.Invoke(obj, null);
+                        getTaskFunc = obj => (Task) asTask.Invoke(obj, null)!;
                         return true;
                     }
                 }
