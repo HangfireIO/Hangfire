@@ -25,6 +25,9 @@ using Hangfire.Logging;
 using Hangfire.Logging.LogProviders;
 using Newtonsoft.Json;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -165,6 +168,7 @@ namespace Hangfire
         public static IGlobalConfiguration<TFilter> UseFilter<TFilter>(
             [NotNull] this IGlobalConfiguration configuration, 
             [NotNull] TFilter filter)
+            where TFilter : notnull
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (filter == null) throw new ArgumentNullException(nameof(filter));
@@ -227,7 +231,7 @@ namespace Hangfire
 
         public static IGlobalConfiguration UseTypeResolver(
             [NotNull] this IGlobalConfiguration configuration,
-            [CanBeNull] Func<string, Type> typeResolver)
+            [CanBeNull] Func<string, Type>? typeResolver)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
@@ -237,7 +241,7 @@ namespace Hangfire
 
         public static IGlobalConfiguration UseTypeSerializer(
             [NotNull] this IGlobalConfiguration configuration,
-            [CanBeNull] Func<Type, string> typeSerializer)
+            [CanBeNull] Func<Type, string>? typeSerializer)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
@@ -280,7 +284,7 @@ namespace Hangfire
         /// </summary>
         public static IGlobalConfiguration UseSerializerSettings(
             [NotNull] this IGlobalConfiguration configuration,
-            [CanBeNull] JsonSerializerSettings settings)
+            [CanBeNull] JsonSerializerSettings? settings)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
@@ -296,7 +300,7 @@ namespace Hangfire
 
         public static IGlobalConfiguration UseRecommendedSerializerSettings(
             [NotNull] this IGlobalConfiguration configuration,
-            [CanBeNull] Action<JsonSerializerSettings> settingsConfiguration)
+            [CanBeNull] Action<JsonSerializerSettings>? settingsConfiguration)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
@@ -338,7 +342,7 @@ namespace Hangfire
 
         public static IGlobalConfiguration UseDefaultCulture(
             [NotNull] this IGlobalConfiguration configuration,
-            [CanBeNull] CultureInfo culture)
+            [CanBeNull] CultureInfo? culture)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             return configuration.UseFilter(new CaptureCultureAttribute(culture?.Name));
@@ -346,7 +350,7 @@ namespace Hangfire
 
         public static IGlobalConfiguration UseDefaultCulture(
             [NotNull] this IGlobalConfiguration configuration,
-            [CanBeNull] CultureInfo culture,
+            [CanBeNull] CultureInfo? culture,
             bool captureDefault)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
@@ -355,8 +359,8 @@ namespace Hangfire
 
         public static IGlobalConfiguration UseDefaultCulture(
             [NotNull] this IGlobalConfiguration configuration,
-            [CanBeNull] CultureInfo culture,
-            [CanBeNull] CultureInfo uiCulture)
+            [CanBeNull] CultureInfo? culture,
+            [CanBeNull] CultureInfo? uiCulture)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             return configuration.UseFilter(new CaptureCultureAttribute(culture?.Name, uiCulture?.Name));
@@ -364,8 +368,8 @@ namespace Hangfire
 
         public static IGlobalConfiguration UseDefaultCulture(
             [NotNull] this IGlobalConfiguration configuration,
-            [CanBeNull] CultureInfo culture,
-            [CanBeNull] CultureInfo uiCulture,
+            [CanBeNull] CultureInfo? culture,
+            [CanBeNull] CultureInfo? uiCulture,
             bool captureDefault)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
@@ -415,6 +419,7 @@ namespace Hangfire
         public static IGlobalConfiguration<T> Use<T>(
             [NotNull] this IGlobalConfiguration configuration, T entry,
             [NotNull] Action<T> entryAction)
+            where T : notnull
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
@@ -423,14 +428,9 @@ namespace Hangfire
             return new ConfigurationEntry<T>(entry);
         }
 
-        private sealed class ConfigurationEntry<T> : IGlobalConfiguration<T>
+        private sealed class ConfigurationEntry<T>(T entry) : IGlobalConfiguration<T>
         {
-            public ConfigurationEntry(T entry)
-            {
-                Entry = entry;
-            }
-
-            public T Entry { get; }
+            public T Entry { get; } = entry;
         }
     }
 }

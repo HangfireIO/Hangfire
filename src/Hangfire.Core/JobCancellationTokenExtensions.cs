@@ -13,13 +13,17 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using Hangfire.Annotations;
 using Hangfire.Server;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire
 {
     internal static class JobCancellationTokenExtensions
     {
-        public static bool IsAborted(this IJobCancellationToken jobCancellationToken)
+        public static bool IsAborted([CanBeNull] this IJobCancellationToken? jobCancellationToken)
         {
             if (jobCancellationToken is ServerJobCancellationToken serverJobCancellationToken)
             {

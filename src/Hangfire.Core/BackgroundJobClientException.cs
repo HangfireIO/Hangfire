@@ -15,9 +15,12 @@
 
 using System;
 using System.Runtime.Serialization;
+using Hangfire.Annotations;
 using Hangfire.Client;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
 #pragma warning disable 618 // Obsolete member
+#nullable enable
 
 namespace Hangfire
 {
@@ -38,7 +41,7 @@ namespace Hangfire
         /// </summary>
         /// <param name="message">The error message that explains the reason for the exception.</param>
         /// <param name="inner">The exception that is the cause of this exception, not null.</param>
-        public BackgroundJobClientException(string message, Exception inner) : base(message, inner)
+        public BackgroundJobClientException([CanBeNull] string? message, [CanBeNull] Exception? inner) : base(message, inner)
         {
         }
 

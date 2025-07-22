@@ -17,11 +17,15 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
 using Newtonsoft.Json;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire
 {
@@ -96,12 +100,12 @@ namespace Hangfire
         
         private readonly object _lockObject = new object();
         private int _attempts;
-        private int[]  _delaysInSeconds;
+        private int[]?  _delaysInSeconds;
         private Func<long, int> _delayInSecondsByAttemptFunc;
         private AttemptsExceededAction _onAttemptsExceeded;
         private bool _logEvents;
-        private Type[] _onlyOn;
-        private Type[] _exceptOn;
+        private Type[]? _onlyOn;
+        private Type[]? _exceptOn;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AutomaticRetryAttribute"/>
@@ -110,7 +114,7 @@ namespace Hangfire
         public AutomaticRetryAttribute()
         {
             Attempts = DefaultRetryAttempts;
-            DelayInSecondsByAttemptFunc = DefaultDelayInSecondsByAttemptFunc;
+            _delayInSecondsByAttemptFunc = DefaultDelayInSecondsByAttemptFunc;
             LogEvents = true;
             OnAttemptsExceeded = AttemptsExceededAction.Fail;
             Order = 20;
@@ -145,7 +149,8 @@ namespace Hangfire
         /// <exception cref="ArgumentNullException">The value in a set operation is null.</exception>
         /// <exception cref="ArgumentException">The value contain one or more negative numbers.</exception>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public int[] DelaysInSeconds
+        [CanBeNull]
+        public int[]? DelaysInSeconds
         {
             get { lock (_lockObject) { return _delaysInSeconds; } }
             set
@@ -168,6 +173,7 @@ namespace Hangfire
         /// </summary>
         /// <exception cref="ArgumentNullException">The value in a set operation is null.</exception>
         [JsonIgnore]
+        [NotNull]
         public Func<long, int> DelayInSecondsByAttemptFunc
         {
             get { lock (_lockObject) { return _delayInSecondsByAttemptFunc;} }
@@ -207,7 +213,8 @@ namespace Hangfire
         /// exception types and their subtypes.
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public Type[] OnlyOn
+        [CanBeNull]
+        public Type[]? OnlyOn
         {
             get { lock (_lockObject) { return _onlyOn; } }
             set { lock (_lockObject) { _onlyOn = value; } }
@@ -222,7 +229,8 @@ namespace Hangfire
         /// be excluded from automatic retries.
         /// </value>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public Type[] ExceptOn
+        [CanBeNull]
+        public Type[]? ExceptOn
         {
             get { lock (_lockObject) { return _exceptOn; } }
             set { lock (_lockObject) { _exceptOn = value; } }

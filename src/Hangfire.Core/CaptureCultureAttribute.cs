@@ -21,6 +21,9 @@ using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Server;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire
 {
     public sealed class CaptureCultureAttribute : JobFilterAttribute, IClientFilter, IServerFilter
@@ -31,14 +34,14 @@ namespace Hangfire
         {
         }
 
-        public CaptureCultureAttribute([CanBeNull] string defaultCultureName, bool captureDefault = true)
+        public CaptureCultureAttribute([CanBeNull] string? defaultCultureName, bool captureDefault = true)
             : this(defaultCultureName, defaultCultureName, captureDefault)
         {
         }
 
         public CaptureCultureAttribute(
-            [CanBeNull] string defaultCultureName,
-            [CanBeNull] string defaultUICultureName,
+            [CanBeNull] string? defaultCultureName,
+            [CanBeNull] string? defaultUICultureName,
             bool captureDefault = true)
         {
             DefaultCultureName = defaultCultureName;
@@ -54,10 +57,10 @@ namespace Hangfire
         }
 
         [CanBeNull]
-        public string DefaultCultureName { get; }
+        public string? DefaultCultureName { get; }
 
         [CanBeNull]
-        public string DefaultUICultureName { get; }
+        public string? DefaultUICultureName { get; }
 
         public bool CaptureDefault { get; }
 

@@ -15,6 +15,8 @@
 
 using System;
 
+#nullable enable
+
 namespace Hangfire
 {
     /// <summary>
@@ -280,8 +282,7 @@ namespace Hangfire
 
             foreach (string expressionPart in expressionParts)
             {
-                int num;
-                if (!Int32.TryParse(expressionPart, out num) && expressionPart != "*")
+                if (!Int32.TryParse(expressionPart, out _) && expressionPart != "*")
                 {
                     throw new InvalidCastException("Invalid Cron Expression");
                 }

@@ -21,6 +21,9 @@ using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.States;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire
 {
     public class BackgroundJobServerOptions
@@ -39,8 +42,8 @@ namespace Hangfire
 
         public BackgroundJobServerOptions()
         {
+            _queues = new[] { EnqueuedState.DefaultQueue };
             WorkerCount = Math.Min(Environment.ProcessorCount * 5, MaxDefaultWorkerCount);
-            Queues = new[] { EnqueuedState.DefaultQueue };
             StopTimeout = BackgroundProcessingServerOptions.DefaultStopTimeout;
             ShutdownTimeout = BackgroundProcessingServer.DefaultShutdownTimeout;
             SchedulePollingInterval = DelayedJobScheduler.DefaultPollingDelay;
@@ -54,8 +57,9 @@ namespace Hangfire
             TimeZoneResolver = null;
             TaskScheduler = TaskScheduler.Default;
         }
-        
-        public string ServerName { get; set; }
+
+        [CanBeNull]
+        public string? ServerName { get; set; }
 
         /// <summary>
         /// Gets or sets whether storage instance will include only <see cref="Worker"/> and required
@@ -75,6 +79,7 @@ namespace Hangfire
             }
         }
 
+        [NotNull]
         public string[] Queues
         {
             get { return _queues; }
@@ -171,22 +176,23 @@ namespace Hangfire
         public TimeSpan CancellationCheckInterval { get; set; }
 
         [Obsolete("Please use `ServerTimeout` or `ServerCheckInterval` options instead. Will be removed in 2.0.0.")]
-        public ServerWatchdogOptions ServerWatchdogOptions { get; set; }
+        [CanBeNull]
+        public ServerWatchdogOptions? ServerWatchdogOptions { get; set; }
 
         [CanBeNull]
-        public IJobFilterProvider FilterProvider { get; set; }
+        public IJobFilterProvider? FilterProvider { get; set; }
 
         [CanBeNull]
-        public JobActivator Activator { get; set; }
+        public JobActivator? Activator { get; set; }
 
         [CanBeNull]
-        public ITimeZoneResolver TimeZoneResolver { get; set; }
+        public ITimeZoneResolver? TimeZoneResolver { get; set; }
 
         [CanBeNull]
-        public TaskScheduler TaskScheduler { get; set; }
-        
+        public TaskScheduler? TaskScheduler { get; set; }
+
         [CanBeNull]
-        public Action<Thread> WorkerThreadConfigurationAction { get; set; }
+        public Action<Thread>? WorkerThreadConfigurationAction { get; set; }
 
         /// <summary>
         /// Experimental option for schedulers, but not for workers. Gets or sets the

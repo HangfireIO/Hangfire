@@ -20,6 +20,9 @@ using System.ComponentModel;
 using System.Threading;
 using Hangfire.Annotations;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Public API, can not touch in minor versions.")]
@@ -35,6 +38,7 @@ namespace Hangfire
     {
         private static int _compatibilityLevel = (int)CompatibilityLevel.Version_110;
 
+        [NotNull]
         public static IGlobalConfiguration Configuration { get; } = new GlobalConfiguration();
 
         internal static CompatibilityLevel CompatibilityLevel

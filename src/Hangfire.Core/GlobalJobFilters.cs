@@ -13,7 +13,11 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using Hangfire.Annotations;
 using Hangfire.Common;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire
 {
@@ -39,6 +43,7 @@ namespace Hangfire
         /// <summary>
         /// Gets the global filter collection.
         /// </summary>
+        [NotNull]
         public static JobFilterCollection Filters { get; }
     }
 }

@@ -15,26 +15,32 @@
 
 using System;
 using System.Threading;
+using Hangfire.Annotations;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire
 {
     public abstract class JobActivatorScope : IDisposable
     {
         // ReSharper disable once InconsistentNaming
-        private static readonly ThreadLocal<JobActivatorScope> _current
-            = new ThreadLocal<JobActivatorScope>(trackAllValues: false);
+        private static readonly ThreadLocal<JobActivatorScope?> _current
+            = new ThreadLocal<JobActivatorScope?>(trackAllValues: false);
 
         protected JobActivatorScope()
         {
             _current.Value = this;
         }
 
-        public static JobActivatorScope Current => _current.Value;
+        [CanBeNull]
+        public static JobActivatorScope? Current => _current.Value;
 
         [Obsolete("This property wasn't implemented and will be removed in Hangfire 2.0.0.")]
-        public object InnerScope { get; set; }
+        public object? InnerScope { get; set; }
 
-        public abstract object Resolve(Type type);
+        [CanBeNull]
+        public abstract object? Resolve([NotNull] Type type);
 
         public virtual void DisposeScope()
         {

@@ -20,6 +20,9 @@ using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.States;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire
 {
     /// <summary>
@@ -50,7 +53,7 @@ namespace Hangfire
         private static readonly Func<IBackgroundJobClient> DefaultFactory
             = static () => CachedClient.Value;
 
-        private static Func<IBackgroundJobClient> _clientFactory;
+        private static Func<IBackgroundJobClient>? _clientFactory;
         private static readonly object ClientFactoryLock = new object();
 
         internal static Func<IBackgroundJobClient> ClientFactory
@@ -83,7 +86,8 @@ namespace Hangfire
         /// 
         /// <seealso cref="EnqueuedState"/>
         /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
-        public static string Enqueue([NotNull, InstantHandle] Expression<Action> methodCall)
+        [CanBeNull]
+        public static string? Enqueue([NotNull, InstantHandle] Expression<Action> methodCall)
         {
             return ClientFactory().Enqueue(methodCall);
         }
@@ -102,7 +106,8 @@ namespace Hangfire
         ///
         /// <seealso cref="EnqueuedState"/>
         /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
-        public static string Enqueue([NotNull] string queue, [NotNull, InstantHandle] Expression<Action> methodCall)
+        [CanBeNull]
+        public static string? Enqueue([NotNull] string queue, [NotNull, InstantHandle] Expression<Action> methodCall)
         {
             return ClientFactory().Enqueue(queue, methodCall);
         }
@@ -119,7 +124,8 @@ namespace Hangfire
         /// 
         /// <seealso cref="EnqueuedState"/>
         /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
-        public static string Enqueue([NotNull, InstantHandle] Expression<Func<Task>> methodCall)
+        [CanBeNull]
+        public static string? Enqueue([NotNull, InstantHandle] Expression<Func<Task>> methodCall)
         {
             return ClientFactory().Enqueue(methodCall);
         }
@@ -138,7 +144,8 @@ namespace Hangfire
         ///
         /// <seealso cref="EnqueuedState"/>
         /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
-        public static string Enqueue([NotNull] string queue, [NotNull, InstantHandle] Expression<Func<Task>> methodCall)
+        [CanBeNull]
+        public static string? Enqueue([NotNull] string queue, [NotNull, InstantHandle] Expression<Func<Task>> methodCall)
         {
             return ClientFactory().Enqueue(queue, methodCall);
         }
@@ -155,7 +162,8 @@ namespace Hangfire
         /// 
         /// <seealso cref="EnqueuedState"/>
         /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
-        public static string Enqueue<T>([NotNull, InstantHandle] Expression<Action<T>> methodCall)
+        [CanBeNull]
+        public static string? Enqueue<T>([NotNull, InstantHandle] Expression<Action<T>> methodCall)
         {
             return ClientFactory().Enqueue(methodCall);
         }
@@ -174,7 +182,8 @@ namespace Hangfire
         ///
         /// <seealso cref="EnqueuedState"/>
         /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
-        public static string Enqueue<T>([NotNull] string queue, [NotNull, InstantHandle] Expression<Action<T>> methodCall)
+        [CanBeNull]
+        public static string? Enqueue<T>([NotNull] string queue, [NotNull, InstantHandle] Expression<Action<T>> methodCall)
         {
             return ClientFactory().Enqueue(queue, methodCall);
         }
@@ -191,7 +200,8 @@ namespace Hangfire
         /// 
         /// <seealso cref="EnqueuedState"/>
         /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
-        public static string Enqueue<T>([NotNull, InstantHandle] Expression<Func<T, Task>> methodCall)
+        [CanBeNull]
+        public static string? Enqueue<T>([NotNull, InstantHandle] Expression<Func<T, Task>> methodCall)
         {
             return ClientFactory().Enqueue(methodCall);
         }
@@ -210,7 +220,8 @@ namespace Hangfire
         ///
         /// <seealso cref="EnqueuedState"/>
         /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
-        public static string Enqueue<T>([NotNull] string queue, [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall)
+        [CanBeNull]
+        public static string? Enqueue<T>([NotNull] string queue, [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall)
         {
             return ClientFactory().Enqueue(queue, methodCall);
         }
@@ -223,7 +234,8 @@ namespace Hangfire
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
         /// <returns>Unique identifier of the created job.</returns>
-        public static string Schedule(
+        [CanBeNull]
+        public static string? Schedule(
             [NotNull, InstantHandle] Expression<Action> methodCall, 
             TimeSpan delay)
         {
@@ -239,7 +251,8 @@ namespace Hangfire
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
         /// <returns>Unique identifier of the created job.</returns>
-        public static string Schedule(
+        [CanBeNull]
+        public static string? Schedule(
             [NotNull] string queue,
             [NotNull, InstantHandle] Expression<Action> methodCall,
             TimeSpan delay)
@@ -255,7 +268,8 @@ namespace Hangfire
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
         /// <returns>Unique identifier of the created job.</returns>
-        public static string Schedule(
+        [CanBeNull]
+        public static string? Schedule(
             [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             TimeSpan delay)
         {
@@ -271,7 +285,8 @@ namespace Hangfire
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
         /// <returns>Unique identifier of the created job.</returns>
-        public static string Schedule(
+        [CanBeNull]
+        public static string? Schedule(
             [NotNull] string queue,
             [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             TimeSpan delay)
@@ -287,7 +302,8 @@ namespace Hangfire
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">The moment of time at which the job will be enqueued.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string Schedule(
+        [CanBeNull]
+        public static string? Schedule(
             [NotNull, InstantHandle] Expression<Action> methodCall, 
             DateTimeOffset enqueueAt)
         {
@@ -303,7 +319,8 @@ namespace Hangfire
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">The moment of time at which the job will be enqueued.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string Schedule(
+        [CanBeNull]
+        public static string? Schedule(
             [NotNull] string queue,
             [NotNull, InstantHandle] Expression<Action> methodCall,
             DateTimeOffset enqueueAt)
@@ -319,7 +336,8 @@ namespace Hangfire
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">The moment of time at which the job will be enqueued.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string Schedule(
+        [CanBeNull]
+        public static string? Schedule(
             [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             DateTimeOffset enqueueAt)
         {
@@ -335,7 +353,8 @@ namespace Hangfire
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">The moment of time at which the job will be enqueued.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string Schedule(
+        [CanBeNull]
+        public static string? Schedule(
             [NotNull] string queue,
             [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             DateTimeOffset enqueueAt)
@@ -352,7 +371,8 @@ namespace Hangfire
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
         /// <returns>Unique identifier of the created job.</returns>
-        public static string Schedule<T>(
+        [CanBeNull]
+        public static string? Schedule<T>(
             [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             TimeSpan delay)
         {
@@ -369,7 +389,8 @@ namespace Hangfire
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
         /// <returns>Unique identifier of the created job.</returns>
-        public static string Schedule<T>(
+        [CanBeNull]
+        public static string? Schedule<T>(
             [NotNull] string queue,
             [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             TimeSpan delay)
@@ -386,7 +407,8 @@ namespace Hangfire
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
         /// <returns>Unique identifier of the created job.</returns>
-        public static string Schedule<T>(
+        [CanBeNull]
+        public static string? Schedule<T>(
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             TimeSpan delay)
         {
@@ -403,7 +425,8 @@ namespace Hangfire
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
         /// <returns>Unique identifier of the created job.</returns>
-        public static string Schedule<T>(
+        [CanBeNull]
+        public static string? Schedule<T>(
             [NotNull] string queue,
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             TimeSpan delay)
@@ -420,7 +443,8 @@ namespace Hangfire
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">The moment of time at which the job will be enqueued.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string Schedule<T>(
+        [CanBeNull]
+        public static string? Schedule<T>(
             [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
             DateTimeOffset enqueueAt)
         {
@@ -437,7 +461,8 @@ namespace Hangfire
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">The moment of time at which the job will be enqueued.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string Schedule<T>(
+        [CanBeNull]
+        public static string? Schedule<T>(
             [NotNull] string queue,
             [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             DateTimeOffset enqueueAt)
@@ -454,7 +479,8 @@ namespace Hangfire
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">The moment of time at which the job will be enqueued.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string Schedule<T>(
+        [CanBeNull]
+        public static string? Schedule<T>(
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             DateTimeOffset enqueueAt)
         {
@@ -471,7 +497,8 @@ namespace Hangfire
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">The moment of time at which the job will be enqueued.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string Schedule<T>(
+        [CanBeNull]
+        public static string? Schedule<T>(
             [NotNull] string queue,
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             DateTimeOffset enqueueAt)
@@ -502,7 +529,7 @@ namespace Hangfire
         /// <param name="jobId">Identifier of job, whose state is being changed.</param>
         /// <param name="fromState">Current state assertion, or null if unneeded.</param>
         /// <returns>True, if state change succeeded, otherwise false.</returns>
-        public static bool Delete([NotNull] string jobId, [CanBeNull] string fromState)
+        public static bool Delete([NotNull] string jobId, [CanBeNull] string? fromState)
         {
             return ClientFactory().Delete(jobId, fromState);
         }
@@ -529,7 +556,7 @@ namespace Hangfire
         /// <param name="jobId">Identifier of job, whose state is being changed.</param>
         /// <param name="fromState">Current state assertion, or null if unneeded.</param>
         /// <returns>True, if state change succeeded, otherwise false.</returns>
-        public static bool Requeue([NotNull] string jobId, [CanBeNull] string fromState)
+        public static bool Requeue([NotNull] string jobId, [CanBeNull] string? fromState)
         {
             return ClientFactory().Requeue(jobId, fromState);
         }
@@ -558,7 +585,7 @@ namespace Hangfire
         /// <param name="delay">Delay, after which the job will be scheduled.</param>
         /// <param name="fromState">Current state assertion, or null if unneeded.</param>
         /// <returns>True, if state change succeeded, otherwise false.</returns>
-        public static bool Reschedule([NotNull] string jobId, TimeSpan delay, [CanBeNull] string fromState)
+        public static bool Reschedule([NotNull] string jobId, TimeSpan delay, [CanBeNull] string? fromState)
         {
             return ClientFactory().Reschedule(jobId, delay, fromState);
         }
@@ -587,7 +614,7 @@ namespace Hangfire
         /// <param name="enqueueAt">The moment of time at which the job will be rescheduled.</param>
         /// <param name="fromState">Current state assertion, or null if unneeded.</param>
         /// <returns>True, if state change succeeded, otherwise false.</returns>
-        public static bool Reschedule([NotNull] string jobId, DateTimeOffset enqueueAt, [CanBeNull] string fromState)
+        public static bool Reschedule([NotNull] string jobId, DateTimeOffset enqueueAt, [CanBeNull] string? fromState)
         {
             return ClientFactory().Reschedule(jobId, enqueueAt, fromState);
         }
@@ -600,7 +627,8 @@ namespace Hangfire
         /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
         /// <returns>Unique identifier of a created job.</returns>
         [Obsolete("Deprecated for clarity, please use ContinueJobWith method with the same arguments. Will be removed in 2.0.0.")]
-        public static string ContinueWith(
+        [CanBeNull]
+        public static string? ContinueWith(
             [NotNull] string parentId, 
             [NotNull, InstantHandle] Expression<Action> methodCall)
         {
@@ -614,7 +642,8 @@ namespace Hangfire
         /// <param name="parentId">Identifier of a background job to wait completion for.</param>
         /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string ContinueJobWith(
+        [CanBeNull]
+        public static string? ContinueJobWith(
             [NotNull] string parentId,
             [NotNull, InstantHandle] Expression<Action> methodCall)
         {
@@ -629,7 +658,8 @@ namespace Hangfire
         /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
         /// <returns>Unique identifier of a created job.</returns>
         [Obsolete("Deprecated for clarity, please use ContinueJobWith method with the same arguments. Will be removed in 2.0.0.")]
-        public static string ContinueWith<T>(
+        [CanBeNull]
+        public static string? ContinueWith<T>(
             [NotNull] string parentId, 
             [NotNull, InstantHandle] Expression<Action<T>> methodCall)
         {
@@ -643,7 +673,8 @@ namespace Hangfire
         /// <param name="parentId">Identifier of a background job to wait completion for.</param>
         /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string ContinueJobWith<T>(
+        [CanBeNull]
+        public static string? ContinueJobWith<T>(
             [NotNull] string parentId,
             [NotNull, InstantHandle] Expression<Action<T>> methodCall)
         {
@@ -658,7 +689,8 @@ namespace Hangfire
         /// <param name="options">Continuation options.</param>
         /// <returns>Unique identifier of a created job.</returns>
         [Obsolete("Deprecated for clarity, please use ContinueJobWith method with the same arguments. Will be removed in 2.0.0.")]
-        public static string ContinueWith(
+        [CanBeNull]
+        public static string? ContinueWith(
             [NotNull] string parentId, 
             [NotNull, InstantHandle] Expression<Action> methodCall, 
             JobContinuationOptions options)
@@ -673,7 +705,8 @@ namespace Hangfire
         /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
         /// <param name="options">Continuation options.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string ContinueJobWith(
+        [CanBeNull]
+        public static string? ContinueJobWith(
             [NotNull] string parentId,
             [NotNull, InstantHandle] Expression<Action> methodCall,
             JobContinuationOptions options)
@@ -690,7 +723,8 @@ namespace Hangfire
         /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
         /// <param name="options">Continuation options.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string ContinueJobWith(
+        [CanBeNull]
+        public static string? ContinueJobWith(
             [NotNull] string parentId,
             [NotNull] string queue,
             [NotNull, InstantHandle] Expression<Action> methodCall,
@@ -708,7 +742,8 @@ namespace Hangfire
         /// <see cref="JobContinuationOptions.OnlyOnSucceededState"/> is used.</param>
         /// <returns>Unique identifier of a created job.</returns>
         [Obsolete("Deprecated for clarity, please use ContinueJobWith method with the same arguments. Will be removed in 2.0.0.")]
-        public static string ContinueWith(
+        [CanBeNull]
+        public static string? ContinueWith(
             [NotNull] string parentId,
             [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             JobContinuationOptions options = JobContinuationOptions.OnlyOnSucceededState)
@@ -724,7 +759,8 @@ namespace Hangfire
         /// <param name="options">Continuation options. By default, 
         /// <see cref="JobContinuationOptions.OnlyOnSucceededState"/> is used.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string ContinueJobWith(
+        [CanBeNull]
+        public static string? ContinueJobWith(
             [NotNull] string parentId,
             [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
             JobContinuationOptions options = JobContinuationOptions.OnlyOnSucceededState)
@@ -742,7 +778,8 @@ namespace Hangfire
         /// <param name="options">Continuation options. By default,
         /// <see cref="JobContinuationOptions.OnlyOnSucceededState"/> is used.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string ContinueJobWith(
+        [CanBeNull]
+        public static string? ContinueJobWith(
             [NotNull] string parentId,
             [NotNull] string queue,
             [NotNull, InstantHandle] Expression<Func<Task>> methodCall,
@@ -759,7 +796,8 @@ namespace Hangfire
         /// <param name="options">Continuation options.</param>
         /// <returns>Unique identifier of a created job.</returns>
         [Obsolete("Deprecated for clarity, please use ContinueJobWith method with the same arguments. Will be removed in 2.0.0.")]
-        public static string ContinueWith<T>(
+        [CanBeNull]
+        public static string? ContinueWith<T>(
             [NotNull] string parentId, 
             [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
             JobContinuationOptions options)
@@ -774,7 +812,8 @@ namespace Hangfire
         /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
         /// <param name="options">Continuation options.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string ContinueJobWith<T>(
+        [CanBeNull]
+        public static string? ContinueJobWith<T>(
             [NotNull] string parentId,
             [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             JobContinuationOptions options)
@@ -791,7 +830,8 @@ namespace Hangfire
         /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
         /// <param name="options">Continuation options.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string ContinueJobWith<T>(
+        [CanBeNull]
+        public static string? ContinueJobWith<T>(
             [NotNull] string parentId,
             [NotNull] string queue,
             [NotNull, InstantHandle] Expression<Action<T>> methodCall,
@@ -809,7 +849,8 @@ namespace Hangfire
         /// <see cref="JobContinuationOptions.OnlyOnSucceededState"/> is used.</param>
         /// <returns>Unique identifier of a created job.</returns>
         [Obsolete("Deprecated for clarity, please use ContinueJobWith method with the same arguments. Will be removed in 2.0.0.")]
-        public static string ContinueWith<T>(
+        [CanBeNull]
+        public static string? ContinueWith<T>(
             [NotNull] string parentId,
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             JobContinuationOptions options = JobContinuationOptions.OnlyOnSucceededState)
@@ -825,7 +866,8 @@ namespace Hangfire
         /// <param name="options">Continuation options. By default, 
         /// <see cref="JobContinuationOptions.OnlyOnSucceededState"/> is used.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string ContinueJobWith<T>(
+        [CanBeNull]
+        public static string? ContinueJobWith<T>(
             [NotNull] string parentId,
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,
             JobContinuationOptions options = JobContinuationOptions.OnlyOnSucceededState)
@@ -843,7 +885,8 @@ namespace Hangfire
         /// <param name="options">Continuation options. By default,
         /// <see cref="JobContinuationOptions.OnlyOnSucceededState"/> is used.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string ContinueJobWith<T>(
+        [CanBeNull]
+        public static string? ContinueJobWith<T>(
             [NotNull] string parentId,
             [NotNull] string queue,
             [NotNull, InstantHandle] Expression<Func<T, Task>> methodCall,

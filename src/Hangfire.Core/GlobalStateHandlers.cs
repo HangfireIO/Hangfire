@@ -14,7 +14,11 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using Hangfire.Annotations;
 using Hangfire.States;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire
 {
@@ -32,6 +36,7 @@ namespace Hangfire
             };
         }
 
+        [NotNull]
         public static ICollection<IStateHandler> Handlers { get; }
     }
 }

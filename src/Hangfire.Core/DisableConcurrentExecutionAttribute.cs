@@ -21,6 +21,9 @@ using Hangfire.Common;
 using Hangfire.Server;
 using Newtonsoft.Json;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire
 {
     public class DisableConcurrentExecutionAttribute : JobFilterAttribute, IServerFilter
@@ -33,19 +36,19 @@ namespace Hangfire
         }
         
         [JsonConstructor]
-        public DisableConcurrentExecutionAttribute(string resource, int timeoutSec)
+        public DisableConcurrentExecutionAttribute([CanBeNull] string? resource, int timeoutSec)
             : this(timeoutSec)
         {
             Resource = resource;
         }
 
         [CanBeNull]
-        public string Resource { get; }
+        public string? Resource { get; }
         public int TimeoutSec { get; }
 
         public void OnPerforming(PerformingContext context)
         {
-            var resource = GetResource(context.BackgroundJob.Job);
+            var resource = GetResource(context.BackgroundJob.Job!);
             var timeout = TimeSpan.FromSeconds(TimeoutSec);
 
             var distributedLock = context.Connection.AcquireDistributedLock(resource, timeout);

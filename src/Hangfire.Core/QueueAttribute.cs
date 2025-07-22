@@ -16,8 +16,12 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.States;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire
 {
@@ -53,22 +57,23 @@ namespace Hangfire
         /// using the specified queue name.
         /// </summary>
         /// <param name="queue">Queue name.</param>
-        public QueueAttribute(string queue)
+        public QueueAttribute([NotNull] string queue)
         {
-            Queue = queue;
+            Queue = queue ?? throw new ArgumentNullException(nameof(queue));
             Order = Int32.MaxValue;
         }
 
         /// <summary>
         /// Gets the queue name that will be used for background jobs.
         /// </summary>
+        [NotNull]
         public string Queue { get; }
 
         public void OnStateElection(ElectStateContext context)
         {
             if (context.CandidateState is EnqueuedState enqueuedState)
             {
-                enqueuedState.Queue = String.Format(CultureInfo.InvariantCulture, Queue, context.BackgroundJob.Job.Args.ToArray());
+                enqueuedState.Queue = String.Format(CultureInfo.InvariantCulture, Queue, context.BackgroundJob.Job!.Args.ToArray());
             }
         }
     }

@@ -21,6 +21,9 @@ using Hangfire.Logging;
 using Hangfire.Profiling;
 using Hangfire.Storage;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire
 {
     /// <summary>
@@ -169,9 +172,9 @@ namespace Hangfire
         public void Trigger(string recurringJobId) => TriggerJob(recurringJobId);
 
         [Obsolete("Please use the `TriggerJob` method instead. Will be removed in 2.0.0.")]
-        public string TriggerExecution(string recurringJobId) => TriggerJob(recurringJobId);
+        public string? TriggerExecution(string recurringJobId) => TriggerJob(recurringJobId);
 
-        public string TriggerJob(string recurringJobId)
+        public string? TriggerJob(string recurringJobId)
         {
             if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
 
@@ -183,7 +186,7 @@ namespace Hangfire
                 var recurringJob = connection.GetRecurringJob(recurringJobId);
                 if (recurringJob == null) return null;
 
-                BackgroundJob backgroundJob;
+                BackgroundJob? backgroundJob;
 
                 try
                 {

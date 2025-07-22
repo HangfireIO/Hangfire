@@ -17,6 +17,9 @@ using System;
 using Hangfire.Annotations;
 using Hangfire.States;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire
 {
     public class RecurringJobOptions
@@ -26,30 +29,23 @@ namespace Hangfire
 
         public RecurringJobOptions()
         {
-            TimeZone = TimeZoneInfo.Utc;
-#pragma warning disable 618
-            QueueName = EnqueuedState.DefaultQueue;
-#pragma warning restore 618
+            _timeZone = TimeZoneInfo.Utc;
+            _queueName = EnqueuedState.DefaultQueue;
             MisfireHandling = MisfireHandlingMode.Relaxed;
         }
 
         [NotNull]
         public TimeZoneInfo TimeZone
         {
-            get { return _timeZone; }
-            set
-            {
-                if (value == null) throw new ArgumentNullException(nameof(value));
-
-                _timeZone = value;
-            }
+            get => _timeZone;
+            set => _timeZone = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         [Obsolete("Please use non-obsolete AddOrUpdate with the explicit `queue` parameter instead. Will be removed in 2.0.0.")]
         [NotNull]
         public string QueueName
         {
-            get { return _queueName; }
+            get => _queueName;
             set
             {
                 EnqueuedState.ValidateQueueName(nameof(value), value);

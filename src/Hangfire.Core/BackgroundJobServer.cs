@@ -26,6 +26,9 @@ using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire
 {
     public class BackgroundJobServer : IBackgroundProcessingServer
@@ -91,11 +94,11 @@ namespace Hangfire
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses,
-            [CanBeNull] IJobFilterProvider filterProvider,
-            [CanBeNull] JobActivator activator,
-            [CanBeNull] IBackgroundJobFactory factory,
-            [CanBeNull] IBackgroundJobPerformer performer,
-            [CanBeNull] IBackgroundJobStateChanger stateChanger)
+            [CanBeNull] IJobFilterProvider? filterProvider,
+            [CanBeNull] JobActivator? activator,
+            [CanBeNull] IBackgroundJobFactory? factory,
+            [CanBeNull] IBackgroundJobPerformer? performer,
+            [CanBeNull] IBackgroundJobStateChanger? stateChanger)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (options == null) throw new ArgumentNullException(nameof(options));
@@ -184,11 +187,11 @@ namespace Hangfire
         }
 
         private IEnumerable<IBackgroundProcessDispatcherBuilder> GetRequiredProcesses(
-            [CanBeNull] IJobFilterProvider filterProvider,
-            [CanBeNull] JobActivator activator,
-            [CanBeNull] IBackgroundJobFactory factory,
-            [CanBeNull] IBackgroundJobPerformer performer,
-            [CanBeNull] IBackgroundJobStateChanger stateChanger)
+            IJobFilterProvider? filterProvider,
+            JobActivator? activator,
+            IBackgroundJobFactory? factory,
+            IBackgroundJobPerformer? performer,
+            IBackgroundJobStateChanger? stateChanger)
         {
             var processes = new List<IBackgroundProcessDispatcherBuilder>();
             var timeZoneResolver = _options.TimeZoneResolver ?? new DefaultTimeZoneResolver();

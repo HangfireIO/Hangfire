@@ -20,6 +20,9 @@ using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire
 {
     /// <summary>
@@ -107,13 +110,9 @@ namespace Hangfire
             [NotNull] IBackgroundJobFactory factory,
             [NotNull] IBackgroundJobStateChanger stateChanger)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
-            if (factory == null) throw new ArgumentNullException(nameof(factory));
-            if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
-            
-            _storage = storage;
-            _stateChanger = stateChanger;
-            _factory = factory;
+            _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            _stateChanger = stateChanger ?? throw new ArgumentNullException(nameof(stateChanger));
+            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
         }
 
         /// <inheritdoc />
@@ -140,10 +139,10 @@ namespace Hangfire
         }
 
         /// <inheritdoc />
-        public string Create(Job job, IState state) => Create(job, state, null);
+        public string? Create(Job job, IState state) => Create(job, state, null);
 
         /// <inheritdoc />
-        public string Create(Job job, IState state, IDictionary<string, object> parameters)
+        public string? Create(Job job, IState state, IDictionary<string, object>? parameters)
         {
             if (job == null) throw new ArgumentNullException(nameof(job));
             if (state == null) throw new ArgumentNullException(nameof(state));
@@ -165,7 +164,7 @@ namespace Hangfire
         }
 
         /// <inheritdoc />
-        public bool ChangeState(string jobId, IState state, string expectedState)
+        public bool ChangeState(string jobId, IState state, string? expectedState)
         {
             if (jobId == null) throw new ArgumentNullException(nameof(jobId));
             if (state == null) throw new ArgumentNullException(nameof(state));

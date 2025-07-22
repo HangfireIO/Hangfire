@@ -22,15 +22,19 @@ using Hangfire.Server;
 using Hangfire.States;
 using Hangfire.Storage;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire
 {
     public abstract class JobStorage
     {
         private static readonly object LockObject = new object();
-        private static JobStorage _current;
+        private static JobStorage? _current;
 
         private TimeSpan _jobExpirationTimeout = TimeSpan.FromDays(1);
 
+        [NotNull]
         public static JobStorage Current
         {
             get
@@ -80,10 +84,13 @@ namespace Hangfire
 
         public virtual bool LinearizableReads => false;
 
+        [NotNull]
         public abstract IMonitoringApi GetMonitoringApi();
 
+        [NotNull]
         public abstract IStorageConnection GetConnection();
 
+        [NotNull]
         public virtual IStorageConnection GetReadOnlyConnection()
         {
             return GetConnection();
@@ -91,28 +98,32 @@ namespace Hangfire
 
 #pragma warning disable 618
         [Obsolete($"Please use the `{nameof(GetStorageWideProcesses)}` and/or `{nameof(GetServerRequiredProcesses)}` methods instead, and enable `{nameof(JobStorageFeatures)}.{nameof(JobStorageFeatures.ProcessesInsteadOfComponents)}`. Will be removed in 2.0.0.")]
+        [NotNull]
         public virtual IEnumerable<IServerComponent> GetComponents()
         {
             return Enumerable.Empty<IServerComponent>();
         }
 #pragma warning restore 618
 
+        [NotNull]
         public virtual IEnumerable<IBackgroundProcess> GetServerRequiredProcesses()
         {
             return Enumerable.Empty<IBackgroundProcess>();
         }
 
+        [NotNull]
         public virtual IEnumerable<IBackgroundProcess> GetStorageWideProcesses()
         {
             return Enumerable.Empty<IBackgroundProcess>();
         }
 
+        [NotNull]
         public virtual IEnumerable<IStateHandler> GetStateHandlers()
         {
             return Enumerable.Empty<IStateHandler>();
         }
 
-        public virtual void WriteOptionsToLog(ILog logger)
+        public virtual void WriteOptionsToLog([NotNull] ILog logger)
         {
         }
 

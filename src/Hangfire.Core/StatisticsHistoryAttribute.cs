@@ -18,6 +18,8 @@ using System.Globalization;
 using Hangfire.Common;
 using Hangfire.States;
 
+#nullable enable
+
 namespace Hangfire
 {
     public sealed class StatisticsHistoryAttribute : JobFilterAttribute, IElectStateFilter

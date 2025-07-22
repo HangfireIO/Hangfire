@@ -20,6 +20,9 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.States;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire
 {
     public static class RecurringJobManagerExtensions
@@ -75,7 +78,7 @@ namespace Hangfire
             [NotNull] string recurringJobId,
             [NotNull] Expression<Action> methodCall,
             [NotNull] Func<string> cronExpression,
-            TimeZoneInfo timeZone = null,
+            TimeZoneInfo? timeZone = null,
             string queue = EnqueuedState.DefaultQueue)
         {
             if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
@@ -132,7 +135,7 @@ namespace Hangfire
             [NotNull] string recurringJobId,
             [NotNull] Expression<Action<T>> methodCall,
             [NotNull] Func<string> cronExpression,
-            TimeZoneInfo timeZone = null,
+            TimeZoneInfo? timeZone = null,
             string queue = EnqueuedState.DefaultQueue)
         {
             if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
@@ -189,7 +192,7 @@ namespace Hangfire
             [NotNull] string recurringJobId,
             [NotNull] Expression<Action> methodCall,
             [NotNull] string cronExpression,
-            TimeZoneInfo timeZone = null,
+            TimeZoneInfo? timeZone = null,
             string queue = EnqueuedState.DefaultQueue)
         {
             if (manager == null) throw new ArgumentNullException(nameof(manager));
@@ -254,7 +257,7 @@ namespace Hangfire
             [NotNull] string recurringJobId,
             [NotNull] Expression<Action<T>> methodCall,
             [NotNull] string cronExpression,
-            TimeZoneInfo timeZone = null,
+            TimeZoneInfo? timeZone = null,
             string queue = EnqueuedState.DefaultQueue)
         {
             if (manager == null) throw new ArgumentNullException(nameof(manager));
@@ -319,7 +322,7 @@ namespace Hangfire
             [NotNull] string recurringJobId,
             [NotNull] Expression<Func<Task>> methodCall,
             [NotNull] Func<string> cronExpression,
-            TimeZoneInfo timeZone = null,
+            TimeZoneInfo? timeZone = null,
             string queue = EnqueuedState.DefaultQueue)
         {
             if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
@@ -376,7 +379,7 @@ namespace Hangfire
             [NotNull] string recurringJobId,
             [NotNull] Expression<Func<T, Task>> methodCall,
             [NotNull] Func<string> cronExpression,
-            TimeZoneInfo timeZone = null,
+            TimeZoneInfo? timeZone = null,
             string queue = EnqueuedState.DefaultQueue)
         {
             if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
@@ -433,7 +436,7 @@ namespace Hangfire
             [NotNull] string recurringJobId,
             [NotNull] Expression<Func<Task>> methodCall,
             [NotNull] string cronExpression,
-            TimeZoneInfo timeZone = null,
+            TimeZoneInfo? timeZone = null,
             string queue = EnqueuedState.DefaultQueue)
         {
             if (manager == null) throw new ArgumentNullException(nameof(manager));
@@ -498,7 +501,7 @@ namespace Hangfire
             [NotNull] string recurringJobId,
             [NotNull] Expression<Func<T, Task>> methodCall,
             [NotNull] string cronExpression,
-            TimeZoneInfo timeZone = null,
+            TimeZoneInfo? timeZone = null,
             string queue = EnqueuedState.DefaultQueue)
         {
             if (manager == null) throw new ArgumentNullException(nameof(manager));

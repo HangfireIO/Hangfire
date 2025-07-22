@@ -18,6 +18,9 @@ using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Server;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire
 {
     public class JobActivator
@@ -28,22 +31,15 @@ namespace Hangfire
         /// Gets or sets the current <see cref="JobActivator"/> instance 
         /// that will be used to activate jobs during performance.
         /// </summary>
+        [NotNull]
         public static JobActivator Current
         {
-            get { return _current; }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _current = value;
-            }
+            get => _current;
+            set => _current = value ?? throw new ArgumentNullException(nameof(value));
         }
 
-        
-        public virtual object ActivateJob(Type jobType)
+        [CanBeNull]
+        public virtual object? ActivateJob([NotNull] Type jobType)
         {
             return Activator.CreateInstance(jobType);
         }
@@ -54,16 +50,18 @@ namespace Hangfire
             return new SimpleJobActivatorScope(this);
         }
 
-        public virtual JobActivatorScope BeginScope(JobActivatorContext context)
+        [NotNull]
+        public virtual JobActivatorScope BeginScope([NotNull] JobActivatorContext context)
         {
 #pragma warning disable 618
             return BeginScope();
 #pragma warning restore 618
         }
 
-        public virtual JobActivatorScope BeginScope(PerformContext context)
+        [NotNull]
+        public virtual JobActivatorScope BeginScope([NotNull] PerformContext context)
         {
-            return this.BeginScope(new JobActivatorContext(context.Connection, context.BackgroundJob, context.CancellationToken));
+            return BeginScope(new JobActivatorContext(context.Connection, context.BackgroundJob, context.CancellationToken));
         }
 
         class SimpleJobActivatorScope : JobActivatorScope
@@ -73,11 +71,10 @@ namespace Hangfire
 
             public SimpleJobActivatorScope([NotNull] JobActivator activator)
             {
-                if (activator == null) throw new ArgumentNullException(nameof(activator));
-                _activator = activator;
+                _activator = activator ?? throw new ArgumentNullException(nameof(activator));
             }
 
-            public override object Resolve(Type type)
+            public override object? Resolve(Type type)
             {
                 var instance = _activator.ActivateJob(type);
                 var disposable = instance as IDisposable;

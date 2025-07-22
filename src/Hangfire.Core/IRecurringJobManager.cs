@@ -16,6 +16,9 @@
 using Hangfire.Annotations;
 using Hangfire.Common;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire
 {
     public interface IRecurringJobManagerV2 : IRecurringJobManager
@@ -24,7 +27,7 @@ namespace Hangfire
         JobStorage Storage { get; }
 
         [CanBeNull]
-        string TriggerJob([NotNull] string recurringJobId);
+        string? TriggerJob([NotNull] string recurringJobId);
     }
 
     public interface IRecurringJobManager

@@ -1,4 +1,5 @@
-﻿using Hangfire.States;
+﻿using System;
+using Hangfire.States;
 using Moq;
 using Xunit;
 
@@ -14,6 +15,13 @@ namespace Hangfire.Core.Tests
             {
                 ApplyContext = { NewStateObject = new EnqueuedState("queue") }
             };
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenQueueIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(() => new QueueAttribute(null));
+            Assert.Equal("queue", exception.ParamName);
         }
 
         [Fact]

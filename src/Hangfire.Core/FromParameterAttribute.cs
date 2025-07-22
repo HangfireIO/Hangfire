@@ -14,17 +14,22 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Hangfire.Annotations;
+
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
 
 namespace Hangfire
 {
     [AttributeUsage(AttributeTargets.Parameter)]
     public class FromParameterAttribute : Attribute
     {
-        public FromParameterAttribute(string parameterName)
+        public FromParameterAttribute([NotNull] string parameterName)
         {
-            ParameterName = parameterName;
+            ParameterName = parameterName ?? throw new ArgumentNullException(nameof(parameterName));
         }
 
+        [NotNull]
         public string ParameterName { get; }
     }
 }

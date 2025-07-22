@@ -23,6 +23,9 @@ using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire
 {
     public class ContinuationsSupportAttribute : JobFilterAttribute, IElectStateFilter, IApplyStateFilter
@@ -71,12 +74,9 @@ namespace Hangfire
             [NotNull] HashSet<string> knownFinalStates, 
             [NotNull] IBackgroundJobStateChanger stateChanger)
         {
-            if (knownFinalStates == null) throw new ArgumentNullException(nameof(knownFinalStates));
-            if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
-
             _pushResults = pushResults;
-            _knownFinalStates = knownFinalStates;
-            _stateChanger = stateChanger;
+            _knownFinalStates = knownFinalStates ?? throw new ArgumentNullException(nameof(knownFinalStates));
+            _stateChanger = stateChanger ?? throw new ArgumentNullException(nameof(stateChanger));
 
             // Ensure this filter is the last filter in the chain to start
             // continuations on the last candidate state only.
@@ -103,10 +103,11 @@ namespace Hangfire
             // TODO: Remove this method and IApplyStateFilter interface in 2.0.0.
         }
 
-        internal static List<Continuation> DeserializeContinuations(string serialized)
+        internal static List<Continuation> DeserializeContinuations(string? serialized)
         {
             var continuations =  SerializationHelper.Deserialize<List<Continuation>>(serialized);
 
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
             if (continuations != null && continuations.TrueForAll(static x => x.JobId == null))
             {
                 continuations = SerializationHelper.Deserialize<List<Continuation>>(serialized, SerializationOption.User);
@@ -207,7 +208,7 @@ namespace Hangfire
                 // the state of a continuation, we should simply skip it.
                 if (currentState.Name != AwaitingState.StateName) continue;
 
-                IState nextState = null;
+                IState? nextState = null;
 
                 if (!ShouldStartContinuation(context.CandidateState.Name, continuation.Options))
                 {
@@ -242,8 +243,8 @@ namespace Hangfire
                 }
             }
             
-            string antecedentResult = null;
-            string antecedentException = null;
+            string? antecedentResult = null;
+            string? antecedentException = null;
 
             if (_pushResults)
             {
@@ -283,9 +284,9 @@ namespace Hangfire
             }
         }
 
-        private StateData GetContinuationState(ElectStateContext context, string continuationJobId, TimeSpan timeout)
+        private StateData? GetContinuationState(ElectStateContext context, string continuationJobId, TimeSpan timeout)
         {
-            StateData currentState = null;
+            StateData? currentState = null;
 
             var started = Stopwatch.StartNew();
             var firstAttempt = true;
@@ -358,12 +359,12 @@ namespace Hangfire
             connection.SetJobParameter(jobId, "Continuations", SerializationHelper.Serialize(continuations));
         }
 
-        private static List<Continuation> GetContinuations(ElectStateContext context, string jobId)
+        private static List<Continuation> GetContinuations(ElectStateContext context, string? jobId)
         {
             // We are altering continuation list only when its background job is locked,
             // and parameter snapshot is obtained only when background job is locked, so
             // it's safe to use cached list when possible.
-            string serialized;
+            string? serialized;
 
             if (String.IsNullOrEmpty(jobId) && context.BackgroundJob.ParametersSnapshot != null)
             {

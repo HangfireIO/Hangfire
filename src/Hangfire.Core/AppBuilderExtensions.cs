@@ -28,6 +28,9 @@ using Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Infrastructure;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire
 {
     using BuildFunc = Action<
@@ -132,8 +135,8 @@ namespace Hangfire
     {
         // Prevent GC to collect background processing servers in hosts that do
         // not support shutdown notifications. Dictionary is used as a Set.
-        private static readonly ConcurrentDictionary<IBackgroundProcessingServer, object> Servers
-            = new ConcurrentDictionary<IBackgroundProcessingServer, object>();
+        private static readonly ConcurrentDictionary<IBackgroundProcessingServer, object?> Servers
+            = new ConcurrentDictionary<IBackgroundProcessingServer, object?>();
 
         /// <summary>
         /// Creates a new instance of the <see cref="BackgroundJobServer"/> class
@@ -322,13 +325,13 @@ namespace Hangfire
 
             var context = new OwinContext(builder.Properties);
             var token = context.Get<CancellationToken>("host.OnAppDisposing");
-            if (token == default(CancellationToken))
+            if (token == CancellationToken.None)
             {
                 // https://github.com/owin/owin/issues/27
                 token = context.Get<CancellationToken>("server.OnDispose");
             }
 
-            if (token == default(CancellationToken))
+            if (token == CancellationToken.None)
             {
                 throw new InvalidOperationException(
                     "Current OWIN environment does not contain an instance of the `CancellationToken` class neither under `host.OnAppDisposing`, nor `server.OnDispose` key.\r\n"
@@ -458,7 +461,7 @@ namespace Hangfire
                 [NotNull] string pathMatch,
                 [NotNull] DashboardOptions options,
                 [NotNull] JobStorage storage,
-                [CanBeNull] IOwinDashboardAntiforgery antiforgery)
+                [CanBeNull] IOwinDashboardAntiforgery? antiforgery)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
             if (pathMatch == null) throw new ArgumentNullException(nameof(pathMatch));

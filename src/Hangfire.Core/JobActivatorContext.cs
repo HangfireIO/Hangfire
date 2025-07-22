@@ -18,6 +18,9 @@ using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Storage;
 
+// ReSharper disable RedundantNullnessAttributeWithNullableReferenceTypes
+#nullable enable
+
 namespace Hangfire
 {
     public class JobActivatorContext
@@ -27,13 +30,9 @@ namespace Hangfire
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IJobCancellationToken cancellationToken)
         {
-            if (connection == null) throw new ArgumentNullException(nameof(connection));
-            if (backgroundJob == null) throw new ArgumentNullException(nameof(backgroundJob));
-            if (cancellationToken == null) throw new ArgumentNullException(nameof(cancellationToken));
-
-            Connection = connection;
-            BackgroundJob = backgroundJob;
-            CancellationToken = cancellationToken;
+            Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            BackgroundJob = backgroundJob ?? throw new ArgumentNullException(nameof(backgroundJob));
+            CancellationToken = cancellationToken ?? throw new ArgumentNullException(nameof(cancellationToken));
         }
 
         [NotNull]
@@ -45,22 +44,24 @@ namespace Hangfire
         [NotNull]
         public IStorageConnection Connection { get; }
 
-        public void SetJobParameter([NotNull] string name, object value)
+        public void SetJobParameter([NotNull] string name, [CanBeNull] object? value)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
             Connection.SetJobParameter(BackgroundJob.Id, name, SerializationHelper.Serialize(value, SerializationOption.User));
         }
 
-        public T GetJobParameter<T>([NotNull] string name) => GetJobParameter<T>(name, allowStale: false);
+        [CanBeNull]
+        public T? GetJobParameter<T>([NotNull] string name) => GetJobParameter<T>(name, allowStale: false);
 
-        public T GetJobParameter<T>([NotNull] string name, bool allowStale)
+        [CanBeNull]
+        public T? GetJobParameter<T>([NotNull] string name, bool allowStale)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
             try
             {
-                string value;
+                string? value;
 
                 if (allowStale && BackgroundJob.ParametersSnapshot != null)
                 {
